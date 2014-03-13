@@ -20,6 +20,7 @@ using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -672,8 +673,7 @@ namespace Rock.Model
             // 3) Both Persons are Married
             
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            Guid marriedGuid = new Guid(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED);
-            int marriedDefinedValueId = new DefinedValueService().Queryable().First(a => a.Guid == marriedGuid).Id;
+            int marriedDefinedValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()).Id;
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
