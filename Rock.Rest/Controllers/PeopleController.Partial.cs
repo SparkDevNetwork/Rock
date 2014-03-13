@@ -108,7 +108,15 @@ namespace Rock.Rest.Controllers
         {
             int count = 20;
             bool reversed;
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, false, out reversed );
+            bool allowFirstNameOnly = false;
+
+            var searchComponent = Rock.Search.SearchContainer.GetComponent( typeof( Rock.Search.Person.Name ) );
+            if ( searchComponent != null )
+            {
+                allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
+            }
+
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, allowFirstNameOnly, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
