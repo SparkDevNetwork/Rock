@@ -87,6 +87,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 lGender.Text = Person.Gender.ToString();
 
+                if (Person.GraduationDate.HasValue)
+                {
+                    lGraduation.Text = string.Format( "{0} {1}",
+                        Person.GraduationDate.Value.CompareTo( RockDateTime.Today ) <= 0 ? "Graduated " : "Graduates ",
+                        Person.GraduationDate.Value.Year );
+
+                    string grade = Person.GradeFormatted;
+                    if (grade != string.Empty)
+                    {
+                        lGrade.Text = string.Format( "<small>({0})</small>", grade );
+                    }
+                }
+
                 lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
                 if ( Person.AnniversaryDate.HasValue )
                     lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );

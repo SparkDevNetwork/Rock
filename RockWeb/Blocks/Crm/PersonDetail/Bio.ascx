@@ -38,7 +38,9 @@
                             <asp:Literal ID="lAge" runat="server" />
                             <asp:Literal ID="lGender" runat="server" /><br />
                             <asp:Literal ID="lMaritalStatus" runat="server" /> 
-                            <asp:Literal ID="lAnniversary" runat="server" />
+                            <asp:Literal ID="lAnniversary" runat="server" /><br />
+                            <asp:Literal ID="lGraduation" runat="server" />
+                            <asp:Literal ID="lGrade" runat="server" />
                         </div>
                     </div>
                 </div>
