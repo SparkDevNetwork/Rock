@@ -326,11 +326,13 @@ namespace Rock.Reporting.DataFilter
 
                         var ddl = ComparisonControl( StringFilterComparisonTypes );
                         ddl.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        ddl.AddCssClass( "js-filter-compare" );
                         filterControl.Controls.Add( ddl );
                         controls.Add( ddl );
 
                         var tb = new RockTextBox();
                         tb.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+                        tb.AddCssClass( "js-filter-control" );
                         filterControl.Controls.Add( tb );
                         controls.Add( tb );
 
