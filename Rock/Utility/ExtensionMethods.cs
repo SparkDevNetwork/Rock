@@ -595,6 +595,17 @@ namespace Rock
                 return value;
             }
         }
+
+        /// <summary>
+        /// Ensures the trailing backslash. Handy when combining folder paths.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string EnsureTrailingBackslash( this string value)
+        {
+            return value.TrimEnd(new char[] { '\\','/' }) + "\\";
+        }
+
         #endregion
 
         #region Int Extensions
