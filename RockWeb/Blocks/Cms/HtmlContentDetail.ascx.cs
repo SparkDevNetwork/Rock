@@ -152,17 +152,7 @@ namespace RockWeb.Blocks.Cms
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
-
-            if ( CurrentUser != null )
-            {
-                bool userSpecificFolders = false;
-                if ( bool.TryParse( GetAttributeValue( "UserSpecificFolders" ), out userSpecificFolders ) && userSpecificFolders )
-                {
-                    documentRoot = System.Web.VirtualPathUtility.Combine( documentRoot, CurrentUser.Id.ToString() );
-                    imageRoot = System.Web.VirtualPathUtility.Combine( imageRoot, CurrentUser.Id.ToString() );
-                }
-            }
-
+            htmlEditor.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
             htmlEditor.DocumentFolderRoot = documentRoot;
             htmlEditor.ImageFolderRoot = imageRoot;
 
