@@ -56,6 +56,11 @@ namespace Rock.Search
             Refresh();
         }
 
+        /// <summary>
+        /// Gets the component.
+        /// </summary>
+        /// <param name="searchComponentType">Type of the search component.</param>
+        /// <returns></returns>
         public static SearchComponent GetComponent( Type searchComponentType )
         {
             foreach ( var serviceEntry in Instance.Components )
