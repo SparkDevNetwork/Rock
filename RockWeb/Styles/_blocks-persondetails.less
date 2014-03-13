@@ -61,6 +61,16 @@
             width: 100%;
             height: auto;
         }
+
+        .fluidbox-ghost {
+            cursor: -webkit-zoom-in;
+            cursor: -moz-zoom-in;
+        }
+
+        .fluidbox-opened .fluidbox-ghost {
+            cursor: -webkit-zoom-out;
+            cursor: -moz-zoom-out;
+        }
     }
 
     .taglist {
@@ -76,7 +86,6 @@
         text-align: center;
         margin-top: @spacing-md-px;
     }
-
 }
 
 
