@@ -740,6 +740,10 @@
     <Compile Include="Migrations\201403121226203_PersonViewedAlias.Designer.cs">
       <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.cs" />
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.Designer.cs">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1275,6 +1279,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403121226203_PersonViewedAlias.resx">
       <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131239078_FixPersonMerge.resx">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
