@@ -157,3 +157,8 @@ span.data-view-filter-label {
     display: none;
 }
 
+/* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
+.merge-personselect .merge-header-summary {
+    cursor:pointer;
+}
+
