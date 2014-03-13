@@ -857,6 +857,45 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade string.
+        /// </summary>
+        /// <value>
+        /// The grade string.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        [MergeField]
+        public virtual string GradeFormatted
+        {
+            get 
+            {
+                int? grade = Grade;
+                if ( grade.HasValue )
+                {
+                    switch ( grade.Value )
+                    {
+                        case 0: { return "Kindergarten"; }
+                        case 1: { return "1st Grade"; }
+                        case 2: { return "2nd Grade"; }
+                        case 3: { return "3rd Grade"; }
+                        case 4: 
+                        case 5: 
+                        case 6: 
+                        case 7: 
+                        case 8: 
+                        case 9: 
+                        case 10:
+                        case 11:
+                        case 12: { return string.Format("{0}th Grade", grade.Value); }
+                        default: { return string.Empty; }
+                    }
+                }
+
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Gets the impersonation parameter.
         /// </summary>
         /// <value>
