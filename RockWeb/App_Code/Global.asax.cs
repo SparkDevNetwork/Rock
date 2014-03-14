@@ -739,7 +739,7 @@ namespace RockWeb
                 }
 
                 // Cache all the attributes.
-                foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
+                foreach ( var attribute in new Rock.Model.AttributeService().Queryable( "Categories" ).ToList() )
                 {
                     if ( qualifiers.ContainsKey( attribute.Id ) )
                         Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
