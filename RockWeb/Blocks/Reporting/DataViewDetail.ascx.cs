@@ -139,6 +139,19 @@ $(document).ready(function() {
         }
 
         /// <summary>
+        /// Set the Guids on the datafilter and it's children to Guid.NewGuid
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        private void SetNewDataFilterGuids(DataViewFilter dataViewFilter)
+        {
+            dataViewFilter.Guid = Guid.NewGuid();
+            foreach (var childFilter in dataViewFilter.ChildFilters)
+            {
+                SetNewDataFilterGuids( childFilter );
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -172,6 +185,9 @@ $(document).ready(function() {
                 dataView.CategoryId = cpCategory.SelectedValueAsInt();
 
                 dataView.DataViewFilter = GetFilterControl();
+
+                // update Guids since we are creating a new dataFilter and children and deleting the old one
+                SetNewDataFilterGuids( dataView.DataViewFilter );
 
                 if ( !Page.IsValid )
                 {
@@ -464,6 +480,7 @@ $(document).ready(function() {
             if ( dataView.DataViewFilter == null || dataView.DataViewFilter.ExpressionType == FilterExpressionType.Filter )
             {
                 dataView.DataViewFilter = new DataViewFilter();
+                dataView.DataViewFilter.Guid = new Guid();
                 dataView.DataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
             }
 
@@ -683,8 +700,9 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
-            filterField.ID = string.Format( "{0}_ff_{1}", groupControl.ID, groupControl.Controls.Count );
+            filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
         }
@@ -698,8 +716,9 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
+            childGroupControl.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( childGroupControl );
-            childGroupControl.ID = string.Format( "{0}_fg_{1}", groupControl.ID, groupControl.Controls.Count );
+            childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
             childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             childGroupControl.FilterType = FilterExpressionType.GroupAll;
         }
@@ -773,7 +792,8 @@ $(document).ready(function() {
             {
                 var filterControl = new FilterField();
                 parentControl.Controls.Add( filterControl );
-                filterControl.ID = string.Format( "{0}_ff_{1}", parentControl.ID, parentControl.Controls.Count );
+                filterControl.DataViewFilterGuid = filter.Guid;
+                filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString("N") );
                 filterControl.FilteredEntityTypeName = filteredEntityTypeName;
                 if ( filter.EntityTypeId.HasValue )
                 {
@@ -796,7 +816,8 @@ $(document).ready(function() {
             {
                 var groupControl = new FilterGroup();
                 parentControl.Controls.Add( groupControl );
-                groupControl.ID = string.Format( "{0}_fg_{1}", parentControl.ID, parentControl.Controls.Count );
+                groupControl.DataViewFilterGuid = filter.Guid;
+                groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString("N") );
                 groupControl.FilteredEntityTypeName = filteredEntityTypeName;
                 groupControl.IsDeleteEnabled = parentControl is FilterGroup;
                 if ( setSelection )
@@ -858,6 +879,7 @@ $(document).ready(function() {
         private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
         {
             DataViewFilter filter = new DataViewFilter();
+            filter.Guid = filterGroup.DataViewFilterGuid;
             filter.ExpressionType = filterGroup.FilterType;
             foreach ( Control control in filterGroup.Controls )
             {
@@ -879,6 +901,7 @@ $(document).ready(function() {
         private DataViewFilter GetFilterFieldControl( FilterField filterField )
         {
             DataViewFilter filter = new DataViewFilter();
+            filter.Guid = filterField.DataViewFilterGuid;
             filter.ExpressionType = FilterExpressionType.Filter;
             filter.Expanded = filterField.Expanded;
             if ( filterField.FilterEntityTypeName != null )
@@ -898,12 +921,14 @@ $(document).ready(function() {
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
             var dataViewFilter = new DataViewFilter();
+            dataViewFilter.Guid = Guid.NewGuid();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
 
             BindDataTransformations();
 
             var emptyFilter = new DataViewFilter();
             emptyFilter.ExpressionType = FilterExpressionType.Filter;
+            emptyFilter.Guid = Guid.NewGuid();
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
             CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, true );
