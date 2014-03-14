@@ -141,28 +141,25 @@ h4 {
 
 /* update status styles */
 .updateprogress-status {
-    position:fixed;
-    padding: 50px;
-    color: #4a4a4a;
+    position: fixed;
+    padding: 50px 20px;
+    color: #ecf0f3;
     left: 40%;
-    top: 30%;
+    top: 40%;
     opacity: 1;
-    z-index: 10000;
-    background-color: #a8a6a6;
+    background-color: #8498ab;
     border-radius: 4px;
-    text-align: center;
+    z-index: 1140;
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
+    height: 30px;
     text-align: center;
     font-size: 10px;
-    margin: 0 auto;
 }
 
 .spinner > div {
-    background-color: #4a4a4a;
+    background-color: #ecf0f3;
     height: 100%;
     width: 6px;
     display: inline-block;
@@ -207,15 +204,11 @@ h4 {
 }
 
 .updateprogress-bg {
-    color: #fff;
     position: fixed;
-    text-align: center;
-    height: 100%;
-    width: 100%;
     top: 0;
     right: 0;
+    bottom: 0;
     left: 0;
-    z-index: 9999;
-    background-color: #343434;
-    opacity: 0.97;
+    z-index: 1030;
+    background-color: rgba(217,225,232,.5);
 }
