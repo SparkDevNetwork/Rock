@@ -216,6 +216,7 @@
     <Compile Include="Jobs\LaunchWorkflow.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Jobs\SendCommunications.cs" />
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
