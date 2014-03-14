@@ -201,7 +201,6 @@ $(document).ready(function() {
                         DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
                         dataViewFilterService.Save( dataViewFilter, CurrentPersonAlias );
                     }
-
                 } );
             }
 
@@ -227,6 +226,7 @@ $(document).ready(function() {
                 {
                     qryParams["CategoryId"] = parentCategoryId;
                 }
+
                 NavigateToPage( RockPage.Guid, qryParams );
             }
             else
@@ -293,6 +293,9 @@ $(document).ready(function() {
             new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
         }
 
+        /// <summary>
+        /// Binds the data transformations.
+        /// </summary>
         public void BindDataTransformations()
         {
             ddlTransform.Items.Clear();
@@ -307,6 +310,7 @@ $(document).ready(function() {
                     ddlTransform.Items.Add( li );
                 }
             }
+
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
         }
 
@@ -511,6 +515,7 @@ $(document).ready(function() {
             {
                 descriptionListFilters.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
             }
+
             lFilters.Text = descriptionListFilters.Html;
 
             ShowReport( dataView );
@@ -615,7 +620,7 @@ $(document).ready(function() {
                             }
 
                             grid.DataSource = qry.AsNoTracking().ToList();
-                        };
+                        }
                     }
                 }
             }
@@ -669,7 +674,12 @@ $(document).ready(function() {
             ShowPreview( dv );
         }
 
-        void groupControl_AddFilterClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the AddFilterClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_AddFilterClick( object sender, EventArgs e )
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
@@ -679,7 +689,12 @@ $(document).ready(function() {
             filterField.Expanded = true;
         }
 
-        void groupControl_AddGroupClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the AddGroupClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_AddGroupClick( object sender, EventArgs e )
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterGroup childGroupControl = new FilterGroup();
@@ -689,18 +704,33 @@ $(document).ready(function() {
             childGroupControl.FilterType = FilterExpressionType.GroupAll;
         }
 
-        void filterControl_DeleteClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the DeleteClick event of the filterControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void filterControl_DeleteClick( object sender, EventArgs e )
         {
             FilterField fieldControl = sender as FilterField;
             fieldControl.Parent.Controls.Remove( fieldControl );
         }
 
-        void groupControl_DeleteGroupClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the DeleteGroupClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_DeleteGroupClick( object sender, EventArgs e )
         {
             FilterGroup groupControl = sender as FilterGroup;
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
+        /// <summary>
+        /// Deletes the data view filter.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        /// <param name="service">The service.</param>
         private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
         {
             if ( dataViewFilter != null )
@@ -709,10 +739,17 @@ $(document).ready(function() {
                 {
                     DeleteDataViewFilter( childFilter, service );
                 }
+
                 service.Delete( dataViewFilter, CurrentPersonAlias );
             }
         }
 
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="filteredEntityTypeId">The filtered entity type identifier.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection )
         {
             phFilters.Controls.Clear();
@@ -723,6 +760,13 @@ $(document).ready(function() {
             }
         }
 
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="filteredEntityTypeName">Name of the filtered entity type.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         private void CreateFilterControl( Control parentControl, DataViewFilter filter, string filteredEntityTypeName, bool setSelection )
         {
             if ( filter.ExpressionType == FilterExpressionType.Filter )
@@ -739,11 +783,13 @@ $(document).ready(function() {
                         filterControl.FilterEntityTypeName = entityTypeCache.Name;
                     }
                 }
+
                 filterControl.Expanded = filter.Expanded;
                 if ( setSelection )
                 {
                     filterControl.Selection = filter.Selection;
                 }
+
                 filterControl.DeleteClick += filterControl_DeleteClick;
             }
             else
@@ -757,6 +803,7 @@ $(document).ready(function() {
                 {
                     groupControl.FilterType = filter.ExpressionType;
                 }
+
                 groupControl.AddFilterClick += groupControl_AddFilterClick;
                 groupControl.AddGroupClick += groupControl_AddGroupClick;
                 groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
@@ -767,6 +814,10 @@ $(document).ready(function() {
             }
         }
 
+        /// <summary>
+        /// Gets the filter control.
+        /// </summary>
+        /// <returns></returns>
         private DataViewFilter GetFilterControl()
         {
             if ( phFilters.Controls.Count > 0 )
@@ -777,6 +828,11 @@ $(document).ready(function() {
             return null;
         }
 
+        /// <summary>
+        /// Gets the filter control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
         private DataViewFilter GetFilterControl( Control control )
         {
             FilterGroup groupControl = control as FilterGroup;
@@ -794,6 +850,11 @@ $(document).ready(function() {
             return null;
         }
 
+        /// <summary>
+        /// Gets the filter group control.
+        /// </summary>
+        /// <param name="filterGroup">The filter group.</param>
+        /// <returns></returns>
         private DataViewFilter GetFilterGroupControl( FilterGroup filterGroup )
         {
             DataViewFilter filter = new DataViewFilter();
@@ -806,9 +867,15 @@ $(document).ready(function() {
                     filter.ChildFilters.Add( childFilter );
                 }
             }
+
             return filter;
         }
 
+        /// <summary>
+        /// Gets the filter field control.
+        /// </summary>
+        /// <param name="filterField">The filter field.</param>
+        /// <returns></returns>
         private DataViewFilter GetFilterFieldControl( FilterField filterField )
         {
             DataViewFilter filter = new DataViewFilter();
@@ -843,6 +910,5 @@ $(document).ready(function() {
         }
 
         #endregion
-
     }
 }
