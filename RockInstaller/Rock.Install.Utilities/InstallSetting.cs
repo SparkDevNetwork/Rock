@@ -10,7 +10,6 @@ namespace Rock.Install.Utilities
     {
 
 #if DEBUG
-        static string _internetCheckSite = "www.google.com";
         static string _dotNetVersionRequired = "4.5";
         static double _iisVersionRequired = 7.0;
         static string _rockInstallFile = "http://storage.rockrms.com/install/test-zip-file.zip";
@@ -19,7 +18,6 @@ namespace Rock.Install.Utilities
         static string _rockStyles = "/install.css";
         static string _rockWelcomeImg = "http://storage.rockrms.com/install/welcome.jpg";
 #else
-        static string _internetCheckSite = "www.google.com";
         static string _dotNetVersionRequired = "4.5";
         static double _iisVersionRequired = 7.0;
         static string _rockInstallFile = "http://storage.rockrms.com/install/rock-install-latest.zip";
