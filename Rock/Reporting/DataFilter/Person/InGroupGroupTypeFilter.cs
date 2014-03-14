@@ -156,7 +156,7 @@ function() {
             }
             
             groupTypePicker = new GroupTypePicker();
-            groupTypePicker.ID = filterControl.ID + "_0";
+            groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
             groupTypePicker.GroupTypes = new GroupTypeService().Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
@@ -166,7 +166,7 @@ function() {
 
             cblRole = new RockCheckBoxList();
             cblRole.Label = "with Group Role(s)";
-            cblRole.ID = filterControl.ID + "_1";
+            cblRole.ID = filterControl.ID + "_cblRole";
             filterControl.Controls.Add( cblRole );
 
             PopulateGroupRolesCheckList( groupTypePicker.SelectedGroupTypeId ?? 0 );
