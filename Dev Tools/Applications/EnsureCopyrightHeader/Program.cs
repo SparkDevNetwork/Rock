@@ -8,6 +8,16 @@ namespace EnsureCopyrightHeader
     class Program
     {
         /// <summary>
+        /// The ignore files
+        /// </summary>
+        static string[] IgnoreFiles = new string[] { "DoubleMetaphone.cs" };
+
+        /// <summary>
+        /// The ignore folders
+        /// </summary>
+        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
+        
+        /// <summary>
         /// Mains the specified args.
         /// </summary>
         /// <param name="args">The args.</param>
@@ -69,17 +79,27 @@ namespace EnsureCopyrightHeader
 //
 ";
 
-            string[] ignoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
+            
             foreach ( string fileName in sourceFilenames )
             {
                 bool skipFile = false;
-                foreach ( var f in ignoreFolders )
+                foreach ( var f in IgnoreFolders )
                 {
                     if ( fileName.Contains( f ) )
                     {
                         skipFile = true;
                     }
+                    
                 }
+
+                foreach (var f in IgnoreFiles)
+                {
+                    if ( Path.GetFileName(fileName).Equals( f, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        skipFile = true;
+                    }
+                }
+
                 if ( skipFile )
                 {
                     continue;
