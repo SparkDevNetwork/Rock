@@ -146,6 +146,25 @@ $('.filter-item-select').click(function (event) {
         }
 
         /// <summary>
+        /// Gets or sets the data view filter unique identifier.
+        /// </summary>
+        /// <value>
+        /// The data view filter unique identifier.
+        /// </value>
+        public Guid DataViewFilterGuid
+        {
+            get
+            {
+                return ViewState["DataViewFilterGuid"] as Guid? ?? Guid.NewGuid();
+            }
+
+            set
+            {
+                ViewState["DataViewFilterGuid"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the filtered entity.
         /// </summary>
         /// <value>
