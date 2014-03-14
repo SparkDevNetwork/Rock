@@ -27,8 +27,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
-    /// <author>Jon Edmiston</author>
-    /// <author>Spark Development Network</author>
     public class JobPulse : IJob
     {
         

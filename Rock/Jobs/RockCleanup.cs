@@ -29,8 +29,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job that executes routine cleanup tasks on Rock
     /// </summary>
-    /// <author>Jon Edmiston/Chris Funk</author>
-    /// <author>Spark Development Network</author>
     [IntegerField("Hours to Keep Unconfirmed Accounts", "The number of hours to keep user accounts that have not been confirmed (default is 48 hours.)", false, 48, "General", 0, "HoursKeepUnconfirmedAccounts" )]
     [IntegerField("Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1,"DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
