@@ -38,17 +38,17 @@ i.fail {
 			
 ul {
 	list-style-type: none;
+    margin-top: 18px;
 }
 			
 ul li {
 	margin-bottom: 12px;
+    margin-left: 28px;
 }
 			
-ul li i[class^="icon-"] {
-	height: 30px;
+ul li i {
 	float: left;
-	margin-right: 12px;
-	line-height: 18px;
+    margin: 4px 12px 0 -28px;
 } 
 			
 div#content > h1 {

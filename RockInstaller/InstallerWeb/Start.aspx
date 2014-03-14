@@ -26,6 +26,7 @@
     const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
     const string rockUtilitiesAssembly = "http://storage.rockrms.com/install/Rock.Install.Utilities.dll";
     const string rockInitalWebConfig = "http://storage.rockrms.com/install/web.config";
+    const string rockInstalledFile = @"\bin\Rock.dll";
 
     const string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
     const string rockStyles = "http://storage.rockrms.com/install/install.css";
@@ -51,7 +52,7 @@
 			// we can't proceed with the install
 			
 			lTitle.Text = "Before We Get Started...";
-			lOutput.Text= "<ul>" + checkMessages + "</ul>";
+            lOutput.Text = "<ul class='list-unstyled'>" + checkMessages + "</ul>";
 			return;
 		}
 		else {
@@ -179,7 +180,7 @@
 
                             <script>
                                 $( document ).ready(function() {
-                                    $('#divNoJavascript').hide();
+                                    $('#content-box').hide();
                                     window.location = "Install.aspx";
                                 });
                             </script>
@@ -291,9 +292,16 @@
         if (!CheckDotNetVersion(out checkResults))
         {
             checksFailed = true;
-            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
         }
         
+        // check that rock not already installed
+        string rockFile = Server.MapPath( "." ) + rockInstalledFile;
+        if ( File.Exists( rockFile ) )
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that Rock is already installed in this directory. You must remove this version of Rock before proceeding.</a></li>";
+        }
         
 		return checksFailed;
 	}

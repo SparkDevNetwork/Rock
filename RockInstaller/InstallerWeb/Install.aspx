@@ -27,7 +27,9 @@
 	{
 		// toggle the SSL warning
         lSslWarning.Visible = !Request.IsSecureConnection;
-        
+
+        // set timeout to 15 mins
+        Server.ScriptTimeout = 900;
 	}
 	
 	void WelcomeNext_Click(Object sender, EventArgs e)
@@ -151,7 +153,7 @@
 		    if (environmentClean) {
 		    	lTestEnvTitle.Text = "Pass!";
 		    	lTestEnvResults.Text = "Your environment passed all tests and looks like a good home for the Rock RMS.  What are we waiting for? Let's get started!!!";
-		    	lTestEnvDetails.Text = "<ul>" + outputMessages + "</ul>";
+                lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
 		    	lTestEnvDetails.Text += "<div class='alert alert-info'><strong>Heads Up:</strong> The next step could take a few minutes to run. Don't worry it's normal.</div>";
 		    	btnEnvNext.Visible = true;
 		    	btnTryAgain.Visible = false;
@@ -172,7 +174,7 @@
 		    } else {
 		    	lTestEnvTitle.Text = "We Have Some Work To Do";
 		    	lTestEnvResults.Text = "The server environment doesn't currently meet all of the requirements.  That's OK, we'll try to help you solve the issues.";
-		    	lTestEnvDetails.Text = "<ul>" + outputMessages + "</ul>";
+                lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
 		    	btnEnvNext.Visible = false;
 		    	btnTryAgain.Visible = true;
 		    }
@@ -340,8 +342,9 @@
                                 </div>
 							</asp:Literal>
 
-							<div class="btn-list">
-								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="WelcomeNext_Click"></asp:LinkButton>
+							<div class="btn-list clearfix">
+								<a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Watch Install Video</a>
+                                <asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="WelcomeNext_Click"></asp:LinkButton>
 							</div>
 						</asp:Panel>
 						
@@ -383,8 +386,8 @@
 							
 							<asp:Literal id="lDatabaseMessages" runat="server"></asp:Literal>
 							
-							<div class="btn-list">
-								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+							<div class="btn-list clearfix">
+								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="DbConfigNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -395,11 +398,11 @@
 						
 							<asp:Label id="lTestEnvDetails" runat="server"></asp:Label>
 							
-							<div class="btn-list">
+							<div class="btn-list clearfix">
 							
-								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
-								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary" OnClick="EnvCheckRetry_Click"></asp:LinkButton> 
-								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default pull-left" OnClick="EnvBack_Click"></asp:LinkButton>  
+								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='fa fa-refresh'></i>"  CssClass="btn btn-primary pull-right" OnClick="EnvCheckRetry_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="EnvNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -418,8 +421,8 @@
 
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
-							<div class="btn-list">		
-								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DownloadNext_Click"></asp:LinkButton> 
+							<div class="btn-list clearfix">		
+								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="DownloadNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 
@@ -455,6 +458,11 @@
 			}
 
           $(document).ready(function() {
+
+              // fade in page
+              $("#content-box").css("display", "none");
+              $("#content-box").fadeIn(1000);
+
               $('body').on('click', '#show-password', function (e) {
 
                   field = $('#txtPassword');
@@ -465,7 +473,6 @@
                   field.replaceWith(new_field);
               });
           });
-			
 
 		</script>
 		
