@@ -87,6 +87,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public string Name { get; set; }
 
         /// <summary>
@@ -96,6 +97,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the description of the group.
         /// </value>
         [DataMember]
+        [Previewable]
         public string Description { get; set; }
 
         /// <summary>
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public bool IsSecurityRole { get; set; }
 
         /// <summary>
@@ -116,6 +119,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Previewable]
         public bool IsActive
         {
             get { return _isActive; }
