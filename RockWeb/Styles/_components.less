@@ -20,7 +20,7 @@
     17. File Upload / Image Upload - styles for the file / image uploader
     18. Update Panel Actions - annimation for update panels
     19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
-    20. 
+    20. Well Messgae - A larger alert type function for delivering important messages.
     21. Security Controls - login status etc
     22. Rock List - styles for the Rock list component
     23. TypeAhead - styles for type ahead support
@@ -1319,6 +1319,23 @@ fieldset .actions {
 
 // 19. Group List
 // -------------------------
+
+// 20. Well Messages
+// -------------------------
+.well-message {
+    text-align: center;
+    background-color: @accent-light-color;
+    border: 1px solid darken(@accent-light-color, 5%);
+
+    h1 {
+        font-size: 38px;
+    }
+
+    i {
+        font-size: 84px;
+        margin: 12px 0;
+    }
+}
     
 ul.groupmembers {
     list-style: none;

@@ -93,7 +93,8 @@ namespace RockWeb.Blocks.Core
                 _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                 if ( IsUpdateAvailable() )
                 {
-                    divPackage.Visible = true;
+                    pnlUpdatesAvailable.Visible = true;
+                    pnlNoUpdates.Visible = false;
                     cbIncludeStats.Visible = true;
                     BindGrid();
                 }
@@ -123,17 +124,17 @@ namespace RockWeb.Blocks.Core
             {
                 if ( ! UpdateRockPackage( version ) )
                 {
-                    nbErrors.Visible = true;
-                    nbSuccess.Visible = false;
+                    pnlError.Visible = true;
+                    pnlUpdateSuccess.Visible = true;
                 }
 
-                divPackage.Visible = false;
-                litRockVersion.Text = "";
+                pnlUpdatesAvailable.Visible = false;
+                lRockVersion.Text = "";
             }
             catch ( Exception ex )
             {
-                nbErrors.Visible = true;
-                nbSuccess.Visible = false;
+                pnlError.Visible = true;
+                pnlUpdateSuccess.Visible = false;
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
@@ -198,7 +199,6 @@ namespace RockWeb.Blocks.Core
                     errors = NuGetService.UpdatePackage( update );
                 }
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
-                nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
 
                 // register any new REST controllers
                 try
@@ -217,13 +217,13 @@ namespace RockWeb.Blocks.Core
 
             if ( errors != null && errors.Count() > 0 )
             {
-                nbErrors.Visible = true;
-                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                pnlError.Visible = true;
+                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul class='list-padded'>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
                 return false;
             }
             else
             {
-                nbSuccess.Visible = true;
+                pnlUpdateSuccess.Visible = true;
                 rptPackageVersions.Visible = false;
                 return true;
             }
@@ -234,7 +234,9 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void DisplayRockVersion()
         {
-            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
+            lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
+            lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
+            lSuccessVersion.Text = VersionInfo.GetRockProductVersionFullName();
         }
         
         /// <summary>
@@ -283,7 +285,9 @@ namespace RockWeb.Blocks.Core
             }
             catch ( InvalidOperationException ex )
             {
-                litMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
+                pnlNoUpdates.Visible = false;
+                pnlError.Visible = true;
+                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
 
             if (verifiedPackages.Count > 0 )
@@ -410,7 +414,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // if we had a match then wrap it in <ul></ul> markup
-            return foundMatch ? string.Format( "<ul>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
+            return foundMatch ? string.Format( "<ul class='list-padded'>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
         }
         #endregion
 
