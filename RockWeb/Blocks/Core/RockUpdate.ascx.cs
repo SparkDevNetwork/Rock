@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Core
                 if ( ! UpdateRockPackage( version ) )
                 {
                     pnlError.Visible = true;
-                    pnlUpdateSuccess.Visible = true;
+                    pnlUpdateSuccess.Visible = false;
                 }
 
                 pnlUpdatesAvailable.Visible = false;
@@ -208,11 +208,13 @@ namespace RockWeb.Blocks.Core
                 catch (Exception ex)
                 {
                     errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
+                    LogException( ex );
                 }
             }
             catch ( InvalidOperationException ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
+                LogException( ex );
             }
 
             if ( errors != null && errors.Count() > 0 )
