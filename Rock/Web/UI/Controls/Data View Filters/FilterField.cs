@@ -122,7 +122,7 @@ $('.filter-item-select').click(function (event) {
                         RockPage rockPage = this.Page as RockPage;
                         if ( rockPage != null )
                         {
-                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ) )
+                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ).ThenBy( c => c.GetTitle(FilteredEntityType)) )
                             {
                                 if ( component.IsAuthorized( "View", rockPage.CurrentPerson ) )
                                 {

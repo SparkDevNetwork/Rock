@@ -254,6 +254,8 @@
     <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GradeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\AgeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\TagFilter.cs" />
     <Compile Include="Reporting\DataSelectComponent.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
