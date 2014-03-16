@@ -104,8 +104,9 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
             {
-                Site site = new SiteService().Get( (int)GetAttributeValue( "Site" ).AsInteger() );
+                var site = SiteCache.Read( (int)GetAttributeValue( "Site" ).AsInteger() );
                 lSiteName.Text = site.Name;
+                lMessages.Text = string.Empty;
             }
             else
             {
