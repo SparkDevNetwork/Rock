@@ -37,7 +37,7 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public SiteFieldAttribute( string name = "Site", string description = "", bool required = true, string defaultSiteId = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).Name )
+            : base( name, description, required, defaultSiteId, category, order, key, typeof( Rock.Field.Types.SiteFieldType ).FullName )
         {
         }
     }
