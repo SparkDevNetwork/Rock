@@ -467,21 +467,12 @@ namespace Rock.Reporting.DataFilter
         var $parentRow = $(this).closest('.js-filter-row');
         $parentRow.find('div.field-criteria').hide();
         $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
-    });
+    });";
 
-    $('.js-filter-compare').change( function () {
-        var $fieldCriteriaRow = $(this).closest('.field-criteria');
-        var compareValue = $(this).val();
-        var isNullCompare = (compareValue == 32 || compareValue == 64);
-        if (isNullCompare) {
-            $fieldCriteriaRow.find('.js-filter-control').hide();
-        }
-        else {
-            $fieldCriteriaRow.find('.js-filter-control').show();
-        }
-    });
-";
-            ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), "property-filter-script", script, true );
+            // only need this script once per page
+            ScriptManager.RegisterStartupScript( filterControl.Page, filterControl.Page.GetType(), "entity-property-selection-change-script", script, true );
+
+            RegisterFilterCompareChangeScript( filterControl );
         }
 
         /// <summary>
