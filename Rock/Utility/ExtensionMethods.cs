@@ -606,6 +606,16 @@ namespace Rock
             return value.TrimEnd(new char[] { '\\','/' }) + "\\";
         }
 
+        /// <summary>
+        /// Ensures the trailing forward slash. Handy when combining url paths.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string EnsureTrailingForwardslash( this string value )
+        {
+            return value.TrimEnd( new char[] { '\\', '/' } ) + "/";
+        }
+
         #endregion
 
         #region Int Extensions

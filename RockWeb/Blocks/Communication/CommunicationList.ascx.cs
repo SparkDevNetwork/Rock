@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Communication
                 string subject = rFilter.GetUserPreference( "Subject" );
                 if ( !string.IsNullOrWhiteSpace( subject ) )
                 {
-                    communications = communications.Where( c => c.Subject.StartsWith( subject ) );
+                    communications = communications.Where( c => c.Subject.Contains( subject ) );
                 }
 
                 Guid entityTypeGuid = Guid.Empty;
