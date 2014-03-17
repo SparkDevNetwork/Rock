@@ -222,6 +222,7 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
+    <Compile Include="Model\FinancialPersonBankAccountService.Partial.cs" />
     <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
