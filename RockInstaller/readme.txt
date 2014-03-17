@@ -1,4 +1,4 @@
-The files in this directory are used to install the Rock ChMS.
+﻿The files in this directory are used to install the Rock ChMS.
 
 CREATING INSTALLER ZIP FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -14,6 +14,7 @@ CREATING INSTALLER ZIP FILE
 8. Zip up the RockWeb directory leaving out the following files:
 	* web.ConnectionStrings.config  !IMPORTANT!
 	* .gitignore
+	* *.pdb 
 	* Settings.StyleCop
 9. Rename zip file 'rock-install-latest.zip'
 10. Move copy of zip to ./RockInstaller/Install Versions/vX.Y.Z/ so that it will be in source control
