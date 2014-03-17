@@ -10,7 +10,7 @@
       {% endif -%}
           <a href="{{ Ad.DetailPageUrl }}">
             {% for Attribute in Ad.Attributes -%}
-              {% if Attribute.Key == 'PromotionImage' -%}
+              {% if Attribute.Key == 'AdImage' -%}
                 {{ Attribute.Value }}
               {% endif -%}
             {% endfor -%}
