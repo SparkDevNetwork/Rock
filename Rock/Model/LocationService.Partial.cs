@@ -73,7 +73,7 @@ namespace Rock.Model
                 Zip = zip
             };
 
-            Standardize( newLocation, null );
+            Verify( newLocation, null, false );
 
             existingLocation = Repository.FirstOrDefault( t =>
                 ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
@@ -86,11 +86,6 @@ namespace Rock.Model
             {
                 return existingLocation;
             }
-
-            // Open Question on if we Add/Save the location if Standardize failed
-
-            // If still no existing location, geocode the new location and save it.
-            Geocode( newLocation, null );
 
             Add( newLocation );
             Save( newLocation );
@@ -168,89 +163,34 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Performs an Address Standardization on the provided <see cref="Rock.Model.Location"/>.
+        /// Performs Address Verification on the provided <see cref="Rock.Model.Location"/>.
         /// </summary>
-        /// <param name="location">A <see cref="Rock.Model.Location"/> to standardize.</param>
-        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the address standardization.</param>
-        public void Standardize( Location location, PersonAlias personAlias )
+        /// <param name="location">A <see cref="Rock.Model.Location"/> to verify.</param>
+        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the address verification.</param>
+        public void Verify( Location location, PersonAlias personAlias, bool reVerify )
         {
             Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
 
             // Try each of the standardization services that were found through MEF
-            foreach ( var service in Rock.Address.StandardizeContainer.Instance.Components )
+            foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
             {
                 if ( service.Value.Value.IsActive )
                 {
                     string result;
-                    bool success = service.Value.Value.Standardize( location, out result );
-
-                    // Log the results of the service
-                    Model.ServiceLog log = new Model.ServiceLog();
-                    log.LogDateTime = RockDateTime.Now;
-                    log.Type = "Location Standardize";
-                    log.Name = service.Value.Metadata.ComponentName;
-                    log.Input = inputLocation;
-                    log.Result = result;
-                    log.Success = success;
-                    logService.Add( log, personAlias );
-                    logService.Save( log, personAlias );
-
-                    // If successful, set the results and stop processing
-                    if ( success )
+                    bool success = service.Value.Value.VerifyLocation( location, reVerify, out result );
+                    if ( !string.IsNullOrWhiteSpace( result ) )
                     {
-                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                        location.StandardizeAttemptedResult = result;
-                        location.StandardizedDateTime = RockDateTime.Now;
-                        break;
-                    }
-
-                    location.StandardizeAttemptedDateTime = RockDateTime.Now;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Performs a geolocation on the provided Location.
-        /// </summary>
-        /// <param name="location">The <see cref="Rock.Model.Location"/> entity to geocode.</param>
-        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
-        public void Geocode( Location location, PersonAlias personAlias )
-        {
-            if ( !( location.IsGeoPointLocked ?? false ) )
-            {
-                Model.ServiceLogService logService = new Model.ServiceLogService();
-                string inputLocation = location.ToString();
-
-                // Try each of the geocoding services that were found through MEF
-                foreach ( var service in Rock.Address.GeocodeContainer.Instance.Components )
-                {
-                    if ( service.Value.Value.IsActive )
-                    {
-                        string result;
-                        bool success = service.Value.Value.Geocode( location, out result );
-
                         // Log the results of the service
                         Model.ServiceLog log = new Model.ServiceLog();
                         log.LogDateTime = RockDateTime.Now;
-                        log.Type = "Location Geocode";
+                        log.Type = "Location Standardize";
                         log.Name = service.Value.Metadata.ComponentName;
                         log.Input = inputLocation;
                         log.Result = result;
                         log.Success = success;
                         logService.Add( log, personAlias );
                         logService.Save( log, personAlias );
-
-                        // If successful, set the results and stop processing
-                        if ( success )
-                        {
-                            location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                            location.GeocodeAttemptedResult = result;
-                            location.GeocodedDateTime = RockDateTime.Now;
-                            break;
-                        }
-
-                        location.GeocodeAttemptedDateTime = RockDateTime.Now;
                     }
                 }
             }

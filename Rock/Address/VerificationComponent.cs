@@ -19,19 +19,21 @@ using Rock.Extension;
 namespace Rock.Address
 {
     /// <summary>
-    /// The base class for all address standardization components
+    /// The base class for all address verification components
     /// </summary>
-    public abstract class StandardizeComponent : Component
+    public abstract class VerificationComponent : Component
     {
         /// <summary>
-        /// Abstract method for standardizing the specified address.  Derived classes should implement
-        /// this method to standardize the address.
+        /// Abstract method for verifying a location.  Derived classes should implement
+        /// this method to perform an verification action on an address (i.e. standardize, geocode, etc.).
         /// </summary>
         /// <param name="location">The location.</param>
+        /// <param name="reVerify">Should location be reverified even if it has already been succesfully verified</param>
         /// <param name="result">The result code unique to the service.</param>
         /// <returns>
-        /// True/False value of whether the address was standardized succesfully
+        /// True/False value of whether the verification was successfull or not
         /// </returns>
-        public abstract bool Standardize( Rock.Model.Location location, out string result );
+        public abstract bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result );
     }
+
 }

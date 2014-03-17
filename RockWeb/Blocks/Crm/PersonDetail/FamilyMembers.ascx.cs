@@ -163,53 +163,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         aMap.HRef = loc.GoogleMapLink( Person.FullName );
                     }
 
-                    LinkButton lbGeocode = e.Item.FindControl( "lbGeocode" ) as LinkButton;
-                    if ( lbGeocode != null )
+                    LinkButton lbVerify = e.Item.FindControl( "lbVerify" ) as LinkButton;
+                    if ( lbVerify != null )
                     {
-                        if ( Rock.Address.GeocodeContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
+                        if ( Rock.Address.VerificationContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
                         {
-                            lbGeocode.Visible = true;
-                            lbGeocode.CommandName = "geocode";
-                            lbGeocode.CommandArgument = loc.Id.ToString();
+                            lbVerify.Visible = true;
+                            lbVerify.CommandName = "verify";
+                            lbVerify.CommandArgument = loc.Id.ToString();
 
                             if ( loc.GeoPoint != null )
                             {
-                                lbGeocode.ToolTip = string.Format( "{0} {1}",
+                                lbVerify.ToolTip = string.Format( "{0} {1}",
                                     loc.GeoPoint.Latitude,
                                     loc.GeoPoint.Longitude );
                             }
                             else
                             {
-                                lbGeocode.ToolTip = "Geocode Address";
+                                lbVerify.ToolTip = "Verify Address";
                             }
                         }
                         else
                         {
-                            lbGeocode.Visible = false;
-                        }
-                    }
-
-                    LinkButton lbStandardize = e.Item.FindControl( "lbStandardize" ) as LinkButton;
-                    if ( lbStandardize != null )
-                    {
-                        if ( Rock.Address.StandardizeContainer.Instance.Components.Any( c => c.Value.Value.IsActive ) )
-                        {
-                            lbStandardize.Visible = true;
-                            lbStandardize.CommandName = "standardize";
-                            lbStandardize.CommandArgument = loc.Id.ToString();
-
-                            if ( loc.StandardizedDateTime.HasValue )
-                            {
-                                lbStandardize.ToolTip = "Address Standardized";
-                            }
-                            else
-                            {
-                                lbStandardize.ToolTip = "Standardize Address";
-                            }
-                        }
-                        else
-                        {
-                            lbStandardize.Visible = false;
+                            lbVerify.Visible = false;
                         }
                     }
 
@@ -235,12 +211,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 switch ( e.CommandName )
                 {
-                    case "geocode":
-                        service.Geocode( location, CurrentPersonAlias );
-                        break;
-
-                    case "standardize":
-                        service.Standardize( location, CurrentPersonAlias );
+                    case "verify":
+                        service.Verify( location, CurrentPersonAlias, true );
                         break;
                 }
 
