@@ -756,6 +756,10 @@
     <Compile Include="Migrations\201403141842057_CommunicationJob.Designer.cs">
       <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.cs" />
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.Designer.cs">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1303,6 +1307,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403141842057_CommunicationJob.resx">
       <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.resx">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

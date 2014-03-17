@@ -107,6 +107,16 @@ namespace Rock.Model
         public string Url { get; set; }
 
         /// <summary>
+        /// Gets or sets the page title of the request.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> of the page title of the request.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string PageTitle { get; set; }
+
+        /// <summary>
         /// Gets or sets the session id of the request.
         /// </summary>
         /// <value>
