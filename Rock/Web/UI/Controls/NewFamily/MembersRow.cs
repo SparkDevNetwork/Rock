@@ -41,8 +41,8 @@ namespace Rock.Web.UI.Controls
         private RockRadioButtonList _rblRole;
         private DropDownList _ddlTitle;
         private RockTextBox _tbFirstName;
-        private RockTextBox _tbNickName;
         private RockTextBox _tbLastName;
+        private DropDownList _ddlSuffix;
         private RockRadioButtonList _rblGender;
         private DatePicker _dpBirthdate;
         private DropDownList _ddlConnectionStatus;
@@ -109,30 +109,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the name of the nick.
-        /// </summary>
-        /// <value>
-        /// The name of the nick.
-        /// </value>
-        public string NickName
-        {
-            get { return _tbNickName.Text; }
-            set { _tbNickName.Text = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show nick name].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show nick name]; otherwise, <c>false</c>.
-        /// </value>
-        internal bool ShowNickName
-        {
-            get { return ViewState["ShowNickName"] as bool? ?? false; }
-            set { ViewState["ShowNickName"] = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the last name.
         /// </summary>
         /// <value>
@@ -142,6 +118,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return _tbLastName.Text; }
             set { _tbLastName.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the suffix value id.
+        /// </summary>
+        /// <value>
+        /// The suffix value id.
+        /// </value>
+        public int? SuffixValueId
+        {
+            get { return _ddlSuffix.SelectedValueAsInt(); }
+            set { SetListValue( _ddlSuffix, value ); }
         }
 
         /// <summary>
@@ -295,7 +283,6 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _rblRole.ValidationGroup = value;
                 _tbFirstName.ValidationGroup = value;
-                _tbNickName.ValidationGroup = value;
                 _tbLastName.ValidationGroup = value;
                 _rblGender.ValidationGroup = value;
                 _dpBirthdate.ValidationGroup = value;
@@ -312,8 +299,8 @@ namespace Rock.Web.UI.Controls
             _rblRole = new RockRadioButtonList();
             _ddlTitle = new DropDownList();
             _tbFirstName = new RockTextBox();
-            _tbNickName = new RockTextBox();
             _tbLastName = new RockTextBox();
+            _ddlSuffix = new DropDownList();
             _rblGender = new RockRadioButtonList();
             _dpBirthdate = new DatePicker();
             _ddlConnectionStatus = new DropDownList();
@@ -332,8 +319,8 @@ namespace Rock.Web.UI.Controls
             _rblRole.ID = "_rblRole";
             _ddlTitle.ID = "_ddlTitle";
             _tbFirstName.ID = "_tbFirstName";
-            _tbNickName.ID = "_tbNickName";
             _tbLastName.ID = "_tbLastName";
+            _ddlSuffix.ID = "_ddlSuffix";
             _rblGender.ID = "_rblGender";
             _dpBirthdate.ID = "_dtBirthdate";
             _ddlConnectionStatus.ID = "_ddlConnectionStatus";
@@ -343,8 +330,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _rblRole );
             Controls.Add( _ddlTitle );
             Controls.Add( _tbFirstName );
-            Controls.Add( _tbNickName );
             Controls.Add( _tbLastName );
+            Controls.Add( _ddlSuffix );
             Controls.Add( _rblGender );
             Controls.Add( _dpBirthdate );
             Controls.Add( _ddlConnectionStatus );
@@ -365,14 +352,17 @@ namespace Rock.Web.UI.Controls
             BindListToDefinedType( _ddlTitle, Rock.SystemGuid.DefinedType.PERSON_TITLE, true );
 
             _tbFirstName.CssClass = "form-control";
+            _tbFirstName.Placeholder = "First Name";
             _tbFirstName.Required = true;
             _tbFirstName.RequiredErrorMessage = "First Name is required for all family members";
 
-            _tbNickName.CssClass = "form-control";
-
             _tbLastName.CssClass = "form-control";
+            _tbLastName.Placeholder = "Last Name";
             _tbLastName.Required = true;
             _tbLastName.RequiredErrorMessage = "Last Name is required for all family members";
+
+            _ddlSuffix.CssClass = "form-control";
+            BindListToDefinedType( _ddlSuffix, Rock.SystemGuid.DefinedType.PERSON_SUFFIX, true );
 
             _rblGender.RepeatDirection = RepeatDirection.Vertical;
             _rblGender.RequiredErrorMessage = "Gender is required for all family members";
@@ -438,20 +428,14 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbFirstName.RenderControl( writer );
                 writer.RenderEndTag();
-                writer.RenderEndTag();
-
-                if ( ShowNickName )
-                {
-                    writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                    _tbNickName.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbLastName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbLastName.RenderControl( writer );
                 writer.RenderEndTag();
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                _ddlSuffix.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );

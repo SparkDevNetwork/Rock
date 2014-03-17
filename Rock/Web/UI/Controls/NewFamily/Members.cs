@@ -21,6 +21,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -59,19 +60,7 @@ namespace Rock.Web.UI.Controls
                 return rows;
             }
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show nick name].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show nick name]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowNickName
-        {
-            get { return ViewState["ShowNickName"] as bool? ?? false; }
-            set { ViewState["ShowNickName"] = value; }
-        }
-
+        
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -127,18 +116,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "First Name" );
+                writer.Write( "Name" );
                 writer.RenderEndTag();
 
-                if ( ShowNickName )
-                {
-                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                    writer.Write( "Nick Name" );
-                    writer.RenderEndTag();
-                }
-
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Last Name" );
+                writer.Write( "Suffix" );
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
@@ -170,7 +152,6 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( control is NewFamilyMembersRow )
                     {
-                        ( (NewFamilyMembersRow)control ).ShowNickName = ShowNickName;
                         control.RenderControl( writer );
                     }
                 }
@@ -180,7 +161,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tfoot );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, ShowNickName ? "9" : "8" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.RenderEndTag();
 

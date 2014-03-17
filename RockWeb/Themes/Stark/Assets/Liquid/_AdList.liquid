@@ -4,7 +4,7 @@
       <div class="col-md-4 col-sm-6 ad">
           <a href="{{ Ad.DetailPageUrl }}">
             {% for Attribute in Ad.Attributes -%}
-              {% if Attribute.Key == 'PromotionImage' -%}
+              {% if Attribute.Key == 'AdImage' -%}
                 {{ Attribute.Value }}
               {% endif -%}
             {% endfor -%}
@@ -12,7 +12,7 @@
           <h2 class="ad-title">{{ Ad.Title }}</h2>
           <p class="ad-text">
             {% for Attribute in Ad.Attributes -%}
-              {% if Attribute.Key == 'PromotionText' -%}
+              {% if Attribute.Key == 'AdText' -%}
                 {{ Attribute.Value }}
               {% endif -%}
             {% endfor -%}
