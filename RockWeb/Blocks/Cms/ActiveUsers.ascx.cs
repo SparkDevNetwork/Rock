@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using System.Text;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -104,9 +105,40 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
             {
+                StringBuilder sbUsers = new StringBuilder();
+                
                 var site = SiteCache.Read( (int)GetAttributeValue( "Site" ).AsInteger() );
                 lSiteName.Text = site.Name;
                 lMessages.Text = string.Empty;
+
+                // get active users
+                UserLoginService loginService = new UserLoginService();
+                var activeLogins = loginService.Queryable("Person")
+                                    .Where( l => l.IsOnLine == true )
+                                    .OrderByDescending(l => l.LastActivityDateTime);
+
+                foreach ( var login in activeLogins )
+                {
+                    TimeSpan tsLastActivity =  RockDateTime.Now.Subtract((DateTime)login.LastActivityDateTime);
+                    if ( tsLastActivity.Minutes <= 5 )
+                    {
+                        sbUsers.Append( String.Format( @"<li class='recent'><i class='fa-li fa fa-circle'></i> {0}</li>", login.Person.FullName ) );
+                    }
+                    else
+                    {
+                        sbUsers.Append( String.Format( @"<li class='not-recent'><i class='fa-li fa fa-circle '></i> {0}</li>", login.Person.FullName ) );
+                    }
+                }
+
+                if ( sbUsers.Length > 0 )
+                {
+                    lUsers.Text = String.Format( @"<ul class='fa-ul'>{0}</ul>", sbUsers.ToString() );
+                }
+                else
+                {
+                    lMessages.Text = String.Format("<div class='alert alert-info'>No one is active on the {0} site.</div>", site.Name);
+                }
+
             }
             else
             {
