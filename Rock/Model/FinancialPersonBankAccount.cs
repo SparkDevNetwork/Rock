@@ -29,14 +29,13 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts 
+    /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts
     /// but a bank account can only be related to an individual person in Rock.
     /// </summary>
     [Table( "FinancialPersonBankAccount" )]
     [DataContract]
     public partial class FinancialPersonBankAccount : Model<FinancialPersonBankAccount>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -48,16 +47,15 @@ namespace Rock.Model
         [DataMember]
         public int PersonId { get; set; }
 
-
         /// <summary>
-        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash so that it can be matched without being known
         /// Enables a match of a Check Account to Person ( or Persons if multiple persons share a checking account) can be made
         /// </summary>
         /// <value>
         /// AccountNumberSecured.
         /// </value>
         [Required]
-        [MaxLength( 40 )]
+        [MaxLength( 128 )]
         public string AccountNumberSecured { get; set; }
 
         #endregion
@@ -94,7 +92,7 @@ namespace Rock.Model
         /// <param name="accountNumber">The account number.</param>
         /// <returns></returns>
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
-        public static string EncodeAccountNumber(string routingNumber, string accountNumber)
+        public static string EncodeAccountNumber( string routingNumber, string accountNumber )
         {
             var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
             if ( String.IsNullOrWhiteSpace( passwordKey ) )
@@ -118,13 +116,11 @@ namespace Rock.Model
                 returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
             return returnBytes;
         }
-        
-        #endregion
 
+        #endregion
     }
 
     #region Entity Configuration
-
 
     /// <summary>
     /// FinancialPersonBankAccount Configuration class.
@@ -141,5 +137,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
