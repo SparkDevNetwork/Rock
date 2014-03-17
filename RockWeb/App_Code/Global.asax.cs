@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
@@ -220,62 +221,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Caches the item removed.
-        /// </summary>
-        /// <param name="k">The k.</param>
-        /// <param name="v">The v.</param>
-        /// <param name="r">The r.</param>
-        public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
-        {
-            if ( r == CacheItemRemovedReason.Expired )
-            {
-                // call a page on the site to keep IIS alive 
-                if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
-                {
-                    string url = Global.BaseUrl + "KeepAlive.aspx";
-                    WebRequest request = WebRequest.Create( url );
-                    WebResponse response = request.GetResponse();
-                }
-
-                // add cache item again
-                AddCallBack();
-
-                // process the transaction queue
-                DrainTransactionQueue();
-            }
-        }
-
-        /// <summary>
-        /// Drains the transaction queue.
-        /// </summary>
-        private void DrainTransactionQueue()
-        {
-            // process the transaction queue
-            if ( !Global.QueueInUse )
-            {
-                Global.QueueInUse = true;
-
-                while ( RockQueue.TransactionQueue.Count != 0 )
-                {
-                    ITransaction transaction = RockQueue.TransactionQueue.Dequeue() as ITransaction;
-                    if ( transaction != null )
-                    {
-                        try
-                        {
-                            transaction.Execute();
-                        }
-                        catch ( Exception ex )
-                        {
-                            LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
-                        }
-                    }
-                }
-
-                Global.QueueInUse = false;
-            }
-        }
-
-        /// <summary>
         /// Handles the Start event of the Session control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -286,6 +231,28 @@ namespace RockWeb
 
             // add new session id
             Session["RockSessionId"] = Guid.NewGuid();
+        }
+
+        /// <summary>
+        /// Handles the End event of the Session control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void Session_End( object sender, EventArgs e )
+        {
+
+            // mark user offline
+            if ( this.Session["RockUserId"] != null )
+            {
+
+                UserLoginService userLoginService = new UserLoginService();
+
+                var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                user.IsOnLine = false;
+
+                userLoginService.Save( user, null );
+
+            }
         }
 
         /// <summary>
@@ -449,83 +416,6 @@ namespace RockWeb
         }
 
         /// <summary>
-        /// Formats the exception.
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="exLevel">The ex level.</param>
-        /// <returns></returns>
-        private string FormatException( Exception ex, string exLevel )
-        {
-            string message = string.Empty;
-
-            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
-            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
-
-            // check for inner exception
-            if ( ex.InnerException != null )
-            {
-                //lErrorInfo.Text += "<p /><p />";
-                message += FormatException( ex.InnerException, "-" + exLevel );
-            }
-
-            return message;
-        }
-
-        /// <summary>
-        /// Logs the error to database
-        /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="context">The context.</param>
-        private void LogError( Exception ex, HttpContext context )
-        {
-            int? pageId;
-            int? siteId;
-            PersonAlias personAlias = null;
-
-            if ( context == null )
-            {
-                pageId = null;
-                siteId = null;
-            }
-            else
-            {
-                var pid = context.Items["Rock:PageId"];
-                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
-                var sid = context.Items["Rock:SiteId"];
-                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
-                var user = UserLoginService.GetCurrentUser();
-                if (user.Person != null)
-                {
-                    personAlias = user.Person.PrimaryAlias;
-                }
-            }
-
-            ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
-        }
-
-        /// <summary>
-        /// Handles the End event of the Session control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void Session_End( object sender, EventArgs e )
-        {
-
-            // mark user offline
-            if ( this.Session["RockUserId"] != null ) { 
-
-                UserLoginService userLoginService = new UserLoginService();
-
-                var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
-                user.IsOnLine = false;
-
-                userLoginService.Save( user, null );
-
-            }
-        }
-
-        /// <summary>
         /// Handles the End event of the Application control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -569,17 +459,29 @@ namespace RockWeb
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
-        /// <summary>
-        /// Adds the call back.
+        /// Formats the exception.
         /// </summary>
-        private void AddCallBack()
+        /// <param name="ex">The ex.</param>
+        /// <param name="exLevel">The ex level.</param>
+        /// <returns></returns>
+        private string FormatException( Exception ex, string exLevel )
         {
-            OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
-            HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
-                DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
-                CacheItemPriority.NotRemovable, OnCacheRemove );
+            string message = string.Empty;
+
+            message += "<h2>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h2>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Message</strong><br>" + ex.Message + "</div>";
+            message += "<p style=\"font-size: 10px; overflow: hidden;\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</p>";
+
+            // check for inner exception
+            if ( ex.InnerException != null )
+            {
+                //lErrorInfo.Text += "<p /><p />";
+                message += FormatException( ex.InnerException, "-" + exLevel );
+            }
+
+            return message;
         }
 
         /// <summary>
@@ -768,6 +670,86 @@ namespace RockWeb
             }
         }
 
+        #region Static Methods
+
+        /// <summary>
+        /// Adds the call back.
+        /// </summary>
+        public static void AddCallBack()
+        {
+            if ( HttpRuntime.Cache["IISCallBack"] == null )
+            {
+                OnCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
+                HttpRuntime.Cache.Insert( "IISCallBack", 60, null,
+                    DateTime.Now.AddSeconds( 60 ), Cache.NoSlidingExpiration,
+                    CacheItemPriority.NotRemovable, OnCacheRemove );
+            }
+        }
+
+        /// <summary>
+        /// Drains the transaction queue.
+        /// </summary>
+        public static void DrainTransactionQueue()
+        {
+            // process the transaction queue
+            if ( !Global.QueueInUse )
+            {
+                Global.QueueInUse = true;
+
+                while ( RockQueue.TransactionQueue.Count != 0 )
+                {
+                    ITransaction transaction = RockQueue.TransactionQueue.Dequeue() as ITransaction;
+                    if ( transaction != null )
+                    {
+                        try
+                        {
+                            transaction.Execute();
+                        }
+                        catch ( Exception ex )
+                        {
+                            LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
+                        }
+                    }
+                }
+
+                Global.QueueInUse = false;
+            }
+        }        
+        
+        /// <summary>
+        /// Logs the error to database
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="context">The context.</param>
+        private static void LogError( Exception ex, HttpContext context )
+        {
+            int? pageId;
+            int? siteId;
+            PersonAlias personAlias = null;
+
+            if ( context == null )
+            {
+                pageId = null;
+                siteId = null;
+            }
+            else
+            {
+                var pid = context.Items["Rock:PageId"];
+                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
+                var sid = context.Items["Rock:SiteId"];
+                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
+                var user = UserLoginService.GetCurrentUser();
+                if ( user.Person != null )
+                {
+                    personAlias = user.Person.PrimaryAlias;
+                }
+            }
+
+            ExceptionLogService.LogException( ex, context, pageId, siteId, personAlias );
+        }
+
+        #endregion
+
         #endregion
 
         #region Event Handlers
@@ -873,6 +855,32 @@ namespace RockWeb
                 // Flush the block instance's parent page 
                 if ( block.PageId.HasValue )
                     Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
+            }
+        }
+
+        /// <summary>
+        /// Caches the item removed.
+        /// </summary>
+        /// <param name="k">The k.</param>
+        /// <param name="v">The v.</param>
+        /// <param name="r">The r.</param>
+        public static void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
+        {
+            if ( r == CacheItemRemovedReason.Expired )
+            {
+                // call a page on the site to keep IIS alive 
+                if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                {
+                    string url = Global.BaseUrl + "KeepAlive.aspx";
+                    WebRequest request = WebRequest.Create( url );
+                    WebResponse response = request.GetResponse();
+                }
+
+                // Process the transaction queue on another thread
+                Task.Run( () => DrainTransactionQueue() );
+
+                // add cache item again
+                AddCallBack();
             }
         }
 
