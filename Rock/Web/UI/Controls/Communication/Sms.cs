@@ -93,6 +93,8 @@ namespace Rock.Web.UI.Controls.Communication
 
             ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
             ddlFrom.Label = "From";
+            ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
+
             Controls.Add( ddlFrom );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );

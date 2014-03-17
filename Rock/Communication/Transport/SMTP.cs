@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -118,6 +119,7 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService();
 
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
                 bool recipientFound = true;
@@ -142,7 +144,25 @@ namespace Rock.Communication.Transport
                                 var mergeObjects = MergeValues( globalConfigValues, recipient );
 
                                 message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
-                                message.Body = communication.GetChannelDataValue( "HtmlMessage" ).ResolveMergeFields( mergeObjects );
+
+                                string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
+                                if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                                {
+                                    plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
+                                    AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                    message.AlternateViews.Add( plainTextView );
+                                }
+
+                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
+                                if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                                {
+                                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                                    htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     
+                                    htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
+                                    htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
+                                    AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                    message.AlternateViews.Add( htmlView );
+                                }
 
                                 try
                                 {

@@ -154,8 +154,13 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             string script = @"
-    $('a.remove-all-recipients').click(function(){
-        return confirm('Are you sure you want to remove all of the pending recipients from this communication?');
+    $('a.remove-all-recipients').click(function( e ){
+        e.preventDefault();
+        Rock.dialogs.confirm('Are you sure you want to remove all of the pending recipients from this communication?', function (result) {
+            if (result) {
+                eval(e.target.href);
+            }
+        });
     });
 ";
             ScriptManager.RegisterStartupScript(lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
@@ -817,6 +822,7 @@ namespace RockWeb.Blocks.Communication
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
                 channelControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
+                channelControl.ValidationGroup = btnSubmit.ValidationGroup;
                 phContent.Controls.Add( channelControl );
 
                 if ( setData  )

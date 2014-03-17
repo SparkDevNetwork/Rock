@@ -10,6 +10,8 @@
             <h1><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
         </div>
 
+        <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
         <div class="row">
             <div class="col-md-6">
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Name" />
@@ -20,9 +22,9 @@
         </div> 
                     
         <div class="row">
-                <div class="col-md-12">
-                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                </div>
+            <div class="col-md-12">
+                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+            </div>
         </div>
 
         <ul class="nav nav-pills nav-pagelist">
@@ -36,8 +38,6 @@
             </asp:Repeater>
         </ul>
         
-        <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
         <asp:PlaceHolder ID="phContent" runat="server" />
 
         <div class="actions">
