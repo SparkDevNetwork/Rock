@@ -3,14 +3,11 @@
 #    Microsoft.Data.Edm.dll
 #    Microsoft.Data.OData.dll
 #    System.Spatial.dll
+/*.pdb
 
 #specific files
 /Rock.Migrations.dll
-/Rock.Migrations.pdb
 /Rock.Rest.dll
-/Rock.Rest.pdb
 /Rock.Version.dll
-/Rock.Version.pdb
 /Rock.dll
-/Rock.pdb
 
