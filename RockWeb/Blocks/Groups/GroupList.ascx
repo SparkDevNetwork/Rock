@@ -12,7 +12,7 @@
                 <asp:BoundField DataField="GroupTypeName" HeaderText="Group Type" SortExpression="GroupTypeName" />
                 <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                 <asp:BoundField DataField="GroupRole" HeaderText="Role" SortExpression="Role" />
-                <asp:BoundField DataField="MemberCount" HeaderText="Members" SortExpression="MemberCount" />
+                <asp:BoundField DataField="MemberCount" HeaderText="Members" SortExpression="MemberCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 <Rock:DateTimeField DataField="DateAdded" HeaderText="Added" SortExpression="DateAdded" FormatAsElapsedTime="true" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
