@@ -54,7 +54,7 @@
                                                 <asp:PlaceHolder ID="phStreet2" runat="server" />
                                                 <span><%# Eval("Location.City") %>, <%# Eval("Location.State") %> <%# Eval("Location.Zip") %></span>
                                             </div>
-                                            <div class="actions rollover-item">
+                                            <div class="pull-left rollover-item">
                                                 <asp:LinkButton ID="lbVerify" runat="server">
                                                     <i class="fa fa-globe"></i>
                                                 </asp:LinkButton>
