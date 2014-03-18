@@ -1,7 +1,7 @@
-﻿<div class="row ad-list">
+﻿<div class="row announcement-list">
   
     {% for Ad in Ads -%}
-      <div class="col-md-4 col-sm-6 ad">
+      <div class="col-md-4 col-sm-6 announcement">
           <a href="{{ Ad.DetailPageUrl }}">
             {% for Attribute in Ad.Attributes -%}
               {% if Attribute.Key == 'AdImage' -%}
@@ -9,8 +9,8 @@
               {% endif -%}
             {% endfor -%}
           </a>
-          <h2 class="ad-title">{{ Ad.Title }}</h2>
-          <p class="ad-text">
+          <h2 class="announcement-title">{{ Ad.Title }}</h2>
+          <p class="announcement-text">
             {% for Attribute in Ad.Attributes -%}
               {% if Attribute.Key == 'AdText' -%}
                 {{ Attribute.Value }}
@@ -24,7 +24,7 @@
         {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
         {% if breakNow == 0 -%}
           </div>
-          <div class="row ad-list">
+          <div class="row announcement-list">
         {% endif -%}
 
   {% endfor -%}
