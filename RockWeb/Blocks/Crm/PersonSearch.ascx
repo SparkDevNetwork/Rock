@@ -7,17 +7,19 @@
         <asp:BoundField 
             DataField="FullNameReversed"  
             HeaderText="Person"  
-            SortExpression="FullNameReversed" />
+            SortExpression="LastName,FirstName" />
         <asp:BoundField 
+            ItemStyle-HorizontalAlign="Right"
+            HeaderStyle-HorizontalAlign="Right"
             DataField="Age"  
             HeaderText="Age"  
-            SortExpression="Age" />
+            SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" />
         <Rock:DefinedValueField
-            DataField="ConnectionStatusValue"
+            DataField="ConnectionStatusValueId"
             HeaderText="Connection Status"
             SortExpression="ConnectionStatusValue.Name" />
         <Rock:DefinedValueField
-            DataField="RecordStatusValue"
+            DataField="RecordStatusValueId"
             HeaderText="Record Status"
             SortExpression="RecordStatusValue.Name" />
     </Columns>
