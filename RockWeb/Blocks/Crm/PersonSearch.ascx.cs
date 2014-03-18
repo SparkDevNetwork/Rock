@@ -122,27 +122,17 @@ namespace RockWeb.Blocks.Crm
                             }
                     }
 
-                    var peopleList = people.ToList();
-                    var qry = peopleList.AsQueryable().Select( p => new
-                    {
-                        Id = p.Id,
-                        FullNameReversed = p.FullNameReversed,
-                        Age = p.Age,
-                        ConnectionStatusValue = p.ConnectionStatusValue,
-                        RecordStatusValue = p.RecordStatusValue
-                    } );
-
                     SortProperty sortProperty = gPeople.SortProperty;
                     if ( sortProperty != null )
                     {
-                        qry = qry.Sort( sortProperty );
+                        people = people.Sort( sortProperty );
                     }
                     else
                     {
-                        qry = qry.OrderBy( p => p.FullNameReversed );
+                        people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
                     }
 
-                    var personList = qry.ToList();
+                    var personList = people.ToList();
 
                     if ( personList.Count == 1 )
                     {
