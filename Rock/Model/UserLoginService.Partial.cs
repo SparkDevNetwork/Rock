@@ -314,12 +314,13 @@ namespace Rock.Model
 
                     if ( user != null && userIsOnline )
                     {
+                        // Save last activity date
+                        var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                        transaction.UserId = user.Id;
+                        transaction.LastActivityDate = RockDateTime.Now;
+
                         if ( (user.IsConfirmed ?? true) && !(user.IsLockedOut ?? false) )
                         {
-                            // Save last activity date
-                            var transaction = new Rock.Transactions.UserLastActivityTransaction();
-                            transaction.UserId = user.Id;
-                            transaction.LastActivityDate = RockDateTime.Now;
 
                             if ( HttpContext.Current.Session["RockUserId"] != null )
                             {
@@ -336,7 +337,6 @@ namespace Rock.Model
                             if (userLastActivity != null)
                             {
                                 userLastActivity.LastActivityDate = transaction.LastActivityDate;
-
                             }
                             else
                             {
@@ -346,6 +346,9 @@ namespace Rock.Model
                         }
                         else
                         {
+                            transaction.IsOnLine = false;
+                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
                             FormsAuthentication.SignOut();
                             return null;
                         }

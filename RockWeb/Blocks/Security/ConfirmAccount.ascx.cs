@@ -18,7 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Web.Security;
 using System.Web.UI;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 
@@ -278,6 +278,12 @@ namespace RockWeb.Blocks.Security
             {
                 if ( CurrentUser != null && CurrentUser.UserName == user.UserName )
                 {
+                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                    transaction.UserId = CurrentUser.Id;
+                    transaction.LastActivityDate = RockDateTime.Now;
+                    transaction.IsOnLine = false;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
                     FormsAuthentication.SignOut();
                 }
 

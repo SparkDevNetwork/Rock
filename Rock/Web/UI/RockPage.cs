@@ -462,6 +462,15 @@ namespace Rock.Web.UI
             Page.Trace.Warn( "Checking for logout request" );
             if ( PageParameter( "logout" ) != string.Empty )
             {
+                if ( CurrentUser != null )
+                {
+                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                    transaction.UserId = CurrentUser.Id;
+                    transaction.LastActivityDate = RockDateTime.Now;
+                    transaction.IsOnLine = false;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+
                 FormsAuthentication.SignOut();
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
