@@ -32,9 +32,8 @@ namespace Rock.Migrations
     {
         #region Entity Type Methods
 
-
         /// <summary>
-        /// Updates the type of the entity.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="guid">The GUID.</param>
@@ -64,7 +63,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Updates the type of the entity.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="friendlyName">Name of the friendly.</param>
@@ -105,7 +104,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the entity.
+        /// Deletes the EntityType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteEntityType( string guid )
@@ -122,7 +121,7 @@ namespace Rock.Migrations
         #region Field Type Methods
 
         /// <summary>
-        /// Updates the type of the field.
+        /// Updates the FieldType by assembly and className (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -163,7 +162,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the field.
+        /// Deletes the FieldType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteFieldType( string guid )
@@ -180,7 +179,8 @@ namespace Rock.Migrations
         #region Block Type Methods
 
         /// <summary>
-        /// Adds the type of the block.
+        /// Updates the BlockType by path (if it exists);
+        /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -221,6 +221,14 @@ namespace Rock.Migrations
                     ) );
         }
         
+        /// <summary>
+        /// Adds a new BlockType.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="path"></param>
+        /// <param name="category"></param>
+        /// <param name="guid"></param>
         public void AddBlockType( string name, string description, string path, string category, string guid )
         {
             Sql( string.Format( @"
@@ -241,7 +249,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the block.
+        /// Deletes the BlockType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlockType( string guid )
@@ -258,7 +266,7 @@ namespace Rock.Migrations
         #region Layout Methods
 
         /// <summary>
-        /// Adds the Layout.
+        /// Adds a new Layout to the given site.
         /// </summary>
         /// <param name="siteGuid">The site GUID.</param>
         /// <param name="fileName">Name of the file.</param>
@@ -286,7 +294,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the page.
+        /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteLayout( string guid )
@@ -303,7 +311,8 @@ namespace Rock.Migrations
         #region Page Methods
 
         /// <summary>
-        /// Adds the page.
+        /// Adds a new Page to the given parent page.
+        /// The new page will be ordered as last child of the parent page.
         /// </summary>
         /// <param name="parentPageGuid">The parent page GUID.</param>
         /// <param name="layoutGuid">The layout GUID.</param>
@@ -351,7 +360,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Moves the page.
+        /// Moves the Page to the new given parent page.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="parentPageGuid">The parent page GUID.</param>
@@ -367,7 +376,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the page.
+        /// Deletes the Page and any PageViews that use the page.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
@@ -385,7 +394,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the page route.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -406,7 +415,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the page context.
+        /// Adds a new PageContext to the given page.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="entity">The entity.</param>
@@ -431,7 +440,10 @@ namespace Rock.Migrations
         #region Block Methods
 
         /// <summary>
-        /// Adds the block.
+        /// Adds a new Block of the given block type to the given page (optional) and layout (optional),
+        /// setting its values with the given parameter values. If only the layout is given,
+        /// edit/configuration authorization will also be inserted into the Auth table
+        /// for the admin role (GroupId 2).
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="layoutGuid">The layout GUID.</param>
@@ -503,7 +515,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the block.
+        /// Deletes the block and any authorization records that belonged to it.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlock( string guid )
@@ -524,6 +536,19 @@ namespace Rock.Migrations
 
         #region Attribute Methods
 
+        /// <summary>
+        /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="blockTypeGuid"></param>
+        /// <param name="fieldTypeGuid"></param>
+        /// <param name="name"></param>
+        /// <param name="key"></param>
+        /// <param name="category"></param>
+        /// <param name="description"></param>
+        /// <param name="order"></param>
+        /// <param name="defaultValue"></param>
+        /// <param name="guid"></param>
         public void UpdateBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -587,7 +612,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the block attribute.
+        /// Adds a new BlockType Attribute for the given blocktype and key.
         /// </summary>
         /// <param name="blockTypeGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -646,7 +671,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the block attribute.
+        /// Deletes the block Attribute.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlockAttribute( string guid )
@@ -655,7 +680,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the entity attribute.
+        /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -716,7 +741,8 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds a global attribute.
+        /// Adds a global Attribute for the given FieldType, entityTypeQualifierColumn, entityTypeQualifierValue and name (key).
+        /// Note: This method delets the Attribute first if it had already existed.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
@@ -766,7 +792,7 @@ namespace Rock.Migrations
 
 
         /// <summary>
-        /// Ensures the entity type exists.
+        /// Ensures the entity type exists by adding it by name if it did not already exist.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         private void EnsureEntityTypeExists( string entityTypeName )
@@ -790,7 +816,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the attribute value.
+        /// Adds a new attribute value for the given attributeGuid if it does not already exist.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="entityId">The entity id.</param>
@@ -834,7 +860,8 @@ namespace Rock.Migrations
         #region Block Attribute Value Methods
 
         /// <summary>
-        /// Adds the block attribute value.
+        /// Adds a new block attribute value for the given block guid and attribute guid,
+        /// deleting any previously existing attribute value first.
         /// </summary>
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="attributeGuid">The attribute GUID.</param>
@@ -897,7 +924,7 @@ namespace Rock.Migrations
         #region DefinedType Methods
 
         /// <summary>
-        /// Adds the type of the defined.
+        /// Adds a new DefinedType.
         /// </summary>
         /// <param name="category">The category.</param>
         /// <param name="name">The name.</param>
@@ -930,7 +957,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the defined.
+        /// Deletes the DefinedType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteDefinedType( string guid )
@@ -947,7 +974,7 @@ namespace Rock.Migrations
         #region DefinedValue Methods
 
         /// <summary>
-        /// Adds the defined value.
+        /// Adds a new DefinedValue for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="name">The name.</param>
@@ -982,7 +1009,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Updates (or Adds) the defined value.
+        /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="name">The name.</param>
@@ -1037,7 +1064,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the defined value.
+        /// Deletes the DefinedValue.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteDefinedValue( string guid )
@@ -1100,7 +1127,7 @@ INSERT INTO [dbo].[Group]
         }
 
         /// <summary>
-        /// Adds the security auth.
+        /// Adds the security auth record for the given entity type and group.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="action">The action.</param>
@@ -1189,7 +1216,7 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
-        /// Deletes the security auth.
+        /// Deletes the security auth record.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteSecurityAuth( string guid )
@@ -1202,7 +1229,7 @@ INSERT INTO [dbo].[Auth]
         #region Group Type
 
         /// <summary>
-        /// Adds a GroupType "Group Attribute" for the given GroupType (guid) with given parameters. 
+        /// Adds a new GroupType "Group Attribute" for the given GroupType using the given values. 
         /// </summary>
         /// <param name="groupTypeGuid"></param>
         /// <param name="fieldTypeGuid"></param>
@@ -1274,6 +1301,5 @@ INSERT INTO [dbo].[Auth]
             );
         }
         #endregion
-
     }
 }
