@@ -55,13 +55,9 @@
                                                 <span><%# Eval("Location.City") %>, <%# Eval("Location.State") %> <%# Eval("Location.Zip") %></span>
                                             </div>
                                             <div class="actions rollover-item">
-                                                <asp:LinkButton ID="lbGeocode" runat="server">
+                                                <asp:LinkButton ID="lbVerify" runat="server">
                                                     <i class="fa fa-globe"></i>
                                                 </asp:LinkButton>
-                                                <asp:LinkButton ID="lbStandardize" runat="server">
-                                                    <i class="fa fa-magic"></i>
-                                                </asp:LinkButton>
-                                                <a title="Address Standardized" href="../Blocks/Crm/PersonDetail/#"></a>
                                             </div>
                                         </li>
                                     </ItemTemplate>

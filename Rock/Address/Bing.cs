@@ -28,32 +28,40 @@ using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 
-namespace Rock.Address.Geocode
+namespace Rock.Address
 {
     /// <summary>
-    /// The geocoding service from <a href="http://dev.virtualearth.net">Bing</a>
+    /// The standardization/geocoding service from <a href="http://dev.virtualearth.net">Bing</a>
     /// </summary>
     [Description( "Address Standardization and Geocoding service from Bing" )]
-    [Export( typeof( GeocodeComponent ) )]
+    [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "Bing" )]
     [TextField( "Bing Maps Key", "The Bing maps key", true, "", "", 1 )]
     [IntegerField("Daily Transaction Limit", "The maximum number of transactions to process each day.", false, 5000, "", 2)]
-    public class Bing : GeocodeComponent
+    public class Bing : VerificationComponent
     {
         const string TXN_DATE = "com.rockrms.bing.txnDate";
         const string DAILY_TXN_COUNT = "com.rockrms.bing.dailyTxnCount";
+
         /// <summary>
-        /// Geocodes the specified address.
+        /// Standardizes and Geocodes an address using Bing service
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="result">The result.</param>
+        /// <param name="reVerify">Should location be reverified even if it has already been succesfully verified</param>
+        /// <param name="result">The result code unique to the service.</param>
         /// <returns>
-        /// True/False value of whether the address was standardized was succesfully
+        /// True/False value of whether the verification was successfull or not
         /// </returns>
-        public override bool Geocode( Rock.Model.Location location, out string result )
+        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
         {
-            if ( location != null )
+            bool verified = false;
+            result = string.Empty;
+
+            if ( location != null && 
+                !(location.IsGeoPointLocked ?? false) &&  
+                (!location.GeocodeAttemptedDateTime.HasValue || reVerify) )
             {
+                // Verify that bing transaction count hasn't been exceeded for the day
                 DateTime? txnDate = Rock.Web.SystemSettings.GetValue( TXN_DATE ).AsDateTime();
                 int? dailyTxnCount = 0;
 
@@ -94,9 +102,14 @@ namespace Rock.Address.Geocode
 
                             result = string.Format( "Confidence: {0}; MatchCodes: {1}",
                                 bingLocation.Confidence, matchCodes.AsDelimited( "," ) );
+
                             if ( bingLocation.Confidence == "High" && matchCodes.Contains( "Good" ) )
                             {
-                                if ( !location.StandardizedDateTime.HasValue )
+                                location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
+                                location.GeocodedDateTime = RockDateTime.Now;
+                                verified = true;
+
+                                if ( !location.StandardizedDateTime.HasValue || reVerify )
                                 {
                                     var address = bingLocation.Address;
                                     if ( address != null )
@@ -114,8 +127,6 @@ namespace Rock.Address.Geocode
                                     }
                                 }
 
-                                location.SetLocationPointFromLatLong( bingLocation.Point.Coordinates[0], bingLocation.Point.Coordinates[1] );
-                                return true;
                             }
                         }
                         else
@@ -132,13 +143,13 @@ namespace Rock.Address.Geocode
                 {
                     result = "Daily transaction limit exceeded";
                 }
-            }
-            else
-            {
-                result = "Null Address";
+
+                location.GeocodeAttemptedServiceType = "Bing";
+                location.GeocodeAttemptedDateTime = RockDateTime.Now;
+                location.GeocodeAttemptedResult = result;
             }
 
-            return false;
+            return verified;
         }
 
         private void GetResponse( Uri uri, Action<Response> callback )

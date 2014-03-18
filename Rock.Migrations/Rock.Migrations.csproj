@@ -768,6 +768,10 @@
     <Compile Include="Migrations\201403171835360_IncreaseAccountNumberLength.Designer.cs">
       <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.cs" />
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.Designer.cs">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1324,6 +1328,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403171835360_IncreaseAccountNumberLength.resx">
       <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403180042036_AddressVerificationService.resx">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
