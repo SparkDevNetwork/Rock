@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -111,22 +112,37 @@ namespace RockWeb.Blocks.Cms
                 lSiteName.Text = site.Name;
                 lMessages.Text = string.Empty;
 
-                // get active users
-                UserLoginService loginService = new UserLoginService();
-                var activeLogins = loginService.Queryable("Person")
-                                    .Where( l => l.IsOnLine == true )
-                                    .OrderByDescending(l => l.LastActivityDateTime);
-
-                foreach ( var login in activeLogins )
+                using ( new UnitOfWorkScope() )
                 {
-                    TimeSpan tsLastActivity =  RockDateTime.Now.Subtract((DateTime)login.LastActivityDateTime);
-                    if ( tsLastActivity.Minutes <= 5 )
+                    IQueryable<PageView> pageViewQry = new PageViewService().Queryable( "Page" );
+
+                    // Query to get who is logged in and last visit was to selected site
+                    var activeLogins = new UserLoginService().Queryable( "Person" )
+                        .Where( l =>
+                            l.PersonId.HasValue &&
+                            l.IsOnLine == true )
+                        .OrderByDescending( l => l.LastActivityDateTime )
+                        .Select( l => new
+                        {
+                            login = l,
+                            pageViews = pageViewQry
+                                .Where( v => v.PersonAlias.PersonId == l.PersonId )
+                                .OrderByDescending( v => v.DateTimeViewed )
+                                .Take( 3 )
+                        } )
+                        .Where( a =>
+                            a.pageViews.Any() &&
+                            a.pageViews.FirstOrDefault().SiteId == site.Id );
+
+                    foreach ( var activeLogin in activeLogins )
                     {
-                        sbUsers.Append( String.Format( @"<li class='recent'><i class='fa-li fa fa-circle'></i> {0}</li>", login.Person.FullName ) );
-                    }
-                    else
-                    {
-                        sbUsers.Append( String.Format( @"<li class='not-recent'><i class='fa-li fa fa-circle '></i> {0}</li>", login.Person.FullName ) );
+                        var login = activeLogin.login;
+                        string pageViews = activeLogin.pageViews.ToList().Select( v => v.Page.PageTitle ).ToList().AsDelimited( ", " );
+
+                        TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
+                        string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
+                        sbUsers.Append( String.Format( @"<li class='{0}'><i class='fa-li fa fa-circle'></i> {1} <small>{2}</small></li>",
+                            className, login.Person.FullName, pageViews ) );
                     }
                 }
 
@@ -136,7 +152,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    lMessages.Text = String.Format("<div class='alert alert-info'>No one is active on the {0} site.</div>", site.Name);
+                    lMessages.Text = String.Format( "<div class='alert alert-info'>No one is active on the {0} site.</div>", site.Name );
                 }
 
             }
