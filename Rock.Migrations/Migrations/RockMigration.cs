@@ -373,6 +373,11 @@ namespace Rock.Migrations
         public void DeletePage( string guid )
         {
             Sql( string.Format( @"
+
+                DELETE PV
+                FROM [PageView] PV
+                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
+
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",
                     guid

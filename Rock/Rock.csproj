@@ -150,10 +150,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Address\GeocodeContainer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Address\Geocode\Bing.cs" />
+    <Compile Include="Address\VerificationContainer.cs" />
+    <Compile Include="Address\VerificationComponent.cs" />
+    <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
@@ -711,13 +710,8 @@
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\Container.cs" />
     <Compile Include="Extension\ComponentDescription.cs" />
-    <Compile Include="Address\Standardize\MelissaData.cs" />
-    <Compile Include="Address\StandardizeContainer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Address\StandardizeComponent.cs" />
-    <Compile Include="Address\GeocodeComponent.cs" />
-    <Compile Include="Address\Geocode\ServiceObjects.cs" />
+    <Compile Include="Address\MelissaData.cs" />
+    <Compile Include="Address\ServiceObjects.cs" />
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\BlockType.cs" />
     <Compile Include="Model\Block.cs" />
