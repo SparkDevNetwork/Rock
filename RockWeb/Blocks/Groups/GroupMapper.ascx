@@ -12,7 +12,7 @@
 
             <asp:Literal ID="lGroupJson" runat="server" />
             <script>
-                $(document).ready(function () {
+                Sys.Application.add_load(function () {
 
                     initializeMap();
 

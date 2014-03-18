@@ -147,6 +147,7 @@ namespace RockWeb.Blocks.Groups
                         g.Id,
                         g.Name,
                         GroupLocation = g.GroupLocations.Where( l => l.GroupLocationTypeValue.Guid == locationType ).FirstOrDefault()
+                        //GroupMembers = g.Members.Where(m => m.GroupRoleId == 1).Select();
                     } );
 
 
