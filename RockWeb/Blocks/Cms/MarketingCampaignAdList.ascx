@@ -21,7 +21,7 @@
                     <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" SortExpression="MarketingCampaignAdType.Name" />
                     <Rock:DateField DataField="StartDate" HeaderText="Date" SortExpression="StartDate" />
                     <Rock:EnumField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" SortExpression="MarketingCampaignAdStatus" />
-                    <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" />
+                    <asp:BoundField DataField="Priority" HeaderText="Priority" SortExpression="Priority" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <Rock:DeleteField OnClick="gMarketingCampaignAds_Delete" />
                 </Columns>
             </Rock:Grid>

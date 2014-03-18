@@ -51,8 +51,8 @@
                     <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
                     <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
                     <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                    <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" />
-                    <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 </Columns>
             </Rock:Grid>
 
