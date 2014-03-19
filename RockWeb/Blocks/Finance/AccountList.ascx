@@ -7,6 +7,7 @@
 
         <Rock:GridFilter ID="rAccountFilter" runat="server" >
             <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name" />
+            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" Visible="false" />
             <Rock:RockDropDownList ID="ddlIsActive" runat="server" Label="Active">
                 <asp:ListItem Text="" Value="" />
                 <asp:ListItem Text="Yes" Value="Yes" />
@@ -17,6 +18,7 @@
                 <asp:ListItem Text="Yes" Value="Yes" />
                 <asp:ListItem Text="No" Value="No" />
             </Rock:RockDropDownList>
+            
         </Rock:GridFilter>
         
         <Rock:Grid ID="rGridAccount" runat="server"  RowItemText="Account" OnRowSelected="rGridAccount_Edit" TooltipField="Description">
@@ -24,6 +26,7 @@
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="PublicName" HeaderText="Public Name" SortExpression="PublicName" />
+                <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus" Visible="false" />
                 <Rock:BoolField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                 <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                 <asp:BoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
