@@ -197,13 +197,6 @@ namespace Rock.Web.UI.Controls
                 var mergeField = cell.ContainingField as PersonMergeField;
                 if ( mergeField != null )
                 {
-                    var rb = new RadioButton();
-                    rb.Text = mergeField.PersonName;
-                    rb.ID = "rbSelectPrimary_" + mergeField.ColumnIndex.ToString();
-                    rb.Checked = mergeField.IsPrimaryPerson;
-                    rb.GroupName = "PrimaryPerson";
-                    cell.Controls.Add( rb );
-
                     var lbDelete = new LinkButton();
                     lbDelete.CausesValidation = false;
                     lbDelete.CssClass = "btn btn-danger btn-xs pull-right";
@@ -220,7 +213,13 @@ namespace Rock.Web.UI.Controls
                     var sm = ScriptManager.GetCurrent( mergeField.ParentGrid.Page );
                     sm.RegisterAsyncPostBackControl( lbDelete );
 
-                    HtmlGenericContainer headerSummary = new HtmlGenericContainer("div", "merge-header-summary");
+                    HtmlGenericContainer headerSummary = new HtmlGenericContainer( "div", "merge-header-summary" );
+                    headerSummary.Attributes.Add( "data-col", mergeField.ColumnIndex.ToString() );
+
+                    var i = new HtmlGenericControl( "i" );
+                    i.Attributes.Add( "class", "fa fa-2x " + ( mergeField.IsPrimaryPerson ? "fa-check-square-o" : "fa-square-o" ) );
+                    headerSummary.Controls.Add( i );
+                   
                     headerSummary.Controls.Add(new LiteralControl(mergeField.HeaderContent));
 
                     string created = (mergeField.ModifiedDateTime.HasValue ? mergeField.ModifiedDateTime.ToElapsedString() + " " : "") +

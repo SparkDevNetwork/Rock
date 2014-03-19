@@ -117,7 +117,10 @@ namespace Rock.Model
         /// <returns>A queryable collection containing the Global <see cref="Rock.Model.Attribute">Attributes</see>.</returns>
         public IQueryable<Attribute> GetGlobalAttributes()
         {
-            return this.Get( null, string.Empty, string.Empty );
+            var query = Repository.AsQueryable( "Categories,AttributeQualifiers" );
+            query = query.Where( t => !t.EntityTypeId.HasValue);
+
+            return query.Where( t => t.EntityTypeQualifierColumn == string.Empty &&  t.EntityTypeQualifierValue == string.Empty);
         }
 
         /// <summary>

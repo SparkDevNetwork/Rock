@@ -16,7 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
 using System.Linq;
 using Rock;
 using Rock.Constants;
@@ -25,7 +24,6 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
@@ -92,7 +90,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                if (_definedType != null)
+                if ( _definedType != null )
                 {
                     ShowDetail();
                 }
@@ -113,7 +111,7 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Events
-                
+
         /// <summary>
         /// Handles the Add event of the gDefinedValues control.
         /// </summary>
@@ -130,7 +128,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Edit( object sender, RowEventArgs e )
-        {            
+        {
             gDefinedValues_ShowEdit( (int)e.RowKeyValue );
         }
 
@@ -141,18 +139,28 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedValues_Delete( object sender, RowEventArgs e )
         {
-            var valueService = new DefinedValueService();
-
-            DefinedValue value = valueService.Get( (int)e.RowKeyValue );
-
-            DefinedTypeCache.Flush(value.DefinedTypeId);
-            DefinedValueCache.Flush(value.Id);
-
-            if ( value != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                valueService.Delete( value, CurrentPersonAlias );
-                valueService.Save( value, CurrentPersonAlias );
-            }
+                var definedValueService = new DefinedValueService();
+
+                DefinedValue value = definedValueService.Get( (int)e.RowKeyValue );
+
+                if ( value != null )
+                {
+                    string errorMessage;
+                    if ( !definedValueService.CanDelete( value, out errorMessage ) )
+                    {
+                        mdGridWarningValues.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    definedValueService.Delete( value, CurrentPersonAlias );
+                    definedValueService.Save( value, CurrentPersonAlias );
+
+                    DefinedTypeCache.Flush( value.DefinedTypeId );
+                    DefinedValueCache.Flush( value.Id );
+                }
+            } );
 
             BindDefinedValuesGrid();
         }
@@ -178,9 +186,9 @@ namespace RockWeb.Blocks.Core
 
                 var orders = definedValueService.Queryable()
                     .Where( d => d.DefinedTypeId == definedTypeId )
-                    .Select( d => d.Order)
+                    .Select( d => d.Order )
                     .ToList();
-                
+
                 definedValue.Order = orders.Any() ? orders.Max() + 1 : 0;
             }
             else
@@ -217,13 +225,13 @@ namespace RockWeb.Blocks.Core
                 Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             } );
-                        
+
             BindDefinedValuesGrid();
 
             hfDefinedValueId.Value = string.Empty;
             modalValue.Hide();
         }
-               
+
         #endregion
 
         #region Internal Methods
@@ -263,7 +271,7 @@ namespace RockWeb.Blocks.Core
 
             using ( new UnitOfWorkScope() )
             {
-                var definedValueService = new DefinedValueService();               
+                var definedValueService = new DefinedValueService();
                 var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
                 definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 BindDefinedValuesGrid();
@@ -303,6 +311,13 @@ namespace RockWeb.Blocks.Core
                         boundField.DataField = dataFieldExpression;
                         boundField.HeaderText = attribute.Name;
                         boundField.SortExpression = string.Empty;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
                         gDefinedValues.Columns.Add( boundField );
                     }
                 }
@@ -333,7 +348,7 @@ namespace RockWeb.Blocks.Core
             ShowAttributeValueEdit( valueId, true );
         }
 
-        private void ShowAttributeValueEdit(int valueId, bool setValues)
+        private void ShowAttributeValueEdit( int valueId, bool setValues )
         {
             var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;

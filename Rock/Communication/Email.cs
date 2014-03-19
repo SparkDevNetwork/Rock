@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 
 using Rock.Model;
 using Rock.Web.Cache;
@@ -37,25 +38,55 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         public static void Send( Guid emailTemplateGuid, Dictionary<string, Dictionary<string, object>> recipients, string appRoot = "", string themeRoot = "" )
         {
-            if ( emailTemplateGuid != Guid.Empty && recipients != null && recipients.Any() )
+            try
             {
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
-                if ( channelEntity != null )
+                if ( recipients != null && recipients.Any() )
                 {
-                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                    if ( channel != null )
+                    var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
+                    if ( channelEntity != null )
                     {
-                        var transport = channel.Transport;
-                        if ( transport != null )
+                        var channel = ChannelContainer.GetComponent( channelEntity.Name );
+                        if ( channel != null && channel.IsActive )
                         {
-                            var template = new SystemEmailService().Get( emailTemplateGuid );
-                            if ( template != null )
+                            var transport = channel.Transport;
+                            if ( transport != null && transport.IsActive )
                             {
-                                transport.Send( template, recipients, appRoot, themeRoot );
+                                var template = new SystemEmailService().Get( emailTemplateGuid );
+                                if ( template != null )
+                                {
+                                    try
+                                    {
+                                        transport.Send( template, recipients, appRoot, themeRoot );
+                                    }
+                                    catch(Exception ex1)
+                                    {
+                                        throw new Exception( string.Format( "Error sending System Email ({0}).", template.Title ), ex1 );
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception( string.Format( "Error sending System Email: An invalid System Email Identifier was provided ({0}).", emailTemplateGuid.ToString() ) );
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception(string.Format("Error sending System Email: The '{0}' channel does not have a valid transport, or the transport is not active.", channelEntity.FriendlyName));
                             }
                         }
+                        else
+                        {
+                            throw new Exception(string.Format("Error sending System Email: The '{0}' channel does not exist, or is not active (type: {1}).", channelEntity.FriendlyName, channelEntity.Name));
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Error sending System Email: Could not read Email Channel Entity Type");
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
             }
         }
     }

@@ -19,9 +19,10 @@
             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
         </Rock:GridFilter>
 
+        <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="gTransactions_Edit" AllowSorting="true" ToolTip="Description">
             <Columns>
-                <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
+                <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
                 <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="TotalAmount" />
                 <Rock:DefinedValueField DataField="TransactionTypeValueId" HeaderText="Transaction Type" SortExpression="TransactionTypeValue.Name" />

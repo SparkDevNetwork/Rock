@@ -49,7 +49,22 @@ namespace Rock.Transactions
         /// </value>
         public int? SessionUserId { get; set; }
 
-        
+        /// <summary>
+        /// Gets or sets a value indicating whether [is on line].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is on line]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsOnLine { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserLastActivityTransaction"/> class.
+        /// </summary>
+        public UserLastActivityTransaction()
+        {
+            IsOnLine = true;
+        }
+
         /// <summary>
         /// Execute method to write transaction to the database.
         /// </summary>
@@ -61,11 +76,11 @@ namespace Rock.Transactions
             if ( user != null )
             {
                 user.LastActivityDateTime = LastActivityDate;
-                user.IsOnLine = true;
+                user.IsOnLine = IsOnLine;
                 userLoginService.Save( user, null );
 
                 // check if this session had a previous account on-line
-                if ( SessionUserId.HasValue && SessionUserId != user.Id )
+                if ( IsOnLine && SessionUserId.HasValue && SessionUserId != user.Id )
                 {
                     // mark old session offline
                     var oldUser = userLoginService.Get( SessionUserId.Value );

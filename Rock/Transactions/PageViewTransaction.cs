@@ -90,6 +90,14 @@ namespace Rock.Transactions
         /// Query String.
         /// </value>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page title.
+        /// </summary>
+        /// <value>
+        /// Page Title.
+        /// </value>
+        public string PageTitle { get; set; }
         
         
         /// <summary>
@@ -111,6 +119,7 @@ namespace Rock.Transactions
             pageView.DateTimeViewed = this.DateViewed;
             pageView.IpAddress = this.IPAddress;
             pageView.PersonAliasId = this.PersonAliasId;
+            pageView.PageTitle = this.PageTitle;
 
             string u = this.UserAgent;
             if ( string.IsNullOrWhiteSpace( u ) )
@@ -140,6 +149,17 @@ namespace Rock.Transactions
                     if ( t.IsMatch( u ) )
                     {
                         pageView.ClientType = "Tablet";
+                        clientDetected = true;
+                    }
+                }
+
+                // let's now label bots/crawler
+                if ( !clientDetected )
+                {
+                    Regex t = new Regex( @"bot|googlebot|crawler|spider|robot|crawling", RegexOptions.IgnoreCase | RegexOptions.Multiline );
+                    if ( t.IsMatch( u ) )
+                    {
+                        pageView.ClientType = "Crawler";
                         clientDetected = true;
                     }
                 }

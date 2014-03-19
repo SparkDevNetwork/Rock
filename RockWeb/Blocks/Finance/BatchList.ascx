@@ -14,9 +14,10 @@
                 <Rock:CampusPicker ID="campCampus" runat="server" />
             </Rock:GridFilter>
 
+            <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit">
                 <Columns>
-                    <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
+                    <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <asp:TemplateField HeaderText="Date">
                         <ItemTemplate>
                             <span><%# Eval("BatchStartDateTime") %></span>
@@ -33,7 +34,7 @@
                             <asp:Label ID="lblVariance" runat="server"></asp:Label>
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField HeaderText="Transaction Count">
+                    <asp:TemplateField HeaderText="Transaction Count" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right">
                         <ItemTemplate>
                             <asp:Literal ID="TransactionCount" runat="server" />
                         </ItemTemplate>

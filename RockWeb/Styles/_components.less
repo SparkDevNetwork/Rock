@@ -11,19 +11,21 @@
     8. Tags - component that allows you to tag entities
     9. Switch - uses the Bootstrap Switch component
     10. Smart Searh - search at th top of the page for searching people, groups, etc.
-    11. Title - markup for styling header titles
-    12. Notifications - additional styles to the Bootstrap notifications
-    13. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
-    14. Datepicker - styles for the date picker
-    15. Timepicker - styles for the time picker
-    16. File Upload / Image Upload - styles for the file / image uploader
-    17. Actions - used to hold buttons at the bottom of forms.
-    18. Code Editor - Styles for the code editor control
-    19. Update Panel Status - Styles for the wait screen on an update panel
-    20. Group List - styles a group of people in a ul -> li format
-    21. Rock List - styles for the Rock list component
-    22. TypeAhead - styles for type ahead support
-    23. Image Cropper - styles for image crop component
+    11. Fieldset Actions - styling for the button actions on field sets
+    12. Title - markup for styling header titles
+    13. Code Editor - styling for code editor
+    14. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    15. Date Picker - styles for the date picker
+    16. Time Picker - styles for the time picker
+    17. File Upload / Image Upload - styles for the file / image uploader
+    18. Update Panel Actions - annimation for update panels
+    19. Group List - Reusable styles for listing group members (family view/edit in CRM Person Profile)
+    20. Well Messgae - A larger alert type function for delivering important messages.
+    21. Security Controls - login status etc
+    22. Rock List - styles for the Rock list component
+    23. TypeAhead - styles for type ahead support
+    24. Image Cropper - styles for image crop component
+    25. Active Users - styles for the active users block
 */
 
 // 1. Pickers
@@ -33,6 +35,10 @@
     position: relative;
     width: 225px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
     .clearfix();
+
+    .picker-mode-options {
+        margin-bottom: 12px;
+    }
 
     .picker-label {
         padding: @padding-base-vertical @padding-base-horizontal;
@@ -48,7 +54,7 @@
         i {
             margin-right: 6px;
             float: left;
-            margin-top: 2px
+            margin-top: 2px;
         }
 
         span {
@@ -73,11 +79,11 @@
         cursor: pointer;
     }
 
-    .scroll-container-picker { 
-        width: 355px; 
+    .scroll-container-picker {
+        width: 355px;
 
-        .viewport { 
-            width: 340px;  
+        .viewport {
+            width: 340px;
             height: 190px;
         }
 
@@ -107,13 +113,18 @@
         border-radius: 0 0 @border-radius-base @border-radius-base;
         margin: 10px -10px -10px -10px;
     }
-
     // details used for pickers like person picker to show the details of the selected item
     .picker-select-item-details {
         margin-left: 20px;
 
-        img {
+        .person-image {
             float: left;
+            border:3px solid @accent-bold-color;
+            float:left;
+            margin-right: 7.5px;
+            display: inline-block;
+            width: 70px;
+            height: 70px;
         }
 
         .contents {
@@ -131,13 +142,14 @@
             width: 520px;
         }
     }
+
     &.picker-person {
-        
+
         .picker-select {
             padding: 0;
             list-style: none;
         }
-        
+
         .picker-select-item-details img {
             width: 65px;
         }
@@ -604,19 +616,21 @@ div.tagsinput
   -ms-user-select: none;
   user-select: none;
   min-width: 100px;
+
+    &.switch-mini {
+        min-width: 70px;
+    }
+
+    &.switch-small {
+        min-width: 80px;
+    }
+
+    &.switch-large {
+      min-width: 120px;
+    }
 }
 
-.switch.switch-mini {
-  min-width: 70px;
-}
 
-.switch.switch-small {
-  min-width: 80px;
-}
-
-.switch.switch-large {
-  min-width: 120px;
-}
 
 .switch.deactivate {
   filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
@@ -820,6 +834,14 @@ div.tagsinput
 	color: @smartsearch-input-selection-text-color;
 }
 
+// 11. Actions
+// -------------------------
+
+fieldset .actions {
+    margin-top: 12px; 
+}
+
+
 // 12. Titles
 // ------------------------
 .title {
@@ -830,13 +852,10 @@ div.tagsinput
     }
 }
 
-
-// 13. Notifications
+// 13. Code Editor
 // -------------------------
-
-.alert-info h4:before {
-    content: "\f05a";
-    font-family: FontAwesome;
+.code-editor {
+   position: relative; 
 }
 
 // 14. Labels
@@ -873,6 +892,7 @@ div.tagsinput
 
 // 15. Datepicker
 // -------------------------
+
 .datepicker {
     padding: 10px;
 
@@ -1087,7 +1107,7 @@ div.tagsinput
     }
 }
 
-// 17. Time Picker
+// 17. Upload Controls
 // -------------------------
 
 .imageupload-group {
@@ -1179,7 +1199,7 @@ div.tagsinput
                 -webkit-font-smoothing: antialiased;
                 margin-left: 42px;
                 position: absolute;
-                top: 14px;
+                top: 4px;
                 left: 0;
             }
 
@@ -1225,25 +1245,10 @@ div.tagsinput
     }
 }
 
-// 16. Actions
-// -------------------------
 
-fieldset .actions {
-    margin-top: 12px; 
-}
-
-// 17. Code Editor
-// -------------------------
-.code-editor {
-   position: relative; 
-}
 
 // 18. Update Panel Status
 // -------------------------
-
-//.updateprogress-bg {
-//
-//}
 
 .updateprogress-status {
     position: fixed; 
@@ -1315,6 +1320,23 @@ fieldset .actions {
 
 // 19. Group List
 // -------------------------
+
+// 20. Well Messages
+// -------------------------
+.well-message {
+    text-align: center;
+    background-color: @accent-light-color;
+    border: 1px solid darken(@accent-light-color, 5%);
+
+    h1 {
+        font-size: 38px;
+    }
+
+    i {
+        font-size: 84px;
+        margin: 12px 0;
+    }
+}
     
 ul.groupmembers {
     list-style: none;
@@ -1353,7 +1375,7 @@ ul.groupmembers {
     }
 }
 
-// 20. Security Controls
+// 21. Security Controls
 // -------------------------
 
 .loginstatus {
@@ -1367,7 +1389,7 @@ ul.groupmembers {
     }
 }
    
-// 21. Rock List
+// 22. Rock List
 // -------------------------
 
 ul.rocklist {
@@ -1420,7 +1442,7 @@ ul.rocklist {
 }
 
 
-// 22. TypeAhead Support
+// 23. TypeAhead Support
 // -------------------------
 
 .twitter-typeahead .tt-query,
@@ -1471,13 +1493,13 @@ ul.rocklist {
   margin: 0;
 }
 
-// 23. Image Cropper
+// 24. Image Cropper
 // -------------------------
 .image-editor-photo {
     width: 150px;
     position: relative;
 
-    img {
+    .image-container {
         width: 150px;
         height: 150px;
         border: 3px solid @accent-bold-color;
@@ -1533,4 +1555,19 @@ ul.rocklist {
 							
 .image-editor-photo .options a:first-child {
 	margin-left: 0;
+}
+
+// 25. Active Users
+// -------------------------
+
+.recent {
+    i {
+        color: @brand-success;
+    }
+}
+
+.not-recent {
+    i {
+        color: @brand-warning;
+    }
 }

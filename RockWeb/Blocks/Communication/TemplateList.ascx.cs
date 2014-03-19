@@ -116,33 +116,30 @@ namespace RockWeb.Blocks.Communication
             switch ( e.Key )
             {
                 case "Channel":
-
-                    int entityTypeId = 0;
-                    if ( int.TryParse( e.Value, out entityTypeId ) )
                     {
-                        var entity = EntityTypeCache.Read( entityTypeId );
+                        var entity = EntityTypeCache.Read( e.Value.AsGuid() );
                         if ( entity != null )
                         {
                             e.Value = entity.FriendlyName;
                         }
+
+                        break;
                     }
-
-                    break;
-
                 case "Owner":
-
-                    int personId = 0;
-                    if ( int.TryParse( e.Value, out personId ) && personId != 0 )
                     {
-                        var personService = new PersonService();
-                        var person = personService.Get( personId );
-                        if ( person != null )
+                        int personId = 0;
+                        if ( int.TryParse( e.Value, out personId ) && personId != 0 )
                         {
-                            e.Value = person.FullName;
+                            var personService = new PersonService();
+                            var person = personService.Get( personId );
+                            if ( person != null )
+                            {
+                                e.Value = person.FullName;
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
             }
         }
 

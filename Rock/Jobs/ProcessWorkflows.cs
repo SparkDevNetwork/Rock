@@ -29,8 +29,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the persisted active workflows
     /// </summary>
-    /// <author>David Turner</author>
-    /// <author>Spark Development Network</author>
     public class ProcessWorkflows : IJob
     {
         /// <summary> 

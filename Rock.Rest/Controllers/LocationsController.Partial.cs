@@ -39,11 +39,11 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "LocationGeocode",
-                routeTemplate: "api/locations/geocode",
+                routeTemplate: "api/locations/verify",
                 defaults: new
                 {
                     controller = "locations",
-                    action = "geocode"
+                    action = "verify"
                 } );
 
             routes.MapHttpRoute(
@@ -72,31 +72,12 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPut]
-        public Location Geocode( Location location )
+        public Location Verify( Location location )
         {
             if ( location != null )
             {
                 var locationService = new LocationService();
-                locationService.Geocode( location, GetPersonAlias() );
-                return location;
-            }
-
-            throw new HttpResponseException( HttpStatusCode.BadRequest );
-        }
-
-        /// <summary>
-        /// Standardize an location
-        /// </summary>
-        /// <param name="location"></param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpPut]
-        public Location Standardize( Location location )
-        {
-            if ( location != null )
-            {
-                var locationService = new LocationService();
-                locationService.Standardize( location, GetPersonAlias() );
+                locationService.Verify( location, GetPersonAlias(), false );
                 return location;
             }
 

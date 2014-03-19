@@ -23,28 +23,33 @@ using Rock.Attribute;
 using Rock.ServiceObjects.GeoCoder;
 using Rock.Web.UI;
 
-namespace Rock.Address.Geocode
+namespace Rock.Address
 {
     /// <summary>
     /// Geocoder service from <a href="http://www.serviceobjects.com">ServiceObjects</a>
     /// </summary>
     [Description("Service Objects Geocoding service")]
-    [Export( typeof( GeocodeComponent ) )]
+    [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "ServiceObjects" )]
     [TextField( "License Key", "The Service Objects License Key" )]
-    public class ServiceObjects : GeocodeComponent
+    public class ServiceObjects : VerificationComponent
     {
         /// <summary>
         /// Geocodes the specified address.
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="result">The ServiceObjects result.</param>
+        /// <param name="reVerify">Should location be reverified even if it has already been succesfully verified</param>
+        /// <param name="result">The result code unique to the service.</param>
         /// <returns>
-        /// True/False value of whether the address was standardized succesfully
+        /// True/False value of whether the address was geocoded succesfully
         /// </returns>
-        public override bool Geocode( Rock.Model.Location location, out string result )
+        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
         {
-            if ( location != null )
+            bool verified = false;
+            result = string.Empty;
+
+            if ( location != null &&
+                (!location.GeocodeAttemptedDateTime.HasValue || reVerify))
             {
                 string licenseKey = GetAttributeValue("LicenseKey");
 
@@ -60,19 +65,22 @@ namespace Rock.Address.Geocode
 
                 result = location_match.Level;
 
+                location.GeocodeAttemptedServiceType = "ServiceObjects";
+                location.GeocodeAttemptedDateTime = RockDateTime.Now;
+                location.GeocodeAttemptedResult = result;
+
                 if ( location_match.Level == "S" || location_match.Level == "P" )
                 {
                     double latitude = double.Parse( location_match.Latitude );
                     double longitude = double.Parse( location_match.Longitude );
                     location.SetLocationPointFromLatLong(latitude, longitude);
-
-                    return true;
+                    location.GeocodedDateTime = RockDateTime.Now;
+                    verified = true;
                 }
-            }
-            else
-                result = "Null Address";
 
-            return false;
+            }
+
+            return verified;
         }
     }
 }

@@ -19,22 +19,23 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Configuration;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using System.Security.Cryptography;
+using System.Text;
 using Rock.Data;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts 
+    /// Represents a relationship between a person and a bank account in Rock. A person can be related to multiple bank accounts
     /// but a bank account can only be related to an individual person in Rock.
     /// </summary>
     [Table( "FinancialPersonBankAccount" )]
     [DataContract]
     public partial class FinancialPersonBankAccount : Model<FinancialPersonBankAccount>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -46,16 +47,15 @@ namespace Rock.Model
         [DataMember]
         public int PersonId { get; set; }
 
-
         /// <summary>
-        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash so that it can be matched without being known
         /// Enables a match of a Check Account to Person ( or Persons if multiple persons share a checking account) can be made
         /// </summary>
         /// <value>
         /// AccountNumberSecured.
         /// </value>
         [Required]
-        [MaxLength( 40 )]
+        [MaxLength( 128 )]
         public string AccountNumberSecured { get; set; }
 
         #endregion
@@ -85,12 +85,42 @@ namespace Rock.Model
             return this.AccountNumberSecured.ToStringSafe();
         }
 
-        #endregion
+        /// <summary>
+        /// Encodes the account number.
+        /// </summary>
+        /// <param name="routingNumber">The routing number.</param>
+        /// <param name="accountNumber">The account number.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Configuration.ConfigurationErrorsException">Account encoding requires a 'PasswordKey' app setting</exception>
+        public static string EncodeAccountNumber( string routingNumber, string accountNumber )
+        {
+            var passwordKey = ConfigurationManager.AppSettings["PasswordKey"];
+            if ( String.IsNullOrWhiteSpace( passwordKey ) )
+            {
+                throw new ConfigurationErrorsException( "Account encoding requires a 'PasswordKey' app setting" );
+            }
 
+            byte[] encryptionKey = HexToByte( passwordKey );
+
+            HMACSHA1 hash = new HMACSHA1();
+            hash.Key = encryptionKey;
+
+            string toHash = string.Format( "{0}|{1}", routingNumber, accountNumber );
+            return Convert.ToBase64String( hash.ComputeHash( Encoding.Unicode.GetBytes( toHash ) ) );
+        }
+
+        private static byte[] HexToByte( string hexString )
+        {
+            byte[] returnBytes = new byte[hexString.Length / 2];
+            for ( int i = 0; i < returnBytes.Length; i++ )
+                returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
+            return returnBytes;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
-
 
     /// <summary>
     /// FinancialPersonBankAccount Configuration class.
@@ -107,5 +137,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

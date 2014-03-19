@@ -88,12 +88,6 @@ table.server-variables
 }
 
 
-.persondetails-header .photo a {
-    cursor: -webkit-zoom-in;
-    cursor: -moz-zoom-in;    
-}
-
-
 
 /* text between input elements in dataview filters - DT */
 span.data-view-filter-label {
@@ -163,21 +157,8 @@ span.data-view-filter-label {
     display: none;
 }
 
-
-/* DT - Person Picker */
-li.picker-select-item div.person-image {
-    border:3px solid #8498ab;
-    float:left;
-    margin-right: 7.5px;
-    display: inline-block;
-    width: 70px;
-    height: 70px;
+/* DT Make the header of the merge field columns have a pointer since it can be used to select checkbox */
+.merge-personselect .merge-header-summary {
+    cursor:pointer;
 }
 
-/* MP - ImageEditor using div background image instead of img*/
-.image-editor-photo .person-image
-{
-    width: 150px;
-    height: 150px;
-    border:3px solid #8498ab;
-}

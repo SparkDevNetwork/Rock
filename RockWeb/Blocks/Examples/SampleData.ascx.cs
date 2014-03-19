@@ -90,17 +90,17 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Holds a cached copy of the "start time" DateTime for any scheduleIds this block encounters.
         /// </summary>
-        private Dictionary<int, DateTime> scheduleTimes = new Dictionary<int, DateTime>();
+        private Dictionary<int, DateTime> _scheduleTimes = new Dictionary<int, DateTime>();
 
         /// <summary>
         /// Holds a cached copy of the Id for each person Guid
         /// </summary>
-        private Dictionary<Guid, int> peopleDictionary = new Dictionary<Guid, int>();
+        private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
         /// Holds a cached copy of the location Id for each family Guid
         /// </summary>
-        private Dictionary<Guid, int> familyLocationDictionary = new Dictionary<Guid, int>();
+        private Dictionary<Guid, int> _familyLocationDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -324,8 +324,8 @@ namespace RockWeb.Blocks.Examples
 
                 Guid personGuid = elemRelationship.Attribute( "personGuid" ).Value.Trim().AsGuid();
                 Guid forGuid = elemRelationship.Attribute( "forGuid" ).Value.Trim().AsGuid();
-                int ownerPersonId = peopleDictionary[personGuid];
-                int forPersonId = peopleDictionary[forGuid];
+                int ownerPersonId = _peopleDictionary[personGuid];
+                int forPersonId = _peopleDictionary[forGuid];
 
                 string rType = elemRelationship.Attribute( "has" ).Value.Trim();
   
@@ -502,9 +502,9 @@ namespace RockWeb.Blocks.Examples
                 foreach ( var p in family.Members )
                 {
                     // Put the person's id into the people dictionary for later use.
-                    if ( !peopleDictionary.ContainsKey( p.Person.Guid ) )
+                    if ( !_peopleDictionary.ContainsKey( p.Person.Guid ) )
                     {
-                        peopleDictionary.Add( p.Person.Guid, p.PersonId );
+                        _peopleDictionary.Add( p.Person.Guid, p.PersonId );
                     }
                 }
             }
@@ -579,13 +579,13 @@ namespace RockWeb.Blocks.Examples
                         IsMappedLocation = false,
                         IsMailingLocation = false,
                         GroupLocationTypeValueId = meetingLocationValueId,
-                        LocationId = familyLocationDictionary[elemGroup.Attribute( "meetsAtHomeOfFamily" ).Value.AsGuid()],
+                        LocationId = _familyLocationDictionary[elemGroup.Attribute( "meetsAtHomeOfFamily" ).Value.AsGuid()],
                     };
 
                     // Set the group location's GroupMemberPersonId if given (required?)
                     if ( elemGroup.Attribute( "meetsAtHomeOfPerson" ) != null )
                     {
-                        groupLocation.GroupMemberPersonId = peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
+                        groupLocation.GroupMemberPersonId = _peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
                     }
                     group.GroupLocations.Add( groupLocation );
                 }
@@ -612,7 +612,7 @@ namespace RockWeb.Blocks.Examples
                     GroupMember groupMember = new GroupMember();
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                     groupMember.GroupRoleId = roleId ?? -1;
-                    groupMember.PersonId = peopleDictionary[personGuid];
+                    groupMember.PersonId = _peopleDictionary[personGuid];
                     group.Members.Add( groupMember );
                 }
 
@@ -800,14 +800,20 @@ namespace RockWeb.Blocks.Examples
                 int.TryParse( elemFamily.Attribute( "percentAttendedRegularService" ).Value.Trim(), out pctAttendedRegularService );
             }
 
-            int scheduleId = 3;
+            int scheduleId = 13;
             if ( elemFamily.Attribute( "attendingScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingScheduleId" ).Value.Trim(), out scheduleId );
-                if ( ! scheduleTimes.ContainsKey(scheduleId) )
+                if ( ! _scheduleTimes.ContainsKey(scheduleId) )
                 {
                     Schedule schedule = new ScheduleService().Get( scheduleId );
-                    scheduleTimes.Add( scheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    if ( schedule == null )
+                    {
+                        // We're not going to continue if they are missing this schedule
+                        return;
+                    }
+
+                    _scheduleTimes.Add( scheduleId, schedule.GetCalenderEvent().DTStart.Value );
                 }
             }
 
@@ -815,10 +821,16 @@ namespace RockWeb.Blocks.Examples
             if ( elemFamily.Attribute( "attendingAltScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value.Trim(), out altScheduleId );
-                if ( ! scheduleTimes.ContainsKey( altScheduleId ) )
+                if ( ! _scheduleTimes.ContainsKey( altScheduleId ) )
                 {
                     Schedule schedule = new ScheduleService().Get( altScheduleId );
-                    scheduleTimes.Add( altScheduleId, schedule.GetCalenderEvent().DTStart.Value );
+                    if ( schedule == null )
+                    {
+                        // We're not going to continue if they are missing this schedule
+                        return;
+                    }
+
+                    _scheduleTimes.Add( altScheduleId, schedule.GetCalenderEvent().DTStart.Value );
                 }
             }
 
@@ -861,7 +873,7 @@ namespace RockWeb.Blocks.Examples
                 int plusMinus = ( _random.Next( 0, 4 ) == 0 ) ? 1 : -1;
                 int randomSeconds = _random.Next( 0, 60 );
 
-                var time = scheduleTimes[serviceSchedId];
+                var time = _scheduleTimes[serviceSchedId];
 
                 DateTime dtTime = new DateTime( date.Year, date.Month, date.Day, time.Hour, time.Minute, time.Second );
                 DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
@@ -1242,9 +1254,9 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Put the location id into the dictionary for later use.
-                if ( location != null && !familyLocationDictionary.ContainsKey( family.Guid ) )
+                if ( location != null && !_familyLocationDictionary.ContainsKey( family.Guid ) )
                 {
-                    familyLocationDictionary.Add( family.Guid, location.Id );
+                    _familyLocationDictionary.Add( family.Guid, location.Id );
                 }
             }
         }

@@ -126,6 +126,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName = new RockTextBox();
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
             tbFromName.Label = "From Name";
+            tbFromName.Required = true;
             Controls.Add( tbFromName );
 
             tbFromAddress = new RockTextBox();
@@ -142,6 +143,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
+            tbSubject.Required = true;
             Controls.Add( tbSubject );
 
             htmlMessage = new HtmlEditor();
@@ -170,6 +172,28 @@ namespace Rock.Web.UI.Controls.Communication
             fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public override string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return tbFromName.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                tbFromName.ValidationGroup = value;
+                tbFromAddress.ValidationGroup = value;
+                tbSubject.ValidationGroup = value;
+            }
         }
 
         /// <summary>

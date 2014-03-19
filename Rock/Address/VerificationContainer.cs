@@ -26,30 +26,49 @@ using Rock.Extension;
 namespace Rock.Address
 {
     /// <summary>
-    /// Singleton class that uses MEF to load and cache all of the GeocodeComponent classes
+    /// Singleton class that uses MEF to load and cache all of the VerificationComponent classes
     /// </summary>
-    public class GeocodeContainer : Container<GeocodeComponent, IComponentData>
+    public class VerificationContainer : Container<VerificationComponent, IComponentData>
     {
         #region Singleton Support
 
-        private static GeocodeContainer instance;
+        private static VerificationContainer instance;
 
         /// <summary>
         /// Gets the instance.
         /// </summary>
-        public static GeocodeContainer Instance
+        public static VerificationContainer Instance
         {
             get
             {
                 if ( instance == null )
-                    instance = new GeocodeContainer();
+                    instance = new VerificationContainer();
                 return instance;
             }
         }
 
-        private GeocodeContainer()
+        private VerificationContainer()
         {
             Refresh();
+        }
+
+        /// <summary>
+        /// Gets the component.
+        /// </summary>
+        /// <param name="verificationComponentType">Type of the verification component.</param>
+        /// <returns></returns>
+        public static VerificationComponent GetComponent( Type verificationComponentType )
+        {
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.TypeName == verificationComponentType.FullName )
+                {
+                    return component;
+                }
+            }
+
+            return null;
         }
 
         #endregion
@@ -58,8 +77,8 @@ namespace Rock.Address
 
         // MEF Import Definition
 #pragma warning disable
-        [ImportMany( typeof( GeocodeComponent ) )]
-        protected override IEnumerable<Lazy<GeocodeComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof( VerificationComponent ) )]
+        protected override IEnumerable<Lazy<VerificationComponent, IComponentData>> MEFComponents { get; set; }
 #pragma warning restore
 
         #endregion

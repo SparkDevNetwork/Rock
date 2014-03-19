@@ -62,13 +62,13 @@ namespace Rock.PersonProfile.Badge
                 
                 Guid groupTypeId = new Guid(GetAttributeValue(badge, "GroupType"));
 
-                writer.Write(String.Format("<div class='badge badge-ingroupoftype' data-original-title=''>"));
+                writer.Write(String.Format("<div class='badge badge-ingroupoftype badge-id-{0}' data-original-title=''>", badge.Id));
 
                 writer.Write("</div>");
 
-                writer.Write(String.Format(@"
+                writer.Write(String.Format( @"
                     <script>
-                        $( document ).ready(function() {{
+                        Sys.Application.add_load(function () {{
                                                 
                             $.ajax({{
                                     type: 'GET',
@@ -89,15 +89,15 @@ namespace Rock.PersonProfile.Badge
                                                 badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\' style=\'color: {2}\'></i>';
                                                 var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
                                             }}
-                                            $('.badge-ingroupoftype').html(badgeHtml);
-                                            $('.badge-ingroupoftype').attr('data-original-title', labelText);
+                                            $('.badge-ingroupoftype.badge-id-{3}').html(badgeHtml);
+                                            $('.badge-ingroupoftype.badge-id-{3}').attr('data-original-title', labelText);
                                         }}
                                     }},
                             }});
                         }});
                     </script>
                 
-                ", Person.Id.ToString(), groupTypeId.ToString(), badgeColor));
+                ", Person.Id.ToString(), groupTypeId.ToString(), badgeColor, badge.Id));
             }
 
         }

@@ -371,6 +371,7 @@ namespace RockWeb.Blocks.Communication
                 phContent.Controls.Clear();
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
+                channelControl.ValidationGroup = btnSave.ValidationGroup;
                 phContent.Controls.Add( channelControl );
 
                 if ( setData  )

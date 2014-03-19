@@ -18,7 +18,7 @@
                     <asp:BoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" />
                     <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
                     <asp:BoundField DataField="Block" HeaderText="Block"  SortExpression="Block" />
-                    <asp:BoundField DataField="BlockId" HeaderText="Block Id" SortExpression="BlockId" />
+                    <asp:BoundField DataField="BlockId" HeaderText="Block Id" SortExpression="BlockId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <asp:BoundField DataField="Content" HeaderText="Content" SortExpression="Content" />
                     <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" CssClass="switch-mini" Enabled="True" OnText="Yes" OffText="No" OnCheckedChanged="gContentList_CheckedChanged" SortExpression="IsApproved" />
                     <asp:BoundField DataField="ApprovedByPerson" HeaderText="Approved By" SortExpression="ApprovedByPerson" />
