@@ -12,11 +12,11 @@
             ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="rGridGivingProfile_Edit">
             <Columns>
                 <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
-                <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                 <Rock:DateField DataField="StartDate" HeaderText="Starting" />
                 <Rock:DateField DataField="EndDate" HeaderText="Ending" />
-                <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right"/>
+                <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                 <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" />
                 <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
                 <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />

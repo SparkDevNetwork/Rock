@@ -740,6 +740,38 @@
     <Compile Include="Migrations\201403121226203_PersonViewedAlias.Designer.cs">
       <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.cs" />
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.Designer.cs">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.cs" />
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.Designer.cs">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403131829216_FixAdultMembersDataView.cs" />
+    <Compile Include="Migrations\201403131829216_FixAdultMembersDataView.Designer.cs">
+      <DependentUpon>201403131829216_FixAdultMembersDataView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403141842057_CommunicationJob.cs" />
+    <Compile Include="Migrations\201403141842057_CommunicationJob.Designer.cs">
+      <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.cs" />
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.Designer.cs">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403171556065_AddFamilyAttribute.cs" />
+    <Compile Include="Migrations\201403171556065_AddFamilyAttribute.Designer.cs">
+      <DependentUpon>201403171556065_AddFamilyAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403171835360_IncreaseAccountNumberLength.cs" />
+    <Compile Include="Migrations\201403171835360_IncreaseAccountNumberLength.Designer.cs">
+      <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.cs" />
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.Designer.cs">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1275,6 +1307,30 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403121226203_PersonViewedAlias.resx">
       <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131239078_FixPersonMerge.resx">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.resx">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131829216_FixAdultMembersDataView.resx">
+      <DependentUpon>201403131829216_FixAdultMembersDataView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403141842057_CommunicationJob.resx">
+      <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.resx">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403171556065_AddFamilyAttribute.resx">
+      <DependentUpon>201403171556065_AddFamilyAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403171835360_IncreaseAccountNumberLength.resx">
+      <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403180042036_AddressVerificationService.resx">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

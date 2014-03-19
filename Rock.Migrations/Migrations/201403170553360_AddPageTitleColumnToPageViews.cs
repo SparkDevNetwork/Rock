@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Extension;
-
-namespace Rock.Address
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// The base class for all address geocoding components
+    ///
     /// </summary>
-    public abstract class GeocodeComponent : Component
+    public partial class AddPageTitleColumnToPageViews : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Abstract method for geocoding the specified address.  Derived classes should implement
-        /// this method to geocode the address.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="result">The result code unique to the service.</param>
-        /// <returns>
-        /// True/False value of whether the address was standardized succesfully
-        /// </returns>
-        public abstract bool Geocode( Rock.Model.Location location, out string result );
+        public override void Up()
+        {
+            AddColumn("dbo.PageView", "PageTitle", c => c.String(maxLength: 500));
+        }
+        
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            DropColumn("dbo.PageView", "PageTitle");
+        }
     }
-
 }

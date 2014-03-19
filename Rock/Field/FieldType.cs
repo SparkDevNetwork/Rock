@@ -51,6 +51,14 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
+
+        /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
         /// <param name="value">The value.</param>

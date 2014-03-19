@@ -20,28 +20,33 @@ using Rock.Attribute;
 using Rock.MelissaData.AddressCheck;
 using Rock.Web.UI;
 
-namespace Rock.Address.Standardize
+namespace Rock.Address
 {
     /// <summary>
     /// The AddressCheck service from <a href="http://www.melissadata.com/">Melissa Data</a>
     /// </summary>
     [Description( "Address Standardization service from Melissa Data" )]
-    [Export( typeof( StandardizeComponent ) )]
+    [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "MelissaData" )]
     [TextField( "Customer Id", "The Melissa Data Customer ID", true, "", "Security" )]
-    public class MelissaData : StandardizeComponent
+    public class MelissaData : VerificationComponent
     {
         /// <summary>
         /// Standardizes the address
         /// </summary>
         /// <param name="location">The location.</param>
-        /// <param name="result">The AddressCheck result code</param>
+        /// <param name="reVerify">Should location be reverified even if it has already been succesfully verified</param>
+        /// <param name="result">The result code unique to the service.</param>
         /// <returns>
         /// True/False value of whether the address was standardized succesfully
         /// </returns>
-        public override bool Standardize( Rock.Model.Location location, out string result )
+        public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
         {
-            if ( location != null )
+            bool verified = false;
+            result = string.Empty;
+
+            if ( location != null && 
+                (!location.StandardizedDateTime.HasValue || reVerify ) )
             {
                 var requestArray = new RequestArray();
                 requestArray.CustomerID = GetAttributeValue("CustomerId");
@@ -77,16 +82,21 @@ namespace Rock.Address.Standardize
                             responseAddress.Suite.Trim() != string.Empty )
                             location.Street2 = responseAddress.Suite;
 
-                        return true;
+                        location.StandardizedDateTime = RockDateTime.Now;
+                        verified = true;
                     }
                 }
                 else
+                {
                     result = "No Records Returned";
-            }
-            else
-                result = "Null Address";
+                }
 
-            return false;
+                location.StandardizeAttemptedServiceType = "MelissaData";
+                location.StandardizeAttemptedDateTime = RockDateTime.Now;
+                location.StandardizeAttemptedResult = result;
+            }
+
+            return verified;
         }
     }
 }

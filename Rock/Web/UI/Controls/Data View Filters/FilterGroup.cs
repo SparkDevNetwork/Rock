@@ -54,6 +54,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the data view filter unique identifier.
+        /// </summary>
+        /// <value>
+        /// The data view filter unique identifier.
+        /// </value>
+        public Guid DataViewFilterGuid
+        {
+            get
+            {
+                return ViewState["DataViewFilterGuid"] as Guid? ?? Guid.NewGuid();
+            }
+
+            set
+            {
+                ViewState["DataViewFilterGuid"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the type of the filter.
         /// </summary>
         /// <value>

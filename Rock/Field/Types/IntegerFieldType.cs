@@ -26,6 +26,17 @@ namespace Rock.Field.Types
     public class IntegerFieldType : FieldType
     {
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public override System.Web.UI.WebControls.HorizontalAlign AlignValue
+        {
+            get
+            {
+                return System.Web.UI.WebControls.HorizontalAlign.Right;
+            }
+        }
+
+        /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
         /// </summary>
         /// <param name="value"></param>

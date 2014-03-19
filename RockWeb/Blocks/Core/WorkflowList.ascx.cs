@@ -201,6 +201,13 @@ namespace RockWeb.Blocks.Core
                     boundField.DataField = dataFieldExpression;
                     boundField.HeaderText = item.Name;
                     boundField.SortExpression = string.Empty;
+                    
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( item.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
                     int insertPos = gWorkflows.Columns.IndexOf( gWorkflows.Columns.OfType<DeleteField>().First() );
                     gWorkflows.Columns.Insert( insertPos, boundField );
                 }

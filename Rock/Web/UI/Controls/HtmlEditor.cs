@@ -259,6 +259,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the document folder root.
+        /// Defaults to ~/Content
         /// </summary>
         /// <value>
         /// The document folder root.
@@ -267,7 +268,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["DocumentFolderRoot"] as string;
+                var result = ViewState["DocumentFolderRoot"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = "~/Content";
+                }
+
+                return result;
             }
 
             set
@@ -278,6 +285,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the image folder root.
+        /// Defaults to ~/Content
         /// </summary>
         /// <value>
         /// The image folder root.
@@ -286,7 +294,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ImageFolderRoot"] as string;
+                var result = ViewState["ImageFolderRoot"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = "~/Content";
+                }
+
+                return result;
             }
 
             set
@@ -487,17 +501,41 @@ CKEDITOR.replace('{0}', {{
                 enabledPlugins.Add( "rockmergefield" );
             }
 
-            enabledPlugins.Add( "rockfilebrowser" );
+            // only show the File/Image plugin if they have Auth to the file browser page
+            var fileBrowserPage = new Rock.Model.PageService().Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            if ( fileBrowserPage != null )
+            {
+                var currentPerson = this.RockBlock().CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    if ( fileBrowserPage.IsAuthorized( "View", currentPerson ) )
+                    {
+                        enabledPlugins.Add( "rockfilebrowser" );
+                    }
+                }
+            }
 
             var globalAttributesCache = GlobalAttributesCache.Read();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
 
+            string documentFolderRoot = this.DocumentFolderRoot;
+            string imageFolderRoot = this.ImageFolderRoot;
+            if ( this.UserSpecificRoot )
+            {
+                var currentUser = this.RockBlock().CurrentUser;
+                if ( currentUser != null )
+                {
+                    documentFolderRoot = System.Web.VirtualPathUtility.Combine( documentFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                    imageFolderRoot = System.Web.VirtualPathUtility.Combine( imageFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                }
+            }
+
             string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
                 this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
-                Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
-                Rock.Security.Encryption.EncryptString( this.ImageFolderRoot ),
+                Rock.Security.Encryption.EncryptString( documentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( imageFolderRoot ),
                 imageFileTypeWhiteList,
                 fileTypeBlackList,
                 this.MergeFields.AsDelimited( "," ) );

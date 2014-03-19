@@ -28,7 +28,9 @@
                         DataField="Id" 
                         HeaderText="Id" 
                         SortExpression="EntityType.FriendlyName" 
-                        ItemStyle-Wrap="false" />
+                        ItemStyle-Wrap="false"
+                        ItemStyle-HorizontalAlign="Right"
+                        HeaderStyle-HorizontalAlign="Right" />
                     <asp:TemplateField ItemStyle-Wrap="false">
                         <HeaderTemplate>Qualifier</HeaderTemplate>
                         <ItemTemplate>

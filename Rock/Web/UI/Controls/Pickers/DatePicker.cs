@@ -83,12 +83,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        /// The mode to start in when first displaying selection window
         /// </summary>
         public enum StartViewOption
         {
+            /// <summary>
+            /// Month
+            /// </summary>
             month = 0,
+
+            /// <summary>
+            /// Year
+            /// </summary>
             year = 1,
+
+            /// <summary>
+            /// Decade
+            /// </summary>
             decade = 2
         }
 

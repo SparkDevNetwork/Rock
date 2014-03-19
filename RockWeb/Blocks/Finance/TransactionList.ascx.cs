@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -230,14 +231,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gTransactions_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var financialTransactionService = new Rock.Model.FinancialTransactionService();
-
-            FinancialTransaction financialTransaction = financialTransactionService.Get( (int)e.RowKeyValue );
-            if ( financialTransaction != null )
+            RockTransactionScope.WrapTransaction( () =>
             {
-                financialTransactionService.Delete( financialTransaction, CurrentPersonAlias );
-                financialTransactionService.Save( financialTransaction, CurrentPersonAlias );
-            }
+                FinancialTransactionService service = new FinancialTransactionService();
+                FinancialTransaction item = service.Get( e.RowKeyId );
+                if ( item != null )
+                {
+                    string errorMessage;
+                    if ( !service.CanDelete( item, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    service.Delete( item, CurrentPersonAlias );
+                    service.Save( item, CurrentPersonAlias );
+                }
+            } );
 
             BindGrid();
         }

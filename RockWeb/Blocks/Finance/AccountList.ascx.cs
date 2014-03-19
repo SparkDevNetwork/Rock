@@ -33,7 +33,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Account List" )]
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
-
     [LinkedPage( "Detail Page" )]
     public partial class AccountList : RockBlock
     {
@@ -51,6 +50,13 @@ namespace RockWeb.Blocks.Finance
 
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rAccountFilter.DisplayFilterValue += rAccountFilter_DisplayFilterValue;
+
+            var campusList = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            if ( campusList.Count > 0 )
+            {
+                ddlCampus.Visible = true;
+                rGridAccount.Columns[3].Visible = true;
+            }
 
             rGridAccount.DataKeyNames = new string[] { "id" };
             rGridAccount.Actions.ShowAdd = canEdit;
@@ -74,7 +80,7 @@ namespace RockWeb.Blocks.Finance
 
             base.OnLoad( e );
         }
-                
+
         #endregion
 
         #region Events
@@ -146,7 +152,7 @@ namespace RockWeb.Blocks.Finance
                 BindGrid();
             }
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the rGridAccount control.
         /// </summary>
@@ -162,7 +168,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        protected void rAccountFilter_DisplayFilterValue(object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void rAccountFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
         }
 
@@ -174,11 +180,12 @@ namespace RockWeb.Blocks.Finance
         protected void rAccountFilter_ApplyFilterClick( object Sender, EventArgs e )
         {
             rAccountFilter.SaveUserPreference( "Account Name", txtAccountName.Text );
+            rAccountFilter.SaveUserPreference( "Campus", txtAccountName.Text );
             rAccountFilter.SaveUserPreference( "Active", ddlIsActive.SelectedValue );
             rAccountFilter.SaveUserPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
             BindGrid();
         }
-        
+
         #endregion
 
         #region Internal Methods
@@ -195,8 +202,14 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.Name.Contains( accountNameFilter ) );
             }
 
+            string campusFilter = rAccountFilter.GetUserPreference( "Campus" );
+            if ( !string.IsNullOrEmpty( campusFilter ) )
+            {
+                accountQuery = accountQuery.Where( account => account.Campus.Name == campusFilter );
+            }
+
             string activeFilter = rAccountFilter.GetUserPreference( "Active" );
-            if ( !string.IsNullOrWhiteSpace(activeFilter) )
+            if ( !string.IsNullOrWhiteSpace( activeFilter ) )
             {
                 accountQuery = accountQuery.Where( account => account.IsActive == ( activeFilter == "Yes" ) );
             }
@@ -224,6 +237,7 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
+            ddlCampus.SelectedValue = rAccountFilter.GetUserPreference( "Campus" );
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
         }

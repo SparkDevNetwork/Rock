@@ -61,6 +61,16 @@
             width: 100%;
             height: auto;
         }
+
+        .fluidbox-ghost {
+            cursor: -webkit-zoom-in;
+            cursor: -moz-zoom-in;
+        }
+
+        .fluidbox-opened .fluidbox-ghost {
+            cursor: -webkit-zoom-out;
+            cursor: -moz-zoom-out;
+        }
     }
 
     .taglist {
@@ -76,7 +86,6 @@
         text-align: center;
         margin-top: @spacing-md-px;
     }
-
 }
 
 
@@ -86,7 +95,7 @@
 .personprofilebar-badge
 {
     background-color: @accent-color;
-    min-height: 67px;
+    min-height: 64px;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
 
     .badge-group {
@@ -95,6 +104,7 @@
 
         .badge { 
             background-color: inherit;
+            padding: 3px 7px 0;
         }
     }
 }
@@ -127,14 +137,14 @@
             display: table-cell;
             vertical-align: bottom;
             height: 40px;
+            width: 15px;
         
             span {
-                margin: 0 1px;
                 display: block;
                 background: @accent-bold-color;
                 position: absolute;
                 bottom: 0;
-                width: 90%;
+                width: 13px;
             }
         }
     }
@@ -465,11 +475,11 @@ span.field-value {
 
     .merge-header-summary {
         margin-left: 20px;
-    }
 
-    .radio-inline {
-        font-size: 16px;
-        font-weight: @font-weight-bold;
+        i {
+            margin-right: 12px;
+            float: left;
+        }
     }
 
     small {

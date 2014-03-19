@@ -56,6 +56,7 @@ namespace Rock.Web.UI.Controls
 
             _rebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+            this.SelectedValue = null;
             this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
             this.DataBind();
 

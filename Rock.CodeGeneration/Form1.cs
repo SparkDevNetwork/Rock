@@ -387,9 +387,6 @@ order by [parentTable], [columnName]
             // detect associative table where more than one key is referencing the same table.  EF will automatically take care of it on the DELETE
             List<string> parentTablesToIgnore = parentTableColumnNameList.GroupBy( a => a.Table ).Where( g => g.Count() > 1 ).Select( s => s.Key ).ToList();
 
-            // GroupLocation isn't an Entity/Model :(
-            parentTablesToIgnore.Add( "GroupLocation" );
-
             string canDeleteBegin = string.Format( @"
         /// <summary>
         /// Determines whether this instance can delete the specified item.

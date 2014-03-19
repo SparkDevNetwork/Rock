@@ -28,8 +28,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to launch a workflow
     /// </summary>
-    /// <author>Rich Dubay</author>
-    /// <author>Spark Development Network</author>
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
     public class LaunchWorkflow : RockBlock, IJob
     {

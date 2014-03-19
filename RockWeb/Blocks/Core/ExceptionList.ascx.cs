@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Administraton
                 DateValue = eg.Key,
                 ExceptionCount = eg.Count(),
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
-            } ).ToList();
+            } ).OrderBy(eg => eg.DateValue).ToList();
 
             if ( exceptionList.Count > 1 )
             {
@@ -485,7 +485,7 @@ namespace RockWeb.Blocks.Administraton
                             e.CreatedByPersonAlias.Person != null ) ?
                             e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",
                         Description = e.Description
-                    } );
+                    } ).OrderBy(e => e.CreatedDateTime);
 
             if ( gExceptionOccurrences.SortProperty == null )
             {

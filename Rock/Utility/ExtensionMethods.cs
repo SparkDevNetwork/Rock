@@ -595,6 +595,27 @@ namespace Rock
                 return value;
             }
         }
+
+        /// <summary>
+        /// Ensures the trailing backslash. Handy when combining folder paths.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string EnsureTrailingBackslash( this string value)
+        {
+            return value.TrimEnd(new char[] { '\\','/' }) + "\\";
+        }
+
+        /// <summary>
+        /// Ensures the trailing forward slash. Handy when combining url paths.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string EnsureTrailingForwardslash( this string value )
+        {
+            return value.TrimEnd( new char[] { '\\', '/' } ) + "/";
+        }
+
         #endregion
 
         #region Int Extensions
@@ -1494,17 +1515,17 @@ namespace Rock
             for ( int columnIndex = 0; columnIndex < columns.Length; columnIndex++ )
             {
                 string column = columns[columnIndex].Trim();
-                if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+
+                var direction = sortProperty.Direction;
+                if (column.ToLower().EndsWith(" desc"))
+                {
+                    column = column.Left( column.Length - 5 );
+                    direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+                }
+
+                if ( direction == SortDirection.Ascending )
                 {
                     qry = ( columnIndex == 0 ) ? source.OrderBy( column ) : qry.ThenBy( column );
-                    if ( columnIndex == 0 )
-                    {
-                        qry = source.OrderBy( column );
-                    }
-                    else
-                    {
-                        qry = qry.ThenBy( column );
-                    }
                 }
                 else
                 {
