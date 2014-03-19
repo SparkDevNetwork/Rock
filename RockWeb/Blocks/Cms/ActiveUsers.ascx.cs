@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
+using System.Web;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -134,14 +135,21 @@ namespace RockWeb.Blocks.Cms
                             a.pageViews.Any() &&
                             a.pageViews.FirstOrDefault().SiteId == site.Id );
 
+                    if (CurrentUser != null) {
+                        activeLogins.Where(m => m.login.UserName != CurrentUser.UserName);
+                    }
+
                     foreach ( var activeLogin in activeLogins )
-                    {
+                    {                        
                         var login = activeLogin.login;
-                        string pageViews = activeLogin.pageViews.ToList().Select( v => v.Page.PageTitle ).ToList().AsDelimited( ", " );
+                        string pageViews = activeLogin.pageViews.ToList().Select( v => HttpUtility.HtmlEncode(v.Page.PageTitle) ).ToList().AsDelimited( "<br> " );
 
                         TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
-                        sbUsers.Append( String.Format( @"<li class='{0}'><i class='fa-li fa fa-circle'></i> {1} <small>{2}</small></li>",
+
+                        sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
+                                                                <i class='fa-li fa fa-circle'></i> {1}
+                                                        </li>",
                             className, login.Person.FullName, pageViews ) );
                     }
                 }
