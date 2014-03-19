@@ -20,7 +20,30 @@
 	
 	private void Page_Init(object sender, System.EventArgs e)
 	{
-    	this.EnableViewState = false;
+    	this.EnableViewState = true;
+
+        // check that an error has not occurred on Rock startup
+        string exceptionLog = Server.MapPath( "~/App_Data/Logs/RockExceptions.csv" );
+        if ( File.Exists( exceptionLog ) )
+        {
+            StringBuilder exceptionDetails = new StringBuilder();
+            exceptionDetails.Append( "<ul class='list-unstyled'>" );
+
+            var reader = new StreamReader( File.OpenRead( exceptionLog ) );
+            while ( !reader.EndOfStream )
+            {
+                var line = reader.ReadLine();
+                var values = line.Split( ',' );
+
+                exceptionDetails.Append( String.Format( @"<li><i class='fa fa-exclamation-triangle fail'></i> {0} - {1}</li>", values[0], values[2] ) );
+            }
+
+            exceptionDetails.Append( "</ul>" );
+            exceptionDetails.Append( "<div class='alert alert-warning'>Depending on your exception you may need to start over with a fresh install.</div>" );
+
+            ProcessPageException( exceptionDetails.ToString() );
+            lDebug.Text = exceptionDetails.ToString();
+        }
     }
 	
 	void Page_Load(object sender, EventArgs e)
@@ -56,135 +79,158 @@
     
 	void DbConfigNext_Click(Object sender, EventArgs e)
     {
-               
-        // check settings
-    	string databaseMessages = string.Empty; 
-        
-        // write database settings to session
-        if (txtServerName.Text != string.Empty) { 
-            Session["dbServer"] = txtServerName.Text;
-            Session["dbDatabasename"] = txtDatabaseName.Text;
-            Session["dbUsername"] = txtUsername.Text;
-            Session["dbPassword"] = txtPassword.Text;
-        }
-        else
+        try
         {
-            txtServerName.Text = Session["dbServer"].ToString();
-            txtDatabaseName.Text = Session["dbDatabasename"].ToString();
-            txtUsername.Text = Session["dbUsername"].ToString();
-            txtPassword.Text = Session["dbPassword"].ToString();
-        }
+            // check settings
+            //string databaseMessages = string.Empty;
 
-        bool canConnect = EnvironmentChecks.CheckSqlLogin(txtServerName.Text, txtUsername.Text, txtPassword.Text);
-
-    	if (!canConnect) {
-    		lDatabaseMessages.Text = String.Format("<div class='alert alert-warning'>Could not connect to '{0}' as '{1}'.</div>", txtServerName.Text, txtUsername.Text);
-            
-            pWelcome.Visible = false;
-            pDatabaseConfig.Visible = true;
-    		
-            return;
-    	} else {
-
-            lDatabaseMessages.Text = string.Empty;
-            
-		    // run environment checks
-		    string outputMessages = string.Empty;
-		    string checkResults = string.Empty;
-		    bool environmentClean = true;
-		    
-		    // check .Net version
-            if (EnvironmentChecks.CheckDotNetVersion(out checkResults))
+            // write database settings to session
+            if ( txtServerName.Text != string.Empty )
             {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-    			environmentClean = false;
-    		}
-		    
-		    // check web server permissions
-            if (EnvironmentChecks.CheckFileSystemPermissions(Server.MapPath("."), out checkResults))
-            {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-    			environmentClean = false;
-    		}
-
-            // check web server trust level
-            if ( EnvironmentChecks.CheckTrustLevel( out checkResults ) )
-            {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                Session["dbServer"] = txtServerName.Text;
+                Session["dbDatabasename"] = txtDatabaseName.Text;
+                Session["dbUsername"] = txtUsername.Text;
+                Session["dbPassword"] = txtPassword.Text;
             }
             else
             {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerTrust' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-                environmentClean = false;
+                txtServerName.Text = Session["dbServer"].ToString();
+                txtDatabaseName.Text = Session["dbDatabasename"].ToString();
+                txtUsername.Text = Session["dbUsername"].ToString();
+                txtPassword.Text = Session["dbPassword"].ToString();
             }
-    		
-    		// check IIS version
-            if (EnvironmentChecks.CheckIisVersion(Request.ServerVariables["SERVER_SOFTWARE"], out checkResults))
-            {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#CheckIISVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-    			environmentClean = false;
-    		}
-		    
-		    // check sql server environment
-            if (EnvironmentChecks.CheckSqlServer( txtServerName.Text, txtUsername.Text, txtPassword.Text, txtDatabaseName.Text, out checkResults))
-            {
-                outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + "</li>";
-    			environmentClean = false;
-    		}
-    		
-    		// check that rock is not installed already
-            if (EnvironmentChecks.CheckRockNotInstalled(Server.MapPath("."), out checkResults))
-            {
-    			
-    		} else {
-                outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
-    			environmentClean = false;
-    		}
 
-    		// setup environment screen based on results
-		    if (environmentClean) {
-		    	lTestEnvTitle.Text = "Pass!";
-		    	lTestEnvResults.Text = "Your environment passed all tests and looks like a good home for the Rock RMS.  What are we waiting for? Let's get started!!!";
-                lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
-		    	lTestEnvDetails.Text += "<div class='alert alert-info'><strong>Heads Up:</strong> The next step could take a few minutes to run. Don't worry it's normal.</div>";
-		    	btnEnvNext.Visible = true;
-		    	btnTryAgain.Visible = false;
-		    	
-		    	// write db config
-		    	// write config file
-			    string configContents = String.Format(@"<add name=""RockContext"" connectionString=""Data Source={0};Initial Catalog={1}; User Id={2}; password={3};MultipleActiveResultSets=true"" providerName=""System.Data.SqlClient""/>", txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text);
-			    
-			    StreamWriter configFile = new StreamWriter(Server.MapPath("~/web.ConnectionStrings.config"), false);
-			    configFile.WriteLine(@"<?xml version=""1.0""?>");
-			    configFile.WriteLine(@"<connectionStrings>");
-			    configFile.WriteLine("\t" + configContents);
-			    configFile.WriteLine("</connectionStrings>");
-			    configFile.Flush();
-			    configFile.Close(); 
-			    configFile.Dispose();
+            bool canConnect = EnvironmentChecks.CheckSqlLogin( txtServerName.Text, txtUsername.Text, txtPassword.Text );
 
-		    } else {
-		    	lTestEnvTitle.Text = "We Have Some Work To Do";
-		    	lTestEnvResults.Text = "The server environment doesn't currently meet all of the requirements.  That's OK, we'll try to help you solve the issues.";
-                lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
-		    	btnEnvNext.Visible = false;
-		    	btnTryAgain.Visible = true;
-		    }
+            if ( !canConnect )
+            {
+                lDatabaseMessages.Text = String.Format( "<div class='alert alert-warning'>Could not connect to '{0}' as '{1}'.</div>", txtServerName.Text, txtUsername.Text );
 
-		    // move to next step
-		    pTestEnv.Visible = true;
-		    pDatabaseConfig.Visible = false;
-		    pWelcome.Visible = false;
-		    
-		}
+                pWelcome.Visible = false;
+                pDatabaseConfig.Visible = true;
+
+                return;
+            }
+            else
+            {
+
+                lDatabaseMessages.Text = string.Empty;
+
+                // run environment checks
+                string outputMessages = string.Empty;
+                string checkResults = string.Empty;
+                bool environmentClean = true;
+
+                // check .Net version
+                if ( EnvironmentChecks.CheckDotNetVersion( out checkResults ) )
+                {
+                    outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                    environmentClean = false;
+                }
+
+                // check web server permissions
+                if ( EnvironmentChecks.CheckFileSystemPermissions( Server.MapPath( "." ), out checkResults ) )
+                {
+                    outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerPermissions' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                    environmentClean = false;
+                }
+
+                // check web server trust level
+                if ( EnvironmentChecks.CheckTrustLevel( out checkResults ) )
+                {
+                    outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#WebServerTrust' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                    environmentClean = false;
+                }
+
+                // check IIS version
+                if ( EnvironmentChecks.CheckIisVersion( Request.ServerVariables["SERVER_SOFTWARE"], out checkResults ) )
+                {
+                    outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#CheckIISVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                    environmentClean = false;
+                }
+
+                // check sql server environment
+                if ( EnvironmentChecks.CheckSqlServer( txtServerName.Text, txtUsername.Text, txtPassword.Text, txtDatabaseName.Text, out checkResults ) )
+                {
+                    outputMessages += "<li><i class='fa fa-check-circle pass'></i> " + checkResults + "</li>";
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + "</li>";
+                    environmentClean = false;
+                }
+
+                // check that rock is not installed already
+                if ( EnvironmentChecks.CheckRockNotInstalled( Server.MapPath( "." ), out checkResults ) )
+                {
+
+                }
+                else
+                {
+                    outputMessages += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IsRockInstalledAlready' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+                    environmentClean = false;
+                }
+
+                // setup environment screen based on results
+                if ( environmentClean )
+                {
+                    lTestEnvTitle.Text = "Pass!";
+                    lTestEnvResults.Text = "Your environment passed all tests and looks like a good home for the Rock RMS.  What are we waiting for? Let's get started!!!";
+                    lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
+                    lTestEnvDetails.Text += "<div class='alert alert-info'><strong>Heads Up:</strong> The next step could take a few minutes to run. Don't worry it's normal.</div>";
+                    btnEnvNext.Visible = true;
+                    btnTryAgain.Visible = false;
+
+                    // write db config
+                    // write config file
+                    string configContents = String.Format( @"<add name=""RockContext"" connectionString=""Data Source={0};Initial Catalog={1}; User Id={2}; password={3};MultipleActiveResultSets=true"" providerName=""System.Data.SqlClient""/>", txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text );
+
+                    StreamWriter configFile = new StreamWriter( Server.MapPath( "~/web.ConnectionStrings.config" ), false );
+                    configFile.WriteLine( @"<?xml version=""1.0""?>" );
+                    configFile.WriteLine( @"<connectionStrings>" );
+                    configFile.WriteLine( "\t" + configContents );
+                    configFile.WriteLine( "</connectionStrings>" );
+                    configFile.Flush();
+                    configFile.Close();
+                    configFile.Dispose();
+
+                }
+                else
+                {
+                    lTestEnvTitle.Text = "We Have Some Work To Do";
+                    lTestEnvResults.Text = "The server environment doesn't currently meet all of the requirements.  That's OK, we'll try to help you solve the issues.";
+                    lTestEnvDetails.Text = "<ul class='list-unstyled'>" + outputMessages + "</ul>";
+                    btnEnvNext.Visible = false;
+                    btnTryAgain.Visible = true;
+                }
+
+                // move to next step
+                pTestEnv.Visible = true;
+                pDatabaseConfig.Visible = false;
+                pWelcome.Visible = false;
+
+            }
+        }
+        catch ( Exception ex )
+        {
+            ProcessPageException( ex.Message );
+        }
 	   
     }
     
@@ -249,8 +295,8 @@
         }
         catch ( Exception ex )
         {
-            ProcessPageException( ex.Message );
-            lDownloadDetails.Text += "Exception on Download and web.config update.";
+            //ProcessPageException( ex.Message );
+            lTest.Text += ex.Message;
         }
     	
     }
@@ -351,7 +397,6 @@
 						<asp:Panel id="pDatabaseConfig" Visible="false" runat="server">
 						
 							<h1>Database Configuration</h1>
-						
 							<p>Please provide configuration information to the database below.  This information should come from your server
 							   administrator or hosting provider.</p>
 							
@@ -429,6 +474,8 @@
 						
 					</div>
 				</div>
+
+                <asp:Literal ID="lDebug" runat="server"></asp:Literal>
 			</ContentTemplate>
 		</asp:UpdatePanel>
 		</form>
