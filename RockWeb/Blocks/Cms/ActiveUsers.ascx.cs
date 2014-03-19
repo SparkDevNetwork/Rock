@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Cms
                             a.pageViews.FirstOrDefault().SiteId == site.Id );
 
                     if (CurrentUser != null) {
-                        activeLogins.Where(m => m.login.UserName != CurrentUser.UserName);
+                        activeLogins = activeLogins.Where(m => m.login.UserName != CurrentUser.UserName);
                     }
 
                     foreach ( var activeLogin in activeLogins )
