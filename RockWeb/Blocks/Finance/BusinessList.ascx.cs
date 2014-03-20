@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists all businesses and provides filtering by business name and owner" )]
     [LinkedPage( "Detail Page" )]
-    public partial class Blocks_Finance_BusinessList : Rock.Web.UI.RockBlock
+    public partial class BusinessList : Rock.Web.UI.RockBlock
     {
         #region Control Methods
 
@@ -58,6 +58,24 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Events
+
+        protected void gBusinessList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+
+        }
+        protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+        protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+        protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+
         #endregion
 
         #region Internal Methods
@@ -87,5 +105,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-    }
+}
 }

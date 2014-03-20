@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -28,7 +29,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Business Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
-    public partial class Blocks_Finance_BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
         #endregion
@@ -37,6 +38,28 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue )
+        {
+        }
+
         #endregion
-    }
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+
+        }
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+            {
+                var phoneNumber = new PhoneNumber();
+                phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+            }
+        }
+}
 }
