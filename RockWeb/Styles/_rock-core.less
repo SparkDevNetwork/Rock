@@ -191,8 +191,20 @@ small
     .panel-body {
         background-color: @body-bg;
 
-        .form-group {
+        .form-group.static-control {
+            .clearfix();
+            margin-bottom: 2px;
+
+            label {
+                width: 40%;
+                text-align: right;
+                float: left;
+                padding-right: 12px;
+            }
+
             .form-control-static {
+                width: 60%;
+                float: left;
                 padding-top: 0;
             }
         }

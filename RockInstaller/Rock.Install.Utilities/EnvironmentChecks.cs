@@ -90,16 +90,16 @@ namespace Rock.Install.Utilities
             try
             {
                 File.Create(filename).Dispose();
+
+                if ( File.Exists( filename ) )
+                {
+                    canWrite = true;
+                    File.Delete( filename );
+                }
             }
             catch (Exception ex)
             {
 
-            }
-
-            if (File.Exists(filename))
-            {
-                canWrite = true;
-                File.Delete(filename);
             }
 
             if (!canWrite)

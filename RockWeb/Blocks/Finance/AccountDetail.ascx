@@ -56,6 +56,7 @@
                         <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
                         <Rock:DataTextBox ID="tbPublicName" runat="server"
                             SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
+                        <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                     </div>
                     <div class="col-md-6">                
                         <Rock:DataTextBox ID="tbGLCode" runat="server"
