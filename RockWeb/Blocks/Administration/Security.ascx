@@ -107,7 +107,7 @@
                 </dl>
             </fieldset>
 
-            <div class="actions">
+            <div class="actions margin-t-md">
                 <asp:LinkButton ID="lbAddRole" runat="server" Text="Add" CssClass="btn btn-primary" onclick="lbAddRole_Click"></asp:LinkButton>
                 <asp:LinkButton ID="lbCancelAddRole" runat="server" Text="Cancel" CssClass="btn btn-link" onclick="lbCancelAdd_Click"></asp:LinkButton>
             </div>
