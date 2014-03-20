@@ -369,7 +369,7 @@ namespace Rock.Model
         public static bool IsPasswordValid( string password )
         {
             var globalAttributes = GlobalAttributesCache.Read();
-            string passwordRegex = globalAttributes.GetValue( "PasswordRegex" );
+            string passwordRegex = globalAttributes.GetValue( "PasswordRegularExpression" );
             if ( string.IsNullOrEmpty( passwordRegex ) )
             {
                 return true;

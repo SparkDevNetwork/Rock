@@ -28,15 +28,6 @@ namespace Rock.Install.Utilities
 #endif
 
 
-
-        public static string InternetCheckSite
-        {
-            get
-            {
-                return _internetCheckSite;
-            }
-        }
-
         public static string DotNetVersionRequired
         {
             get

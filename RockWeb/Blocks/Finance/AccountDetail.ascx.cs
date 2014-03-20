@@ -15,19 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.UI.WebControls;
 using Rock;
-using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Constants;
 using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -59,7 +55,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
         }
-                
+
         #endregion
 
         #region Events
@@ -96,6 +92,7 @@ namespace RockWeb.Blocks.Finance
                 account.ParentAccountId = apParentAccount.SelectedValueAsInt();
                 account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
                 account.PublicName = tbPublicName.Text;
+                account.CampusId = cpCampus.SelectedValueAsInt();
 
                 account.GlCode = tbGLCode.Text;
                 account.StartDate = dtpStartDate.SelectedDate;
@@ -122,12 +119,12 @@ namespace RockWeb.Blocks.Finance
 
         #region Internal Methods
 
-        public void ShowDetail(string itemKey, int itemKeyValue)
+        public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = false;
 
-            if (!itemKey.Equals("accountId"))
-            { 
+            if ( !itemKey.Equals( "accountId" ) )
+            {
                 return;
             }
 
@@ -135,7 +132,7 @@ namespace RockWeb.Blocks.Finance
 
             FinancialAccount account = null;
 
-            if (!itemKeyValue.Equals(0))
+            if ( !itemKeyValue.Equals( 0 ) )
             {
                 account = new FinancialAccountService().Get( itemKeyValue );
                 editAllowed = account.IsAuthorized( "Edit", CurrentPerson );
@@ -145,7 +142,7 @@ namespace RockWeb.Blocks.Finance
                 account = new FinancialAccount { Id = 0, IsActive = true };
             }
 
-            if (account == null)
+            if ( account == null )
             {
                 return;
             }
@@ -156,7 +153,7 @@ namespace RockWeb.Blocks.Finance
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if (!editAllowed || !IsUserAuthorized("Edit"))
+            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );
@@ -170,7 +167,6 @@ namespace RockWeb.Blocks.Finance
             {
                 ShowEditDetails( account );
             }
-
         }
 
         private void ShowEditDetails( FinancialAccount account )
@@ -200,13 +196,13 @@ namespace RockWeb.Blocks.Finance
             apParentAccount.SetValue( account.ParentAccount );
             ddlAccountType.SetValue( account.AccountTypeValueId );
             tbPublicName.Text = account.PublicName;
+            cpCampus.SelectedCampusId = account.CampusId;
 
             tbGLCode.Text = account.GlCode;
             cbIsTaxDeductible.Checked = account.IsTaxDeductible;
             dtpStartDate.SelectedDate = account.StartDate;
             dtpEndDate.SelectedDate = account.EndDate;
         }
-
 
         private void ShowReadonlyDetails( FinancialAccount account )
         {
@@ -233,7 +229,11 @@ namespace RockWeb.Blocks.Finance
         private void LoadDropDowns()
         {
             ddlAccountType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
+
+            cpCampus.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampus.Visible = cpCampus.Items.Count > 0;
         }
+
         #endregion
     }
 }
