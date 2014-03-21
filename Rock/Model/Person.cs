@@ -332,6 +332,15 @@ namespace Rock.Model
         public string EmailNote { get; set; }
 
         /// <summary>
+        /// Gets or sets the email preference.
+        /// </summary>
+        /// <value>
+        /// The email preference.
+        /// </value>
+        [DataMember]
+        public EmailPreference EmailPreference { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag that indicates that the Person does not want to receive email.
         /// </summary>
         /// <value>
@@ -1274,6 +1283,27 @@ namespace Rock.Model
         /// </summary>
         [Description( "12th Grade" )]
         Twelfth = 12
+    }
+
+    /// <summary>
+    /// The person's email preference
+    /// </summary>
+    public enum EmailPreference
+    {
+        /// <summary>
+        /// Emails can be sent to person
+        /// </summary>
+        EmailAllowed = 0,
+
+        /// <summary>
+        /// No Mass emails should be sent to person
+        /// </summary>
+        NoMassEmails = 1,
+
+        /// <summary>
+        /// No emails should be sent to person
+        /// </summary>
+        DoNotEmail = 2
     }
 
     #endregion
