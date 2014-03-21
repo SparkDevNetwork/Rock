@@ -28,7 +28,9 @@
                         map.setTilt(45);
 
                         // Display multiple markers on a map
-                        var infoWindow = new google.maps.InfoWindow(), marker, i;
+                        if (showInfoWindow) {
+                            var infoWindow = new google.maps.InfoWindow(), marker, i;
+                        }
 
                         // Loop through our array of markers & place each one on the map
                         $.each(groupData.groups, function (i, group) {
@@ -39,16 +41,18 @@
                             marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
-                                title: group.name
+                                title: htmlDecode(group.name)
                             });
 
                             // Allow each marker to have an info window    
-                            google.maps.event.addListener(marker, 'click', (function (marker, i) {
-                                return function () {
-                                    infoWindow.setContent(groupData.groups[i].name);
-                                    infoWindow.open(map, marker);
-                                }
-                            })(marker, i));
+                            if (showInfoWindow) {
+                                google.maps.event.addListener(marker, 'click', (function (marker, i) {
+                                    return function () {
+                                        infoWindow.setContent(htmlDecode(groupData.groups[i].infowindow));
+                                        infoWindow.open(map, marker);
+                                    }
+                                })(marker, i));
+                            }
 
                             map.fitBounds(bounds);
                        
@@ -59,6 +63,12 @@
                             this.setZoom(14);
                             google.maps.event.removeListener(boundsListener);
                         });
+                    }
+
+                    function htmlDecode(input) {
+                        var e = document.createElement('div');
+                        e.innerHTML = input;
+                        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
                     }
                 });
 
