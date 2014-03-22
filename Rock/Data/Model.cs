@@ -352,18 +352,7 @@ namespace Rock.Data
         }
 
         #endregion
+
     }
 
-    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
-    //    where T : Model<T>, new()
-    //{
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
-    //    /// </summary>
-    //    public RockModelConfiguration()
-    //    {
-    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
-    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
-    //    }
-    //}
 }
