@@ -352,6 +352,9 @@ namespace RockWeb.Blocks.Core
         {
             var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
+
+            modalValue.SubTitle = String.Format( "Id: {0}", valueId );
+
             if ( !valueId.Equals( 0 ) )
             {
                 definedValue = new DefinedValueService().Get( valueId );
