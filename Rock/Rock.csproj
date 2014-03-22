@@ -215,6 +215,7 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Jobs\LocationServicesVerify.cs" />
     <Compile Include="Jobs\LaunchWorkflow.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

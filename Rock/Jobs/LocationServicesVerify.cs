@@ -1,0 +1,80 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Linq;
+
+using Quartz;
+
+using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Attribute;
+using Rock.Model;
+
+namespace Rock.Jobs
+{
+    /// <summary>
+    /// Job to keep a heartbeat of the job process so we know when the jobs stop working
+    /// </summary>
+    [IntegerField("Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
+    [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
+    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful lookup.", true, 200 )]
+    public class LocationServicesVerify : IJob
+    {
+        
+        /// <summary> 
+        /// Empty constructor for job initilization
+        /// <para>
+        /// Jobs require a public empty constructor so that the
+        /// scheduler can instantiate the class whenever it needs.
+        /// </para>
+        /// </summary>
+        public LocationServicesVerify()
+        {
+        }
+        
+        /// <summary> 
+        /// Job that updates the JobPulse setting with the current date/time.
+        /// This will allow us to notify an admin if the jobs stop running.
+        /// 
+        /// Called by the <see cref="IScheduler" /> when a
+        /// <see cref="ITrigger" /> fires that is associated with
+        /// the <see cref="IJob" />.
+        /// </summary>
+        public virtual void  Execute(IJobExecutionContext context)
+        {
+            // get the job map
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+
+            int maxRecords = Int32.Parse( dataMap.GetString( "MaxRecordsPerRun" ) );
+            int throttlePeriod = Int32.Parse( dataMap.GetString( "ThrottlePeriod" ) );
+            int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
+            
+            LocationService locationService = new LocationService();
+            var addresses = locationService.Queryable()
+                                .Where( l => ((l.IsGeoPointLocked != true && l.GeocodedDateTime == null) || l.StandardizedDateTime == null) && l.IsActive == true && l.Street1 != null && l.Zip != null)
+                                .Take( maxRecords ).ToList();
+
+            foreach ( var address in addresses )
+            {
+                locationService.Verify( address, null, false ); // currently not reverifying 
+                locationService.Save( address );
+                System.Threading.Thread.Sleep( throttlePeriod );
+            }
+        }
+
+    }
+}
