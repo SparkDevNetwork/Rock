@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage("Group Detail Page", "Page to use as a link to the group details (optional).", false, "", "", 3)]
     [LinkedPage( "Person Profile Page", "Page to use as a link to the person profile page (optional).", false, "", "", 4 )]
     [BooleanField("Show Map Info Window", "Control whether a info window should be displayed when clicking on a map point.", true, "", 5)]
-    [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (i.e. 'StudyTopic,MeetingTime').", false, "", "", 6 )]
+    [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 6 )]
     [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"<div class='clearfix'>
     <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
