@@ -58,7 +58,7 @@ public partial class error : System.Web.UI.Page
     private void ShowException()
     {
         pnlException.Visible = true;
-
+        
         // get error level
         int errorLevel = 0;
 
@@ -67,19 +67,33 @@ public partial class error : System.Web.UI.Page
             errorLevel = Int32.Parse( Request["error"].ToString() );
         }
 
-        if ( errorLevel == 1 )
+
+        switch ( errorLevel )
         {
-            // check to see if the user is an admin, if so allow them to view the error details
-            var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+            case 1:
+                // check to see if the user is an admin, if so allow them to view the error details
+                var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
-            GroupService service = new GroupService();
-            Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
+                GroupService service = new GroupService();
+                Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
 
-            if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
-            {
-                
+                if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
+                {
 
-                // get exception from Session
+
+                    // get exception from Session
+                    if ( Session["Exception"] != null )
+                    {
+                        // is an admin
+                        lErrorInfo.Text = "<h3>Exception Log:</h3>";
+
+                        ProcessException( (Exception)Session["Exception"], " " );
+                    }
+                }
+                break;
+
+            case 66: // massive errors from global.asax.cs
+
                 if ( Session["Exception"] != null )
                 {
                     // is an admin
@@ -87,11 +101,12 @@ public partial class error : System.Web.UI.Page
 
                     ProcessException( (Exception)Session["Exception"], " " );
                 }
-            }
+                break;
         }
-
+        
         // clear session object
         Session.Remove( "Exception" );
+         
     }
 
     /// <summary>

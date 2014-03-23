@@ -39,7 +39,9 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of active users of a website." )]
     [SiteField("Site", "Site to show current active users for.", true)]
-    [BooleanField("Show Last Pages", "Shows last pages in a tooltip.", true)]
+    [BooleanField( "Show Site Name As Title", "Detmine whether to show the name of the site as a title above the list.", true )]
+    [LinkedPage("Person Profile Page", "Page reference to the person profil page you would like to use as a link. Not providing a reference will suppress the creation of a link.", false)]
+    [IntegerField("Page View Count", "The number of past page views to show on roll-over. A value of 0 will disable the roll-over.", true, 5)]
     public partial class ActiveUsers : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -107,10 +109,18 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
             {
+                int pageViewCount = (int) GetAttributeValue( "PageViewCount" ).AsInteger();
+                if ( pageViewCount == 0 )
+                {
+                    pageViewCount++;
+                }
+                
                 StringBuilder sbUsers = new StringBuilder();
                 
                 var site = SiteCache.Read( (int)GetAttributeValue( "Site" ).AsInteger() );
-                lSiteName.Text = site.Name;
+                lSiteName.Text = "<h4>" + site.Name + "</h4>";
+                lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
+                
                 lMessages.Text = string.Empty;
 
                 using ( new UnitOfWorkScope() )
@@ -129,11 +139,12 @@ namespace RockWeb.Blocks.Cms
                             pageViews = pageViewQry
                                 .Where( v => v.PersonAlias.PersonId == l.PersonId )
                                 .OrderByDescending( v => v.DateTimeViewed )
-                                .Take( 3 )
+                                .Take( pageViewCount )
                         } )
                         .Where( a =>
                             a.pageViews.Any() &&
-                            a.pageViews.FirstOrDefault().SiteId == site.Id );
+                            a.pageViews.FirstOrDefault().SiteId == site.Id
+                        );
 
                     if (CurrentUser != null) {
                         activeLogins = activeLogins.Where(m => m.login.UserName != CurrentUser.UserName);
@@ -142,15 +153,46 @@ namespace RockWeb.Blocks.Cms
                     foreach ( var activeLogin in activeLogins )
                     {                        
                         var login = activeLogin.login;
-                        string pageViews = activeLogin.pageViews.ToList().Select( v => HttpUtility.HtmlEncode(v.Page.PageTitle) ).ToList().AsDelimited( "<br> " );
+                        var pageViews = activeLogin.pageViews.ToList();
+                        Guid? latestSession = pageViews.FirstOrDefault().SessionId;
+
+                        string pageViewsHtml = activeLogin.pageViews.ToList()
+                                                .Where( v => v.SessionId == latestSession )
+                                                .Select( v => HttpUtility.HtmlEncode(v.Page.PageTitle) ).ToList().AsDelimited( "<br> " );
 
                         TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
                         string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
 
-                        sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
+                        // create link to the person
+                        string personLink = login.Person.FullName;
+
+                        if ( GetAttributeValue( "PersonProfilePage" ) != null )
+                        {
+                            string personProfilePage = GetAttributeValue( "PersonProfilePage" );
+                            var pageParams = new Dictionary<string, string>();
+                            pageParams.Add( "PersonId", login.Person.Id.ToString() );
+                            var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
+                            personLink = String.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
+                        }
+
+                        // determine whether to show last page views
+                        if ( (int)GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
+                        {
+                            sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
                                                                 <i class='fa-li fa fa-circle'></i> {1}
                                                         </li>",
-                            className, login.Person.FullName, pageViews ) );
+                                            className, personLink, pageViewsHtml ) );
+                        }
+                        else
+                        {
+                            sbUsers.Append( String.Format( @"<li class='active-user {0}'>
+                                                                <i class='fa-li fa fa-circle'></i> {1}
+                                                        </li>",
+                                            className, personLink ) );
+                        }
+
+
+                        
                     }
                 }
 

@@ -18,7 +18,7 @@
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="602555-2911">
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6025552911">
           <attributes>
             <attribute BaptismDate="9/13/2001"/>
             <attribute FirstVisit="12/15/2012"/>
@@ -195,7 +195,7 @@
     </family>
 
     <!-- Tom and Thomas Miller are actually the same person (duplicate) that needs
-        to be merged. The records have the same email and same phone mumber.
+        to be merged. The records have the same email and same phone number.
         Tom Miller used to live at one address but later moved to a new address.
         Someone created the Thomas Miller account from a 'connection card' placed
         in the offering satchel because they did not know that the Tom record (which had 
