@@ -38,7 +38,7 @@
     <ul class="nav nav-pills">
         <asp:Repeater ID="rptActions" runat="server">
             <ItemTemplate>
-                <li class='<%# GetTabClass(Container.DataItem) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Container.DataItem %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
+                <li class='<%# GetTabClass( Eval( "Key" ) ) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
             </ItemTemplate>
         </asp:Repeater>
     </ul>
@@ -46,6 +46,7 @@
     <div class="tab-content">
 
         <asp:PlaceHolder ID="phList" runat="server">
+            <div class="security-action-description"><asp:Literal ID="lActionDescription" runat="server" /></div>
             <div class="security-rights">
                 <h4>Item Permissions</h4>
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">

@@ -157,14 +157,24 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         [NotMapped]
-        public virtual List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return _supportedActions; }
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
         }
-        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+        private Dictionary<string, string> _supportedActions;
 
 
         /// <summary>

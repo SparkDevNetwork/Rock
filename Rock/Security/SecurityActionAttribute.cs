@@ -21,26 +21,35 @@ using System.Linq;
 namespace Rock.Security
 {
     /// <summary>
-    /// A class Attribute that can be used by objects that implement ISecured to add additional supported actions
+    /// A class Attribute that can be used by objects that implement ISecured to add an additional security action or change the description of an action
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true )]
-    public class AdditionalActionsAttribute : System.Attribute
+    public class SecurityActionAttribute : System.Attribute
     {
         /// <summary>
-        /// Gets or sets the additional actions to support
+        /// Gets or sets the action to add or change description for
         /// </summary>
         /// <value>
-        /// The Actions.
+        /// The Action.
         /// </value>
-        public List<string> AdditionalActions { get; set; }
+        public string Action { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AdditionalActionsAttribute"/> class.
+        /// Gets or sets the description of the action
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SecurityActionAttribute"/> class.
         /// </summary>
         /// <param name="actions">The actions.</param>
-        public AdditionalActionsAttribute( string[] actions )
+        public SecurityActionAttribute( string action, string description )
         {
-            this.AdditionalActions = actions.ToList<string>();
+            this.Action = action;
+            this.Description = description;
         }
 
     }

@@ -682,7 +682,8 @@ namespace Rock.Web.UI
                         AddGoogleAnalytics( _pageCache.Layout.Site.GoogleAnalyticsCode );
                     }
 
-                    bool canEditBlock = false;
+                    // Flag indicating if user has rights to administer one or more of the blocks on page
+                    bool canAdministrateBlock = false;
 
                     // Load the blocks and insert them into page zones
                     Page.Trace.Warn( "Loading Blocks" );
@@ -698,9 +699,9 @@ namespace Rock.Web.UI
 
                         if ( canAdministrate || canEdit )
                         {
-                            canEditBlock = true;
-                        }                        
-                        
+                            canAdministrateBlock = true;
+                        }
+
                         // Make sure user has access to view block instance
                         if ( canAdministrate || canEdit || canView )
                         {
@@ -786,18 +787,16 @@ namespace Rock.Web.UI
                                         blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
                                     }
 
-                                    // If the blocktype's additional actions have not yet been loaded, load them now
-                                    if ( !block.BlockType.CheckedAdditionalSecurityActions )
+                                    // If the blocktype's security actions have not yet been loaded, load them now
+                                    if ( !block.BlockType.CheckedSecurityActions )
                                     {
                                         Page.Trace.Warn( "\tAdding additional security actions for blcok" );
-                                        foreach ( string action in blockControl.GetAdditionalActions() )
+                                        block.BlockType.SecurityActions = new Dictionary<string, string>();
+                                        foreach ( var action in blockControl.GetSecurityActionAttributes() )
                                         {
-                                            if ( !block.BlockType.SupportedActions.Contains( action ) )
-                                            {
-                                                block.BlockType.SupportedActions.Add( action );
-                                            }
+                                            block.BlockType.SecurityActions.Add( action.Key, action.Value );
                                         }
-                                        block.BlockType.CheckedAdditionalSecurityActions = true;
+                                        block.BlockType.CheckedSecurityActions = true;
                                     }
 
                                     // If the block's AttributeProperty values have not yet been verified verify them.
@@ -851,7 +850,7 @@ namespace Rock.Web.UI
                     } 
 
                     // Add the page admin footer if the user is authorized to edit the page
-                    if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canEditBlock ) )
+                    if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canAdministrateBlock ) )
                     {
                         // Add the page admin script
                         AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );

@@ -37,7 +37,8 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Adds an editable HTML fragment to the page." )]
 
-    [AdditionalActions( new string[] { "Approve" } )]
+    [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
     [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]

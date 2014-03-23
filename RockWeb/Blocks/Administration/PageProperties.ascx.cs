@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.Administration
                     }
                     else
                     {
-                        DisplayError( "You are not authorized to edit this page" );
+                        DisplayError( "You are not authorized to administrate this page" );
                     }
                 }
                 else

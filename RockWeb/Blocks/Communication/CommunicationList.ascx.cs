@@ -36,8 +36,8 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all previously created communications." )]
 
-    [AdditionalActions( new string[] { "Approve" } )]
-    [LinkedPage("Detail Page")]
+    [SecurityAction( Authorization.APPROVE, "Can approve new communications." )]
+    [LinkedPage( "Detail Page" )]
     public partial class CommunicationList : Rock.Web.UI.RockBlock
     {
         private bool canApprove = false;
