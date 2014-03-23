@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Groups
         <strong>{{GroupMemberTerm}}s</strong><br>
         {% for GroupMember in GroupMembers -%}
             {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
             {% else %}
                 {{GroupMember.NickName}} {{GroupMember.LastName}}
             {% endif %}
