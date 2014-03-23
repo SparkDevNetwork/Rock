@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.Security;
 using Rock;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Security
 {
@@ -125,7 +126,7 @@ namespace RockWeb.Blocks.Security
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                if ( RockPage.IsAuthorized( "View", null ) )
+                if ( RockPage.IsAuthorized( Authorization.VIEW, null ) )
                 {
                     Response.Redirect( CurrentPageReference.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();

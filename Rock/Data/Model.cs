@@ -198,7 +198,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -258,7 +258,7 @@ namespace Rock.Data
             this.LoadAttributes();
             foreach ( var attribute in this.Attributes )
             {
-                if (attribute.Value.IsAuthorized("View", null))
+                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                 {
                     string value = GetAttributeValue( attribute.Key );
                     dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );

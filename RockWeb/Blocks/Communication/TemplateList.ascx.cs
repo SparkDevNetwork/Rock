@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Communication
             gCommunication.GridRebind += gCommunication_GridRebind;
 
             // The created by column/filter should only be displayed if user is allowed to approve
-            canEdit = this.IsUserAuthorized( "Edit" );
+            canEdit = this.IsUserAuthorized( Authorization.EDIT );
             ppOwner.Visible = canEdit;
             gCommunication.Columns[0].Visible = canEdit;
         }

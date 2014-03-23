@@ -20,10 +20,10 @@ using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _isAuthorizedToConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
+            _isAuthorizedToConfigure = RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )

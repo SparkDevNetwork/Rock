@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -55,8 +56,8 @@ namespace RockWeb.Blocks.CheckIn
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridRebind += gGroupType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gGroupType.Actions.ShowAdd = canAddEditDelete;
 
         }

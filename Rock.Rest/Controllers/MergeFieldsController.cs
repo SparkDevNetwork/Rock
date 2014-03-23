@@ -21,9 +21,9 @@ using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
-
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -157,7 +157,7 @@ namespace Rock.Rest.Controllers
 
                     foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
                     {
-                        if ( attributeCache.IsAuthorized( "View", null ) )
+                        if ( attributeCache.IsAuthorized( Authorization.VIEW, null ) )
                         {
                             items.Add( new TreeViewItem
                             {
@@ -250,7 +250,7 @@ namespace Rock.Rest.Controllers
                                     // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
                                     if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&
                                         string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
-                                        attribute.IsAuthorized("View", null))
+                                        attribute.IsAuthorized( Authorization.VIEW, null ) )
                                     {
                                         items.Add( new TreeViewItem
                                         {

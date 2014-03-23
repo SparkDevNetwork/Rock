@@ -27,6 +27,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 using Rock.Data;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
-            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             if ( _canConfigure )
             {

@@ -29,6 +29,7 @@ using Rock;
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -131,7 +132,7 @@ namespace RockWeb.Blocks.Core
         {
             nbMessage.Visible = false;
 
-            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

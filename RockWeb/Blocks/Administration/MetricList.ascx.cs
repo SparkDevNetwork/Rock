@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -54,9 +55,9 @@ namespace RockWeb.Blocks.Administration
             gMetrics.GridRebind += gMetrics_GridRebind;                    
            
             gfFilter.ApplyFilterClick += gfFilter_ApplyFilterClick;
-            BindCategoryFilter();                
-                       
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            BindCategoryFilter();
+
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gMetrics.Actions.ShowAdd = canAddEditDelete;
             gMetrics.IsDeleteEnabled = canAddEditDelete;
         }

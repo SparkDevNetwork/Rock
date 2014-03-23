@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -242,7 +243,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( group != null )
                         {
-                            if ( group.IsAuthorized( "View", CurrentPerson ) )
+                            if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 phGroupTypeIcon.Controls.Clear();
                                 if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
@@ -254,7 +255,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                 lGroupName.Text = group.Name;
 
-                                phEditActions.Visible = group.IsAuthorized( "Edit", CurrentPerson );
+                                phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                                 // TODO: How many implied relationships should be displayed
 

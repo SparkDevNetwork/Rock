@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -558,7 +559,7 @@ namespace RockWeb.Blocks.Reporting
                 // Add DataSelect MEF Components that apply to this EntityType
                 foreach ( var component in DataSelectContainer.GetComponentsBySelectedEntityTypeName( entityType.FullName ).OrderBy( c => c.Order ).ThenBy( c => c.GetTitle( entityType ) ) )
                 {
-                    if ( component.IsAuthorized( "View", this.RockPage.CurrentPerson ) )
+                    if ( component.IsAuthorized( Authorization.VIEW, this.RockPage.CurrentPerson ) )
                     {
                         var selectEntityType = EntityTypeCache.Read( component.TypeName );
                         var listItem = new ListItem();
@@ -629,7 +630,7 @@ namespace RockWeb.Blocks.Reporting
 
             string authorizationMessage;
 
-            if ( !this.IsAuthorizedForAllReportComponents( "Edit", report, out authorizationMessage ) )
+            if ( !this.IsAuthorizedForAllReportComponents( Authorization.EDIT, report, out authorizationMessage ) )
             {
                 nbEditModeMessage.Text = authorizationMessage;
                 readOnly = true;
@@ -641,7 +642,7 @@ namespace RockWeb.Blocks.Reporting
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Report.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = report.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = report.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = report.Name;
             btnSecurity.EntityId = report.Id;
 
@@ -695,7 +696,7 @@ namespace RockWeb.Blocks.Reporting
                         var dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                         if ( dataSelectComponent != null )
                         {
-                            if ( !dataSelectComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                            if ( !dataSelectComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                             {
                                 isAuthorized = false;
                                 authorizationMessage = "INFO: This Reports contains a data selection component that you do not have access to view.";
@@ -708,14 +709,14 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                if ( !report.DataView.IsAuthorized( "View", this.CurrentPerson ) )
+                if ( !report.DataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 {
                     isAuthorized = false;
                     authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
                 }
                 else
                 {
-                    if ( report.DataView.DataViewFilter != null && !report.DataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+                    if ( report.DataView.DataViewFilter != null && !report.DataView.DataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         isAuthorized = false;
                         authorizationMessage = "INFO: The Data View for this report contains a filter that you do not have access to view.";
@@ -727,7 +728,7 @@ namespace RockWeb.Blocks.Reporting
                         var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
                         if ( dataTransformationComponent != null )
                         {
-                            if ( !dataTransformationComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                            if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                             {
                                 isAuthorized = false;
                                 authorizationMessage = "INFO: The Data View for this report contains a data transformation that you do not have access to view.";
@@ -828,7 +829,7 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 string authorizationMessage;
-                if ( !this.IsAuthorizedForAllReportComponents( "View", report, out authorizationMessage ) )
+                if ( !this.IsAuthorizedForAllReportComponents( Authorization.VIEW, report, out authorizationMessage ) )
                 {
                     nbEditModeMessage.Text = authorizationMessage;
                     return;

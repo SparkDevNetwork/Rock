@@ -18,11 +18,11 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -54,8 +54,8 @@ namespace RockWeb.Blocks.Groups
             gGroupType.GridReorder += gGroupType_GridReorder;
             gGroupType.GridRebind += gGroupType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canEditBlock = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
             gGroupType.Actions.ShowAdd = canEditBlock;
             gGroupType.IsDeleteEnabled = canEditBlock;
 
