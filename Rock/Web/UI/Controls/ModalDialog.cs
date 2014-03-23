@@ -38,6 +38,8 @@ namespace Rock.Web.UI.Controls
         private HtmlGenericControl _closeLink;
         private HtmlGenericControl _titleH3;
         private LiteralControl _title;
+        private HtmlGenericControl _subtitleSmall;
+        private LiteralControl _subtitle;
 
         private Panel _contentPanel;
 
@@ -89,6 +91,31 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _title.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the subtitle.
+        /// </summary>
+        /// <value>
+        /// The subtitle.
+        /// </value>
+        [
+            Category( "Appearance" ),
+            DefaultValue( "" ),
+            Description( "The subtitle of the dialog." )
+        ]
+        public string SubTitle
+        {
+            get
+            {
+                EnsureChildControls();
+                return _subtitle.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _subtitle.Text = value;
             }
         }
 
@@ -183,6 +210,13 @@ namespace Rock.Web.UI.Controls
             _title = new LiteralControl();
             _title.Text = string.Empty;
             _titleH3.Controls.Add( _title );
+
+            _subtitleSmall = new HtmlGenericControl( "small" );
+            _headerPanel.Controls.Add( _subtitleSmall );
+
+            _subtitle = new LiteralControl();
+            _subtitle.Text = string.Empty;
+            _subtitleSmall.Controls.Add( _subtitle );
 
             _cancelLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _cancelLink );
