@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -60,7 +61,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             if ( _canConfigure )
             {
                 Guid entityTypeGuid = Guid.Empty;

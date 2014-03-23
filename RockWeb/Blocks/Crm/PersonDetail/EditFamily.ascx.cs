@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -121,7 +122,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            _canEdit = IsUserAuthorized( "Edit" );
+            _canEdit = IsUserAuthorized( Authorization.EDIT );
 
             var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;

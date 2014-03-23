@@ -44,7 +44,8 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for creating and sending communications such as email, SMS, etc. to people." )]
 
-    [SecurityAction( Authorization.APPROVE, "Can approve new communications." )]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
+
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?")]
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved" )]
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list" )]
@@ -881,7 +882,7 @@ namespace RockWeb.Blocks.Communication
             // submit and save buttons (they won't see the approve/deny buttons)
             if ( canApprove ||
                 CurrentPersonId == communication.SenderPersonId ||
-                IsUserAuthorized( "Edit" ) )
+                IsUserAuthorized( Authorization.EDIT ) )
             {
                 btnSubmit.Enabled = true;
                 btnSave.Enabled = true;

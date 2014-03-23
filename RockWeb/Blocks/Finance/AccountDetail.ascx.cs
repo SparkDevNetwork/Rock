@@ -21,6 +21,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -135,7 +136,7 @@ namespace RockWeb.Blocks.Finance
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 account = new FinancialAccountService().Get( itemKeyValue );
-                editAllowed = account.IsAuthorized( "Edit", CurrentPerson );
+                editAllowed = account.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else
             {
@@ -153,7 +154,7 @@ namespace RockWeb.Blocks.Finance
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialAccount.FriendlyTypeName );

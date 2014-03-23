@@ -16,12 +16,12 @@
 //
 using System;
 using System.ComponentModel;
-
 using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,8 +48,8 @@ namespace RockWeb.Blocks.Core
             gCampuses.Actions.AddClick += gCampuses_Add;
             gCampuses.GridRebind += gCampuses_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gCampuses.Actions.ShowAdd = canAddEditDelete;
             gCampuses.IsDeleteEnabled = canAddEditDelete;
         }

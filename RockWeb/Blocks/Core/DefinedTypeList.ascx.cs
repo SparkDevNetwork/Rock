@@ -19,11 +19,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,8 +57,8 @@ namespace RockWeb.Blocks.Core
             gDefinedType.Actions.AddClick += gDefinedType_Add;
             gDefinedType.GridRebind += gDefinedType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gDefinedType.Actions.ShowAdd = canAddEditDelete;
             gDefinedType.IsDeleteEnabled = canAddEditDelete;
         }

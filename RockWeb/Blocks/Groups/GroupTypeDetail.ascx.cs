@@ -20,12 +20,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -603,7 +603,7 @@ namespace RockWeb.Blocks.Groups
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 groupType = new GroupTypeService().Get( itemKeyValue );
-                editAllowed = groupType.IsAuthorized( "Edit", CurrentPerson );
+                editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else
             {
@@ -632,7 +632,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( GroupType.FriendlyTypeName );

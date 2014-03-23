@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -993,7 +994,7 @@ namespace RockWeb.Blocks.CheckIn
             hfParentGroupTypeId.Value = parentGroupType.Id.ToString();
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 // this UI doesn't have a ReadOnly mode, so just show a message and keep the Detail panel hidden
                 nbEditModeMessage.Heading = "Information";

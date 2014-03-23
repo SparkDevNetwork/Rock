@@ -22,10 +22,10 @@ using System.Linq;
 using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Administration
                         dialogPage.SubTitle = string.Format( "Id: {0}", pageCache.Id );
                     }
 
-                    if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
+                    if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                     {
                         ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
 

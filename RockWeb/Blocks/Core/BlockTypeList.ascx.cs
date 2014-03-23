@@ -22,6 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Core
             gBlockTypes.Actions.AddClick += gBlockTypes_Add;
             gBlockTypes.GridRebind += gBlockTypes_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBlockTypes.Actions.ShowAdd = canAddEditDelete;
             gBlockTypes.IsDeleteEnabled = canAddEditDelete;
 
