@@ -927,24 +927,25 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Reads the <see cref="Rock.Security.AdditionalActionsAttribute">additional action attributes</see> for this <see cref="Rock.Model.Block"/>
+        /// Reads the <see cref="Rock.Security.SecurityActionAttribute">security action attributes</see> for this <see cref="Rock.Model.Block"/>
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.List{String}" /> containing the action values for the <see cref="Rock.Model.Block">Block's</see>
-        /// <see cref="Rock.Security.AdditionalActionsAttribute">AdditionalActionsAttributes</see>.</returns>
-        internal List<string> GetAdditionalActions()
+        /// <returns>A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see>
+        /// <see cref="Rock.Security.SecurityActionAttribute">SecurityActionAttributes</see>.</returns>
+        internal Dictionary<string, string> GetSecurityActionAttributes()
         {
-            var additionalActions = new List<string>();
+            var securityActions = new Dictionary<string, string>();
 
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
-            if ( customAttributes.Length > 0 )
+            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( SecurityActionAttribute ), true );
+            foreach ( var customAttribute in customAttributes )
             {
-                foreach ( string action in ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions )
+                var securityActionAttribute = customAttribute as SecurityActionAttribute;
+                if (securityActionAttribute != null)
                 {
-                    additionalActions.Add( action );
+                    securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
                 }
             }
 
-            return additionalActions;
+            return securityActions;
         }
 
         /// <summary>

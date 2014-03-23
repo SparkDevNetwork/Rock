@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer > Admin" )]
     [Description( "Displays a list of prayer requests for the configured top-level group category." )]
 
-    [AdditionalActions( new string[] { "Approve" } )]
+    [SecurityAction( Authorization.APPROVE, "Can approve new prayer requests and prayer categories." )]
     [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock

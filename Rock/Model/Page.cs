@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -330,6 +331,22 @@ namespace Rock.Model
         /// </value>
         public virtual Page ParentPage { get; set; }
 
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var actions = new Dictionary<string, string>();
+                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view the page." );
+                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the page.  This includes setting properties of the page, setting security for the page, managing the zones and blocks on the page, and editing the child pages." );
+                return actions;
+            }
+        }
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Layout"/> that the pages uses.
         /// </summary>

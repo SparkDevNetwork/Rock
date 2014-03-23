@@ -781,7 +781,7 @@
     <Compile Include="Search\Person\Phone.cs" />
     <Compile Include="Search\SearchComponent.cs" />
     <Compile Include="Search\SearchContainer.cs" />
-    <Compile Include="Security\AdditionalActionsAttribute.cs" />
+    <Compile Include="Security\SecurityActionAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
     <Compile Include="Security\Encryption.cs" />
