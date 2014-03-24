@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using Rock.Model;
 
@@ -156,7 +157,7 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         private string GetPhysicalPath( string path, HttpContext context )
         {
-            if ( path.StartsWith( "C:" ) || path.StartsWith( "\\\\" ) )
+            if ( Regex.Match(path, @"^[A-Z,a-z]:\\").Success  || path.StartsWith( "\\\\" ) )
             {
                 return path;
             }

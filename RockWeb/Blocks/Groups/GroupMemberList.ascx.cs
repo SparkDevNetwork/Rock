@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -31,7 +31,6 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member List" )]
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
-
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [LinkedPage("Detail Page")]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
@@ -80,6 +79,10 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                        
+                        bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+                        gGroupMembers.Actions.ShowAdd = canEditBlock;
+                        gGroupMembers.IsDeleteEnabled = canEditBlock;
 
                         // Add attribute columns
                         AddAttributeColumns();

@@ -65,7 +65,7 @@
                         <Rock:Zone Name="Header" runat="server" />
                     </div>
 
-				    <Rock:SearchField ID="searchField" CssClass="pull-right" runat="server" />
+				    <Rock:SearchField ID="searchField" runat="server" />
 
             </div>
 
