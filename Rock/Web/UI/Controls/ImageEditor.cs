@@ -631,16 +631,16 @@ namespace Rock.Web.UI.Controls
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
 
-            string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1}&width=150);background-size:cover;background-position:50%' {2}></div>";
+            string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1});background-size:cover;background-position:50%'></div>";
             string imageDivHtml = "";
 
             if ( BinaryFileId != null )
             {
-                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() ), null );
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width = 150" ) );
             }
             else
             {
-                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl, "display='none'" );
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl);
             }
 
             writer.Write( imageDivHtml );
