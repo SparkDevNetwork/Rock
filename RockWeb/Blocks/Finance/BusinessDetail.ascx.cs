@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -32,9 +33,52 @@ namespace RockWeb.Blocks.Finance
     public partial class BusinessDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                string itemId = PageParameter( "businessId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    ShowDetail( "businessId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
+        }
+
         #endregion
 
         #region Events
+
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+            {
+                var phoneNumber = new PhoneNumber();
+                phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+            }
+        }
+
+        protected void lbEdit_Click( object sender, EventArgs e )
+        {
+
+        }
+
         #endregion
 
         #region Internal Methods
@@ -46,20 +90,35 @@ namespace RockWeb.Blocks.Finance
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            pnlDetails.Visible = false;
+
+            if ( !itemKey.Equals( "businessId" ) )
+            {
+                return;
+            }
+
+            bool editAllowed = true;
+
+            Person business = null;     // A business is a person
+
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                business = new PersonService().Get( itemKeyValue );
+                editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            }
+            else
+            {
+                business = new Person { Id = 0 };
+            }
+
+            if ( business == null )
+            {
+                return;
+            }
+
+            pnlDetails.Visible = true;
         }
 
         #endregion
-        protected void lbSave_Click( object sender, EventArgs e )
-        {
-
-        }
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
-            {
-                var phoneNumber = new PhoneNumber();
-                phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
-            }
-        }
 }
 }

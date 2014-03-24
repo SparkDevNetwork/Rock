@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -40,6 +41,17 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            bool canEdit = IsUserAuthorized( Authorization.EDIT );
+
+            gfBusinessFilter.ApplyFilterClick += gfBusinessFilter_ApplyFilterClick;
+            gfBusinessFilter.DisplayFilterValue += gfBusinessFilter_DisplayFilterValue;
+
+            gBusinessList.DataKeyNames = new string[] { "id" };
+            gBusinessList.Actions.ShowAdd = canEdit;
+            gBusinessList.Actions.AddClick += gBusinessList_AddClick;
+            gBusinessList.GridRebind += gBusinessList_GridRebind;
+            gBusinessList.IsDeleteEnabled = canEdit;
         }
 
         /// <summary>
@@ -59,18 +71,43 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        void gfBusinessFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        {
+            
+        }
+
+        void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            
+        }
+
+        void gBusinessList_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        void gBusinessList_AddClick( object sender, EventArgs e )
+        {
+            var parms = new Dictionary<string, string>();
+            parms.Add( "businessId", "0" );
+            NavigateToLinkedPage( "DetailPage", parms );
+        }
+
         protected void gBusinessList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
 
         }
+
         protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
 
         }
+
         protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
 
         }
+
         protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
 
@@ -93,6 +130,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            gBusinessList.DataBind();
         }
 
         /// <summary>
