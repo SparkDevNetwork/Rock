@@ -78,6 +78,25 @@ namespace Rock.Model
         public string StatusNote { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was opened by recipient.
+        /// </summary>
+        /// <value>
+        /// The opened date time.
+        /// </value>
+        [DataMember]
+        public DateTime? OpenedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of client that the recipient used to open the communication.
+        /// </summary>
+        /// <value>
+        /// The client.
+        /// </value>
+        [DataMember]
+        [MaxLength(200)]
+        public string OpenedClient { get; set; }
+
+        /// <summary>
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
@@ -125,6 +144,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Communication Communication { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the Communication.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationRecipientActivity> Activities
+        {
+            get { return _activities ?? ( _activities = new Collection<CommunicationRecipientActivity>() ); }
+            set { _activities = value; }
+        }
+        private ICollection<CommunicationRecipientActivity> _activities;
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
@@ -210,7 +243,12 @@ namespace Rock.Model
         /// <summary>
         /// Communication was cancelled prior to sending to the recipient
         /// </summary>
-        Cancelled = 3
+        Cancelled = 3,
+
+        /// <summary>
+        /// Communication was sent and opened (viewed) by the recipient
+        /// </summary>
+        Opened = 4
     }
 }
 
