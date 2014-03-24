@@ -18,10 +18,12 @@
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="6025552911">
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444">
           <attributes>
             <attribute BaptismDate="9/13/2001"/>
             <attribute FirstVisit="12/15/2012"/>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Outreach Pastor"/>
           </attributes>
         </person>
 
@@ -181,7 +183,12 @@
           email="alisha.marble@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/marble_alisha.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="6235552444">
+          <attributes>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Assistant"/>
+          </attributes>
+        </person>
         
         <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
          firstName="William" nickName="Bill" lastName="Marble" birthDate="2/29/1964" gender="male"
@@ -229,8 +236,42 @@
           homePhone="6235550909" mobilePhone="" workPhone=""/>
       </members>
     </family>
+
+
+    <!-- Peter Foster is the senior pastor of Rock Solid Church and is a member of the Prayer Team,
+         Staff User, and Pastoral Staff roles.  Peter's wife, Adelle (Pamela) is on the Prayer Team
+         and is a Staff-Like user.
+    -->
+    <family name="Foster Family" guid="FFE1DA77-B596-46B9-AAF8-C7C8E3AC8F2C" campus="main campus">
+      <addresses>
+        <address type="home" street1="1543 W Joan de Arc Ave" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.6075439" long="-112.0931931" />
+      </addresses>
+
+      <members>
+        <person guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"
+          firstName="Peter" nickName="Pete" lastName="Foster" birthDate="1/7/1976" age="50" gender="male"
+          email="peter@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_peter.jpg"
+          homePhone="4805551234" mobilePhone="6025554321" workPhone="6235552444">
+          <attributes>
+            <attribute Employer="Rock Solid Church"/>
+            <attribute Position="Outreach Pastor"/>
+          </attributes>
+        </person>
+        <person guid="F4450E80-F221-4556-881D-CB92B008C2DA"
+          firstName="Adelle" nickName="Pamela" lastName="Foster" birthDate="7/4/1976" age="50" gender="female"
+          email="pamela@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/foster_pamela.jpg"
+          homePhone="4805551234" mobilePhone="" workPhone="">
+          <attributes>
+          </attributes>
+        </person>
+      </members>
+    </family>
     
-  </families>
+ </families>
 
   <relationships>
     <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" has="step-child" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
@@ -258,4 +299,70 @@
 
   </groups>
 
+  <securityRoles>
+    <group name="Communication Administrators" guid="B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="Finance Administrators" guid="6246A7EF-B7A3-4C8C-B1E4-3FF114B84559" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Finance Users" guid="2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9" >
+      <members>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      </members>
+    </group>
+    <group name="Pastoral Staff" guid="26E7148C-2059-4F45-BCFE-32230A12F0DC" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+      </members>
+    </group>
+    <group name="Prayer Administrators" guid="59DA53FC-AE18-4052-BC90-CE75B3979943" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Prayer Team" guid="9E17621E-F559-44E9-8C40-E8CF44CF8FCF" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+        <person fullname="Adelle Foster" guid="F4450E80-F221-4556-881D-CB92B008C2DA"/>
+      </members>
+    </group>
+    <group name="Rock Administrators" guid="628C51A8-4613-43ED-A18D-4A6FB999273E" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      </members>
+    </group>
+    <group name="Staff-Like Users" guid="300BA2C8-49A3-44BA-A82A-82E3FD8C3745" >
+      <members>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+        <person fullname="Adelle Foster" guid="F4450E80-F221-4556-881D-CB92B008C2DA"/>
+      </members>
+    </group>
+    <group name="Staff Users" guid="2C112948-FF4C-46E7-981A-0257681EADF4" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+        <person fullname="Peter Foster" guid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C"/>
+      </members>
+    </group>
+    <group name="Website Administrators" guid="1918E74F-C00D-4DDD-94C4-2E7209CE12C3" >
+      <members>
+        <person fullname="Ted Decker" guid="8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4"/>
+      </members>
+    </group>
+    <group name="Website Content Editors" guid="CDF68207-2795-42DE-B060-FE01C33BEAEA" >
+      <members>
+        <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+        <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
+      </members>
+    </group>
+  </securityRoles>
 </data>

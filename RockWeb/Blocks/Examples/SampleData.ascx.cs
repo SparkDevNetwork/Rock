@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -39,14 +41,16 @@ namespace RockWeb.Blocks.Examples
     [DisplayName( "Rock Solid Church Sample Data" )]
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
+
+    [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
+    [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if given in xml)", true, "", 2 )]
+    [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
-        /// <summary>
-        /// The Url to the sample data
-        /// </summary>
-        private static string _xmlFileUrl = "http://storage.rockrms.com/sampledata/sampledata.xml";
 
+        private static Stopwatch _stopwatch = new Stopwatch();
+        private static StringBuilder _sb = new StringBuilder();
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
@@ -155,10 +159,11 @@ namespace RockWeb.Blocks.Examples
         protected void bbtnLoadData_Click( object sender, EventArgs e )
         {
             string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
-
+            
             try
             {
-                if ( DownloadFile( _xmlFileUrl, saveFile ) )
+                string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
+                if ( DownloadFile( xmlFileUrl, saveFile ) )
                 {
                     ProcessXml( saveFile );
                     nbMessage.Visible = true;
@@ -259,18 +264,35 @@ namespace RockWeb.Blocks.Examples
                     var elemFamilies = xdoc.Element( "data" ).Element( "families" );
                     var elemGroups = xdoc.Element( "data" ).Element( "groups" );
                     var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
+                    var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
 
                     // First we'll clean up by deleting any previously created data such as
                     // families, addresses, people, photos, attendance data, etc.
+                    _stopwatch.Start();
                     DeleteExistingGroups( elemGroups );
                     DeleteExistingFamilyData( elemFamilies );
+                    _sb.AppendFormat( "Time to delete data: {0}<br/>", _stopwatch.Elapsed );
 
                     // Now we can add the families (and people) and then groups.
                     AddFamilies( elemFamilies );
+                    _sb.AppendFormat( "Time to add families: {0}<br/>", _stopwatch.Elapsed );
+
                     AddRelationships( elemRelationships );
+                    _sb.AppendFormat( "Time to add relationships: {0}<br/>", _stopwatch.Elapsed );
+
                     AddGroups( elemGroups );
+                    _sb.AppendFormat( "Time to add groups: {0}<br/>", _stopwatch.Elapsed );
+
+                    AddToSecurityGroups( elemSecurityGroups );
+                    _sb.AppendFormat( "Time to add people to security roles: {0}<br/>", _stopwatch.Elapsed );
                 }
             } );
+
+            bool EnableStopwatch = GetAttributeValue("EnableStopwatch").AsBoolean();
+            if ( EnableStopwatch )
+            {
+                lTime.Text = _sb.ToString();
+            }
         }
    
         /// <summary>
@@ -479,6 +501,8 @@ namespace RockWeb.Blocks.Examples
                 return;
             }
 
+            bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
+
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
             {
@@ -493,8 +517,15 @@ namespace RockWeb.Blocks.Examples
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
 
+                _sb.AppendFormat( "  Time to add family and address for {1}: {0}<br/>", _stopwatch.Elapsed, family.Name );
+
+
                 // add their attendance data
-                AddFamilyAttendance( family, elemFamily );
+                if ( fabricateAttendance )
+                {
+                    AddFamilyAttendance( family, elemFamily );
+                    _sb.AppendFormat( "  Time to add attendance for {1}: {0}<br/>", _stopwatch.Elapsed, family.Name );
+                }
 
                 // lastly, save the data and move to the next family
                 groupService.Save( family, CurrentPersonAlias );
@@ -621,6 +652,55 @@ namespace RockWeb.Blocks.Examples
                 group.SaveAttributeValues( CurrentPersonAlias );
 
             }
+        }
+
+        /// <summary>
+        /// Handles adding people to the security groups from the given XML element snippet.
+        /// </summary>
+        /// <param name="elemSecurityGroups"></param>
+        private void AddToSecurityGroups( XElement elemSecurityGroups )
+        {
+            if ( elemSecurityGroups == null )
+            {
+                return;
+            }
+
+            GroupService groupService = new GroupService();
+            var allGroups = groupService.RockContext.Groups;
+
+            // Next find each group and add its members
+            foreach ( var elemGroup in elemSecurityGroups.Elements( "group" ) )
+            {
+                int membersAdded = 0;
+                Guid guid = elemGroup.Attribute( "guid" ).Value.Trim().AsGuid();
+                Group securityGroup = groupService.GetByGuid( guid );
+                if ( securityGroup == null )
+                {
+                    continue;
+                }
+
+                // Add each person as a member of the group
+                foreach ( var elemPerson in elemGroup.Elements( "members" ).Elements( "person" ) )
+                {
+                    Guid personGuid = elemPerson.Attribute( "guid" ).Value.Trim().AsGuid();
+                    int personId = _peopleDictionary[personGuid];
+
+                    // Don't add if already in the group...
+                    if ( securityGroup.Members.Where( p=>p.PersonId == personId ).Count() > 0 )
+                    {
+                        continue;
+                    }
+
+                    membersAdded++;
+                    GroupMember groupMember = new GroupMember();
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    groupMember.GroupRoleId = securityGroup.GroupType.DefaultGroupRoleId.Value;
+                    groupMember.PersonId = personId;
+                    securityGroup.Members.Add( groupMember );
+                }
+            }
+
+            groupService.RockContext.SaveChanges();
         }
 
         /// <summary>
