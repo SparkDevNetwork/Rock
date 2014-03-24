@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Core
         {
             nbMessage.Visible = false;
 
-            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 if ( !Page.IsPostBack )
                 {

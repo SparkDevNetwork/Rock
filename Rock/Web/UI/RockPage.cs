@@ -1088,17 +1088,6 @@ namespace Rock.Web.UI
             return new List<string>();
         }
 
-        /// <summary>
-        /// Determines whether the specified action is authorized for the current page.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public bool IsAuthorized( string action, Person person )
-        {
-            return _pageCache.IsAuthorized( action, person );
-        }
-
         #region HtmlLinks
 
         /// <summary>

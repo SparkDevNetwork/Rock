@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Communication
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             BindFilter();
 
-            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
                 gEmailTemplates.Actions.ShowAdd = true;
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Communication
         {
             nbMessage.Visible = false;
 
-            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 if ( !Page.IsPostBack )
                 {

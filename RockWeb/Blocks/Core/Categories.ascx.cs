@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _canConfigure = RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
             if ( _canConfigure )
             {
                 Guid entityTypeGuid = Guid.Empty;
