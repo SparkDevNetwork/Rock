@@ -100,14 +100,16 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 //gtpExportGroupType.GroupTypes =  new GroupTypeService().Queryable().ToList();
-                /*ddlExportGroupTypes.DataValueField = "Id";
+                ddlExportGroupTypes.DataValueField = "Id";
                 ddlExportGroupTypes.DataTextField = "Name";
                 ddlExportGroupTypes.DataSource = new GroupTypeService().Queryable().Select( g => new { g.Id, g.Name } ).ToList();
                 ddlExportGroupTypes.DataBind();
                 ddlExportGroupTypes.Items.Insert( 0, "" );
 
                 ddlExportGroupLocationType.DataValueField = "Id";
-                ddlExportGroupLocationType.DataTextField = "Name";*/
+                ddlExportGroupLocationType.DataTextField = "Name";
+
+                lTitle.Text = ("Groups KML Importer and Exporter").FormatAsHtmlTitle();
             }
         }
 
@@ -117,30 +119,71 @@ namespace RockWeb.Blocks.Groups
 
         // handlers called by the controls on your block
 
-
-        /*protected void gtpExportGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        protected void btnPillExport_Click( object sender, EventArgs e )
         {
-            string test = "";
-        }*/
-
-        /*protected void ddlExportGroupTypes_SelectedIndexChanged( object sender, EventArgs e )
+            liPillExport.RemoveCssClass( "active" );
+            liPillExport.AddCssClass( "active" );
+            liPillImport.RemoveCssClass( "active" );
+            pnlExport.Visible = true;
+            pnlImport.Visible = false;
+        }
+        protected void btnPillImport_Click( object sender, EventArgs e )
         {
-            int selectedGroupTypeId = Int32.Parse( ddlExportGroupTypes.SelectedValue );
+            liPillImport.RemoveCssClass( "active" );
+            liPillImport.AddCssClass( "active" );
+            liPillExport.RemoveCssClass( "active" );
+            pnlExport.Visible = false;
+            pnlImport.Visible = true;
+        }
 
-            GroupTypeService groupTypeService = new GroupTypeService();
-            var selectedGroupType = groupTypeService.Get( selectedGroupTypeId );
+        protected void ddlExportGroupTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( ddlExportGroupTypes.SelectedValue != string.Empty )
+            {
+                int selectedGroupTypeId = Int32.Parse( ddlExportGroupTypes.SelectedValue );
 
-            ddlExportGroupLocationType.DataSource = selectedGroupType.LocationTypes.ToList();
-        }*/
+                GroupTypeService groupTypeService = new GroupTypeService();
+                var selectedGroupType = groupTypeService.Get( selectedGroupTypeId );
+
+                ddlExportGroupLocationType.DataSource = selectedGroupType.LocationTypes.Select( l => new { Id = l.LocationTypeValueId, Name = l.LocationTypeValue.Name } ).ToList();
+                ddlExportGroupLocationType.DataBind();
+                ddlExportGroupLocationType.Enabled = true;
+
+                if ( ddlExportGroupLocationType.Items.Count > 0 )
+                {
+                    btnExport.Enabled = true;
+                }
+                else
+                {
+                    btnExport.Enabled = false;
+                }
+            }
+            else
+            {
+                ddlExportGroupLocationType.Items.Clear();
+                ddlExportGroupLocationType.Enabled = false;
+                btnExport.Enabled = false;
+            }
+        }
+
+        protected void ddlExportGroupLocationType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+
+        }
+
+        protected void btnImport_Click( object sender, EventArgs e )
+        {
+
+        }
 
         protected void btnExport_Click( object sender, EventArgs e )
         {
-            int groupTypeId = 28;
-            int locationTypeValueId = 212;
-            bool exportAsKmz = true;
+            int groupTypeId = Int32.Parse(ddlExportGroupTypes.SelectedValue);
+            int locationTypeValueId = Int32.Parse(ddlExportGroupLocationType.SelectedValue);
+            bool exportAsKmz = (rblExportFileType.SelectedValue == "kmz");
 
-            ExportType exportType = ExportType.GeoFence;
-
+            bool exportPoints = rblExportGeoTypes.Items.Cast<ListItem>().Where(i => i.Value == "points").Select(i => i.Selected).FirstOrDefault();
+            bool exportGeofences = rblExportGeoTypes.Items.Cast<ListItem>().Where( i => i.Value == "geofences" ).Select( i => i.Selected ).FirstOrDefault();
 
             GroupService groupService = new GroupService();
             var groups = groupService.Queryable()
@@ -155,9 +198,9 @@ namespace RockWeb.Blocks.Groups
 
             // create kml document
             Document document = new Document();
-            document.Name = String.Format("Rock Group Export ({0})", RockDateTime.Now.ToShortDateString());
+            document.Name = String.Format("{0} ({1})", ddlExportGroupTypes.SelectedItem.Text, ddlExportGroupLocationType.SelectedItem.Text);
             document.Open = false;
-            
+
 
             foreach ( var group in groups )
             {
@@ -166,50 +209,58 @@ namespace RockWeb.Blocks.Groups
                 placemark.Id = group.Guid.ToString();
 
                 Description description = new Description();
-                description.Text = group.Description ;
+                description.Text = group.Description;
                 placemark.Description = description;
 
-                switch ( exportType )
+                if ( group.GroupLocation != null )
                 {
-                    case ExportType.GeoFence:
-                        if ( group.GroupLocation.Location != null && group.GroupLocation.Location.GeoFence != null )
+
+                    if ( exportPoints && group.GroupLocation.Location.GeoPoint != null )
+                    {
+                        Point point = new Point();
+                        point.Id = group.GroupLocation.Location.Guid.ToString();
+                        point.Coordinate = new Vector( (double)group.GroupLocation.Location.GeoPoint.Latitude, (double)group.GroupLocation.Location.GeoPoint.Longitude );
+                        placemark.Geometry = point;
+                        document.AddFeature( placemark );
+                    }
+                    
+                    if ( exportGeofences && group.GroupLocation.Location.GeoFence != null )
+                    {
+
+                        //group.GroupLocation.Location.GeoFence.
+                        OuterBoundary outerBoundary = new OuterBoundary();
+                        outerBoundary.LinearRing = new LinearRing();
+                        outerBoundary.LinearRing.Coordinates = new CoordinateCollection();
+
+                        // get points
+                        string groupFence = group.GroupLocation.Location.GeoFence.ProviderValue.ToString();
+                        string match = @"POLYGON \(\(([0-9\.\-\,\s]+)\)\)";
+                        string longSpaceLatComma = Regex.Replace( groupFence, match, "$1", RegexOptions.IgnoreCase );
+                        string[] points = longSpaceLatComma.Split( ',' );
+
+                        foreach ( string point in points )
                         {
-
-                            //group.GroupLocation.Location.GeoFence.
-                            OuterBoundary outerBoundary = new OuterBoundary();
-                            outerBoundary.LinearRing = new LinearRing();
-                            outerBoundary.LinearRing.Coordinates = new CoordinateCollection();
-
-                            // get points
-                            string groupFence = group.GroupLocation.Location.GeoFence.ProviderValue.ToString();
-                            string match = @"POLYGON \(\(([0-9\.\-\,\s]+)\)\)";
-                            string longSpaceLatComma = Regex.Replace( groupFence, match, "$1", RegexOptions.IgnoreCase );
-                            string[] points = longSpaceLatComma.Split( ',' );
-
-                            foreach ( string point in points )
-                            {
-                                string[] longLat;
-                                longLat = point.Trim().Split( ' ' );
-                                outerBoundary.LinearRing.Coordinates.Add( new Vector( Convert.ToDouble(longLat[1]), Convert.ToDouble(longLat[0]), 0 ) );
-                            }
-
-                            Polygon polygon = new Polygon();
-                            polygon.OuterBoundary = outerBoundary;
-
-                            // set the color of the polygon
-                            var style = new SharpKml.Dom.Style();
-
-                            style.Polygon = new PolygonStyle();
-                            style.Polygon.ColorMode = SharpKml.Dom.ColorMode.Normal;
-                            style.Polygon.Color = GetColor();
-
-                            placemark.Geometry = polygon;
-                            placemark.AddStyle( style);
-                            document.AddFeature( placemark );
+                            string[] longLat;
+                            longLat = point.Trim().Split( ' ' );
+                            outerBoundary.LinearRing.Coordinates.Add( new Vector( Convert.ToDouble( longLat[1] ), Convert.ToDouble( longLat[0] ), 0 ) );
                         }
-                        break;
+
+                        Polygon polygon = new Polygon();
+                        polygon.Id = group.GroupLocation.Location.Guid.ToString();
+                        polygon.OuterBoundary = outerBoundary;
+
+                        // set the color of the polygon
+                        var style = new SharpKml.Dom.Style();
+
+                        style.Polygon = new PolygonStyle();
+                        style.Polygon.ColorMode = SharpKml.Dom.ColorMode.Normal;
+                        style.Polygon.Color = GetColor();
+
+                        placemark.Geometry = polygon;
+                        placemark.AddStyle( style );
+                        document.AddFeature( placemark );
+                    }
                 }
-               
             }
 
             Kml root = new Kml();
@@ -274,8 +325,7 @@ namespace RockWeb.Blocks.Groups
 
        
 
-        #endregion
+        #endregion 
 
-        
-}
+    }
 }
