@@ -312,6 +312,12 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group != null )
                 {
+                    if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdDeleteWarning.Show( "You are not authorized to delete this group.", ModalAlertType.Information );
+                        return;
+                    }
+
                     parentGroupId = group.ParentGroupId;
                     string errorMessage;
                     if ( !groupService.CanDelete( group, out errorMessage ) )
@@ -653,7 +659,7 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            bool editAllowed = true;
+            bool editAllowed = true; 
 
             Group group = null;
 
