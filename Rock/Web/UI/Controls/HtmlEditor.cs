@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -508,7 +509,7 @@ CKEDITOR.replace('{0}', {{
                 var currentPerson = this.RockBlock().CurrentPerson;
                 if ( currentPerson != null )
                 {
-                    if ( fileBrowserPage.IsAuthorized( "View", currentPerson ) )
+                    if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
                         enabledPlugins.Add( "rockfilebrowser" );
                     }

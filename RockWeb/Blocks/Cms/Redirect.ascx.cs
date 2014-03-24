@@ -17,6 +17,7 @@
 using System;
 using Rock.Attribute;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !string.IsNullOrEmpty( url ) )
             {
-                if ( IsUserAuthorized( "Administrate" ) )
+                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
                 {
                     nbAlert.Text = string.Format( "If you did not have Administrate permissions on this block, you would have been redirected to here: <a href='{0}'>{0}</a>.", Page.ResolveUrl( url ) );
                 }

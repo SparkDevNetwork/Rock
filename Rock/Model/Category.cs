@@ -156,7 +156,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> that can use this Category.
         /// </value>
-        [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>

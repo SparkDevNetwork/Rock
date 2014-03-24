@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -366,7 +367,7 @@ $(document).ready(function() {
                 dataView = new DataView { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
-            if ( dataView == null || !dataView.IsAuthorized( "View", CurrentPerson ) )
+            if ( dataView == null || !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -380,7 +381,7 @@ $(document).ready(function() {
 
             string authorizationMessage = string.Empty;
 
-            if ( !this.IsAuthorizedForAllDataViewComponents( "Edit", dataView, out authorizationMessage ) )
+            if ( !this.IsAuthorizedForAllDataViewComponents( Authorization.EDIT, dataView, out authorizationMessage ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = authorizationMessage;
@@ -392,7 +393,7 @@ $(document).ready(function() {
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DataView.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = dataView.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = dataView.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = dataView.Name;
             btnSecurity.EntityId = dataView.Id;
 
@@ -436,7 +437,7 @@ $(document).ready(function() {
                 authorizationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
             }
 
-            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            if ( dataView.DataViewFilter != null && !dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 isAuthorized = false;
                 authorizationMessage = "INFO: This Data View contains a filter that you do not have access to view.";
@@ -448,7 +449,7 @@ $(document).ready(function() {
                 var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
                 if ( dataTransformationComponent != null )
                 {
-                    if ( !dataTransformationComponent.IsAuthorized( "View", this.CurrentPerson ) )
+                    if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                     {
                         isAuthorized = false;
                         authorizationMessage = "INFO: The Data View for this report contains a data transformation that you do not have access to view.";
@@ -544,11 +545,11 @@ $(document).ready(function() {
         /// <param name="dataView">The data view.</param>
         private void ShowReport( DataView dataView )
         {
-            if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
+            if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 string authorizationMessage = string.Empty;
 
-                if ( this.IsAuthorizedForAllDataViewComponents( "View", dataView, out authorizationMessage ) )
+                if ( this.IsAuthorizedForAllDataViewComponents( Authorization.VIEW, dataView, out authorizationMessage ) )
                 {
                     bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
 

@@ -118,7 +118,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var location in qry )
             {
-                if ( location.IsAuthorized( "View", person ) )
+                if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
                     locationList.Add( location );
                     var treeViewItem = new TreeViewItem();

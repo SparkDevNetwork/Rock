@@ -213,7 +213,7 @@ namespace Rock.Rest
                 // Need to reload using service with a proxy enabled so that if model has custom
                 // parent authorities, those properties can be lazy-loaded and checked for authorization
                 ISecured reloadedModel = (ISecured)new Service<T>().Get( securedModel.Id );
-                if ( reloadedModel != null && !reloadedModel.IsAuthorized( "Edit", person ) )
+                if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
                 {
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
                 }

@@ -4,5 +4,6 @@
     <ContentTemplate>
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="true" NotificationBoxType="Warning" Title="Important!" Text="Never load sample data into your production (real) Rock system.  This sample data for training and testing purposes only."></Rock:NotificationBox>
         <Rock:BootstrapButton ID="bbtnLoadData" runat="server" CssClass="btn btn-primary" OnClick="bbtnLoadData_Click" Text="Load Sample Data" DataLoadingText="Loading...(this may take a few minutes)"></Rock:BootstrapButton>
+        <Rock:RockLiteral ID="lTime" runat="server"></Rock:RockLiteral>
     </ContentTemplate>
 </asp:UpdatePanel>

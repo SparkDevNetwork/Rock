@@ -19,11 +19,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Communication
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             BindFilter();
 
-            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 gEmailTemplates.DataKeyNames = new string[] { "id" };
                 gEmailTemplates.Actions.ShowAdd = true;
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Communication
         {
             nbMessage.Visible = false;
 
-            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 if ( !Page.IsPostBack )
                 {

@@ -71,15 +71,6 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system) Attribute.
-        /// </value>
-        [DataMember]
-        public virtual Model.EntityType EntityType { get; set; }
-
-        /// <summary>
         /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
@@ -184,12 +175,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system) Attribute.
+        /// </value>
+        public virtual Model.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> for this Attribute.
         /// </summary>
         /// <value>
         /// Collection of <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> for this Attribute.
         /// </value>
-        [DataMember]
         public virtual ICollection<AttributeQualifier> AttributeQualifiers
         {
             get { return _attributeQualifiers ?? ( _attributeQualifiers = new Collection<AttributeQualifier>() ); }
@@ -203,7 +201,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FieldType"/> that is used to get/capture the value of the Attribute.
         /// </value>
-        [DataMember]
         public virtual FieldType FieldType { get; set; }
 
         /// <summary>
@@ -212,7 +209,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Attribute is associated with.
         /// </value>
-        [DataMember]
         public virtual ICollection<Category> Categories
         {
             get { return _categories ?? ( _categories = new Collection<Category>() ); }

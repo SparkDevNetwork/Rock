@@ -24,6 +24,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -61,7 +62,7 @@ namespace RockWeb.Blocks.Finance
             mdDetails.SaveClick += mdDetails_SaveClick;
             mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
 
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );

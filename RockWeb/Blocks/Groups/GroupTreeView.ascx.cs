@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var group in qry )
             {
-                if ( group.IsAuthorized( "View", CurrentPerson ) )
+                if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     return group;
                 }

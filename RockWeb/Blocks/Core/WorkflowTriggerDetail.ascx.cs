@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 
 namespace RockWeb.Blocks.Core
@@ -80,7 +81,7 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var workflowType in new WorkflowTypeService().Queryable().OrderBy( w => w.Name ) )
             {
-                if ( workflowType.IsAuthorized( "View", CurrentPerson ) )
+                if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     ddlWorkflowType.Items.Add( new ListItem( workflowType.Name, workflowType.Id.ToString() ) );
                 }
@@ -137,7 +138,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowTrigger.FriendlyTypeName );

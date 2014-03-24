@@ -157,14 +157,24 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         [NotMapped]
-        public virtual List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return _supportedActions; }
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
         }
-        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+        private Dictionary<string, string> _supportedActions;
 
 
         /// <summary>
@@ -188,7 +198,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -248,7 +258,7 @@ namespace Rock.Data
             this.LoadAttributes();
             foreach ( var attribute in this.Attributes )
             {
-                if (attribute.Value.IsAuthorized("View", null))
+                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                 {
                     string value = GetAttributeValue( attribute.Key );
                     dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
@@ -352,18 +362,7 @@ namespace Rock.Data
         }
 
         #endregion
+
     }
 
-    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
-    //    where T : Model<T>, new()
-    //{
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
-    //    /// </summary>
-    //    public RockModelConfiguration()
-    //    {
-    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
-    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
-    //    }
-    //}
 }

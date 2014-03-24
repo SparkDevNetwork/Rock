@@ -77,7 +77,8 @@ namespace Rock.Rest.Filters
                     }
                 }
 
-                string action = actionMethod.Equals("GET", StringComparison.OrdinalIgnoreCase) ? "View" : "Edit";
+                string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ? 
+                    Rock.Security.Authorization.VIEW : Rock.Security.Authorization.EDIT;
                 if ( !item.IsAuthorized( action, person ) )
                 {
                     actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );

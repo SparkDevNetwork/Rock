@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -61,7 +62,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
-            _canConfigure = RockPage.IsAuthorized( "Edit", CurrentPerson );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             if ( _canConfigure )
             {

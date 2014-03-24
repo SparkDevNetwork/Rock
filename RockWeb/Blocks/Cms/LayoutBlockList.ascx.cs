@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            if ( RockPage.Layout.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.Layout.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.Actions.ShowAdd = false;

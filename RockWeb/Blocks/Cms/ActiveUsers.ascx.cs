@@ -109,10 +109,10 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !string.IsNullOrEmpty( GetAttributeValue( "Site" ) ) )
             {
-                int pageViewCount = (int) GetAttributeValue( "PageViewCount" ).AsInteger();
-                if ( pageViewCount == 0 )
+                int? pageViewCount = GetAttributeValue( "PageViewCount" ).AsInteger();
+                if ( !pageViewCount.HasValue || pageViewCount.Value == 0 )
                 {
-                    pageViewCount++;
+                    pageViewCount = 1;
                 }
                 
                 StringBuilder sbUsers = new StringBuilder();
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Cms
                             pageViews = pageViewQry
                                 .Where( v => v.PersonAlias.PersonId == l.PersonId )
                                 .OrderByDescending( v => v.DateTimeViewed )
-                                .Take( pageViewCount )
+                                .Take( pageViewCount.Value )
                         } )
                         .Where( a =>
                             a.pageViews.Any() &&

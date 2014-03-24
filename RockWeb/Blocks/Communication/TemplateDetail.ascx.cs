@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            canEdit = this.IsUserAuthorized( "Edit" );
+            canEdit = this.IsUserAuthorized( Authorization.EDIT );
             ppOwner.Visible = canEdit;
         }
 
