@@ -87,10 +87,6 @@ namespace RockWeb.Blocks.Groups
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
         /// <summary>
@@ -103,7 +99,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                // added for your convience
+                //gtpExportGroupType.GroupTypes =  new GroupTypeService().Queryable().ToList();
+                /*ddlExportGroupTypes.DataValueField = "Id";
+                ddlExportGroupTypes.DataTextField = "Name";
+                ddlExportGroupTypes.DataSource = new GroupTypeService().Queryable().Select( g => new { g.Id, g.Name } ).ToList();
+                ddlExportGroupTypes.DataBind();
+                ddlExportGroupTypes.Items.Insert( 0, "" );
+
+                ddlExportGroupLocationType.DataValueField = "Id";
+                ddlExportGroupLocationType.DataTextField = "Name";*/
             }
         }
 
@@ -113,15 +117,21 @@ namespace RockWeb.Blocks.Groups
 
         // handlers called by the controls on your block
 
-        /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+
+        /*protected void gtpExportGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            
-        }
+            string test = "";
+        }*/
+
+        /*protected void ddlExportGroupTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int selectedGroupTypeId = Int32.Parse( ddlExportGroupTypes.SelectedValue );
+
+            GroupTypeService groupTypeService = new GroupTypeService();
+            var selectedGroupType = groupTypeService.Get( selectedGroupTypeId );
+
+            ddlExportGroupLocationType.DataSource = selectedGroupType.LocationTypes.ToList();
+        }*/
 
         protected void btnExport_Click( object sender, EventArgs e )
         {
@@ -154,8 +164,6 @@ namespace RockWeb.Blocks.Groups
                 Placemark placemark = new Placemark();
                 placemark.Name = group.Name;
                 placemark.Id = group.Guid.ToString();
-                //placemark.Styles;
-                
 
                 Description description = new Description();
                 description.Text = group.Description ;
@@ -182,8 +190,6 @@ namespace RockWeb.Blocks.Groups
                             {
                                 string[] longLat;
                                 longLat = point.Trim().Split( ' ' );
-
-                                //outerBoundary.LinearRing.Coordinates.Add( new Vector( -122.366278, 37.818844, 30 ) );
                                 outerBoundary.LinearRing.Coordinates.Add( new Vector( Convert.ToDouble(longLat[1]), Convert.ToDouble(longLat[0]), 0 ) );
                             }
 
@@ -269,5 +275,7 @@ namespace RockWeb.Blocks.Groups
        
 
         #endregion
-    }
+
+        
+}
 }
