@@ -34,7 +34,8 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer > Admin" )]
     [Description( "Displays a list of prayer requests for the configured top-level group category." )]
 
-    [SecurityAction( Authorization.APPROVE, "Can approve new prayer requests and prayer categories." )]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]
+
     [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock
@@ -99,9 +100,9 @@ namespace RockWeb.Blocks.Prayer
             gPrayerRequests.Actions.AddClick += gPrayerRequests_Add;
             gPrayerRequests.GridRebind += gPrayerRequests_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
+            // Block Security and special attributes (RockPage takes care of View)
             _canApprove = IsUserAuthorized( "Approve" );
-            _canAddEditDelete = IsUserAuthorized( "Edit" );
+            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPrayerRequests.Actions.ShowAdd = _canAddEditDelete;
             gPrayerRequests.IsDeleteEnabled = _canAddEditDelete;
         }

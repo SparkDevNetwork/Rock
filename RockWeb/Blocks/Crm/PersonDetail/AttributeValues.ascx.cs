@@ -21,10 +21,10 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( a => a.Order ).ThenBy( a => a.Name );
                         foreach ( var attribute in orderedAttributeList )
                         {
-                            if ( attribute.IsAuthorized( "View", CurrentPerson ) )
+                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
                                 AttributeList.Add( attribute.Id );
                             }
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 
-                    if ( !EditMode || !attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                    if ( !EditMode || !attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         formattedValue = attribute.FieldType.Field.FormatValue( fsAttributes, attributeValue, attribute.QualifierValues, false );
                         if ( !string.IsNullOrWhiteSpace( formattedValue ) )
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             var attribute = AttributeCache.Read( attributeId );
 
-                            if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            if ( Person != null && EditMode && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
                                 if ( attributeControl != null )

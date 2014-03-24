@@ -24,6 +24,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using CronExpressionDescriptor;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -202,7 +203,7 @@ namespace RockWeb.Blocks.Administration
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( ServiceJob.FriendlyTypeName );

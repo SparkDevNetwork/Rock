@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -147,8 +148,8 @@ namespace Rock.Reporting.DataFilter
             {
                 foreach ( var dataView in new DataViewService().GetByEntityTypeId( entityTypeId ) )
                 {
-                    if ( dataView.IsAuthorized( "View", page.CurrentPerson ) &&
-                        dataView.DataViewFilter.IsAuthorized( "View", page.CurrentPerson ) )
+                    if ( dataView.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) &&
+                        dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) )
                     {
                         ddlDataViews.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
                     }

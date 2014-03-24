@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -628,7 +629,7 @@ namespace RockWeb.Blocks.Groups
                 group = GetGroup( itemKeyValue );
                 if ( group != null )
                 {
-                    editAllowed = group.IsAuthorized( "Edit", CurrentPerson );
+                    editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
             }
             else
@@ -649,7 +650,7 @@ namespace RockWeb.Blocks.Groups
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -964,7 +965,7 @@ namespace RockWeb.Blocks.Groups
             phMaps.Controls.Clear();
             phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
 
-            btnSecurity.Visible = group.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = group.Name;
             btnSecurity.EntityId = group.Id;
 

@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -338,7 +339,7 @@ namespace RockWeb.Blocks.Core
                 location = new LocationService().Get( itemKeyValue );
                 if ( location != null )
                 {
-                    editAllowed = location.IsAuthorized( "Edit", CurrentPerson );
+                    editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
             }
             else
@@ -358,7 +359,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !editAllowed || !IsUserAuthorized( "Edit" ) )
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Location.FriendlyTypeName );
@@ -501,7 +502,7 @@ namespace RockWeb.Blocks.Core
             phMaps.Controls.Clear();
             phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
 
-            btnSecurity.Visible = location.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = location.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = location.Name;
             btnSecurity.EntityId = location.Id;
 

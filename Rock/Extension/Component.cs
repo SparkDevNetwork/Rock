@@ -303,7 +303,7 @@ namespace Rock.Extension
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>

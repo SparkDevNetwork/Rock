@@ -28,6 +28,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -477,7 +478,7 @@ namespace Rock.Web.UI
                 // redirect back to the current page, otherwise redirect to the site's default page
                 if ( _pageCache != null )
                 {
-                    if ( _pageCache.IsAuthorized( "View", null ) )
+                    if ( _pageCache.IsAuthorized( Authorization.VIEW, null ) )
                     {
                         // Remove the 'logout' queryparam before redirecting
                         var pageReference = new PageReference( PageReference.PageId, PageReference.RouteId, PageReference.Parameters );
@@ -576,7 +577,7 @@ namespace Rock.Web.UI
 
                 // Verify that the current user is allowed to view the page.  
                 Page.Trace.Warn( "Checking if user is authorized" );
-                if ( !_pageCache.IsAuthorized( "View", CurrentPerson ) )
+                if ( !_pageCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     if ( user == null )
                     {
@@ -636,7 +637,7 @@ namespace Rock.Web.UI
                     ObjectCache cache = MemoryCache.Default;
 
                     Page.Trace.Warn( "Checking if user can administer" );
-                    bool canAdministratePage = _pageCache.IsAuthorized( "Administrate", CurrentPerson );
+                    bool canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
@@ -693,9 +694,9 @@ namespace Rock.Web.UI
 
                         // Get current user's permissions for the block instance
                         Page.Trace.Warn( "\tChecking permission" );
-                        bool canAdministrate = block.IsAuthorized( "Administrate", CurrentPerson );
-                        bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
-                        bool canView = block.IsAuthorized( "View", CurrentPerson );
+                        bool canAdministrate = block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                        bool canEdit = block.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                        bool canView = block.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                         if ( canAdministrate || canEdit )
                         {

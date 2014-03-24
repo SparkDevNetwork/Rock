@@ -23,6 +23,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.UI.Controls
 {
@@ -641,13 +642,13 @@ namespace Rock.Web.UI.Controls
                         break;
                     }
 
-                    if ( note.IsAuthorized( "View", currentPerson ) )
+                    if ( note.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
                         var noteEditor = new NoteControl();
                         noteEditor.ID = string.Format( "note_{0}", note.Guid.ToString().Replace( "-", "_" ) );
                         noteEditor.Note = note;
-                        noteEditor.IsPrivate = note.IsPrivate( "View", currentPerson );
-                        noteEditor.CanEdit = note.IsAuthorized( "Edit", currentPerson );
+                        noteEditor.IsPrivate = note.IsPrivate( Authorization.VIEW, currentPerson );
+                        noteEditor.CanEdit = note.IsAuthorized( Authorization.EDIT, currentPerson );
                         noteEditor.SaveButtonClick += note_Updated;
                         noteEditor.DeleteButtonClick += note_Updated;
                         Controls.Add( noteEditor );

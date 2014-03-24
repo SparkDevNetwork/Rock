@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock;
 using Attribute = Rock.Model.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -54,8 +55,8 @@ namespace RockWeb.Blocks.Core
             gWorkflows.Actions.AddClick += gWorkflows_Add;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gWorkflows.Actions.ShowAdd = canAddEditDelete;
             gWorkflows.IsDeleteEnabled = canAddEditDelete;
         }

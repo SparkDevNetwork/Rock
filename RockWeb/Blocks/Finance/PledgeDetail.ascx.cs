@@ -20,6 +20,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -129,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                 lActionTitle.Text = ActionTitle.Add(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
             }
 
-            var isReadOnly = !IsUserAuthorized( "Edit" );
+            var isReadOnly = !IsUserAuthorized( Authorization.EDIT );
             var isNewPledge = pledge.Id == 0;
 
             hfPledgeId.Value = pledge.Id.ToString();
