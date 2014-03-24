@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -64,8 +65,8 @@ namespace RockWeb.Blocks.Core
             gBinaryFile.GridRebind += gBinaryFile_GridRebind;
             gBinaryFile.RowItemText = binaryFileType != null ? binaryFileType.Name : "Binary File";
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBinaryFile.Actions.ShowAdd = canAddEditDelete;
             gBinaryFile.IsDeleteEnabled = canAddEditDelete;
         }

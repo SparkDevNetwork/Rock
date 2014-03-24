@@ -26,6 +26,7 @@ using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -80,7 +81,7 @@ namespace RockWeb.Blocks.Core
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 Block _block = new BlockService().Get( blockId );
 
-                if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     phAttributes.Controls.Clear();
                     phAdvancedAttributes.Controls.Clear();
@@ -128,7 +129,7 @@ namespace RockWeb.Blocks.Core
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
             BlockCache _block = BlockCache.Read( blockId );
 
-            if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();

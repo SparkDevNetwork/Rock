@@ -855,7 +855,7 @@ namespace Rock.Web.UI
                 iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
                 var pageCache = PageCache.Read( RockPage.PageId );
-                if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );

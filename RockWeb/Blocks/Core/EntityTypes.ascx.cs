@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 gEntityTypes.DataKeyNames = new string[] { "id" };
                 gEntityTypes.Actions.ShowAdd = false;
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Core
         {
             nbWarning.Visible = false;
 
-            if ( RockPage.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

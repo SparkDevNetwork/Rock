@@ -25,6 +25,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Cms
             gPageRoutes.Actions.AddClick += gPageRoutes_Add;
             gPageRoutes.GridRebind += gPageRoutes_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPageRoutes.Actions.ShowAdd = canAddEditDelete;
             gPageRoutes.IsDeleteEnabled = canAddEditDelete;
         }

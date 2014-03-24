@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            bool canEdit = IsUserAuthorized( "Edit" );
+            bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rAccountFilter.DisplayFilterValue += rAccountFilter_DisplayFilterValue;

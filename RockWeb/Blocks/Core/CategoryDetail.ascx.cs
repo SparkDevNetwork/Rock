@@ -29,6 +29,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -307,7 +308,7 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
 
-            if ( category == null || !category.IsAuthorized( "View", CurrentPerson ) )
+            if ( category == null || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -319,7 +320,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !category.IsAuthorized( "Edit", CurrentPerson ) )
+            if ( !category.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Category.FriendlyTypeName );
@@ -331,7 +332,7 @@ namespace RockWeb.Blocks.Core
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Category.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = category.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = category.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = category.Name;
             btnSecurity.EntityId = category.Id;
 

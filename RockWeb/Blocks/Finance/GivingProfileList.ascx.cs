@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -69,7 +70,7 @@ namespace RockWeb.Blocks.Finance
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            bool canEdit = RockPage.IsAuthorized( "Edit", CurrentPerson );
+            bool canEdit = RockPage.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             rGridGivingProfile.DataKeyNames = new string[] { "id" };
             rGridGivingProfile.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );

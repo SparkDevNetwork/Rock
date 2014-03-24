@@ -21,6 +21,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -45,7 +46,7 @@ namespace RockWeb.Blocks.Finance
             gPledges.GridRebind += gPledges_GridRebind;
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
         }

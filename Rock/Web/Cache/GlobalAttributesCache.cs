@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Caching;
 
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -227,7 +228,7 @@ namespace Rock.Web.Cache
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
             foreach ( var attributeCache in globalAttributes.Attributes.OrderBy( a => a.Key ) )
             {
-                if ( attributeCache.IsAuthorized( "View", currentPerson ) )
+                if ( attributeCache.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     string value = attributeCache.FieldType.Field.FormatValue( null, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false );
                     globalAttributeValues.Add( attributeCache.Key, value );

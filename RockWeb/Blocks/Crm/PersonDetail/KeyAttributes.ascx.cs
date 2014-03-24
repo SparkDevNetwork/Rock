@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -192,7 +193,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     var attribute = AttributeCache.Read( attributeId );
 
-                    if ( Person != null && EditMode && attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                    if ( Person != null && EditMode && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                     {
                         Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
                         if ( attributeControl != null )
@@ -240,7 +241,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     c.EntityTypeQualifierColumn == "EntityTypeId" &&
                     c.EntityTypeQualifierValue == personEntityTypeId ) )
             {
-                if ( category.IsAuthorized( "View", CurrentPerson ) )
+                if ( category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     ListItem li = new ListItem( category.Name, category.Id.ToString() );
                     ddlCategories.Items.Add( li );
@@ -290,7 +291,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( Int32.TryParse( keyAttributeId, out attributeId ) )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-                    if ( attribute != null && attribute.IsAuthorized( "View", CurrentPerson ) )
+                    if ( attribute != null && attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         AttributeList.Add( attribute.Id );
                     }
@@ -343,7 +344,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .OrderBy( a => a.Order)
                 .ThenBy( a => a.Name))
             {
-                if (attribute.IsAuthorized("View", CurrentPerson))
+                if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     ListItem li = new ListItem( attribute.Name, attribute.Id.ToString() );
                     li.Selected = SelectedAttributes.Contains( attribute.Id );
