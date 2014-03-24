@@ -4,6 +4,7 @@
     1. Zone Configuration
     2. Module Configuration
     3. Admin Footer
+    4. Responsive Rules
 */
 
 
@@ -136,7 +137,7 @@
 // -------------------------
 #cms-admin-footer {
     bottom: 0;
-    height: 25px;
+    height: 45px;
     z-index: 9999;
     position: fixed;
     right: 0;
@@ -148,6 +149,12 @@
     color: @adminbar-text-color;
     padding: 5px 12px 0 12px;
     font-size: 80%;
+
+    > span {
+        display: block;
+        text-align: center;
+        margin-bottom: 4px;
+    }
 }
 
 #cms-admin-footer .button-bar {
@@ -170,3 +177,15 @@
     text-shadow: none;
 }
 
+
+// 4. Responsive Rules
+// -------------------------
+@media (min-width: @screen-sm-min) {
+    #cms-admin-footer {
+        height: 30px;
+
+        > span {
+            float: left;
+        }
+    }
+}

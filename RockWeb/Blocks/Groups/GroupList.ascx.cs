@@ -161,6 +161,12 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group != null )
                 {
+                    if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
+                        return;
+                    }
+                    
                     string errorMessage;
                     if ( !groupService.CanDelete( group, out errorMessage ) )
                     {
