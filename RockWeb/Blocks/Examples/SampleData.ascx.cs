@@ -49,8 +49,16 @@ namespace RockWeb.Blocks.Examples
     {
         #region Fields
 
-        private static Stopwatch _stopwatch = new Stopwatch();
-        private static StringBuilder _sb = new StringBuilder();
+        /// <summary>
+        /// Stopwatch used to measure time during certain operations.
+        /// </summary>
+        private Stopwatch _stopwatch = new Stopwatch();
+
+        /// <summary>
+        /// StringBuilder is used to build the stopwatch trace for certain operations.
+        /// </summary>
+        private StringBuilder _sb = new StringBuilder();
+
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
@@ -101,6 +109,11 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private Dictionary<Guid, int> _peopleDictionary = new Dictionary<Guid, int>();
 
+        /// <summary>
+        /// Holds a cache of the person object
+        /// </summary>
+        private Dictionary<Guid, Person> _personCache = new Dictionary<Guid, Person>();
+        
         /// <summary>
         /// Holds a cached copy of the location Id for each family Guid
         /// </summary>
@@ -271,20 +284,25 @@ namespace RockWeb.Blocks.Examples
                     _stopwatch.Start();
                     DeleteExistingGroups( elemGroups );
                     DeleteExistingFamilyData( elemFamilies );
-                    _sb.AppendFormat( "Time to delete data: {0}<br/>", _stopwatch.Elapsed );
+                    TimeSpan ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                     // Now we can add the families (and people) and then groups.
                     AddFamilies( elemFamilies );
-                    _sb.AppendFormat( "Time to add families: {0}<br/>", _stopwatch.Elapsed );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                     AddRelationships( elemRelationships );
-                    _sb.AppendFormat( "Time to add relationships: {0}<br/>", _stopwatch.Elapsed );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                     AddGroups( elemGroups );
-                    _sb.AppendFormat( "Time to add groups: {0}<br/>", _stopwatch.Elapsed );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                     AddToSecurityGroups( elemSecurityGroups );
-                    _sb.AppendFormat( "Time to add people to security roles: {0}<br/>", _stopwatch.Elapsed );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
             } );
 
@@ -502,43 +520,57 @@ namespace RockWeb.Blocks.Examples
             }
 
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
+            GroupService groupService = new GroupService();
+            var allFamilies = groupService.RockContext.Groups;
+
+            List<Guid> allGroups = new List<Guid>();
 
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
             {
                 Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
-                var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ) );
+                var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ), groupService.RockContext );
 
-                GroupService groupService = new GroupService();
-
-                Group family = groupService.SaveNewFamily( familyMembers, 1, savePersonAttributes: true, personAlias: CurrentPersonAlias );
+                // Call replica of groupService's SaveNewFamily method in an attempt to speed things up
+                Group family = CreateNewFamily( familyMembers, 1, savePersonAttributes: true, personAlias: CurrentPersonAlias );
                 family.Guid = guid;
+                // add the family to the context's list of groups
+                allFamilies.Add( family );
 
                 // add the families address(es)
                 AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
-
-                _sb.AppendFormat( "  Time to add family and address for {1}: {0}<br/>", _stopwatch.Elapsed, family.Name );
-
 
                 // add their attendance data
                 if ( fabricateAttendance )
                 {
                     AddFamilyAttendance( family, elemFamily );
-                    _sb.AppendFormat( "  Time to add attendance for {1}: {0}<br/>", _stopwatch.Elapsed, family.Name );
                 }
 
+                allGroups.Add( guid );
                 // lastly, save the data and move to the next family
-                groupService.Save( family, CurrentPersonAlias );
+//groupService.Save( family, CurrentPersonAlias );
 
-                foreach ( var p in family.Members )
+                _stopwatch.Stop();
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
+                _stopwatch.Start();
+            }
+
+            groupService.RockContext.SaveChanges();
+
+            // Now add each person's ID to a dictionary for use later.
+            foreach ( var guid in allGroups )
+            {
+                var group = groupService.GetByGuid( guid );
+                foreach ( var p in group.Members )
                 {
                     // Put the person's id into the people dictionary for later use.
                     if ( !_peopleDictionary.ContainsKey( p.Person.Guid ) )
                     {
-                        _peopleDictionary.Add( p.Person.Guid, p.PersonId );
+                        _peopleDictionary.Add( p.Person.Guid, p.Person.Id );
                     }
                 }
             }
+
         }
 
         /// <summary>
@@ -666,7 +698,6 @@ namespace RockWeb.Blocks.Examples
             }
 
             GroupService groupService = new GroupService();
-            var allGroups = groupService.RockContext.Groups;
 
             // Next find each group and add its members
             foreach ( var elemGroup in elemSecurityGroups.Elements( "group" ) )
@@ -933,7 +964,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="altScheduleId"></param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
         {
-            Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            //Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            int childRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
 
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
@@ -959,7 +991,7 @@ namespace RockWeb.Blocks.Examples
                 DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
 
                 // foreach child in the family
-                foreach ( var member in familyMembers.Where( m => m.GroupRole.Guid == childGuid ) )
+                foreach ( var member in familyMembers.Where( m => m.GroupRoleId == childRoleId ) )
                 {
                     // Find a class room (group location)
                     // TODO -- someday perhaps we will change this to actually find a real GroupLocationSchedule record
@@ -1020,7 +1052,7 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="elemMembers"></param>
         /// <returns>a list of family members.</returns>
-        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers )
+        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers, RockContext context )
         {
             var familyMembers = new List<GroupMember>();
 
@@ -1031,7 +1063,13 @@ namespace RockWeb.Blocks.Examples
                 Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value.Trim() );
 
                 // Attempt to find an existing person...
-                Person person = new PersonService().Get( guid );
+                //Person person = new PersonService().Get( guid );
+                Person person = null;
+                if ( _personCache.ContainsKey(guid) )
+                {
+                    person = _personCache[guid];
+                }
+
                 if ( person == null )
                 {
                     person = new Person();
@@ -1074,7 +1112,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
-                        person.PhotoId = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim() );
+                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), context );
                     }
 
                     if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
@@ -1168,6 +1206,8 @@ namespace RockWeb.Blocks.Examples
                         };
                         person.PhoneNumbers.Add( phoneNumber );
                     }
+
+                    _personCache[guid] = person;
                 }
 
                 groupMember.Person = person;
@@ -1218,7 +1258,7 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="photoUrl">a URL to a photo (jpg, png, bmp, tiff).</param>
         /// <returns>Id of the binaryFile</returns>
-        private int? SavePhoto( string photoUrl )
+        private BinaryFile SavePhoto( string photoUrl, RockContext context )
         {
             // always create a new BinaryFile record of IsTemporary when a file is uploaded
             BinaryFile binaryFile = new BinaryFile();
@@ -1266,10 +1306,9 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                var binaryFileService = new BinaryFileService();
+                var binaryFileService = new BinaryFileService( context );
                 binaryFileService.Add( binaryFile );
-                binaryFileService.Save( binaryFile );
-                return binaryFile.Id;
+                return binaryFile;
             }
             catch ( WebException )
             {
@@ -1319,7 +1358,8 @@ namespace RockWeb.Blocks.Examples
                         throw new NotSupportedException( string.Format( "unknown addressType: {0}", addressType ) );
                 }
 
-                groupService.AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
+                // Call replica of the groupService's AddNewFamilyAddress in an attempt to speed it up
+                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
 
                 var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
 
@@ -1338,6 +1378,123 @@ namespace RockWeb.Blocks.Examples
                 {
                     _familyLocationDictionary.Add( family.Guid, location.Id );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Saves the new family.
+        /// </summary>
+        /// <param name="familyMembers">The family members.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        {
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+
+            if ( familyGroupType != null )
+            {
+                var familyGroup = new Group();
+                familyGroup.GroupTypeId = familyGroupType.Id;
+                familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
+                familyGroup.CampusId = campusId;
+
+                int? childRoleId = null;
+                var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+                if ( childRole != null )
+                {
+                    childRoleId = childRole.Id;
+                }
+
+                foreach ( var familyMember in familyMembers )
+                {
+                    var person = familyMember.Person;
+                    if ( person != null )
+                    {
+                        familyGroup.Members.Add( familyMember );
+                    }
+                }
+
+                //Add( familyGroup, personAlias );
+                //Save( familyGroup, personAlias );
+
+                foreach ( var groupMember in familyMembers )
+                {
+                    var person = groupMember.Person;
+
+                    if ( savePersonAttributes )
+                    {
+                        var newValues = person.AttributeValues;
+
+                        person.LoadAttributes();
+                        foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
+                        {
+                            string oldValue = person.GetAttributeValue( attributeCache.Key ) ?? string.Empty;
+                            string newValue = string.Empty;
+                            if ( newValues != null &&
+                                newValues.ContainsKey( attributeCache.Key ) &&
+                                newValues[attributeCache.Key].Count > 0 )
+                            {
+                                newValue = newValues[attributeCache.Key][0].Value ?? string.Empty;
+                            }
+                        }
+                    }
+
+                    //if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
+                    //{
+                    //    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                    //}
+
+                    if ( groupMember.GroupRoleId != childRoleId )
+                    {
+                        person.GivingGroup = familyGroup;
+                    }
+                }
+
+                return familyGroup;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Adds the new family address.
+        /// </summary>
+        /// <param name="family">The family.</param>
+        /// <param name="locationTypeGuid">The location type unique identifier.</param>
+        /// <param name="street1">The street1.</param>
+        /// <param name="street2">The street2.</param>
+        /// <param name="city">The city.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="zip">The zip.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
+        {
+            if ( !String.IsNullOrWhiteSpace( street1 ) ||
+                 !String.IsNullOrWhiteSpace( street2 ) ||
+                 !String.IsNullOrWhiteSpace( city ) ||
+                 !String.IsNullOrWhiteSpace( zip ) )
+            {
+                var groupLocation = new GroupLocation();
+
+                // Get new or existing location and associate it with group
+                var location = new LocationService().Get( street1, street2, city, state, zip );
+                groupLocation.Location = location;
+                groupLocation.IsMailingLocation = true;
+                groupLocation.IsMappedLocation = true;
+
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( locationTypeGuid, out guid ) )
+                {
+                    var locationType = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    if ( locationType != null )
+                    {
+                        groupLocation.GroupLocationTypeValueId = locationType.Id;
+                    }
+                }
+
+                family.GroupLocations.Add( groupLocation );
             }
         }
 
