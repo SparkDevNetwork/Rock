@@ -137,11 +137,12 @@
 // -------------------------
 #cms-admin-footer {
     bottom: 0;
-    height: 45px;
+    width: 100%;
+    height: 25px;
     z-index: 9999;
     position: fixed;
     right: 0;
-    margin-right: 25px;
+    margin-right: 0;
     background: @adminbar-bg;
     border-color: darken(@adminbar-bg, @const-border-darken-amt);
     border-width: 1px 1px 0 1px;
@@ -152,7 +153,7 @@
 
     > span {
         display: block;
-        text-align: center;
+        float: left;
         margin-bottom: 4px;
     }
 }
@@ -181,11 +182,10 @@
 // 4. Responsive Rules
 // -------------------------
 @media (min-width: @screen-sm-min) {
+    
     #cms-admin-footer {
-        height: 30px;
-
-        > span {
-            float: left;
-        }
+        margin-right: 25px;
+        width: auto;
     }
+
 }
