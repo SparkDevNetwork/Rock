@@ -54,9 +54,13 @@ namespace RockWeb.Blocks.Administration
                 _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page != null )
+                {
                     canConfigure = _page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                }
                 else
-                    canConfigure = RockPage.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                {
+                    canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+                } 
 
                 if ( canConfigure )
                 {

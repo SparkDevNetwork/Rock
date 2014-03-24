@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.ApplyFilterClick += gfBatchFilter_ApplyFilterClick;
             gfBatchFilter.DisplayFilterValue += gfBatchFilter_DisplayFilterValue;
 
-            _canConfigure = RockPage.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             if ( _canConfigure )
             {

@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Finance
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
 
-            _canConfigure = RockPage.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
             if ( _canConfigure )
             {

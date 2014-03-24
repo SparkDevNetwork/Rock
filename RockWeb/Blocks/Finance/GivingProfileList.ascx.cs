@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Finance
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
 
-            bool canEdit = RockPage.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
             rGridGivingProfile.DataKeyNames = new string[] { "id" };
             rGridGivingProfile.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
