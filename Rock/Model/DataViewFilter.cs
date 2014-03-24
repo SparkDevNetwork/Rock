@@ -26,6 +26,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -139,7 +140,7 @@ namespace Rock.Model
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
-            if ( authorized && string.Compare( action, "View", true ) == 0 )
+            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
                 if ( EntityType != null )
                 {

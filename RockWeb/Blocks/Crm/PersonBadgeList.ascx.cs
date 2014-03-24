@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.PersonProfile;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -54,8 +55,8 @@ namespace RockWeb.Blocks.Crm
             gPersonBadge.GridRebind += gPersonBadge_GridRebind;
             gPersonBadge.RowItemText = "Person Badge";
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPersonBadge.Actions.ShowAdd = canAddEditDelete;
             gPersonBadge.IsDeleteEnabled = canAddEditDelete;
 

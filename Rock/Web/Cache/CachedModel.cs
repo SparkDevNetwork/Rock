@@ -118,9 +118,9 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public virtual List<string> SupportedActions { get; private set; }
+        public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -143,7 +143,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>

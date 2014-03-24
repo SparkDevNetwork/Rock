@@ -22,7 +22,6 @@ using Quartz;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Attribute;
-using Rock.Model;
 
 namespace Rock.Jobs
 {

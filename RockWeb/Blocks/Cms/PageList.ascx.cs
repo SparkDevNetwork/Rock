@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Data;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Cms
             gPages.GridRebind += gPages_GridRebind;
             gPagesFilter.ApplyFilterClick += gPagesFilter_ApplyFilterClick;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPages.IsDeleteEnabled = canAddEditDelete;
         }
 

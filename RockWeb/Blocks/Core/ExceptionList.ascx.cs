@@ -32,6 +32,7 @@ using Rock.Web.UI.Controls;
 using System.Data;
 using System.Data.Entity;
 using System.Text;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Administraton
 {
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Administraton
             base.OnInit( e );
 
             //Only show clear exceptions button if user has edit rights
-            btnClearExceptions.Visible = IsUserAuthorized( "Edit" );
+            btnClearExceptions.Visible = IsUserAuthorized( Authorization.EDIT );
 
             //Set Exception List filter properties
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;

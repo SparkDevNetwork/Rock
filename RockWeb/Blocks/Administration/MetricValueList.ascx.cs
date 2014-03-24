@@ -25,6 +25,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -50,9 +51,9 @@ namespace RockWeb.Blocks.Administration
             gMetricValues.DataKeyNames = new string[] { "id" };
             gMetricValues.Actions.ShowAdd = true;
             gMetricValues.Actions.AddClick += gMetricValues_Add;
-            gMetricValues.GridRebind += gMetricValues_GridRebind;            
+            gMetricValues.GridRebind += gMetricValues_GridRebind;
 
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gMetricValues.Actions.ShowAdd = canAddEditDelete;
             gMetricValues.IsDeleteEnabled = canAddEditDelete;
 

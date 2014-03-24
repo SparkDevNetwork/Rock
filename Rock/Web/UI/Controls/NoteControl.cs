@@ -19,8 +19,8 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -703,17 +703,17 @@ namespace Rock.Web.UI.Controls
 
                 if ( newNote )
                 {
-                    note.AllowPerson( "Edit", currentPerson, personAlias );
+                    note.AllowPerson( Authorization.EDIT, currentPerson, personAlias );
                 }
 
-                if ( IsPrivate && !note.IsPrivate( "View", currentPerson ) )
+                if ( IsPrivate && !note.IsPrivate( Authorization.VIEW, currentPerson ) )
                 {
-                    note.MakePrivate( "View", currentPerson, personAlias );
+                    note.MakePrivate( Authorization.VIEW, currentPerson, personAlias );
                 }
 
-                if ( !IsPrivate && note.IsPrivate( "View", currentPerson ) )
+                if ( !IsPrivate && note.IsPrivate( Authorization.VIEW, currentPerson ) )
                 {
-                    note.MakeUnPrivate( "View", currentPerson, personAlias );
+                    note.MakeUnPrivate( Authorization.VIEW, currentPerson, personAlias );
                 }
 
 
@@ -747,7 +747,7 @@ namespace Rock.Web.UI.Controls
                 if ( NoteId.HasValue )
                 {
                     note = service.Get( NoteId.Value );
-                    if ( note != null && note.IsAuthorized( "Edit", currentPerson ) )
+                    if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         service.Delete( note, personAlias );
                         service.Save( note, personAlias );

@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -60,8 +61,8 @@ namespace RockWeb.Blocks.Cms
             gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            // Block Security on Ads grid (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security on Ads grid (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gMarketingCampaignAds.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
 

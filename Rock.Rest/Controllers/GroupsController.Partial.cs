@@ -69,7 +69,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var group in qry )
             {
-                if ( group.IsAuthorized( "View", person ) )
+                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
                     groupList.Add( group );
                     var treeViewItem = new TreeViewItem();

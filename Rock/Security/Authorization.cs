@@ -27,6 +27,11 @@ namespace Rock.Security
     /// </summary>
     public static class Authorization
     {
+        public const string VIEW = "View";
+        public const string EDIT = "Edit";
+        public const string ADMINISTRATE = "Administrate";
+        public const string APPROVE = "Approve";
+
         /// <summary>
         /// Sets the auth cookie.
         /// </summary>
@@ -580,7 +585,7 @@ namespace Rock.Security
             {
                 foreach ( KeyValuePair<string, List<AuthRule>> action in Authorizations[sourceEntityTypeId][sourceEntity.Id] )
                 {
-                    if ( targetEntity.SupportedActions.Contains( action.Key ) )
+                    if ( targetEntity.SupportedActions.ContainsKey( action.Key ) )
                     {
                         newActions.Add( action.Key, new List<AuthRule>() );
 
@@ -630,7 +635,7 @@ namespace Rock.Security
         public static IQueryable<AuthRule> FindAuthRules( ISecured securableObject )
         {
             return ( from action in securableObject.SupportedActions
-                     from rule in AuthRules( securableObject.TypeId, securableObject.Id, action )
+                     from rule in AuthRules( securableObject.TypeId, securableObject.Id, action.Key )
                      select rule ).AsQueryable();
         }
     }

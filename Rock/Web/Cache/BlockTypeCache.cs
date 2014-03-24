@@ -88,12 +88,20 @@ namespace Rock.Web.Cache
         public bool IsInstancePropertiesVerified { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [checked additional security actions].
+        /// Gets or sets a value indicating whether [checked security actions].
         /// </summary>
         /// <value>
-        /// <c>true</c> if [checked additional security actions]; otherwise, <c>false</c>.
+        /// <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckedAdditionalSecurityActions { get; set; }
+        public bool CheckedSecurityActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security actions that were defined by a SecurityActionAttribute on the block type
+        /// </summary>
+        /// <value>
+        /// The security actions.
+        /// </value>
+        public Dictionary<string, string> SecurityActions { get; set; }
 
         #endregion
 

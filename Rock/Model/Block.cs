@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -244,6 +245,22 @@ namespace Rock.Model
                 }
             }
         }
+
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
+                }
+                return _supportedActions;
+            }
+        }
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 

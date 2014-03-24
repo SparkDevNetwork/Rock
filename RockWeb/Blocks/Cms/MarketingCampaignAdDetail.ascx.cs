@@ -34,7 +34,9 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Marketing Campaign - Ad Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details for an Ad." )]
-    [AdditionalActions( new string[] { "Approve" } )]
+
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve Ads." )]
+    
     public partial class MarketingCampaignAdDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
