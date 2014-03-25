@@ -594,6 +594,22 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
             }
+
+            // Create person alias records for each person
+            PersonService personService = new PersonService();
+            foreach ( var person in personService.Queryable( "Aliases" )
+                .Where( p => 
+                    _peopleDictionary.Keys.Contains( p.Guid ) &&
+                    !p.Aliases.Any() ) )
+            {
+                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+            }
+            personService.RockContext.SaveChanges();
+
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+
         }
 
         /// <summary>
