@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -117,6 +118,54 @@ namespace RockWeb.Blocks.Finance
             }
 
             pnlDetails.Visible = true;
+            hfBusinessId.Value = business.Id.ToString();
+
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Person.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                ShowReadonlyDetails( business );
+            }
+            else
+            {
+                lbEdit.Visible = true;
+                if ( business.Id > 0 )
+                {
+                    ShowReadonlyDetails( business );
+                }
+                else
+                {
+                    ShowEditDetails( business );
+                }
+            }
+        }
+
+        private void ShowReadonlyDetails( Person business )
+        {
+            SetEditMode( false );
+
+            //hfAccountId.SetValue( account.Id );
+            //lActionTitle.Text = account.Name.FormatAsHtmlTitle();
+            //hlInactive.Visible = !account.IsActive;
+            //lAccountDescription.Text = account.Description;
+
+            //DescriptionList descriptionList = new DescriptionList();
+            //descriptionList.Add( "", "" );
+            //lblMainDetails.Text = descriptionList.Html;
+        }
+
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewSummary.Visible = !editable;
+            this.HideSecondaryBlocks( editable );
         }
 
         #endregion
