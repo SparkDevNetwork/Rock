@@ -82,12 +82,11 @@ namespace Rock.Communication.Transport
                             var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
                             if ( recipient != null )
                             {
-                                string phoneNumber = recipient.Person.PhoneNumbers
+                                var phoneNumber = recipient.Person.PhoneNumbers
                                     .Where( p => p.IsMessagingEnabled )
-                                    .Select( p => p.Number )
                                     .FirstOrDefault();
 
-                                if ( string.IsNullOrWhiteSpace( phoneNumber ) )
+                                if ( phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.Number))
                                 {
                                     recipient.Status = CommunicationRecipientStatus.Failed;
                                     recipient.StatusNote = "No Phone Number with Messaging Enabled";
@@ -97,10 +96,15 @@ namespace Rock.Communication.Transport
                                     // Create merge field dictionary
                                     var mergeObjects = MergeValues( globalConfigValues, recipient );
                                     string subject = communication.Subject.ResolveMergeFields( mergeObjects );
+                                    string twillioNumber = phoneNumber.Number;
+                                    if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
+                                    {
+                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                    }
 
                                     try
                                     {
-                                        twilio.SendMessage( fromPhone, phoneNumber, subject );
+                                        twilio.SendMessage( fromPhone, twillioNumber, subject );
                                         recipient.Status = CommunicationRecipientStatus.Success;
                                     }
                                     catch ( Exception ex )

@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
@@ -153,16 +154,16 @@ namespace RockWeb.Blocks.Security
                         foreach ( RepeaterItem item in rContactInfo.Items )
                         {
                             HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                            TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
+                            PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
                             CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
                             CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
                             if ( hfPhoneType != null &&
-                                tbPhone != null &&
+                                pnbPhone != null &&
                                 cbSms != null &&
                                 cbUnlisted != null )
                             {
-                                if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
+                                if ( !string.IsNullOrWhiteSpace( pnbPhone.Number ) )
                                 {
                                     int phoneNumberTypeId;
                                     if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
@@ -179,7 +180,8 @@ namespace RockWeb.Blocks.Security
                                             oldPhoneNumber = phoneNumber.NumberFormatted;
                                         }
 
-                                        phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                                        phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                                        phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                                         phoneNumber.IsMessagingEnabled = cbSms.Checked;
                                         phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                         phoneNumberTypeIds.Add( phoneNumberTypeId );

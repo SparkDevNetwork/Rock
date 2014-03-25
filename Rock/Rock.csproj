@@ -536,6 +536,7 @@
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
+    <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />

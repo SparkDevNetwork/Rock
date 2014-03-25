@@ -65,7 +65,7 @@
                                         <div class="row">
                                             <div class="col-sm-7">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                                <Rock:RockTextBox ID="tbPhone" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
+                                                <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' />
                                             </div>    
                                             <div class="col-sm-5">
                                                 <div class="row">

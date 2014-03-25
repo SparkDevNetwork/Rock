@@ -54,6 +54,7 @@ namespace RockWeb.Blocks.Core
             gDefinedTypeAttributes.Actions.ShowAdd = true;
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
+            gDefinedTypeAttributes.GridReorder += gDefinedTypeAttributes_GridReorder;
         }
 
         /// <summary>
@@ -339,6 +340,57 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gDefinedTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        void gDefinedTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            string qualifierValue = hfDefinedTypeId.Value;
+
+            var attributeService = new AttributeService();
+
+            int order = 0;
+            var attributes = attributeService
+                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            attributes.ForEach( a => a.Order = order++ );
+
+            var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in attributes.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in attributes.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = e.NewIndex;
+                attributeService.RockContext.SaveChanges();
+            }
+
+
+            BindDefinedTypeAttributesGrid();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gDefinedTypeAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -418,14 +470,17 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindDefinedTypeAttributesGrid()
         {
-            AttributeService attributeService = new AttributeService();
-
             string qualifierValue = hfDefinedTypeId.Value;
-            var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+            var attributes = new AttributeService()
+                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
 
-            gDefinedTypeAttributes.DataSource = qryDefinedTypeAttributes.OrderBy( a => a.Name ).ToList();
+            gDefinedTypeAttributes.DataSource = attributes;
             gDefinedTypeAttributes.DataBind();
         }
 
