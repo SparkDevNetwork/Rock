@@ -1,4 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  ║▌║█║▌│║▌▌│║▌█
+  This file format is intended for internal use only.  There is no DTD which defines its 
+  specification yet.  It's purpose is to give us a way to quickly load some sample/play
+  data using the SampleData block.  The data in this file and it's specification is
+  not only subject to change, it will certainly change quite often.
+-->
 <data>
   <families>
 
