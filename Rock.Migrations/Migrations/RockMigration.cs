@@ -1193,7 +1193,7 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForPage( string pageGuid, int order, string action, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.Page";
             EnsureEntityTypeExists( entityTypeName );
@@ -1223,13 +1223,14 @@ INSERT INTO [dbo].[Auth]
            ,@pageId
            ,{6}
            ,'{3}'
-           ,'A'
+           ,'{7}'
            ,{4}
            ,null
            ,@groupId
            ,'{5}')
 ";
-            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole.ConvertToInt(), authGuid, order ) );
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
         }
 
         /// <summary>
