@@ -62,6 +62,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength(3)]
         [DataMember]
+        [MergeField]
         public string CountryCode { get; set; }
 
         /// <summary>
@@ -73,6 +74,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public string Number { get; set; }
 
         /// <summary>
@@ -83,6 +85,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
+        [MergeField]
         public string Extension { get; set; }
 
         /// <summary>
@@ -229,6 +232,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the formatted number.
         /// </value>
+        [MergeField]
         public virtual string NumberFormatted
         {
             get { return PhoneNumber.FormattedNumber( CountryCode, Number ); }
@@ -240,6 +244,7 @@ namespace Rock.Model
         /// <value>
         /// The number formatted with country code.
         /// </value>
+        [MergeField]
         public virtual string NumberFormattedWithCountryCode
         {
             get { return PhoneNumber.FormattedNumber( CountryCode, Number, true ); }
@@ -253,7 +258,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return FormattedNumber( CountryCode, Number );
+            if ( !IsUnlisted )
+            {
+                return FormattedNumber( CountryCode, Number );
+            }
+            else
+            {
+                return "Unlisted";
+            }
         }
     }
 
