@@ -296,9 +296,19 @@
                 <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
             </div>
 
-            <a id="NotificationBox"></a>
+            <a id="Notificationbox"></a>
+            <h2 runat="server">Rock:Notificationbox</h2>
+            <p>
+                This creates a <a href="http://getbootstrap.com/components/#alerts">Bootstrap alert</a>.  We've added the ability to have Details that can be shown. 
+            </p>
+
             <div runat="server" class="r-example">
-                <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
+                <Rock:NotificationBox ID="notificationBox1" runat="server" Title="Success" Text="This is a success message." NotificationBoxType="Success"/>
+                <Rock:NotificationBox ID="notificationBox2" runat="server" Title="Info" Text="This is an informational message." NotificationBoxType="Info"/>
+                <Rock:NotificationBox ID="notificationBox3" runat="server" Title="Warning" Text="This is a warning." NotificationBoxType="Warning"/>
+                <Rock:NotificationBox ID="notificationBox4" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger"/>
+                <Rock:NotificationBox ID="notificationBox5" runat="server" Title="Hey" Text="You can close this when you are done reading it if you want." NotificationBoxType="Warning" Dismissable="true" />
+                <Rock:NotificationBox ID="notificationBox6" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details"/>
             </div>
 
             <a id="Badge"></a>

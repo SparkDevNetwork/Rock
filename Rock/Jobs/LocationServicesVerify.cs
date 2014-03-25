@@ -61,10 +61,20 @@ namespace Rock.Jobs
             int maxRecords = Int32.Parse( dataMap.GetString( "MaxRecordsPerRun" ) );
             int throttlePeriod = Int32.Parse( dataMap.GetString( "ThrottlePeriod" ) );
             int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
+
+            DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
             
             LocationService locationService = new LocationService();
             var addresses = locationService.Queryable()
-                                .Where( l => ((l.IsGeoPointLocked != true && l.GeocodedDateTime == null) || l.StandardizedDateTime == null) && l.IsActive == true && l.Street1 != null && l.Zip != null)
+                                .Where( l => (
+                                    (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
+                                    && (l.IsActive == true && l.Street1 != null && l.Zip != null) // or incomplete addresses
+                                    && (
+                                        (l.GeocodedDateTime == null && (l.GeocodeAttemptedDateTime == null || l.GeocodeAttemptedDateTime < retryDate)) // has not been attempted to be geocoded since retry date
+                                        ||
+                                        (l.StandardizedDateTime == null && (l.StandardizeAttemptedDateTime == null || l.StandardizeAttemptedDateTime < retryDate)) // has not been attempted to be standardize since retry date
+                                    )
+                                ))
                                 .Take( maxRecords ).ToList();
 
             foreach ( var address in addresses )
@@ -73,6 +83,7 @@ namespace Rock.Jobs
                 locationService.Save( address );
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
+
         }
 
     }

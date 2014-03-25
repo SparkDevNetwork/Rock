@@ -35,18 +35,19 @@
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
  
-    <ul class="nav nav-pills">
+    <ul class="nav nav-pills nav-pagelist">
         <asp:Repeater ID="rptActions" runat="server">
             <ItemTemplate>
                 <li class='<%# GetTabClass( Eval( "Key" ) ) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
             </ItemTemplate>
         </asp:Repeater>
+        <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
     </ul>
 
     <div class="tab-content">
 
         <asp:PlaceHolder ID="phList" runat="server">
-            <div class="security-action-description"><asp:Literal ID="lActionDescription" runat="server" /></div>
+            <div id="security-details" class="security-action-description alert alert-info collapse"><asp:Literal ID="lActionDescription" runat="server" /></div>
             <div class="security-rights">
                 <h4>Item Permissions</h4>
                 <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="role/user">

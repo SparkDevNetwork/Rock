@@ -309,5 +309,19 @@ namespace Rock.SystemGuid
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
 
         #endregion
+
+        #region map Styles
+
+        /// <summary>
+        /// Person Record Type
+        /// </summary>
+        public const string MAP_STYLE_GOOGLE = "BFC46259-FB66-4427-BF05-2B030A582BEA";
+
+        /// <summary>
+        /// Business Record Type
+        /// </summary>
+        public const string MAP_STYLE_ROCK = "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC";
+
+        #endregion
     }
 }
