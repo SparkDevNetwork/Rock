@@ -83,13 +83,15 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool Save( AttributeValue item, PersonAlias personAlias )
         {
-            if ( item.Attribute != null )
+            var attribute = item.Attribute ?? new AttributeService( this.RockContext ).Get( item.AttributeId );
+            
+            if ( attribute != null )
             {
                 // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
                 var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
                 var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
 
-                if ( item.Attribute.FieldTypeId == fieldTypeImage.Id || item.Attribute.FieldTypeId == fieldTypeBinaryFile.Id )
+                if ( attribute.FieldTypeId == fieldTypeImage.Id || attribute.FieldTypeId == fieldTypeBinaryFile.Id )
                 {
                     int? binaryFileId = item.Value.AsInteger();
                     if ( binaryFileId.HasValue )
