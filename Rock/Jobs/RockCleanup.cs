@@ -127,13 +127,23 @@ namespace Rock.Jobs
                 }
             }
 
+            // Add any missing person aliases
+            PersonService personService = new PersonService();
+            foreach ( var person in personService.Queryable( "Aliases" )
+                .Where( p => !p.Aliases.Any() ) 
+                .Take( 300 ) )
+            {
+                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+            }
+            personService.RockContext.SaveChanges();
+
+
             // Add any missing metaphones
             int namesToProcess = Int32.Parse( dataMap.GetString( "MaxMetaphoneNames" ) );
             if ( namesToProcess > 0 )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    PersonService personService = new PersonService();
                     var firstNameQry = personService.Queryable().Select( p => p.FirstName );
                     var nickNameQry = personService.Queryable().Select( p => p.NickName );
                     var lastNameQry = personService.Queryable().Select( p => p.LastName );
