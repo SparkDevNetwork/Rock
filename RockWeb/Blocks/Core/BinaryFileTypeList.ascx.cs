@@ -17,11 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.Actions.AddClick += gBinaryFileType_Add;
             gBinaryFileType.GridRebind += gBinaryFileType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBinaryFileType.Actions.ShowAdd = canAddEditDelete;
             gBinaryFileType.IsDeleteEnabled = canAddEditDelete;
         }

@@ -70,11 +70,18 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
+            get
+            {
+                var actions = new Dictionary<string, string>();
+                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view.");
+                actions.Add( Authorization.EDIT, "The roles and/or users that have access to edit.");
+                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate.");
+                return actions;
+            }
         }
 
         /// <summary>
@@ -98,7 +105,7 @@ namespace Rock.Security
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>

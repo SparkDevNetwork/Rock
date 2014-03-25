@@ -20,11 +20,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -161,6 +161,12 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group != null )
                 {
+                    if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this group", ModalAlertType.Information );
+                        return;
+                    }
+                    
                     string errorMessage;
                     if ( !groupService.CanDelete( group, out errorMessage ) )
                     {
@@ -297,7 +303,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    bool canEdit = IsUserAuthorized( "Edit" );
+                    bool canEdit = IsUserAuthorized( Authorization.EDIT );
                     gGroups.Actions.ShowAdd = canEdit;
                     gGroups.IsDeleteEnabled = canEdit;
 
@@ -355,7 +361,7 @@ namespace RockWeb.Blocks.Groups
                 foreach ( int groupTypeId in qry.Select( t => t.Id ) )
                 {
                     var groupType = GroupTypeCache.Read( groupTypeId );
-                    if ( groupType != null && groupType.IsAuthorized( "View", CurrentPerson ) )
+                    if ( groupType != null && groupType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
                         groupTypeIds.Add( groupTypeId );
                     }

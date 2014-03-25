@@ -99,6 +99,7 @@
                             <li><a href="#mobiledetect">Mobile Detect</a> (Unlicense) - <a href="http://detectmobilebrowsers.com/">Project Site</a></li>
                             <li><a href="#doublemetaphone">Double Metaphone</a> (Custom) - <a href="http://www.codeproject.com/Articles/4625/Implement-Phonetic-Sounds-like-Name-Searches-wit-4">Project Site</a></li>
                             <li><a href="#jcrop">JCrop</a> (MIT) - <a href="http://deepliquid.com/content/Jcrop.html">Project Site</a></li>
+                            <li><a href="#snazzymaps">Snazzy Maps</a> (Creative Commons - Share Alike) - <a href="http://snazzymaps.com/">Project Site</a></li>
                         </ul>
 
 
@@ -2474,6 +2475,23 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
+</pre>
+
+<a name="snazzymaps"></a>
+<h3>Snazzy Maps</h3>
+<pre>
+Creative Commons
+
+You are free to:
+Share — copy and redistribute the material in any medium or format
+Adapt — remix, transform, and build upon the material
+for any purpose, even commercially.
+The licensor cannot revoke these freedoms as long as you follow the license terms.
+
+Under the following terms:
+Attribution — You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+
+ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 </pre>
                     </div>
                 </div>

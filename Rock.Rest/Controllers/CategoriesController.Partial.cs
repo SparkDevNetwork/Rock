@@ -21,10 +21,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.Http;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -115,7 +115,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var category in categoryList )
             {
-                if ( category.IsAuthorized( "View", currentPerson ) )
+                if ( category.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     var categoryItem = new CategoryItem();
                     categoryItem.Id = category.Id.ToString();
@@ -134,7 +134,7 @@ namespace Rock.Rest.Controllers
                     foreach ( var item in items )
                     {
                         ICategorized categorizedItem = item as ICategorized;
-                        if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                        if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             var categoryItem = new CategoryItem();
                             categoryItem.Id = categorizedItem.Id.ToString();
@@ -157,7 +157,7 @@ namespace Rock.Rest.Controllers
 
                     foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
                     {
-                        if ( childCategory.IsAuthorized( "View", currentPerson ) )
+                        if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             g.HasChildren = true;
                             break;
@@ -174,7 +174,7 @@ namespace Rock.Rest.Controllers
                                 foreach ( var item in childItems )
                                 {
                                     ICategorized categorizedItem = item as ICategorized;
-                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                                     {
                                         g.HasChildren = true;
                                         break;

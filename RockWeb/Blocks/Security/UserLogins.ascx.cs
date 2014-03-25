@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Security
                 // Hide the person name column
                 gUserLogins.Columns[1].Visible = false;
             } 
-            _canEdit = RockPage.IsAuthorized( "Edit", CurrentPerson );
+            _canEdit = IsUserAuthorized( Authorization.EDIT );
 
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;

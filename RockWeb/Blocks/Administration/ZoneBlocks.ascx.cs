@@ -19,9 +19,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Administration
 
             lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", page.Layout.Name );
 
-            if ( page.Layout.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.Layout.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
             }
 
-            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
                 gPageBlocks.Actions.ShowAdd = true;
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Administration
 
             nbMessage.Visible = false;
 
-            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {

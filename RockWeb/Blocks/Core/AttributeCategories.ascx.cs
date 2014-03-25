@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -61,7 +62,7 @@ namespace RockWeb.Blocks.Core
             entityTypeFilter.EntityTypes = entityTypes;
             entityTypePicker.EntityTypes = entityTypes;
 
-            _canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
+            _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             BindFilter();
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;

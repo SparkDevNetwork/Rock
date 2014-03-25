@@ -89,135 +89,146 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
-            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            try
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString("hh:mm:ss.FFF" ) ));
-            }
-
-            // Check if database should be auto-migrated for the core and plugins
-            bool autoMigrate = true;
-            if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
-            {
-                autoMigrate = true;
-            }
-
-            if ( autoMigrate )
-            {
-                try
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-
-                    Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
-
-                    // explictly check if the database exists, and force create it if doesn't exist
-                    Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
-                    if ( !rockContext.Database.Exists() )
-                    {
-                        rockContext.Database.Initialize( true );
-                    }
-                    else
-                    {
-                        var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                        migrator.Update();
-                    }
-
-                    // Migrate any plugins that have pending migrations
-                    List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
-
-                    foreach ( var configType in configurationTypeList )
-                    {
-                        if ( configType != typeof( Rock.Migrations.Configuration ) )
-                        {
-                            var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
-                            System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
-                            pluginMigrator.Update();
-                        }
-                    }
-
-                }
-                catch ( Exception ex )
-                {
-                    // if migrations fail, log error and attempt to continue
-                    LogError( ex, null );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-            }
-            else
-            {
-                // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
-                Database.SetInitializer<Rock.Data.RockContext>( null );
-            }
+                // Check if database should be auto-migrated for the core and plugins
+                bool autoMigrate = true;
+                if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
+                {
+                    autoMigrate = true;
+                }
 
-            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-            {
-                new AttributeService().Get( 0 );
-                System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-            }
-
-            // Preload the commonly used objects
-            LoadCacheObjects();
-            if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-            {
-                System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-            }
-
-            // setup and launch the jobs infrastructure if running under IIS
-            bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-            if ( runJobsInContext )
-            {
-
-                ISchedulerFactory sf;
-
-                // create scheduler
-                sf = new StdSchedulerFactory();
-                sched = sf.GetScheduler();
-
-                // get list of active jobs
-                ServiceJobService jobService = new ServiceJobService();
-                foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+                if ( autoMigrate )
                 {
                     try
                     {
-                        IJobDetail jobDetail = jobService.BuildQuartzJob( job );
-                        ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
 
-                        sched.ScheduleJob( jobDetail, jobTrigger );
+                        Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+
+                        // explictly check if the database exists, and force create it if doesn't exist
+                        Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+                        if ( !rockContext.Database.Exists() )
+                        {
+                            rockContext.Database.Initialize( true );
+                        }
+                        else
+                        {
+                            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                            migrator.Update();
+                        }
+
+                        // Migrate any plugins that have pending migrations
+                        List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
+
+                        foreach ( var configType in configurationTypeList )
+                        {
+                            if ( configType != typeof( Rock.Migrations.Configuration ) )
+                            {
+                                var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
+                                System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
+                                pluginMigrator.Update();
+                            }
+                        }
+
                     }
                     catch ( Exception ex )
                     {
-                        // create a friendly error message
-                        string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
-                        job.LastStatusMessage = message;
-                        job.LastStatus = "Error Loading Job";
-
-                        jobService.Save( job, null );
+                        // if migrations fail, log error and attempt to continue
+                        LogError( ex, null );
                     }
+
+                }
+                else
+                {
+                    // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
+                    Database.SetInitializer<Rock.Data.RockContext>( null );
                 }
 
-                // set up the listener to report back from jobs as they complete
-                sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    new AttributeService().Get( 0 );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
 
-                // start the scheduler
-                sched.Start();
+                // Preload the commonly used objects
+                LoadCacheObjects();
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
+
+                // setup and launch the jobs infrastructure if running under IIS
+                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                if ( runJobsInContext )
+                {
+
+                    ISchedulerFactory sf;
+
+                    // create scheduler
+                    sf = new StdSchedulerFactory();
+                    sched = sf.GetScheduler();
+
+                    // get list of active jobs
+                    ServiceJobService jobService = new ServiceJobService();
+                    foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+                    {
+                        try
+                        {
+                            IJobDetail jobDetail = jobService.BuildQuartzJob( job );
+                            ITrigger jobTrigger = jobService.BuildQuartzTrigger( job );
+
+                            sched.ScheduleJob( jobDetail, jobTrigger );
+                        }
+                        catch ( Exception ex )
+                        {
+                            // create a friendly error message
+                            string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
+                            job.LastStatusMessage = message;
+                            job.LastStatus = "Error Loading Job";
+
+                            jobService.Save( job, null );
+                        }
+                    }
+
+                    // set up the listener to report back from jobs as they complete
+                    sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+
+                    // start the scheduler
+                    sched.Start();
+                }
+
+                // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+                AddCallBack();
+
+                RegisterFilters( GlobalConfiguration.Configuration.Filters );
+
+                RegisterRoutes( RouteTable.Routes );
+
+                Rock.Security.Authorization.Load();
+
+                AddEventHandlers();
+
+                new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
+                new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
+
+                BundleConfig.RegisterBundles( BundleTable.Bundles );
+
+                // mark any user login stored as 'IsOnline' in the database as offline
+                MarkOnlineUsersOffline();
             }
-
-            // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
-            AddCallBack();
-
-            RegisterFilters( GlobalConfiguration.Configuration.Filters );
-
-            RegisterRoutes( RouteTable.Routes );
-
-            Rock.Security.Authorization.Load();
-
-            AddEventHandlers();
-
-            new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
-            new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
-
-            BundleConfig.RegisterBundles( BundleTable.Bundles );
-
-            // mark any user login stored as 'IsOnline' in the database as offline
-            MarkOnlineUsersOffline();
+            catch ( Exception ex )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+            }
         }
 
         /// <summary>
@@ -227,10 +238,21 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_Start( object sender, EventArgs e )
         {
-            new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
+            try
+            {
+                new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
 
-            // add new session id
-            Session["RockSessionId"] = Guid.NewGuid();
+                // add new session id
+                Session["RockSessionId"] = Guid.NewGuid();
+            }
+            catch ( Exception ex )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+            }
         }
 
         /// <summary>
@@ -240,18 +262,28 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Session_End( object sender, EventArgs e )
         {
-
-            // mark user offline
-            if ( this.Session["RockUserId"] != null )
+            try
             {
+                // mark user offline
+                if ( this.Session["RockUserId"] != null )
+                {
 
-                UserLoginService userLoginService = new UserLoginService();
+                    UserLoginService userLoginService = new UserLoginService();
 
-                var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
-                user.IsOnLine = false;
+                    var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
+                    user.IsOnLine = false;
 
-                userLoginService.Save( user, null );
+                    userLoginService.Save( user, null );
 
+                }
+            }
+            catch ( Exception ex )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
             }
         }
 
@@ -262,15 +294,26 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+            try
             {
-                if ( Context.Request.Url != null )
+                if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
                 {
-                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                    if ( Context.Request.Url != null )
+                    {
+                        Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                    }
                 }
-            }
 
-            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+                Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            }
+            catch ( Exception ex )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+            }
         }
 
         /// <summary>
@@ -291,127 +334,138 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
-            HttpContext context = HttpContext.Current;
-
-            // If the current context is null, there's nothing that can be done. Just return.
-            if ( context == null )
+            try
             {
-                return;
-            }
+                HttpContext context = HttpContext.Current;
 
-            // log error
-            var ex = Context.Server.GetLastError();
-
-            if ( ex != null )
-            {
-                bool logException = true;
-
-                // string to send a message to the error page to prevent infinite loops
-                // of error reporting from incurring if there is an exception on the error page
-                string errorQueryParm = "?type=exception&error=1";
-
-                string errorCount = context.Request["error"];
-                if ( !string.IsNullOrWhiteSpace( errorCount ) )
+                // If the current context is null, there's nothing that can be done. Just return.
+                if ( context == null )
                 {
-                    if ( errorCount == "1" )
-                    {
-                        errorQueryParm = "?type=exception&error=2";
-                    }
-                    else if ( errorCount == "2" )
-                    {
-                        // something really bad is occurring stop logging errors as we're in an infinate loop
-                        logException = false;
-                    }
+                    return;
                 }
 
-                if ( logException )
+                // log error
+                var ex = Context.Server.GetLastError();
+
+                if ( ex != null )
                 {
-                    string status = "500";
+                    bool logException = true;
 
-                    var globalAttributesCache = GlobalAttributesCache.Read();
+                    // string to send a message to the error page to prevent infinite loops
+                    // of error reporting from incurring if there is an exception on the error page
+                    string errorQueryParm = "?type=exception&error=1";
 
-                    // determine if 404's should be tracked as exceptions
-                    bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
-
-                    // set status to 404
-                    if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
+                    string errorCount = context.Request["error"];
+                    if ( !string.IsNullOrWhiteSpace( errorCount ) )
                     {
-                        status = "404";
+                        if ( errorCount == "1" )
+                        {
+                            errorQueryParm = "?type=exception&error=2";
+                        }
+                        else if ( errorCount == "2" )
+                        {
+                            // something really bad is occurring stop logging errors as we're in an infinate loop
+                            logException = false;
+                        }
                     }
 
-                    if ( status == "500" || track404 )
+                    if ( logException )
                     {
-                        LogError( ex, context );
-                        context.Server.ClearError();
+                        string status = "500";
 
-                        string errorPage = string.Empty;
+                        var globalAttributesCache = GlobalAttributesCache.Read();
 
-                        // determine error page based on the site
-                        SiteService service = new SiteService();
-                        string siteName = string.Empty;
+                        // determine if 404's should be tracked as exceptions
+                        bool track404 = Convert.ToBoolean( globalAttributesCache.GetValue( "Log404AsException" ) );
 
-                        if ( context.Items["Rock:SiteId"] != null )
+                        // set status to 404
+                        if ( ex.Message == "File does not exist." && ex.Source == "System.Web" )
                         {
-                            int siteId;
-                            Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
-
-                            // load site
-                            Site site = service.Get( siteId );
-                            siteName = site.Name;
-                            errorPage = site.ErrorPage;
+                            status = "404";
                         }
 
-                        // Attempt to store exception in session. Session state may not be available
-                        // within the context of an HTTP handler or the REST API.
-                        try { Session["Exception"] = ex; }
-                        catch ( HttpException ) { }
-
-                        // email notifications if 500 error
-                        if ( status == "500" )
+                        if ( status == "500" || track404 )
                         {
-                            try
+                            LogError( ex, context );
+                            context.Server.ClearError();
+
+                            string errorPage = string.Empty;
+
+                            // determine error page based on the site
+                            SiteService service = new SiteService();
+                            string siteName = string.Empty;
+
+                            if ( context.Items["Rock:SiteId"] != null )
                             {
-                                // setup merge codes for email
-                                var mergeObjects = new Dictionary<string, object>();
-                                mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
+                                int siteId;
+                                Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
 
-                                // get email addresses to send to
-                                string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+                                // load site
+                                Site site = service.Get( siteId );
+                                siteName = site.Name;
+                                errorPage = site.ErrorPage;
+                            }
 
-                                if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
+                            // Attempt to store exception in session. Session state may not be available
+                            // within the context of an HTTP handler or the REST API.
+                            try { Session["Exception"] = ex; }
+                            catch ( HttpException ) { }
+
+                            // email notifications if 500 error
+                            if ( status == "500" )
+                            {
+                                try
                                 {
-                                    string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                    var recipients = new Dictionary<string, Dictionary<string, object>>();
+                                    // setup merge codes for email
+                                    var mergeObjects = new Dictionary<string, object>();
+                                    mergeObjects.Add( "ExceptionDetails", "An error occurred on the " + siteName + " site on page: <br>" + context.Request.Url.OriginalString + "<p>" + FormatException( ex, "" ) );
 
-                                    foreach ( string emailAddress in emailAddresses )
+                                    // get email addresses to send to
+                                    string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
+                                    if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                     {
-                                        recipients.Add( emailAddress, mergeObjects );
-                                    }
+                                        string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
-                                    Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                        foreach ( string emailAddress in emailAddresses )
+                                        {
+                                            recipients.Add( emailAddress, mergeObjects );
+                                        }
+
+                                        Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                    }
+                                }
+                                catch
+                                {
                                 }
                             }
-                            catch 
-                            { 
+
+                            // redirect to error page
+                            if ( !string.IsNullOrEmpty( errorPage ) )
+                            {
+                                Response.Redirect( errorPage + errorQueryParm, false );
+                                Context.ApplicationInstance.CompleteRequest();
                             }
-                        }
+                            else
+                            {
+                                Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
+                                Context.ApplicationInstance.CompleteRequest();
+                            }
 
-                        // redirect to error page
-                        if ( !string.IsNullOrEmpty( errorPage ) )
-                        {
-                            Response.Redirect( errorPage + errorQueryParm, false );
-                            Context.ApplicationInstance.CompleteRequest();
+                            // intentially throw ThreadAbort
+                            Response.End();
                         }
-                        else
-                        {
-                            Response.Redirect( "~/error.aspx" + errorQueryParm, false );  // default error page
-                            Context.ApplicationInstance.CompleteRequest();
-                        }
-
-                        // intentially throw ThreadAbort
-                        Response.End();
                     }
                 }
+            }
+            catch ( Exception ex )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
             }
         }
 

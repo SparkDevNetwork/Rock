@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -277,7 +278,7 @@ namespace RockWeb.Blocks.Cms
             }
             catch ( Exception ex )
             {
-                if ( IsUserAuthorized( "Administrate" ) )
+                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
                 {
                     throw ex;
                 }
@@ -289,7 +290,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( messages.Count > 0 )
             {
-                if ( IsUserAuthorized( "Administrate" ) )
+                if ( IsUserAuthorized( Authorization.ADMINISTRATE ) )
                 {
                     SetNotificationBox( messages.FirstOrDefault().Key, messages.FirstOrDefault().Value, isError ? NotificationBoxType.Warning : NotificationBoxType.Info );
                 }

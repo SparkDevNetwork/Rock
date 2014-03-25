@@ -21,6 +21,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -64,7 +65,7 @@ namespace RockWeb.Blocks.Core
                     gDefinedValues.GridRebind += gDefinedValues_GridRebind;
                     gDefinedValues.GridReorder += gDefinedValues_GridReorder;
 
-                    bool canAddEditDelete = IsUserAuthorized( "Edit" );
+                    bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
                     gDefinedValues.Actions.ShowAdd = canAddEditDelete;
                     gDefinedValues.IsDeleteEnabled = canAddEditDelete;
 
@@ -352,6 +353,9 @@ namespace RockWeb.Blocks.Core
         {
             var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );
             DefinedValue definedValue;
+
+            modalValue.SubTitle = String.Format( "Id: {0}", valueId );
+
             if ( !valueId.Equals( 0 ) )
             {
                 definedValue = new DefinedValueService().Get( valueId );

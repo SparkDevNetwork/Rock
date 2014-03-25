@@ -28,6 +28,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using System.IO;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -260,7 +261,7 @@ namespace RockWeb.Blocks.Crm
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Rock.Model.Layout.FriendlyTypeName );

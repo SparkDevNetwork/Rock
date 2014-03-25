@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -40,12 +41,18 @@ namespace RockWeb.Blocks.Administration
         private Rock.Model.AuthService authService = new Rock.Model.AuthService();
         private ISecured iSecured;
 
+        /// <summary>
+        /// Gets or sets the current action.
+        /// </summary>
+        /// <value>
+        /// The current action.
+        /// </value>
         protected string CurrentAction
         {
             get
             {
                 object currentAction = ViewState["CurrentAction"];
-                return currentAction != null ? currentAction.ToString() : "View";
+                return currentAction != null ? currentAction.ToString() : Authorization.VIEW;
             }
             set
             {
@@ -119,21 +126,30 @@ namespace RockWeb.Blocks.Administration
                 var block = iSecured as Rock.Model.Block;
                 if ( block != null )
                 {
-                    // If the entity is a block, get the cachedblock's supported action, as the RockPage may have
-                    // added additional actions when the cache was created.
-                    foreach ( var action in BlockCache.Read( block.Id ).SupportedActions )
+                    // If the entity is a block, get any actions that were updated or added by the block type using
+                    // one or more SecurityActionAttributes.
+                    foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
                     {
-                        if ( !block.SupportedActions.Contains( action ) )
+                        if ( block.SupportedActions.ContainsKey( action.Key ) )
                         {
-                            block.SupportedActions.Add( action );
+                            block.SupportedActions[action.Key] = action.Value;
+                        }
+                        else
+                        {
+                            block.SupportedActions.Add( action.Key, action.Value );
                         }
                     }
 
                     iSecured = block;
                 }
 
-                if ( iSecured != null && iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( iSecured != null && iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
+                    if (iSecured.SupportedActions.Any())
+                    {
+                        lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
+                    }
+
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
 
@@ -181,7 +197,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                     BindGrid();
@@ -487,11 +503,13 @@ namespace RockWeb.Blocks.Administration
         {
             cblRoleActionList.Items.Clear();
 
-            foreach ( string action in iSecured.SupportedActions )
+            foreach ( var action in iSecured.SupportedActions )
             {
-                if ( action == CurrentAction )
+                if ( action.Key == CurrentAction )
                 {
-                    ListItem roleItem = new ListItem( action );
+                    lActionDescription.Text = action.Value;
+
+                    ListItem roleItem = new ListItem( action.Key );
                     roleItem.Selected = true;
                     cblRoleActionList.Items.Add( roleItem );
                 }
@@ -513,7 +531,7 @@ namespace RockWeb.Blocks.Administration
                     if ( groupId < 0 )
                         groupId = null;
 
-                    foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action ) )
+                    foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action.Key ) )
                     {
                         if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {
@@ -523,7 +541,7 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     if ( !alreadyAdded )
-                        cblRoleActionList.Items.Add( new ListItem( action ) );
+                        cblRoleActionList.Items.Add( new ListItem( action.Key ) );
                 }
             }
         }
