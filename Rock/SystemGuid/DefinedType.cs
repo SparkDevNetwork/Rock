@@ -37,7 +37,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The list of phone country code formats and how to format their numbers 
         /// </summary>
-        public const string COMMUNICATION_PHONE_COUNTRY_CODE_FORMAT = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
+        public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
         /// Guid for check-in search type

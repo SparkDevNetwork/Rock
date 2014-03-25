@@ -249,7 +249,7 @@ namespace Rock.Web.UI.Controls
                     StringBuilder sbScript = new StringBuilder();
                     sbScript.Append( "\tvar phoneNumberFormats = {\n" );
 
-                    var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE_FORMAT.AsGuid() );
+                    var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
                     if ( definedType != null )
                     {
                         var definedValues = definedType.DefinedValues;
@@ -371,7 +371,7 @@ namespace Rock.Web.UI.Controls
 
             bool renderCountryCodeButton = false;
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE_FORMAT.AsGuid() );
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {
                 var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Name ).Distinct();
