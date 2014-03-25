@@ -146,7 +146,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string DefaultCountryCode()
         {
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE_FORMAT.AsGuid() );
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if (definedType != null)
             {
                 string countryCode = definedType.DefinedValues.OrderBy( v => v.Order).Select( v => v.Name).FirstOrDefault();
@@ -176,7 +176,7 @@ namespace Rock.Model
 
             number = CleanNumber( number );
 
-            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE_FORMAT.AsGuid() );
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if (definedType != null)
             {
                 var definedValues = definedType.DefinedValues.OrderBy( v => v.Order);
