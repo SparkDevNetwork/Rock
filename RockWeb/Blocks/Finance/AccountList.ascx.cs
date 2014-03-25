@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -170,6 +171,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The e.</param>
         protected void rAccountFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            switch ( e.Key )
+            {
+                case "Campus":
+
+                    int campusId = 0;
+                    if ( int.TryParse( e.Value, out campusId ) )
+                    {
+                        var service = new CampusService();
+                        var campus = service.Get( campusId );
+                        if ( campus != null )
+                        {
+                            e.Value = campus.Name;
+                        }
+                    }
+
+                    break;
+            }
         }
 
         /// <summary>
@@ -180,7 +198,7 @@ namespace RockWeb.Blocks.Finance
         protected void rAccountFilter_ApplyFilterClick( object Sender, EventArgs e )
         {
             rAccountFilter.SaveUserPreference( "Account Name", txtAccountName.Text );
-            rAccountFilter.SaveUserPreference( "Campus", txtAccountName.Text );
+            rAccountFilter.SaveUserPreference( "Campus", ddlCampus.SelectedValue );
             rAccountFilter.SaveUserPreference( "Active", ddlIsActive.SelectedValue );
             rAccountFilter.SaveUserPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
             BindGrid();
@@ -202,10 +220,10 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.Name.Contains( accountNameFilter ) );
             }
 
-            string campusFilter = rAccountFilter.GetUserPreference( "Campus" );
-            if ( !string.IsNullOrEmpty( campusFilter ) )
+            int campusId = int.MinValue;
+            if ( int.TryParse( rAccountFilter.GetUserPreference( "Campus" ), out campusId ) )
             {
-                accountQuery = accountQuery.Where( account => account.Campus.Name == campusFilter );
+                accountQuery = accountQuery.Where( account => account.Campus.Id == campusId );
             }
 
             string activeFilter = rAccountFilter.GetUserPreference( "Active" );
@@ -237,7 +255,14 @@ namespace RockWeb.Blocks.Finance
         private void BindFilter()
         {
             txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
-            ddlCampus.SelectedValue = rAccountFilter.GetUserPreference( "Campus" );
+            var campusService = new CampusService();
+            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( Campus campus in campusService.Queryable() )
+            {
+                ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
+                li.Selected = campus.Id.ToString() == rAccountFilter.GetUserPreference( "Campus" );
+                ddlCampus.Items.Add( li );
+            }
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
         }

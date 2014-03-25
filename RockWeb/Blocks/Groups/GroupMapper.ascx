@@ -10,7 +10,7 @@
                 <div id="map_canvas" class="mapping"></div>
             </div>
 
-            <asp:Literal ID="lGroupJson" runat="server" />
+            <asp:Literal ID="lMapScript" runat="server" />
             <script>
                 Sys.Application.add_load(function () {
 
@@ -20,7 +20,8 @@
                         var map;
                         var bounds = new google.maps.LatLngBounds();
                         var mapOptions = {
-                            mapTypeId: 'roadmap'
+                            mapTypeId: 'roadmap',
+                            styles: mapStyle
                         };
 
                         // Display a map on the page
@@ -34,14 +35,16 @@
 
                         // Loop through our array of markers & place each one on the map
                         $.each(groupData.groups, function (i, group) {
-                            console.log(group);
+
                             var position = new google.maps.LatLng(group.latitude, group.longitude);
                             bounds.extend(position);
 
                             marker = new google.maps.Marker({
                                 position: position,
                                 map: map,
-                                title: htmlDecode(group.name)
+                                title: htmlDecode(group.name),
+                                icon: pinImage,
+                                shadow: pinShadow
                             });
 
                             // Allow each marker to have an info window    

@@ -173,7 +173,6 @@ a:hover i.fs
     background: none;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
     color: @header-text-color;
-    --padding-bottom: @spacing-md-px;
     margin-bottom: @spacing-md-px;
 
     a {
@@ -192,9 +191,12 @@ a:hover i.fs
     }
 
     .smartsearch {
-        margin: 0 auto;
+        margin: 0 auto 20px;
     }
 
+    .loginstatus {
+        display: none;
+    }
 
     .brandbar-logo {
 	    width: 110px;
@@ -205,10 +207,7 @@ a:hover i.fs
         color: @header-text-color;
         border-color: @header-text-color;
     }
-    
-    .loginstatus {
-        display: none;
-    }   
+     
 }
 
 
@@ -216,31 +215,27 @@ a:hover i.fs
 .pagenav {
     border-top: 1px solid lighten(@header-bg, 10%);
     border-bottom: 1px solid darken(@header-bg, 10%);
-
     background: @header-bg;
-	
+    max-height: inherit; // override bootstraps max-height 340px
+
     .navbar-nav {
         margin: 0;
     }
 
     .nav {
-        border-left: 1px solid lighten(@header-bg, 10%);
         width: 100%;
 
         > li {
-            height: 67px;
-            border-left: 1px solid darken(@header-bg, 10%);
-            border-right: 1px solid lighten(@header-bg, 10%);
-            width: 12.5%; // set to allow 8 nav items 
+            height: auto;
+            width: 50%;
             float: left;
-            
-            &:last-child:after { // add the final shadow to the last nav element 
+
+            &:last-child:after { // add the final shadow to the last nav element
                 content: " ";
                 position: absolute;
                 top: 0;
                 right: 0;
                 bottom: 0;
-                border-right: 1px solid darken(@header-bg, 10%);
             }
 
             > a {
@@ -266,7 +261,6 @@ a:hover i.fs
                     margin: 6px auto 0;
                     font-size: 18px;
                 }
-
                 // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
                 div {
                     height: 26px;
@@ -279,17 +273,27 @@ a:hover i.fs
                     line-height: 11px;
                 }
             }
-        }
 
-        /* remove last divider out of the menu */
-        li.divider:last-child { 
-            display: none;
+            .dropdown-menu > li {
+                
+                a {
+                    color: @header-text-color;
+
+                    &:hover {
+                        background-color: inherit;
+                    }
+                }
+                
+                &.divider {
+                    display: none;
+                }
+            }
         }
     }
 
-    .dropdown-menu 
-    {
-	    left: -2px;
+
+    .dropdown-menu {
+        left: -2px;
         width: 240px;
     }
 }
@@ -337,14 +341,9 @@ a:hover i.fs
 // 4. Responsive Overrides 
 // -------------------------
 
-// default styling should be for phones 767px or less
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
 
-// Small devices (tablets, 768px and up)
-@media (min-width: @screen-sm-min) {
-    
     .pageheader {
-        padding-bottom: 0;
-
         .smartsearch {
             margin: 20px auto;
             float: right;
@@ -355,97 +354,72 @@ a:hover i.fs
         }
     }
 
+    .pagenav { // change menu to show as boxes
+        .nav {
+            border-left: 1px solid lighten(@header-bg, 10%);
+
+            & > li {
+                width: 12.5%;
+                height: 67px;
+                border-left: 1px solid darken(@header-bg, 10%);
+                border-right: 1px solid lighten(@header-bg, 10%);
+
+                .dropdown-menu > li {
+                    > a {
+                        color: @text-color;
+
+                        &:hover {
+                            background-color: @accent-light-color;
+                        }
+                    }
+
+                    &:last-child:after {
+                        border-right: 1px solid darken(@header-bg, 10%);
+                    }
+
+                    &.divider {
+                        display: inherit;
+                    }
+
+                    &.divider:last-child { // remove last divider out of the menu
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
-
+    
+    .pagenav {
+        .nav {
+            .dropdown-menu > li {
+                
+            }
+        }
+    }
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-    
+
     .container { // allow the rock screen to grow wide
         width: 90%;
-    }
-
-}
-
-
-
-@media (max-width: @screen-sm-min) { // if screen smaller than sm
-
-    .pageheader {
-        .smartsearch {
-            margin: 0 auto 20px;
-            float: none !important;
-        }
-    }
-                                     
-    header .header-zone {
-        margin: -10px 0 0 0;
-
-        .navbar-nav .open .dropdown-menu {
-            a {
-                color: @header-text-color;
-            }
-
-            .divider {
-                display: none;
-            }
-        }
-    }
-
-    .pagenav { // responsive menu rules
-        .nav {
-            border: 0;
-
-            & > li {
-                width: 33%;
-                height: auto;
-                border: 0;
-
-                &:last-child:after {
-		            border-right: 0;
-	            }
-
-                .dropdown-menu > li {
-                    > a {
-                        color: white;
-
-                        &:hover {
-                            background-color: lighten(@header-bg, 10%) !important;
-                        }
-                    }
-
-                    &.divider {
-                        display: none;
-                    }
-                } 
-            }
-        }
-    }
-}
-
-@media (max-width: @screen-xs-min) { // if screen smaller than sm
-
-    .pagenav .nav > li { // 2 columns of icons
-        width: 50%;
     }
 }
 
 // 6. Layout Specific Styles
 // -------------------------
-
 // splash screen
-body#splash
-{
+body#splash {
     background: none;
 }
 
 #splash .pageheader-logo {
     height: 45px;
-	width: 127.57px;
+    width: 127.57px;
     margin-bottom: 6px;
 }
 
@@ -460,9 +434,8 @@ body#splash #content-box {
     overflow: hidden;
 }
 
-#splash #content-box
-{
-   padding: 15px;
+#splash #content-box {
+    padding: 15px;
 }
 
 #splash .login .form-actions {

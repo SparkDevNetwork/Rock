@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -53,6 +52,44 @@ namespace Rock.Web.UI.Controls
         public NotificationBoxType NotificationBoxType { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [dismissable].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [dismissable]; otherwise, <c>false</c>.
+        /// </value>
+        public bool Dismissable
+        {
+            get
+            {
+                return ViewState["Dismissable"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["Dismissable"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the details.
+        /// </summary>
+        /// <value>
+        /// The details.
+        /// </value>
+        public string Details
+        {
+            get
+            {
+                return ViewState["Details"] as string;
+            }
+
+            set
+            {
+                ViewState["Details"] = value;
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
@@ -69,21 +106,40 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "alert alert-" + alertType );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    if ( !string.IsNullOrWhiteSpace( Heading ) )
+                    if ( this.Dismissable )
+                    {
+                        writer.Write( @"<button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='fa fa-times'></i></button>" );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( this.Heading ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.H4 );
                         writer.Write( Heading );
                         writer.RenderEndTag();
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( Title ) )
+                    if ( !string.IsNullOrWhiteSpace( this.Title ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-                        writer.Write( Title + " ");
+                        writer.Write( Title + " " );
                         writer.RenderEndTag();
                     }
 
                     base.RenderControl( writer );
+
+                    if ( !string.IsNullOrWhiteSpace( this.Details ) )
+                    {
+                        string detailsFormat = @"
+<small>
+    <a data-toggle='collapse' data-parent='#accordion' href='#error-details'>Show Details</a>
+</small>
+<div id='error-details' class='collapse'>
+        <p class='margin-t-sm'>
+        {0}
+    </p>
+</div>";
+                        writer.Write( detailsFormat, this.Details );
+                    }
 
                     writer.RenderEndTag();
                 }
@@ -96,7 +152,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public enum NotificationBoxType
     {
-
         /// <summary>
         /// Display an information box
         /// </summary>
@@ -116,5 +171,5 @@ namespace Rock.Web.UI.Controls
         /// Display a success box
         /// </summary>
         Success
-    };
+    }
 }
