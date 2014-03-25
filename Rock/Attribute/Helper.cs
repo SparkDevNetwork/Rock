@@ -589,12 +589,14 @@ namespace Rock.Attribute
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
                 attributeService.Add( attribute, currentPersonAlias );
+                newAttribute.Order = attributeService.Queryable().Max( a => a.Order) + 1;
             }
             else
             {
                 // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
                 newAttribute.Id = attribute.Id;
                 newAttribute.Guid = attribute.Guid;
+                newAttribute.Order = attribute.Order;
             }
 
             // Copy all the properties from the new attribute to the attribute model

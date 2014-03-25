@@ -105,6 +105,7 @@ namespace Rock.Model
         {
             target.IsSystem = source.IsSystem;
             target.PersonId = source.PersonId;
+            target.CountryCode = source.CountryCode;
             target.Number = source.Number;
             target.Extension = source.Extension;
             target.NumberTypeValueId = source.NumberTypeValueId;

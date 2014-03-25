@@ -16,7 +16,7 @@
                         <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
                             <Columns>
                                 <Rock:ReorderField/>
-                                <asp:BoundField DataField="Name" HeaderText="Name"/>
+                                <asp:BoundField DataField="Name" HeaderText="Value"/>
                                 <asp:BoundField DataField="Description" HeaderText="Description"/>
                             </Columns>
                         </Rock:Grid>
@@ -37,7 +37,7 @@
                 <fieldset>                
                     <div class="row-fluid">
                         <div class="span12">
-                            <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" ValidationGroup="Value"/>
+                            <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" ValidationGroup="Value" Label="Value"/>
                             <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value"/>
                         </div>
                     </div>

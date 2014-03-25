@@ -40,6 +40,8 @@ namespace RockWeb.Blocks.Security
     [LinkedPage("Detail Page", "Page to edit account details")]
     public partial class MyAccount : RockBlock
     {
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -89,6 +91,15 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbEditPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEditPerson_Click( object sender, EventArgs e )
         {
             if ( CurrentPerson != null )
@@ -96,6 +107,25 @@ namespace RockWeb.Blocks.Security
                 NavigateToLinkedPage( "DetailPage" );
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Formats the phone number.
+        /// </summary>
+        /// <param name="countryCode">The country code.</param>
+        /// <param name="number">The number.</param>
+        /// <returns></returns>
+        protected string FormatPhoneNumber( object countryCode, object number )
+        {
+            string cc = countryCode as string ?? string.Empty;
+            string n = number as string ?? string.Empty;
+            return PhoneNumber.FormattedNumber( cc, n );
+        }
+
+        #endregion
 
     }
 }

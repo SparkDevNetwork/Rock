@@ -306,8 +306,8 @@ achieve our mission.  We are so grateful for your commitment.
                 tdEmail.Visible = display;
 
                 bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
-                txtPhone.Visible = display;
-                txtPhone.Required = display;
+                pnbPhone.Visible = display;
+                pnbPhone.Required = display;
                 tdPhone.Visible = display;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
@@ -457,7 +457,16 @@ achieve our mission.  We are so grateful for your commitment.
                             if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
                             {
                                 var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
-                                txtPhone.Text = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
+                                if ( phoneNumber != null )
+                                {
+                                    pnbPhone.CountryCode = phoneNumber.CountryCode;
+                                    pnbPhone.Number = phoneNumber.NumberFormatted;
+                                }
+                                else
+                                {
+                                    pnbPhone.CountryCode = PhoneNumber.DefaultCountryCode();
+                                    pnbPhone.Number = string.Empty;
+                                }
                             }
 
                             Guid addressTypeGuid = Guid.Empty;
@@ -880,7 +889,8 @@ achieve our mission.  We are so grateful for your commitment.
                             if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
                             {
                                 var phone = new PhoneNumber();
-                                phone.Number = txtPhone.Text.AsNumeric();
+                                phone.CountryCode = PhoneNumber.CleanNumber(pnbPhone.CountryCode);
+                                phone.Number = PhoneNumber.CleanNumber(pnbPhone.Number);
                                 phone.NumberTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
                                 person.PhoneNumbers.Add( phone );
                             }
@@ -1149,7 +1159,7 @@ achieve our mission.  We are so grateful for your commitment.
 
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
             paymentInfo.Email = txtEmail.Text;
-            paymentInfo.Phone = txtPhone.Text;
+            paymentInfo.Phone = PhoneNumber.FormattedNumber( pnbPhone.CountryCode, pnbPhone.Number, true );
             paymentInfo.Street = txtStreet.Text;
             paymentInfo.City = txtCity.Text;
             paymentInfo.State = ddlState.SelectedValue;
