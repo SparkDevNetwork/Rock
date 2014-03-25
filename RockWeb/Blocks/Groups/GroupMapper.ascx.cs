@@ -362,29 +362,35 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // add styling to map
-                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( new Guid( GetAttributeValue( "MapStyle" ) ) );
-                string styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
-                string markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace("#", "");
+                string styleCode = "null";
+                string markerColor = "FE7569";
+
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsGuid() );
+                if ( dvcMapStyle != null )
+                {
+                    styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", "" );
+                }
 
                 // write script to page
                 lMapScript.Text = String.Format( @" <script> 
-                                                        var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
-                                                        var showInfoWindow = {1}; 
-                                                        var mapStyle = {2};
-                                                        var pinColor = '{3}';
-                                                        var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
-                                                            new google.maps.Size(21, 34),
-                                                            new google.maps.Point(0,0),
-                                                            new google.maps.Point(10, 34));
-                                                        var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
-                                                            new google.maps.Size(40, 37),
-                                                            new google.maps.Point(0, 0),
-                                                            new google.maps.Point(12, 35));
-                                                    </script>", 
-                                        groupJson, 
+                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
+                                                    var showInfoWindow = {1}; 
+                                                    var mapStyle = {2};
+                                                    var pinColor = '{3}';
+                                                    var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                        new google.maps.Size(21, 34),
+                                                        new google.maps.Point(0,0),
+                                                        new google.maps.Point(10, 34));
+                                                    var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                        new google.maps.Size(40, 37),
+                                                        new google.maps.Point(0, 0),
+                                                        new google.maps.Point(12, 35));
+                                                </script>",
+                                        groupJson,
                                         GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean().ToString().ToLower(),
                                         styleCode,
-                                        markerColor);
+                                        markerColor );
 
                 if ( groupsMapped == 0 ) {
                     pnlMap.Visible = false;
