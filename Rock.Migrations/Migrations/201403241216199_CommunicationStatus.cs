@@ -328,8 +328,15 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
     -- Communication Template Detail
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '924036BE-6B89-4C60-96ED-0A9AF1201CC4'
 " );
-
-
+            // Set security for Contributions and Security pages on person detail
+            DeleteSecurityAuthForPage( "0E56F56E-FB32-4827-A69A-B90D43CB47F5" );
+            DeleteSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892" );
+            AddSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", 0, "View", "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "752EB915-9575-4ECA-8608-B025AC0D34E7" );
+            AddSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", 1, "View", "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", Model.SpecialRole.None, "7055E0BE-05DB-4A33-B139-29C62B374FE9" );
+            AddSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", 2, "View", "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", Model.SpecialRole.None, "6C3EACE3-E806-4BD1-8950-C044CB787E6C" );
+            AddSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", 3, "View", null, Model.SpecialRole.AllUsers, "86B329FF-A451-4ABF-A2B0-199162EA0954" );
+            AddSecurityAuthForPage( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", 0, "View", "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "ACA8C084-1896-4256-BEB0-5DE54B1551B6" );
+            AddSecurityAuthForPage( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", 1, "View", null, Model.SpecialRole.AllUsers, "D97F79B7-400E-4533-B6D2-5BCDE376D368" );
         }
         
         /// <summary>
