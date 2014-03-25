@@ -65,6 +65,16 @@ namespace RockWeb.Blocks.Examples
         private static BinaryFileType _binaryFileType = new BinaryFileTypeService().Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
 
         /// <summary>
+        /// The id for the "child" role of a family.
+        /// </summary>
+        private static int _childRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+
+        /// <summary>
+        /// The id for the "adult" role of a family.
+        /// </summary>
+        private static int _adultRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+
+        /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
         private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
@@ -118,6 +128,12 @@ namespace RockWeb.Blocks.Examples
         /// Holds a cached copy of the location Id for each family Guid
         /// </summary>
         private Dictionary<Guid, int> _familyLocationDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
+        /// Holds the dictionary of person guids and a dictionary of their attribute names
+        /// and values from the family section of the XML.
+        /// </summary>
+        private Dictionary<Guid, bool> _personWithAttributes = new Dictionary<Guid, bool>();
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -204,7 +220,7 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Extract the stories out of the XML and put them on the results page.
+        /// Extract the stories out of the XML comments and put them on the results page.
         /// </summary>
         /// <param name="saveFile"></param>
         /// <returns></returns>
@@ -532,7 +548,7 @@ namespace RockWeb.Blocks.Examples
                 var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ), groupService.RockContext );
 
                 // Call replica of groupService's SaveNewFamily method in an attempt to speed things up
-                Group family = CreateNewFamily( familyMembers, 1, savePersonAttributes: true, personAlias: CurrentPersonAlias );
+                Group family = CreateNewFamily( familyMembers, 1 );
                 family.Guid = guid;
                 // add the family to the context's list of groups
                 allFamilies.Add( family );
@@ -547,8 +563,6 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 allGroups.Add( guid );
-                // lastly, save the data and move to the next family
-//groupService.Save( family, CurrentPersonAlias );
 
                 _stopwatch.Stop();
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
@@ -557,20 +571,29 @@ namespace RockWeb.Blocks.Examples
 
             groupService.RockContext.SaveChanges();
 
-            // Now add each person's ID to a dictionary for use later.
+            // Now save each person's attributevalues (who had them defined in the XML)
+            // and add each person's ID to a dictionary for use later.
             foreach ( var guid in allGroups )
             {
                 var group = groupService.GetByGuid( guid );
-                foreach ( var p in group.Members )
+                foreach ( var gm in group.Members )
                 {
                     // Put the person's id into the people dictionary for later use.
-                    if ( !_peopleDictionary.ContainsKey( p.Person.Guid ) )
+                    if ( !_peopleDictionary.ContainsKey( gm.Person.Guid ) )
                     {
-                        _peopleDictionary.Add( p.Person.Guid, p.Person.Id );
+                        _peopleDictionary.Add( gm.Person.Guid, gm.Person.Id );
+                    }
+
+                    // Only save if the person had attributes, otherwise it will error.
+                    if ( _personWithAttributes.ContainsKey( gm.Person.Guid ) )
+                    {
+                        gm.Person.SaveAttributeValues( CurrentPersonAlias );
+                        _stopwatch.Stop();
+                        _sb.AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, gm.Person.FullName );
+                        _stopwatch.Start();
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -682,7 +705,6 @@ namespace RockWeb.Blocks.Examples
                 groupService.Add( group );
                 groupService.Save( group, CurrentPersonAlias );
                 group.SaveAttributeValues( CurrentPersonAlias );
-
             }
         }
 
@@ -964,9 +986,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="altScheduleId"></param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
         {
-            //Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-            int childRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
-
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
@@ -991,7 +1010,7 @@ namespace RockWeb.Blocks.Examples
                 DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
 
                 // foreach child in the family
-                foreach ( var member in familyMembers.Where( m => m.GroupRoleId == childRoleId ) )
+                foreach ( var member in familyMembers.Where( m => m.GroupRoleId == _childRoleId ) )
                 {
                     // Find a class room (group location)
                     // TODO -- someday perhaps we will change this to actually find a real GroupLocationSchedule record
@@ -1063,7 +1082,6 @@ namespace RockWeb.Blocks.Examples
                 Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value.Trim() );
 
                 // Attempt to find an existing person...
-                //Person person = new PersonService().Get( guid );
                 Person person = null;
                 if ( _personCache.ContainsKey(guid) )
                 {
@@ -1214,11 +1232,11 @@ namespace RockWeb.Blocks.Examples
 
                 if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {
-                    groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                    groupMember.GroupRoleId = _adultRoleId;
                 }
                 else
                 {
-                    groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+                    groupMember.GroupRoleId = _childRoleId;
                 }
 
                 // person attributes
@@ -1234,7 +1252,7 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// 
+        /// Adds the person attributes and values found in the XML to the person's attribute-value collection.
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
@@ -1245,6 +1263,9 @@ namespace RockWeb.Blocks.Examples
 
             foreach ( var personAttribute in attributes.Elements( "attribute" ) )
             {
+                // Add them to the list of people who need to have their attribute values saved.
+                // This will be done after all the family groups have been saved.
+                _personWithAttributes[groupMember.Person.Guid] = true;
                 foreach ( var pa in personAttribute.Attributes() )
                 {
                     groupMember.Person.SetAttributeValue( pa.Name.LocalName, pa.Value );
@@ -1359,7 +1380,7 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Call replica of the groupService's AddNewFamilyAddress in an attempt to speed it up
-                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
+                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip );
 
                 var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
 
@@ -1382,14 +1403,12 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Saves the new family.
+        /// Creates a new family using the given set of people.
         /// </summary>
         /// <param name="familyMembers">The family members.</param>
         /// <param name="campusId">The campus identifier.</param>
-        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -1400,13 +1419,6 @@ namespace RockWeb.Blocks.Examples
                 familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
                 familyGroup.CampusId = campusId;
 
-                int? childRoleId = null;
-                var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-                if ( childRole != null )
-                {
-                    childRoleId = childRole.Id;
-                }
-
                 foreach ( var familyMember in familyMembers )
                 {
                     var person = familyMember.Person;
@@ -1416,37 +1428,16 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                //Add( familyGroup, personAlias );
-                //Save( familyGroup, personAlias );
-
                 foreach ( var groupMember in familyMembers )
                 {
                     var person = groupMember.Person;
-
-                    if ( savePersonAttributes )
-                    {
-                        var newValues = person.AttributeValues;
-
-                        person.LoadAttributes();
-                        foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
-                        {
-                            string oldValue = person.GetAttributeValue( attributeCache.Key ) ?? string.Empty;
-                            string newValue = string.Empty;
-                            if ( newValues != null &&
-                                newValues.ContainsKey( attributeCache.Key ) &&
-                                newValues[attributeCache.Key].Count > 0 )
-                            {
-                                newValue = newValues[attributeCache.Key][0].Value ?? string.Empty;
-                            }
-                        }
-                    }
 
                     //if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
                     //{
                     //    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
                     //}
 
-                    if ( groupMember.GroupRoleId != childRoleId )
+                    if ( groupMember.GroupRoleId != _childRoleId )
                     {
                         person.GivingGroup = familyGroup;
                     }
@@ -1468,8 +1459,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="zip">The zip.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
