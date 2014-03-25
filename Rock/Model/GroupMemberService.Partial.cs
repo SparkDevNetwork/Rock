@@ -156,7 +156,7 @@ namespace Rock.Model
                 OrderBy( m => m.GroupRole.Order ).
                 ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
                 ThenBy( m => m.Person.Gender ).
-                Select( m => m.Person.FirstName ).
+                Select( m => m.Person.NickName ).
                 ToList();
         }
 
