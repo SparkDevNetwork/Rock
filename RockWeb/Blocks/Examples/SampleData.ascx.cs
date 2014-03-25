@@ -360,6 +360,7 @@ namespace RockWeb.Blocks.Examples
 
             Guid ownerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
             Guid knownRelationshipsGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
+            var memberService = new GroupMemberService();
 
             var groupTypeRoles = new GroupTypeRoleService().Queryable("GroupType")
                 .Where( r => r.GroupType.Guid == knownRelationshipsGroupTypeGuid ).ToList();
@@ -384,8 +385,7 @@ namespace RockWeb.Blocks.Examples
                 int forPersonId = _peopleDictionary[forGuid];
 
                 string rType = elemRelationship.Attribute( "has" ).Value.Trim();
-  
-                var memberService = new GroupMemberService();
+
                 int roleId = -1;
 
                 switch ( rType )
@@ -509,19 +509,19 @@ namespace RockWeb.Blocks.Examples
                         PersonId = forPersonId,
                         GroupRoleId = roleId,
                     };
-                    memberService.Add( groupMember, CurrentPersonAlias );
+                    memberService.RockContext.GroupMembers.Add( groupMember );
                 }
-
-                memberService.Save( groupMember, CurrentPersonAlias );
                 
-                // now create thee inverse relationship
-                var inverseGroupMember = memberService.GetInverseRelationship(
-                    groupMember, createGroup: true, personAlias: CurrentPersonAlias );
-                if ( inverseGroupMember != null )
-                {
-                    memberService.Save( inverseGroupMember, CurrentPersonAlias );
-                }
+                // Now create thee inverse relationship.
+                //
+                // (NOTE: There is no need to do anything with the
+                // inverseGroupMember relationship because it was already added to the
+                // context.  All we have to do below is save the changes to the context
+                // when we're ready.)
+                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, createGroup: true, personAlias: CurrentPersonAlias );
             }
+
+            memberService.RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -573,6 +573,7 @@ namespace RockWeb.Blocks.Examples
 
             // Now save each person's attributevalues (who had them defined in the XML)
             // and add each person's ID to a dictionary for use later.
+            AttributeValueService attributeValueService = new AttributeValueService();
             foreach ( var guid in allGroups )
             {
                 var group = groupService.GetByGuid( guid );
@@ -587,14 +588,24 @@ namespace RockWeb.Blocks.Examples
                     // Only save if the person had attributes, otherwise it will error.
                     if ( _personWithAttributes.ContainsKey( gm.Person.Guid ) )
                     {
-                        gm.Person.SaveAttributeValues( CurrentPersonAlias );
-                        _stopwatch.Stop();
-                        _sb.AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, gm.Person.FullName );
-                        _stopwatch.Start();
+                        foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
+                        {
+                            var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
+                            if ( newValue != null )
+                            {
+                                newValue.EntityId = gm.Person.Id;
+                                attributeValueService.RockContext.AttributeValues.Add( newValue );
+                            }
+                        }
                     }
                 }
             }
-
+            
+            attributeValueService.RockContext.SaveChanges();
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+           
             // Create person alias records for each person
             PersonService personService = new PersonService();
             foreach ( var person in personService.Queryable( "Aliases" )
@@ -609,7 +620,6 @@ namespace RockWeb.Blocks.Examples
             _stopwatch.Stop();
             _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
             _stopwatch.Start();
-
         }
 
         /// <summary>
