@@ -171,9 +171,29 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
             UpdateBlockType( "Active Users", "Displays a list of active users of a website.", "~/Blocks/Cms/ActiveUsers.ascx", "CMS", "3E7033EE-31A3-4484-AFA9-240C856A500C" );
             
             // Add Block to Page: Internal Homepage, Site: Rock RMS
-            AddBlock( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "", "3E7033EE-31A3-4484-AFA9-240C856A500C", "Active Users", "Sidebar1", "", "", 1, "CB8F9152-08BB-4576-B7A1-B0DDD9880C44" );
+            AddBlock( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "", "3E7033EE-31A3-4484-AFA9-240C856A500C", "Active Users", "Sidebar1", @"
+<div class=""panel panel-info""> 
+    <div class=""panel-heading"">
+       <h4 class=""panel-title"">Active Internal Users</h4>
+    </div>
+    <div class=""panel-body"">
+", @"
+    </div>
+</div>
+", 1, "CB8F9152-08BB-4576-B7A1-B0DDD9880C44" );
+            
             // Add Block to Page: Internal Homepage, Site: Rock RMS
-            AddBlock( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "", "3E7033EE-31A3-4484-AFA9-240C856A500C", "Active Users", "Sidebar1", "", "", 2, "03FCBF5A-42E0-4F45-B670-BC8E324BD573" );
+            AddBlock( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "", "3E7033EE-31A3-4484-AFA9-240C856A500C", "Active Users", "Sidebar1", @"
+<div class=""panel panel-info""> 
+    <div class=""panel-heading"">
+       <h4 class=""panel-title"">Active External Users</h4>
+    </div>
+    <div class=""panel-body"">
+", @"
+    </div>
+</div>
+", 2, "03FCBF5A-42E0-4F45-B670-BC8E324BD573" );
+
             // Add Block to Page: Communication Templates, Site: Rock RMS
             AddBlock( "39F75137-90D2-4E6F-8613-F19344767594", "", "EACDBBD4-C355-4D38-B604-779BC55D3876", "Template List", "Main", "", "", 0, "69185EDF-C743-4013-894F-8F8BE53A149E" );
             // Add Block to Page: Template Detail, Site: Rock RMS
@@ -194,11 +214,12 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
             // Attrib Value for Block:Active Users, Attribute:Site Page: Internal Homepage, Site: Rock RMS
             AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "73E6A9D1-3D3C-40D0-B685-0123D13A345E", @"1" );
             // Attrib Value for Block:Active Users, Attribute:Page View Count Page: Internal Homepage, Site: Rock RMS
-            AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "941D0BF8-E2D3-4D25-9AA1-4E5A03AAAA64", @"5" );
+            AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "941D0BF8-E2D3-4D25-9AA1-4E5A03AAAA64", @"0" );
             // Attrib Value for Block:Active Users, Attribute:Person Profile Page Page: Internal Homepage, Site: Rock RMS
             AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "0537EBF7-2B62-4482-BA75-1091DF94D3F9", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
             // Attrib Value for Block:Active Users, Attribute:Show Site Name As Title Page: Internal Homepage, Site: Rock RMS
-            AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "8D05182B-6B2C-42C5-BC02-29623EF49AFD", @"True" );
+            AddBlockAttributeValue( "CB8F9152-08BB-4576-B7A1-B0DDD9880C44", "8D05182B-6B2C-42C5-BC02-29623EF49AFD", @"False" );
+
             // Attrib Value for Block:Active Users, Attribute:Site Page: Internal Homepage, Site: Rock RMS
             AddBlockAttributeValue( "03FCBF5A-42E0-4F45-B670-BC8E324BD573", "73E6A9D1-3D3C-40D0-B685-0123D13A345E", @"3" );
             // Attrib Value for Block:Active Users, Attribute:Page View Count Page: Internal Homepage, Site: Rock RMS
@@ -206,7 +227,7 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
             // Attrib Value for Block:Active Users, Attribute:Person Profile Page Page: Internal Homepage, Site: Rock RMS
             AddBlockAttributeValue( "03FCBF5A-42E0-4F45-B670-BC8E324BD573", "0537EBF7-2B62-4482-BA75-1091DF94D3F9", @"08dbd8a5-2c35-4146-b4a8-0f7652348b25,7e97823a-78a8-4e8e-a337-7a20f2da9e52" );
             // Attrib Value for Block:Active Users, Attribute:Show Site Name As Title Page: Internal Homepage, Site: Rock RMS
-            AddBlockAttributeValue( "03FCBF5A-42E0-4F45-B670-BC8E324BD573", "8D05182B-6B2C-42C5-BC02-29623EF49AFD", @"True" );
+            AddBlockAttributeValue( "03FCBF5A-42E0-4F45-B670-BC8E324BD573", "8D05182B-6B2C-42C5-BC02-29623EF49AFD", @"False" );
 
             Sql( @"
     -- Communication settings page order
