@@ -287,9 +287,6 @@ namespace Rock.CheckIn
         /// </summary>
         protected void CancelCheckin()
         {
-            CurrentWorkflow = null;
-            CurrentCheckInState = null;
-            SaveState();
             NavigateToHomePage();
         }
 
