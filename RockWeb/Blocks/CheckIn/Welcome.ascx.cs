@@ -68,6 +68,7 @@ namespace RockWeb.Blocks.CheckIn
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
+                CurrentCheckInState.CheckIn = new CheckInStatus();
                 SaveState();
                 RefreshView();
             }
