@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Administration
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the SystemConfiguration control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

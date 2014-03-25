@@ -127,6 +127,10 @@ namespace Rock.Migrations
 
     -- Update pages that use GroupDetail to to not show breadcrumbs
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] IN ('4E237286-B715-4109-A578-C1445EC02707','48AAD428-A9C9-4BBB-A80F-B85F28D31240')
+
+    -- Change PageLiquid block name to PageMenu
+    UPDATE [BlockType] SET [Path] = '~/Blocks/Cms/PageMenu.ascx' WHERE [Guid] = 'CACB9D1A-A820-4587-986A-D66A69EE9948'
+
 " );
             // Delete the GroupDetail block that is not used
             DeleteBlock("D025306E-6820-42A6-8BF6-8606582D3DF5");
@@ -224,6 +228,7 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
             AddSecurityAuthForPage( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", 3, "View", false, null, Model.SpecialRole.AllUsers, "86B329FF-A451-4ABF-A2B0-199162EA0954" );
             AddSecurityAuthForPage( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", 0, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "ACA8C084-1896-4256-BEB0-5DE54B1551B6" );
             AddSecurityAuthForPage( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", 1, "View", false, null, Model.SpecialRole.AllUsers, "D97F79B7-400E-4533-B6D2-5BCDE376D368" );
+
         }
         
         /// <summary>
@@ -231,6 +236,11 @@ UPDATE [DefinedValue] SET [Order] = 7 WHERE [Guid] = 'B0E46522-921F-47AA-B548-F0
         /// </summary>
         public override void Down()
         {
+            Sql( @"
+    -- Change PageMenu block name to PageLiquid
+    UPDATE [BlockType] SET [Path] = '~/Blocks/Cms/PageLiquid.ascx' WHERE [Guid] = 'CACB9D1A-A820-4587-986A-D66A69EE9948'
+" );
+
             // Attrib for BlockType: Active Users:Show Site Name As Title
             DeleteAttribute( "8D05182B-6B2C-42C5-BC02-29623EF49AFD" );
             // Attrib for BlockType: Active Users:Page View Count
