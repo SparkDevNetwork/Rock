@@ -263,10 +263,17 @@ namespace RockWeb.Blocks.Security
                         return;
                     }
 
+                    if (service.GetByUserName(tbUserName.Text.Trim()) != null)
+                    {
+                        nbErrorMessage.Title = "Invalid User Name";
+                        nbErrorMessage.Text = "The User Name you selected already exists.  Please select a different User Name.";
+                        nbErrorMessage.Visible = true;
+                        return;
+                    }
                     service.Add( userLogin, CurrentPersonAlias );
                 }
 
-                userLogin.UserName = tbUserName.Text;
+                userLogin.UserName = tbUserName.Text.Trim();
                 userLogin.IsConfirmed = cbIsConfirmed.Checked;
                 userLogin.IsLockedOut = cbIsLockedOut.Checked;
 
