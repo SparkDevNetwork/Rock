@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    lMessages.Text = String.Format( "<div class='alert alert-info'>No one is active on the {0} site.</div>", site.Name );
+                    lMessages.Text = String.Format( "There are no logged in users on the {0} site.", site.Name );
                 }
 
             }

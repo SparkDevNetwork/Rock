@@ -159,5 +159,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
 
+        /// <summary>
+        /// Guid for the types of map styles
+        /// </summary>
+        public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
+
     }
 }
