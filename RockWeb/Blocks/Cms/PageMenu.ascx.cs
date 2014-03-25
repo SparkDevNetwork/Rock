@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
     [BooleanField( "Enable Debug", "Flag indicating that the control should output the page data that will be passed to Liquid for parsing.", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
-    public partial class PageLiquid : RockBlock, ISecondaryBlock
+    public partial class PageMenu : RockBlock, ISecondaryBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
         private static readonly string NUM_LEVELS = "NumberofLevels";
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Cms
 
             base.OnInit( e );
 
-            this.BlockUpdated += PageLiquid_BlockUpdated;
+            this.BlockUpdated += PageMenu_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upContent );
 
             // add css file to page
@@ -79,11 +79,11 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the PageMenu control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void PageLiquid_BlockUpdated( object sender, EventArgs e )
+        protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( CacheKey() );
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.Cms
 
         private string CacheKey()
         {
-            return string.Format( "Rock:PageLiquid:{0}", BlockId );
+            return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
         private Template GetTemplate()

@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Groups
         // handlers called by the controls on your block
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the GroupMapper control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
