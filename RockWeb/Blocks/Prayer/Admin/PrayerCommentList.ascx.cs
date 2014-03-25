@@ -91,8 +91,8 @@ namespace RockWeb.Blocks.Prayer
 
             BindFilter();
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            _canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            _canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             _canApprove = IsUserAuthorized( "Approve" );
 
             // grid stuff...

@@ -199,20 +199,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override List<string> SupportedActions
-        {
-            get
-            {
-                return BlockType.SupportedActions;
-            }
-        }
-
-        /// <summary>
         /// Gets the block location.
         /// </summary>
         /// <value>

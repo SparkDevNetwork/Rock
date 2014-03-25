@@ -23,8 +23,10 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -77,13 +79,14 @@ namespace RockWeb.Blocks.Core
             try
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId );
+                Block _block = new BlockService().Get( blockId );
 
-                if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     phAttributes.Controls.Clear();
                     phAdvancedAttributes.Controls.Clear();
 
+                    _block.LoadAttributes();
                     if ( _block.Attributes != null )
                     {
                         foreach ( var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories( _block ) )
@@ -126,7 +129,7 @@ namespace RockWeb.Blocks.Core
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
             BlockCache _block = BlockCache.Read( blockId );
 
-            if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( !Page.IsPostBack && _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 rptProperties.DataSource = _tabs;
                 rptProperties.DataBind();
@@ -168,13 +171,12 @@ namespace RockWeb.Blocks.Core
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId );
             if ( Page.IsValid )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
                     var blockService = new Rock.Model.BlockService();
-                    var block = blockService.Get( _block.Id );
+                    var block = blockService.Get( blockId );
 
                     block.LoadAttributes();
 
@@ -185,14 +187,14 @@ namespace RockWeb.Blocks.Core
                     block.OutputCacheDuration = Int32.Parse( tbCacheDuration.Text );
                     blockService.Save( block, CurrentPersonAlias );
 
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, _block );
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, block );
                     if ( phAdvancedAttributes.Controls.Count > 0 )
                     {
-                        Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, _block );
+                        Rock.Attribute.Helper.GetEditValues( phAdvancedAttributes, block );
                     }
-                    _block.SaveAttributeValues( CurrentPersonAlias );
+                    block.SaveAttributeValues( CurrentPersonAlias );
 
-                    Rock.Web.Cache.BlockCache.Flush( _block.Id );
+                    Rock.Web.Cache.BlockCache.Flush( block.Id );
                 }
 
                 string script = string.Format( "window.parent.Rock.controls.modal.close('BLOCK_UPDATED:{0}');", blockId );

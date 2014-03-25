@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,8 +49,8 @@ namespace RockWeb.Blocks.Administration
             gScheduledJobs.Actions.AddClick += gScheduledJobs_Add;
             gScheduledJobs.GridRebind += gScheduledJobs_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gScheduledJobs.Actions.ShowAdd = canAddEditDelete;
             gScheduledJobs.IsDeleteEnabled = canAddEditDelete;
 

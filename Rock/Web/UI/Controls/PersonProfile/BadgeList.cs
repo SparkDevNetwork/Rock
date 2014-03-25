@@ -19,11 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock.Model;
 using Rock.PersonProfile;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -100,7 +99,7 @@ namespace Rock.Web.UI.Controls
                 var currentPerson =  ((RockPage)Page).CurrentPerson;
                 foreach ( var personBadge in PersonBadges.OrderBy( b => b.Order ) )
                 {
-                    if (personBadge.IsAuthorized("View", currentPerson))
+                    if ( personBadge.IsAuthorized( Authorization.VIEW, currentPerson ) )
                     {
                         var badgeControl = new PersonProfileBadge();
                         badgeControl.PersonBadge = personBadge;

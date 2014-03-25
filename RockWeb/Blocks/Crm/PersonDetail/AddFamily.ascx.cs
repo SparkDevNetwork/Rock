@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -341,7 +342,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
                         {
-                            if ( attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 attributeControl.AttributeList.Add( AttributeCache.Read( attribute ) );
                             }

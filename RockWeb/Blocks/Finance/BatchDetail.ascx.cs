@@ -22,6 +22,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.UI;
 
@@ -254,7 +255,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             bool readOnly = false;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );

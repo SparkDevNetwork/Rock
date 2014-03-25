@@ -1543,7 +1543,7 @@ namespace Rock
         /// <example>
         /// using ( new Rock.Data.UnitOfWorkScope() )
         /// {
-        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "IsBaptized", "true" ).ToList();
+        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "BaptizedHere", "True" ).ToList();
         /// }
         /// </example>
         /// <typeparam name="T"></typeparam>

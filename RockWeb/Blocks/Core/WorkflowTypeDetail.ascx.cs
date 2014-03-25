@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -469,7 +470,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";

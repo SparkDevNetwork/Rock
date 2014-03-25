@@ -89,7 +89,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use this FieldType.
         /// </value>
-        [DataMember]
         public virtual ICollection<DefinedType> DefinedTypes { get; set; }
 
         // <summary>

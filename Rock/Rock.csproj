@@ -215,6 +215,7 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Jobs\LocationServicesVerify.cs" />
     <Compile Include="Jobs\LaunchWorkflow.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -780,7 +781,7 @@
     <Compile Include="Search\Person\Phone.cs" />
     <Compile Include="Search\SearchComponent.cs" />
     <Compile Include="Search\SearchContainer.cs" />
-    <Compile Include="Security\AdditionalActionsAttribute.cs" />
+    <Compile Include="Security\SecurityActionAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
     <Compile Include="Security\Encryption.cs" />

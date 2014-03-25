@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -152,7 +153,7 @@ namespace RockWeb.Blocks.Prayer
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Title = "Information";

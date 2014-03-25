@@ -29,6 +29,9 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
 using System.Collections.Generic;
+using DotLiquid;
+using System.Dynamic;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -38,10 +41,52 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Mapper" )]
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]
-    [GroupTypeField( "Group Type", "The type of group to map.", true )]
-    [DefinedValueField( "2E68D37C-FB7B-4AA5-9E09-3785D52156CB", "Location Type", "The location type to use for the map." )]
-    [LinkedPage("Group Detail Page", "Page to use as a link to the person details (optional).", false)]
-    [IntegerField("Map Height", "Height of the map in pixels (default value is 600px)", false, 600)]
+
+    [GroupTypeField( "Group Type", "The type of group to map.", true, "", "", 0 )]
+    [DefinedValueField( "2E68D37C-FB7B-4AA5-9E09-3785D52156CB", "Location Type", "The location type to use for the map.", true, false, "", "", 1 )]
+    //[GroupRoleField("", "Display Group Role", "")]
+    [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
+    [LinkedPage("Group Detail Page", "Page to use as a link to the group details (optional).", false, "", "", 3)]
+    [LinkedPage( "Person Profile Page", "Page to use as a link to the person profile page (optional).", false, "", "", 4 )]
+    [BooleanField("Show Map Info Window", "Control whether a info window should be displayed when clicking on a map point.", true, "", 5)]
+    [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 6 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 7 )]
+    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"<div class='clearfix'>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
+    <span class='label label-campus pull-right'>{{GroupCampus}}</span>
+</div>
+
+<div class='clearfix'>
+    <div class='pull-left' style='padding-right: 24px'>
+        <strong>{{GroupLocation.Name}}</strong><br>
+        {{GroupLocation.Street1}}
+        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
+        {% for attribute in Attributes %}
+            {% if forloop.first %}<br/>{% endif %}
+            <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
+        {% endfor %}
+    </div>
+    <div class='pull-left'>
+        <strong>{{GroupMemberTerm}}s</strong><br>
+        {% for GroupMember in GroupMembers -%}
+            {% if PersonProfilePage != '' %}
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+            {% else %}
+                {{GroupMember.NickName}} {{GroupMember.LastName}}
+            {% endif %}
+            - {{GroupMember.Email}}
+            <br>
+        {% endfor -%}
+    </div>
+</div>
+
+{% if GroupDetailPage != '' %}
+    <br>
+    <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
+{% endif %}
+
+", "", 8 )]
+    [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 groups to help show you wants available for your liquid.", false, "", 9 )]
     public partial class GroupMapper : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -125,11 +170,11 @@ namespace RockWeb.Blocks.Groups
                                 border-radius: 8px;
                             }}
                         </style>", GetAttributeValue( "MapHeight" ) );
-
-            string groupDetailPage = GetAttributeValue( "GroupDetailPage" );
                                 
             if ( !string.IsNullOrEmpty( GetAttributeValue( "GroupType" ) ) && !string.IsNullOrEmpty( GetAttributeValue( "LocationType" ) ) )
             {
+                pnlMap.Visible = true;
+
                 int groupsMapped = 0;
                 int groupsWithNoGeo = 0;
 
@@ -139,39 +184,171 @@ namespace RockWeb.Blocks.Groups
                 Guid groupType = new Guid( GetAttributeValue( "GroupType" ) );
                 Guid locationType = new Guid( GetAttributeValue( "LocationType" ) );
 
-                GroupService groupService = new GroupService();
-                var groups = groupService.Queryable()
-                    .Where( g => g.GroupType.Guid == groupType )
-                    .Select( g => new
-                    {
-                        g.Id,
-                        g.Name,
-                        GroupLocation = g.GroupLocations.Where( l => l.GroupLocationTypeValue.Guid == locationType ).FirstOrDefault()
-                        //GroupMembers = g.Members.Where(m => m.GroupRoleId == 1).Select();
-                    } );
-
-
-                foreach ( var group in groups )
+                Template template = null;
+                if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                 {
-                    if ( group.GroupLocation != null && group.GroupLocation.Location.GeoPoint != null )
+                    template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );
+                }
+                else
+                {
+                    template = Template.Parse( "" );
+                }
+
+                var groupPageRef = new PageReference( GetAttributeValue( "GroupDetailPage" ) );
+
+                // create group detail link for use in map's info window
+                var personPageParams = new Dictionary<string, string>();
+                personPageParams.Add( "PersonId", "" );
+                var personProfilePage = LinkedPageUrl("PersonProfilePage", personPageParams );
+
+
+                var groupEntityType = EntityTypeCache.Read(typeof(Group));
+                var dynamicGroups = new List<dynamic>();
+
+                using ( new UnitOfWorkScope() )
+                {
+                    // Create query to get attribute values for selected attribute keys.
+                    var attributeKeys = GetAttributeValue( "Attributes" ).SplitDelimitedValues().ToList();
+                    var attributeValues = new AttributeValueService().Queryable( "Attribute" )
+                        .Where( v =>
+                            v.Attribute.EntityTypeId == groupEntityType.Id &&
+                            attributeKeys.Contains( v.Attribute.Key ) );
+
+                    GroupService groupService = new GroupService();
+                    var groups = groupService.Queryable()
+                        .Where( g => g.GroupType.Guid == groupType )
+                        .Select( g => new
+                        {
+                            Group = g,
+                            GroupId = g.Id,
+                            GroupName = g.Name,
+                            GroupGuid = g.Guid,
+                            GroupMemberTerm = g.GroupType.GroupMemberTerm,
+                            GroupCampus = g.Campus.Name,
+                            GroupLocation = g.GroupLocations
+                                                .Where( l => l.GroupLocationTypeValue.Guid == locationType )
+                                                .Select( l => new
+                                                {
+                                                    l.Location.Street1,
+                                                    l.Location.Street2,
+                                                    l.Location.City,
+                                                    l.Location.State,
+                                                    l.Location.Zip,
+                                                    Latitude = l.Location.GeoPoint.Latitude,
+                                                    Longitude = l.Location.GeoPoint.Longitude,
+                                                    l.GroupLocationTypeValue.Name
+                                                } ).FirstOrDefault(),
+                            GroupMembers = g.Members
+//                                                .Where( m => m.GroupRoleId == 25 )
+                                                .Select( m => new
+                                                {
+                                                    m.Person.Id,
+                                                    GuidP = m.Person.Guid,
+                                                    m.Person.NickName,
+                                                    m.Person.LastName,
+                                                    RoleName = m.GroupRole.Name,
+                                                    m.Person.Email,
+                                                    PhotoGuid = m.Person.Photo != null ? m.Person.Photo.Guid : Guid.Empty,
+                                                    PhoneNumbers = m.Person.PhoneNumbers.Select( p => new { p.IsUnlisted, p.Number, PhoneType = p.NumberTypeValue.Name } )
+                                                } ),
+                            AttributeValues = attributeValues
+                                                .Where( v => v.EntityId == g.Id )
+
+                        } );
+
+                    // Create dynamic object to include attribute values
+                    foreach ( var group in groups )
+                    {
+                        dynamic dynGroup = new ExpandoObject();
+                        dynGroup.GroupId = group.GroupId;
+                        dynGroup.GroupName = group.GroupName;
+
+                        // create group detail link for use in map's info window
+                        if ( groupPageRef.PageId > 0 )
+                        {
+                            var groupPageParams = new Dictionary<string, string>();
+                            groupPageParams.Add( "GroupId", group.GroupId.ToString() );
+                            groupPageRef.Parameters = groupPageParams;
+                            dynGroup.GroupDetailPage = groupPageRef.BuildUrl();
+                        }
+                        else
+                        {
+                            dynGroup.GroupDetailPage = string.Empty;
+                        }
+                        dynGroup.PersonProfilePage = personProfilePage;
+                        dynGroup.GroupMemberTerm = group.GroupMemberTerm;
+                        dynGroup.GroupCampus = group.GroupCampus;
+                        dynGroup.GroupLocation = group.GroupLocation;
+                        dynGroup.GroupLocation = group.GroupLocation;
+                        dynGroup.GroupMembers = group.GroupMembers;
+
+                        var groupAttributes = new List<dynamic>();
+                        foreach ( AttributeValue value in group.AttributeValues )
+                        {
+                            var attrCache = AttributeCache.Read( value.AttributeId );
+                            var dictAttribute = new Dictionary<string, object>();
+                            dictAttribute.Add( "Key", attrCache.Key );
+                            dictAttribute.Add( "Name", attrCache.Name );
+
+                            if (attrCache != null)
+                            {
+                                dictAttribute.Add( "Value", attrCache.FieldType.Field.FormatValue( null, value.Value, attrCache.QualifierValues, false ) );
+                            }
+                            else
+                            {
+                                dictAttribute.Add( "Value", value.Value );
+                            }
+
+                            groupAttributes.Add( dictAttribute );
+                        }
+
+                        dynGroup.Attributes = groupAttributes;
+
+                        dynamicGroups.Add( dynGroup );
+                    }
+                }
+
+                // enable showing debug info
+                if ( GetAttributeValue( "EnableDebug" ).AsBoolean() )
+                {
+                    lDebug.Visible = true;
+                    StringBuilder debugInfo = new StringBuilder();
+                    debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
+                    debugInfo.Append( "<p><em>Showing first 5 groups.</em></p>" );
+                    debugInfo.Append( "<pre>" + dynamicGroups.Take( 5 ).ToJson() + "</pre>" );
+                    debugInfo.Append( "</div" );
+                    lDebug.Text = debugInfo.ToString();
+                }
+                else
+                {
+                    lDebug.Visible = false;
+                    lDebug.Text = string.Empty;
+                }
+
+                foreach ( var group in dynamicGroups )
+                {
+                    if ( group.GroupLocation != null && group.GroupLocation.Latitude != null )
                     {
                         groupsMapped++;
-                        sbGroupJson.Append( String.Format( @"{{ ""name"":""{0}"" , ""latitude"":""{1}"", ""longitude"":""{2}"" }},", HttpUtility.HtmlEncode( group.Name ), group.GroupLocation.Location.GeoPoint.Latitude, group.GroupLocation.Location.GeoPoint.Longitude ) );
+                        var groupDict = group as IDictionary<string, object>;
+                        string infoWindow = template.Render( Hash.FromDictionary( groupDict ) ).Replace( "\n", "" );
+                        sbGroupJson.Append( String.Format( @"{{ ""name"":""{0}"" , ""latitude"":""{1}"", ""longitude"":""{2}"", ""infowindow"":""{3}"" }}," 
+                                                , HttpUtility.HtmlEncode( group.GroupName )
+                                                , group.GroupLocation.Latitude
+                                                , group.GroupLocation.Longitude
+                                                , HttpUtility.HtmlEncode( infoWindow ) ) );
                     }
                     else
                     {
                         groupsWithNoGeo++;
 
-                        if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
+                        if ( !string.IsNullOrWhiteSpace( group.GroupDetailPage ) )
                         {
-                            var pageParams = new Dictionary<string, string>();
-                            pageParams.Add( "groupId", group.Id.ToString() );
-                            var pageReference = new Rock.Web.PageReference( groupDetailPage, pageParams );
-                            sbGroupsWithNoGeo.Append( String.Format( @"<li><a href='{0}'>{1}</a></li>", pageReference.BuildUrl(), group.Name ) );
+                            sbGroupsWithNoGeo.Append( String.Format( @"<li><a href='{0}'>{1}</a></li>", group.GroupDetailPage, group.GroupName ) );
                         }
                         else
                         {
-                            sbGroupsWithNoGeo.Append( String.Format( @"<li>{0}</li>", group.Name ) );
+                            sbGroupsWithNoGeo.Append( String.Format( @"<li>{0}</li>", group.GroupName ) );
                         }
                     }
                 }
@@ -184,7 +361,30 @@ namespace RockWeb.Blocks.Groups
                     groupJson = groupJson.Substring( 0, groupJson.Length - 1 );
                 }
 
-                lGroupJson.Text = String.Format( @"<script>var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}');</script>", groupJson );
+                // add styling to map
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( new Guid( GetAttributeValue( "MapStyle" ) ) );
+                string styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                string markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace("#", "");
+
+                // write script to page
+                lMapScript.Text = String.Format( @" <script> 
+                                                        var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
+                                                        var showInfoWindow = {1}; 
+                                                        var mapStyle = {2};
+                                                        var pinColor = '{3}';
+                                                        var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                            new google.maps.Size(21, 34),
+                                                            new google.maps.Point(0,0),
+                                                            new google.maps.Point(10, 34));
+                                                        var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                            new google.maps.Size(40, 37),
+                                                            new google.maps.Point(0, 0),
+                                                            new google.maps.Point(12, 35));
+                                                    </script>", 
+                                        groupJson, 
+                                        GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean().ToString().ToLower(),
+                                        styleCode,
+                                        markerColor);
 
                 if ( groupsMapped == 0 ) {
                     pnlMap.Visible = false;
@@ -214,7 +414,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-               
+                pnlMap.Visible = false;
                 lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display and a location type to use.</div>";
                
             }

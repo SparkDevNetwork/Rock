@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -53,9 +54,13 @@ namespace RockWeb.Blocks.Administration
                 _page = Rock.Web.Cache.PageCache.Read( pageId );
 
                 if ( _page != null )
-                    canConfigure = _page.IsAuthorized( "Administrate", CurrentPerson );
+                {
+                    canConfigure = _page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                }
                 else
-                    canConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
+                {
+                    canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+                } 
 
                 if ( canConfigure )
                 {

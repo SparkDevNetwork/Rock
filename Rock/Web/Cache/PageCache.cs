@@ -524,7 +524,7 @@ namespace Rock.Web.Cache
                 case Model.DisplayInNavWhen.Always:
                     return true;
                 case Model.DisplayInNavWhen.WhenAllowed:
-                    return this.IsAuthorized( "View", person );
+                    return this.IsAuthorized( Authorization.VIEW, person );
                 default:
                     return false;
             }
