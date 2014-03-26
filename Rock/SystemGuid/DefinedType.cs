@@ -50,6 +50,11 @@ namespace Rock.SystemGuid
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
 
         /// <summary>
+        /// Guid for External Application
+        /// </summary>
+        public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";
+
+        /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
