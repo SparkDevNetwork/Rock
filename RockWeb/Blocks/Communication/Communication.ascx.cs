@@ -698,13 +698,13 @@ namespace RockWeb.Blocks.Communication
             ddlTemplate.Items.Clear();
             ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach(var template in new CommunicationTemplateService().Queryable()
-                .Where( t =>
-                    t.OwnerPersonAlias == null ||
-                    t.OwnerPersonAlias.PersonId == (CurrentPersonId ?? 0))
                 .OrderBy( t => t.Name ))
             {
-                visible = true;
-                ddlTemplate.Items.Add( new ListItem( template.Name, template.Id.ToString() ) );
+                if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    visible = true;
+                    ddlTemplate.Items.Add( new ListItem( template.Name, template.Id.ToString() ) );
+                }
             }
 
             ddlTemplate.Visible = visible;
