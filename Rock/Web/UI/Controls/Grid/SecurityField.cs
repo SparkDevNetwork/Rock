@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -133,8 +134,8 @@ namespace Rock.Web.UI.Controls
 
         void aSecure_DataBinding( object sender, EventArgs e )
         {
-            HtmlGenericControl lnk = ( HtmlGenericControl )sender;
-            GridViewRow container = ( GridViewRow )lnk.NamingContainer;
+            HtmlGenericControl lnk = (HtmlGenericControl)sender;
+            GridViewRow container = (GridViewRow)lnk.NamingContainer;
 
             // Get title
             string title = "Security";
@@ -153,7 +154,7 @@ namespace Rock.Web.UI.Controls
             {
                 string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
                     EntityTypeId, dataValue.ToString(), title ) );
-                lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url + "')" );
+                lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url.EscapeQuotes() + "')" );
             }
         }
     }
