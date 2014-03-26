@@ -221,6 +221,7 @@
     </Compile>
     <Compile Include="Jobs\SendCommunications.cs" />
     <Compile Include="Jobs\RunSQL.cs" />
+    <Compile Include="Model\CodeGenerated\CommunicationRecipientActivityService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
     <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />

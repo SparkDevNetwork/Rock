@@ -107,6 +107,8 @@ namespace Rock.Model
             target.CommunicationId = source.CommunicationId;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
+            target.OpenedDateTime = source.OpenedDateTime;
+            target.OpenedClient = source.OpenedClient;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

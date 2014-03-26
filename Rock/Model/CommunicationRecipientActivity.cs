@@ -37,6 +37,9 @@ namespace Rock.Model
 
         #region Constants
 
+        /// <summary>
+        /// User clicked link
+        /// </summary>
         public const string ACTIVITY_TYPE_CLICK = "Click";
 
         #endregion
