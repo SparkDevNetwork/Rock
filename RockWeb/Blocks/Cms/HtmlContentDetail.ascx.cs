@@ -150,6 +150,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
@@ -200,6 +201,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
+            FlushCacheItem( EntityValue() );
+            ShowView();
         }
 
         /// <summary>
@@ -520,7 +523,13 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    html = content.Content.ResolveMergeFields( Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson ) );
+                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                    if (CurrentPerson != null)
+                    {
+                        mergeFields.Add( "Person", CurrentPerson );
+                    }
+
+                    html = content.Content.ResolveMergeFields( mergeFields );
                 }
                 else
                 {
