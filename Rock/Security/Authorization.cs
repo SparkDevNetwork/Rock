@@ -27,9 +27,24 @@ namespace Rock.Security
     /// </summary>
     public static class Authorization
     {
+        /// <summary>
+        /// Authorization to view object
+        /// </summary>
         public const string VIEW = "View";
+
+        /// <summary>
+        /// Authorization to edit object ( add, set properties, delete, etc )
+        /// </summary>
         public const string EDIT = "Edit";
+
+        /// <summary>
+        /// Authorization to administer object ( add child object, set security, etc)
+        /// </summary>
         public const string ADMINISTRATE = "Administrate";
+
+        /// <summary>
+        /// Authorization to approve object (html, prayer, ads, etc)
+        /// </summary>
         public const string APPROVE = "Approve";
 
         /// <summary>

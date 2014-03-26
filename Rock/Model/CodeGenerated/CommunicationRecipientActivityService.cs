@@ -28,31 +28,31 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// PageView Service class
+    /// CommunicationRecipientActivity Service class
     /// </summary>
-    public partial class PageViewService : Service<PageView>
+    public partial class CommunicationRecipientActivityService : Service<CommunicationRecipientActivity>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationRecipientActivityService"/> class
         /// </summary>
-        public PageViewService()
+        public CommunicationRecipientActivityService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationRecipientActivityService"/> class
         /// </summary>
         /// <param name="repository">The repository.</param>
-        public PageViewService(IRepository<PageView> repository) : base(repository)
+        public CommunicationRecipientActivityService(IRepository<CommunicationRecipientActivity> repository) : base(repository)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationRecipientActivityService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public PageViewService(RockContext context) : base(context)
+        public CommunicationRecipientActivityService(RockContext context) : base(context)
         {
         }
 
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( PageView item, out string errorMessage )
+        public bool CanDelete( CommunicationRecipientActivity item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -74,45 +74,43 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class PageViewExtensionMethods
+    public static partial class CommunicationRecipientActivityExtensionMethods
     {
         /// <summary>
-        /// Clones this PageView object to a new PageView object
+        /// Clones this CommunicationRecipientActivity object to a new CommunicationRecipientActivity object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static PageView Clone( this PageView source, bool deepCopy )
+        public static CommunicationRecipientActivity Clone( this CommunicationRecipientActivity source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as PageView;
+                return source.Clone() as CommunicationRecipientActivity;
             }
             else
             {
-                var target = new PageView();
+                var target = new CommunicationRecipientActivity();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another PageView object to this PageView object
+        /// Copies the properties from another CommunicationRecipientActivity object to this CommunicationRecipientActivity object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this PageView target, PageView source )
+        public static void CopyPropertiesFrom( this CommunicationRecipientActivity target, CommunicationRecipientActivity source )
         {
-            target.PageId = source.PageId;
-            target.SiteId = source.SiteId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.DateTimeViewed = source.DateTimeViewed;
-            target.UserAgent = source.UserAgent;
-            target.ClientType = source.ClientType;
-            target.Url = source.Url;
-            target.PageTitle = source.PageTitle;
-            target.SessionId = source.SessionId;
-            target.IpAddress = source.IpAddress;
+            target.CommunicationRecipientId = source.CommunicationRecipientId;
+            target.ActivityDateTime = source.ActivityDateTime;
+            target.ActivityType = source.ActivityType;
+            target.ActivityDetail = source.ActivityDetail;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
 
