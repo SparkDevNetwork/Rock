@@ -16,9 +16,6 @@
             <div class="col-md-6">
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.CommunicationTemplate, Rock" PropertyName="Name" />
             </div>
-            <div class="col-md-6">
-                <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
-            </div>
         </div> 
                     
         <div class="row">
@@ -42,7 +39,7 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
         </div>
 
     </ContentTemplate>
