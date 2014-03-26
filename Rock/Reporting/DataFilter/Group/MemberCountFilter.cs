@@ -18,27 +18,24 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataFilter.Person
+namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on based on the current age in years" )]
+    [Description( "Filter groups based on member count" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Age" )]
-    public class AgeFilter : DataFilterComponent
+    [ExportMetadata( "ComponentName", "Member Count" )]
+    public class MemberCountFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -49,7 +46,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof( Rock.Model.Person ).FullName; }
+            get { return typeof( Rock.Model.Group ).FullName; }
         }
 
         /// <summary>
@@ -74,10 +71,10 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Age";
+            return "Member Count";
         }
 
         /// <summary>
@@ -105,23 +102,23 @@ namespace Rock.Reporting.DataFilter.Person
             var values = selection.Split( '|' );
             if ( values.Length == 1 )
             {
-                return string.Format( "Age is {0}", values[0] );
+                return string.Format( "Member count is {0}", values[0] );
             }
             else if ( values.Length >= 2 )
             {
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
                 {
-                    return string.Format( "Age {0}", comparisonType.ConvertToString() );
+                    return string.Format( "Member count {0}", comparisonType.ConvertToString() );
                 }
                 else
                 {
-                    return string.Format( "Age {0} '{1}'", comparisonType.ConvertToString(), values[1] );
+                    return string.Format( "Member count {0} '{1}'", comparisonType.ConvertToString(), values[1] );
                 }
             }
             else
             {
-                return "Age Filter";
+                return "Member Count";
             }
         }
 
@@ -220,71 +217,42 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            DateTime currentDate = RockDateTime.Today;
-            int currentDayOfYear = currentDate.DayOfYear;
-
-
             var values = selection.Split( '|' );
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-            int? ageValue = values[1].AsInteger( false );
+            int? memberCountValue = values[1].AsInteger( false );
 
-            var personAgeQuery = new PersonService( serviceInstance.RockContext ).Queryable();
+            var memberCountQuery = new GroupService( serviceInstance.RockContext ).Queryable();
 
             switch ( comparisonType )
             {
                 case ComparisonType.EqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            == ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() == memberCountValue );
                     break;
                 case ComparisonType.GreaterThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            > ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() > memberCountValue );
                     break;
                 case ComparisonType.GreaterThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            >= ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() >= memberCountValue );
                     break;
                 case ComparisonType.IsBlank:
-                    personAgeQuery = personAgeQuery.Where( p => !p.BirthDate.HasValue );
+                    memberCountQuery = memberCountQuery.Where( p => !p.Members.Any() );
                     break;
                 case ComparisonType.IsNotBlank:
-                    personAgeQuery = personAgeQuery.Where( p => p.BirthDate.HasValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Any() );
                     break;
                 case ComparisonType.LessThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            < ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() < memberCountValue );
                     break;
                 case ComparisonType.LessThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            <= ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() <= memberCountValue );
                     break;
                 case ComparisonType.NotEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            != ageValue );
+                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() != memberCountValue );
                     break;
             }
 
-
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, parameterExpression, "p" );
+            return FilterExpressionExtractor.Extract<Rock.Model.Group>( memberCountQuery, parameterExpression, "p" );
         }
 
         #endregion
