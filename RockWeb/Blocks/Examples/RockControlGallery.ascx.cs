@@ -15,18 +15,17 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock;
-using System.Collections;
-using System.Text;
-using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -406,6 +405,17 @@ namespace RockWeb.Blocks.Examples
         {
             string debug = geoPicker.SelectedValue.AsText();
 
+        }
+
+        /// <summary>
+        /// Handles the FileUploaded event of the fupContentFile control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void fupContentFile_FileUploaded( object sender, EventArgs e )
+        {
+            string physicalFileName =  this.Request.MapPath( fupContentFile.UploadedContentFilePath );
+            lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
 }
 }
