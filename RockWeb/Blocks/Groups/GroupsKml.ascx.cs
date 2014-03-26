@@ -180,10 +180,11 @@ namespace RockWeb.Blocks.Groups
         {
             int groupTypeId = Int32.Parse(ddlExportGroupTypes.SelectedValue);
             int locationTypeValueId = Int32.Parse(ddlExportGroupLocationType.SelectedValue);
+            DefinedValueCache locationTypeValue = DefinedValueCache.Read( locationTypeValueId );
             bool exportAsKmz = (rblExportFileType.SelectedValue == "kmz");
 
-            bool exportPoints = rblExportGeoTypes.Items.Cast<ListItem>().Where(i => i.Value == "points").Select(i => i.Selected).FirstOrDefault();
-            bool exportGeofences = rblExportGeoTypes.Items.Cast<ListItem>().Where( i => i.Value == "geofences" ).Select( i => i.Selected ).FirstOrDefault();
+            //bool exportPoints = rblExportGeoTypes.Items.Cast<ListItem>().Where(i => i.Value == "points").Select(i => i.Selected).FirstOrDefault();
+            //bool exportGeofences = rblExportGeoTypes.Items.Cast<ListItem>().Where( i => i.Value == "geofences" ).Select( i => i.Selected ).FirstOrDefault();
 
             GroupService groupService = new GroupService();
             var groups = groupService.Queryable()
@@ -198,9 +199,19 @@ namespace RockWeb.Blocks.Groups
 
             // create kml document
             Document document = new Document();
+            document.Address = locationTypeValue.Guid.ToString();
             document.Name = String.Format("{0} ({1})", ddlExportGroupTypes.SelectedItem.Text, ddlExportGroupLocationType.SelectedItem.Text);
             document.Open = false;
 
+            // add icon style
+            SharpKml.Dom.Style stylePoint = new SharpKml.Dom.Style();
+            stylePoint.Id = "style1";
+            stylePoint.Icon = new IconStyle();
+            stylePoint.Icon.Icon = new IconStyle.IconLink( new Uri( "http://maps.google.com/mapfiles/kml/paddle/red-circle.png" ) );
+            stylePoint.Icon.Scale = 1.0;
+            //stylePoint.Icon.Hotspot.X = 20;
+            //stylePoint.Icon.Hotspot.Y = 10;
+            document.AddStyle( stylePoint );
 
             foreach ( var group in groups )
             {
@@ -214,17 +225,18 @@ namespace RockWeb.Blocks.Groups
 
                 if ( group.GroupLocation != null )
                 {
-
-                    if ( exportPoints && group.GroupLocation.Location.GeoPoint != null )
+                    // note currently group locations cannot have both a GeoPoint and Geofence. If that changes then this will need to change too.
+                    if ( group.GroupLocation.Location.GeoPoint != null )
                     {
                         Point point = new Point();
                         point.Id = group.GroupLocation.Location.Guid.ToString();
                         point.Coordinate = new Vector( (double)group.GroupLocation.Location.GeoPoint.Latitude, (double)group.GroupLocation.Location.GeoPoint.Longitude );
                         placemark.Geometry = point;
+                        placemark.StyleUrl = new Uri( "#style1", UriKind.Relative );
                         document.AddFeature( placemark );
                     }
                     
-                    if ( exportGeofences && group.GroupLocation.Location.GeoFence != null )
+                    if ( group.GroupLocation.Location.GeoFence != null )
                     {
 
                         //group.GroupLocation.Location.GeoFence.
