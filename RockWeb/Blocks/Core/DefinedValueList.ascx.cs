@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Core
             using ( new UnitOfWorkScope() )
             {
                 var definedValueService = new DefinedValueService();
-                var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
+                var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order ).ThenBy( a => a.Name);
                 definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
                 BindDefinedValuesGrid();
             }

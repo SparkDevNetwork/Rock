@@ -35,7 +35,7 @@ namespace Rock.Model
         /// be ordered by the <see cref="DefinedValue">DefinedValue's</see> Order property.</returns>
         public IEnumerable<DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
-            return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order );
+            return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order ).ThenBy( a => a.Name );
         }
 
         /// <summary>
