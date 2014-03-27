@@ -411,7 +411,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [DataMember]
+        [MergeField]
         public virtual string FullName
         {
             get
@@ -434,7 +434,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
         public virtual string FullNameReversed
         {
             get
@@ -457,7 +456,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [DataMember]
         public virtual string FullNameFormal
         {
             get
@@ -480,7 +478,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
         public virtual string FullNameFormalReversed
         {
             get
@@ -872,7 +869,6 @@ namespace Rock.Model
         /// The grade string.
         /// </value>
         [NotMapped]
-        [DataMember]
         [MergeField]
         public virtual string GradeFormatted
         {
