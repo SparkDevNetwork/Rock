@@ -120,6 +120,10 @@ namespace Rock.Model
             
             // ignoring CommunicationRecipient,ModifiedByPersonAliasId 
             
+            // ignoring CommunicationRecipientActivity,CreatedByPersonAliasId 
+            
+            // ignoring CommunicationRecipientActivity,ModifiedByPersonAliasId 
+            
             // ignoring CommunicationTemplate,CreatedByPersonAliasId 
             
             // ignoring CommunicationTemplate,ModifiedByPersonAliasId 
@@ -301,6 +305,10 @@ namespace Rock.Model
             // ignoring PersonBadge,CreatedByPersonAliasId 
             
             // ignoring PersonBadge,ModifiedByPersonAliasId 
+            
+            // ignoring PersonViewed,TargetPersonAliasId 
+            
+            // ignoring PersonViewed,ViewerPersonAliasId 
             
             // ignoring PhoneNumber,CreatedByPersonAliasId 
             

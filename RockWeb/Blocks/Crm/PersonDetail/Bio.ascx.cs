@@ -40,6 +40,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [PersonBadgesField("Badges")]
     public partial class Bio : PersonBlock
     {
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -151,6 +154,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        #endregion
+
+        #region Events
+
         protected void lbEditPerson_Click( object sender, EventArgs e )
         {
             if ( Person != null )
@@ -158,6 +165,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ) );
             }
         }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Formats the phone number.
+        /// </summary>
+        /// <param name="countryCode">The country code.</param>
+        /// <param name="number">The number.</param>
+        /// <returns></returns>
+        protected string FormatPhoneNumber(object countryCode, object number)
+        {
+            string cc = countryCode as string ?? string.Empty;
+            string n = number as string ?? string.Empty;
+            return PhoneNumber.FormattedNumber(cc, n);
+        }
+
+        #endregion
 
     }
 }

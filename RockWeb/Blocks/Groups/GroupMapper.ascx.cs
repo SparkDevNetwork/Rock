@@ -51,7 +51,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField("Show Map Info Window", "Control whether a info window should be displayed when clicking on a map point.", true, "", 5)]
     [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 6 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 7 )]
-    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"<div class='clearfix'>
+    [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
+<div class='clearfix'>
     <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
 </div>
@@ -75,6 +76,9 @@ namespace RockWeb.Blocks.Groups
                 {{GroupMember.NickName}} {{GroupMember.LastName}}
             {% endif %}
             - {{GroupMember.Email}}
+            {% for PhoneType in GroupMember.PhoneTypes %}
+                {{PhoneType.Name}}: {{PhoneType.Phone.NumberFormatted}}
+            {% endfor %}
             <br>
         {% endfor -%}
     </div>
@@ -142,7 +146,7 @@ namespace RockWeb.Blocks.Groups
         // handlers called by the controls on your block
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the GroupMapper control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -239,7 +243,7 @@ namespace RockWeb.Blocks.Groups
                                                     l.GroupLocationTypeValue.Name
                                                 } ).FirstOrDefault(),
                             GroupMembers = g.Members
-//                                                .Where( m => m.GroupRoleId == 25 )
+                                //                                                .Where( m => m.GroupRoleId == 25 )
                                                 .Select( m => new
                                                 {
                                                     m.Person.Id,
@@ -249,7 +253,11 @@ namespace RockWeb.Blocks.Groups
                                                     RoleName = m.GroupRole.Name,
                                                     m.Person.Email,
                                                     PhotoGuid = m.Person.Photo != null ? m.Person.Photo.Guid : Guid.Empty,
-                                                    PhoneNumbers = m.Person.PhoneNumbers.Select( p => new { p.IsUnlisted, p.Number, PhoneType = p.NumberTypeValue.Name } )
+                                                    PhoneTypes = m.Person.PhoneNumbers.Select( p => new
+                                                    {
+                                                        Name = p.NumberTypeValue.Name,
+                                                        Phone = p
+                                                    } )
                                                 } ),
                             AttributeValues = attributeValues
                                                 .Where( v => v.EntityId == g.Id )
@@ -362,29 +370,35 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // add styling to map
-                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( new Guid( GetAttributeValue( "MapStyle" ) ) );
-                string styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
-                string markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace("#", "");
+                string styleCode = "null";
+                string markerColor = "FE7569";
+
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ).AsGuid() );
+                if ( dvcMapStyle != null )
+                {
+                    styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", "" );
+                }
 
                 // write script to page
                 lMapScript.Text = String.Format( @" <script> 
-                                                        var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
-                                                        var showInfoWindow = {1}; 
-                                                        var mapStyle = {2};
-                                                        var pinColor = '{3}';
-                                                        var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
-                                                            new google.maps.Size(21, 34),
-                                                            new google.maps.Point(0,0),
-                                                            new google.maps.Point(10, 34));
-                                                        var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
-                                                            new google.maps.Size(40, 37),
-                                                            new google.maps.Point(0, 0),
-                                                            new google.maps.Point(12, 35));
-                                                    </script>", 
-                                        groupJson, 
+                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
+                                                    var showInfoWindow = {1}; 
+                                                    var mapStyle = {2};
+                                                    var pinColor = '{3}';
+                                                    var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                        new google.maps.Size(21, 34),
+                                                        new google.maps.Point(0,0),
+                                                        new google.maps.Point(10, 34));
+                                                    var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                        new google.maps.Size(40, 37),
+                                                        new google.maps.Point(0, 0),
+                                                        new google.maps.Point(12, 35));
+                                                </script>",
+                                        groupJson,
                                         GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean().ToString().ToLower(),
                                         styleCode,
-                                        markerColor);
+                                        markerColor );
 
                 if ( groupsMapped == 0 ) {
                     pnlMap.Visible = false;

@@ -242,6 +242,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the uploaded content file path.
+        /// </summary>
+        /// <value>
+        /// The uploaded content file path.
+        /// </value>
+        public string UploadedContentFilePath
+        {
+            get
+            {
+                if ( IsBinaryFile || string.IsNullOrWhiteSpace(_hfBinaryFileId.Value) )
+                {
+                    return null;
+                }
+                else
+                {
+                    return this.RootFolder.EnsureTrailingForwardslash() + _hfBinaryFileId.Value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [is binary file].
         /// </summary>
         /// <value>
@@ -309,7 +330,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string result = ViewState["UploadUrl"] as string;
-                if (string.IsNullOrWhiteSpace(result))
+                if ( string.IsNullOrWhiteSpace( result ) )
                 {
                     result = "FileUploader.ashx";
                 }
@@ -467,10 +488,19 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( BinaryFileId != null )
+            if ( BinaryFileId != null || !string.IsNullOrWhiteSpace(this.UploadedContentFilePath)  )
             {
-                _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
-                _aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
+                if ( IsBinaryFile )
+                {
+                    _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                    _aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
+                }
+                else
+                {
+                    _aFileName.HRef = string.Format( "{0}GetFile.ashx?isBinaryFile=F&rootFolder={1}&fileName={2}", ResolveUrl( "~" ), Rock.Security.Encryption.EncryptString( this.RootFolder ), BinaryFileId );
+                    _aFileName.InnerText = this.UploadedContentFilePath;
+                }
+
                 _aFileName.AddCssClass( "file-exists" );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }

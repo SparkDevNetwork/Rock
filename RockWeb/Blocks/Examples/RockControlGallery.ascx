@@ -283,7 +283,13 @@
 
             <a id="FileUploader"></a>
             <div runat="server" class="r-example">
-                <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader" BinaryFileTypeGuid="29EFF9B7-6814-4B9F-A922-77FA0448EBFA" />
+                <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
+            </div>
+
+            <a id="FileUploaderContentFileMode"></a>
+            <div runat="server" class="r-example">
+                <Rock:FileUploader ID="fupContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles"  OnFileUploaded="fupContentFile_FileUploaded" />
+                <asp:Label ID="lblPhysicalFileName" runat="server" Text="Uploaded File: -" />
             </div>
 
             <a id="ImageUploader"></a>

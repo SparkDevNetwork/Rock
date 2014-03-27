@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -42,7 +43,7 @@ namespace RockWeb.Blocks.Communication
 
         #region Fields
 
-        private bool canEdit = false;
+        private bool _canEdit = false;
 
         #endregion
 
@@ -66,9 +67,12 @@ namespace RockWeb.Blocks.Communication
             gCommunication.GridRebind += gCommunication_GridRebind;
 
             // The created by column/filter should only be displayed if user is allowed to approve
-            canEdit = this.IsUserAuthorized( Authorization.EDIT );
-            ppOwner.Visible = canEdit;
-            gCommunication.Columns[0].Visible = canEdit;
+            _canEdit = IsUserAuthorized( Authorization.EDIT );
+            ppCreatedBy.Visible = _canEdit;
+            gCommunication.Columns[4].Visible = _canEdit;
+
+            SecurityField securityField = gCommunication.Columns[4] as SecurityField;
+            securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.CommunicationTemplate ) ).Id;
         }
 
         /// <summary>
@@ -97,9 +101,9 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Channel", cpChannel.SelectedValue );
-            if ( canEdit )
+            if ( _canEdit )
             {
-                rFilter.SaveUserPreference( "Owner", ppOwner.PersonId.ToString() );
+                rFilter.SaveUserPreference( "Created By", ppCreatedBy.PersonId.ToString() );
             }
 
             BindGrid();
@@ -125,7 +129,7 @@ namespace RockWeb.Blocks.Communication
 
                         break;
                     }
-                case "Owner":
+                case "Created By":
                     {
                         int personId = 0;
                         if ( int.TryParse( e.Value, out personId ) && personId != 0 )
@@ -171,6 +175,12 @@ namespace RockWeb.Blocks.Communication
                 var template = service.Get( e.RowKeyId );
                 if ( template != null )
                 {
+                    if ( !template.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                    {
+                        maGridWarning.Show( "You are not authorized to delete this template", ModalAlertType.Information );
+                        return;
+                    }
+
                     string errorMessage;
                     if ( !service.CanDelete( template, out errorMessage ) )
                     {
@@ -209,21 +219,21 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                if ( !canEdit )
+                if ( !_canEdit )
                 {
-                    rFilter.SaveUserPreference( "Owner", string.Empty );
+                    rFilter.SaveUserPreference( "Created By", string.Empty );
                 }
 
                 cpChannel.SelectedValue = rFilter.GetUserPreference( "Channel" );
 
                 int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Owner" ), out personId ) )
+                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
                 {
                     var personService = new PersonService();
                     var person = personService.Get( personId );
                     if ( person != null )
                     {
-                        ppOwner.SetValue( person );
+                        ppCreatedBy.SetValue( person );
                     }
                 }
             }
@@ -245,23 +255,16 @@ namespace RockWeb.Blocks.Communication
                             c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
                 }
 
-                if ( canEdit )
+                if ( _canEdit )
                 {
                     int personId = 0;
                     if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
                     {
                         communications = communications
-                            .Where( c => 
-                                c.OwnerPersonAlias != null &&
-                                c.OwnerPersonAlias.PersonId == personId );
+                            .Where( c =>
+                                c.CreatedByPersonAlias != null &&
+                                c.CreatedByPersonAlias.PersonId == personId );
                     }
-                }
-                else
-                {
-                    communications = communications
-                        .Where( c => 
-                            c.OwnerPersonAlias != null &&
-                            c.OwnerPersonAlias.PersonId == CurrentPersonId );
                 }
 
                 var sortProperty = gCommunication.SortProperty;
@@ -275,7 +278,23 @@ namespace RockWeb.Blocks.Communication
                     communications = communications.OrderBy( c => c.Name );
                 }
 
-                gCommunication.DataSource = communications.ToList();
+                var viewableCommunications = new List<CommunicationTemplate>();
+                if ( _canEdit )
+                {
+                    viewableCommunications = communications.ToList();
+                }
+                else
+                {
+                    foreach ( var comm in communications )
+                    {
+                        if ( comm.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                        {
+                            viewableCommunications.Add( comm );
+                        }
+                    }
+                }
+                
+                gCommunication.DataSource = viewableCommunications;
                 gCommunication.DataBind();
             }
 

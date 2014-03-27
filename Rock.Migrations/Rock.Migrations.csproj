@@ -772,6 +772,14 @@
     <Compile Include="Migrations\201403180042036_AddressVerificationService.Designer.cs">
       <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403241216199_CommunicationStatus.cs" />
+    <Compile Include="Migrations\201403241216199_CommunicationStatus.Designer.cs">
+      <DependentUpon>201403241216199_CommunicationStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403261648315_ExternalApplicationDefinedType.cs" />
+    <Compile Include="Migrations\201403261648315_ExternalApplicationDefinedType.Designer.cs">
+      <DependentUpon>201403261648315_ExternalApplicationDefinedType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1331,6 +1339,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403180042036_AddressVerificationService.resx">
       <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403241216199_CommunicationStatus.resx">
+      <DependentUpon>201403241216199_CommunicationStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403261648315_ExternalApplicationDefinedType.resx">
+      <DependentUpon>201403261648315_ExternalApplicationDefinedType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

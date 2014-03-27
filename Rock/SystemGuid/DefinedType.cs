@@ -35,6 +35,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 
         /// <summary>
+        /// The list of phone country code formats and how to format their numbers 
+        /// </summary>
+        public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
@@ -43,6 +48,11 @@ namespace Rock.SystemGuid
         /// Guid for Device Type
         /// </summary>
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
+
+        /// <summary>
+        /// Guid for External Application
+        /// </summary>
+        public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";
 
         /// <summary>
         /// Guid for Financial Currency Type

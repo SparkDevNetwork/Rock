@@ -65,6 +65,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group is a member of.
         /// </value>
         [Required]
+        [HideFromReporting]
         [DataMember( IsRequired = true )]
         public int GroupTypeId { get; set; }
 
@@ -75,6 +76,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not 
         /// associated with a campus, this value is null.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? CampusId { get; set; }
 

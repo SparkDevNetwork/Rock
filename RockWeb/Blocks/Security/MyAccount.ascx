@@ -34,7 +34,7 @@
                 <ul class="phone-list list-unstyled">
                 <asp:Repeater ID="rptPhones" runat="server">
                     <ItemTemplate>
-                        <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : Rock.Model.PhoneNumber.FormattedNumber(Eval("Number").ToString()) %> <small><%# Eval("NumberTypeValue.Name") %></small></li>
+                        <li><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Name") %></small></li>
                     </ItemTemplate>
                 </asp:Repeater>
                 </ul>
