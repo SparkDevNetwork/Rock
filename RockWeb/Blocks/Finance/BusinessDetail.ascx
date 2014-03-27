@@ -16,28 +16,37 @@
                         <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Title" TabIndex="1" 
                             SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
                     </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbPhone" Label="Phone Number" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' TabIndex="7" />
+                    </div>
                 </div>
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
-                        <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
-                        <div class="row">
-                            <div class="col-lg-7">
-                                <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" />
-                            </div>
-                            <div class="col-lg-2">
-                                <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
-                            </div>
-                            <div class="col-lg-3">
-                                <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
-                            </div>
-                        </div>
+                        <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="2" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPhone" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
-                        <Rock:RockTextBox ID="tbEmailAddress" runat="server" Label="Email Address" />
-                        <!-- this is for contact information. in particular phone number and email address -->
+                        <Rock:RockTextBox ID="tbEmailAddress" runat="server" Label="Email Address" TabIndex="8" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="3" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="4" />
+                            </div>
+                            <div class="col-lg-2">
+                                <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="5" />
+                            </div>
+                            <div class="col-lg-3">
+                                <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" TabIndex="6" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 

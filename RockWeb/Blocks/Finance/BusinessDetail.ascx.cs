@@ -15,15 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Finance
@@ -63,15 +64,34 @@ namespace RockWeb.Blocks.Finance
 
         protected void lbSave_Click( object sender, EventArgs e )
         {
-
-        }
-
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
+            var businessService = new PersonService();
+            var business = new Person();
+            //tbBusinessName;
+            //tbStreet1;
+            //tbStreet2;
+            //tbCity;
+            //ddlState.SelectedValue;
+            //tbZip;
+            //tbPhone;
+            //tbEmailAddress;
             if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
             {
                 var phoneNumber = new PhoneNumber();
                 phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+            }
+            business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+        }
+
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfBusinessId.ValueAsInt() != 0 )
+            {
+                var savedBusiness = new PersonService().Get( hfBusinessId.ValueAsInt() );
+                ShowSummary( savedBusiness );
+            }
+            else
+            {
+                NavigateToParentPage();
             }
         }
 
@@ -131,14 +151,14 @@ namespace RockWeb.Blocks.Finance
 
             if ( readOnly )
             {
-                ShowReadonlyDetails( business );
+                ShowSummary( business );
             }
             else
             {
-                lbEdit.Visible = true;
+                //lbEdit.Visible = true;
                 if ( business.Id > 0 )
                 {
-                    ShowReadonlyDetails( business );
+                    ShowSummary( business );
                 }
                 else
                 {
@@ -147,9 +167,12 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        private void ShowReadonlyDetails( Person business )
+        private void ShowSummary( Person business )
         {
             SetEditMode( false );
+            hfBusinessId.SetValue( business.Id );
+            lTitle.Text = String.Format( "Edit: {0}", business.FullName ).FormatAsHtmlTitle();
+
 
             //hfAccountId.SetValue( account.Id );
             //lActionTitle.Text = account.Name.FormatAsHtmlTitle();
@@ -159,6 +182,52 @@ namespace RockWeb.Blocks.Finance
             //DescriptionList descriptionList = new DescriptionList();
             //descriptionList.Add( "", "" );
             //lblMainDetails.Text = descriptionList.Html;
+        }
+
+        //private void ShowSummary( FinancialBatch financialBatch )
+        //{
+        //    string batchDate = string.Empty;
+        //    if ( financialBatch.BatchStartDateTime != null )
+        //    {
+        //        batchDate = financialBatch.BatchStartDateTime.Value.ToShortDateString();
+        //    }
+
+        //    lTitle.Text = string.Format( "{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
+
+        //    SetEditMode( false );
+
+        //    string campus = string.Empty;
+        //    if ( financialBatch.CampusId.HasValue )
+        //    {
+        //        campus = financialBatch.Campus.ToString();
+        //    }
+
+        //    hfBatchId.SetValue( financialBatch.Id );
+        //    lDetailsLeft.Text = new DescriptionList()
+        //        .Add( "Title", financialBatch.Name )
+        //        .Add( "Status", financialBatch.Status.ToString() )
+        //        .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString( "MM/dd/yyyy" ) )
+        //        .Html;
+
+        //    lDetailsRight.Text = new DescriptionList()
+        //        .Add( "Control Amount", financialBatch.ControlAmount.ToString() )
+        //        .Add( "Campus", campus )
+        //        .Add( "Batch End Date", Convert.ToDateTime( financialBatch.BatchEndDateTime ).ToString( "MM/dd/yyyy" ) )
+        //        .Html;
+        //}
+
+        private void ShowEditDetails( Person business )
+        {
+            if ( business.Id > 0 )
+            {
+                lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
+            }
+            else
+            {
+                lTitle.Text = ActionTitle.Add( "Business" ).FormatAsHtmlTitle();
+            }
+
+            SetEditMode( true );
         }
 
         private void SetEditMode( bool editable )
