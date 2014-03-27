@@ -7,6 +7,7 @@
 </head>
 <body>
     Paste Dynamic JSON Map parameters here
+	<br />
     <textarea id="textBoxInput" rows="10" cols="120" >[{ featureType: "landscape", stylers: [{ saturation: -100 }, { lightness: 65 }, { visibility: "on" }] }, { featureType: "poi", stylers: [{ saturation: -100 }, { lightness: 51 }, { visibility: "simplified" }] }, { featureType: "road.highway", stylers: [{ saturation: -100 }, { visibility: "simplified" }] }, { featureType: "road.arterial", stylers: [{ saturation: -100 }, { lightness: 30 }, { visibility: "on" }] }, { featureType: "road.local", stylers: [{ saturation: -100 }, { lightness: 40 }, { visibility: "on" }] }, { featureType: "transit", stylers: [{ saturation: -100 }, { visibility: "simplified" }] }, { featureType: "administrative.province", stylers: [{ visibility: "off" }]/**/ }, { featureType: "administrative.locality", stylers: [{ visibility: "off" }] }, { featureType: "administrative.neighborhood", stylers: [{ visibility: "on" }]/**/ }, { featureType: "water", elementType: "labels", stylers: [{ visibility: "on" }, { lightness: -25 }, { saturation: -100 }] }, { featureType: "water", elementType: "geometry", stylers: [{ hue: "#ffff00" }, { lightness: -25 }, { saturation: -97 }] }];</textarea>
     <br />
     <input type="button" onclick="javascript: convertStuff()" value="Convert" >
@@ -15,9 +16,11 @@
     <br />
     <textarea id="textBoxOutput" rows="10" cols="120"></textarea>
     <br />
-    Static Map preview
-    <br />
-	<img id='testImg' src="http://maps.googleapis.com/maps/api/staticmap?sensor=false&amp;size=350x200&amp;format=png&amp;style=feature:all|saturation:0|hue:0xe7ecf0&amp;style=feature:road|saturation:-70&amp;style=feature:transit|visibility:off&amp;style=feature:poi|visibility:off&amp;style=feature:water|visibility:simplified|saturation:-60&amp;visual_refresh=true&amp;path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:_~vlEte`lToeAwIaqAjSmXddA{TjfAxcBzi@dNe}@zjAgQ~FsoB" />
+    <h4>Static Map preview (Polygon)</h4>
+    <img id='testImg1' src="http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=700x400&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:_~vlEte`lToeAwIaqAjSmXddA{TjfAxcBzi@dNe}@zjAgQ~FsoB" />
+	<br />
+	<h4>Static Map preview (Point)</h4>
+	<img id='testImg2' src="http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=700x400&zoom=15&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&markers=color:0x779cb1|33.7110844999552,-112.209709212184&visual_refresh=true">
 	
     <script type="text/javascript">
         function convertStuff() {
@@ -27,7 +30,8 @@
             result = decodeURIComponent(result).trim();
             $('#textBoxOutput').val(result);
 			
-			$('#testImg').attr('src', 'http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&' + result + '&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:_~vlEte`lToeAwIaqAjSmXddA{TjfAxcBzi@dNe}@zjAgQ~FsoB');
+			$('#testImg1').attr('src', 'http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=700x400&format=png&' + result + '&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:_~vlEte`lToeAwIaqAjSmXddA{TjfAxcBzi@dNe}@zjAgQ~FsoB');
+			$('#testImg2').attr('src', 'http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=700x400&zoom=15&format=png&' + result + '&markers=color:0x779cb1|33.7110844999552,-112.209709212184&visual_refresh=true"');
         }
 
 
