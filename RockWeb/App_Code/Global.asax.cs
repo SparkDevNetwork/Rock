@@ -920,21 +920,34 @@ namespace RockWeb
         /// <param name="r">The r.</param>
         public static void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            if ( r == CacheItemRemovedReason.Expired )
+            try
             {
-                // call a page on the site to keep IIS alive 
-                if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                if ( r == CacheItemRemovedReason.Expired )
                 {
-                    string url = Global.BaseUrl + "KeepAlive.aspx";
-                    WebRequest request = WebRequest.Create( url );
-                    WebResponse response = request.GetResponse();
+                    // Process the transaction queue on another thread
+                    Task.Run( () => DrainTransactionQueue() );
+
+                    // add cache item again
+                    AddCallBack();
+
+                    // call a page on the site to keep IIS alive 
+                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                    {
+                        string url = Global.BaseUrl + "KeepAlive.aspx";
+                        WebRequest request = WebRequest.Create( url );
+                        WebResponse response = request.GetResponse();
+                    }
                 }
-
-                // Process the transaction queue on another thread
-                Task.Run( () => DrainTransactionQueue() );
-
-                // add cache item again
-                AddCallBack();
+                else
+                {
+                    throw new Exception( 
+                        string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}", 
+                            r.ConvertToString() ) );
+                }
+            }
+            catch( Exception ex)
+            {
+                LogError(ex, null);
             }
         }
 
