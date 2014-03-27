@@ -132,6 +132,11 @@ namespace RockWeb
                 Directory.CreateDirectory( physicalContentFolderName );
             }
 
+            if ( File.Exists( physicalFilePath ) )
+            {
+                File.Delete( physicalFilePath );
+            }
+
             File.WriteAllBytes( physicalFilePath, fileContent );
 
             var response = new
