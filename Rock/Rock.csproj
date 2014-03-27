@@ -200,7 +200,6 @@
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
-    <Compile Include="Data\RockContextConfig.cs" />
     <Compile Include="Field\Types\SiteFieldType.cs" />
     <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
