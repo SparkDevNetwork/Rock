@@ -224,34 +224,6 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            // control for merge
-            _lbMerge = new LinkButton();
-            Controls.Add( _lbMerge );
-            _lbMerge.ID = "lbMerge";
-            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
-            _lbMerge.ToolTip = "Merge Person Records";
-            _lbMerge.Click += lbMerge_Click;
-            _lbMerge.CausesValidation = false;
-            _lbMerge.PreRender += lb_PreRender;
-            Controls.Add( _lbMerge );
-            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
-            iMerge.Attributes.Add( "class", "fa fa-users" );
-            _lbMerge.Controls.Add( iMerge );
-
-            // control for communicate
-            _lbCommunicate = new LinkButton();
-            Controls.Add( _lbCommunicate );
-            _lbCommunicate.ID = "lbCommunicate";
-            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
-            _lbCommunicate.ToolTip = "Communicate";
-            _lbCommunicate.Click += lbCommunicate_Click;
-            _lbCommunicate.CausesValidation = false;
-            _lbCommunicate.PreRender += lb_PreRender;
-            Controls.Add( _lbCommunicate );
-            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
-            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
-            _lbCommunicate.Controls.Add( iCommunicate );
-
             // controls for add
             _aAdd = new HtmlGenericControl( "a" );
             Controls.Add( _aAdd );
@@ -272,6 +244,34 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add("class", "fa fa-plus-circle");
             _lbAdd.Controls.Add( iAdd );
+            
+            // control for communicate
+            _lbCommunicate = new LinkButton();
+            Controls.Add( _lbCommunicate );
+            _lbCommunicate.ID = "lbCommunicate";
+            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
+            _lbCommunicate.ToolTip = "Communicate";
+            _lbCommunicate.Click += lbCommunicate_Click;
+            _lbCommunicate.CausesValidation = false;
+            _lbCommunicate.PreRender += lb_PreRender;
+            Controls.Add( _lbCommunicate );
+            HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
+            iCommunicate.Attributes.Add( "class", "fa fa-comment" );
+            _lbCommunicate.Controls.Add( iCommunicate );
+
+            // control for merge
+            _lbMerge = new LinkButton();
+            Controls.Add( _lbMerge );
+            _lbMerge.ID = "lbMerge";
+            _lbMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbMerge.ToolTip = "Merge Person Records";
+            _lbMerge.Click += lbMerge_Click;
+            _lbMerge.CausesValidation = false;
+            _lbMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbMerge );
+            HtmlGenericControl iMerge = new HtmlGenericControl( "i" );
+            iMerge.Attributes.Add( "class", "fa fa-users" );
+            _lbMerge.Controls.Add( iMerge );
 
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );

@@ -52,7 +52,7 @@
                                 <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
                                 <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
-                                <Rock:RockTextBox ID="txtPhone" runat="server" Label="Phone"></Rock:RockTextBox>
+                                <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                 <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtStreet" runat="server" Label="Address"></Rock:RockTextBox>
                                 

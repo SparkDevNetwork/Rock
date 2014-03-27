@@ -45,7 +45,14 @@
                 },
                 done: function (e, data) {
                     var $el = $('#' + options.aFileName);
-                    $('#' + options.hfFileId).val(data.response().result.Id);
+
+                    if ((options.isBinaryFile || 'T') == 'F') {
+                        $('#' + options.hfFileId).val(data.response().result.FileName);
+                    }
+                    else {
+                        $('#' + options.hfFileId).val(data.response().result.Id);
+                    }
+                    
                     var getFileUrl = Rock.settings.get('baseUrl')
                         + 'GetFile.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')

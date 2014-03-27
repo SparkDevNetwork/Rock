@@ -112,7 +112,7 @@ namespace Rock.Reporting.DataFilter.Person
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
                 {
-                    return string.Format( "age {0}", comparisonType.ConvertToString() );
+                    return string.Format( "Age {0}", comparisonType.ConvertToString() );
                 }
                 else
                 {

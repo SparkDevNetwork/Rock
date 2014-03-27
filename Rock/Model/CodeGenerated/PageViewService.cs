@@ -110,6 +110,7 @@ namespace Rock.Model
             target.UserAgent = source.UserAgent;
             target.ClientType = source.ClientType;
             target.Url = source.Url;
+            target.PageTitle = source.PageTitle;
             target.SessionId = source.SessionId;
             target.IpAddress = source.IpAddress;
             target.Id = source.Id;

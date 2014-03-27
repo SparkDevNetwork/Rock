@@ -32,9 +32,6 @@ namespace Rock.Data
     /// </summary>
     public partial class RockContext : DbContext
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockContext"/> class.
-        /// </summary>
         //public RockContext()
         //{
         //    this.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );

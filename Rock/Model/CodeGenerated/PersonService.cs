@@ -107,10 +107,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring PersonViewed,TargetPersonId 
-            
-            // ignoring PersonViewed,ViewerPersonId 
  
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -187,6 +183,7 @@ namespace Rock.Model
             target.Email = source.Email;
             target.IsEmailActive = source.IsEmailActive;
             target.EmailNote = source.EmailNote;
+            target.EmailPreference = source.EmailPreference;
             target.DoNotEmail = source.DoNotEmail;
             target.SystemNote = source.SystemNote;
             target.ViewedCount = source.ViewedCount;

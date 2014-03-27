@@ -592,7 +592,6 @@ namespace Rock.Web.UI.Controls
                 var rockControl = control as IRockControl;
                 if ( rockControl != null )
                 {
-                    rockControl.Required = false;
                     rockControl.ValidationGroup = validationGroup;
                 }
             }
@@ -873,6 +872,7 @@ namespace Rock.Web.UI.Controls
                     if ( defaultControl is IRockControl )
                     {
                         var rockControl = defaultControl as IRockControl;
+                        rockControl.Required = false;
                         rockControl.Label = "Default Value";
                     }
 

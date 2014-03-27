@@ -43,9 +43,10 @@ namespace Rock.Security
         public string Description { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityActionAttribute"/> class.
+        /// Initializes a new instance of the <see cref="SecurityActionAttribute" /> class.
         /// </summary>
-        /// <param name="actions">The actions.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="description">The description.</param>
         public SecurityActionAttribute( string action, string description )
         {
             this.Action = action;

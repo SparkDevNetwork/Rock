@@ -25,6 +25,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -254,16 +255,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     foreach ( RepeaterItem item in rContactInfo.Items )
                     {
                         HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                        TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
                         CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
                         CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
                         if ( hfPhoneType != null &&
-                            tbPhone != null &&
+                            pnbPhone != null &&
                             cbSms != null &&
                             cbUnlisted != null )
                         {
-                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
                             {
                                 int phoneNumberTypeId;
                                 if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
@@ -277,17 +278,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
                                     else
                                     {
-                                        oldPhoneNumber = phoneNumber.NumberFormatted;
+                                        oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
                                     }
 
-                                    phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                                    phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                                     phoneNumber.IsMessagingEnabled = cbSms.Checked;
                                     phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                     phoneNumberTypeIds.Add( phoneNumberTypeId );
 
                                     History.EvaluateChange( changes,
                                         string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                        oldPhoneNumber, phoneNumber.NumberFormatted );
+                                        oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
                                 }
                             }
                         }

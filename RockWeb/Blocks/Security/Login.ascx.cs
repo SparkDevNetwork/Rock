@@ -49,6 +49,7 @@ Thank-you for logging in, however, we need to confirm the email associated with 
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, @"
 Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
 ", "", 5 )]
+    [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own accont.", false, "", 6, "HideNewAccount" )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
 
@@ -61,6 +62,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
 
             phExternalLogins.Controls.Clear();
 
