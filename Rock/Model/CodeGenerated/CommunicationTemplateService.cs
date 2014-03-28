@@ -105,7 +105,6 @@ namespace Rock.Model
         {
             target.Name = source.Name;
             target.Description = source.Description;
-            target.OwnerPersonAliasId = source.OwnerPersonAliasId;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
             target.Subject = source.Subject;
             target.ChannelEntityTypeId = source.ChannelEntityTypeId;
