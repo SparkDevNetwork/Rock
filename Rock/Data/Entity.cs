@@ -178,6 +178,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
+        [MergeField]
         public virtual string UrlEncodedKey
         {
             get

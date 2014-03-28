@@ -23,6 +23,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
@@ -53,6 +54,9 @@ namespace Rock.Communication.Transport
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication, PersonAlias currentPersonAlias )
         {
+            // Requery the Communication object
+            communication = new CommunicationService().Get( communication.Id );
+
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
@@ -145,7 +149,27 @@ namespace Rock.Communication.Transport
 
                                 message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
+                                string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
+                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
                                 string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
+
+                                // If there is unsubscribe html (would have been added by channel PreSend), inject it
+                                if (!string.IsNullOrWhiteSpace(htmlBody) && !string.IsNullOrWhiteSpace(unsubscribeHtml))
+                                {
+                                    string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
+                                    if (htmlBody != newHtml)
+                                    {
+                                        // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
+                                        htmlBody = newHtml;
+                                    }
+                                    else
+                                    {
+                                        // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
+                                        htmlBody += unsubscribeHtml;
+                                    }
+                                }
+
+                                // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
                                 if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                                 {
                                     plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
@@ -153,7 +177,6 @@ namespace Rock.Communication.Transport
                                     message.AlternateViews.Add( plainTextView );
                                 }
 
-                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
                                 if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                                 {
                                     string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();

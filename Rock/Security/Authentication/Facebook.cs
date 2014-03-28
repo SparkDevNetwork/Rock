@@ -191,7 +191,7 @@ namespace Rock.Security.ExternalAuthentication
                                         else
                                             person.Gender = Gender.Unknown;
                                         person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
-                                        person.DoNotEmail = false;
+                                        person.EmailPreference = EmailPreference.EmailAllowed;
 
                                         new GroupService().SaveNewFamily( person, null, false, null );
                                     }

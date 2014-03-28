@@ -446,6 +446,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
 
+                groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
+
                 groupMember.Person.LoadAttributes();
 
                 foreach ( var attributeControl in attributeControls )

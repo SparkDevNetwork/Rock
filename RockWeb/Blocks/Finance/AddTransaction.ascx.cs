@@ -884,6 +884,7 @@ achieve our mission.  We are so grateful for your commitment.
                             person.FirstName = txtFirstName.Text;
                             person.LastName = txtLastName.Text;
                             person.Email = txtEmail.Text;
+                            person.EmailPreference = EmailPreference.EmailAllowed;
 
                             bool displayPhone = false;
                             if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )

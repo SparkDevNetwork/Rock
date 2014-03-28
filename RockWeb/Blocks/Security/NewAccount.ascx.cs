@@ -514,6 +514,8 @@ namespace RockWeb.Blocks.Security
             person.FirstName = tbFirstName.Text;
             person.LastName = tbLastName.Text;
             person.Email = tbEmail.Text;
+            person.EmailPreference = EmailPreference.EmailAllowed;
+
             switch(ddlGender.SelectedValue)
             {
                 case "M":
