@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Groups
             {% endif %}
             - {{GroupMember.Email}}
             {% for PhoneType in GroupMember.PhoneTypes %}
-                {{PhoneType.Name}}: {{PhoneType.Phone.NumberFormatted}}
+                <br>{{PhoneType.Name}}: {{PhoneType.Phone.NumberFormatted}}
             {% endfor %}
             <br>
         {% endfor -%}
@@ -381,24 +381,87 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // write script to page
-                lMapScript.Text = String.Format( @" <script> 
-                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
-                                                    var showInfoWindow = {1}; 
-                                                    var mapStyle = {2};
-                                                    var pinColor = '{3}';
-                                                    var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
-                                                        new google.maps.Size(21, 34),
-                                                        new google.maps.Point(0,0),
-                                                        new google.maps.Point(10, 34));
-                                                    var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
-                                                        new google.maps.Size(40, 37),
-                                                        new google.maps.Point(0, 0),
-                                                        new google.maps.Point(12, 35));
+                string mapScript = String.Format( @" <script> 
+                                                    Sys.Application.add_load(function () {{
+                                                        var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}'); 
+                                                        var showInfoWindow = {1}; 
+                                                        var mapStyle = {2};
+                                                        var pinColor = '{3}';
+                                                        var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
+                                                            new google.maps.Size(21, 34),
+                                                            new google.maps.Point(0,0),
+                                                            new google.maps.Point(10, 34));
+                                                        var pinShadow = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                                                            new google.maps.Size(40, 37),
+                                                            new google.maps.Point(0, 0),
+                                                            new google.maps.Point(12, 35));
+
+                                                        initializeMap();
+
+                                                        function initializeMap() {{
+                                                            console.log(mapStyle);
+                                                            var map;
+                                                            var bounds = new google.maps.LatLngBounds();
+                                                            var mapOptions = {{
+                                                                mapTypeId: 'roadmap',
+                                                                styles: mapStyle
+                                                            }};
+
+                                                            // Display a map on the page
+                                                            map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+                                                            map.setTilt(45);
+
+                                                            // Display multiple markers on a map
+                                                            if (showInfoWindow) {{
+                                                                var infoWindow = new google.maps.InfoWindow(), marker, i;
+                                                            }}
+
+                                                            // Loop through our array of markers & place each one on the map
+                                                            $.each(groupData.groups, function (i, group) {{
+
+                                                                var position = new google.maps.LatLng(group.latitude, group.longitude);
+                                                                bounds.extend(position);
+
+                                                                marker = new google.maps.Marker({{
+                                                                    position: position,
+                                                                    map: map,
+                                                                    title: htmlDecode(group.name),
+                                                                    icon: pinImage,
+                                                                    shadow: pinShadow
+                                                                }});
+
+                                                                // Allow each marker to have an info window    
+                                                                if (showInfoWindow) {{
+                                                                    google.maps.event.addListener(marker, 'click', (function (marker, i) {{
+                                                                        return function () {{
+                                                                            infoWindow.setContent(htmlDecode(groupData.groups[i].infowindow));
+                                                                            infoWindow.open(map, marker);
+                                                                        }}
+                                                                    }})(marker, i));
+                                                                }}
+
+                                                                map.fitBounds(bounds);
+                       
+                                                            }});
+
+                                                            // Override our map zoom level once our fitBounds function runs (Make sure it only runs once)
+                                                            var boundsListener = google.maps.event.addListener((map), 'bounds_changed', function (event) {{
+                                                                google.maps.event.removeListener(boundsListener);
+                                                            }});
+                                                        }}
+
+                                                        function htmlDecode(input) {{
+                                                            var e = document.createElement('div');
+                                                            e.innerHTML = input;
+                                                            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+                                                        }}
+                                                    }});
                                                 </script>",
                                         groupJson,
                                         GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean().ToString().ToLower(),
                                         styleCode,
                                         markerColor );
+                ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-mapper-script", mapScript, false );
 
                 if ( groupsMapped == 0 ) {
                     pnlMap.Visible = false;
