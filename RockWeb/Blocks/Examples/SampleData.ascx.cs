@@ -43,11 +43,16 @@ namespace RockWeb.Blocks.Examples
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
     [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
-    [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if given in xml)", true, "", 2 )]
+    [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
+
+        /// <summary>
+        /// Holds the System Setting key for the sample data load date/time.
+        /// </summary>
+        public static readonly string SYSTEM_SETTING_SD_DATE = "com.rockrms.sampledata.datetime";
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -202,6 +207,7 @@ namespace RockWeb.Blocks.Examples
                         <p>Here are some of the things you'll find in the sample data:</p>{1}"
                         , ResolveRockUrl( "~/Person/Search/name/Decker" ), GetStories( saveFile ) );
                     bbtnLoadData.Visible = false;
+                    RecordSuccess();
                 }
             }
             catch ( Exception ex )
@@ -216,6 +222,20 @@ namespace RockWeb.Blocks.Examples
             if ( File.Exists( saveFile ) )
             {
                 File.Delete( saveFile );
+            }
+        }
+
+        /// <summary>
+        /// Records the current date into the SampleData system setting
+        /// so that other blocks (such as the RockUpdate) can know that
+        /// sample data has been loaded.
+        /// </summary>
+        private void RecordSuccess()
+        {
+            string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
+            if ( xmlFileUrl.StartsWith( "http://storage.rockrms.com/sampledata/" ) )
+            {
+                Rock.Web.SystemSettings.SetValue( SYSTEM_SETTING_SD_DATE, RockDateTime.Now.ToString(), CurrentPersonAlias );
             }
         }
 
