@@ -193,6 +193,12 @@ namespace RockWeb.Blocks.Administration
             if (job.Id == 0)
             {
                 job.Class = ddlJobTypes.SelectedValue;
+                lCronExpressionDesc.Visible = false;
+            }
+            else
+            {
+                lCronExpressionDesc.Text = ExpressionDescriptor.GetDescription( job.CronExpression );
+                lCronExpressionDesc.Visible = true;
             }
 
             job.LoadAttributes();
@@ -222,9 +228,10 @@ namespace RockWeb.Blocks.Administration
                 Rock.Attribute.Helper.AddDisplayControls( job, phAttributesReadOnly );
                 phAttributesReadOnly.Visible = true;
                 phAttributes.Visible = false;
-                tbCronExpression.Text = ExpressionDescriptor.GetDescription( job.CronExpression );
+                tbCronExpression.Text = job.CronExpression;
             }
 
+            
             tbName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             cbActive.Enabled = !readOnly;
