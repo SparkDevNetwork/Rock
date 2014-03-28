@@ -784,6 +784,10 @@
     <Compile Include="Migrations\201403271548291_GoogleMapStyles.Designer.cs">
       <DependentUpon>201403271548291_GoogleMapStyles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.cs" />
+    <Compile Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.Designer.cs">
+      <DependentUpon>201403282057374_RemoveCommunicationTemplateOwnerPerson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1352,6 +1356,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403271548291_GoogleMapStyles.resx">
       <DependentUpon>201403271548291_GoogleMapStyles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.resx">
+      <DependentUpon>201403282057374_RemoveCommunicationTemplateOwnerPerson.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
