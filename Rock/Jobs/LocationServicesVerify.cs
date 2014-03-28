@@ -30,7 +30,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField("Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
-    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful lookup.", true, 200 )]
+    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
     public class LocationServicesVerify : IJob
     {
         
