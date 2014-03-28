@@ -758,6 +758,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         History.EvaluateChange( demographicChanges, "Giving Group", string.Empty, _family.Name );
                                     }
 
+                                    person.EmailPreference = EmailPreference.EmailAllowed;
+
                                     groupMember.Person = person;
                                 }
                                 else

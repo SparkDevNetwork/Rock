@@ -1142,7 +1142,9 @@ namespace RockWeb.Blocks.Examples
                         int ageDiff = person.Age - age  ?? 0;
                         person.BirthDate = person.BirthDate.Value.AddYears( ageDiff );
                     }
-                    
+
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+
                     if ( personElem.Attribute( "email" ) != null )
                     {
                         var emailAddress = personElem.Attribute( "email" ).Value.Trim();
@@ -1150,7 +1152,10 @@ namespace RockWeb.Blocks.Examples
                         {
                             person.Email = emailAddress;
                             person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.FromTrueFalse();
-                            person.DoNotEmail = personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse();
+                            if ( personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse() )
+                            {
+                                person.EmailPreference = EmailPreference.DoNotEmail;
+                            }
                         }
                     }
 

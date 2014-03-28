@@ -16,9 +16,7 @@
 
         <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" />
-
-        <ul class="nav nav-pills nav-pagelist">
+        <ul id="ulChannels" runat="server" class="nav nav-pills nav-pagelist">
             <asp:Repeater ID="rptChannels" runat="server">
                 <ItemTemplate>
                     <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
@@ -45,7 +43,7 @@
                     <ul class="recipient-content">
                         <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
                             <ItemTemplate>
-                                <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton></li>
+                                <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton> <small><%# Eval("StatusNote") %></small></li>
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>
@@ -58,6 +56,7 @@
             </div>
         </div>
 
+        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" />
 
         <asp:PlaceHolder ID="phContent" runat="server" />
 

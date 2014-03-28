@@ -51,6 +51,9 @@ namespace Rock.Communication.Transport
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias )
         {
+            // Requery the Communication
+            communication = new CommunicationService().Get( communication.Id );
+
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
