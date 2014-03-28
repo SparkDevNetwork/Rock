@@ -38,7 +38,7 @@ namespace Rock.Communication.Channel
 
     [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Email.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
 <p style='float: right;'>
-    <small><a href='{{ GlobalAttribute.PublicApplicationRoot }}/Unsubscribe/{{ Person.UrlEncodedKey }}/'>Unsubscribe</a></small>
+    <small><a href='{{ GlobalAttribute.PublicApplicationRoot }}Unsubscribe/{{ Person.UrlEncodedKey }}/'>Unsubscribe</a></small>
 </p>
 " )]
     public class Email : ChannelComponent
