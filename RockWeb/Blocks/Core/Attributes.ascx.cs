@@ -667,19 +667,21 @@ namespace RockWeb.Blocks.Core
                 fsEditControl.Controls.Clear();
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-
-                mdAttributeValue.Title = attribute.Name + " Value";
-
-                var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
-                attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
-
-                SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
-
-                if ( setValues )
+                if ( attribute != null )
                 {
-                    hfIdValues.Value = attribute.Id.ToString();
-                    ShowDialog( "AttributeValue", true );
+                    mdAttributeValue.Title = attribute.Name + " Value";
+
+                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                    string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
+                    attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
+
+                    SetValidationGroup( fsEditControl.Controls, mdAttributeValue.ValidationGroup );
+
+                    if ( setValues )
+                    {
+                        hfIdValues.Value = attribute.Id.ToString();
+                        ShowDialog( "AttributeValue", true );
+                    }
                 }
             }
         }
