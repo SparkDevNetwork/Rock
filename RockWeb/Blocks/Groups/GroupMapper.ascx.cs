@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Groups
             {% endif %}
             - {{GroupMember.Email}}
             {% for PhoneType in GroupMember.PhoneTypes %}
-                <br>{{PhoneType.Name}}: {{PhoneType.Phone.NumberFormatted}}
+                <br>{{PhoneType.Name}}: {{PhoneType.Number}}
             {% endfor %}
             <br>
         {% endfor -%}
@@ -242,23 +242,7 @@ namespace RockWeb.Blocks.Groups
                                                     Longitude = l.Location.GeoPoint.Longitude,
                                                     l.GroupLocationTypeValue.Name
                                                 } ).FirstOrDefault(),
-                            GroupMembers = g.Members
-                                //                                                .Where( m => m.GroupRoleId == 25 )
-                                                .Select( m => new
-                                                {
-                                                    m.Person.Id,
-                                                    GuidP = m.Person.Guid,
-                                                    m.Person.NickName,
-                                                    m.Person.LastName,
-                                                    RoleName = m.GroupRole.Name,
-                                                    m.Person.Email,
-                                                    PhotoGuid = m.Person.Photo != null ? m.Person.Photo.Guid : Guid.Empty,
-                                                    PhoneTypes = m.Person.PhoneNumbers.Select( p => new
-                                                    {
-                                                        Name = p.NumberTypeValue.Name,
-                                                        Phone = p
-                                                    } )
-                                                } ),
+                            GroupMembers = g.Members,
                             AttributeValues = attributeValues
                                                 .Where( v => v.EntityId == g.Id )
 
@@ -287,8 +271,6 @@ namespace RockWeb.Blocks.Groups
                         dynGroup.GroupMemberTerm = group.GroupMemberTerm;
                         dynGroup.GroupCampus = group.GroupCampus;
                         dynGroup.GroupLocation = group.GroupLocation;
-                        dynGroup.GroupLocation = group.GroupLocation;
-                        dynGroup.GroupMembers = group.GroupMembers;
 
                         var groupAttributes = new List<dynamic>();
                         foreach ( AttributeValue value in group.AttributeValues )
@@ -309,8 +291,33 @@ namespace RockWeb.Blocks.Groups
 
                             groupAttributes.Add( dictAttribute );
                         }
-
                         dynGroup.Attributes = groupAttributes;
+
+                        var groupMembers = new List<dynamic>();
+                        foreach( GroupMember member in group.GroupMembers )
+                        {
+                            var dictMember = new Dictionary<string, object>();
+                            dictMember.Add("Id", member.Person.Id);
+                            dictMember.Add("GuidP", member.Person.Guid);
+                            dictMember.Add("NickName", member.Person.NickName);
+                            dictMember.Add("LastName", member.Person.LastName);
+                            dictMember.Add("RoleName", member.GroupRole.Name);
+                            dictMember.Add("Email", member.Person.Email);
+                            dictMember.Add("PhotoGuid", member.Person.Photo != null ? member.Person.Photo.Guid : Guid.Empty);
+
+                            var phoneTypes = new List<dynamic>();
+                            foreach( PhoneNumber p in member.Person.PhoneNumbers)
+                            {
+                                var dictPhoneNumber = new Dictionary<string, object>();
+                                dictPhoneNumber.Add("Name", p.NumberTypeValue.Name);
+                                dictPhoneNumber.Add("Number", p.NumberFormatted);
+                                phoneTypes.Add(dictPhoneNumber);
+                            }
+                            dictMember.Add("PhoneTypes", phoneTypes );
+
+                            groupMembers.Add(dictMember);
+                        }
+                        dynGroup.GroupMembers = groupMembers;
 
                         dynamicGroups.Add( dynGroup );
                     }
