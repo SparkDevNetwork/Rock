@@ -180,7 +180,7 @@ namespace Rock.Security.ExternalAuthentication
                                         person = new Person();
                                         person.IsSystem = false;
                                         person.RecordTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                                        person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                                        person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
                                         person.FirstName = me.first_name.ToString();
                                         person.LastName = me.last_name.ToString();
                                         person.Email = me.email.ToString();
