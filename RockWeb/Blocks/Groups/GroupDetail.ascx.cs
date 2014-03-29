@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -38,6 +39,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group." )]
+    
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false, "", "", 0 )]
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
@@ -548,6 +550,21 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Control Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            // grouptype changed, so load up the new attributes and set controls to the default attribute values
+            var group = new Group { GroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0 };
+            if ( group.GroupTypeId > 0 )
+            {
+                ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, true );
+            }
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlParentGroup control.
@@ -1577,6 +1594,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
-}
+        
+    }
 }
