@@ -46,7 +46,7 @@ namespace Rock.Migrations
                        ,1
                        ,null
                        ,'Pastoral Staff'
-                       ,'Group of individuals how can access information limited to just pastors on staff.'
+                       ,'Group of individuals who can access information limited to just pastors on staff.'
                        ,1
                        ,1
                        ,0
