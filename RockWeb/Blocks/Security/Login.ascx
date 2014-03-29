@@ -16,9 +16,7 @@
 
         <div class="alt-authentication">
             <asp:PlaceHolder ID="phExternalLogins" runat="server">
-    <%--            <div class="facebook-login">
-                    <asp:LinkButton ID="lbFacebookLogin" runat="server" OnClick="lbFacebookLogin_Click" CausesValidation="false"><img src="<%= Page.ResolveUrl("~/Assets/Images/facebook-login.png") %>" style="border:none" /></asp:LinkButton>
-                </div>--%>
+
             </asp:PlaceHolder>
         </div>
 
