@@ -65,8 +65,8 @@
     2. Bootstrap Overides
     3. Page Header
     4. Footer
-    5. Responsive Tweaks
-    6. Layout Specific Styles
+    5. Layout Specific Styles
+    6. Responsive Overrides
 
 */
 
@@ -334,11 +334,39 @@ a:hover i.fs
 }
 
 
-
-// 5. Responsive Tweaks
+// 5. Layout Specific Styles
 // -------------------------
+// splash screen
+#splash {
+    background: none;
 
-// 4. Responsive Overrides 
+    .pageheader-logo {
+        height: 45px;
+        width: 127.57px;
+        margin-top: 45px;
+        margin-bottom: 6px;
+    }
+
+    #content {
+        #content-box {
+            background-color: @body-bg;
+            overflow: hidden;
+            padding: 15px;
+
+            .form-actions {
+                margin: 0 -15px -15px -15px;
+            }
+        }
+    }
+} 
+
+/* JME 3/29/2014 needed?
+    
+    .no-person-outline {
+    fill: #000000;
+}*/ 
+
+// 6. Responsive Overrides 
 // -------------------------
 
 @media (min-width: @screen-sm-min) { // tablet portrait and larger
@@ -388,6 +416,22 @@ a:hover i.fs
             }
         }
     }
+
+    #splash {
+        
+        .pageheader-logo {
+            margin-top: 0;
+        }
+        
+        #content {
+            width: 700px;
+            margin: 5% auto 0;
+
+            #content-box {
+                border-radius: @border-radius-base;
+            }
+        }
+    }
 }
 
 // Medium devices (desktops, 992px and up) 
@@ -410,43 +454,6 @@ a:hover i.fs
     }
 }
 
-// 6. Layout Specific Styles
-// -------------------------
-// splash screen
-body#splash {
-    background: none;
-}
 
-#splash .pageheader-logo {
-    height: 45px;
-    width: 127.57px;
-    margin-bottom: 6px;
-}
-
-#splash #content {
-    width: 550px;
-    margin: 5% auto 0 auto;
-}
-
-body#splash #content-box {
-    background-color: @body-bg;
-    border-radius: @border-radius-base;
-    overflow: hidden;
-}
-
-#splash #content-box {
-    padding: 15px;
-}
-
-#splash .login .form-actions {
-    margin: 0 -15px -15px -15px;
-}
-
-
-
-
-.no-person-outline {
-    fill: #000000;
-}
 
 

@@ -3,30 +3,34 @@
     <asp:Panel ID="pnlLogin" runat="server">
 
         <fieldset>
+            <legend>Login</legend>
 
-            <legend>Login</legend> 
+            <div class="row">
+                <div id="divSocialLogin" runat="server" class="col-sm-6 margin-b-lg">
+                    <p>Login with social account</p>
+                    <asp:PlaceHolder ID="phExternalLogins" runat="server"></asp:PlaceHolder>
+                </div>
+                <div id="divOrgLogin" runat="server" class="col-sm-6">
+                 
+                        <p><asp:Literal ID="lLoginProviderMessage" runat="server" /></p>
+                        <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
 
-            <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger"/>
+                        <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
+                        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
+                    
+                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
+                        <asp:Button ID="btnNewAccount" runat="server" Text="Register" CssClass="btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
+                        <asp:Button ID="btnHelp" runat="server" Text="Forgot Account" CssClass="btn btn-link" OnClick="btnHelp_Click" CausesValidation="false" />
 
-            <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
-            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
-            <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
-    
+                        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-warning block-message margin-t-md"/>
+                    
+                </div>
+            </div>
         </fieldset>
 
-        <div class="alt-authentication">
-            <asp:PlaceHolder ID="phExternalLogins" runat="server">
+        
 
-            </asp:PlaceHolder>
-        </div>
-
-        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-warning block-message "/>
-
-        <div class="form-actions">
-            <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
-            <asp:Button ID="btnNewAccount" runat="server" Text="Create New Account" CssClass="btn btn-action" OnClick="btnNewAccount_Click" CausesValidation="false" />
-            <asp:Button ID="btnHelp" runat="server" Text="Forgot Account" CssClass="btn btn-action" OnClick="btnHelp_Click" CausesValidation="false" />
-        </div>
 
     </asp:Panel>
 

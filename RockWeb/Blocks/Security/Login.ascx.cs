@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
@@ -63,9 +64,15 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         {
             base.OnInit( e );
 
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            lLoginProviderMessage.Text = String.Format( "Login with {0} account", globalAttributesCache.GetValue( "OrganizationName" ) );
+
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
 
             phExternalLogins.Controls.Clear();
+
+            
+            int activeAuthProviders = 0;
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -88,6 +95,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                         }
                     }
 
+                    activeAuthProviders++;
+
                     LinkButton lbLogin = new LinkButton();
                     phExternalLogins.Controls.Add( lbLogin );
                     lbLogin.AddCssClass( "btn btn-authenication " + loginTypeName.ToLower() );
@@ -104,9 +113,17 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                     }
                     else
                     {
-                        lbLogin.Text = "Login Using " + loginTypeName;
+                        lbLogin.Text = loginTypeName;
                     }
                 }
+            }
+
+            // adjust the page if there are no social auth providers
+            if ( activeAuthProviders == 0 )
+            {
+                divSocialLogin.Visible = false;
+                divOrgLogin.RemoveCssClass( "col-sm-6" );
+                divOrgLogin.AddCssClass( "col-sm-12" );
             }
         }
 
@@ -302,7 +319,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
             if (!string.IsNullOrWhiteSpace(returnUrl))
             {
-                Response.Redirect( Server.UrlDecode( returnUrl ), false );
+                string redirectUrl = Server.UrlDecode( returnUrl );
+                Response.Redirect( redirectUrl );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else
