@@ -51,6 +51,7 @@ Thank-you for logging in, however, we need to confirm the email associated with 
 Sorry, your account has been locked.  Please contact our office at {{ GlobalAttribute.OrganizationPhone }} or email {{ GlobalAttribute.OrganizationEmail }} to resolve this.  Thank-you. 
 ", "", 5 )]
     [BooleanField("Hide New Account Option", "Should 'New Account' option be hidden?  For site's that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own accont.", false, "", 6, "HideNewAccount" )]
+    [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 7)]
     public partial class Login : Rock.Web.UI.RockBlock
     {
 
@@ -71,15 +72,21 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
             phExternalLogins.Controls.Clear();
 
-            
             int activeAuthProviders = 0;
+
+            var selectedGuids = new List<Guid>();
+            GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
+                .ToList()
+                .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
 
-                if ( component.IsActive && component.RequiresRemoteAuthentication )
+                if ( component.IsActive &&
+                    component.RequiresRemoteAuthentication &&
+                    selectedGuids.Contains( component.EntityType.Guid ) )
                 {
                     string loginTypeName = component.GetType().Name;
 
