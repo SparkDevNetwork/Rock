@@ -378,12 +378,6 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool Save(T item, PersonAlias personAlias)
         {
-            int? personAliasId = null;
-            if ( personAlias != null )
-            {
-                personAliasId = personAlias.Id;
-            } 
-
             ErrorMessages = new List<string>();
 
             if ( !TriggerWorkflows( item, WorkflowTriggerType.PreSave, personAlias ) )

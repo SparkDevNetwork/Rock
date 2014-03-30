@@ -10,10 +10,14 @@
 .communication {
 
     .recipients {
-        margin-top: @spacing-lg-px;
 
-        .control-label {
-            margin-top: @spacing-sm-px;
+        .recipient {
+
+            &.failed {
+                small {
+                    color: @brand-danger;
+                }
+            }
         }
     }
 }

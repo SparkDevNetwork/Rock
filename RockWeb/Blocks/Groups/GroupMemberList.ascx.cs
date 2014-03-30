@@ -79,8 +79,9 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
-                        
-                        bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+                        // make sure they have Auth to the block AND Edit to the Group
+                        bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
                         gGroupMembers.Actions.ShowAdd = canEditBlock;
                         gGroupMembers.IsDeleteEnabled = canEditBlock;
 
@@ -372,7 +373,7 @@ namespace RockWeb.Blocks.Groups
                         }
                         else
                         {
-                            gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                            gGroupMembers.DataSource = qry.OrderBy(a => a.GroupRole.Order).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                         }
 
                         gGroupMembers.DataBind();

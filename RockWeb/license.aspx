@@ -100,6 +100,8 @@
                             <li><a href="#doublemetaphone">Double Metaphone</a> (Custom) - <a href="http://www.codeproject.com/Articles/4625/Implement-Phonetic-Sounds-like-Name-Searches-wit-4">Project Site</a></li>
                             <li><a href="#jcrop">JCrop</a> (MIT) - <a href="http://deepliquid.com/content/Jcrop.html">Project Site</a></li>
                             <li><a href="#snazzymaps">Snazzy Maps</a> (Creative Commons - Share Alike) - <a href="http://snazzymaps.com/">Project Site</a></li>
+                            <li><a href="#jrespond">jRespond</a> (MIT) - <a href="https://github.com/ten1seven/jRespond">Project Site</a></li>
+                            <li><a href="#jpanelmenu">jPanelmenu</a> (MIT) - <a href="https://github.com/acolangelo/jPanelMenu">Project Site</a></li>
                         </ul>
 
 
@@ -2493,6 +2495,58 @@ Attribution — You must give appropriate credit, provide a link to the license, a
 
 ShareAlike — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original.
 </pre>
+
+<a name="jrespond"></a>
+<h3>jRespond</h3>
+<pre>
+                        The MIT License (MIT)
+
+Copyright (c) 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+    </pre>
+
+<a name="jpanelmenu"></a>
+<h3>jPanelMenu</h3>
+<pre>
+                        The MIT License (MIT)
+
+Copyright (c) 
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+    </pre>
                     </div>
                 </div>
             </div>

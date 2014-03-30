@@ -1234,6 +1234,56 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
+        /// Adds the binaryfiletype security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.BinaryFileType";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @binaryFileTypeId int
+SET @binaryFileTypeId = (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@binaryFileTypeId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, binaryFileTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
         /// Deletes the security auth record.
         /// </summary>
         /// <param name="guid">The GUID.</param>

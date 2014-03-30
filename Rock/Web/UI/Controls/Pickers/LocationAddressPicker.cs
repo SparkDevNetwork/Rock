@@ -257,7 +257,7 @@ namespace Rock.Web.UI.Controls
                     _tbAddress1.Text = string.Empty;
                     _tbAddress2.Text = string.Empty;
                     _tbCity.Text = string.Empty;
-                    _ddlState.SelectedValue = string.Empty;
+                    _ddlState.SelectedValue = _ddlState.DefaultSelectedValue;
                     _tbZip.Text = string.Empty;
                 }
             }

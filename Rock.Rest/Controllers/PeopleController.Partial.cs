@@ -114,7 +114,7 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, false, allowFirstNameOnly, out reversed );
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, true, false, allowFirstNameOnly, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();

@@ -65,8 +65,8 @@
     2. Bootstrap Overides
     3. Page Header
     4. Footer
-    5. Responsive Tweaks
-    6. Layout Specific Styles
+    5. Layout Specific Styles
+    6. Responsive Overrides
 
 */
 
@@ -168,12 +168,17 @@ a:hover i.fs
 // 3. Page Header
 // -------------------------
 
+#jPanelMenu-menu {
+    width: 265px !important;
+}
+
 // brand bar
 .pageheader {
     background: none;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
     color: @header-text-color;
     margin-bottom: @spacing-md-px;
+    text-align: center;
 
     a {
         color: @header-text-color;
@@ -192,20 +197,31 @@ a:hover i.fs
 
     .smartsearch {
         margin: 0 auto 20px;
+        text-align: left;
     }
 
     .loginstatus {
         display: none;
     }
 
-    .brandbar-logo {
-	    width: 110px;
-        height: 41px;
+    .navbar-brand {
+        float: none;
+        display: block;
+
+        .brandbar-logo {
+	        width: 110px;
+            height: 41px;
+        }
     }
 
     .navbar-toggle {
         color: @header-text-color;
         border-color: @header-text-color;
+        position: absolute;
+        left: 0;
+        margin: 11px 0 0 12px;
+        
+        &:focus {outline:0;}
     }
      
 }
@@ -217,6 +233,8 @@ a:hover i.fs
     border-bottom: 1px solid darken(@header-bg, 10%);
     background: @header-bg;
     max-height: inherit; // override bootstraps max-height 340px
+    padding: 24px 0 0 0;
+    text-align: left;
 
     .navbar-nav {
         margin: 0;
@@ -227,7 +245,7 @@ a:hover i.fs
 
         > li {
             height: auto;
-            width: 50%;
+            width: 100%;
             float: left;
 
             &:last-child:after { // add the final shadow to the last nav element
@@ -239,27 +257,22 @@ a:hover i.fs
             }
 
             > a {
-                padding: 4px 15px;
-                text-align: center;
-                font-size: 11px;
+                padding: 14px 0;
+                font-size: 14px;
                 color: @header-text-color;
                 position: relative;
                 height: 100%;
-                min-height: 67px;
                 line-height: 1em;
 
                 .fa.fa-caret-down {
-                    display: block;
-                    margin-bottom: 6px;
-                    position: absolute;
-                    bottom: 0;
-                    left: 48%;
+                    display: none;
                 }
 
                 i.fa {
                     display: block;
-                    margin: 6px auto 0;
+                    margin: 4px 12px 0 0;
                     font-size: 18px;
+                    float: left;
                 }
                 // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
                 div {
@@ -274,18 +287,22 @@ a:hover i.fs
                 }
             }
 
-            .dropdown-menu > li {
-                
-                a {
-                    color: @header-text-color;
+            .dropdown-menu {
+                margin-left: 8px;
 
-                    &:hover {
-                        background-color: inherit;
+                > li {
+
+                    a {
+                        color: @header-text-color;
+
+                        &:hover {
+                            background-color: inherit;
+                        }
                     }
-                }
-                
-                &.divider {
-                    display: none;
+
+                    &.divider {
+                        display: none;
+                    }
                 }
             }
         }
@@ -334,11 +351,39 @@ a:hover i.fs
 }
 
 
-
-// 5. Responsive Tweaks
+// 5. Layout Specific Styles
 // -------------------------
+// splash screen
+#splash {
+    background: none;
 
-// 4. Responsive Overrides 
+    .pageheader-logo {
+        height: 45px;
+        width: 127.57px;
+        margin-top: 45px;
+        margin-bottom: 6px;
+    }
+
+    #content {
+        #content-box {
+            background-color: @body-bg;
+            overflow: hidden;
+            padding: 15px;
+
+            .form-actions {
+                margin: 0 -15px -15px -15px;
+            }
+        }
+    }
+} 
+
+/* JME 3/29/2014 needed?
+    
+    .no-person-outline {
+    fill: #000000;
+}*/ 
+
+// 6. Responsive Overrides 
 // -------------------------
 
 @media (min-width: @screen-sm-min) { // tablet portrait and larger
@@ -355,6 +400,8 @@ a:hover i.fs
     }
 
     .pagenav { // change menu to show as boxes
+        padding-top: 0;
+
         .nav {
             border-left: 1px solid lighten(@header-bg, 10%);
 
@@ -364,27 +411,67 @@ a:hover i.fs
                 border-left: 1px solid darken(@header-bg, 10%);
                 border-right: 1px solid lighten(@header-bg, 10%);
 
-                .dropdown-menu > li {
-                    > a {
-                        color: @text-color;
+                > a {
+                    text-align: center;
+                    padding: 4px 15px;
+                    min-height: 67px;
+                    font-size: 11px;
 
-                        &:hover {
-                            background-color: @accent-light-color;
-                        }
+                    i.fa {
+                        margin: 6px auto 0;
+                        float: none;
                     }
 
-                    &:last-child:after {
-                        border-right: 1px solid darken(@header-bg, 10%);
-                    }
-
-                    &.divider {
-                        display: inherit;
-                    }
-
-                    &.divider:last-child { // remove last divider out of the menu
-                        display: none;
+                    .fa.fa-caret-down {
+                        display: block;
+                        margin-bottom: 6px;
+                        position: absolute;
+                        bottom: 0;
+                        left: 48%;
                     }
                 }
+
+                .dropdown-menu {
+                    margin-left: 0;
+
+                    > li {
+                        > a {
+                            color: @text-color;
+
+                            &:hover {
+                                background-color: @accent-light-color;
+                            }
+                        }
+
+                        &:last-child:after {
+                            border-right: 1px solid darken(@header-bg, 10%);
+                        }
+
+                        &.divider {
+                            display: inherit;
+                        }
+
+                            &.divider:last-child { // remove last divider out of the menu
+                                display: none;
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    #splash {
+        
+        .pageheader-logo {
+            margin-top: 0;
+        }
+        
+        #content {
+            width: 700px;
+            margin: 5% auto 0;
+
+            #content-box {
+                border-radius: @border-radius-base;
             }
         }
     }
@@ -410,43 +497,6 @@ a:hover i.fs
     }
 }
 
-// 6. Layout Specific Styles
-// -------------------------
-// splash screen
-body#splash {
-    background: none;
-}
 
-#splash .pageheader-logo {
-    height: 45px;
-    width: 127.57px;
-    margin-bottom: 6px;
-}
-
-#splash #content {
-    width: 550px;
-    margin: 5% auto 0 auto;
-}
-
-body#splash #content-box {
-    background-color: @body-bg;
-    border-radius: @border-radius-base;
-    overflow: hidden;
-}
-
-#splash #content-box {
-    padding: 15px;
-}
-
-#splash .login .form-actions {
-    margin: 0 -15px -15px -15px;
-}
-
-
-
-
-.no-person-outline {
-    fill: #000000;
-}
 
 

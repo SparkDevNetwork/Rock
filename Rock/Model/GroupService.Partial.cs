@@ -241,7 +241,8 @@ namespace Rock.Model
                         History.EvaluateChange( demographicChanges, "Email", string.Empty, person.Email );
                         History.EvaluateChange( demographicChanges, "Email Active", false.ToString(), ( person.IsEmailActive ?? false ).ToString() );
                         History.EvaluateChange( demographicChanges, "Email Note", string.Empty, person.EmailNote );
-                        History.EvaluateChange( demographicChanges, "Do Not Email", false.ToString(), person.DoNotEmail.ToString() );
+                        History.EvaluateChange( demographicChanges, "Email Preference", null, person.EmailPreference );
+                        History.EvaluateChange( demographicChanges, "Inactive Reason Note", string.Empty, person.InactiveReasonNote );
                         History.EvaluateChange( demographicChanges, "System Note", string.Empty, person.SystemNote );
 
                         familyDemographicChanges.Add( person.Guid, demographicChanges );

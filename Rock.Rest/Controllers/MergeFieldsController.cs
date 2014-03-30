@@ -125,26 +125,26 @@ namespace Rock.Rest.Controllers
                     
                     if (!string.IsNullOrWhiteSpace(additionalFields))
                     {
-                        foreach(string fieldName in additionalFields.SplitDelimitedValues())
+                        foreach ( string fieldName in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             var entityType = EntityTypeCache.Read( fieldName, false );
-                            if (entityType != null)
+                            if ( entityType != null )
                             {
-                                items.Add(new TreeViewItem
+                                items.Add( new TreeViewItem
                                 {
                                     Id = fieldName,
                                     Name = entityType.FriendlyName,
                                     HasChildren = true
-                                });
+                                } );
                             }
                             else
                             {
-                                items.Add(new TreeViewItem
+                                items.Add( new TreeViewItem
                                 {
                                     Id = fieldName,
                                     Name = fieldName.SplitCase(),
                                     HasChildren = fieldName == "GlobalAttribute"
-                                });
+                                } );
                             }
                         }
                     }

@@ -10,7 +10,7 @@
 
         <div class="treeview">
 
-            <div class="treeview-actions">
+            <div class="treeview-actions" id="divTreeviewActions" runat="server" >
 
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">

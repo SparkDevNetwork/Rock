@@ -13,7 +13,7 @@ namespace Rock.Install.Utilities
 {
     static public class EnvironmentChecks
     {
-        const string dotNetVersionRequired = "4.5";
+        const string dotNetVersionRequired = "4.5.1";
         const double iisVersionRequired = 7.0;
 
         /// <summary>
@@ -120,25 +120,35 @@ namespace Rock.Install.Utilities
         /// </summary>
         public static bool CheckDotNetVersion(out string errorDetails)
         {
-
-            bool checksFailed = false;
+            bool checksPassed = false;
             errorDetails = string.Empty;
 
             // check .net
-            // ok this is not easy as .net 4.5 actually reports as 4.0.30319.269 so instead we need to search for the existence of an assembly that
-            // only exists in 4.5 (could also look for Environment.Version.Major == 4 && Environment.Version.Revision > 17000 but this is not future proof)
-            // sigh... Microsoft... :)
-            if (!(Type.GetType("System.Reflection.ReflectionContext", false) != null))
+            // ok this is not easy as .net 4.5.1 actually reports as 4.0.378675 or 4.0.378758 depending on how it was installed
+            // http://en.wikipedia.org/wiki/List_of_.NET_Framework_versions
+            if ( System.Environment.Version.Major > 4 )
             {
-                errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
+                checksPassed = true;
+            }
+            else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build > 30319 )
+            {
+                checksPassed = true;
+            }
+            else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 18408 )
+            {
+                checksPassed = true;
+            }
+
+            if ( checksPassed )
+            {
+                errorDetails += String.Format( "You have the correct version of .Net ({0}+).", dotNetVersionRequired );
             }
             else
             {
-                errorDetails += "You have the correct version of .Net (4.5+).";
-                checksFailed = true;
+                errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
             }
 
-            return checksFailed;
+            return checksPassed;
         }
 
         /// <summary>

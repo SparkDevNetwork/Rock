@@ -16,9 +16,11 @@
 //
 using System;
 using System.IO;
+using System.Linq;
 using System.Web;
 using Rock;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb
 {
@@ -136,9 +138,24 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    BinaryFile binaryFile = new BinaryFileService().EndGet( result, context );
+                    bool requiresSecurity = false;
+                    BinaryFile binaryFile = new BinaryFileService().EndGet( result, context, out requiresSecurity );
                     if ( binaryFile != null )
                     {
+                        //// if the binaryFile's BinaryFileType requires security, check security
+                        //// note: we put a RequiresSecurity flag on BinaryFileType because checking security for every file would be slow (~40ms+ per request)
+                        if ( requiresSecurity )
+                        {
+                            var currentUser = new UserLoginService().GetByUserName( UserLogin.GetCurrentUserName() );
+                            Person currentPerson = currentUser != null ? currentUser.Person : null;
+                            binaryFile.BinaryFileType = binaryFile.BinaryFileType ?? new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId.Value );
+                            if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                            {
+                                SendNotAuthorized( context );
+                                return;
+                            }
+                        }
+                        
                         context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", binaryFile.FileName ) );
                         context.Response.ContentType = binaryFile.MimeType;
 
@@ -194,6 +211,17 @@ namespace RockWeb
         public void ProcessRequest( HttpContext context )
         {
             throw new NotImplementedException( "The method or operation is not implemented. This is an asynchronous file handler." );
+        }
+
+        /// <summary>
+        /// Sends a 403 (forbidden)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendNotAuthorized( HttpContext context )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
+            context.Response.StatusDescription = "Not authorized to view file";
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

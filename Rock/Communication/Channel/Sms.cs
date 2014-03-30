@@ -46,6 +46,5 @@ namespace Rock.Communication.Channel
         {
             get { return new Rock.Web.UI.Controls.Communication.Sms(); }
         }
- 
     }
 }

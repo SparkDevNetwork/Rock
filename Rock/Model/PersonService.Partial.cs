@@ -42,13 +42,16 @@ namespace Rock.Model
         /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities. If includeDeceased is <c>false</c>, deceased individuals will be excluded.
         /// </summary>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.Person"/> should be included. If <c>true</c>
-        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.
-        /// </param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities, with deceased individuals either included or excluded based on the provided value.</returns>
-        public IQueryable<Person> Queryable( bool includeDeceased )
+        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>
+        /// A queryable collection of <see cref="Rock.Model.Person"/> entities, with deceased individuals either included or excluded based on the provided value.
+        /// </returns>
+        public IQueryable<Person> Queryable( bool includeDeceased, bool includeBusinesses = true )
         {
             // Do an eager load of suffix since its used by all the FullName methods
-            return base.Repository.AsQueryable( "SuffixValue" ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+            return Queryable( "SuffixValue", includeDeceased, includeBusinesses );
+
         }
 
         /// <summary>
@@ -58,7 +61,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading.</returns>
         public override IQueryable<Person> Queryable( string includes )
         {
-            return Queryable( includes, false );
+            return Queryable( includes, false, true );
         }
 
         /// <summary>
@@ -68,10 +71,27 @@ namespace Rock.Model
         /// <param name="includes">The includes.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.Person"/> should be included. If <c>true</c>
         /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.</param>
-        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading, with deceased individuals either included or excluded based on the provided value. </returns>
-        public IQueryable<Person> Queryable( string includes, bool includeDeceased )
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>
+        /// A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading, with deceased individuals either included or excluded based on the provided value.
+        /// </returns>
+        public IQueryable<Person> Queryable( string includes, bool includeDeceased, bool includeBusinesses = true)
         {
-            return base.Repository.AsQueryable( includes ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
+            if ( !includeBusinesses )
+            {
+                var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
+                if ( definedValue != null )
+                {
+                    return base.Repository.AsQueryable( includes )
+                        .Where( p =>
+                            p.RecordTypeValueId != definedValue.Id &&
+                            ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
+                }
+            }
+
+            return base.Repository.AsQueryable( includes )
+                .Where( p =>
+                    ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
         }
 
         /// <summary>
@@ -105,20 +125,21 @@ namespace Rock.Model
         #region Get People
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by email address.
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person" /> entities by email address.
         /// </summary>
-        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
+        /// <param name="email">A <see cref="System.String" /> representing the email address to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in the search results, if
         /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false )
+        public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t => 
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value) &&
-                ( t.Email == email || ( email == null && t.Email == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p => 
+                    p.Email == email || ( email == null && p.Email == null ) )
+                .ToList();
         }
 
         /// <summary>
@@ -129,134 +150,143 @@ namespace Rock.Model
         /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
         /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false )
+        public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.Email == email && t.FirstName == firstName && t.LastName == lastName )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p => 
+                    p.Email == email && 
+                    p.FirstName == firstName && 
+                    p.LastName == lastName )
+                .ToList();
         }
 
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.MaritalStatusValueId == maritalStatusId || ( maritalStatusId == null && t.MaritalStatusValueId == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.MaritalStatusValueId == maritalStatusId || ( maritalStatusId == null && p.MaritalStatusValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Person" /> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue" />.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Connection Status <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="personConnectionStatusId">A <see cref="System.Int32" /> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue" /> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
+        /// <param name="personConnectionStatusId">A <see cref="System.Int32"/> representing the Id of the Person Connection Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByPersonConnectionStatusId( int? personConnectionStatusId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByPersonConnectionStatusId( int? personConnectionStatusId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.ConnectionStatusValueId == personConnectionStatusId || ( personConnectionStatusId == null && t.ConnectionStatusValueId == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.ConnectionStatusValueId == personConnectionStatusId || ( personConnectionStatusId == null && p.ConnectionStatusValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their Record Status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="recordStatusId">A <see cref="System.Int32"/> representing the Id of the Record Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.RecordStatusValueId == recordStatusId || ( recordStatusId == null && t.RecordStatusValueId == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.RecordStatusValueId == recordStatusId || ( recordStatusId == null && p.RecordStatusValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the RecordStatusReason <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="recordStatusReasonId">A <see cref="System.Int32"/> representing the Id of the RecordStatusReason <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.RecordStatusReasonValueId == recordStatusReasonId || ( recordStatusReasonId == null && t.RecordStatusReasonValueId == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.RecordStatusReasonValueId == recordStatusReasonId || ( recordStatusReasonId == null && p.RecordStatusReasonValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their RecordType <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="recordTypeId">A <see cref="System.Int32"/> representing the Id of the RecordType <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId, bool includeDeceased = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.RecordTypeValueId == recordTypeId || ( recordTypeId == null && t.RecordTypeValueId == null ) )
-            );
+            return Queryable( includeDeceased, true )
+                .Where( p =>
+                    ( p.RecordTypeValueId == recordTypeId || ( recordTypeId == null && p.RecordTypeValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their Suffix <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
         /// <param name="suffixId">An <see cref="System.Int32"/> representing the Id of Suffix <see cref="Rock.Model.DefinedValue"/> to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetBySuffixId( int? suffixId, bool includeDeceased = false )
+        public IEnumerable<Person> GetBySuffixId( int? suffixId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t =>
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.SuffixValueId == suffixId || ( suffixId == null && t.SuffixValueId == null ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.SuffixValueId == suffixId || ( suffixId == null && p.SuffixValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Person"/> entities by their Title <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <param name="titleId">A <see cref="System.Int32"/> representing the Id of the Title <see cref="Rock.Model.DefinedValue"/>.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByTitleId( int? titleId, bool includeDeceased = false )
+        public IEnumerable<Person> GetByTitleId( int? titleId, bool includeDeceased = false, bool includeBusinesses = false )
         {
-            return Repository.Find( t => 
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) ) 
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    ( p.TitleValueId == titleId || ( titleId == null && p.TitleValueId == null ) ) )
+                .ToList();
         }
 
         /// <summary>
@@ -265,25 +295,27 @@ namespace Rock.Model
         /// <param name="fullName">The full name.</param>
         /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns></returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool allowFirstNameOnly, bool includeDeceased = false )
+        public IQueryable<Person> GetByFullName( string fullName, bool allowFirstNameOnly, bool includeDeceased = false, bool includeBusinesses = false )
         {
             bool reversed = false;
-            return GetByFullName( fullName, includeDeceased, allowFirstNameOnly, out reversed );
+            return GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Model.Person" /> entities by the person's full name.
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities by the person's full name.
         /// </summary>
-        /// <param name="fullName">A <see cref="System.String" /> representing the full name to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean" /> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
+        /// <param name="fullName">A <see cref="System.String"/> representing the full name to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns>
-        /// A queryable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
+        /// A queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
-        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool allowFirstNameOnly, out bool reversed )
+        public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -313,7 +345,7 @@ namespace Rock.Model
             {
                 if ( allowFirstNameOnly )
                 {
-                    return Queryable( includeDeceased )
+                    return Queryable( includeDeceased, includeBusinesses )
                         .Where( p =>
                             p.LastName.StartsWith( singleName ) ||
                             p.FirstName.StartsWith( singleName ) ||
@@ -321,14 +353,14 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return Queryable( includeDeceased )
+                    return Queryable( includeDeceased, includeBusinesses )
                         .Where( p =>
                             p.LastName.StartsWith( singleName ) );
                 }
             }
             else
             {
-                return Queryable( includeDeceased )
+                return Queryable( includeDeceased, includeBusinesses )
                     .Where( p =>
                         p.LastName.StartsWith( lastName ) &&
                         ( p.FirstName.StartsWith( firstName ) ||
@@ -341,12 +373,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="fullName">The full name.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <param name="allowFirstNameOnly">if set to true, a single value in fullName will also search for matching first names.</param>
         /// <param name="reversed">if set to <c>true</c> [reversed].</param>
         /// <returns></returns>
-        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, bool allowFirstNameOnly, out bool reversed)
+        public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed)
         {
-            var qry = new PersonService().GetByFullName( fullName, includeDeceased, allowFirstNameOnly, out reversed );
+            var qry = new PersonService().GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
             if ( reversed )
             {
                 return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
@@ -363,8 +396,9 @@ namespace Rock.Model
         /// <param name="fullName">The full name.</param>
         /// <param name="excludeIds">The exclude ids.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
         /// <returns></returns>
-        public List<string> GetSimiliarNames(string fullName, List<int> excludeIds, bool includeDeceased = false)
+        public List<string> GetSimiliarNames( string fullName, List<int> excludeIds, bool includeDeceased = false, bool includeBusinesses = false )
         {
             var names = fullName.SplitDelimitedValues();
 
@@ -428,7 +462,7 @@ namespace Rock.Model
 
                     if ( firstNames.Any() )
                     {
-                        similarNames = Queryable( includeDeceased )
+                        similarNames = Queryable( includeDeceased, includeBusinesses )
                         .Where( p => !excludeIds.Contains( p.Id ) &&
                             lastNames.Contains( p.LastName ) &&
                             ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) ) )
@@ -448,17 +482,19 @@ namespace Rock.Model
         /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
         /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
         /// included, otherwise <c>false</c>.</param>
-        /// <returns>An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
-        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
+        /// <returns>
+        /// An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
+        /// </returns>
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false, bool includeBusinesses = false )
         {
             string numericPhone = partialPhoneNumber.AsNumeric();
 
-            return Repository.AsQueryable().Where( p =>
-                ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
-                p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
-            );
+            return Queryable( includeDeceased, includeBusinesses )
+                .Where( p =>
+                    p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) ) );
         }
 
         /// <summary>

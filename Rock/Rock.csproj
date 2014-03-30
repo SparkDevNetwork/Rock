@@ -156,6 +156,7 @@
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
+    <Compile Include="Attribute\RemoteAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
@@ -200,6 +201,7 @@
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
+    <Compile Include="Field\Types\RemoteAuthsFieldType.cs" />
     <Compile Include="Field\Types\SiteFieldType.cs" />
     <Compile Include="Field\Types\PersonBadgesFieldType.cs" />
     <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
@@ -541,6 +543,7 @@
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />

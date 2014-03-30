@@ -409,15 +409,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 childMaritalStatusId = childMaritalStatus.Id;
             }
-
             int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
+            int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
-                groupMember.Person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                groupMember.Person.RecordTypeValueId = recordTypePersonId;
+                groupMember.Person.RecordStatusValueId = recordStatusActiveId;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -442,6 +445,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.BirthDate = row.BirthDate;
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
+
+                groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
 

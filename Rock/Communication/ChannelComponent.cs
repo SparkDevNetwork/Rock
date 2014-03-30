@@ -16,9 +16,9 @@
 //
 using System;
 using System.Web.UI;
-
 using Rock.Attribute;
 using Rock.Extension;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
@@ -73,6 +73,19 @@ namespace Rock.Communication
             this.LoadAttributes();
         }
 
+        /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="personAlias">The person alias.</param>
+        public virtual void Send( Rock.Model.Communication communication, PersonAlias personAlias )
+        {
+            var transport = Transport;
+            if ( transport != null )
+            {
+                transport.Send( communication, personAlias );
+            }
+        }
     }
 
 }

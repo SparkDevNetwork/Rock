@@ -33,6 +33,17 @@ namespace Rock.Rest
     public abstract class ApiController<T> : ApiController
         where T : Rock.Data.Entity<T>, new()
     {
+        /// <summary>
+        /// Gets or sets the service.
+        /// </summary>
+        /// <value>
+        /// The service.
+        /// </value>
+        protected Service<T> Service
+        {
+            get { return _service; }
+            set { _service = value; }
+        }
         private Service<T> _service;
 
         public ApiController( Service<T> service )

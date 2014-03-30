@@ -82,7 +82,7 @@ namespace Rock.Search.Person
             }
 
             bool reversed = false;
-            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, allowFirstNameSearch, out reversed );
+            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
             return qry
                 .Select( p => ( reversed ?
                     p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :
