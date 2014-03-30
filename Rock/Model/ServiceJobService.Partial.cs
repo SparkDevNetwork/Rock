@@ -90,7 +90,7 @@ namespace Rock.Model
             // create the quartz job object
             IJobDetail jobDetail = JobBuilder.Create( type )
             .WithDescription( job.Id.ToString() )
-            .WithIdentity( new Guid().ToString(), job.Name )
+            .WithIdentity( job.Guid.ToString(), job.Name )
             .UsingJobData( map )
             .Build();
 
@@ -106,7 +106,7 @@ namespace Rock.Model
         {
             // create quartz trigger
             ITrigger trigger = ( ICronTrigger )TriggerBuilder.Create()
-                .WithIdentity( new Guid().ToString(), job.Name )
+                .WithIdentity( job.Guid.ToString(), job.Name )
                 .WithCronSchedule( job.CronExpression )
                 .StartNow()
                 .Build();
