@@ -212,7 +212,20 @@ namespace Rock.Model
         /// <param name="asyncResult">The asynchronous result.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context )
+        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context)
+        {
+            bool requiresSecurity;
+            return EndGet( asyncResult, context, out requiresSecurity );
+        }
+
+        /// <summary>
+        /// Ends the get.
+        /// </summary>
+        /// <param name="asyncResult">The asynchronous result.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="requiresSecurity">if set to <c>true</c> [requires security].</param>
+        /// <returns></returns>
+        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresSecurity )
         {
             // restore the command from the context
             SqlCommand cmd = (SqlCommand)context.Items["cmd"];
@@ -227,6 +240,11 @@ namespace Rock.Model
                 binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
                 binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
+
+                // return requiresSecurity to let caller know that security needs to be checked on this binaryFile
+                requiresSecurity = (bool)reader["RequiresSecurity"];
+                
+                
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;
                 binaryFile.MimeType = reader["MimeType"] as string;

@@ -39,11 +39,6 @@ namespace Rock.SystemGuid
         public const string CONTRIBUTION_IMAGE = "6D18A9C4-34AB-444A-B95B-C644019465AC";
 
         /// <summary>
-        /// Gets the External File file type guid
-        /// </summary>
-        public const string EXTERNAL_FILE = "29EFF9B7-6814-4B9F-A922-77FA0448EBFA";
-
-        /// <summary>
         /// The Person Image file type guid
         /// </summary>
         public const string PERSON_IMAGE = "03BD8476-8A9F-4078-B628-5B538F967AFC";
