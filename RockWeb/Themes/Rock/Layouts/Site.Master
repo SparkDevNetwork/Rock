@@ -22,6 +22,7 @@
     <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery.jpanelmenu.min.js") %>"></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.jRespond.min.js") %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -140,13 +141,54 @@
     </form>
 
     <script>
-        // future look at adding jRespond (http://jpanelmenu.com/examples/jrespond/index.html)
+       
         var jPM = $.jPanelMenu({
             menu: '.pagenav',
             trigger: '.navbar-toggle'
         });
 
-        jPM.on();
+        //jPM.on();
+
+        var jRes = jRespond([
+            {
+                label: 'xs',
+                enter: 0,
+                exit: 480
+            }, {
+                label: 'sm',
+                enter: 480,
+                exit: 768
+            }, {
+                label: 'md',
+                enter: 768,
+                exit: 992
+            }, {
+                label: 'lg',
+                enter: 992,
+                exit: 10000
+            }
+        ]);
+
+        jRes.addFunc({
+            breakpoint: 'xs',
+            enter: function () {
+                jPM.on();
+            },
+            exit: function () {
+                jPM.off();
+            }
+        });
+
+        jRes.addFunc({
+            breakpoint: 'md',
+            enter: function () {
+                jPM.on();
+            },
+            exit: function () {
+                jPM.off();
+            }
+        });
+
     </script>
 
 </body>
