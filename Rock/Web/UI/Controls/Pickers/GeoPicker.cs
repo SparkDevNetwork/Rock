@@ -380,6 +380,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the drawing style to use on the map.
+        /// </summary>
+        /// <value>
+        ///   A style guid as found in the defined values (e.g., Rock, Retro, Old Timey, etc.) for the Map Styles
+        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />). 
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC" ),
+        Description( "The style to use for the Google map." )
+        ]
+        public string MapStyle
+        {
+            get { return ViewState["MapStyle"] as string ?? "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC"; }
+            set { ViewState["MapStyle"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the mode panel.
         /// </summary>
         /// <value>
@@ -609,7 +628,21 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string options = string.Format( "controlId: '{0}', drawingMode: '{1}'", this.ClientID, this.DrawingMode );
+            string mapStyle = "null";
+            string markerColor = "";
+
+            try
+            {
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( this.MapStyle );
+                if ( dvcMapStyle != null )
+                {
+                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", "" );
+                }
+            }
+            catch { } // oh well...
+
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
 
             DbGeography centerPoint = CenterPoint;
             if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )

@@ -17,6 +17,10 @@
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
 
+            // An array of styles that controls the look of the Google Map
+            // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
+            obj.styles = options.mapStyle;
+
             // This is used to temporarily store in case of user cancel.
             obj.pathTemp = null;
 
@@ -37,40 +41,40 @@
 
             // An array of styles that controls the look of the Google Map
             // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
-            obj.styles = [
-              {
-                  "stylers": [
-                    { "visibility": "simplified" },
-                    { "saturation": -100 }
-                  ]
-              }, {
-                  "featureType": "road",
-                  "elementType": "labels",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }, {
-                  "featureType": "poi",
-                  "stylers": [
-                    { "visibility": "off" }
-                  ]
-              }, {
-                  "featureType": "landscape",
-                  "stylers": [
-                    { "visibility": "off" }
-                  ]
-              }, {
-                  "featureType": "administrative.province",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }, {
-                  "featureType": "administrative.locality",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }
-            ];
+            //obj.styles = [
+            //  {
+            //      "stylers": [
+            //        { "visibility": "simplified" },
+            //        { "saturation": -100 }
+            //      ]
+            //  }, {
+            //      "featureType": "road",
+            //      "elementType": "labels",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }, {
+            //      "featureType": "poi",
+            //      "stylers": [
+            //        { "visibility": "off" }
+            //      ]
+            //  }, {
+            //      "featureType": "landscape",
+            //      "stylers": [
+            //        { "visibility": "off" }
+            //      ]
+            //  }, {
+            //      "featureType": "administrative.province",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }, {
+            //      "featureType": "administrative.locality",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }
+            //];
 
             /** 
             * Initializes the map viewport boundary coordinates.
@@ -172,6 +176,28 @@
             }
 
             /**
+            * Returns a marker image styled according to the stroke color.
+            */
+            this.getMarkerImage = function getMarkerImage() {
+
+                return new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + obj.strokeColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(10, 34));
+            }
+
+            /**
+            * Returns a marker image shadow.
+            */
+            this.getMarkerImageShadow = function getMarkerImageShadow() {
+
+                return new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                    new google.maps.Size(40, 37),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(12, 35));
+            }
+
+            /**
             * Finds the point/polygon boundary and sets the map viewport to fit
             */
             this.fitBounds = function () {
@@ -267,7 +293,7 @@
                         pathArray.push(new google.maps.LatLng(lat, lng));
                     }
 
-                    // reverse geo code the first point to an address and display.
+                    // reverse geocode the first point to an address and display.
                     var $label = $('#selectedGeographyLabel_' + this.controlId);
                     obj.toAddress(pathArray[0], $label);
 
@@ -325,9 +351,10 @@
                             var point = new google.maps.Marker({
                                 position: pathArray[0],
                                 map: map,
-                                clickable: true
+                                clickable: true,
+                                icon: obj.getMarkerImage(),
+                                shadow: obj.getMarkerImageShadow()
                             });
-                            //point.setMap(map);
 
                             // Select the point
                             obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
@@ -423,11 +450,17 @@
             */
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().toggle();
-                if ($('#' + controlId).find('.picker-menu').first().is(":visible")) {
+                var $control = $('#' + controlId)
+                $control.find('.picker-menu').first().toggle();
+                if ( $control.find('.picker-menu').first().is(":visible") ) {
                     google.maps.event.trigger(self.map, "resize");
                     // now we can safely fit the map to any polygon boundary
                     self.fitBounds();
+
+                    // Scroll down so you can see the done/cancel buttons
+                    $("html,body").animate({
+                        scrollTop: $control.offset().top
+                    }, 1000);
                 }
             });
 
@@ -561,6 +594,10 @@
                     fillColor: self.fillColor,
                     strokeWeight: 2
                 },
+                markerOptions: {
+                    icon: self.getMarkerImage(),
+                    shadow: self.getMarkerImageShadow()
+                }
             });
             
             self.drawingManager.setMap(self.map);
