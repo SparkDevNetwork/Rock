@@ -147,6 +147,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = binaryFileType.Description;
             tbIconCssClass.Text = binaryFileType.IconCssClass;
             cbAllowCaching.Checked = binaryFileType.AllowCaching;
+            cbRequiresSecurity.Checked = binaryFileType.RequiresSecurity;
 
             if ( binaryFileType.StorageEntityType != null )
             {
@@ -196,6 +197,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.ReadOnly = readOnly || binaryFileType.IsSystem;
             tbIconCssClass.ReadOnly = readOnly || binaryFileType.IsSystem;
             cbAllowCaching.Enabled = !readOnly && !binaryFileType.IsSystem;
+            cbRequiresSecurity.Enabled = !readOnly && !binaryFileType.IsSystem;
             gBinaryFileAttributes.Enabled = !readOnly && !binaryFileType.IsSystem;
 
             // allow storagetype to be edited if IsSystem
@@ -252,6 +254,7 @@ namespace RockWeb.Blocks.Core
                 binaryFileType.Description = tbDescription.Text;
                 binaryFileType.IconCssClass = tbIconCssClass.Text;
                 binaryFileType.AllowCaching = cbAllowCaching.Checked;
+                binaryFileType.RequiresSecurity = cbRequiresSecurity.Checked;
 
                 if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
                 {

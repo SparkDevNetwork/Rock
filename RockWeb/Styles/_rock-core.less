@@ -230,6 +230,21 @@ small
     .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
 }
 
+.btn-authenication {
+    .button-variant(@accent-text-color; @accent-color; darken(@accent-color, 10%));
+    width: 100%;
+
+    &:hover {
+        background-color: darken(@accent-color, 10%);
+    }
+
+    &.facebook:before {
+        font-family: 'FontAwesome';
+        content: @fa-var-facebook;
+        margin-right: 12px;
+    }
+}
+
 // alert extentions
 
 // new alert types

@@ -44,13 +44,17 @@ namespace RockWeb.Blocks.Core
     [Description( "Handles checking for and performing upgrades to the Rock system." )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
         WebProjectManager nuGetService = null;
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+
+        /// <summary>
+        /// Holds the System Setting key for the sample data load date/time.
+        /// </summary>
+        private static readonly string SYSTEM_SETTING_SD_DATE = "com.rockrms.sampledata.datetime";
 
         #endregion
 
@@ -112,11 +116,12 @@ namespace RockWeb.Blocks.Core
             rptPackageVersions.DataSource = _availablePackages;
             rptPackageVersions.DataBind();
         }
-
+        
         /// <summary>
         /// Wraps the install or update process in some guarded code while putting the app in "offline"
         /// mode and then back "online" when it's complete.
         /// </summary>
+        /// <param name="version">the semantic version number</param>
         private void Update( string version )
         {
             WriteAppOffline();
@@ -130,6 +135,8 @@ namespace RockWeb.Blocks.Core
 
                 pnlUpdatesAvailable.Visible = false;
                 lRockVersion.Text = "";
+
+                SendStatictics( version );
             }
             catch ( Exception ex )
             {
@@ -418,7 +425,67 @@ namespace RockWeb.Blocks.Core
             // if we had a match then wrap it in <ul></ul> markup
             return foundMatch ? string.Format( "<ul class='list-padded'>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
         }
-        #endregion
 
+        /// <summary>
+        /// Sends statistics to the SDN server but only if the sample data has not been 
+        /// loaded. The statistics are:
+        ///     * Rock Instance Id
+        ///     * Update Version
+        ///     * IP Address - The IP address of your Rock server.
+        ///     
+        /// ...and we only send these if they checked the "Include Impact Statistics":
+        ///     * Organization Name and Address
+        ///     * Public Web Address
+        ///     * Number of Active Records
+        ///     
+        /// As per http://www.rockrms.com/Rock/Impact
+        /// </summary>
+        /// <param name="version">the semantic version number</param>
+        private void SendStatictics( string version )
+        {
+            try
+            {
+                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SYSTEM_SETTING_SD_DATE ).AsDateTime();
+                string organizationName = string.Empty;
+                string organizationAddress = string.Empty;
+                int numberOfActiveRecords = 0;
+
+                if ( sampleDataLoadDate == null )
+                {
+                    var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                    var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
+
+                    if ( cbIncludeStats.Checked )
+                    {
+                        var globalAttributes = GlobalAttributesCache.Read();
+                        organizationName = globalAttributes.GetValue( "OrganizationName" );
+
+                        // Fetch their organization address
+                        var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
+                        if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
+                        {
+                            var location = new Rock.Model.LocationService().Get( organizationAddressLocationGuid );
+                            if ( location != null )
+                            {
+                                organizationAddress = location.GetFullStreetAddress();
+                            }
+                        }
+
+                        numberOfActiveRecords = new PersonService().Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                    }
+
+                    // TODO now send them to SDN
+                    //SendToSpark( rockInstanceId, version, ipAddress, organizationName, organizationAddress, numberOfActiveRecords );
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Just catch any exceptions, log it, and keep moving... We don't want to mess up the experience
+                // over a few statistics/metrics.
+                LogException( ex );
+            }
+        }
+
+        #endregion
     }
 }

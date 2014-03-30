@@ -341,15 +341,14 @@ namespace Rock.Model
         public EmailPreference EmailPreference { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag that indicates that the Person does not want to receive email.
+        /// Gets or sets the Inactive Reason Note
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person does not wish to receive email; otherwise <c>false</c>.
+        /// A <see cref="System.String"/> representing an Inactive Reason Note.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        [MergeField]
-        public bool DoNotEmail { get; set; }
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string InactiveReasonNote { get; set; }
 
         /// <summary>
         /// Gets or sets the System Note
@@ -397,6 +396,7 @@ namespace Rock.Model
         /// <value>
         /// The primary alias.
         /// </value>
+        [MergeField]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -411,7 +411,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [DataMember]
+        [MergeField]
         public virtual string FullName
         {
             get
@@ -434,7 +434,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
         public virtual string FullNameReversed
         {
             get
@@ -457,7 +456,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [DataMember]
         public virtual string FullNameFormal
         {
             get
@@ -480,7 +478,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
         public virtual string FullNameFormalReversed
         {
             get
@@ -872,7 +869,6 @@ namespace Rock.Model
         /// The grade string.
         /// </value>
         [NotMapped]
-        [DataMember]
         [MergeField]
         public virtual string GradeFormatted
         {

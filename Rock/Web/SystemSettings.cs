@@ -50,6 +50,22 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Gets the RockInstanceId for this particular installation.
+        /// </summary>
+        /// <returns>the Guid of this Rock instance</returns>
+        public static Guid GetRockInstanceId()
+        {
+            var settings = SystemSettings.Read();
+            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( "RockInstanceId", StringComparison.OrdinalIgnoreCase ) );
+            if ( attributeCache != null )
+            {
+                return attributeCache.Guid;
+            }
+
+            return new Guid(); // 0000-0000-0000...
+        }
+
+        /// <summary>
         /// Gets the Global Attribute values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>

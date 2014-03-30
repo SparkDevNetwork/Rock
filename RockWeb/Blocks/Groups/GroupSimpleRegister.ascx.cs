@@ -199,6 +199,7 @@ namespace RockWeb.Blocks.Groups
                     person.FirstName = txtFirstName.Text;
                     person.LastName = txtLastName.Text;
                     person.Email = txtEmail.Text;
+                    person.EmailPreference = EmailPreference.EmailAllowed;
 
                     new GroupService().SaveNewFamily( person, null, false, CurrentPersonAlias );
 

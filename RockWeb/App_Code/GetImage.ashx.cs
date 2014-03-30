@@ -23,6 +23,7 @@ using System.Web;
 using ImageResizer;
 using Rock;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb
 {
@@ -147,6 +148,7 @@ namespace RockWeb
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
+                BinaryFileType_RequiresSecurity = a.BinaryFileType.RequiresSecurity,
                 ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
@@ -156,6 +158,20 @@ namespace RockWeb
             {
                 SendNotFound( context );
                 return;
+            }
+
+            //// if the binaryFile's BinaryFileType requires security, check security
+            //// note: we put a RequiresSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
+            if ( binaryFileMetaData.BinaryFileType_RequiresSecurity )
+            {
+                var currentUser = new UserLoginService().GetByUserName( UserLogin.GetCurrentUserName() );
+                Person currentPerson = currentUser != null ? currentUser.Person : null;
+                BinaryFile binaryFileAuth = new BinaryFileService().Queryable( "BinaryFileType" ).First( a => a.Guid == fileGuid || a.Id == fileId );
+                if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    SendNotAuthorized( context );
+                    return;
+                }
             }
 
             byte[] fileContent = null;
@@ -231,14 +247,14 @@ namespace RockWeb
             NameValueCollection cleanedQueryString = new NameValueCollection( queryString );
 
             // remove params that don't have impact on uniqueness
-            cleanedQueryString.Remove("isBinaryFile");
-            cleanedQueryString.Remove("rootFolder");
-            cleanedQueryString.Remove("fileName");
-            
+            cleanedQueryString.Remove( "isBinaryFile" );
+            cleanedQueryString.Remove( "rootFolder" );
+            cleanedQueryString.Remove( "fileName" );
+
             string fileName = string.Empty;
-            foreach (var key in cleanedQueryString.Keys)
+            foreach ( var key in cleanedQueryString.Keys )
             {
-                fileName += (string.Format( "{0}_{1}", key, cleanedQueryString[key as string] )).RemoveSpecialCharacters() + "-";
+                fileName += ( string.Format( "{0}_{1}", key, cleanedQueryString[key as string] ) ).RemoveSpecialCharacters() + "-";
             }
 
             fileName = fileName.TrimEnd( new char[] { '-' } );
@@ -355,8 +371,19 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void SendNotFound( HttpContext context )
         {
-            context.Response.StatusCode = 404;
+            context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt(); ;
             context.Response.StatusDescription = "The requested image could not be found.";
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Sends a 403 (forbidden)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendNotAuthorized( HttpContext context )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
+            context.Response.StatusDescription = "Not authorized to view image";
             context.ApplicationInstance.CompleteRequest();
         }
 

@@ -59,15 +59,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-
-        /// <summary>
-        /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.PersonAlias"/> who is the owner of the Communication
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonAliasId of the <see cref="Rock.Model.PersonAlias" /> who is the owner of the Communication.
-        /// </value>
-        [DataMember]
-        public int? OwnerPersonAliasId { get; set; }
         
         /// <summary>
         /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who is the sender of the Communication
@@ -125,15 +116,6 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the Communication's sender.
-        /// </summary>
-        /// <value>
-        /// A <see cref="Rock.Model.PersonAlias"/> that represents the Communication's sender.
-        /// </value>
-        [DataMember]
-        public virtual PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the Communication's sender.
@@ -274,7 +256,6 @@ namespace Rock.Model
         /// </summary>
         public CommunicationTemplateConfiguration()
         {
-            this.HasOptional( c => c.OwnerPersonAlias ).WithMany().HasForeignKey( c => c.OwnerPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.SenderPersonAlias ).WithMany().HasForeignKey( c => c.SenderPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ChannelEntityType ).WithMany().HasForeignKey( c => c.ChannelEntityTypeId ).WillCascadeOnDelete( false );
         }

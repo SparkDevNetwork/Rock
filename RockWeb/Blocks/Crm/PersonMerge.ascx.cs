@@ -304,7 +304,8 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.Email = GetNewStringValue( "Email", changes );
                         primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
                         primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
-                        primaryPerson.DoNotEmail = GetNewBoolValue( "DoNotEmail", changes ) ?? false;
+                        primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue("DoNotEmail", typeof(EmailPreference), changes );
+                        primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
 
                         // Update phone numbers
@@ -955,7 +956,8 @@ namespace RockWeb.Blocks.Crm
             AddProperty( "Email", person.Id, person.Email );
             AddProperty( "EmailActive", person.Id, person.IsEmailActive );
             AddProperty( "EmailNote", person.Id, person.EmailNote );
-            AddProperty( "DoNotEmail", person.Id, person.DoNotEmail );
+            AddProperty( "EmailPreference", person.Id, person.EmailPreference );
+            AddProperty( "InactiveReasonNote", person.Id, person.InactiveReasonNote );
             AddProperty( "SystemNote", person.Id, person.SystemNote );
         }
 

@@ -64,11 +64,7 @@ namespace Rock.Jobs
                 var channel = comm.Channel;
                 if ( channel != null )
                 {
-                    var transport = channel.Transport;
-                    if ( transport != null )
-                    {
-                        transport.Send( comm, null );
-                    }
+                    channel.Send( comm, null );
                 }
             }
         }

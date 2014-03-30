@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -33,6 +34,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Tree View" )]
     [Category( "Groups" )]
     [Description( "Creates a navigation tree for groups of the configured group type(s)." )]
+
     [TextField( "Treeview Title", "Group Tree View", false )]
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
@@ -64,8 +66,9 @@ namespace RockWeb.Blocks.Groups
             hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
-            lbAddGroupRoot.Enabled = canEditBlock;
-            lbAddGroupChild.Enabled = canEditBlock;
+            
+            // hide all the actions if user doesn't have EDIT to the block
+            divTreeviewActions.Visible = canEditBlock;
         }
 
         /// <summary>

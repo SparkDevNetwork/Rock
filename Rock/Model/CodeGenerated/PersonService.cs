@@ -184,7 +184,7 @@ namespace Rock.Model
             target.IsEmailActive = source.IsEmailActive;
             target.EmailNote = source.EmailNote;
             target.EmailPreference = source.EmailPreference;
-            target.DoNotEmail = source.DoNotEmail;
+            target.InactiveReasonNote = source.InactiveReasonNote;
             target.SystemNote = source.SystemNote;
             target.ViewedCount = source.ViewedCount;
             target.CreatedDateTime = source.CreatedDateTime;

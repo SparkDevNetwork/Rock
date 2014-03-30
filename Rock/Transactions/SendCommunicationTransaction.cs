@@ -51,11 +51,7 @@ namespace Rock.Transactions
                 var channel = communication.Channel;
                 if ( channel != null )
                 {
-                    var transport = channel.Transport;
-                    if ( transport != null )
-                    {
-                        transport.Send( communication, PersonAlias );
-                    }
+                    channel.Send( communication, PersonAlias );
                 }
             }
         }

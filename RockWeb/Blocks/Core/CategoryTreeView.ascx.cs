@@ -15,14 +15,16 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -55,6 +57,11 @@ namespace RockWeb.Blocks.Core
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            // hide all the actions if user doesn't have EDIT to the block
+            divTreeviewActions.Visible = canEditBlock;
 
             RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
 
@@ -177,7 +184,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-
         /// <summary>
         /// Handles the Click event of the lbAddItem control.
         /// </summary>
@@ -191,6 +197,12 @@ namespace RockWeb.Blocks.Core
                 NavigateToLinkedPage( "DetailPage", PageParameterName, 0, "parentCategoryId", parentCategoryId );
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCategoryChild control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryChild_Click(object sender, EventArgs e)
         {
             int parentCategoryId = 0;
@@ -203,6 +215,12 @@ namespace RockWeb.Blocks.Core
                 NavigateToLinkedPage("DetailPage", "CategoryId", 0);
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCategoryRoot control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCategoryRoot_Click(object sender, EventArgs e)
         {
             NavigateToLinkedPage("DetailPage", "CategoryId", 0);

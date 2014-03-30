@@ -93,6 +93,15 @@ namespace Rock.Model
         [DataMember]
         public bool AllowCaching { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires security].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires security]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresSecurity { get; set; }
+
         #endregion
 
         #region Virtual Properties

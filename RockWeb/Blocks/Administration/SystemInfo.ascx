@@ -44,9 +44,13 @@
 
     <div id="version-info">
 
-        <p>Rock Version: 
+        <p><strong>Rock Version: </strong>
             <asp:Literal ID="lRockVersion" runat="server"></asp:Literal></p>
-            <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
+
+        <p><strong>Server Culture Setting: </strong>
+            <asp:Literal ID="lServerCulture" runat="server"></asp:Literal></p>
+        
+        <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
 
         <div class="actions margin-t-xl">
             <asp:Button runat="server" ID="btnFlushCache" CssClass="btn btn-primary btn-sm" Text="Clear Cache" OnClick="btnClearCache_Click" ToolTip="Flushes Pages, BlockTypes, Blocks and Attributes from the Rock web cache." />

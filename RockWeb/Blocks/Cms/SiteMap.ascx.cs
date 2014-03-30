@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Cms
         {
             var sb = new StringBuilder();
 
-            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.InternalName, Environment.NewLine );
+            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.InternalName, Environment.NewLine );
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
                 {
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, block.BlockType.Name, Environment.NewLine );
+                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, block.BlockType.Name, Environment.NewLine );
                 }
 
                 sb.AppendLine( "</ul>" );

@@ -34,6 +34,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls.Communication;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -46,9 +47,10 @@ namespace RockWeb.Blocks.Communication
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?")]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved" )]
-    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list" )]
+    [ComponentsField( "Rock.Communication.ChannelContainer, Rock", "Channels", "The Channels that should be available to user to send through (If none are selected, all active channels will be available).", false, "", "", 0  )]
+    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 1 )]
+    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 2  )]
+    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 3 )]
     public partial class Communication : RockBlock
     {
         #region Properties
@@ -180,7 +182,6 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                LoadTemplates();
                 ShowAllRecipients = false;
 
                 string itemId = PageParameter( "CommunicationId" );
@@ -239,7 +240,6 @@ namespace RockWeb.Blocks.Communication
                 var template = new CommunicationTemplateService().Get( templateID.Value );
                 if (template != null)
                 {
-                    ChannelEntityTypeId = template.ChannelEntityTypeId;
                     ChannelData = template.ChannelData;
                     ChannelData.Add( "Subject", template.Subject );
                     LoadChannelControl( true );
@@ -265,6 +265,7 @@ namespace RockWeb.Blocks.Communication
                     BindChannels();
 
                     LoadChannelControl( true );
+                    LoadTemplates();
                 }
             }
         }
@@ -283,7 +284,7 @@ namespace RockWeb.Blocks.Communication
                     var Person = new PersonService().Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
-                        Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending ) );
+                        Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending, string.Empty ) );
                         ShowAllRecipients = true;
                         BindRecipients();
                     }
@@ -674,7 +675,7 @@ namespace RockWeb.Blocks.Communication
             BindChannels();
 
             Recipients.Clear();
-            communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person.Id, r.Person.FullName, r.Status ) ) );
+            communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person.Id, r.Person.FullName, r.Status, r.StatusNote ) ) );
             BindRecipients();
 
             ChannelData = communication.ChannelData;
@@ -691,34 +692,21 @@ namespace RockWeb.Blocks.Communication
             ShowActions( communication );
         }
 
-        private void LoadTemplates()
-        {
-            bool visible = false;
-
-            ddlTemplate.Items.Clear();
-            ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            foreach(var template in new CommunicationTemplateService().Queryable()
-                .OrderBy( t => t.Name ))
-            {
-                if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    visible = true;
-                    ddlTemplate.Items.Add( new ListItem( template.Name, template.Id.ToString() ) );
-                }
-            }
-
-            ddlTemplate.Visible = visible;
-        }
-
         /// <summary>
         /// Binds the channels.
         /// </summary>
         private void BindChannels()
         {
+            var selectedGuids = new List<Guid>();
+            GetAttributeValue( "Channels" ).SplitDelimitedValues()
+                .ToList()
+                .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
+
             var channels = new Dictionary<int, string>();
             foreach ( var item in ChannelContainer.Instance.Components.Values )
             {
-                if ( item.Value.IsActive )
+                if ( item.Value.IsActive && 
+                    !selectedGuids.Any() || selectedGuids.Contains(item.Value.EntityType.Guid))
                 {
                     var entityType = item.Value.EntityType;
                     channels.Add( entityType.Id, entityType.FriendlyName );
@@ -729,8 +717,40 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            LoadTemplates();
+
+            ulChannels.Visible = channels.Count() > 1;
+
             rptChannels.DataSource = channels;
             rptChannels.DataBind();
+        }
+
+        private void LoadTemplates()
+        {
+            bool visible = false;
+
+            string prevSelection = ddlTemplate.SelectedValue;
+
+            ddlTemplate.Items.Clear();
+            ddlTemplate.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            if (ChannelEntityTypeId.HasValue)
+            { 
+                foreach ( var template in new CommunicationTemplateService().Queryable()
+                    .Where( t => t.ChannelEntityTypeId == ChannelEntityTypeId.Value )
+                    .OrderBy( t => t.Name ) )
+                {
+                    if ( template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        visible = true;
+                        var li = new ListItem( template.Name, template.Id.ToString() );
+                        li.Selected = template.Id.ToString() == prevSelection;
+                        ddlTemplate.Items.Add( li );
+                    }
+                }
+            }
+
+            ddlTemplate.Visible = visible;
         }
 
         /// <summary>
@@ -1085,16 +1105,25 @@ namespace RockWeb.Blocks.Communication
             public CommunicationRecipientStatus Status { get; set; }
 
             /// <summary>
+            /// Gets or sets the status note.
+            /// </summary>
+            /// <value>
+            /// The status note.
+            /// </value>
+            public string StatusNote { get; set; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="Recipient" /> class.
             /// </summary>
             /// <param name="personId">The person id.</param>
             /// <param name="personName">Name of the person.</param>
             /// <param name="status">The status.</param>
-            public Recipient( int personId, string personName, CommunicationRecipientStatus status )
+            public Recipient( int personId, string personName, CommunicationRecipientStatus status, string statusNote )
             {
                 PersonId = personId;
                 PersonName = personName;
                 Status = status;
+                StatusNote = statusNote;
             }
         }
 

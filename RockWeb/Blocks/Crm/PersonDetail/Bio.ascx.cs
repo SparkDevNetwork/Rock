@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
 
             if ( Person != null )
             {
@@ -113,7 +113,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     rptPhones.DataBind();
                 }
 
-                lEmail.Text = Person.Email;
+                lEmail.Text = Person.Email +
+                    (( Person.EmailPreference == EmailPreference.DoNotEmail || Person.EmailPreference == EmailPreference.NoMassEmails ) ?
+                    string.Format( " <small>{0}</small>", Person.EmailPreference.ConvertToString() ) : string.Empty);
 
                 taglPersonTags.EntityTypeId = Person.TypeId;
                 taglPersonTags.EntityGuid = Person.Guid;
