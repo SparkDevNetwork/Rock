@@ -21,6 +21,7 @@
     
     <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.jpanelmenu.min.js") %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,13 +53,16 @@
             
                     <!-- Brand Bar -->
 			        <div class="navbar-header">
+
+                        <button class="navbar-toggle" type="button" data-toggle="collapsex" data-target=".pagenav">
+                            <i class="fa fa-bars fa-2x"></i>
+                        </button>
+
                         <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock">
                             <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
                         </asp:HyperLink>
                     
-                        <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pagenav">
-                            <i class="fa fa-bars fa-2x"></i>
-                        </button>
+                        
 			        </div>	
 
                     <div class="pull-right header-zone">
@@ -134,6 +138,16 @@
         </asp:UpdateProgress>
 
     </form>
+
+    <script>
+        // future look at adding jRespond (http://jpanelmenu.com/examples/jrespond/index.html)
+        var jPM = $.jPanelMenu({
+            menu: '.pagenav',
+            trigger: '.navbar-toggle'
+        });
+
+        jPM.on();
+    </script>
 
 </body>
 
