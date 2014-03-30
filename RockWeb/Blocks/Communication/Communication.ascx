@@ -39,11 +39,11 @@
              </div>   
                 
              <div class="panel-body">
-                <div class="recipient">
-                    <ul class="recipient-content">
+
+                    <ul class="recipients">
                         <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
                             <ItemTemplate>
-                                <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton> <small><%# Eval("StatusNote") %></small></li>
+                                <li class='recipient <%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton> <small><%# Eval("StatusNote") %></small></li>
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>
@@ -52,7 +52,7 @@
                         <asp:LinkButton ID="lbShowAllRecipients" runat="server" CssClass="btn btn-action btn-xs" Text="Show All" OnClick="lbShowAllRecipients_Click" CausesValidation="false"/>
                         <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All Pending Recipients" CssClass="remove-all-recipients btn btn-action btn-xs" OnClick="lbRemoveAllRecipients_Click" CausesValidation="false"/>
                     </div>
-                </div>
+
             </div>
         </div>
 
