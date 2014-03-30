@@ -131,19 +131,22 @@ namespace Rock.Security.ExternalAuthentication
                     dynamic me = fbClient.Get( "me" );
                     string facebookId = "FACEBOOK_" + me.id.ToString();
 
-                    // query for matching id in the user table 
-                    var userLoginService = new UserLoginService();
-                    var user = userLoginService.GetByUserName( facebookId );
+                    UserLogin user = null;
 
-                    // if no user was found see if we can find a match in the person table
-                    if ( user == null )
+                    RockTransactionScope.WrapTransaction( () =>
                     {
-                        try
-                        {
-                            RockTransactionScope.WrapTransaction( () =>
+                        using ( new UnitOfWorkScope() )
+                        {                    
+                            // query for matching id in the user table 
+                            var userLoginService = new UserLoginService();
+                            user = userLoginService.GetByUserName( facebookId );
+
+                            // if no user was found see if we can find a match in the person table
+                            if ( user == null )
                             {
-                                using ( new UnitOfWorkScope() )
+                                try
                                 {
+
                                     var familyChanges = new List<string>();
                                     var familyMemberChanges = new List<string>();
                                     var PersonChanges = new List<string>();
@@ -198,20 +201,31 @@ namespace Rock.Security.ExternalAuthentication
 
                                     user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
                                 }
-                            } );
+                                catch ( Exception ex )
+                                {
+                                    string msg = ex.Message;
+                                    // TODO: probably should report something...
+                                }
+                            }
+                            else
+                            {
+                                // TODO: Show label indicating inability to find user corresponding to facebook id
+                            }
                         }
-                        catch ( Exception ex )
-                        {
-                            string msg = ex.Message;
-                            // TODO: probably should report something...
-                        }
+                    } );
 
-                        // TODO: Show label indicating inability to find user corresponding to facebook id
+                    if ( user != null )
+                    {
+                        username = user.UserName;
+                        returnUrl = oAuthResult.State;
+                        return true;
                     }
-
-                    username = user.UserName;
-                    returnUrl = oAuthResult.State;
-                    return true;
+                    else
+                    {
+                        username = string.Empty;
+                        returnUrl = string.Empty;
+                        return false;
+                    }
 
                 }
                 catch ( FacebookOAuthException oae )
