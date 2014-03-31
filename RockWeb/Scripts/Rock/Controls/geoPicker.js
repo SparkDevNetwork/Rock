@@ -254,7 +254,7 @@
             }
 
             /**
-            * Disable the drawing manager so they cannot add anything to the map.
+            * Disables the drawing manager so they cannot add anything to the map.
             */
             this.disableDrawingManager = function () {
                 // Switch back to non-drawing mode after drawing a shape.
@@ -465,6 +465,75 @@
             });
 
             /**
+            * Handle the toggle expand fullscreen button click.
+            */
+            $('#btnExpandToggle_' + controlId).click(function () {
+
+                var $myElement = $('#geoPicker_' + self.controlId);
+
+                var isExpaned = $myElement.data("fullscreen");
+
+                $(this).children('i').toggleClass("fa-expand", isExpaned);
+                $(this).children('i').toggleClass("fa-compress", ! isExpaned);
+
+                // Shrink to regular size
+                if ( isExpaned ) {
+                    $myElement.data("fullscreen", false);
+                    
+                    $(this).closest('.picker-menu').css({
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '',
+                        width: 520
+                    });
+                    // resize the map
+                    $myElement.css({
+                        height: 300,
+                        width: 500
+                    });
+
+                    // move the delete button
+                    $('#gmnoprint-delete-button_' + self.controlId).css({
+                        left: '105px',
+                        top: '40',
+                    });
+
+                }
+                else {
+
+                    // Expand to fullscreen
+
+                    $myElement.data("fullscreen", true);
+                    // resize the container
+                    $(this).closest('.picker-menu').css({
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        width: '100%'
+                    });
+
+                    // resize the map
+                    $myElement.css({
+                        height: '85%',
+                        width: '100%'
+                    });
+
+                    // move the delete button
+                    $('#gmnoprint-delete-button_' + self.controlId).css({
+                        left: '160px',
+                        top: '40',
+                    });
+                }
+
+                // tell the map to resize/redraw
+                google.maps.event.trigger(self.map, 'resize');
+                self.fitBounds();
+
+            });
+
+            /**
             * Handle the Cancel button click by hiding the overlay.
             */
             $('#btnCancel_' + controlId).click(function () {
@@ -622,6 +691,14 @@
                         self.setSelection(newShape, e.type);
                     });
                     self.setSelection(newShape, e.type);
+
+                    // Add an event listener to implement right-click to delete node
+                    google.maps.event.addListener(newShape, 'rightclick', function (ev) {
+                        if (ev.vertex != null) {
+                            newShape.getPath().removeAt(ev.vertex);
+                        }
+                        obj.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
+                    });
                 }
             });
 
@@ -630,13 +707,13 @@
             google.maps.event.addListener(self.drawingManager, 'drawingmode_changed', self.clearSelection);
             google.maps.event.addListener(self.map, 'click', self.clearSelection);
 
+            // Move our custom delete button into place once the map is idle.
             // as per http://stackoverflow.com/questions/832692/how-to-check-if-google-maps-is-fully-loaded
             google.maps.event.addListenerOnce(self.map, 'idle', function () {
                 // move the custom delete button to the second to last item in the gmnoprint list
-                $('#' + deleteButtonId).insertAfter($myElement.find('div.gmnoprint:nth-last-child(2)'));
+                //$('#' + deleteButtonId).insertAfter($myElement.find('div.gmnoprint:nth-last-child(2)'));
                 $('#' + deleteButtonId).fadeIn();
-                //console.log("insert delete button after:");
-                //console.log($myElement.find('div.gmnoprint:nth-last-child(2)'));
+
                 // wire up an event handler to the delete button
                 google.maps.event.addDomListener(document.getElementById(deleteButtonId), 'click', self.deleteSelectedShape);
             });

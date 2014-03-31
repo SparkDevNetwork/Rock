@@ -163,6 +163,17 @@
                 <Rock:DateTimePicker ID="dateTimePicker" runat="server" Label="Rock:DateTimePicker" />
             </div>
 
+            <a id="DaysOfWeekPicker"></a>
+            <div runat="server" class="r-example">
+                <Rock:DaysOfWeekPicker ID="daysOfWeekPicker" runat="server" Label="Rock:DaysOfWeekPicker" />
+            </div>
+
+            <a id="DayOfWeekPicker"></a>
+            <div runat="server" class="r-example">
+                <Rock:DayOfWeekPicker ID="dayOfWeekPicker" runat="server" Label="Rock:DayOfWeekPicker" />
+            </div>
+
+
             <a id="TimePicker"></a>
             <div runat="server" class="r-example">
                 <Rock:TimePicker ID="timePicker" runat="server" Label="Rock:TimePicker" />
