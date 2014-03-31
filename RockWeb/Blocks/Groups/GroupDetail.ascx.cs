@@ -44,20 +44,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
-    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Liquid syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 300, false, @"
-    {% for point in points %}
-        <div class='group-location-map'>
-            <h4>{{ point.type }}</h4>
-            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&zoom=13&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}&visual_refresh=true'/>
-        </div>
-    {% endfor %}
-    {% for polygon in polygons %}
-        <div class='group-location-map'>
-            <h4>{{ polygon.type }}</h4>
-            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60&visual_refresh=true&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}'/>
-        </div>
-    {% endfor %}
-", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, "", "", 4)]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -965,61 +952,67 @@ namespace RockWeb.Blocks.Groups
             var attributeCategories = Helper.GetAttributeCategories( attributes );
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
 
-            // Get all the group locations and group all those that have a geo-location into either points or polygons
-            var points = new List<GroupLocation>();
-            var polygons = new List<GroupLocation>();
-            foreach ( GroupLocation groupLocation in group.GroupLocations )
-            {
-                if ( groupLocation.Location != null )
-                {
-                    if ( groupLocation.Location.GeoPoint != null )
-                    {
-                        points.Add( groupLocation );
-                    }
-                    else if ( groupLocation.Location.GeoFence != null )
-                    {
-                        polygons.Add( groupLocation );
-                    }
-                }
-            }
-
-            var dict = new Dictionary<string, object>();
-            if ( points.Any() )
-            {
-                var pointsList = new List<Dictionary<string, object>>();
-                foreach ( var groupLocation in points)
-                {
-                    var pointsDict = new Dictionary<string, object>();
-                    if ( groupLocation.GroupLocationTypeValue != null )
-                    {
-                        pointsDict.Add( "type", groupLocation.GroupLocationTypeValue.Name );
-                    }
-                    pointsDict.Add( "latitude", groupLocation.Location.GeoPoint.Latitude );
-                    pointsDict.Add( "longitude", groupLocation.Location.GeoPoint.Longitude );
-                    pointsList.Add( pointsDict );
-                }
-                dict.Add( "points", pointsList );
-            }
-
-            if ( polygons.Any() )
-            {
-                var polygonsList = new List<Dictionary<string, object>>();
-                foreach ( var groupLocation in polygons )
-                {
-                    var polygonDict = new Dictionary<string, object>();
-                    if ( groupLocation.GroupLocationTypeValue != null )
-                    {
-                        polygonDict.Add( "type", groupLocation.GroupLocationTypeValue.Name );
-                    }
-                    polygonDict.Add( "polygon_wkt", groupLocation.Location.GeoFence.AsText());
-                    polygonDict.Add( "google_encoded_polygon", groupLocation.Location.EncodeGooglePolygon() );
-                    polygonsList.Add( polygonDict );
-                }
-                dict.Add( "polygons", polygonsList );
-            }
-
+            // Get Map Style
             phMaps.Controls.Clear();
-            phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
+            var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
+            if ( mapStyleValue == null )
+            {
+                mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+            }
+            if ( mapStyleValue != null )
+            {
+                string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
+
+                if ( !string.IsNullOrWhiteSpace( mapStyle ) )
+                {
+                    // Get all the group locations and group all those that have a geo-location into either points or polygons
+                    var points = new List<GroupLocation>();
+                    var polygons = new List<GroupLocation>();
+                    foreach ( GroupLocation groupLocation in group.GroupLocations )
+                    {
+                        if ( groupLocation.Location != null )
+                        {
+                            if ( groupLocation.Location.GeoPoint != null )
+                            {
+                                points.Add( groupLocation );
+                            }
+                            else if ( groupLocation.Location.GeoFence != null )
+                            {
+                                polygons.Add( groupLocation );
+                            }
+                        }
+                    }
+
+                    if ( points.Any() )
+                    {
+                        foreach ( var groupLocation in points )
+                        {
+                            string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
+                            string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
+                            mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", "" );
+                            mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                            var literalcontrol = new Literal() { 
+                                Text = string.Format( "<div class='group-location-map'>{0}<img src='{1}'/></div>", 
+                                    groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty, mapLink ), 
+                                Mode = LiteralMode.PassThrough };
+                            phMaps.Controls.Add( literalcontrol );
+                        }
+                    }
+
+                    if ( polygons.Any() )
+                    {
+                        foreach ( var groupLocation in polygons )
+                        {
+                            string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
+                            string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", "" );
+                            mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
+                            mapLink += "&sensor=false&size=350x200&format=png";
+                            phMaps.Controls.Add( new LiteralControl( string.Format( "<div class='group-location-map'>{0}<img src='{1}'/></div>",
+                                groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty, mapLink )));
+                        }
+                    }
+                }
+            }
 
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = group.Name;
@@ -1308,6 +1301,14 @@ namespace RockWeb.Blocks.Groups
                                 if ( displayOtherTab )
                                 {
                                     locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
+                                    
+                                    string mapStyle = GetAttributeValue("MapStyle");
+                                    if (string.IsNullOrWhiteSpace(mapStyle))
+                                    {
+                                        mapStyle = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK;
+                                    }
+                                    locpGroupLocation.MapStyle = mapStyle;
+
                                     if ( groupLocation.Location != null )
                                     {
                                         locpGroupLocation.Location = new LocationService().Get( groupLocation.Location.Id );
