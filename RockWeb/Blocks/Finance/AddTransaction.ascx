@@ -18,7 +18,7 @@
 
                                 <asp:Repeater ID="rptAccountList" runat="server">
                                     <ItemTemplate>
-                                        <Rock:RockTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
+                                        <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
@@ -173,7 +173,7 @@
                     <Rock:TermDescription runat="server" />
                     <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                         <ItemTemplate>
-                            <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# "$" + Eval("AmountFormatted") %>' />
+                            <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
                         </ItemTemplate>
                     </asp:Repeater>
                     <Rock:TermDescription ID="tdTotal" runat="server" Term="Total" />
