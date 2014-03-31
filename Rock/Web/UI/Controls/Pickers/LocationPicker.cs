@@ -230,6 +230,20 @@ namespace Rock.Web.UI.Controls
             return LocationPickerMode.Named;
         }
 
+        public string MapStyle
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pointPicker.MapStyle;
+            }
+            set
+            {
+                EnsureChildControls();
+                _pointPicker.MapStyle = value;
+                _polygonPicker.MapStyle = value;
+            }
+        }
 
         #endregion
 
