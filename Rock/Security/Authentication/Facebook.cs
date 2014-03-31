@@ -282,5 +282,32 @@ namespace Rock.Security.ExternalAuthentication
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports change password].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsChangePassword
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="oldPassword">The old password.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
+        {
+            warningMessage = "not supported";
+            return false;
+        }
     }
 }
