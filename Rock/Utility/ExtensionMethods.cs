@@ -436,8 +436,8 @@ namespace Rock
 
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off the currency symbol if there is one
-                str = str.Replace( "$", string.Empty );
+                // strip off non numeric and characters
+                str = Regex.Replace( str, @"[^0-9\.]", "" );
             }
 
             decimal value;
