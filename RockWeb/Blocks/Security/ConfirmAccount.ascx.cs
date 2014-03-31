@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Security
                     caption = string.Format( caption, user.Person.FirstName );
                 lResetSuccess.Text = caption;
 
-                userLoginService.ChangePassword( user, tbPassword.Text );
+                userLoginService.SetPassword( user, tbPassword.Text );
                 user.IsConfirmed = true;
                 userLoginService.Save( user, CurrentPersonAlias );
 

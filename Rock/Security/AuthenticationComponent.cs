@@ -89,5 +89,24 @@ namespace Rock.Security
         /// </summary>
         /// <returns></returns>
         public abstract String ImageUrl();
+
+        /// <summary>
+        /// Gets a value indicating whether [supports change password].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
+        /// </value>
+        public abstract Boolean SupportsChangePassword { get; }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="oldPassword">The old password.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <param name="warningMessage">The warning message.</param>
+        /// <returns></returns>
+        public abstract bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage );
+
     }
 }

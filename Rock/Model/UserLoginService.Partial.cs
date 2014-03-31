@@ -151,36 +151,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Changes a <see cref="Rock.Model.UserLogin">UserLogin's</see> password after first validating the current password.
-        /// </summary>
-        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to change the password on..</param>
-        /// <param name="oldPassword">A <see cref="System.String"/> representing an unhashed instance of the current/old password.</param>
-        /// <param name="newPassword">A <see cref="System.String"/> representing an unhashed instance of the new password..</param>
-        /// <returns>A <see cref="System.Boolean"/> value that indicates if the password change was successful. <c>true</c> if successful; otherwise <c>false</c>.</returns>
-        public bool ChangePassword( UserLogin user, string oldPassword, string newPassword )
-        {
-            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
-            if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
-
-            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
-                throw new Exception( "Cannot change password on external service type" );
-
-            if ( !authenticationComponent.Authenticate( user, oldPassword ) )
-                return false;
-
-            user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDateTime = RockDateTime.Now;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Changes the a <see cref="Rock.Model.UserLogin">UserLogin's</see> password.
+        /// Sets the a <see cref="Rock.Model.UserLogin">UserLogin's</see> password.
         /// </summary>
         /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to change the password for.</param>
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
-        public void ChangePassword( UserLogin user, string password )
+        public void SetPassword( UserLogin user, string password )
         {
             var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
