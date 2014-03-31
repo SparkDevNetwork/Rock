@@ -636,7 +636,7 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null )
             {
-                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width = 150" ) );
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150" ) );
             }
             else
             {
