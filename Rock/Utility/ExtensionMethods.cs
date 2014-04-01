@@ -436,12 +436,45 @@ namespace Rock
 
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
-                // strip off non numeric and characters
+                // strip off non numeric and characters (for example, currency symbols)
                 str = Regex.Replace( str, @"[^0-9\.]", "" );
             }
 
             decimal value;
             if ( decimal.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to double.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
+        /// <returns></returns>
+        public static double? AsDouble( this string str, bool emptyStringAsZero = true )
+        {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off non numeric and characters (for example, currency symbols)
+                str = Regex.Replace( str, @"[^0-9\.]", "" );
+            }
+
+            double value;
+            if ( double.TryParse( str, out value ) )
             {
                 return value;
             }
