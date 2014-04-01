@@ -10,11 +10,13 @@
 
         <div class="treeview">
 
-            <div class="treeview-actions" id="divTreeviewActions" runat="server" >
+            <div class="treeview-actions" id="divTreeviewActions" runat="server">
 
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i>Add Category <span class="fa fa-caret-down"></span>
+                        <i class="fa fa-plus-circle"></i>
+                        <asp:Literal ID="ltAddCategory" runat="server" Text=" Add Category" />
+                        <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
                         <li>
@@ -108,31 +110,31 @@
                             urlParameter = (isCategory ? 'CategoryId' : '<%= PageParameterName %>'),
                                 itemSearch = '?' + urlParameter + '=' + id;
 
-                            var currentItemId = $selectedId.val();
+                        var currentItemId = $selectedId.val();
 
-                            if (currentItemId !== id) {
-                                // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
-                                var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
-                                    return $(this).attr('data-id')
-                                }).get().join(',');
+                        if (currentItemId !== id) {
+                            // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
+                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                                return $(this).attr('data-id')
+                            }).get().join(',');
 
-                                var pageRouteTemplate = $('#hfPageRouteTemplate').val();
-                                var locationUrl = "";
-                                var regex = new RegExp("{" + urlParameter + "}", "i");
+                            var pageRouteTemplate = $('#hfPageRouteTemplate').val();
+                            var locationUrl = "";
+                            var regex = new RegExp("{" + urlParameter + "}", "i");
 
-                                if (pageRouteTemplate.match(regex)) {
-                                    locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, id);
-                                    locationUrl += "?expandedIds=" + encodeURIComponent(expandedDataIds);
-                                }
-                                else {
-                                    locationUrl = window.location.href.split('?')[0] + itemSearch;
-                                    locationUrl += "&expandedIds=" + encodeURIComponent(expandedDataIds);
-                                }
-
-                                window.location = locationUrl;
+                            if (pageRouteTemplate.match(regex)) {
+                                locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, id);
+                                locationUrl += "?expandedIds=" + encodeURIComponent(expandedDataIds);
+                            }
+                            else {
+                                locationUrl = window.location.href.split('?')[0] + itemSearch;
+                                locationUrl += "&expandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
-                        })
+                            window.location = locationUrl;
+                        }
+
+                    })
                         .on('rockTree:rendered', function () {
 
                             // update viewport height
@@ -149,15 +151,15 @@
                             selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                             expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
                         });
-                });
+            });
 
-                function resizeScrollbar(scrollControl) {
-                    var overviewHeight = $(scrollControl).find('.overview').height();
+            function resizeScrollbar(scrollControl) {
+                var overviewHeight = $(scrollControl).find('.overview').height();
 
-                    $(scrollControl).find('.viewport').height(overviewHeight);
+                $(scrollControl).find('.viewport').height(overviewHeight);
 
-                    scrollControl.tinyscrollbar_update('relative');
-                }
+                scrollControl.tinyscrollbar_update('relative');
+            }
 
 
         </script>
