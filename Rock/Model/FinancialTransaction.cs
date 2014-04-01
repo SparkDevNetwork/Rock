@@ -183,7 +183,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.FinancialBatch"/> that contains the transaction.
         /// </value>
-        [DataMember]
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
@@ -241,7 +240,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.FinancialTransactionRefund">refund transaction</see> associated with this transaction. This will be null if the transaction
         /// is not a refund transaction.
         /// </value>
-        [DataMember]
         public virtual FinancialTransactionRefund Refund { get; set; }
 
         /// <summary>
@@ -250,7 +248,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that initiated this transaction.
         /// </value>
-        [DataMember]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>

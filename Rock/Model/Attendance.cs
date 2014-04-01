@@ -161,7 +161,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [DataMember]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -170,7 +169,6 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [DataMember]
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
@@ -179,7 +177,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
-        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -188,7 +185,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who was the attendee.
         /// </value>
-        [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>

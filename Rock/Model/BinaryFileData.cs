@@ -41,7 +41,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
-        [DataMember]
         public byte[] Content { get; set; }
 
         #endregion

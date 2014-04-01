@@ -114,7 +114,6 @@ namespace Rock.Model
         /// <value>
         /// Collection of <see cref="Rock.Model.Block">Blocks</see> that implements this BlockType.
         /// </value>
-        [DataMember]
         public virtual ICollection<Block> Blocks
         {
             get { return _blocks ?? ( _blocks = new Collection<Block>() ); }

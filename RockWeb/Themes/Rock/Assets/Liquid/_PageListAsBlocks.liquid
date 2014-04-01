@@ -1,6 +1,6 @@
 ﻿<div class="panel panel-default page-list-as-blocks clearfix">
     <div class="panel-body">
-        <ul>
+        <ul class="list-unstyled">
             {% for childPage in page.pages %}
                 <li>
                     <a href="{{ childPage.id }}" {% if childPage.display-description != 'true' %} title="{{ childPage.description }}"{% endif %}>

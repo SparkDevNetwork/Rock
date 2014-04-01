@@ -37,6 +37,9 @@ namespace Rock.Model
     [DataContract]
     public partial class DefinedType : Model<DefinedType>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this DefinedType is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -96,7 +99,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-        
+
+        #endregion 
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.DefinedValue">DefinedValues</see> that belong to this DefinedType.
         /// </summary>
@@ -116,6 +123,10 @@ namespace Rock.Model
         [DataMember]
         public virtual FieldType FieldType { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this DefinedType.
         /// </summary>
@@ -126,7 +137,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Defined Type Configuration class.
@@ -138,7 +154,9 @@ namespace Rock.Model
         /// </summary>
         public DefinedTypeConfiguration()
         {
-            this.HasOptional( p => p.FieldType ).WithMany( p => p.DefinedTypes ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.FieldType ).WithMany().HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete(false);
         }
     }
+
+    #endregion
 }

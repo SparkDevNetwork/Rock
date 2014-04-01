@@ -91,7 +91,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> instance that is performing this WorkflowActivity.
         /// </value>
-        [DataMember]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -109,12 +108,15 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
+        [NotMapped]
         public virtual bool IsActive
         {
             get
             {
                 return ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
+            private set { }
         }
 
         /// <summary>

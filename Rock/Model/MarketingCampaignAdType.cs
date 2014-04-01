@@ -30,6 +30,9 @@ namespace Rock.Model
     [DataContract]
     public partial class MarketingCampaignAdType : Model<MarketingCampaignAdType>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this MarketingCampaignAdType is part of the Rock core system/framework. 
         /// </summary>
@@ -60,7 +63,29 @@ namespace Rock.Model
         [DataMember]
         public DateRangeTypeEnum DateRangeType { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// 
@@ -74,6 +99,10 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// Represents the type of DateRange that is supported.
@@ -90,4 +119,7 @@ namespace Rock.Model
         /// </summary>
         DateRange = 2
     }
+
+    #endregion
+
 }

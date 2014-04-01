@@ -56,7 +56,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the priority of this MarketingCampaignAd. The lower the number, the higher the priority of the Ad.
         /// </value>
-        [MergeField]
         [DataMember]
         public int Priority { get; set; }
 
@@ -67,7 +66,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.MarketingCampaignAdStatus"/> enumeration value that represents the status of this MarketingCampaignAd. When <c>MarketingCampaignAdStatus.PendingApproval</c> the ad is 
         /// awaiting approval; when <c>MarketingCampaignAdStatus.Approved</c> the ad has been approved by the approver, when <c>MarketingCampaignAdStatus.Denied</c> the ad has been denied by the approver.
         /// </value>
-        [MergeField]
         [DataMember]
         public MarketingCampaignAdStatus MarketingCampaignAdStatus { get; set; }
 
@@ -88,7 +86,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime"/> representing the StartDate of the MarketingCampaignAd will run.
         /// </value>
-        [MergeField]
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime StartDate { get; set; }
@@ -99,7 +96,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.DateTime" /> representing the EndDate of when the MarketingCampaignAd will run.
         /// </value>
-        [MergeField]
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime EndDate { get; set; }
@@ -110,7 +106,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the URL that this MarketingCampaingnAdd should direct people to.
         /// </value>
-        [MergeField]
         [MaxLength( 2000 )]
         [DataMember]
         public string Url { get; set; }
@@ -121,7 +116,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.MarketingCampaign"/> that this ad belongs to.
         /// </value>
-        [MergeField]
         [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
@@ -131,7 +125,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.MarketingCampaignAdType"/> of this Ad.
         /// </value>
-        [MergeField]
         [DataMember]
         public virtual MarketingCampaignAdType MarketingCampaignAdType { get; set; }
     }

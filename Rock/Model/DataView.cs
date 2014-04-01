@@ -141,6 +141,19 @@ namespace Rock.Model
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the type of the entity used for an optional transformation
+        /// </summary>
+        /// <value>
+        /// The transformation type of entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType TransformEntityType { get; set; }
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets the parent security authority for the DataView
         /// </summary>
@@ -159,15 +172,6 @@ namespace Rock.Model
                 return base.ParentAuthority;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the type of the entity used for an optional transformation
-        /// </summary>
-        /// <value>
-        /// The transformation type of entity.
-        /// </value>
-        [DataMember]
-        public virtual EntityType TransformEntityType { get; set; }
 
         #endregion
 

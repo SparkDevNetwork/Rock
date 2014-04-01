@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Security
 
                     var personDictionaries = new List<IDictionary<string, object>>();
 
-                    var users = new List<IDictionary<string, object>>();
+                    var users = new List<UserLogin>();
                     var userLoginService = new UserLoginService();
                     foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                     {
@@ -388,15 +388,22 @@ namespace RockWeb.Blocks.Security
                             var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                             if ( component.ServiceType == AuthenticationServiceType.Internal )
                             {
-                                users.Add( user.ToDictionary() );
+                                users.Add( user );
                             }
                         }
                     }
 
                     if ( users.Count > 0 )
                     {
-                        IDictionary<string, object> personDictionary = person.ToDictionary();
-                        personDictionary.Add( "Users", users.ToArray() );
+                        var personDictionary = person.ToLiquid() as Dictionary<string, object>;
+                        if ( personDictionary.Keys.Contains( "Users" ) )
+                        {
+                            personDictionary["Users"] = users;
+                        }
+                        else
+                        {
+                            personDictionary.Add( "Users", users );
+                        }
                         personDictionaries.Add( personDictionary );
                     }
 
@@ -429,12 +436,11 @@ namespace RockWeb.Blocks.Security
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
                 var mergeObjects = new Dictionary<string, object>();
-                mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) ); 
-                
-                var personDictionary = person.ToDictionary();
-                mergeObjects.Add( "Person", personDictionary );
+                mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
-                mergeObjects.Add( "User", user.ToDictionary() );
+                var personDictionary = person.ToLiquid() as Dictionary<string, object>;
+                mergeObjects.Add( "Person", personDictionary );
+                mergeObjects.Add( "User", user );
 
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( person.Email, mergeObjects );
@@ -469,10 +475,9 @@ namespace RockWeb.Blocks.Security
                         var mergeObjects = new Dictionary<string, object>();
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
-                        var personDictionary = person.ToDictionary();
+                        var personDictionary = person.ToLiquid() as Dictionary<string, object>;
                         mergeObjects.Add( "Person", personDictionary );
-
-                        mergeObjects.Add( "User", user.ToDictionary() );
+                        mergeObjects.Add( "User", user );
 
                         var recipients = new Dictionary<string, Dictionary<string, object>>();
                         recipients.Add( person.Email, mergeObjects );

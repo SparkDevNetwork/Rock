@@ -135,8 +135,10 @@ function() {
             comparisonControl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( comparisonControl );
 
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
             NumberBox numberBoxAmount = new NumberBox();
-            numberBoxAmount.PrependText = "$";
+            numberBoxAmount.PrependText = globalAttributes.GetValue("CurrencySymbol") ?? "$";
             numberBoxAmount.NumberType = ValidationDataType.Currency;
             numberBoxAmount.ID = filterControl.ID + "_1";
             numberBoxAmount.Label = "Amount";
@@ -240,7 +242,7 @@ function() {
                     new
                     {
                         PersonId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.TotalAmount )
+                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Sum( td => td.Amount) )
                     } );
 
             if ( comparisonType == ComparisonType.LessThan )

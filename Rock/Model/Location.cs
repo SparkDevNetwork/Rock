@@ -307,12 +307,14 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this instance is a named location; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [NotMapped]
         public virtual bool IsNamedLocation 
         { 
             get
             {
                 return !string.IsNullOrWhiteSpace( Name );
             }
+            private set { }
         }
 
         /// <summary>
@@ -321,7 +323,6 @@ namespace Rock.Model
         /// <value>
         /// The location type value.
         /// </value>
-        [MergeField]
         [DataMember]
         public virtual DefinedValue LocationTypeValue { get; set; }
 
@@ -345,7 +346,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupLocation"/> entities that reference this Location.
         /// </value>
-        [DataMember]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }

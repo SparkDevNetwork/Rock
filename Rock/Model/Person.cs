@@ -107,7 +107,6 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        [MergeField]
         public bool? IsDeceased
         {
             get
@@ -160,7 +159,6 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         public string NickName { get; set; }
 
         /// <summary>
@@ -182,7 +180,6 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         public string LastName { get; set; }
 
         /// <summary>
@@ -216,7 +213,6 @@ namespace Rock.Model
         /// this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthDay { get; set; }
 
         /// <summary>
@@ -226,7 +222,6 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the month portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthMonth { get; set; }
 
         /// <summary>
@@ -236,7 +231,6 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the year portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthYear { get; set; }
 
         /// <summary>
@@ -249,7 +243,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        [MergeField]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -269,7 +262,6 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the anniversary date of the Person's wedding. If the anniversary date is not known or they are not married this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? AnniversaryDate { get; set; }
 
@@ -281,7 +273,6 @@ namespace Rock.Model
         /// Person has not entered school.
         /// </value>
         [DataMember]
-        [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
 
@@ -294,7 +285,6 @@ namespace Rock.Model
         /// The giving group id.
         /// </value>
         [DataMember]
-        [MergeField]
         [HideFromReporting]
         public int? GivingGroupId { get; set; }
 
@@ -307,7 +297,6 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
         public string Email { get; set; }
 
@@ -328,7 +317,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
-        [MergeField]
         public string EmailNote { get; set; }
 
         /// <summary>
@@ -358,7 +346,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
-        [MergeField]
         public string SystemNote { get; set; }
 
         /// <summary>
@@ -396,7 +383,7 @@ namespace Rock.Model
         /// <value>
         /// The primary alias.
         /// </value>
-        [MergeField]
+        [NotMapped]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -406,12 +393,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the primary alias identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public int? PrimaryAliasId
+        {
+            get
+            {
+                var primaryAlias = PrimaryAlias;
+                if ( primaryAlias != null )
+                {
+                    return primaryAlias.Id;
+                }
+
+                return null;
+            }
+            private set { }
+        }
+
+        /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [MergeField]
+        [DataMember]
+        [NotMapped]
         public virtual string FullName
         {
             get
@@ -425,6 +436,7 @@ namespace Rock.Model
 
                 return fullName.ToString();
             }
+            private set { }
         }
 
 
@@ -434,6 +446,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
+        [NotMapped]
         public virtual string FullNameReversed
         {
             get
@@ -456,6 +469,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
+        [NotMapped]
         public virtual string FullNameFormal
         {
             get
@@ -478,6 +492,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
+        [NotMapped]
         public virtual string FullNameFormalReversed
         {
             get
@@ -499,12 +514,15 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
+        [DataMember]
+        [NotMapped]
         public virtual string PhotoUrl
         {
             get 
             {
                 return Person.GetPhotoUrl( this.PhotoId, this.Gender );
             }
+            private set { }
         }
 
         /// <summary>
@@ -514,7 +532,6 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.UserLogin">UserLogins</see> that belong to the Person.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual ICollection<UserLogin> Users
         {
             get { return _users; }
@@ -529,7 +546,6 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.PhoneNumber"/> entities representing the phone numbers that are associated with this Person.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers
         {
             get { return _phoneNumbers; }
@@ -544,7 +560,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [MergeField]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -558,7 +573,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
         /// </value>
-        [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
             get { return _attendances; }
@@ -586,7 +600,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary>
@@ -596,7 +609,6 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object representing the Person's connection status. 
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
 
         /// <summary>
@@ -606,7 +618,6 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object representing the record status.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordStatusValue { get; set; }
 
         /// <summary>
@@ -616,7 +627,6 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> that represents the Record Status Reason (disposition)
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
 
         /// <summary>
@@ -626,7 +636,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> representing the record type.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordTypeValue { get; set; }
 
         /// <summary>
@@ -636,7 +645,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue" /> representing the name suffix.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue SuffixValue { get; set; }
 
         /// <summary>
@@ -646,7 +654,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> object representing the Person's salutation title.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue TitleValue { get; set; }
 
         /// <summary>
@@ -656,7 +663,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -665,7 +671,6 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
-        [DataMember]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -676,7 +681,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [MergeField]
         public DateTime? BirthDate
         {
             get
@@ -721,7 +725,8 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the person's age.  If the birthdate and age is not available then returns null.
         /// </value>
-        [MergeField]
+        [DataMember]
+        [NotMapped]
         public virtual int? Age
         {
             get
@@ -736,6 +741,7 @@ namespace Rock.Model
                 }
                 return null;
             }
+            private set { }
         }
 
         /// <summary>
@@ -744,7 +750,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
         /// </value>
-        [MergeField]
+        [DataMember]
+        [NotMapped]
         public virtual int DaysToBirthday
         {
             get
@@ -777,6 +784,7 @@ namespace Rock.Model
                 }
                 return int.MaxValue;
             }
+            private set { }
         }
 
         /// <summary>
@@ -785,6 +793,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year) 
         /// </value>
+        [NotMapped]
         public virtual double? AgePrecise
         {
             get
@@ -819,7 +828,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [MergeField]
         public virtual int? Grade
         {
             get
@@ -869,7 +877,7 @@ namespace Rock.Model
         /// The grade string.
         /// </value>
         [NotMapped]
-        [MergeField]
+        [DataMember]
         public virtual string GradeFormatted
         {
             get 
@@ -898,6 +906,7 @@ namespace Rock.Model
 
                 return string.Empty;
             }
+            private set { }
         }
 
         /// <summary>
@@ -906,6 +915,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
+        [NotMapped]
         public virtual string ImpersonationParameter
         {
             get
@@ -920,6 +930,7 @@ namespace Rock.Model
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </value>
+        [NotMapped]
         public virtual UserLogin ImpersonatedUser
         {
             get

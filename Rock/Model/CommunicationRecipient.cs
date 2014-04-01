@@ -142,7 +142,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [DataMember]
         public virtual Communication Communication { get; set; }
 
         /// <summary>

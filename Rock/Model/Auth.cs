@@ -32,6 +32,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Auth : Model<Auth>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the entity that this Auth object applies to.
         /// </summary>
@@ -116,14 +119,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? GroupId { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Security Role <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. This is used for Group based authorization. 
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that this Auth entity allows or denies access to. If group based authorization is not used, this value will be null.
         /// </value>
-        [DataMember]
         public virtual Model.Group Group { get; set; }
         
         /// <summary>
@@ -132,7 +138,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that this Auth entity allows or denies access to. If person based authorization is not used, this value will be null.
         /// </value>
-        [DataMember]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -141,8 +146,11 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> of of the entity that is being secured.
         /// </value>
-        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns the default authorization for a specific action.
@@ -177,7 +185,11 @@ namespace Rock.Model
             return sb.ToString();
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Auth Configuration class.
@@ -194,6 +206,10 @@ namespace Rock.Model
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// Authorization for a special group of users not defined by a specific role or person
@@ -220,5 +236,7 @@ namespace Rock.Model
         /// </summary>
         AllUnAuthenticatedUsers = 3,
     }
+
+    #endregion
 
 }

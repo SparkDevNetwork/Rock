@@ -105,7 +105,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who is making the pledge.
         /// </value>
-        [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
@@ -114,7 +113,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> or fund that the pledge is being directed toward.
         /// </value>
-        [DataMember]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

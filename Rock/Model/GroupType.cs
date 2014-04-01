@@ -252,7 +252,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
-        [DataMember]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -266,7 +265,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
         /// </value>
-        [DataMember]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
@@ -280,7 +278,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing the GroupTypes that this GroupType inherits from.
         /// </value>
-        [DataMember]
         public virtual ICollection<GroupType> ParentGroupTypes
         {
             get { return _parentGroupTypes ?? ( _parentGroupTypes = new Collection<GroupType>() ); }
@@ -325,6 +322,7 @@ namespace Rock.Model
         /// The default <see cref="Rock.Model.GroupTypeRole"/> for <see cref="Rock.Model.GroupMember">GroupMembers</see> who belong to a <see cref="Rock.Model.Group"/>
         /// of this GroupType.
         /// </value>
+        [DataMember]
         public virtual GroupTypeRole DefaultGroupRole { get; set; }
 
         /// <summary>
