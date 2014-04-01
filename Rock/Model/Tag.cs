@@ -32,6 +32,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Tag : Model<Tag>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this Tag is part of the Rock core system/framework.
         /// </summary>
@@ -84,7 +87,6 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public string Name { get; set; }
 
         /// <summary>
@@ -94,7 +96,6 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
-        [MergeField]
         public string Description { get; set; }
 
         /// <summary>
@@ -106,7 +107,6 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public int Order { get; set; }
 
         /// <summary>
@@ -117,6 +117,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? OwnerId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> who is the Owner of this Tag.
@@ -132,8 +136,8 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> of Entities that this Tag can be applied to.
         /// </value>
+        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
-
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.TaggedItem">TaggedItems</see> representing the entities that are tagged with this Tag.
@@ -143,6 +147,10 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Tag.
         /// </summary>
@@ -153,8 +161,13 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Tag Configuration class.
     /// </summary>
@@ -169,4 +182,7 @@ namespace Rock.Model
             this.HasRequired( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

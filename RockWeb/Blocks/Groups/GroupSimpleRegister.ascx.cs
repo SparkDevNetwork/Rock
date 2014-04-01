@@ -184,11 +184,12 @@ namespace RockWeb.Blocks.Groups
             {
                 var personService = new PersonService();
 
-                var personMatches = personService.GetByEmail( txtEmail.Text ).Where( p =>
-                    p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
-                    ( ( p.FirstName != null && p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
-                    ( p.NickName != null && p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ) );
-
+                var personMatches = personService.GetByEmail( txtEmail.Text )
+                    .Where( p =>
+                        p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
+                        ( ( p.FirstName != null && p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
+                            ( p.NickName != null && p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ) )
+                    .ToList();
                 if ( personMatches.Count() == 1 )
                 {
                     return personMatches.FirstOrDefault();

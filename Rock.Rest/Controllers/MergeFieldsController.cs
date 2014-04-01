@@ -207,7 +207,7 @@ namespace Rock.Rest.Controllers
                             // Add the tree view items
                             foreach ( var propInfo in type.GetProperties() )
                             {
-                                if ( propInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                                if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                                 {
                                     var treeViewItem = new TreeViewItem
                                     {
@@ -230,7 +230,7 @@ namespace Rock.Rest.Controllers
                                     {
                                         foreach ( var childPropInfo in propertyType.GetProperties() )
                                         {
-                                            if ( childPropInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                                            if ( childPropInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                                             {
                                                 hasChildren = true;
                                                 break;

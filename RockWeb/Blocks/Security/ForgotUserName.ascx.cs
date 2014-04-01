@@ -86,9 +86,10 @@ namespace RockWeb.Blocks.Security
             var personService = new PersonService();
             var userLoginService = new UserLoginService();
 
-            foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
+            foreach ( Person person in personService.GetByEmail( tbEmail.Text )
+                .Where( p => p.Users.Any()))
             {
-                var users = new List<IDictionary<string, object>>();
+                var users = new List<UserLogin>();
                 foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.EntityType != null )
@@ -96,15 +97,22 @@ namespace RockWeb.Blocks.Security
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                         if ( component.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            users.Add( user.ToDictionary() );
+                            users.Add( user );
                         }
                     }
                 }
 
                 if ( users.Count > 0 )
                 {
-                    IDictionary<string, object> personDictionary = person.ToDictionary();
-                    personDictionary.Add( "Users", users.ToArray() );
+                    var personDictionary = person.ToLiquid() as Dictionary<string, object>;
+                    if (personDictionary.Keys.Contains("Users"))
+                    {
+                        personDictionary["Users"] = users;
+                    }
+                    else
+                    {
+                        personDictionary.Add( "Users", users );
+                    }
                     personDictionaries.Add( personDictionary );
                 }
             }

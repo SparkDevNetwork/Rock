@@ -134,12 +134,11 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Person" /> entities that match the search criteria.
         /// </returns>
-        public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false, bool includeBusinesses = false )
+        public IQueryable<Person> GetByEmail( string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p => 
-                    p.Email == email || ( email == null && p.Email == null ) )
-                .ToList();
+                    p.Email == email || ( email == null && p.Email == null ) );
         }
 
         /// <summary>

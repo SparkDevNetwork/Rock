@@ -34,6 +34,9 @@ namespace Rock.Model
     [DataContract]
     public partial class SiteDomain : Model<SiteDomain>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this SiteDomain was created by and is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -67,15 +70,22 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Domain { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this SiteDomain.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
-        [DataMember]
         public virtual Site Site { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the domain name and represents this instance.
@@ -87,8 +97,13 @@ namespace Rock.Model
         {
             return this.Domain;
         }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Site Domain Configuration class.
     /// </summary>
@@ -102,4 +117,6 @@ namespace Rock.Model
             this.HasRequired( p => p.Site ).WithMany( p => p.SiteDomains ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete(true);
         }
     }
+
+    #endregion
 }

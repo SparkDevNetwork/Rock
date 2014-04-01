@@ -34,6 +34,9 @@ namespace Rock.Model
     [DataContract]
     public partial class PhoneNumber : Model<PhoneNumber>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if the PhoneNumber is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -62,7 +65,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength(3)]
         [DataMember]
-        [MergeField]
         public string CountryCode { get; set; }
 
         /// <summary>
@@ -74,7 +76,6 @@ namespace Rock.Model
         [Required]
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public string Number { get; set; }
 
         /// <summary>
@@ -85,7 +86,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
-        [MergeField]
         public string Extension { get; set; }
 
         /// <summary>
@@ -106,6 +106,10 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMessagingEnabled { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the Phone Number's NumberType <see cref="Rock.Model.DefinedValue"/>
@@ -140,8 +144,39 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that the phone number belongs to.
         /// </value>
-        [DataMember]
         public virtual Person Person { get; set; }
+
+        /// <summary>
+        /// Returns a formatted version of the Number.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> containing the formatted number.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string NumberFormatted
+        {
+            get { return PhoneNumber.FormattedNumber( CountryCode, Number ); }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the number formatted with country code.
+        /// </summary>
+        /// <value>
+        /// The number formatted with country code.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string NumberFormattedWithCountryCode
+        {
+            get { return PhoneNumber.FormattedNumber( CountryCode, Number, true ); }
+            private set { }
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the defaults country code.
@@ -227,30 +262,6 @@ namespace Rock.Model
         private static Regex digitsOnly = new Regex( @"[^\d]" );
 
         /// <summary>
-        /// Returns a formatted version of the Number.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the formatted number.
-        /// </value>
-        [MergeField]
-        public virtual string NumberFormatted
-        {
-            get { return PhoneNumber.FormattedNumber( CountryCode, Number ); }
-        }
-
-        /// <summary>
-        /// Gets the number formatted with country code.
-        /// </summary>
-        /// <value>
-        /// The number formatted with country code.
-        /// </value>
-        [MergeField]
-        public virtual string NumberFormattedWithCountryCode
-        {
-            get { return PhoneNumber.FormattedNumber( CountryCode, Number, true ); }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> containing the Number and represents this instance.
         /// </summary>
         /// <returns>
@@ -267,7 +278,12 @@ namespace Rock.Model
                 return "Unlisted";
             }
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Phone Number Configuration class.
@@ -283,4 +299,7 @@ namespace Rock.Model
             this.HasOptional( p => p.NumberTypeValue ).WithMany().HasForeignKey( p => p.NumberTypeValueId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

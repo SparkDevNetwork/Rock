@@ -195,7 +195,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/>.
         /// </value>
-        [DataMember]
         public virtual Page Page { get; set; }
 
         /// <summary>
@@ -206,7 +205,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/>.
         /// </value>
-        [DataMember]
         public virtual Layout Layout { get; set; }
         
         /// <summary>
@@ -218,10 +216,17 @@ namespace Rock.Model
         /// <example>
         /// <c>BlockLocation.Page</c>
         /// </example>
+        [DataMember]
+        [NotMapped]
         public virtual BlockLocation BlockLocation
         {
             get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+            private set { }
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page

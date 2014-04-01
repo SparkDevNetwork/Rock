@@ -306,7 +306,6 @@
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
     <Compile Include="Storage\Provider\FileSystem.cs" />
-    <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />

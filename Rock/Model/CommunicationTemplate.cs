@@ -75,6 +75,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the Subject of the communication.
         /// </value>
+        [DataMember]
         [MaxLength( 100 )]
         public string Subject { get; set; }
 

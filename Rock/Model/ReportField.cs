@@ -115,7 +115,6 @@ namespace Rock.Model
         /// <value>
         /// The report.
         /// </value>
-        [DataMember]
         public virtual Report Report { get; set; }
 
         /// <summary>

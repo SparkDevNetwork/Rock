@@ -30,6 +30,9 @@ namespace Rock.Model
     [DataContract]
     public partial class MetricValue : Model<MetricValue>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -109,14 +112,21 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the metric.
         /// </summary>
         /// <value>
         /// The metric.
         /// </value>
-        [DataMember]
         public virtual Metric Metric { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the parent authority.
@@ -137,15 +147,12 @@ namespace Rock.Model
             return this.Value;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricValue"/> class.
-        /// </summary>
-        public MetricValue()
-        {
-            
-        }
+        #endregion
+
     }
-    
+
+    #region Entity Configuration
+
     /// <summary>
     /// MetricValue Configuration class.
     /// </summary>
@@ -159,4 +166,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
         }
     }
+    
+    #endregion
+
 }

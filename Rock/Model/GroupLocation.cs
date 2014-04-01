@@ -110,7 +110,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that is associated with this GroupLocation.
         /// </value>
-        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -138,7 +137,6 @@ namespace Rock.Model
         /// <value>
         /// The group member person.
         /// </value>
-        [DataMember]
         public virtual Person GroupMemberPerson { get; set; }
 
         /// <summary>
