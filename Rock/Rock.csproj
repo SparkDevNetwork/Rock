@@ -267,6 +267,7 @@
     <Compile Include="PersonProfile\Badge\InGroupOfType.cs" />
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
+    <Compile Include="Reporting\DataFilter\Group\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\MemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupTypeFilter.cs" />
@@ -278,6 +279,7 @@
     <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Group\DistanceFromSelect.cs" />
     <Compile Include="Reporting\DataSelect\Group\LocationSelect.cs" />
     <Compile Include="Reporting\DataSelect\LiquidSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InGroupGroupTypeSelect.cs" />
@@ -336,6 +338,7 @@
     <Compile Include="Web\Cache\RestControllerCache.cs" />
     <Compile Include="Web\Cache\RestActionCache.cs" />
     <Compile Include="Web\FileUploadException.cs" />
+    <Compile Include="Web\Fingerprint.cs" />
     <Compile Include="Web\RequestValidator.cs" />
     <Compile Include="Web\SystemSettings.cs" />
     <Compile Include="Web\Cache\GroupTypeCache.cs" />

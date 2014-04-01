@@ -25,14 +25,14 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataFilter.Person
+namespace Rock.Reporting.DataFilter.Group
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter people on home address within a specified distance from a location" )]
+    [Description( "Filter group within a specified distance from a location" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Person Distance From Filter" )]
+    [ExportMetadata( "ComponentName", "Group Distance From Filter" )]
     public class DistanceFromFilter : DataFilterComponent
     {
         #region Properties
@@ -45,7 +45,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof( Rock.Model.Person ).FullName; }
+            get { return typeof( Rock.Model.Group ).FullName; }
         }
 
         /// <summary>
@@ -108,11 +108,11 @@ function() {
             string result = "Distance From";
             string[] selectionValues = selection.Split( '|' );
 
-            if ( selectionValues.Length >= 2 )
+            if ( selectionValues.Length >= 3 )
             {
-                int? locationId = selectionValues[0].AsInteger();
+                int? locationId = selectionValues[1].AsInteger();
                 var location = new LocationService().Get( locationId ?? 0 );
-                double miles = selectionValues[1].AsDouble() ?? 0;
+                double miles = selectionValues[2].AsDouble() ?? 0;
 
                 result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
             }
@@ -126,20 +126,33 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
+            RockDropDownList groupLocationTypeList = new RockDropDownList();
+            groupLocationTypeList.Items.Clear();
+            foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            {
+                groupLocationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+            }
+
+            groupLocationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
+
+            groupLocationTypeList.ID = filterControl.ID + "_groupLocationTypeList";
+            groupLocationTypeList.Label = "Location Type";
+            filterControl.Controls.Add( groupLocationTypeList );            
+            
             LocationPicker locationPicker = new LocationPicker();
-            locationPicker.ID = filterControl.ID + "_0";
+            locationPicker.ID = filterControl.ID + "_locationPicker";
             locationPicker.Label = "Location";
 
             filterControl.Controls.Add( locationPicker );
 
             NumberBox numberBox = new NumberBox();
-            numberBox.ID = filterControl.ID + "_1";
+            numberBox.ID = filterControl.ID + "_numberBox";
             numberBox.NumberType = ValidationDataType.Double;
             numberBox.Label = "Miles";
             numberBox.AddCssClass( "number-box-miles" );
             filterControl.Controls.Add( numberBox );
 
-            return new Control[2] { locationPicker, numberBox };
+            return new Control[3] { groupLocationTypeList, locationPicker, numberBox };
         }
 
         /// <summary>
@@ -162,15 +175,22 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var location = ( controls[0] as LocationPicker ).Location;
+            int? groupLocationTypeId = null;
+            RockDropDownList dropDownList = controls[0] as RockDropDownList;
+            if ( dropDownList != null )
+            {
+                groupLocationTypeId = dropDownList.SelectedValueAsId();
+            }
+            
+            var location = ( controls[1] as LocationPicker ).Location;
             var value1 = string.Empty;
             if ( location != null )
             {
                 value1 = location.Id.ToString();
             }
 
-            var value2 = ( controls[1] as NumberBox ).Text;
-            return value1 + "|" + value2;
+            var value2 = ( controls[2] as NumberBox ).Text;
+            return groupLocationTypeId.ToString() + "|" + value1 + "|" + value2;
         }
 
         /// <summary>
@@ -182,14 +202,18 @@ function() {
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
             string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 2 )
+            if ( selectionValues.Length >= 3 )
             {
-                var locationPicker = controls[0] as LocationPicker;
-                var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                var groupLocationType = controls[0] as RockDropDownList;
+                groupLocationType.SetValue( selectionValues[0] );
+
+                var locationPicker = controls[1] as LocationPicker;
+                var selectedLocation = new LocationService().Get( selectionValues[1].AsInteger() ?? 0 );
                 locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
-                var numberBox = controls[1] as NumberBox;
-                numberBox.Text = selectionValues[1];
+                
+                var numberBox = controls[2] as NumberBox;
+                numberBox.Text = selectionValues[2];
             }
         }
 
@@ -206,7 +230,9 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                Location location = new LocationService( serviceInstance.RockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
+                int? groupLocationTypeValueId = selectionValues[0].AsInteger( false );
+                
+                Location location = new LocationService( serviceInstance.RockContext ).Get( selectionValues[1].AsInteger() ?? 0 );
 
                 if ( location == null )
                 {
@@ -214,27 +240,21 @@ function() {
                 }
 
                 var selectedLocationGeoPoint = location.GeoPoint;
-                double miles = selectionValues[1].AsDouble() ?? 0;
-
+                double miles = selectionValues[2].AsDouble() ?? 0;
                 double meters = miles * 1609.344;
 
-                GroupMemberService groupMemberService = new GroupMemberService( serviceInstance.RockContext );
+                GroupService groupService = new GroupService( serviceInstance.RockContext );
 
-                // limit to Family's Home Addresses that have are a real location (not a PO Box)
-                var groupMemberServiceQry = groupMemberService.Queryable()
-                    .Where( xx => xx.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) )
-                    .Where( xx => xx.Group.GroupLocations
-                        .Where( l => l.GroupLocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ) )
+                var qry = groupService.Queryable()
+                    .Where( p => p.GroupLocations
+                        .Where( l => l.GroupLocationTypeValueId == groupLocationTypeValueId )
                         .Where( l => l.IsMappedLocation ).Any() );
 
                 // limit to distance LessThan specified distance (dbGeography uses meters for distance units)
-                groupMemberServiceQry = groupMemberServiceQry
-                    .Where( xx => xx.Group.GroupLocations.Any( l => l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
+                qry = qry
+                    .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
 
-                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
-                    .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
-
-                Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
+                Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );
 
                 return extractedFilterExpression;
             }
