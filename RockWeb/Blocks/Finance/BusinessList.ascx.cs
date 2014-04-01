@@ -21,8 +21,11 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -60,6 +63,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad( e );
+
             if ( !Page.IsPostBack )
             {
                 BindFilter();
@@ -130,6 +135,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            var queryable = new PersonService().Queryable();
+            var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId );
+            gBusinessList.DataSource = queryable.ToList();
             gBusinessList.DataBind();
         }
 

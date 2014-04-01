@@ -80,6 +80,37 @@ namespace RockWeb.Blocks.Finance
                 phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
             }
             business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            business.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            business.IsDeceased = false;
+            business.FirstName = tbBusinessName.Text;
+            //business.PhotoId = 0;
+            business.Email = tbEmailAddress.Text;
+            business.IsEmailActive = true;
+
+            // Need to create a group for the business/person and tie that group to a grouplocation and location (which will actually hold the address).
+
+            var businessGroupType = GroupTypeCache.GetFamilyGroupType();
+            if ( businessGroupType != null )
+            {
+                var groupService = new GroupService();
+                var businessGroup = new Group();
+                businessGroup.GroupTypeId = businessGroupType.Id;
+                businessGroup.Name = tbBusinessName.Text + " Business Group";
+                //businessGroup.CampusId = campusId;
+
+                foreach( var groupMember in business.Members )
+                {
+                    businessGroup.Members.Add( groupMember );
+                    var groupMemberService = new GroupMemberService();
+                    groupMemberService.RockContext.SaveChanges();
+                }
+
+                groupService.RockContext.SaveChanges();
+
+                business.GivingGroup = businessGroup;
+            }
+
+            businessService.RockContext.SaveChanges();
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
