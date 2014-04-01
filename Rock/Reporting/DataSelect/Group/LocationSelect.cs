@@ -131,10 +131,10 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? locationTypeValueId = selection.AsInteger( false );
+            int? groupLocationTypeValueId = selection.AsInteger( false );
 
             var groupLocationQuery = new GroupService( context ).Queryable()
-                .Select( p => p.GroupLocations.Select( gl => gl.Location).FirstOrDefault( w => w.LocationTypeValueId == locationTypeValueId));
+                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId).Select( gl => gl.Location).FirstOrDefault());
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationQuery, entityIdProperty, "p" );
 
