@@ -238,6 +238,7 @@ namespace Rock.Model
         /// <value>
         /// The default <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
+        [DataMember]
         public virtual Page DefaultPage { get; set; }
 
         /// <summary>
@@ -246,6 +247,7 @@ namespace Rock.Model
         /// <value>
         /// The default page route.
         /// </value>
+        [DataMember]
         public virtual PageRoute DefaultPageRoute { get; set; }
 
         /// <summary>
@@ -254,6 +256,7 @@ namespace Rock.Model
         /// <value>
         /// The login <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
+        [DataMember]
         public virtual Page LoginPage { get; set; }
 
         /// <summary>
@@ -262,6 +265,7 @@ namespace Rock.Model
         /// <value>
         /// The login page route.
         /// </value>
+        [DataMember]
         public virtual PageRoute LoginPageRoute { get; set; }
 
         /// <summary>
@@ -270,6 +274,7 @@ namespace Rock.Model
         /// <value>
         /// The registration <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
+        [DataMember]
         public virtual Page RegistrationPage { get; set; }
 
         /// <summary>
@@ -278,6 +283,7 @@ namespace Rock.Model
         /// <value>
         /// The registration page route.
         /// </value>
+        [DataMember]
         public virtual PageRoute RegistrationPageRoute { get; set; }
 
         /// <summary>
@@ -286,6 +292,7 @@ namespace Rock.Model
         /// <value>
         /// The 404 <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
+        [DataMember]
         public virtual Page PageNotFoundPage { get; set; }
 
         /// <summary>
@@ -294,6 +301,7 @@ namespace Rock.Model
         /// <value>
         /// The registration page route.
         /// </value>
+        [DataMember]
         public virtual PageRoute PageNotFoundPageRoute { get; set; }
 
         #endregion

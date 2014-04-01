@@ -31,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class FieldType : Model<FieldType>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this FieldType is part of of the Rock core system/framework. This property is required.
         /// </summary>
@@ -82,14 +85,14 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Class { get; set; }
-        
-        /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use this FieldType.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use this FieldType.
-        /// </value>
-        public virtual ICollection<DefinedType> DefinedTypes { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        #endregion
+
+        #region Methods
 
         // <summary>
         // Gets or sets the Metrics.
@@ -110,7 +113,11 @@ namespace Rock.Model
             return Name;
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Field Type Configuration class.
@@ -124,4 +131,7 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
 }

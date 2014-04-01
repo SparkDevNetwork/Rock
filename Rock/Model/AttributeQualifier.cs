@@ -33,6 +33,8 @@ namespace Rock.Model
     [DataContract]
     public partial class AttributeQualifier : Entity<AttributeQualifier>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if the AttributeQualifer is part of the Rock core system/framework.
         /// </summary>
@@ -72,15 +74,22 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Value { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Attribute"/> that uses this AttributeQualifier.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Attribute"/> that uses this AttributeQualifier.
         /// </value>
-        [DataMember]
         public virtual Attribute Attribute { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -92,7 +101,11 @@ namespace Rock.Model
         {
             return this.Key;
         }
+
+        #endregion
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Attribute Qualifier Configuration class.
@@ -107,4 +120,6 @@ namespace Rock.Model
             this.HasRequired( p => p.Attribute ).WithMany( p => p.AttributeQualifiers ).HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete(true);
         }
     }
+
+    #endregion
 }

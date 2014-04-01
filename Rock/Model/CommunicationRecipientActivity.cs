@@ -94,7 +94,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.CommunicationRecipient"/>
         /// </value>
-        [DataMember]
         public virtual CommunicationRecipient CommunicationRecipient { get; set; }
 
         #endregion

@@ -48,7 +48,6 @@ namespace Rock.Data
         /// </value>
         [Key]
         [DataMember]
-        [MergeField]
         public int Id { get; set; }
 
         /// <summary>
@@ -66,7 +65,6 @@ namespace Rock.Data
         /// </value>
         [AlternateKey]
         [DataMember]
-        [MergeField]
         public Guid Guid
         {
             get { return _guid; }
@@ -178,7 +176,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [MergeField]
+        [DataMember]
         public virtual string UrlEncodedKey
         {
             get
@@ -186,6 +184,7 @@ namespace Rock.Data
                 string encodedKey = System.Web.HttpUtility.UrlEncode( EncryptedKey );
                 return encodedKey.Replace( '%', '!' );
             }
+            private set { }
         }
 
         #endregion
@@ -270,12 +269,38 @@ namespace Rock.Data
         /// <returns>DotLiquid compatible dictionary.</returns>
         public virtual object ToLiquid()
         {
+            return this.ToLiquid( false );
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public virtual object ToLiquid(bool debug = false)
+        {
             var dictionary = new Dictionary<string, object>();
 
-            foreach ( var propInfo in this.GetType().GetProperties() )
+            Type entityType = this.GetType();
+            if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
+                entityType = entityType.BaseType;
+
+            foreach ( var propInfo in entityType.GetProperties() )
             {
-                if ( propInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
-                    dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
+                if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                {
+                    object propValue = propInfo.GetValue( this, null );
+                    if ( debug && propValue is DotLiquid.ILiquidizable )
+                    {
+                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
+                    }
+                    else
+                    {
+                        dictionary.Add( propInfo.Name, propValue );
+                    }
+                }
             }
 
             return dictionary;

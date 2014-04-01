@@ -248,12 +248,24 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// To the liquid.
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>DotLiquid compatible dictionary.</returns>
         public override object ToLiquid()
         {
-            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
+            return this.ToLiquid( false );
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug = false )
+        {
+            Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
             this.LoadAttributes();
             foreach ( var attribute in this.Attributes )
@@ -285,7 +297,6 @@ namespace Rock.Data
         /// The attributes.
         /// </value>
         [NotMapped]
-        [DataMember]
         public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -296,7 +307,6 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
-        [DataMember]
         public virtual Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>

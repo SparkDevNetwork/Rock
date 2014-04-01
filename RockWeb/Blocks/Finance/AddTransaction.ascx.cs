@@ -867,10 +867,12 @@ achieve our mission.  We are so grateful for your commitment.
                             !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                             !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                         {
-                            var personMatches = personService.GetByEmail( txtEmail.Text ).Where( p =>
-                                p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
-                                ( p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ||
-                                p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) );
+                            var personMatches = personService.GetByEmail( txtEmail.Text )
+                                .Where( p =>
+                                    p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
+                                    ( p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ||
+                                        p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) )
+                                .ToList();
                             if ( personMatches.Count() == 1 )
                             {
                                 person = personMatches.FirstOrDefault();

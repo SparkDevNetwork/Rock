@@ -37,7 +37,6 @@ namespace Rock.Model
 
         #region Entity Properties
 
-
         /// <summary>
         /// Gets or sets the FinancialAccountId of the parent FinancialAccount to this FinancialAccount. If this
         /// FinancialAccount does not have a parent, this property will be null.

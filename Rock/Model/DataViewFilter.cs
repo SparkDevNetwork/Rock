@@ -125,6 +125,10 @@ namespace Rock.Model
         }
         private ICollection<DataViewFilter> _filters;
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Determines whether the specified action is authorized.
         /// </summary>
@@ -165,11 +169,7 @@ namespace Rock.Model
 
             return authorized;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
         /// </summary>

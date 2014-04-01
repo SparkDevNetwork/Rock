@@ -114,16 +114,6 @@ namespace Rock.Model
         [DataMember]
         public int? StorageEntityTypeId { get; private set; }
 
-        /// <summary>
-        /// Sets the type of the storage entity.
-        /// Should only be set by the BinaryFileService
-        /// </summary>
-        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
-        public void SetStorageEntityTypeId( int? storageEntityTypeId)
-        {
-            StorageEntityTypeId = storageEntityTypeId;
-        }
-
         #endregion
 
         #region Virtual Properties
@@ -134,6 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileType"/> of the file.
         /// </value>
+        [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         /// <summary>
@@ -150,12 +141,23 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> representing the Storage Service that is being used.
         /// </value>
+        [DataMember]
         public virtual EntityType StorageEntityType { get; set; }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Sets the type of the storage entity.
+        /// Should only be set by the BinaryFileService
+        /// </summary>
+        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        public void SetStorageEntityTypeId( int? storageEntityTypeId )
+        {
+            StorageEntityTypeId = storageEntityTypeId;
+        }
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the name of the file and  represents this instance.
         /// </summary>

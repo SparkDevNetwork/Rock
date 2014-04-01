@@ -110,7 +110,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
-        [DataMember]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -119,7 +118,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
-        [DataMember]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

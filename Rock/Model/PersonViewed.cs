@@ -34,6 +34,9 @@ namespace Rock.Model
     [DataContract]
     public partial class PersonViewed : Entity<PersonViewed>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that was the viewer.
         /// </summary>
@@ -80,7 +83,11 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string Source { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> entity of the viewer.
         /// </summary>
@@ -97,6 +104,10 @@ namespace Rock.Model
         /// </value>
         public virtual PersonAlias TargetPersonAlias { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -109,8 +120,13 @@ namespace Rock.Model
                 ( ( ViewerPersonAlias != null && ViewerPersonAlias.Person != null ) ? ViewerPersonAlias.Person.ToStringSafe() : ViewerPersonAliasId.ToString() ),
                 ( ( TargetPersonAlias != null && TargetPersonAlias.Person != null ) ? TargetPersonAlias.Person.ToStringSafe() : TargetPersonAliasId.ToString() ) );
         }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Person Viewed Configuration class.
     /// </summary>
@@ -125,4 +141,7 @@ namespace Rock.Model
             this.HasOptional( p => p.TargetPersonAlias ).WithMany().HasForeignKey( p => p.TargetPersonAliasId ).WillCascadeOnDelete(false);
         }
     }
+
+    #endregion
+
 }

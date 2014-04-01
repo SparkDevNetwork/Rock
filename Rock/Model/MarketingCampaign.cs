@@ -31,13 +31,15 @@ namespace Rock.Model
     [DataContract]
     public partial class MarketingCampaign : Model<MarketingCampaign>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the title of the marketing campaign. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the title of the Marketing Campaign.
         /// </value>
-        [MergeField]
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
@@ -59,7 +61,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the email address of the contact. If the contact does not have an email address, this value will be null.
         /// </value>
-        [MergeField]
         [MaxLength( 254 )]
         [DataMember]
         [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Contact Email address is invalid")]
@@ -71,7 +72,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the contact phone number.
         /// </value>
-        [MergeField]
         [MaxLength( 20 )]
         [DataMember]
         public string ContactPhoneNumber { get; set; }
@@ -82,11 +82,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of the contact.
         /// </value>
-        [MergeField]
         [MaxLength( 152 )]
         [DataMember]
         public string ContactFullName { get; set; }
-
 
         /// <summary>
         /// Gets or sets the GroupId of the Event <see cref="Rock.Model.Group"/> that is associated with this Marketing Campaign. If an event group is not associated with this campaign, 
@@ -98,13 +96,16 @@ namespace Rock.Model
         [DataMember]
         public int? EventGroupId { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the contact <see cref="Rock.Model.Person"/> if the contact is external or not in Rock, this value will be null.
         /// </summary>
         /// <value>
         /// The contact <see cref="Rock.Model.Person"/> for the marketing Campaign.
         /// </value>
-        [MergeField]
         [DataMember]
         public virtual Person ContactPerson { get; set; }
 
@@ -114,8 +115,6 @@ namespace Rock.Model
         /// <value>
         /// The event <see cref="Rock.Model.Group"/> that is associated with this Marketing Campaign. If a group is not associated with this Marketing Campaign this value will be null.
         /// </value>
-        [MergeField]
-        [DataMember]
         public virtual Group EventGroup { get; set; }
 
         /// <summary>
@@ -124,7 +123,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.MarketingCampaignAd">MarketingCampaignAds</see> that belong to this Marketing Campaign.
         /// </value>
-        [DataMember]
         public virtual ICollection<MarketingCampaignAd> MarketingCampaignAds { get; set; }
 
         /// <summary>
@@ -145,6 +143,10 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
 
+        #endregion
+
+        #region Methods
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Marketing Campaign
         /// </summary>
@@ -155,8 +157,13 @@ namespace Rock.Model
         {
             return this.Title;
         }
+
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// 
     /// </summary>
@@ -171,4 +178,7 @@ namespace Rock.Model
             this.HasOptional( p => p.EventGroup ).WithMany().HasForeignKey( p => p.EventGroupId).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }
