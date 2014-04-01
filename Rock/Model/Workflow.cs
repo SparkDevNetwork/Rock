@@ -132,12 +132,15 @@ namespace Rock.Model
         /// <value>
         ///  A <see cref="System.Boolean"/> value that is <c>true</c> if this Workflow instance is active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
+        [NotMapped]
         public virtual bool IsActive
         {
             get
             {
                 return ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
+            private set { }
         }
 
         /// <summary>

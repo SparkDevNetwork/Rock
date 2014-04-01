@@ -94,7 +94,6 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public int Order { get; set; }
         
         /// <summary>
@@ -106,7 +105,6 @@ namespace Rock.Model
         [Required( ErrorMessage = "Name is required" )]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public string Name { get; set; }
 
         /// <summary>
@@ -116,7 +114,6 @@ namespace Rock.Model
         /// The description.
         /// </value>
         [DataMember]
-        [MergeField]
         public string Description { get; set; }
         
         /// <summary>
@@ -126,7 +123,6 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
         /// </value>
         [DataMember]
-        [MergeField]
         public string IconCssClass { get; set; }
 
         #endregion
@@ -156,6 +152,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> that can use this Category.
         /// </value>
+        [DataMember]
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>

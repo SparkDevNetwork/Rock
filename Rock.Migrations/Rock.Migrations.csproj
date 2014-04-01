@@ -796,6 +796,10 @@
     <Compile Include="Migrations\201403300445046_BinaryFileSecurity.Designer.cs">
       <DependentUpon>201403300445046_BinaryFileSecurity.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403311909020_GroupMapStyles.cs" />
+    <Compile Include="Migrations\201403311909020_GroupMapStyles.Designer.cs">
+      <DependentUpon>201403311909020_GroupMapStyles.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1373,6 +1377,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403300445046_BinaryFileSecurity.resx">
       <DependentUpon>201403300445046_BinaryFileSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403311909020_GroupMapStyles.resx">
+      <DependentUpon>201403311909020_GroupMapStyles.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -18,6 +18,7 @@ using System;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
+using Rock;
 using Rock.Model;
 using Rock.Security;
 
@@ -205,7 +206,13 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static DefinedValueCache Read( string guid )
         {
-            return Read( new Guid( guid ) );
+            Guid realGuid = guid.AsGuid();
+            if ( realGuid.Equals( Guid.Empty ) )
+            {
+                return null;
+            }
+
+            return Read( realGuid );
         }
 
         /// <summary>

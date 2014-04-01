@@ -30,10 +30,10 @@ namespace Rock.PersonProfile.Badge
     /// </summary>
     [Description( "Liquid Badge" )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata("ComponentName", "Liquid Badge")]
+    [ExportMetadata( "ComponentName", "Liquid Badge" )]
 
-    [CodeEditorField( "Display Text", "The text (or html) to display as a badge",CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200 )]
-    [BooleanField("Enable Debug", "Outputs the object graph to help create your liquid syntax.", false)]
+    [CodeEditorField( "Display Text", "The text (or html) to display as a badge", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200 )]
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false )]
     public class Liquid : BadgeComponent
     {
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.PersonProfile.Badge
                             <pre id='badge-debug' class='collapse well badge-debug'>
                                 {0}
                             </pre>
-                        ", Person.ToJson() );
+                        ", Person.ToLiquid( true ).ToJson() );
 
                     displayText += debugInfo;
                 }

@@ -156,15 +156,15 @@
                 exit: 480
             }, {
                 label: 'sm',
-                enter: 480,
-                exit: 768
+                enter: 481,
+                exit: 767
             }, {
                 label: 'md',
                 enter: 768,
-                exit: 992
+                exit: 991
             }, {
                 label: 'lg',
-                enter: 992,
+                enter: 991,
                 exit: 10000
             }
         ]);
@@ -180,7 +180,7 @@
         });
 
         jRes.addFunc({
-            breakpoint: 'md',
+            breakpoint: 'sm',
             enter: function () {
                 jPM.on();
             },

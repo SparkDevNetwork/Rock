@@ -88,7 +88,14 @@ namespace Rock.Reporting.DataFilter.Group
         /// </value>
         public override string GetClientFormatSelection( Type entityType )
         {
-            return @"'Age ' + $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' ) ";
+            return @"
+function () {
+    var result = 'Number of Members ';
+    result += $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' );
+    return result; 
+}
+
+";
         }
 
         /// <summary>
@@ -102,18 +109,18 @@ namespace Rock.Reporting.DataFilter.Group
             var values = selection.Split( '|' );
             if ( values.Length == 1 )
             {
-                return string.Format( "Member count is {0}", values[0] );
+                return string.Format( "Number of Members is {0}", values[3] );
             }
             else if ( values.Length >= 2 )
             {
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
                 if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
                 {
-                    return string.Format( "Member count {0}", comparisonType.ConvertToString() );
+                    return string.Format( "Number of Members {0}", comparisonType.ConvertToString() );
                 }
                 else
                 {
-                    return string.Format( "Member count {0} '{1}'", comparisonType.ConvertToString(), values[1] );
+                    return string.Format( "Number of Members {0} '{1}'", comparisonType.ConvertToString(), values[1] );
                 }
             }
             else
@@ -131,18 +138,18 @@ namespace Rock.Reporting.DataFilter.Group
             var controls = new List<Control>();
 
             var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
-            ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            ddlIntegerCompare.ID = string.Format( "{0}_ddlIntegerCompare", filterControl.ID );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
             controls.Add( ddlIntegerCompare );
 
-            var numberBox = new NumberBox();
-            numberBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
-            numberBox.AddCssClass( "js-filter-control" );
-            filterControl.Controls.Add( numberBox );
-            controls.Add( numberBox );
+            var nbMemberCount = new NumberBox();
+            nbMemberCount.ID = string.Format( "{0}_nbMemberCount", filterControl.ID, controls.Count() );
+            nbMemberCount.AddCssClass( "js-filter-control" );
+            filterControl.Controls.Add( nbMemberCount );
+            controls.Add( nbMemberCount );
 
-            numberBox.FieldName = "Age";
+            nbMemberCount.FieldName = "Member Count";
 
             return controls.ToArray();
         }
@@ -156,13 +163,17 @@ namespace Rock.Reporting.DataFilter.Group
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            // Comparison Row
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Comparison Type
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
             writer.RenderEndTag();
 
+            // Comparison Value
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[1].RenderControl( writer );

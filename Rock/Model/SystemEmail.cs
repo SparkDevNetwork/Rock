@@ -32,6 +32,9 @@ namespace Rock.Model
     [DataContract]
     public partial class SystemEmail : Model<SystemEmail>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if the email template is part of the Rock core system/framework.
         /// </summary>
@@ -140,6 +143,13 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Body { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -150,8 +160,13 @@ namespace Rock.Model
         {
             return this.Title;
         }
+
+        #endregion
+
     }
-    
+
+    #region Entity Configuration
+        
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>
@@ -164,4 +179,7 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
 }

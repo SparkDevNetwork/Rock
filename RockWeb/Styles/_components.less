@@ -370,15 +370,14 @@ ul.rocktree ul {
     }
     
     ul {
-        list-style: none;
-
+        
         li {
             background-color: @pagelist-bg;
             border-radius: @border-radius-base;
             border: 1px solid #bbb;
             float: left;
-            margin: 0 2% @spacing-md-px 2%;
-            width: 20%;
+            margin: 0 1.25% @spacing-md-px;
+            width: 45%;
             overflow: hidden;
             color: @pagelist-text-color;
             text-align: center;
@@ -388,6 +387,17 @@ ul.rocktree ul {
                 color: inherit;
                 height: 80px;
                 padding: @spacing-md-px;
+            }
+        }
+    }
+}
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .page-list-as-blocks {
+        ul {
+            li {
+                margin: 0 2.5% @spacing-md-px;
+                width: 20%;
             }
         }
     }

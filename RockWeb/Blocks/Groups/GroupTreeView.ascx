@@ -12,31 +12,41 @@
 
         <div class="treeview">
             <div class="treeview-actions" id="divTreeviewActions" runat="server">
-                
+
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i> Add Group <span class="fa fa-caret-down"></span>
+                        <i class="fa fa-plus-circle"></i>
+                        <asp:Literal ID="ltAddCategory" runat="server" Text=" Add Group" />
+                        <span class="fa fa-caret-down"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
-                        <li><asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                        <li><asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                        <li>
+                            <asp:LinkButton ID="lbAddGroupRoot" OnClick="lbAddGroupRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                        <li>
+                            <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                     </ul>
                 </div>
 
             </div>
 
             <div class="treeview-scroll scroll-container scroll-container-horizontal">
-                
+
                 <div class="viewport">
                     <div class="overview">
                         <div class="panel-body treeview-frame">
                             <div id="treeview-content">
                             </div>
                         </div>
-                    
+
                     </div>
                 </div>
-                <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
+                <div class="scrollbar">
+                    <div class="track">
+                        <div class="thumb">
+                            <div class="end"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -74,12 +84,11 @@
                                 locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(/{groupId}/i, id);
                                 locationUrl += "?expandedIds=" + encodeURIComponent(expandedDataIds);
                             }
-                            else
-                            {
+                            else {
                                 locationUrl = window.location.href.split('?')[0] + groupSearch;
                                 locationUrl += "&expandedIds=" + encodeURIComponent(expandedDataIds);
                             }
-                            
+
                             window.location = locationUrl;
                         }
                     })

@@ -167,17 +167,21 @@ namespace RockWeb.Blocks.Communication
                     bPending.Visible = communicationItem.PendingRecipients > 0;
                     bPending.Text = communicationItem.PendingRecipients.ToString( "N0" );
 
-                    var bSuccess = e.Row.FindControl( "bSuccess" ) as Badge;
-                    bSuccess.Visible = communicationItem.SuccessRecipients > 0;
-                    bSuccess.Text = communicationItem.SuccessRecipients.ToString( "N0" );
-
-                    var bWarning = e.Row.FindControl( "bWarning" ) as Badge;
-                    bWarning.Visible = communicationItem.CancelledRecipients > 0;
-                    bWarning.Text = communicationItem.CancelledRecipients.ToString( "N0" );
+                    var bCancelled = e.Row.FindControl( "bCancelled" ) as Badge;
+                    bCancelled.Visible = communicationItem.CancelledRecipients > 0;
+                    bCancelled.Text = communicationItem.CancelledRecipients.ToString( "N0" );
 
                     var bFailed = e.Row.FindControl( "bFailed" ) as Badge;
                     bFailed.Visible = communicationItem.FailedRecipients > 0;
                     bFailed.Text = communicationItem.FailedRecipients.ToString( "N0" );
+
+                    var bSuccess = e.Row.FindControl( "bSuccess" ) as Badge;
+                    bSuccess.Visible = communicationItem.SuccessRecipients > 0;
+                    bSuccess.Text = communicationItem.SuccessRecipients.ToString( "N0" );
+
+                    var bOpened = e.Row.FindControl( "bOpened" ) as Badge;
+                    bOpened.Visible = communicationItem.OpenedRecipients > 0;
+                    bOpened.Text = communicationItem.OpenedRecipients.ToString( "N0" );
 
                     // Hide delete button if there are any successful recipients
                     e.Row.Cells[7].Controls[0].Visible = communicationItem.SuccessRecipients <= 0;
@@ -328,11 +332,25 @@ namespace RockWeb.Blocks.Communication
                     {
                         Id = c.Id,
                         Communication = c,
-                        Recipients = recipients.Where( r => r.CommunicationId == c.Id).Count(),
-                        PendingRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending).Count(),
-                        SuccessRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Success).Count(),
-                        FailedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed).Count(),
-                        CancelledRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled).Count()
+                        Recipients = recipients
+                            .Where( r => r.CommunicationId == c.Id)
+                            .Count(),
+                        PendingRecipients = recipients
+                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending)
+                            .Count(),
+                        CancelledRecipients = recipients
+                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled)
+                            .Count(),
+                        FailedRecipients = recipients
+                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
+                            .Count(),
+                        SuccessRecipients = recipients
+                            .Where( r => r.CommunicationId == c.Id && 
+                                (r.Status == CommunicationRecipientStatus.Success || r.Status == CommunicationRecipientStatus.Opened))
+                            .Count(),
+                        OpenedRecipients = recipients
+                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
+                            .Count()
                     } );
 
                 var sortProperty = gCommunication.SortProperty;
@@ -359,9 +377,10 @@ namespace RockWeb.Blocks.Communication
             public Rock.Model.Communication Communication { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }
-            public int SuccessRecipients { get; set; }
-            public int FailedRecipients { get; set; }
             public int CancelledRecipients { get; set; }
+            public int FailedRecipients { get; set; }
+            public int SuccessRecipients { get; set; }
+            public int OpenedRecipients { get; set; }
         }
 
     }

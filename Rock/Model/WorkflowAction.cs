@@ -81,7 +81,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivity"/> that contains this WorkflowAction.
         /// </value>
-        [DataMember]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
@@ -99,12 +98,15 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this WorkflowAction is active; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
+        [NotMapped]
         public virtual bool IsActive
         {
             get
             {
                 return !CompletedDateTime.HasValue;
             }
+            private set { }
         }
 
         /// <summary>

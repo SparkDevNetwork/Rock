@@ -32,6 +32,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Metric : Model<Metric>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this Metric is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -158,6 +161,10 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets a collection that contains all the <see cref="MetricValue">Metric Values</see> (values) for this Metric.
         /// </summary>
@@ -176,6 +183,10 @@ namespace Rock.Model
         [DataMember]
         public virtual Model.DefinedValue CollectionFrequencyValue { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Metric
         /// </summary>
@@ -186,7 +197,13 @@ namespace Rock.Model
         {
             return this.Title;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
+
     /// <summary>
     /// Metric Configuration class.
     /// </summary>
@@ -200,4 +217,7 @@ namespace Rock.Model
             this.HasOptional( p => p.CollectionFrequencyValue ).WithMany().HasForeignKey( p => p.CollectionFrequencyValueId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }
