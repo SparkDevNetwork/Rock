@@ -36,6 +36,15 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" SourceTypeName="Rock.Model.Report, Rock" PropertyName="FetchTop" Label="Record Count" MinimumValue="0" MaxLength="9"
+                            Help="Set this to limit the number of rows returned in the report. Leave blank to show all rows." />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+
                 <section class="panel panel-widget">
                     <header class="panel-heading clearfix">
                         <div class="pull-left">
@@ -121,7 +130,7 @@
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
                     if ($(this).find('.fa-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
-                        
+
                         // set hidden value of title
                         $(this).find('.js-header-title-hidden').val(title);
 
