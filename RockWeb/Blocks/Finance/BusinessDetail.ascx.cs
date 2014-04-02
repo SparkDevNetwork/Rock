@@ -65,51 +65,131 @@ namespace RockWeb.Blocks.Finance
 
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            var businessService = new PersonService();
-            var business = new Person();
-            business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-            business.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            business.FirstName = tbBusinessName.Text;
-            business.Email = tbEmailAddress.Text;
-            business.IsEmailActive = true;
-
-            var groupService = new GroupService();
-            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-            if ( familyGroupType != null )
+            using ( new UnitOfWorkScope() )
             {
-                var businessGroup = new Group();
-                businessGroup.GroupTypeId = familyGroupType.Id;
-                businessGroup.Name = tbBusinessName.Text + " Business";
-                businessGroup.CampusId = 1;   // **** This should be set to the value of a dropdown.
-                var groupMember = new GroupMember();
-                groupMember.Person = business;
-                groupMember.GroupRoleId = new GroupTypeRoleService( groupService.RockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
-                businessGroup.Members.Add( groupMember );
-                groupService.Add( businessGroup, CurrentPersonAlias );
-                groupService.Save( businessGroup, CurrentPersonAlias );
-                var personService = new PersonService( groupService.RockContext );
-                business = businessService.Get( groupMember.PersonId );
-                if ( business != null )
+                RockTransactionScope.WrapTransaction( () =>
                 {
-                    if ( !business.Aliases.Any( a => a.AliasPersonId == business.Id ) )
+                    var businessService = new PersonService();
+                    Person business = null;
+                    var businessId = int.Parse( hfBusinessId.Value );
+                    if ( businessId == 0 )
                     {
-                        business.Aliases.Add( new PersonAlias { AliasPersonId = business.Id, AliasPersonGuid = business.Guid } );
+                        business = new Person();
+                    }
+                    else
+                    {
+                        business = businessService.Get( businessId );
                     }
 
-                    business.GivingGroupId = businessGroup.Id;
-                    if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
-                    {
-                        var phoneNumber = new PhoneNumber();
-                        phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
-                        business.PhoneNumbers.Add( phoneNumber );
-                    }
-                    businessService.Save( business, CurrentPersonAlias );
-                }
+                    business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    business.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                    business.FirstName = tbBusinessName.Text;
+                    business.Email = tbEmailAddress.Text;
+                    business.IsEmailActive = true;
 
-                // Save the address
-                groupService.AddNewFamilyAddress( businessGroup, GetAttributeValue( "LocationType" ),
-                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
+                    var phoneNumber = business.PhoneNumbers.FirstOrDefault();
+                    if ( phoneNumber != null )
+                    {
+                        // The phone number already exists
+                        var phoneNumberService = new PhoneNumberService();
+                        business.PhoneNumbers.Remove(phoneNumber);
+                        phoneNumberService.Delete(phoneNumber, CurrentPersonAlias);
+                    }
+                    else
+                    {
+                        // Need a new phone number
+                        phoneNumber = new PhoneNumber();
+                    }
+
+                    phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                    business.PhoneNumbers.Add(phoneNumber);
+                } );
             }
+
+
+
+
+
+
+
+
+
+            //var groupService = new GroupService();
+            //var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            //if ( familyGroupType != null )
+            //{
+            //    Group businessGroup = null;
+            //    if ( business.GivingGroupId != null )
+            //    {
+            //        businessGroup = groupService.Get( (int)business.GivingGroupId );
+            //    }
+            //    else
+            //    {
+            //        businessGroup = new Group();
+            //    }
+            //    businessGroup.GroupTypeId = familyGroupType.Id;
+            //    businessGroup.Name = tbBusinessName.Text + " Business";
+            //    businessGroup.CampusId = 1;   // **** This should be set to the value of a dropdown.
+            //    GroupMember groupMember = null;
+            //    if ( businessGroup.Members.Count > 0 )
+            //    {
+            //        groupMember = businessGroup.Members.FirstOrDefault();
+            //    }
+            //    else
+            //    {
+            //        groupMember = new GroupMember();
+            //    }
+            //    groupMember.Person = business;
+            //    //groupMember.GroupRoleId = new GroupTypeRoleService( groupService.RockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            //    groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+            //    if ( businessId == 0 )
+            //    {
+            //        businessGroup.Members.Add( groupMember );
+            //        groupService.Add( businessGroup, CurrentPersonAlias );
+            //    }
+            //    groupService.Save( businessGroup, CurrentPersonAlias );
+            //    //var personService = new PersonService( groupService.RockContext );
+            //    //business = businessService.Get( groupMember.PersonId );
+            //    if ( business != null )
+            //    {
+            //        if ( !business.Aliases.Any( a => a.AliasPersonId == business.Id ) )
+            //        {
+            //            business.Aliases.Add( new PersonAlias { AliasPersonId = business.Id, AliasPersonGuid = business.Guid } );
+            //        }
+
+            //        business.GivingGroupId = businessGroup.Id;
+            //        if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+            //        {
+            //            var phoneNumber = new PhoneNumber();
+            //            phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+            //            if ( businessId != 0 )
+            //            {
+            //                var phoneNumberChanged = business.PhoneNumbers.FirstOrDefault().Number != phoneNumber.Number;
+            //                if ( phoneNumberChanged )
+            //                {
+            //                    var oldPhoneNumber = new PhoneNumber();
+            //                    oldPhoneNumber.Number = business.PhoneNumbers.FirstOrDefault().Number;
+            //                    business.PhoneNumbers.Remove( oldPhoneNumber );
+            //                }
+            //            }
+            //            business.PhoneNumbers.Add( phoneNumber );
+            //        }
+            //        businessService.Save( business, CurrentPersonAlias );
+            //    }
+
+            //    // Save the address
+            //    if ( businessId > 0 )
+            //    {
+            //        var locationService = new LocationService();
+            //        var businessAddress = locationService.Get( businessGroup.GroupLocations.Where( a => a.GroupId == businessGroup.Id ).FirstOrDefault().Location.Id );
+            //        var groupLocation = new GroupLocation();
+            //        groupLocation.Location = businessAddress;
+            //        businessGroup.GroupLocations.Remove( groupLocation );
+            //    }
+
+            //    groupService.AddNewFamilyAddress( businessGroup, GetAttributeValue( "LocationType" ),
+            //        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZipCode.Text, CurrentPersonAlias );
+            //}
 
             NavigateToParentPage();
         }
@@ -129,7 +209,8 @@ namespace RockWeb.Blocks.Finance
 
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-
+            var business = new PersonService().Get( int.Parse( hfBusinessId.Value ) );
+            ShowEditDetails( business );
         }
 
         #endregion
@@ -187,7 +268,6 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                //lbEdit.Visible = true;
                 if ( business.Id > 0 )
                 {
                     ShowSummary( business );
@@ -212,64 +292,41 @@ namespace RockWeb.Blocks.Finance
             var phoneNumberService = new PhoneNumberService();
             var businessPhone = phoneNumberService.GetByPersonId( business.Id ).FirstOrDefault();
 
-            lDetails.Text = new DescriptionList()
+            lDetailsLeft.Text = new DescriptionList()
                 .Add( "Title", business.FirstName )
                 .Add( "Address Line 1", businessAddress.Street1 )
                 .Add( "Address Line 2", businessAddress.Street2 )
                 .Add( "City", businessAddress.City )
                 .Add( "State", businessAddress.State )
                 .Add( "Zip Code", businessAddress.Zip )
+                .Html;
+
+            lDetailsRight.Text = new DescriptionList()
                 .Add( "Phone Number", businessPhone.NumberFormatted )
                 .Add( "Email Address", business.Email )
                 .Html;
-
-            //hfAccountId.SetValue( account.Id );
-            //lActionTitle.Text = account.Name.FormatAsHtmlTitle();
-            //hlInactive.Visible = !account.IsActive;
-            //lAccountDescription.Text = account.Description;
-
-            //DescriptionList descriptionList = new DescriptionList();
-            //descriptionList.Add( "", "" );
-            //lblMainDetails.Text = descriptionList.Html;
         }
-
-        //private void ShowSummary( FinancialBatch financialBatch )
-        //{
-        //    string batchDate = string.Empty;
-        //    if ( financialBatch.BatchStartDateTime != null )
-        //    {
-        //        batchDate = financialBatch.BatchStartDateTime.Value.ToShortDateString();
-        //    }
-
-        //    lTitle.Text = string.Format( "{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
-
-        //    SetEditMode( false );
-
-        //    string campus = string.Empty;
-        //    if ( financialBatch.CampusId.HasValue )
-        //    {
-        //        campus = financialBatch.Campus.ToString();
-        //    }
-
-        //    hfBatchId.SetValue( financialBatch.Id );
-        //    lDetailsLeft.Text = new DescriptionList()
-        //        .Add( "Title", financialBatch.Name )
-        //        .Add( "Status", financialBatch.Status.ToString() )
-        //        .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString( "MM/dd/yyyy" ) )
-        //        .Html;
-
-        //    lDetailsRight.Text = new DescriptionList()
-        //        .Add( "Control Amount", financialBatch.ControlAmount.ToString() )
-        //        .Add( "Campus", campus )
-        //        .Add( "Batch End Date", Convert.ToDateTime( financialBatch.BatchEndDateTime ).ToString( "MM/dd/yyyy" ) )
-        //        .Html;
-        //}
 
         private void ShowEditDetails( Person business )
         {
             if ( business.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
+                var groupService = new GroupService();
+                var businessGroup = groupService.Get( (int)business.GivingGroupId );
+                var locationService = new LocationService();
+                var businessAddress = locationService.Get( businessGroup.GroupLocations.Where( a => a.GroupId == businessGroup.Id ).FirstOrDefault().Location.Id );
+                var phoneNumberService = new PhoneNumberService();
+                var businessPhone = phoneNumberService.GetByPersonId( business.Id ).FirstOrDefault();
+
+                tbBusinessName.Text = business.FirstName;
+                tbStreet1.Text = businessAddress.Street1;
+                tbStreet2.Text = businessAddress.Street2;
+                tbCity.Text = businessAddress.City;
+                ddlState.SelectedValue = businessAddress.State;
+                tbZipCode.Text = businessAddress.Zip;
+                tbPhone.Text = businessPhone.NumberFormatted;
+                tbEmailAddress.Text = business.Email;
             }
             else
             {

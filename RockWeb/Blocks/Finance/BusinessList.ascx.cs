@@ -105,7 +105,10 @@ namespace RockWeb.Blocks.Finance
 
         protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-
+            var parms = new Dictionary<string, string>();
+            var businessId = (int)e.RowKeyValue;
+            parms.Add( "businessId", businessId.ToString() );
+            NavigateToLinkedPage( "DetailPage", parms );
         }
 
         protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
