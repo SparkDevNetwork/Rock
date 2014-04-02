@@ -44,7 +44,7 @@
                                 <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="5" />
                             </div>
                             <div class="col-lg-3">
-                                <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" TabIndex="6" />
+                                <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="6" />
                             </div>
                         </div>
                     </div>
@@ -61,15 +61,14 @@
                     <div class="col-md-12">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
-                        <asp:Literal ID="lDetails" runat="server" />
-                    </div>
-<%--                    <div class="col-md-6">
-                        <asp:Literal ID="lAddress" runat="server" />
+                        <asp:Literal ID="lDetailsLeft" runat="server" />
                     </div>
                     <div class="col-md-6">
-                        <asp:Literal ID="lContactInfo" runat="server" />
-                    </div>--%>
+                        <asp:Literal ID="lDetailsRight" runat="server" />
+                    </div>
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="lbEdit_Click" />
