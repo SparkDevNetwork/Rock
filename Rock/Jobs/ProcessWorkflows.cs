@@ -57,6 +57,7 @@ namespace Rock.Jobs
         /// </remarks>
         public virtual void Execute( IJobExecutionContext context )
         {
+            var rockContext
             var service = new WorkflowService();
 
             foreach ( var workflow in service.GetActive() )

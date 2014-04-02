@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Security
@@ -88,7 +89,8 @@ namespace Rock.Security
         {
             Authorizations = new Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
 
-            AuthService authService = new AuthService();
+            var rockContext = new RockContext();
+            AuthService authService = new AuthService( rockContext );
 
             foreach ( Auth auth in authService.Queryable().
                 OrderBy( A => A.EntityTypeId ).ThenBy( A => A.EntityId ).ThenBy( A => A.Action ).ThenBy( A => A.Order ) )
@@ -129,7 +131,8 @@ namespace Rock.Security
                             Authorizations[entityTypeId][entityId][action] = new List<AuthRule>();
 
                 // Find the Authrules for the given entity type, entity id, and action
-                AuthService authService = new AuthService();
+                var rockContext = new RockContext();
+                AuthService authService = new AuthService( rockContext );
                 foreach ( Auth auth in authService.GetAuths( entityTypeId, entityId, action ) )
                 {
                     if ( !Authorizations.ContainsKey( auth.EntityTypeId ) )
@@ -341,7 +344,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="personAlias">The person alias.</param>
-        public static void MakePrivate( ISecured entity, string action, Person person, PersonAlias personAlias )
+        public static void MakePrivate( ISecured entity, string action, Person person )
         {
             if ( !IsPrivate( entity, action, person ) )
             {
@@ -353,7 +356,8 @@ namespace Rock.Security
                         Load();
                     }
 
-                    var authService = new AuthService();
+                    var rockContext = new RockContext();
+                    var authService = new AuthService( rockContext );
 
                     // If there are not entries in the Authorizations object for this entity type and entity instance, create
                     // the dictionary entries
@@ -377,34 +381,35 @@ namespace Rock.Security
                         foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
                         {
                             var oldAuth = authService.Get( authRule.Id );
-                            authService.Delete( oldAuth, personAlias );
+                            authService.Delete( oldAuth );
                         }
                     }
 
                     var rules = new List<AuthRule>();
 
-                    Auth auth = new Auth();
-                    auth.EntityTypeId = entity.TypeId;
-                    auth.EntityId = entity.Id;
-                    auth.Order = 0;
-                    auth.Action = action;
-                    auth.AllowOrDeny = "A";
-                    auth.SpecialRole = SpecialRole.None;
-                    auth.PersonId = person.Id;
-                    authService.Add( auth, personAlias );
-                    authService.Save( auth, personAlias );
-                    rules.Add( new AuthRule( auth ) );
+                    Auth auth1 = new Auth();
+                    auth1.EntityTypeId = entity.TypeId;
+                    auth1.EntityId = entity.Id;
+                    auth1.Order = 0;
+                    auth1.Action = action;
+                    auth1.AllowOrDeny = "A";
+                    auth1.SpecialRole = SpecialRole.None;
+                    auth1.PersonId = person.Id;
+                    authService.Add( auth1 );
 
-                    auth = new Auth();
-                    auth.EntityTypeId = entity.TypeId;
-                    auth.EntityId = entity.Id;
-                    auth.Order = 1;
-                    auth.Action = action;
-                    auth.AllowOrDeny = "D";
-                    auth.SpecialRole = SpecialRole.AllUsers;
-                    authService.Add( auth, personAlias );
-                    authService.Save( auth, personAlias );
-                    rules.Add( new AuthRule( auth ) );
+                    Auth auth2 = new Auth();
+                    auth2.EntityTypeId = entity.TypeId;
+                    auth2.EntityId = entity.Id;
+                    auth2.Order = 1;
+                    auth2.Action = action;
+                    auth2.AllowOrDeny = "D";
+                    auth2.SpecialRole = SpecialRole.AllUsers;
+                    authService.Add( auth2 );
+
+                    rockContext.SaveChanges();
+
+                    rules.Add( new AuthRule( auth1 ) );
+                    rules.Add( new AuthRule( auth2 ) );
 
                     Authorizations[entity.TypeId][entity.Id][action] = rules;
                 }
@@ -418,18 +423,21 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="personAlias">The person alias.</param>
-        public static void MakeUnPrivate( ISecured entity, string action, Person person, PersonAlias personAlias )
+        public static void MakeUnPrivate( ISecured entity, string action, Person person )
         {
             if ( IsPrivate( entity, action, person ) )
             {
-                var authService = new AuthService();
+                var rockContext = new RockContext();
+                var authService = new AuthService( rockContext );
 
                 // if is private, then there are only two rules for this action that should be deleted
                 foreach ( AuthRule authRule in Authorizations[entity.TypeId][entity.Id][action] )
                 {
                     var oldAuth = authService.Get( authRule.Id );
-                    authService.Delete( oldAuth, personAlias );
+                    authService.Delete( oldAuth );
                 }
+
+                rockContext.SaveChanges();
 
                 Authorizations[entity.TypeId][entity.Id][action] = new List<AuthRule>();
             }
@@ -442,7 +450,7 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="personAlias">The person alias.</param>
-        public static void AllowPerson( ISecured entity, string action, Person person, PersonAlias personAlias )
+        public static void AllowPerson( ISecured entity, string action, Person person )
         {
             if ( person != null )
             {
@@ -452,7 +460,8 @@ namespace Rock.Security
                     Load();
                 }
 
-                var authService = new AuthService();
+                var rockContext = new RockContext();
+                var authService = new AuthService( rockContext );
 
                 // If there are not entries in the Authorizations object for this entity type and entity instance, create
                 // the dictionary entries
@@ -479,28 +488,25 @@ namespace Rock.Security
 
                 int order = 0;
 
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                {
-                    Auth auth = new Auth();
-                    auth.EntityTypeId = entity.TypeId;
-                    auth.EntityId = entity.Id;
-                    auth.Order = order++;
-                    auth.Action = action;
-                    auth.AllowOrDeny = "A";
-                    auth.SpecialRole = SpecialRole.None;
-                    auth.PersonId = person.Id;
-                    authService.Add( auth, personAlias );
-                    authService.Save( auth, personAlias );
+                Auth auth = new Auth();
+                auth.EntityTypeId = entity.TypeId;
+                auth.EntityId = entity.Id;
+                auth.Order = order++;
+                auth.Action = action;
+                auth.AllowOrDeny = "A";
+                auth.SpecialRole = SpecialRole.None;
+                auth.PersonId = person.Id;
+                authService.Add( auth );
 
-                    foreach(var rule in rules)
-                    {
-                        var existingAuth = authService.Get( rule.Id );
-                        existingAuth.Order = order++;
-                        authService.Save( existingAuth, personAlias );
-                    }
+                foreach(var rule in rules)
+                {
+                    var existingAuth = authService.Get( rule.Id );
+                    existingAuth.Order = order++;
+                }
+
+                rockContext.SaveChanges();
                 
-                    rules.Insert(0, new AuthRule( auth ) );
-                } );
+                rules.Insert(0, new AuthRule( auth ) );
             }
         }
 
@@ -574,7 +580,7 @@ namespace Rock.Security
         /// <param name="sourceEntity">The source entity.</param>
         /// <param name="targetEntity">The target entity.</param>
         /// <param name="personAlias">The person alias.</param>
-        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, PersonAlias personAlias)
+        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity )
         {
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
@@ -585,12 +591,13 @@ namespace Rock.Security
             var sourceEntityTypeId = sourceEntity.TypeId;
             var targetEntityTypeId = targetEntity.TypeId;
 
-            AuthService authService = new AuthService();
+            var rockContext = new RockContext();
+            AuthService authService = new AuthService( rockContext );
 
             // Delete the current authorizations for the target entity
             foreach ( Auth auth in authService.Get( targetEntityTypeId, targetEntity.Id ) )
             {
-                authService.Delete( auth, personAlias );
+                authService.Delete( auth );
             }
 
             Dictionary<string, List<AuthRule>> newActions = new Dictionary<string, List<AuthRule>>();
@@ -616,8 +623,7 @@ namespace Rock.Security
                             auth.PersonId = rule.PersonId;
                             auth.GroupId = rule.GroupId;
 
-                            authService.Add( auth, personAlias );
-                            authService.Save( auth, personAlias );
+                            authService.Add( auth );
 
                             newActions[action.Key].Add( new AuthRule( rule.Id, rule.EntityId, rule.AllowOrDeny, rule.SpecialRole, rule.PersonId, rule.GroupId, rule.Order ) );
 
@@ -626,6 +632,8 @@ namespace Rock.Security
                     }
                 }
             }
+
+            rockContext.SaveChanges();
 
             if ( !Authorizations.ContainsKey( targetEntityTypeId ) )
             {

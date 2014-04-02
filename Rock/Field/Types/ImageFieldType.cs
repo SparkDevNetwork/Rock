@@ -94,7 +94,7 @@ namespace Rock.Field.Types
                 int? binaryFileTypeId = configurationValues["binaryFileType"].Value.AsInteger();
                 if ( binaryFileTypeId.HasValue )
                 {
-                    var binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId.Value );
+                    var binaryFileType = new BinaryFileTypeService( ).Get( binaryFileTypeId.Value );
 
                     if ( binaryFileType != null )
                     {

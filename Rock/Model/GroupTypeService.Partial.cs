@@ -33,7 +33,7 @@ namespace Rock.Model
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
-            return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
+            return Queryable().Where( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
         {
-            return Repository.AsQueryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+            return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>
@@ -53,16 +53,14 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupType> GetParentGroupTypes( int groupTypeId )
         {
-            return Repository.AsQueryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+            return Queryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>
-        /// Verifies if the specified <see cref="Rock.Model.GroupType"/> can be deleted, and if so deletes it.
+        /// Deletes the specified item.
         /// </summary>
-        /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the <see cref="Rock.Model.GroupType"/> was able to be successfully deleted, otherwise <c>false</c>.</returns>
-        public override bool Delete( GroupType item, PersonAlias personAlias )
+        /// <param name="item">The item.</param>
+        public override bool Delete( GroupType item )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -70,11 +68,7 @@ namespace Rock.Model
                 return false;
             }
 
-            item.ChildGroupTypes.Clear();
-            this.Save( item, personAlias );
-
-            return base.Delete( item, personAlias );
+            return base.Delete( item );
         }
-
     }
 }

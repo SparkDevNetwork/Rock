@@ -249,7 +249,8 @@ namespace Rock.Web.Cache
         /// <param name="personAlias">The person alias.</param>
         public virtual void SaveAttributeValues( PersonAlias personAlias )
         {
-            var service = new Rock.Data.Service<T>();
+            var rockContext = new Rock.Data.RockContext();
+            var service = new Rock.Data.Service<T>( rockContext );
             var model = service.Get( this.Id );
 
             if ( model != null )

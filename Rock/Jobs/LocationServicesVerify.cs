@@ -63,8 +63,9 @@ namespace Rock.Jobs
             int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
 
             DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
-            
-            LocationService locationService = new LocationService();
+
+            var rockContext = new Rock.Data.RockContext();
+            LocationService locationService = new LocationService(rockContext);
             var addresses = locationService.Queryable()
                                 .Where( l => (
                                     (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
@@ -80,7 +81,7 @@ namespace Rock.Jobs
             foreach ( var address in addresses )
             {
                 locationService.Verify( address, null, false ); // currently not reverifying 
-                locationService.Save( address );
+                rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
 

@@ -56,6 +56,8 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext context )
         {
+            var rockContext = new Rock.Data.RockContext();
+
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
@@ -65,13 +67,14 @@ namespace Rock.Jobs
             {
                 DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
 
-                var userLoginService = new UserLoginService();
+                var userLoginService = new UserLoginService(rockContext);
 
                 foreach ( var user in userLoginService.Queryable().Where( u => u.IsConfirmed == false && ( u.CreatedDateTime ?? DateTime.MinValue ) < userAccountExpireDate ).ToList() )
                 {
-                    userLoginService.Delete( user, null );
-                    userLoginService.Save( user, null );
+                    userLoginService.Delete( user );
                 }
+
+                rockContext.SaveChanges();
             }
 
             // purge exception log
@@ -80,13 +83,14 @@ namespace Rock.Jobs
             {
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
 
-                ExceptionLogService exceptionLogService = new ExceptionLogService();
+                ExceptionLogService exceptionLogService = new ExceptionLogService( rockContext );
 
                 foreach ( var exception in exceptionLogService.Queryable().Where( e => e.CreatedDateTime.HasValue && e.CreatedDateTime < exceptionExpireDate ).ToList() )
                 {
-                    exceptionLogService.Delete( exception, null );
-                    exceptionLogService.Save( exception, null );
+                    exceptionLogService.Delete( exception );
                 }
+
+                rockContext.SaveChanges();
             }
 
             // purge audit log
@@ -94,12 +98,13 @@ namespace Rock.Jobs
             if ( auditExpireDays.HasValue )
             {
                 DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
-                AuditService auditService = new AuditService();
+                AuditService auditService = new AuditService(rockContext);
                 foreach ( var audit in auditService.Queryable().Where( a => a.DateTime < auditExpireDate ).ToList() )
                 {
-                    auditService.Delete( audit, null );
-                    auditService.Save( audit, null );
+                    auditService.Delete( audit );
                 }
+
+                rockContext.SaveChanges();
             }
 
             // clean the cached file directory
@@ -127,18 +132,18 @@ namespace Rock.Jobs
             }
 
             // clean out any temporary binary files
-            BinaryFileService binaryFileService = new BinaryFileService();
+            BinaryFileService binaryFileService = new BinaryFileService(rockContext);
             foreach ( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
             {
                 if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
                 {
-                    binaryFileService.Delete( binaryFile, null );
-                    binaryFileService.Save( binaryFile, null );
+                    binaryFileService.Delete( binaryFile );
                 }
             }
+            rockContext.SaveChanges();
 
             // Add any missing person aliases
-            PersonService personService = new PersonService();
+            PersonService personService = new PersonService(rockContext);
             foreach ( var person in personService.Queryable( "Aliases" )
                 .Where( p => !p.Aliases.Any() )
                 .Take( 300 ) )
@@ -146,7 +151,7 @@ namespace Rock.Jobs
                 person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
             }
 
-            personService.RockContext.SaveChanges();
+            rockContext.SaveChanges();
 
             // Add any missing metaphones
             int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger( false ) ?? 0;
@@ -157,7 +162,7 @@ namespace Rock.Jobs
                 var lastNameQry = personService.Queryable().Select( p => p.LastName );
                 var nameQry = firstNameQry.Union( nickNameQry.Union( lastNameQry ) );
 
-                var metaphones = personService.RockContext.Metaphones;
+                var metaphones = rockContext.Metaphones;
                 var existingNames = metaphones.Select( m => m.Name ).Distinct();
 
                 // Get the names that have not yet been processed
@@ -180,7 +185,7 @@ namespace Rock.Jobs
                     metaphones.Add( metaphone );
                 }
 
-                personService.RockContext.SaveChanges();
+                rockContext.SaveChanges();
             }
         }
 

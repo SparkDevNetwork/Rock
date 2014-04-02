@@ -36,12 +36,12 @@ namespace Rock.Model
         /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
         /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
         /// <returns>The activated <see cref="Rock.Model.Workflow"/> instance</returns>
-        public Workflow Activate( WorkflowType workflowType, string name, PersonAlias currentPersonAlias )
+        public Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = Workflow.Activate( workflowType, name );
 
-            this.Add( workflow, currentPersonAlias );
-            this.Save( workflow, currentPersonAlias );
+            this.Add( workflow );
+            this.Context.SaveChanges();
 
             return workflow;
         }
@@ -53,15 +53,15 @@ namespace Rock.Model
         /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
         /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
         /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow"/>.</param>
-        public void Process( Workflow workflow, PersonAlias currentPersonAlias, out List<string> errorMessages )
+        public void Process( Workflow workflow, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
-            this.Save( workflow, currentPersonAlias );
+            this.Context.SaveChanges();
 
             workflow.Process(out errorMessages); 
 
             workflow.IsProcessing = false;
-            this.Save( workflow, currentPersonAlias );
+            this.Context.SaveChanges();
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of active <see cref="Rock.Model.Workflow"/>entities ordered by LastProcessedDate.</returns>
         public IQueryable<Workflow> GetActive()
         {
-            return Repository.AsQueryable()
+            return this.Queryable()
                 .Where( w =>
                     w.ActivatedDateTime.HasValue &&
                     !w.CompletedDateTime.HasValue )

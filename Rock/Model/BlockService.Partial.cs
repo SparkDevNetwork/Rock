@@ -32,10 +32,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="blockTypeId">The Id of the <see cref="Rock.Model.BlockType"/> to search for.</param>
         /// <returns>An enumerable collection of <see cref="Block"/> entity objects that implemented the referenced <see cref="Rock.Model.BlockType"/>.</returns>
-        public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
+        public IQueryable<Block> GetByBlockTypeId( int blockTypeId )
         {
-            return Repository
-                .Find( t => t.BlockTypeId == blockTypeId )
+            return Queryable()
+                .Where( t => t.BlockTypeId == blockTypeId )
                 .OrderBy( t => t.Order );
         }
 
@@ -46,10 +46,10 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented as part of the provided site layout.
         /// </returns>
-        public IEnumerable<Block> GetByLayout( int layoutId )
+        public IQueryable<Block> GetByLayout( int layoutId )
         {
-            return Repository
-                .Find( t => t.LayoutId == layoutId)
+            return Queryable()
+                .Where( t => t.LayoutId == layoutId )
                 .OrderBy( t => t.Zone ).ThenBy( t => t.Order );
         }
 
@@ -61,10 +61,10 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Block">Blocks</see> that are implemented in a Zone of a <see cref="Rock.Model.Site"/> Layout.
         /// </returns>
-        public IEnumerable<Block> GetByLayoutAndZone( int layoutId, string zone )
+        public IQueryable<Block> GetByLayoutAndZone( int layoutId, string zone )
         {
-            return Repository
-                .Find( t => 
+            return Queryable()
+                .Where( t => 
                     t.LayoutId == layoutId && 
                     string.Compare(t.Zone, zone ) == 0)
                 .OrderBy( t => t.Order );
@@ -75,10 +75,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="pageId">An <see cref="System.Int32"/> representing the Id of a <see cref="Page"/> that a <see cref="Block"/> may be implemented on.</param>
         /// <returns>An enumerable collection of <see cref="Block">Blocks</see> that are implemented on the <see cref="Rock.Model.Page"/>.</returns>
-        public IEnumerable<Block> GetByPage( int pageId )
+        public IQueryable<Block> GetByPage( int pageId )
         {
-            return Repository
-                .Find( t => t.PageId == pageId )
+            return Queryable()
+                .Where( t => t.PageId == pageId )
                 .OrderBy( t => t.Order );
         }
 
@@ -88,10 +88,10 @@ namespace Rock.Model
         /// <param name="pageId">An <see cref="System.Int32"/> that represents the Id of <see cref="Rock.Model.Page"/> that a <see cref="Rock.Model.Block"/> may be implemented on.</param>
         /// <param name="zone">A <see cref="System.String"/> that represents the name of a page/layout zone that a <see cref="Rock.Model.Block"/> may be implemented on.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented in a specific Zone of a <see cref="Rock.Model.Page"/>.</returns>
-        public IEnumerable<Block> GetByPageAndZone( int pageId, string zone )
+        public IQueryable<Block> GetByPageAndZone( int pageId, string zone )
         {
-            return Repository
-                .Find( t =>
+            return Queryable()
+                .Where( t =>
                     t.PageId == pageId &&
                     string.Compare( t.Zone, zone ) == 0 )
                 .OrderBy( t => t.Order );

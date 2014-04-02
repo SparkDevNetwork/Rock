@@ -55,8 +55,10 @@ namespace Rock.Communication.Transport
         /// <param name="communication">The communication.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, PersonAlias currentPersonAlias )
+        public override void Send( Rock.Model.Communication communication )
         {
+            var rockContext = new RockContext();
+
             if ( GetAttributeValue( "UseSSL" ).AsBoolean() )
             {
                 serverPort = 465;
@@ -66,7 +68,7 @@ namespace Rock.Communication.Transport
 
             
             // Requery the Communication object
-            communication = new CommunicationService().Get( communication.Id );
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
@@ -120,7 +122,7 @@ namespace Rock.Communication.Transport
                 string attachmentIds = communication.GetChannelDataValue( "Attachments" );
                 if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                 {
-                    var binaryFileService = new BinaryFileService();
+                    var binaryFileService = new BinaryFileService( rockContext );
 
                     foreach(string idVal in attachmentIds.SplitDelimitedValues())
                     {
@@ -137,7 +139,7 @@ namespace Rock.Communication.Transport
                     }
                 }
 
-                var recipientService = new CommunicationRecipientService();
+                var recipientService = new CommunicationRecipientService( rockContext );
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
@@ -145,82 +147,80 @@ namespace Rock.Communication.Transport
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
-                    RockTransactionScope.WrapTransaction( () =>
+                    var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                    if ( recipient != null )
                     {
-                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
-                        if ( recipient != null )
+                        if ( string.IsNullOrWhiteSpace( recipient.Person.Email ) )
                         {
-                            if ( string.IsNullOrWhiteSpace( recipient.Person.Email ) )
-                            {
-                                recipient.Status = CommunicationRecipientStatus.Failed;
-                                recipient.StatusNote = "No Email Address";
-                            }
-                            else
-                            {
-                                message.To.Clear();
-                                message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
-
-                                // Create merge field dictionary
-                                var mergeObjects = MergeValues( globalConfigValues, recipient );
-
-                                message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
-
-                                string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
-                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
-                                string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
-
-                                // If there is unsubscribe html (would have been added by channel PreSend), inject it
-                                if (!string.IsNullOrWhiteSpace(htmlBody) && !string.IsNullOrWhiteSpace(unsubscribeHtml))
-                                {
-                                    string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
-                                    if (htmlBody != newHtml)
-                                    {
-                                        // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
-                                        htmlBody = newHtml;
-                                    }
-                                    else
-                                    {
-                                        // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
-                                        htmlBody += unsubscribeHtml;
-                                    }
-                                }
-
-                                // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
-                                if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                                {
-                                    plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
-                                    AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
-                                    message.AlternateViews.Add( plainTextView );
-                                }
-
-                                if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-                                {
-                                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-                                    htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     
-                                    htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-                                    htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
-                                    AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
-                                    message.AlternateViews.Add( htmlView );
-                                }
-
-                                try
-                                {
-                                    smtpClient.Send( message );
-                                    recipient.Status = CommunicationRecipientStatus.Success;
-                                }
-                                catch ( Exception ex )
-                                {
-                                    recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "SMTP Exception: " + ex.Message;
-                                }
-                            }
-                            recipientService.Save( recipient, currentPersonAlias );
+                            recipient.Status = CommunicationRecipientStatus.Failed;
+                            recipient.StatusNote = "No Email Address";
                         }
                         else
                         {
-                            recipientFound = false;
+                            message.To.Clear();
+                            message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
+
+                            // Create merge field dictionary
+                            var mergeObjects = MergeValues( globalConfigValues, recipient );
+
+                            message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
+
+                            string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
+                            string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
+                            string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
+
+                            // If there is unsubscribe html (would have been added by channel PreSend), inject it
+                            if ( !string.IsNullOrWhiteSpace( htmlBody ) && !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
+                            {
+                                string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
+                                if ( htmlBody != newHtml )
+                                {
+                                    // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
+                                    htmlBody = newHtml;
+                                }
+                                else
+                                {
+                                    // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
+                                    htmlBody += unsubscribeHtml;
+                                }
+                            }
+
+                            // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
+                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                            {
+                                plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                message.AlternateViews.Add( plainTextView );
+                            }
+
+                            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                            {
+                                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
+                                htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );
+                                htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
+                                htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
+                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                message.AlternateViews.Add( htmlView );
+                            }
+
+                            try
+                            {
+                                smtpClient.Send( message );
+                                recipient.Status = CommunicationRecipientStatus.Success;
+                            }
+                            catch ( Exception ex )
+                            {
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "SMTP Exception: " + ex.Message;
+                            }
                         }
-                    } );
+
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        recipientFound = false;
+                    }
                 }
             }
         }

@@ -32,9 +32,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="attributeId">A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Attribute"/> to retrieve <see cref="Rock.Model.AttributeQualifier"/>.</param>
         /// <returns>An enumerable collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> that the specified <see cref="Rock.Model.Attribute"/> uses.</returns>
-        public IEnumerable<AttributeQualifier> GetByAttributeId( int attributeId )
+        public IQueryable<AttributeQualifier> GetByAttributeId( int attributeId )
         {
-            return Repository.Find( t => t.AttributeId == attributeId );
+            return Queryable().Where( t => t.AttributeId == attributeId );
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.GroupTypeRole"/> with a SortOrder that matches the provided value.</returns>
         public IEnumerable<GroupTypeRole> GetBySortOrder( int? sortOrder )
         {
-            return Repository.Find( t => ( t.Order == sortOrder || ( sortOrder == null && t.Order == null ) ) );
+            return Queryable().Where( t => ( t.Order == sortOrder || ( sortOrder == null && t.Order == null ) ) );
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupTypeRole> GetByGroupTypeId (int groupTypeId)
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( r => r.GroupTypeId == groupTypeId )
                 .OrderBy( r => r.Order );
         }

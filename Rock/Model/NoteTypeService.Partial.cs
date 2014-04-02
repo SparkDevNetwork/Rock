@@ -31,7 +31,7 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.NoteType"/> matching the provided values. If a match is not found, this value will be null.</returns>
         public NoteType Get( int entityTypeId, string name )
         {
-            return Repository.FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
+            return Queryable().FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
         }
 
     }

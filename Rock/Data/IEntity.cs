@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Data
 {
@@ -97,5 +98,6 @@ namespace Rock.Data
         /// </summary>
         /// <returns></returns>
         IEntity Clone();
+
     }
 }

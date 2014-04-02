@@ -38,7 +38,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Tag">Tags</see> that match the provided criteria.</returns>
         public IQueryable<Tag> Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&
@@ -60,7 +60,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Tag"/> that matches the provided criteria. If a match is not found, null will be returned.</returns>
         public Tag Get( int entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? ownerId, string name )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t => t.EntityTypeId == entityTypeId &&
                     ( t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == "" || t.EntityTypeQualifierColumn == entityQualifierColumn ) &&
                     ( t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == "" || t.EntityTypeQualifierValue == entityQualifierValue ) &&

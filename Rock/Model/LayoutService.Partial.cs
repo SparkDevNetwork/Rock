@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Layout> GetBySiteId( int siteId )
         {
-            return Repository.AsQueryable().Where( l => l.SiteId == siteId ).OrderBy( l => l.Name );
+            return Queryable().Where( l => l.SiteId == siteId ).OrderBy( l => l.Name );
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="site">The site.</param>
         /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged in <see cref="Rock.Model.Person" />.</param>
-        public void RegisterLayouts( string physWebAppPath, SiteCache site, PersonAlias currentPersonAlias )
+        public static void RegisterLayouts( string physWebAppPath, SiteCache site )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -64,9 +64,12 @@ namespace Rock.Model
                 }
             }
 
+            var rockContext = new RockContext();
+            var layoutService = new LayoutService( rockContext );
+
             // Get a list of the layout filenames already registered 
-            var registered = GetBySiteId( site.Id ).Select( l => l.FileName ).Distinct().ToList();
-                
+            var registered = layoutService.GetBySiteId( site.Id ).Select( l => l.FileName ).Distinct().ToList();
+
             // for each unregistered layout
             foreach ( string layoutFile in layoutFiles.Except( registered, StringComparer.CurrentCultureIgnoreCase ) )
             {
@@ -77,9 +80,10 @@ namespace Rock.Model
                 layout.Name = layoutFile.SplitCase();
                 layout.Guid = new Guid();
 
-                this.Add( layout, currentPersonAlias );
-                this.Save( layout, currentPersonAlias );
+                layoutService.Add( layout );
             }
+
+            rockContext.SaveChanges();
         }
 
     }

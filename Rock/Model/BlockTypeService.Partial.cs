@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>
         public BlockType GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
 
 
@@ -45,9 +45,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="name">A <see cref="System.String"/> containing the Name filter to search for. </param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.BlockType"/> entities who's Name property matches the search criteria.</returns>
-        public IEnumerable<BlockType> GetByName( string name )
+        public IQueryable<BlockType> GetByName( string name )
         {
-            return Repository.Find( t => t.Name == name );
+            return Queryable().Where( t => t.Name == name );
         }
 
 
@@ -56,9 +56,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="path">A <see cref="System.String"/> containing the path to search for.</param>
         /// <returns>A collection of <see cref="Rock.Model.BlockType"/> entities who's Path property matches the search criteria.</returns>
-        public IEnumerable<BlockType> GetByPath( string path )
+        public IQueryable<BlockType> GetByPath( string path )
         {
-            return Repository.Find( t => t.Path == path );
+            return Queryable().Where( t => t.Path == path );
         }
 
         /// <summary>
@@ -68,8 +68,9 @@ namespace Rock.Model
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged on <see cref="Rock.Model.Person" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, PersonAlias personAlias, bool refreshAll = false)
+        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
         {
+
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
 
@@ -80,7 +81,9 @@ namespace Rock.Model
             FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
             // Get a list of the BlockTypes already registered (via the path)
-            var registered = Repository.GetAll();
+            var rockContext = new RockContext();
+            var blockTypeService = new BlockTypeService( rockContext );
+            var registered =  blockTypeService.Queryable();
 
             // for each BlockType
             foreach ( string path in list.Keys)
@@ -98,7 +101,7 @@ namespace Rock.Model
                             blockType = new BlockType();
                             blockType.Path = path;
                             blockType.Guid = new Guid();
-                            this.Add( blockType, personAlias );
+                            blockTypeService.Add( blockType );
                         }
 
                         Type controlType = control.GetType();
@@ -125,11 +128,10 @@ namespace Rock.Model
                         }
                         blockType.Category = Rock.Reflection.GetCategory( controlType ) ?? string.Empty;
                         blockType.Description = Rock.Reflection.GetDescription( controlType ) ?? string.Empty;
-
-                        this.Save( blockType, personAlias );
                     }
                 }
             }
+            rockContext.SaveChanges();
         }
 
         /// <summary>

@@ -255,6 +255,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     pageService.Save( page, CurrentPersonAlias );
 
+                    PageCache.Flush( page.Id );
                     if ( _page != null )
                     {
                         Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonAlias );

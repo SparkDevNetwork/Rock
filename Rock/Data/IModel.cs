@@ -77,5 +77,10 @@ namespace Rock.Data
         /// The modified by person alias.
         /// </value>
         PersonAlias ModifiedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved
+        /// </summary>
+        void PreSave( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state );
     }
 }

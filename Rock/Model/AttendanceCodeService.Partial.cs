@@ -31,11 +31,12 @@ namespace Rock.Model
         /// <summary>
         /// An array of characters that can be used as a part of  <see cref="Rock.Model.AttendanceCode">AttendanceCodes</see>
         /// </summary>
-        private char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
+        private static char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
+
         /// <summary>
         /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
         /// </summary>
-        private List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
+        private static List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that used a specified code on a specified date.
@@ -47,7 +48,7 @@ namespace Rock.Model
         {
             DateTime today = day.Date;
             DateTime tomorrow = today.AddDays( 1 );
-            return Repository.AsQueryable().Where( c => c.Code == code && c.IssueDateTime <= today && c.IssueDateTime < tomorrow);
+            return Queryable().Where( c => c.Code == code && c.IssueDateTime <= today && c.IssueDateTime < tomorrow);
         }
 
         /// <summary>
@@ -55,11 +56,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="codeLength">A <see cref="System.Int32"/> representing the length of the (security) code.</param>
         /// <returns>A new <see cref="Rock.Model.AttendanceCode"/></returns>
-        public AttendanceCode GetNew(int codeLength = 3)
+        public static AttendanceCode GetNew(int codeLength = 3)
         {
             string code = string.Empty;
 
             var attendanceCode = new AttendanceCode();
+
+            var rockContext = new Rock.Data.RockContext();
+            var service = new AttendanceCodeService( rockContext );
 
             // Make sure only one instance at a time is checking for unique code
             lock (obj)
@@ -67,15 +71,15 @@ namespace Rock.Model
                 // Find a good unique code for today
                 while ( code == string.Empty ||
                     noGood.Any( s => s == code ) ||
-                    Get( RockDateTime.Today, code ).Any() )
+                    service.Get( RockDateTime.Today, code ).Any() )
                 {
                     code = GenerateRandomCode( codeLength );
                 }
 
                 attendanceCode.IssueDateTime = RockDateTime.Now;
                 attendanceCode.Code = code;
-                this.Add( attendanceCode );
-                this.Save( attendanceCode );
+                service.Add( attendanceCode );
+                rockContext.SaveChanges();
             }
 
             return attendanceCode;
@@ -86,7 +90,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="length">A <see cref="System.Int32"/> representing the length that the code needs to be.</param>
         /// <returns>A <see cref="System.String"/> representing the (security) code.</returns>
-        private string GenerateRandomCode( int length )
+        private static string GenerateRandomCode( int length )
         {
             StringBuilder sb = new StringBuilder();
             Random rnd = new Random();

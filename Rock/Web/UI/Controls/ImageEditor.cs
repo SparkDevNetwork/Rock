@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -445,7 +446,8 @@ namespace Rock.Web.UI.Controls
         {
             try
             {
-                BinaryFileService binaryFileService = new BinaryFileService();
+                var rockContext = new RockContext();
+                BinaryFileService binaryFileService = new BinaryFileService(rockContext);
 
                 // load image from database
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
@@ -462,8 +464,9 @@ namespace Rock.Web.UI.Controls
                     croppedBinaryFile.Data = new BinaryFileData();
                     croppedBinaryFile.Data.Content = croppedImage;
 
-                    binaryFileService.Add( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
-                    binaryFileService.Save( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                    binaryFileService.Add( croppedBinaryFile );
+                    rockContext.SaveChanges();
+
                     this.BinaryFileId = croppedBinaryFile.Id;
                 }
 
@@ -576,7 +579,7 @@ namespace Rock.Web.UI.Controls
 
             _nbImageWarning.Visible = false;
             _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + CropBinaryFileId;
-            var binaryFile = new BinaryFileService().Get( CropBinaryFileId ?? 0 );
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )

@@ -39,7 +39,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
-            var qry = Repository.AsQueryable( "ScheduledTransactionDetails" )
+            var qry = Queryable( "ScheduledTransactionDetails" )
                 .Where( t => t.IsActive || includeInactive );
 
             if ( givingGroupId.HasValue )
@@ -63,30 +63,26 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t => t.GatewayScheduleId == scheduleId)
                 .FirstOrDefault();
         }
 
         /// <summary>
-        /// Updates the status.
+        /// Sets the status.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool UpdateStatus(FinancialScheduledTransaction scheduledTransaction, PersonAlias currentPersonAlias, out string errorMessages)
+        public bool GetStatus(FinancialScheduledTransaction scheduledTransaction, out string errorMessages)
         {
             if ( scheduledTransaction.GatewayEntityType != null )
             {
                 var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
                 if ( gateway != null && gateway.IsActive )
                 {
-                    if ( gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages ) )
-                    {
-                        Save( scheduledTransaction, currentPersonAlias );
-                        return true;
-                    }
+                    return gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
                 }
             }
 

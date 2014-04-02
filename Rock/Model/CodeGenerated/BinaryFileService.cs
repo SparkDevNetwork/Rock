@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileService"/> class
         /// </summary>
-        public BinaryFileService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public BinaryFileService(IRepository<BinaryFile> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public BinaryFileService(RockContext context) : base(context)
         {
@@ -68,13 +52,13 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.BinaryFileId == item.Id ) )
+            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Person>().Queryable().Any( a => a.PhotoId == item.Id ) )
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;

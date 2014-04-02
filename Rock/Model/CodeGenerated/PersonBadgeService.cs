@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonBadgeService"/> class
         /// </summary>
-        public PersonBadgeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonBadgeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PersonBadgeService(IRepository<PersonBadge> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonBadgeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PersonBadgeService(RockContext context) : base(context)
         {

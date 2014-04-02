@@ -64,7 +64,8 @@ namespace Rock.Jobs
         {
             var scheduler = context.Scheduler;
 
-            ServiceJobService jobService = new ServiceJobService();
+            var rockContext = new Rock.Data.RockContext();
+            ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
             List<Quartz.JobKey> scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).ToList();
 
@@ -92,10 +93,10 @@ namespace Rock.Jobs
                     string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
                     job.LastStatusMessage = message;
                     job.LastStatus = "Error Loading Job";
-
-                    jobService.Save( job, null );
                 }
             }
+
+            rockContext.SaveChanges();
 
             // reload the jobs in case any where added/removed
             scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).ToList();
