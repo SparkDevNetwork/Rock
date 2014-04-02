@@ -44,7 +44,7 @@ namespace Rock.Model
             return Queryable()
                 .Where( g =>
                     g.LocationId == locationId &&
-                    g.Group.IsActive ).ToList();
+                    g.Group.IsActive );
 
         }
 

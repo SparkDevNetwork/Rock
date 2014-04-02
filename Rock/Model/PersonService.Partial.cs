@@ -705,8 +705,7 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting. </param>
         /// <param name="values">A list of <see cref="System.String"/> values representing the value of the preference setting.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public static void SaveUserPreference( Person person, string key, List<string> values, PersonAlias personAlias )
+        public static void SaveUserPreference( Person person, string key, List<string> values )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 

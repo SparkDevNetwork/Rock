@@ -467,11 +467,11 @@ namespace Rock.Web.UI
         /// Saves the block attribute values.
         /// </summary>
         /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveAttributeValues( PersonAlias currentPersonAlias )
+        public void SaveAttributeValues()
         {
             if ( _blockCache != null )
             {
-                _blockCache.SaveAttributeValues( currentPersonAlias );
+                _blockCache.SaveAttributeValues();
             }
         }
 

@@ -49,10 +49,12 @@ namespace Rock.Communication.Transport
         /// <param name="communication">The communication.</param>
         /// <param name="CurrentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias )
+        public override void Send( Rock.Model.Communication communication )
         {
+            var rockContext = new RockContext();
+
             // Requery the Communication
-            communication = new CommunicationService().Get( communication.Id );
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
@@ -73,56 +75,54 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     var twilio = new TwilioRestClient( accountSid, authToken );
 
-                    var recipientService = new CommunicationRecipientService();
+                    var recipientService = new CommunicationRecipientService( rockContext );
 
                     var globalConfigValues = GlobalAttributesCache.GetMergeFields( null );
 
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        RockTransactionScope.WrapTransaction( () =>
+                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                        if ( recipient != null )
                         {
-                            var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
-                            if ( recipient != null )
+                            var phoneNumber = recipient.Person.PhoneNumbers
+                                .Where( p => p.IsMessagingEnabled )
+                                .FirstOrDefault();
+
+                            if ( phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.Number))
                             {
-                                var phoneNumber = recipient.Person.PhoneNumbers
-                                    .Where( p => p.IsMessagingEnabled )
-                                    .FirstOrDefault();
-
-                                if ( phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.Number))
-                                {
-                                    recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "No Phone Number with Messaging Enabled";
-                                }
-                                else
-                                {
-                                    // Create merge field dictionary
-                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
-                                    string subject = communication.Subject.ResolveMergeFields( mergeObjects );
-                                    string twillioNumber = phoneNumber.Number;
-                                    if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
-                                    {
-                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                    }
-
-                                    try
-                                    {
-                                        twilio.SendMessage( fromPhone, twillioNumber, subject );
-                                        recipient.Status = CommunicationRecipientStatus.Success;
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "Twilio Exception: " + ex.Message;
-                                    }
-                                }
-                                recipientService.Save( recipient, CurrentPersonAlias );
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "No Phone Number with Messaging Enabled";
                             }
                             else
                             {
-                                recipientFound = false;
+                                // Create merge field dictionary
+                                var mergeObjects = MergeValues( globalConfigValues, recipient );
+                                string subject = communication.Subject.ResolveMergeFields( mergeObjects );
+                                string twillioNumber = phoneNumber.Number;
+                                if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
+                                {
+                                    twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                }
+
+                                try
+                                {
+                                    twilio.SendMessage( fromPhone, twillioNumber, subject );
+                                    recipient.Status = CommunicationRecipientStatus.Success;
+                                }
+                                catch ( Exception ex )
+                                {
+                                    recipient.Status = CommunicationRecipientStatus.Failed;
+                                    recipient.StatusNote = "Twilio Exception: " + ex.Message;
+                                }
                             }
-                        } );
+
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            recipientFound = false;
+                        }
                     }
                 }
             }

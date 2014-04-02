@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
             Guid workflowTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out workflowTypeGuid ))
             {
-                var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
+                var workflowtype = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
                 if ( workflowtype != null )
                 {
                     formattedValue = workflowtype.Name;
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
                 int id = int.MinValue;
                 if ( Int32.TryParse( ( (WorkflowTypePicker)control ).SelectedValue, out id ) )
                 {
-                    var workflowtype = new WorkflowTypeService().Get( id );
+                    var workflowtype = new WorkflowTypeService( new RockContext() ).Get( id );
                     if ( workflowtype != null )
                     {
                         return workflowtype.Guid.ToString();
@@ -107,7 +107,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is WorkflowTypePicker )
                 {
-                    var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
+                    var workflowtype = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
                     if ( workflowtype != null )
                     {
                         ( (WorkflowTypePicker)control ).SetValue( workflowtype.Id.ToString() );

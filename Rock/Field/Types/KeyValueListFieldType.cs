@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace Rock.Field.Types
 {
@@ -81,7 +82,7 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.DataTextField = "Name";
             ddl.DataValueField = "Id";
-            ddl.DataSource = new Rock.Model.DefinedTypeService().Queryable().OrderBy( d => d.Order ).ToList();
+            ddl.DataSource = new Rock.Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
             ddl.DataBind();
             ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
             ddl.Label = "Defined Type";

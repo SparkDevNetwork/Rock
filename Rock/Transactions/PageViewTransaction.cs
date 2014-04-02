@@ -18,6 +18,7 @@ using System;
 using System.IO;
 using Rock.Model;
 using System.Text.RegularExpressions;
+using Rock.Data;
 
 namespace Rock.Transactions
 {
@@ -105,8 +106,8 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-
-            PageViewService pvService = new PageViewService();
+            var rockContext = new RockContext();
+            PageViewService pvService = new PageViewService( rockContext );
 
             PageView pageView = new PageView();
             pvService.Add( pageView );
@@ -171,7 +172,7 @@ namespace Rock.Transactions
                 }
             }
 
-            pvService.Save( pageView );
+            rockContext.SaveChanges();
         }
     }
 }

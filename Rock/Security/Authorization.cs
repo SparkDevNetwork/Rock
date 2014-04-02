@@ -749,7 +749,7 @@ namespace Rock.Security
                         {
                             try
                             {
-                                PersonService personService = new PersonService();
+                                PersonService personService = new PersonService( new RockContext() );
                                 Person person = personService.Get( PersonId.Value );
                                 if ( person != null )
                                 {

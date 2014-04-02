@@ -260,10 +260,11 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Loads the <see cref="P:IHasAttributes.Attributes"/> and <see cref="P:IHasAttributes.AttributeValues"/> of any <see cref="IHasAttributes"/> object
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null  )
         {
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -271,7 +272,7 @@ namespace Rock.Attribute
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            var rockContext = new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
             // Check for group type attributes
             var groupTypeIds = new List<int>();

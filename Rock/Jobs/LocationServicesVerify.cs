@@ -80,7 +80,7 @@ namespace Rock.Jobs
 
             foreach ( var address in addresses )
             {
-                locationService.Verify( address, null, false ); // currently not reverifying 
+                locationService.Verify( address, false ); // currently not reverifying 
                 rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }

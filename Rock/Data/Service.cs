@@ -34,7 +34,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> where T : Rock.Data.Entity<T>, new()
+    public class Service<T> : IService where T : Rock.Data.Entity<T>, new()
     {
 
         #region Fields

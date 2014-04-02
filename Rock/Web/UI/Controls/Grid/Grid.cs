@@ -29,6 +29,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using DotLiquid;
 using OfficeOpenXml;
+using Rock.Data;
 
 namespace Rock.Web.UI.Controls
 {
@@ -1088,9 +1089,10 @@ namespace Rock.Web.UI.Controls
 
                     if ( communication.Recipients.Any() )
                     {
-                        var service = new Rock.Model.CommunicationService();
-                        service.Add( communication, rockPage.CurrentPersonAlias );
-                        service.Save( communication, rockPage.CurrentPersonAlias );
+                        var rockContext = new RockContext();
+                        var service = new Rock.Model.CommunicationService( rockContext );
+                        service.Add( communication );
+                        rockContext.SaveChanges();
 
                         Page.Response.Redirect( string.Format( CommunicationPageRoute, communication.Id ), false );
                         Context.ApplicationInstance.CompleteRequest();

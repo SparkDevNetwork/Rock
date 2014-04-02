@@ -71,7 +71,7 @@ namespace Rock.Address
                 }
                 else
                 {
-                    Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString(), null);
+                    Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString() );
                 }
 
                 int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsInteger();
@@ -79,7 +79,7 @@ namespace Rock.Address
                 if ( !maxTxnCount.HasValue || maxTxnCount.Value == 0 || dailyTxnCount < maxTxnCount.Value )
                 {
                     dailyTxnCount++;
-                    Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString(), null );
+                    Rock.Web.SystemSettings.SetValue( DAILY_TXN_COUNT, dailyTxnCount.ToString() );
 
                     string key = GetAttributeValue( "BingMapsKey" );
                     string query = HttpUtility.UrlEncode( string.Format( "{0} {1} {2} {3} {4}",

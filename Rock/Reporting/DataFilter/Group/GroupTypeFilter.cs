@@ -129,7 +129,7 @@ function() {
             GroupTypePicker groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService().Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             filterControl.Controls.Add( groupTypePicker );
 
             return new Control[] { groupTypePicker };
@@ -189,7 +189,7 @@ function() {
             {
                 int groupTypeId = selectionValues[0].AsInteger() ?? 0;
 
-                var qry = new GroupService( serviceInstance.RockContext ).Queryable()
+                var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => p.GroupTypeId == groupTypeId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );

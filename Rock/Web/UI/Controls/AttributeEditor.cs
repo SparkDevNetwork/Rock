@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -806,7 +806,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsGridColumn = this.ShowInGrid;
 
                 attribute.Categories.Clear();
-                new CategoryService().Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
+                new CategoryService( new RockContext() ).Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
                     attribute.Categories.Add( c ) );
 
                 attribute.AttributeQualifiers.Clear();

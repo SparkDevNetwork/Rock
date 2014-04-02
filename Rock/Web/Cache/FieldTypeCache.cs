@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using System.Linq;
 
 using Rock.Model;
+using Rock.Data;
 
 namespace Rock.Web.Cache
 {
@@ -151,7 +152,7 @@ namespace Rock.Web.Cache
             if ( allfieldTypes == null )
             {
                 allfieldTypes = new List<FieldTypeCache>();
-                foreach ( var fieldType in new FieldTypeService().Queryable()
+                foreach ( var fieldType in new FieldTypeService( new RockContext() ).Queryable()
                     .OrderBy( f => f.Name ) )
                 {
                     allfieldTypes.Add( Read( fieldType ) );
@@ -188,7 +189,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService();
+                var fieldTypeService = new FieldTypeService( new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
@@ -233,7 +234,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService();
+                var fieldTypeService = new FieldTypeService( new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( guid );
                 if ( fieldTypeModel != null )
                 {

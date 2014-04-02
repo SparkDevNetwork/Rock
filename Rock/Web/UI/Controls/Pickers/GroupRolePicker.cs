@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 
 namespace Rock.Web.UI.Controls
 {
@@ -228,7 +229,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( !GroupTypeId.HasValue )
                     {
-                        var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRoleId );
+                        var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( groupRoleId );
                         if ( groupRole != null &&
                             groupRole.GroupTypeId.HasValue &&
                             _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
@@ -352,7 +353,7 @@ namespace Rock.Web.UI.Controls
         {
             _ddlGroupType.Items.Clear();
 
-            var groupTypeService = new Rock.Model.GroupTypeService();
+            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
             
             // get all group types that have at least one role
             var groupTypes = groupTypeService.Queryable().Where( a => a.Roles.Any()).OrderBy( a => a.Name ).ToList();
@@ -381,7 +382,7 @@ namespace Rock.Web.UI.Controls
 
                 List<int> excludeGroupRoles = ExcludeGroupRoles;
 
-                var groupRoleService = new Rock.Model.GroupTypeRoleService();
+                var groupRoleService = new Rock.Model.GroupTypeRoleService( new RockContext() );
                 var groupRoles = groupRoleService.Queryable()
                     .Where( r => 
                         r.GroupTypeId == groupTypeId.Value &&

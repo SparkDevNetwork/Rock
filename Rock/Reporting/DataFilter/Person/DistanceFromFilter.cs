@@ -111,7 +111,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int? locationId = selectionValues[0].AsInteger();
-                var location = new LocationService().Get( locationId ?? 0 );
+                var location = new LocationService( new RockContext() ).Get( locationId ?? 0 );
                 double miles = 0;
                 double.TryParse( selectionValues[1], out miles );
 
@@ -186,7 +186,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 var locationPicker = controls[0] as LocationPicker;
-                var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
                 locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;
@@ -204,10 +204,12 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            var rockContext = (RockContext)serviceInstance.Context;
+
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                Location location = new LocationService( serviceInstance.RockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
+                Location location = new LocationService( rockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
 
                 if ( location == null )
                 {
@@ -220,7 +222,7 @@ function() {
 
                 double meters = miles * 1609.344;
 
-                GroupMemberService groupMemberService = new GroupMemberService( serviceInstance.RockContext );
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
                 // limit to Family's Home Addresses that have are a real location (not a PO Box)
                 var groupMemberServiceQry = groupMemberService.Queryable()
@@ -233,7 +235,7 @@ function() {
                 groupMemberServiceQry = groupMemberServiceQry
                     .Where( xx => xx.Group.GroupLocations.Any( l => l.Location.GeoPoint.Distance( selectedLocationGeoPoint ) <= meters ) );
 
-                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+                var qry = new PersonService( rockContext ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

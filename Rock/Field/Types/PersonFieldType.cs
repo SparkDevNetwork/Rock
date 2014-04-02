@@ -46,7 +46,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = value.AsGuid();
-                formattedValue = new PersonAliasService().Queryable()
+                formattedValue = new PersonAliasService( new RockContext() ).Queryable()
                     .Where( a => a.Guid.Equals( guid ) )
                     .Select( a => a.Person.NickName + " " + a.Person.LastName )
                     .FirstOrDefault();
@@ -86,33 +86,32 @@ namespace Rock.Field.Types
 
                 if ( personId.HasValue )
                 {
-                    using ( new UnitOfWorkScope() )
-                    {
-                        var personAliasService = new PersonAliasService();
-                        var personAlias = personAliasService.Queryable()
-                            .Where( a => a.AliasPersonId == personId )
-                            .FirstOrDefault();
-                        if ( personAlias != null )
-                        {
-                            result = personAlias.Guid.ToString();
-                        }
-                        else
-                        {
-                            // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
-                            // to that personId.  If there isn't for some reason, create it now...
-                            var person = new PersonService().Get( personId.Value );
-                            if ( person != null )
-                            {
-                                personAlias = new PersonAlias();
-                                personAlias.Guid = Guid.NewGuid();
-                                personAlias.AliasPersonId = person.Id;
-                                personAlias.AliasPersonGuid = person.Guid;
-                                personAlias.PersonId = person.Id;
-                                result = personAlias.Guid.ToString();
+                    var rockContext = new RockContext();
 
-                                personAliasService.Add( personAlias );
-                                personAliasService.Save( personAlias );
-                            }
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var personAlias = personAliasService.Queryable()
+                        .Where( a => a.AliasPersonId == personId )
+                        .FirstOrDefault();
+                    if ( personAlias != null )
+                    {
+                        result = personAlias.Guid.ToString();
+                    }
+                    else
+                    {
+                        // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                        // to that personId.  If there isn't for some reason, create it now...
+                        var person = new PersonService( rockContext ).Get( personId.Value );
+                        if ( person != null )
+                        {
+                            personAlias = new PersonAlias();
+                            personAlias.Guid = Guid.NewGuid();
+                            personAlias.AliasPersonId = person.Id;
+                            personAlias.AliasPersonGuid = person.Guid;
+                            personAlias.PersonId = person.Id;
+                            result = personAlias.Guid.ToString();
+
+                            personAliasService.Add( personAlias );
+                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -137,7 +136,7 @@ namespace Rock.Field.Types
                     Guid guid = Guid.Empty;
                     Guid.TryParse( value, out guid );
 
-                    var person = new PersonAliasService().Queryable()
+                    var person = new PersonAliasService( new RockContext() ).Queryable()
                         .Where( a => a.Guid.Equals(guid))
                         .Select( a => a.Person)
                         .FirstOrDefault();

@@ -357,7 +357,7 @@ namespace Rock.Model
         {
             get
             {
-                var groupService = new GroupService();
+                var groupService = new GroupService( new RockContext() );
                 var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
                 return qry;
             }

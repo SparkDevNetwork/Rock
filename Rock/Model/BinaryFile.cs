@@ -240,10 +240,10 @@ namespace Rock.Model
         {
             Rock.Storage.ProviderComponent storageProvider = null;
 
-            StorageEntityType = StorageEntityType ?? new EntityTypeService( this.RockContext ).Get( item.StorageEntityTypeId ?? 0 );
-            if ( item.StorageEntityType != null )
+            StorageEntityType = StorageEntityType ?? new EntityTypeService( new RockContext() ).Get( StorageEntityTypeId ?? 0 );
+            if ( StorageEntityType != null )
             {
-                storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
+                storageProvider = Rock.Storage.ProviderContainer.GetComponent( StorageEntityType.Name );
             }
 
             return storageProvider;

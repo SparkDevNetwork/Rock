@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -41,7 +42,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new FinancialAccountService();
+                var service = new FinancialAccountService( new RockContext() );
                 var account = service.Get( new Guid( value ) );
 
                 if ( account != null )
@@ -81,7 +82,7 @@ namespace Rock.Field.Types
             {
                 var guid = Guid.Empty;
                 var id = picker.ItemId.AsInteger();
-                var account = new FinancialAccountService().Get( id ?? 0 );
+                var account = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
 
                 if ( account != null )
                 {
@@ -110,7 +111,7 @@ namespace Rock.Field.Types
                 {
                     Guid guid;
                     Guid.TryParse( value, out guid );
-                    var account = new FinancialAccountService().Get( guid );
+                    var account = new FinancialAccountService( new RockContext() ).Get( guid );
                     picker.SetValue( account );
                 }
             }

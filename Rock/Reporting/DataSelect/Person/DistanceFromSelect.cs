@@ -139,14 +139,14 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Count() >= 2 )
             {
                 // the selected Location 
-                selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                selectedLocation = new LocationService( context ).Get( selectionValues[0].AsInteger() ?? 0 );
 
                 // which address type (home, work, previous) to use as the person's location
                 locationTypeValidId = selectionValues[1].AsInteger( false );
             }
 
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
+            int familyGroupTypeId = new GroupTypeService( context ).Get( familyGuid ).Id;
 
             var groupMemberQuery = new GroupMemberService( context ).Queryable();
 
@@ -259,7 +259,7 @@ namespace Rock.Reporting.DataSelect.Person
                 if ( selectionValues.Length >= 2 )
                 {
                     var locationPicker = controls[0] as LocationPicker;
-                    var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                    var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
                     locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                     locationPicker.Location = selectedLocation;
 

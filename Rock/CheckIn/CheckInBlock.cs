@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -138,7 +139,7 @@ namespace Rock.CheckIn
             int workflowTypeId = 0;
             if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
             {
-                var workflowTypeService = new WorkflowTypeService();
+                var workflowTypeService = new WorkflowTypeService( new RockContext() );
                 var workflowType = workflowTypeService.Get( workflowTypeId );
                 if ( workflowType != null )
                 {
