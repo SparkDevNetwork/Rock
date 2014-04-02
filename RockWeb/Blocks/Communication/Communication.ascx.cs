@@ -303,17 +303,23 @@ namespace RockWeb.Blocks.Communication
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var recipient = e.Item.DataItem as Recipient;
-                if ( recipient != null && recipient.Status != CommunicationRecipientStatus.Pending )
+                if ( recipient != null )
                 {
-                    var lbRemove = e.Item.FindControl( "lbRemoveRecipient" ) as LinkButton;
-                    if ( lbRemove != null )
+                    if ( recipient.Status != CommunicationRecipientStatus.Pending )
                     {
-                        lbRemove.Visible = false;
+                        var lbRemove = e.Item.FindControl( "lbRemoveRecipient" ) as LinkButton;
+                        if ( lbRemove != null )
+                        {
+                            lbRemove.Visible = false;
+                        }
+                    }
+
+                    var lRecipientName = e.Item.FindControl( "lRecipientName" ) as Literal;
+                    if ( lRecipientName != null )
+                    {
+                        lRecipientName.Text = String.Format( "<span data-toggle=\"tooltip\" data-placement=\"top\" title=\"{0}\">{1}</span>", recipient.StatusNote, recipient.PersonName );
                     }
                 }
-
-                var lRecipientName = e.Item.FindControl( "lRecipientName" ) as Literal;
-                lRecipientName.Text = String.Format( "<span data-toggle='tooltip' data-placement='top' title='{0}'>{1}</span>", recipient.StatusNote, recipient.PersonName );
             }
         }
 
