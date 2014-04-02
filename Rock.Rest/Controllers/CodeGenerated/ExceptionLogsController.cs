@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ExceptionLogsController : Rock.Rest.ApiController<Rock.Model.ExceptionLog>
     {
-        public ExceptionLogsController() : base( new Rock.Model.ExceptionLogService() ) { } 
+        public ExceptionLogsController() : base( new Rock.Model.ExceptionLogService( new Rock.Data.RockContext() ) ) { } 
     }
 }

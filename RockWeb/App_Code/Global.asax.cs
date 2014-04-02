@@ -32,9 +32,9 @@ using System.Web.Routing;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
-
 using Rock;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Transactions;
@@ -103,6 +103,8 @@ namespace RockWeb
                     autoMigrate = true;
                 }
 
+                RockContext rockContext;
+
                 if ( autoMigrate )
                 {
                     try
@@ -111,7 +113,7 @@ namespace RockWeb
                         Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
 
                         // explictly check if the database exists, and force create it if doesn't exist
-                        Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+                        rockContext = new RockContext();
                         if ( !rockContext.Database.Exists() )
                         {
                             rockContext.Database.Initialize( true );
@@ -149,14 +151,17 @@ namespace RockWeb
                     Database.SetInitializer<Rock.Data.RockContext>( null );
                 }
 
+                // Get a db context
+                rockContext = new RockContext();
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    new AttributeService().Get( 0 );
+                    new AttributeService( rockContext ).Get( 0 );
                     System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
                 // Preload the commonly used objects
-                LoadCacheObjects();
+                LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
@@ -174,7 +179,7 @@ namespace RockWeb
                     sched = sf.GetScheduler();
 
                     // get list of active jobs
-                    ServiceJobService jobService = new ServiceJobService();
+                    ServiceJobService jobService = new ServiceJobService( rockContext );
                     foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
                     {
                         try
@@ -190,8 +195,7 @@ namespace RockWeb
                             string message = string.Format( "Error loading the job: {0}.  Ensure that the correct version of the job's assembly ({1}.dll) in the websites App_Code directory. \n\n\n\n{2}", job.Name, job.Assembly, ex.Message );
                             job.LastStatusMessage = message;
                             job.LastStatus = "Error Loading Job";
-
-                            jobService.Save( job, null );
+                            rockContext.SaveChanges();
                         }
                     }
 
@@ -207,12 +211,12 @@ namespace RockWeb
 
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
-                RegisterRoutes( RouteTable.Routes );
+                RegisterRoutes( rockContext, RouteTable.Routes );
 
-                Rock.Security.Authorization.Load();
+                Rock.Security.Authorization.Load( rockContext );
 
-                new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
-                new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
+                EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
+                FieldTypeService.RegisterFieldTypes( Server.MapPath( "~" ) );
 
                 BundleConfig.RegisterBundles( BundleTable.Bundles );
 
@@ -238,7 +242,7 @@ namespace RockWeb
         {
             try
             {
-                new Rock.Model.UserLoginService().UpdateLastLogin( UserLogin.GetCurrentUserName() );
+                UserLoginService.UpdateLastLogin( UserLogin.GetCurrentUserName() );
 
                 // add new session id
                 Session["RockSessionId"] = Guid.NewGuid();
@@ -265,14 +269,13 @@ namespace RockWeb
                 // mark user offline
                 if ( this.Session["RockUserId"] != null )
                 {
-
-                    UserLoginService userLoginService = new UserLoginService();
+                    var rockContext = new RockContext();
+                    var userLoginService = new UserLoginService( rockContext );
 
                     var user = userLoginService.Get( Int32.Parse( this.Session["RockUserId"].ToString() ) );
                     user.IsOnLine = false;
 
-                    userLoginService.Save( user, null );
-
+                    rockContext.SaveChanges();
                 }
             }
             catch ( Exception ex )
@@ -390,7 +393,7 @@ namespace RockWeb
                             string errorPage = string.Empty;
 
                             // determine error page based on the site
-                            SiteService service = new SiteService();
+                            SiteService service = new SiteService( new RockContext() );
                             string siteName = string.Empty;
 
                             if ( context.Items["Rock:SiteId"] != null )
@@ -541,13 +544,15 @@ namespace RockWeb
         /// </summary>
         private void MarkOnlineUsersOffline()
         {
-            UserLoginService userLoginService = new UserLoginService();
+            var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+
             foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
             {
-                userLoginService.Attach( user );
                 user.IsOnLine = false;
-                userLoginService.Save( user, null );
             }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -564,9 +569,9 @@ namespace RockWeb
         /// Registers the routes.
         /// </summary>
         /// <param name="routes">The routes.</param>
-        private void RegisterRoutes( RouteCollection routes )
+        private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
         {
-            PageRouteService pageRouteService = new PageRouteService();
+            PageRouteService pageRouteService = new PageRouteService( rockContext );
 
             // find each page that has defined a custom routes.
             foreach ( PageRoute pageRoute in pageRouteService.Queryable() )
@@ -663,46 +668,43 @@ namespace RockWeb
         /// <summary>
         /// Loads the cache objects.
         /// </summary>
-        private void LoadCacheObjects()
+        private void LoadCacheObjects( RockContext rockContext )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
+            var qualifiers = new Dictionary<int, Dictionary<string, string>>();
+            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
             {
-                // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
-                var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-                foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService().Queryable() )
-                {
-                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
-                }
+                if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                    qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+            }
 
-                // Cache all the attributes.
-                foreach ( var attribute in new Rock.Model.AttributeService().Queryable( "Categories" ).ToList() )
-                {
-                    if ( qualifiers.ContainsKey( attribute.Id ) )
-                        Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
-                    else
-                        Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
-                }
+            // Cache all the attributes.
+            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" ).ToList() )
+            {
+                if ( qualifiers.ContainsKey( attribute.Id ) )
+                    Rock.Web.Cache.AttributeCache.Read( attribute, qualifiers[attribute.Id] );
+                else
+                    Rock.Web.Cache.AttributeCache.Read( attribute, new Dictionary<string, string>() );
+            }
 
-                // Cache all the Field Types
-                var all = Rock.Web.Cache.FieldTypeCache.All();
+            // Cache all the Field Types
+            var all = Rock.Web.Cache.FieldTypeCache.All();
 
-                // DT: When running with production CCV Data, this is taking a considerable amount of time 
+            // DT: When running with production CCV Data, this is taking a considerable amount of time 
 
-                // Cache all tha Defined Types
-                var definedTypeService = new Rock.Model.DefinedTypeService();
-                foreach ( var definedType in definedTypeService.Queryable().ToList() )
-                {
-                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-                }
+            // Cache all tha Defined Types
+            var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
+            foreach ( var definedType in definedTypeService.Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+            }
 
-                // Cache all the Defined Values
-                var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                {
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                }
+            // Cache all the Defined Values
+            var definedValueService = new Rock.Model.DefinedValueService();
+            foreach ( var definedValue in definedValueService.Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
             }
         }
 

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FollowingsController : Rock.Rest.ApiController<Rock.Model.Following>
     {
-        public FollowingsController() : base( new Rock.Model.FollowingService() ) { } 
+        public FollowingsController() : base( new Rock.Model.FollowingService( new Rock.Data.RockContext() ) ) { } 
     }
 }

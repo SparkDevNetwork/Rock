@@ -114,7 +114,9 @@ namespace Rock.Rest.Controllers
                 allowFirstNameOnly = searchComponent.GetAttributeValue( "FirstNameSearch" ).AsBoolean();
             }
 
-            IOrderedQueryable<Person> sortedPersonQry = new PersonService().GetByFullNameOrdered( name, true, false, allowFirstNameOnly, out reversed );
+            var rockContext = new Rock.Data.RockContext();
+            IOrderedQueryable<Person> sortedPersonQry = new PersonService( rockContext )
+                .GetByFullNameOrdered( name, true, false, allowFirstNameOnly, out reversed );
 
             var topQry = sortedPersonQry.Take( count );
             List<Person> sortedPersonList = topQry.ToList();
@@ -132,7 +134,7 @@ namespace Rock.Rest.Controllers
             Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
 
             // figure out Family, Address, Spouse
-            GroupMemberService groupMemberService = new GroupMemberService();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             List<PersonSearchResult> searchResult = new List<PersonSearchResult>();
             foreach ( var person in sortedPersonList )
@@ -245,7 +247,11 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Person GetByUserName( string username )
         {
-            int? personId = new UserLoginService().Queryable().Where( u => u.UserName.Equals( username ) ).Select( a => a.PersonId ).FirstOrDefault();
+            int? personId = new UserLoginService( ( Rock.Data.RockContext )Service.Context ).Queryable()
+                .Where( u => u.UserName.Equals( username ) )
+                .Select( a => a.PersonId )
+                .FirstOrDefault();
+
             if ( personId != null )
             {
                 return this.Get( personId.Value );
@@ -264,7 +270,8 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Person GetByPersonAliasId( int personAliasId )
         {
-            int? personId = new PersonAliasService().Queryable().Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
+            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
             if ( personId != null )
             {
                 return this.Get( personId.Value );
@@ -287,7 +294,7 @@ namespace Rock.Rest.Controllers
             result.PickerItemDetailsHtml = "No Details Available";
 
             var html = new StringBuilder();
-            var person = new PersonService().Get( personId );
+            var person = Service.Get( personId );
             if ( person != null )
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class BlockTypesController : Rock.Rest.ApiController<Rock.Model.BlockType>
     {
-        public BlockTypesController() : base( new Rock.Model.BlockTypeService() ) { } 
+        public BlockTypesController() : base( new Rock.Model.BlockTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

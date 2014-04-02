@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialTransactionsController : Rock.Rest.ApiController<Rock.Model.FinancialTransaction>
     {
-        public FinancialTransactionsController() : base( new Rock.Model.FinancialTransactionService() ) { } 
+        public FinancialTransactionsController() : base( new Rock.Model.FinancialTransactionService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DataViewsController : Rock.Rest.ApiController<Rock.Model.DataView>
     {
-        public DataViewsController() : base( new Rock.Model.DataViewService() ) { } 
+        public DataViewsController() : base( new Rock.Model.DataViewService( new Rock.Data.RockContext() ) ) { } 
     }
 }
