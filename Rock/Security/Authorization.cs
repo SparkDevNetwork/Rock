@@ -85,11 +85,10 @@ namespace Rock.Security
         /// <summary>
         /// Load the static Authorizations object
         /// </summary>
-        public static void Load()
+        public static void Load( RockContext rockContext )
         {
             Authorizations = new Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>();
 
-            var rockContext = new RockContext();
             AuthService authService = new AuthService( rockContext );
 
             foreach ( Auth auth in authService.Queryable().
@@ -119,9 +118,11 @@ namespace Rock.Security
         /// <param name="action">The action.</param>
         public static void ReloadAction( int entityTypeId, int entityId, string action )
         {
+            var rockContext = new RockContext();
+
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
-                Load();
+                Load( rockContext );
             else
             {
                 // Delete the current authorizations
@@ -131,7 +132,6 @@ namespace Rock.Security
                             Authorizations[entityTypeId][entityId][action] = new List<AuthRule>();
 
                 // Find the Authrules for the given entity type, entity id, and action
-                var rockContext = new RockContext();
                 AuthService authService = new AuthService( rockContext );
                 foreach ( Auth auth in authService.GetAuths( entityTypeId, entityId, action ) )
                 {
@@ -173,7 +173,7 @@ namespace Rock.Security
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load();
+                Load( new RockContext() );
             }
 
             var entityTypeId = entity.TypeId;
@@ -220,7 +220,7 @@ namespace Rock.Security
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load();
+                Load( new RockContext() );
             }
 
             var entityTypeId = entity.TypeId;
@@ -307,7 +307,7 @@ namespace Rock.Security
                 // If there's no Authorizations object, create it
                 if ( Authorizations == null )
                 {
-                    Load();
+                    Load( new RockContext() );
                 }
 
                 // If there are entries in the Authorizations object for this entity type and entity instance, evaluate each 
@@ -353,7 +353,7 @@ namespace Rock.Security
                     // If there's no Authorizations object, create it
                     if ( Authorizations == null )
                     {
-                        Load();
+                        Load( new RockContext() );
                     }
 
                     var rockContext = new RockContext();
@@ -454,13 +454,14 @@ namespace Rock.Security
         {
             if ( person != null )
             {
+                var rockContext = new RockContext();
+
                 // If there's no Authorizations object, create it
                 if ( Authorizations == null )
                 {
-                    Load();
+                    Load( rockContext );
                 }
 
-                var rockContext = new RockContext();
                 var authService = new AuthService( rockContext );
 
                 // If there are not entries in the Authorizations object for this entity type and entity instance, create
@@ -524,7 +525,7 @@ namespace Rock.Security
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load();
+                Load( new RockContext() );
             }
 
             // Find the Authrules for the given entity type, entity id, and action
@@ -582,16 +583,17 @@ namespace Rock.Security
         /// <param name="personAlias">The person alias.</param>
         public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity )
         {
+            var rockContext = new RockContext();
+
             // If there's no Authorizations object, create it
             if ( Authorizations == null )
             {
-                Load();
+                Load( rockContext );
             }
 
             var sourceEntityTypeId = sourceEntity.TypeId;
             var targetEntityTypeId = targetEntity.TypeId;
 
-            var rockContext = new RockContext();
             AuthService authService = new AuthService( rockContext );
 
             // Delete the current authorizations for the target entity

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class HistoriesController : Rock.Rest.ApiController<Rock.Model.History>
     {
-        public HistoriesController() : base( new Rock.Model.HistoryService() ) { } 
+        public HistoriesController() : base( new Rock.Model.HistoryService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AuditsController : Rock.Rest.ApiController<Rock.Model.Audit>
     {
-        public AuditsController() : base( new Rock.Model.AuditService() ) { } 
+        public AuditsController() : base( new Rock.Model.AuditService( new Rock.Data.RockContext() ) ) { } 
     }
 }

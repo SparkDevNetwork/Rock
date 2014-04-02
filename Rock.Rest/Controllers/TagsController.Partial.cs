@@ -75,8 +75,8 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
-            var service = new TagService();
-            var tag = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault(t => t.Name == name);
+            var tag = ( (TagService)Service )
+                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault( t => t.Name == name );
 
             if ( tag != null )
                 return tag;
@@ -102,11 +102,11 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
-            var service = new TagService();
-            return service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
-                .Where( t => 
-                    t.Name.StartsWith(name) && 
-                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ))
+            return ( (TagService)Service )
+                .Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
+                .Where( t =>
+                    t.Name.StartsWith( name ) &&
+                    !t.TaggedItems.Any( i => i.EntityGuid == entityGuid ) )
                 .OrderBy( t => t.Name );
         }
 

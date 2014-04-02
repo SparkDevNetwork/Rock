@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class CommunicationRecipientActivitiesController : Rock.Rest.ApiController<Rock.Model.CommunicationRecipientActivity>
     {
-        public CommunicationRecipientActivitiesController() : base( new Rock.Model.CommunicationRecipientActivityService() ) { } 
+        public CommunicationRecipientActivitiesController() : base( new Rock.Model.CommunicationRecipientActivityService( new Rock.Data.RockContext() ) ) { } 
     }
 }

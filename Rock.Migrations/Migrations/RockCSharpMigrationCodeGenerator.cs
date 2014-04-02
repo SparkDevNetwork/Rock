@@ -38,7 +38,7 @@ namespace Rock.Migrations
     /// 
     /// </summary>
     /// <typeparam name="T">Target DbContext to be migrated</typeparam>
-    public class RockCSharpMigrationCodeGenerator<T> : CSharpMigrationCodeGenerator where T : DbContext, new()
+    public class RockCSharpMigrationCodeGenerator<T> : CSharpMigrationCodeGenerator where T : System.Data.Entity.DbContext, new()
     {
         #region internal custom methods
 
@@ -88,7 +88,7 @@ namespace Rock.Migrations
             Type dbContextType = typeof( T );
             var dbSets = dbContextType.GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.GetGenericTypeDefinition() == typeof( DbSet<> ) );
 
-            DbContext dbContext = new T();
+            System.Data.Entity.DbContext dbContext = new T();
             Database.SetInitializer<T>( null );
             IObjectContextAdapter objectContextAdapter = dbContext as IObjectContextAdapter;
             ObjectContext objectContext = objectContextAdapter.ObjectContext;

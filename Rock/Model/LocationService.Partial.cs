@@ -185,7 +185,9 @@ namespace Rock.Model
         {
             string inputLocation = location.ToString();
 
-            Model.ServiceLogService logService = new Model.ServiceLogService( (RockContext)Context );
+            // Create new context to save service log without affecting calling method's context
+            var rockContext = new RockContext();
+            Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
 
             // Try each of the standardization services that were found through MEF
             foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
@@ -204,11 +206,13 @@ namespace Rock.Model
                         log.Input = inputLocation;
                         log.Result = result;
                         log.Success = success;
-
                         logService.Add( log );
                     }
                 }
             }
+
+            rockContext.SaveChanges();
+
         }
 
         /// <summary>

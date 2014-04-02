@@ -54,7 +54,7 @@ namespace Rock.Rest.Controllers
         {
             bool valid = false;
 
-            var userLoginService = new UserLoginService();
+            var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
             var userLogin = userLoginService.GetByUserName( loginParameters.Username );
             if ( userLogin != null && userLogin.EntityType != null) 
             {

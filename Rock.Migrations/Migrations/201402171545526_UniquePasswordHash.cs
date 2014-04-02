@@ -31,7 +31,7 @@ namespace Rock.Migrations
         public override void Up()
         {
 
-            var service = new Rock.Data.Service();
+            var service = new Rock.Data.Service( new Rock.Data.RockContext() );
             string qry = @"
     SELECT 
          L.[Id]

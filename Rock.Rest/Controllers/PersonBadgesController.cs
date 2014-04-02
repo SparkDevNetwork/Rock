@@ -82,7 +82,7 @@ namespace Rock.Rest.Controllers
             result.GroupList = new List<GroupSummary>();
 
             // get person info
-            Person person = new PersonService().Get(personId);
+            Person person = new PersonService( (Rock.Data.RockContext)Service.Context ).Get( personId );
 
             if (person != null)
             {
@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
             }
 
             // get group type info
-            GroupType groupType = new GroupTypeService().Get(groupTypeId);
+            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeId );
 
             if (groupType != null)
             {
@@ -101,7 +101,7 @@ namespace Rock.Rest.Controllers
             }
 
             // determine if person is in this type of group
-            GroupMemberService groupMemberService = new GroupMemberService();
+            GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
                                         .Where(t => t.Group.GroupType.Guid == groupTypeId && t.PersonId == personId )
                                         .OrderBy(g => g.GroupRole.Order);
@@ -129,13 +129,12 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public int GetWeeksAttendedInDuration(int personId, int weekCount)
         {
-            Service service = new Service();
-
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
             parameters.Add("WeekDuration", weekCount);
 
-            var result = service.ExecuteScaler("spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters);
+            var result = new Service( (Rock.Data.RockContext)Service.Context )
+                .ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
             if (result != null)
             {
                 return (int)result;
@@ -155,13 +154,12 @@ namespace Rock.Rest.Controllers
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
             
-            Service service = new Service();
-
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
             parameters.Add("MonthCount", monthCount);
 
-            var table = service.GetDataTable("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
+            var table = new Service( (Rock.Data.RockContext)Service.Context )
+                .GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
 
             if (table != null)
             {

@@ -491,7 +491,7 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    /// </summary>" );
             sb.AppendFormat( "    public partial class {0}Controller : Rock.Rest.ApiController<{1}.{2}>" + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    {" );
-            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service() ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
+            sb.AppendFormat( "        public {0}Controller() : base( new {1}.{2}Service( new Rock.Data.RockContext() ) ) {{ }} " + Environment.NewLine, pluralizedName, type.Namespace, type.Name );
             sb.AppendLine( "    }" );
             sb.AppendLine( "}" );
 

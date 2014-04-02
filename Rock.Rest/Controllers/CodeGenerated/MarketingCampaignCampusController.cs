@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MarketingCampaignCampusController : Rock.Rest.ApiController<Rock.Model.MarketingCampaignCampus>
     {
-        public MarketingCampaignCampusController() : base( new Rock.Model.MarketingCampaignCampusService() ) { } 
+        public MarketingCampaignCampusController() : base( new Rock.Model.MarketingCampaignCampusService( new Rock.Data.RockContext() ) ) { } 
     }
 }

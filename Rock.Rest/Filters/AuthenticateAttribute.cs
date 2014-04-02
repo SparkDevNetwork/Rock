@@ -56,7 +56,7 @@ namespace Rock.Rest.Filters
 
             if (! String.IsNullOrWhiteSpace( authToken ) )
             {
-                var userLoginService = new UserLoginService();
+                var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                 var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
                 if ( userLogin != null )
                 {
