@@ -190,7 +190,7 @@ namespace Rock.Communication.Transport
                                 try
                                 {
                                     smtpClient.Send( message );
-                                    recipient.Status = CommunicationRecipientStatus.Success;
+                                    recipient.Status = CommunicationRecipientStatus.Delivered;
                                 }
                                 catch ( Exception ex )
                                 {

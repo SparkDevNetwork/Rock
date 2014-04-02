@@ -311,6 +311,9 @@ namespace RockWeb.Blocks.Communication
                         lbRemove.Visible = false;
                     }
                 }
+
+                var lRecipientName = e.Item.FindControl( "lRecipientName" ) as Literal;
+                lRecipientName.Text = String.Format( "<span data-toggle='tooltip' data-placement='top' title='{0}'>{1}</span>", recipient.StatusNote, recipient.PersonName );
             }
         }
 
@@ -558,7 +561,7 @@ namespace RockWeb.Blocks.Communication
                         communication = service.Get( communication.Id );
 
                         if ( !communication.Recipients
-                            .Where( r => r.Status == CommunicationRecipientStatus.Success )
+                            .Where( r => r.Status == CommunicationRecipientStatus.Delivered )
                             .Any() )
                         {
                             communication.Status = CommunicationStatus.Draft;

@@ -175,16 +175,16 @@ namespace RockWeb.Blocks.Communication
                     bFailed.Visible = communicationItem.FailedRecipients > 0;
                     bFailed.Text = communicationItem.FailedRecipients.ToString( "N0" );
 
-                    var bSuccess = e.Row.FindControl( "bSuccess" ) as Badge;
-                    bSuccess.Visible = communicationItem.SuccessRecipients > 0;
-                    bSuccess.Text = communicationItem.SuccessRecipients.ToString( "N0" );
+                    var bDelivered = e.Row.FindControl( "bDelivered" ) as Badge;
+                    bDelivered.Visible = communicationItem.DeliveredRecipients > 0;
+                    bDelivered.Text = communicationItem.DeliveredRecipients.ToString( "N0" );
 
                     var bOpened = e.Row.FindControl( "bOpened" ) as Badge;
                     bOpened.Visible = communicationItem.OpenedRecipients > 0;
                     bOpened.Text = communicationItem.OpenedRecipients.ToString( "N0" );
 
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[7].Controls[0].Visible = communicationItem.SuccessRecipients <= 0;
+                    e.Row.Cells[7].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
                 }
             }
         }
@@ -344,9 +344,9 @@ namespace RockWeb.Blocks.Communication
                         FailedRecipients = recipients
                             .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
                             .Count(),
-                        SuccessRecipients = recipients
+                        DeliveredRecipients = recipients
                             .Where( r => r.CommunicationId == c.Id && 
-                                (r.Status == CommunicationRecipientStatus.Success || r.Status == CommunicationRecipientStatus.Opened))
+                                (r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened))
                             .Count(),
                         OpenedRecipients = recipients
                             .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Communication
             public int PendingRecipients { get; set; }
             public int CancelledRecipients { get; set; }
             public int FailedRecipients { get; set; }
-            public int SuccessRecipients { get; set; }
+            public int DeliveredRecipients { get; set; }
             public int OpenedRecipients { get; set; }
         }
 
