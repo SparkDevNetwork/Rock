@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
@@ -25,15 +26,15 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataSelect.Person
+namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select an Address of the Person" )]
+    [Description( "Shows the distance of the Group's location from a location" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Address" )]
-    public class AddressSelect : DataSelectComponent
+    [ExportMetadata( "ComponentName", "Select Group Distance" )]
+    public class DistanceFromSelect : DataSelectComponent
     {
         #region Properties
 
@@ -48,7 +49,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return typeof( Rock.Model.Person ).FullName;
+                return typeof( Rock.Model.Group ).FullName;
             }
         }
 
@@ -76,7 +77,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Address";
+                return "Distance";
             }
         }
 
@@ -88,7 +89,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( string ); }
+            get { return typeof( double? ); }
         }
 
         /// <summary>
@@ -101,7 +102,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Address";
+                return "Distance (miles)";
             }
         }
 
@@ -119,7 +120,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Address";
+            return "Distance";
         }
 
         /// <summary>
@@ -131,24 +132,38 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? groupLocationTypeValueId = selection.AsInteger( false );
+            string[] selectionValues = selection.Split( '|' );
 
-            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
+            Location selectedLocation = null;
+            int? groupLocationTypeValueId = null;
+            if ( selectionValues.Count() >= 2 )
+            {
+                // the selected Location 
+                selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
 
-            var groupMemberQuery = new GroupMemberService( context ).Queryable();
+                // which group location type type () to use as the group's location
+                groupLocationTypeValueId = selectionValues[1].AsInteger( false );
+            }
 
-            // NOTE: This builds the FullAddress similar to how Location.ToString() does, but using SQL functions (selecting the entire Location record then doing ToString() is slow)
-            var personLocationQuery = new PersonService( context ).Queryable()
-                .Select( p =>
-                    groupMemberQuery
-                    .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId )
-                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
-                    .FirstOrDefault() );
+            const double milesPerMeter = 1 / 1609.344;
 
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
+            IQueryable<double?> groupLocationDistanceQuery;
+
+            if ( selectedLocation != null )
+            {
+                groupLocationDistanceQuery = new GroupService( context ).Queryable()
+                    .Select( p => p.GroupLocations
+                        .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId)
+                        .Where( gl => gl.Location.GeoPoint != null)
+                        .Select( s => DbFunctions.Truncate( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * milesPerMeter, 2 ) ).FirstOrDefault() );
+            }
+            else
+            {
+                groupLocationDistanceQuery = new PersonService( context ).Queryable()
+                    .Select( p => (double?)null );
+            }
+
+            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationDistanceQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }
@@ -160,6 +175,11 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
+            LocationPicker locationPicker = new LocationPicker();
+            locationPicker.ID = parentControl.ID + "_0";
+            locationPicker.Label = "Location";
+            parentControl.Controls.Add( locationPicker );
+
             RockDropDownList locationTypeList = new RockDropDownList();
             locationTypeList.Items.Clear();
             foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
@@ -173,7 +193,7 @@ namespace Rock.Reporting.DataSelect.Person
             locationTypeList.Label = "Address Type";
             parentControl.Controls.Add( locationTypeList );
 
-            return new System.Web.UI.Control[] { locationTypeList };
+            return new System.Web.UI.Control[] { locationPicker, locationTypeList };
         }
 
         /// <summary>
@@ -194,16 +214,27 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 1 )
+            if ( controls.Count() == 2 )
             {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
+                int? locationId = null;
+                int? locationTypeId = null;
+                LocationPicker locationPicker = controls[0] as LocationPicker;
+                Location location = locationPicker.Location;
+                if ( location != null )
+                {
+                    locationId = location.Id;
+                }
+
+                RockDropDownList dropDownList = controls[1] as RockDropDownList;
                 if ( dropDownList != null )
                 {
-                    return dropDownList.SelectedValueAsId().ToString();
+                    locationTypeId = dropDownList.SelectedValueAsId();
                 }
+
+                return string.Format( "{0}|{1}", locationId, locationTypeId );
             }
 
-            return null;
+            return string.Empty;
         }
 
         /// <summary>
@@ -213,12 +244,18 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 1 )
+            if ( controls.Count() == 2 )
             {
-                RockDropDownList dropDownList = controls[0] as RockDropDownList;
-                if ( dropDownList != null )
+                string[] selectionValues = selection.Split( '|' );
+                if ( selectionValues.Length >= 2 )
                 {
-                    dropDownList.SetValue( selection );
+                    var locationPicker = controls[0] as LocationPicker;
+                    var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                    locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
+                    locationPicker.Location = selectedLocation;
+
+                    RockDropDownList dropDownList = controls[1] as RockDropDownList;
+                    dropDownList.SetValue( selectionValues[1] );
                 }
             }
         }

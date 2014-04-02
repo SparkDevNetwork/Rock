@@ -444,12 +444,12 @@ namespace RockWeb.Blocks.CheckIn
                     new CheckinGroupEditor.LocationGridItem()
                         {
                             LocationId = a.LocationId,
-                            Name = a.Location.Name
+                            Name = a.Location.ToString()
                         } )
                         .OrderBy( o => o.Name )
                         .ToList();
 
-            groupEditor.AddLocationClick += groupEditor_AddLocationClick;
+            groupEditor.AddLocationClick += groupEditor_AddLocationClick; 
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
             groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
 
