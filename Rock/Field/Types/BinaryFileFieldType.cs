@@ -86,7 +86,7 @@ namespace Rock.Field.Types
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.DataTextField = "Name";
             ddl.DataValueField = "Id";
-            ddl.DataSource = new BinaryFileTypeService()
+            ddl.DataSource = new BinaryFileTypeService( new RockContext() )
                 .Queryable()
                 .OrderBy( f => f.Name )
                 .Select( f => new { f.Id, f.Name } )

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls
             List<DefinedValue> values = null;
             if ( DefinedTypeId.HasValue )
             {
-                values = new DefinedValueService().GetByDefinedTypeId( DefinedTypeId.Value ).ToList();
+                values = new DefinedValueService( new RockContext() ).GetByDefinedTypeId( DefinedTypeId.Value ).ToList();
             }
 
             string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );

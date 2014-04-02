@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var group = new GroupService().Get( int.Parse( ItemId ) );
+            var group = new GroupService( new RockContext() ).Get( int.Parse( ItemId ) );
             SetValue( group );
         }
 
@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var groups = new GroupService().Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            var groups = new GroupService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
             this.SetValues( groups );
         }
 

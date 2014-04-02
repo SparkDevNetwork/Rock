@@ -109,33 +109,25 @@ namespace Rock
         /// <returns></returns>
         public static string GetFriendlyTypeName( this Type type )
         {
-            Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
-            if ( attrib != null )
+            if ( type.Namespace == null )
             {
-                return attrib.FriendlyTypeName;
+                // Anonymous types will not have a namespace
+                return "Item";
+            }
+
+            if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+            {
+                type = type.BaseType;
+            }
+
+            if ( type.Namespace.Equals( "Rock.Model" ) )
+            {
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
+                return entityType.FriendlyName ?? SplitCase( type.Name );
             }
             else
             {
-                if ( type.Namespace == null )
-                {
-                    // Anonymous types will not have a namespace
-                    return "Item";
-                }
-
-                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
-                {
-                    type = type.BaseType;
-                }
-
-                if ( type.Namespace.Equals( "Rock.Model" ) )
-                {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                    return entityType.FriendlyName ?? SplitCase( type.Name );
-                }
-                else
-                {
-                    return SplitCase( type.Name );
-                }
+                return SplitCase( type.Name );
             }
         }
 
@@ -1570,9 +1562,9 @@ namespace Rock
         /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
-            Rock.Attribute.Helper.LoadAttributes( entity );
+            Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
         }
 
         /// <summary>
@@ -1580,9 +1572,9 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, PersonAlias currentPersonAlias )
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity )
         {
-            Rock.Attribute.Helper.SaveAttributeValues( entity, currentPersonAlias );
+            Rock.Attribute.Helper.SaveAttributeValues( entity );
         }
 
         /// <summary>

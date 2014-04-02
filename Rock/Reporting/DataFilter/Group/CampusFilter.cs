@@ -117,7 +117,7 @@ function() {
                 int? campusId = selectionValues[0].AsInteger(false);
                 if ( campusId.HasValue )
                 {
-                    var campus = new CampusService().Get( campusId.Value);
+                    var campus = new CampusService( new RockContext() ).Get( campusId.Value );
                     if (campus != null)
                     {
                         result = string.Format( "Campus: {0}", campus.Name );
@@ -141,7 +141,7 @@ function() {
             CampusPicker campusPicker = new CampusPicker();
             campusPicker.ID = filterControl.ID + "_campusPicker";
             campusPicker.Label = "Campus";
-            campusPicker.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            campusPicker.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             filterControl.Controls.Add( campusPicker );
 
             return new Control[] { campusPicker };
@@ -201,7 +201,7 @@ function() {
             {
                 int? campusId = selectionValues[0].AsInteger(false);
 
-                var qry = new GroupService( serviceInstance.RockContext ).Queryable()
+                var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => p.CampusId == campusId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );

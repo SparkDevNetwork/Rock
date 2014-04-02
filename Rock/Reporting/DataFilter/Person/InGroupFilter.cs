@@ -114,11 +114,12 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                var group = new GroupService().Get( selectionValues[0].AsInteger() ?? 0 );
+                var rockContext = new RockContext();
+                var group = new GroupService( rockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
 
                 var groupTypeRoleIdList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
 
-                var groupTypeRoles = new GroupTypeRoleService().Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
+                var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
 
                 if ( group != null )
                 {
@@ -170,12 +171,14 @@ function() {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gp_SelectItem( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             int groupId = gp.SelectedValueAsId() ?? 0;
-            var groupService = new GroupService();
+            var groupService = new GroupService( rockContext );
             var group = groupService.Get( groupId );
             if ( group != null )
             {
-                var groupTypeRoleService = new GroupTypeRoleService();
+                var groupTypeRoleService = new GroupTypeRoleService( rockContext );
                 var list = groupTypeRoleService.Queryable().Where( a => a.GroupTypeId == group.GroupTypeId ).OrderBy( a => a.Order ).ToList();
                 cblRole.Items.Clear();
                 foreach ( var item in list )
@@ -254,7 +257,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                GroupMemberService groupMemberService = new GroupMemberService( serviceInstance.RockContext );
+                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
                 int groupId = selectionValues[0].AsInteger() ?? 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
@@ -265,7 +268,7 @@ function() {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains(xx.GroupRoleId) );
                 }
 
-                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

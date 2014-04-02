@@ -139,10 +139,9 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="uploadedPackage">Byte array of the uploaded package</param>
         /// <param name="fileName">File name of uploaded package</param>
-        /// <param name="personAlias">Alias of the Person performing the import</param>
         /// <param name="pageId">The Id of the Page to save new data underneath</param>
         /// <param name="siteId">The Id of the Site tha the Page is being imported into</param>
-        public bool ImportPage( byte[] uploadedPackage, string fileName, PersonAlias personAlias, int pageId, int siteId )
+        public bool ImportPage( byte[] uploadedPackage, string fileName, int pageId, int siteId )
         {
             // Write .nupkg file to the PackageStaging folder...
             var path = Path.Combine( HttpContext.Current.Server.MapPath( "~/App_Data/PackageStaging" ), fileName );
@@ -181,22 +180,24 @@ namespace Rock.Services.NuGet
 
             if ( page != null )
             {
+                var rockContext = new RockContext();
+
                 // Find new block types and save them prior to scrubbing data...
-                var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService().Queryable() ).ToList();
+                var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService( rockContext ).Queryable() ).ToList();
                 RockTransactionScope.WrapTransaction( () =>
                     {
                         try
                         {
-                            var blockTypeService = new BlockTypeService();
+                            var blockTypeService = new BlockTypeService( rockContext );
 
                             foreach ( var blockType in newBlockTypes )
                             {
-                                blockTypeService.Add( blockType, personAlias );
-                                blockTypeService.Save( blockType, personAlias );
+                                blockTypeService.Add( blockType );
                             }
+                            rockContext.SaveChanges();
 
                             ValidateImportData( page, newBlockTypes );
-                            SavePages( page, newBlockTypes, personAlias, pageId, siteId );
+                            SavePages( rockContext, page, newBlockTypes, pageId, siteId );
                             ExpandFiles( packageFiles );
                         }
                         catch ( Exception e )
@@ -393,13 +394,14 @@ namespace Rock.Services.NuGet
         /// </summary>
         /// <param name="page">The current Page to save</param>
         /// <param name="newBlockTypes">List of BlockTypes not currently installed</param>
-        /// <param name="personAlias">Alias of the Person performing the "Import" operation</param>
         /// <param name="parentPageId">Id of the the current Page's parent</param>
         /// <param name="siteId">Id of the site the current Page is being imported into</param>
-        private void SavePages( Page page, IEnumerable<BlockType> newBlockTypes, PersonAlias personAlias, int parentPageId, int siteId )
+        private void SavePages( RockContext rockContext, Page page, IEnumerable<BlockType> newBlockTypes, int parentPageId, int siteId )
         {
+            rockContext = rockContext ?? new RockContext();
+
             // find layout
-            var layoutService = new LayoutService();
+            var layoutService = new LayoutService( rockContext );
             var layout = layoutService.GetBySiteId(siteId).Where( l => l.Name == page.Layout.Name && l.FileName == page.Layout.FileName ).FirstOrDefault();
             if ( layout == null )
             {
@@ -408,7 +410,7 @@ namespace Rock.Services.NuGet
                 layout.Name = page.Layout.Name;
                 layout.SiteId = siteId;
                 layoutService.Add( layout );
-                layoutService.Save( layout );
+                rockContext.SaveChanges();
             }
             int layoutId = layout.Id;
 
@@ -419,11 +421,11 @@ namespace Rock.Services.NuGet
             pg.ParentPageId = parentPageId;
             pg.LayoutId = layoutId;
 
-            var pageService = new PageService();
-            pageService.Add( pg, personAlias );
-            pageService.Save( pg, personAlias );
+            var pageService = new PageService( rockContext );
+            pageService.Add( pg );
+            rockContext.SaveChanges();
 
-            var blockService = new BlockService();
+            var blockService = new BlockService( rockContext );
 
             foreach ( var block in page.Blocks ?? new List<Block>() )
             {
@@ -436,33 +438,33 @@ namespace Rock.Services.NuGet
                     b.BlockTypeId = blockType.Id;
                 }
 
-                blockService.Add( b, personAlias );
-                blockService.Save( b, personAlias );
+                blockService.Add( b );
             }
+            rockContext.SaveChanges();
 
-            var pageRouteService = new PageRouteService();
+            var pageRouteService = new PageRouteService( rockContext );
 
             foreach ( var pageRoute in page.PageRoutes ?? new List<PageRoute>() )
             {
                 var pr = pageRoute.Clone(deepCopy: false);
                 pr.PageId = pg.Id;
-                pageRouteService.Add( pr, personAlias );
-                pageRouteService.Save( pr, personAlias );
+                pageRouteService.Add( pr );
             }
+            rockContext.SaveChanges();
 
-            var pageContextService = new PageContextService();
+            var pageContextService = new PageContextService( rockContext );
 
             foreach ( var pageContext in page.PageContexts ?? new List<PageContext>() )
             {
                 var pc = pageContext.Clone(deepCopy: false);
                 pc.PageId = pg.Id;
-                pageContextService.Add( pc, personAlias );
-                pageContextService.Save( pc, personAlias );
+                pageContextService.Add( pc );
             }
+            rockContext.SaveChanges();
 
             foreach ( var p in page.Pages ?? new List<Page>() )
             {
-                SavePages( p, blockTypes, personAlias, pg.Id, siteId );
+                SavePages( rockContext, p, blockTypes, pg.Id, siteId );
             }
         }
 
@@ -480,7 +482,7 @@ namespace Rock.Services.NuGet
         {
             // Remove export.json file from the list of files to be unzipped
             var filesToUnzip = packageFiles.Where( f => !f.Path.Contains( "export.json" ) ).ToList();
-            var blockTypeService = new BlockTypeService();
+            var blockTypeService = new BlockTypeService( new RockContext() );
             var installedBlockTypes = blockTypeService.Queryable();
             var webRoot = HttpContext.Current.Server.MapPath( "~" );
 

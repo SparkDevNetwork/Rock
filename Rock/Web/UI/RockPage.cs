@@ -27,6 +27,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
@@ -505,12 +506,14 @@ namespace Rock.Web.UI
                 }
             }
 
+            var rockContext = new RockContext();
+
             // If the impersonated query key was included then set the current person
             Page.Trace.Warn( "Checking for person impersanation" );
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.Model.PersonService personService = new Model.PersonService();
+                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                 Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
@@ -540,7 +543,7 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.Model.PersonService personService = new Model.PersonService();
+                        Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                         Rock.Model.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
@@ -1256,13 +1259,13 @@ namespace Rock.Web.UI
                     {
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
-                            keyModel.Entity = new PersonService()
+                            keyModel.Entity = new PersonService( new RockContext() )
                                 .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases" )
                                 .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
                         {
-                            keyModel.Entity = new PersonService().GetByPublicKey( keyModel.Key );
+                            keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
                         }
                     }
                     else
@@ -1961,12 +1964,18 @@ namespace Rock.Web.UI
 
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
+            {
                 sessionValues[key] = newValues;
+            }
             else
+            {
                 sessionValues.Add( key, newValues );
+            }
 
             if ( CurrentPerson != null )
-                new PersonService().SaveUserPreference( CurrentPerson, key, newValues, CurrentPersonAlias );
+            {
+                PersonService.SaveUserPreference( CurrentPerson, key, newValues );
+            }
         }
 
         /// <summary>
@@ -1985,7 +1994,7 @@ namespace Rock.Web.UI
             if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
-                    userPreferences = new PersonService().GetUserPreferences( CurrentPerson );
+                    userPreferences = PersonService.GetUserPreferences( CurrentPerson );
                 else
                     userPreferences = new Dictionary<string, List<string>>();
 

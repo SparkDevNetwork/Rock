@@ -179,6 +179,10 @@ namespace Rock.Data
         {
             Dictionary<string, PropertyInfo> properties = null;
 
+            var rockContext = new RockContext();
+            var workflowTypeService = new WorkflowTypeService( rockContext );
+            var workflowService = new WorkflowService( rockContext );
+
             foreach ( var trigger in TriggerCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
             {
                 bool match = true;
@@ -203,7 +207,6 @@ namespace Rock.Data
                 {
                     if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete )
                     {
-                        var workflowTypeService = new WorkflowTypeService();
                         var workflowType = workflowTypeService.Get( trigger.WorkflowTypeId );
 
                         if ( workflowType != null )
@@ -220,9 +223,8 @@ namespace Rock.Data
                             {
                                 if ( workflowType.IsPersisted )
                                 {
-                                    var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.Add( workflow, personAlias );
-                                    workflowService.Save( workflow, personAlias );
+                                    workflowService.Add( workflow );
+                                    rockContext.SaveChanges();
                                 }
                             }
                         }

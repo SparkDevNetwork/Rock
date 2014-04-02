@@ -51,7 +51,7 @@ namespace Rock.Jobs
         public virtual void Execute( IJobExecutionContext context )
         {
             var globalAttributesCache = GlobalAttributesCache.Read();
-            globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), null, true );
+            globalAttributesCache.SetValue( "JobPulse", RockDateTime.Now.ToString(), true );
 
             UpdateScheduledJobs( context );
         }

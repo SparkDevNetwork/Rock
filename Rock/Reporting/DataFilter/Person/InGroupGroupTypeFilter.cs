@@ -118,7 +118,7 @@ function() {
 
                 var groupTypeRoleIdList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
 
-                var groupTypeRoles = new GroupTypeRoleService().Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
+                var groupTypeRoles = new GroupTypeRoleService( new RockContext() ).Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
 
                 if ( groupType != null )
                 {
@@ -158,7 +158,7 @@ function() {
             groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = filterControl.ID + "_groupTypePicker";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService().Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
@@ -195,7 +195,7 @@ function() {
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService().GetByGroupTypeId( groupType.Id ) )
+                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
                 }
@@ -270,7 +270,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                GroupMemberService groupMemberService = new GroupMemberService( serviceInstance.RockContext );
+                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
                 int groupTypeId = selectionValues[0].AsInteger() ?? 0;
 
                 var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId );
@@ -281,7 +281,7 @@ function() {
                     groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains( xx.GroupRoleId ) );
                 }
 
-                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

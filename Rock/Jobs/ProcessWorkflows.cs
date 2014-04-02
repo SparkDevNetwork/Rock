@@ -22,6 +22,7 @@ using System.IO;
 using Quartz;
 
 using Rock.Model;
+using Rock.Data;
 
 namespace Rock.Jobs
 {
@@ -57,8 +58,7 @@ namespace Rock.Jobs
         /// </remarks>
         public virtual void Execute( IJobExecutionContext context )
         {
-            var rockContext
-            var service = new WorkflowService();
+            var service = new WorkflowService( new RockContext() );
 
             foreach ( var workflow in service.GetActive() )
             {
@@ -66,7 +66,7 @@ namespace Rock.Jobs
                     RockDateTime.Now.Subtract( workflow.LastProcessedDateTime.Value ).TotalSeconds >= workflow.WorkflowType.ProcessingIntervalSeconds )
                 {
                     var errorMessages = new List<string>();
-                    service.Process( workflow, null, out errorMessages );
+                    service.Process( workflow, out errorMessages );
                 }
             }
         }

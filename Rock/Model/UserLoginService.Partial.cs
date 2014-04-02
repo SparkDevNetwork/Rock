@@ -293,7 +293,8 @@ namespace Rock.Model
         /// <returns></returns>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
         /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
-        public static UserLogin Create( Rock.Model.Person person,
+        public static UserLogin Create( RockContext rockContext,
+            Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             int entityTypeId,
             string username,
@@ -302,7 +303,6 @@ namespace Rock.Model
         {
             if ( person != null )
             {
-                var rockContext = new Rock.Data.RockContext();
                 var userLoginService = new UserLoginService( rockContext );
 
                 var entityType = EntityTypeCache.Read( entityTypeId );

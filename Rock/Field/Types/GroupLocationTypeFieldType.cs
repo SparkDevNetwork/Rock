@@ -20,9 +20,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -92,7 +92,7 @@ namespace Rock.Field.Types
             ddl.Label = "Group Type";
             ddl.Help = "The Group Type to select location types from.";
 
-            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService();
+            Rock.Model.GroupTypeService groupTypeService = new Model.GroupTypeService( new RockContext() );
             foreach ( var groupType in groupTypeService.Queryable().OrderBy( g => g.Name ) )
             {
                 ddl.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );

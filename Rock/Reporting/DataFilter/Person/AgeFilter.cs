@@ -229,7 +229,7 @@ namespace Rock.Reporting.DataFilter.Person
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? ageValue = values[1].AsInteger( false );
 
-            var personAgeQuery = new PersonService( serviceInstance.RockContext ).Queryable();
+            var personAgeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
             switch ( comparisonType )
             {

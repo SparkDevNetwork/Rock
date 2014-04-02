@@ -18,8 +18,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -82,7 +82,7 @@ namespace Rock.Search.Person
             }
 
             bool reversed = false;
-            var qry = new PersonService().GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
+            var qry = new PersonService( new RockContext() ).GetByFullNameOrdered( searchterm, true, false, allowFirstNameSearch, out reversed );
             return qry
                 .Select( p => ( reversed ?
                     p.LastName + ", " + p.NickName + ( p.SuffixValueId.HasValue ? " " + p.SuffixValue.Name : "" ) :

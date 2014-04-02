@@ -1127,49 +1127,50 @@ namespace Rock.Model
         /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            var groupMemberService = new GroupMemberService( rockContext );
+            var knownRelationshipGroup = groupMemberService.Queryable()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                .Select( m => m.Group )
+                .FirstOrDefault();
+
+            if ( knownRelationshipGroup != null )
             {
-                var groupMemberService = new GroupMemberService();
-                var knownRelationshipGroup = groupMemberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( m => m.Group )
+                int? canCheckInRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
+                    .Select( r => r.Id )
                     .FirstOrDefault();
-
-                if ( knownRelationshipGroup != null )
+                if ( canCheckInRoleId.HasValue )
                 {
-                    int? canCheckInRoleId = new GroupTypeRoleService().Queryable()
-                        .Where( r =>
-                            r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    if ( canCheckInRoleId.HasValue )
+                    var canCheckInMember = groupMemberService.Queryable()
+                        .FirstOrDefault( m =>
+                            m.GroupId == knownRelationshipGroup.Id &&
+                            m.PersonId == relatedPersonId &&
+                            m.GroupRoleId == canCheckInRoleId.Value );
+
+                    if ( canCheckInMember == null )
                     {
-                        var canCheckInMember = groupMemberService.Queryable()
-                            .FirstOrDefault( m =>
-                                m.GroupId == knownRelationshipGroup.Id &&
-                                m.PersonId == relatedPersonId &&
-                                m.GroupRoleId == canCheckInRoleId.Value );
-
-                        if ( canCheckInMember == null )
-                        {
-                            canCheckInMember = new GroupMember();
-                            canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                            canCheckInMember.PersonId = relatedPersonId;
-                            canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                            groupMemberService.Add( canCheckInMember, currentPersonAlias );
-                            groupMemberService.Save( canCheckInMember, currentPersonAlias );
-                        }
-
-                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                        if ( inverseGroupMember != null )
-                        {
-                            groupMemberService.Save( inverseGroupMember, currentPersonAlias );
-                        }
+                        canCheckInMember = new GroupMember();
+                        canCheckInMember.GroupId = knownRelationshipGroup.Id;
+                        canCheckInMember.PersonId = relatedPersonId;
+                        canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
+                        rockContext.SaveChanges();
                     }
+
+                    var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
+                    if ( inverseGroupMember != null )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
+                    rockContext.SaveChanges();
                 }
             }
+
         }
 
         #endregion
@@ -1349,7 +1350,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Group> GetFamilies( this Person person )
         {
-            return new PersonService().GetFamilies( person != null ? person.Id : 0);
+            return new PersonService( new RockContext() ).GetFamilies( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -1360,7 +1361,7 @@ namespace Rock.Model
         /// <returns>Returns a queryable collection of <see cref="Rock.Model.Person"/> entities representing the provided Person's family.</returns>
         public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
         {
-            return new PersonService().GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>
@@ -1370,7 +1371,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
         public static Person GetSpouse( this Person person )
         {
-            return new PersonService().GetSpouse( person );
+            return new PersonService( new RockContext() ).GetSpouse( person );
         }
 
     }

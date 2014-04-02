@@ -130,7 +130,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlGroupType.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlGroupType );
 
-            foreach ( Rock.Model.GroupType groupType in new GroupTypeService().Queryable() )
+            foreach ( Rock.Model.GroupType groupType in new GroupTypeService( new RockContext() ).Queryable() )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }

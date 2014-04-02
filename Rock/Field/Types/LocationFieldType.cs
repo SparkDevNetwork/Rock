@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -41,7 +42,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new LocationService();
+                var service = new LocationService( new RockContext() );
                 var location = service.Get( new Guid( value ) );
 
                 if ( location != null )
@@ -110,7 +111,7 @@ namespace Rock.Field.Types
                 {
                     Guid guid;
                     Guid.TryParse( value, out guid );
-                    var location = new LocationService().Get( guid );
+                    var location = new LocationService( new RockContext() ).Get( guid );
                     picker.Location = location;
                 }
             }

@@ -121,7 +121,7 @@ namespace Rock.Reporting.DataFilter
             int dvId = int.MinValue;
             if ( int.TryParse( selection, out dvId ) )
             {
-                var dataView = new DataViewService().Get( dvId );
+                var dataView = new DataViewService( new RockContext() ).Get( dvId );
                 if ( dataView != null )
                 {
                     return string.Format( "Included in '{0}' Data View", dataView.Name );
@@ -146,7 +146,7 @@ namespace Rock.Reporting.DataFilter
             RockPage page = filterControl.Page as RockPage;
             if ( page != null )
             {
-                foreach ( var dataView in new DataViewService().GetByEntityTypeId( entityTypeId ) )
+                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId ) )
                 {
                     if ( dataView.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) &&
                         dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) )
@@ -224,7 +224,7 @@ namespace Rock.Reporting.DataFilter
             int dvId = int.MinValue;
             if ( int.TryParse( selection, out dvId ) )
             {
-                var dataView = new DataViewService( serviceInstance.RockContext ).Get( dvId );
+                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dvId );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)

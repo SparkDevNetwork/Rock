@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -273,7 +273,7 @@ namespace Rock.Web.Cache
                 {
                     childGroupTypeIds = new List<int>();
 
-                    var groupTypeService = new GroupTypeService();
+                    var groupTypeService = new GroupTypeService( new RockContext() );
                     foreach ( GroupType groupType in groupTypeService.GetChildGroupTypes( this.Id ) )
                     {
                         groupType.LoadAttributes();
@@ -310,7 +310,7 @@ namespace Rock.Web.Cache
                 {
                     parentGroupTypeIds = new List<int>();
 
-                    var groupTypeService = new GroupTypeService();
+                    var groupTypeService = new GroupTypeService( new RockContext() );
                     foreach ( GroupType groupType in groupTypeService.GetParentGroupTypes( this.Id ) )
                     {
                         groupType.LoadAttributes();
@@ -429,7 +429,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var groupTypeService = new GroupTypeService();
+                var groupTypeService = new GroupTypeService( new RockContext() );
                 var groupTypeModel = groupTypeService.Get( id );
                 if ( groupTypeModel != null )
                 {
@@ -475,7 +475,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var groupTypeService = new GroupTypeService();
+                var groupTypeService = new GroupTypeService( new RockContext() );
                 var groupTypeModel = groupTypeService.Get( guid );
                 if ( groupTypeModel != null )
                 {

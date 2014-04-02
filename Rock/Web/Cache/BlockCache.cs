@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -277,7 +277,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockService = new BlockService();
+                var blockService = new BlockService( new RockContext() );
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
@@ -313,7 +313,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockService = new BlockService();
+                var blockService = new BlockService( new RockContext() );
                 var blockModel = blockService.Get( guid );
                 if ( blockModel != null )
                 {

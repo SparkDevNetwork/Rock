@@ -225,6 +225,8 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            var rockContext = (RockContext)serviceInstance.Context;
+
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length != 4 )
             {
@@ -236,7 +238,7 @@ function() {
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-            var financialTransactionQry = new FinancialTransactionService( serviceInstance.RockContext ).Queryable()
+            var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
                 .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
                     new
@@ -256,7 +258,7 @@ function() {
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
 
-            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+            var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );
