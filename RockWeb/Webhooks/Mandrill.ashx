@@ -52,28 +52,44 @@ public class Mandrill : IHttpHandler {
                             {
                                 case MandrillEventType.Send:
                                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
+                                    communicationRecipient.StatusNote = String.Format( "Confirmed delivered by Mandrill at {0}", item.EventDateTime.ToString() );
                                     break;
                                 case MandrillEventType.Opened:
                                     communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                     communicationRecipient.OpenedDateTime = item.EventDateTime;
                                     communicationRecipient.OpenedClient = String.Format("{0} {1} ({2})", 
-                                        item.UserAgent.OperatingSystemName, 
-                                        item.UserAgent.UserAgentName,
-                                        item.UserAgent.Type
-                                        );
+                                                                            item.UserAgent.OperatingSystemName, 
+                                                                            item.UserAgent.UserAgentName,
+                                                                            item.UserAgent.Type);
+                                    CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
+                                    openActivity.ActivityType = "Opened";
+                                    openActivity.ActivityDateTime = item.EventDateTime;
+                                    openActivity.ActivityDetail = string.Format( "Opened from {0} on {1} ({2})",
+                                                                    item.UserAgent.UserAgentName,
+                                                                    item.UserAgent.OperatingSystemName, 
+                                                                    item.IpAddress);
+                                    communicationRecipient.Activities.Add( openActivity );
                                     break;
                                 case MandrillEventType.Clicked:
-                                    CommunicationRecipientActivity activity = new CommunicationRecipientActivity();
-                                    activity.ActivityType = "Click";
-                                    activity.ActivityDateTime = item.EventDateTime;
-                                    activity.ActivityDetail = string.Format("Clicked the address {0} from {1} using {2} {3} {4} ({5}).",
+                                    CommunicationRecipientActivity clickActivity = new CommunicationRecipientActivity();
+                                    clickActivity.ActivityType = "Click";
+                                    clickActivity.ActivityDateTime = item.EventDateTime;
+                                    clickActivity.ActivityDetail = string.Format( "Clicked the address {0} from {1} using {2} {3} {4} ({5})",
                                                                     item.UrlAddress,
                                                                     item.IpAddress,
                                                                     item.UserAgent.OperatingSystemName,
                                                                     item.UserAgent.UserAgentFamily,
                                                                     item.UserAgent.UserAgentVersion,
                                                                     item.UserAgent.Type);
-                                    communicationRecipient.Activities.Add(activity);
+                                    communicationRecipient.Activities.Add( clickActivity );
+                                    break;
+                                case MandrillEventType.SoftBounced:
+                                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                                    communicationRecipient.StatusNote = String.Format( "Soft Bounce Occurred on {0} ({1})", item.EventDateTime.ToShortDateString(), item.Msg.BounceDescription );
+                                    break;
+                                case MandrillEventType.HardBounced:
+                                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                                    communicationRecipient.StatusNote = String.Format( "Hard Bounce Occurred on {0} ({1})", item.EventDateTime.ToShortDateString(), item.Msg.BounceDescription );
                                     break;
                             }
                         }
@@ -122,12 +138,15 @@ public class Mandrill : IHttpHandler {
             }
         }
 
-        // must do this or Mandrill will not accept your webhook!
         response.Write( String.Format("Success: Processed {0} transactions.", transactionCount.ToString()) );
+
+        // must do this or Mandrill will not accept your webhook!
         response.StatusCode = 200;
         
     }
 
+    // see mandrill webhook format definitions at: http://help.mandrill.com/entries/24466132-Webhook-Format
+    
     public enum MandrillEventType { Send, HardBounced, Opened, Spam, Rejected, Delayed, Clicked, SoftBounced, Unsubscribe, Unknown };
     
     public bool IsReusable {

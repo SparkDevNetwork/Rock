@@ -207,6 +207,7 @@ namespace Rock.Communication.Transport
                                 {
                                     smtpClient.Send( message );
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    recipient.StatusNote = String.Format( "Email was recieved for delivery by Mandrill ({0})", RockDateTime.Now );
                                 }
                                 catch ( Exception ex )
                                 {
