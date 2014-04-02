@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -66,51 +67,51 @@ namespace RockWeb.Blocks.Finance
         {
             var businessService = new PersonService();
             var business = new Person();
-            //tbBusinessName;
-            //tbStreet1;
-            //tbStreet2;
-            //tbCity;
-            //ddlState.SelectedValue;
-            //tbZip;
-            //tbPhone;
-            //tbEmailAddress;
-            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
-            {
-                var phoneNumber = new PhoneNumber();
-                phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
-            }
             business.RecordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
             business.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            business.IsDeceased = false;
             business.FirstName = tbBusinessName.Text;
-            //business.PhotoId = 0;
             business.Email = tbEmailAddress.Text;
             business.IsEmailActive = true;
 
-            // Need to create a group for the business/person and tie that group to a grouplocation and location (which will actually hold the address).
-
-            var businessGroupType = GroupTypeCache.GetFamilyGroupType();
-            if ( businessGroupType != null )
+            var groupService = new GroupService();
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            if ( familyGroupType != null )
             {
-                var groupService = new GroupService();
                 var businessGroup = new Group();
-                businessGroup.GroupTypeId = businessGroupType.Id;
-                businessGroup.Name = tbBusinessName.Text + " Business Group";
-                //businessGroup.CampusId = campusId;
-
-                foreach( var groupMember in business.Members )
+                businessGroup.GroupTypeId = familyGroupType.Id;
+                businessGroup.Name = tbBusinessName.Text + " Business";
+                businessGroup.CampusId = 1;   // **** This should be set to the value of a dropdown.
+                var groupMember = new GroupMember();
+                groupMember.Person = business;
+                groupMember.GroupRoleId = new GroupTypeRoleService( groupService.RockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                businessGroup.Members.Add( groupMember );
+                groupService.Add( businessGroup, CurrentPersonAlias );
+                groupService.Save( businessGroup, CurrentPersonAlias );
+                var personService = new PersonService( groupService.RockContext );
+                business = businessService.Get( groupMember.PersonId );
+                if ( business != null )
                 {
-                    businessGroup.Members.Add( groupMember );
-                    var groupMemberService = new GroupMemberService();
-                    groupMemberService.RockContext.SaveChanges();
+                    if ( !business.Aliases.Any( a => a.AliasPersonId == business.Id ) )
+                    {
+                        business.Aliases.Add( new PersonAlias { AliasPersonId = business.Id, AliasPersonGuid = business.Guid } );
+                    }
+
+                    business.GivingGroupId = businessGroup.Id;
+                    if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+                    {
+                        var phoneNumber = new PhoneNumber();
+                        phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                        business.PhoneNumbers.Add( phoneNumber );
+                    }
+                    businessService.Save( business, CurrentPersonAlias );
                 }
 
-                groupService.RockContext.SaveChanges();
-
-                business.GivingGroup = businessGroup;
+                // Save the address
+                groupService.AddNewFamilyAddress( businessGroup, GetAttributeValue( "LocationType" ),
+                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
             }
 
-            businessService.RockContext.SaveChanges();
+            NavigateToParentPage();
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
@@ -202,8 +203,25 @@ namespace RockWeb.Blocks.Finance
         {
             SetEditMode( false );
             hfBusinessId.SetValue( business.Id );
-            lTitle.Text = String.Format( "Edit: {0}", business.FullName ).FormatAsHtmlTitle();
+            lTitle.Text = "View Business".FormatAsHtmlTitle();
 
+            var groupService = new GroupService();
+            var businessGroup = groupService.Get( (int)business.GivingGroupId );
+            var locationService = new LocationService();
+            var businessAddress = locationService.Get( businessGroup.GroupLocations.Where( a => a.GroupId == businessGroup.Id ).FirstOrDefault().Location.Id );
+            var phoneNumberService = new PhoneNumberService();
+            var businessPhone = phoneNumberService.GetByPersonId( business.Id ).FirstOrDefault();
+
+            lDetails.Text = new DescriptionList()
+                .Add( "Title", business.FirstName )
+                .Add( "Address Line 1", businessAddress.Street1 )
+                .Add( "Address Line 2", businessAddress.Street2 )
+                .Add( "City", businessAddress.City )
+                .Add( "State", businessAddress.State )
+                .Add( "Zip Code", businessAddress.Zip )
+                .Add( "Phone Number", businessPhone.NumberFormatted )
+                .Add( "Email Address", business.Email )
+                .Html;
 
             //hfAccountId.SetValue( account.Id );
             //lActionTitle.Text = account.Name.FormatAsHtmlTitle();

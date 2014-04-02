@@ -15,9 +15,9 @@
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gBusinessList" runat="server" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBusinessList_RowSelected">
                 <Columns>
-                    <asp:BoundField DataField="BusinessName" HeaderText="Business Name" SortExpression="BusinessName" />
-                    <asp:BoundField DataField="Contacts" HeaderText="Contacts" SortExpression="Contacts" />
-                    <asp:BoundField DataField="Address" HeaderText="Address" SortExpression="Address" />
+                    <asp:BoundField DataField="FirstName" HeaderText="Business Name" SortExpression="FirstName" />
+<%--                    <asp:BoundField DataField="Contacts" HeaderText="Contacts" SortExpression="Contacts" />
+                    <asp:BoundField DataField="Address" HeaderText="Address" SortExpression="Address" />--%>
                     <Rock:EditField OnClick="gBusinessList_Edit" />
                     <Rock:DeleteField OnClick="gBusinessList_Delete" />
                 </Columns>
