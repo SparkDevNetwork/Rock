@@ -373,12 +373,12 @@ namespace RockWeb.Blocks.Finance
                 nre.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
                 if ( nre.LowerValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.TotalAmount >= nre.LowerValue.Value );
+                    queryable = queryable.Where( t => t.TransactionDetails.Sum( d => d.Amount ) >= nre.LowerValue.Value );
                 }
 
                 if ( nre.UpperValue.HasValue )
                 {
-                    queryable = queryable.Where( t => t.TotalAmount <= nre.UpperValue.Value );
+                    queryable = queryable.Where( t => t.TransactionDetails.Sum( d => d.Amount ) <= nre.UpperValue.Value );
                 }
 
                 // Transaction Code
@@ -427,7 +427,21 @@ namespace RockWeb.Blocks.Finance
             SortProperty sortProperty = gTransactions.SortProperty;
             if ( sortProperty != null )
             {
-                queryable = queryable.Sort( sortProperty );
+                if ( sortProperty.Property == "TotalAmount" )
+                {
+                    if ( sortProperty.Direction == SortDirection.Ascending )
+                    {
+                        queryable = queryable.OrderBy( t => t.TransactionDetails.Sum( d => d.Amount ) );
+                    }
+                    else
+                    {
+                        queryable = queryable.OrderByDescending( t => t.TransactionDetails.Sum( d => d.Amount ) );
+                    }
+                }
+                else
+                {
+                    queryable = queryable.Sort( sortProperty );
+                }
             }
             else
             {
