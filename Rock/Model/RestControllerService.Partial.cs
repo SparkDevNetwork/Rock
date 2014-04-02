@@ -18,6 +18,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
+using Rock.Data;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -29,9 +31,12 @@ namespace Rock.Model
         /// Registers the controllers.
         /// </summary>
         /// <param name="personAlias">The person alias.</param>
-        public void RegisterControllers(PersonAlias personAlias)
+        public static void RegisterControllers()
         {
-            var existingControllers = Repository.AsQueryable("Actions").ToList();
+            var rockContext = new RockContext();
+            var restControllerService = new RestControllerService( rockContext );
+
+            var existingControllers = restControllerService.Queryable( "Actions" ).ToList();
             var discoveredControllers = new List<RestController>();
 
             var config = GlobalConfiguration.Configuration;
@@ -61,15 +66,15 @@ namespace Rock.Model
                 } );
             }
 
-            var actionService = new RestActionService( this.RockContext );
+            var actionService = new RestActionService( rockContext );
             foreach(var discoveredController in discoveredControllers)
             {
-                var controller = Repository.AsQueryable( "Actions" )
+                var controller = restControllerService.Queryable( "Actions" )
                     .Where( c => c.Name == discoveredController.Name ).FirstOrDefault();
                 if ( controller == null )
                 {
                     controller = new RestController { Name = discoveredController.Name };
-                    Add( controller, personAlias );
+                    restControllerService.Add( controller );
                 }
                 controller.ClassName = discoveredController.ClassName;
 
@@ -90,19 +95,18 @@ namespace Rock.Model
                 var actions = discoveredController.Actions.Select( d => d.ApiId).ToList();
                 foreach( var action in controller.Actions.Where( a => !actions.Contains(a.ApiId)).ToList())
                 {
-                    actionService.Delete( action, personAlias );
+                    actionService.Delete( action );
                     controller.Actions.Remove(action);
                 }
-
-                Save( controller, personAlias );
             }
 
             var controllers = discoveredControllers.Select( d => d.Name ).ToList();
-            foreach ( var controller in Repository.AsQueryable().Where( c => !controllers.Contains( c.Name )).ToList())
+            foreach ( var controller in restControllerService.Queryable().Where( c => !controllers.Contains( c.Name ) ).ToList() )
             {
-                Delete( controller, personAlias );
-                Save( controller, personAlias );
+                restControllerService.Delete( controller );
             }
+
+            rockContext.SaveChanges();
         }
     }
 }

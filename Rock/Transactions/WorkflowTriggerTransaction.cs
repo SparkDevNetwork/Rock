@@ -61,7 +61,8 @@ namespace Rock.Transactions
         {
             if ( Trigger != null )
             {
-                var workflowTypeService = new WorkflowTypeService();
+                var rockContext = new RockContext();
+                var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowType = workflowTypeService.Get( Trigger.WorkflowTypeId );
 
                 if ( workflowType != null )
@@ -73,9 +74,9 @@ namespace Rock.Transactions
                     {
                         if ( workflowType.IsPersisted )
                         {
-                            var workflowService = new Rock.Model.WorkflowService();
-                            workflowService.Add( workflow, PersonAlias );
-                            workflowService.Save( workflow, PersonAlias );
+                            var workflowService = new Rock.Model.WorkflowService( rockContext );
+                            workflowService.Add( workflow );
+                            rockContext.SaveChanges();
                         }
                     }
                 }

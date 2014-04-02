@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="NoteService"/> class
         /// </summary>
-        public NoteService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NoteService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public NoteService(IRepository<Note> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NoteService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public NoteService(RockContext context) : base(context)
         {

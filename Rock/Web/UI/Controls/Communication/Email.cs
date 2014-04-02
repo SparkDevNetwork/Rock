@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls.Communication
@@ -110,7 +110,7 @@ namespace Rock.Web.UI.Controls.Communication
                 var fileIds = new List<int>();
                 hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger() ?? 0));
 
-                new BinaryFileService().Queryable()
+                new BinaryFileService( new RockContext() ).Queryable()
                     .Where( f => fileIds.Contains( f.Id ) )
                     .Select( f => new
                     {

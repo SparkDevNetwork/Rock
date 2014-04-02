@@ -225,6 +225,35 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSave( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state != System.Data.Entity.EntityState.Deleted )
+            {
+                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+                if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
+                {
+                    int? binaryFileId = DefaultValue.AsInteger();
+                    if ( binaryFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

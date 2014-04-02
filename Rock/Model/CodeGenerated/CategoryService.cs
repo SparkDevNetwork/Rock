@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryService"/> class
         /// </summary>
-        public CategoryService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public CategoryService(IRepository<Category> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CategoryService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public CategoryService(RockContext context) : base(context)
         {
@@ -68,43 +52,43 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Category>().Queryable().Any( a => a.ParentCategoryId == item.Id ) )
+            if ( new Service<Category>( Context ).Queryable().Any( a => a.ParentCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<DataView>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<DataView>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DataView.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<History>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<History>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<PrayerRequest>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<PrayerRequest>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Report>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<Report>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Schedule>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<Schedule>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Schedule.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<WorkflowType>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            if ( new Service<WorkflowType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );
                 return false;

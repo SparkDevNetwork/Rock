@@ -31,9 +31,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to retrieve phone numbers for.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> that belong to the specified <see cref="Rock.Model.Person"/>.</returns>
-        public IEnumerable<PhoneNumber> GetByPersonId( int personId )
+        public IQueryable<PhoneNumber> GetByPersonId( int personId )
         {
-            return Repository.Find( t => t.PersonId == personId );
+            return Queryable().Where( t => t.PersonId == personId );
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
             Regex rgx = new Regex( @"[^\d]" );
             searchterm = rgx.Replace( searchterm, "" );
 
-            return Repository.AsQueryable().
+            return Queryable().
                 Where( n => n.Number.Contains( searchterm ) );
         }
     }

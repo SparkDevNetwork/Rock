@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowTriggerService"/> class
         /// </summary>
-        public WorkflowTriggerService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowTriggerService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public WorkflowTriggerService(IRepository<WorkflowTrigger> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowTriggerService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public WorkflowTriggerService(RockContext context) : base(context)
         {

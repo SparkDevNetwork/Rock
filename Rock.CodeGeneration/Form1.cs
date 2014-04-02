@@ -218,25 +218,6 @@ namespace Rock.CodeGeneration
             sb.AppendLine( "        /// <summary>" );
             sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
             sb.AppendLine( "        /// </summary>" );
-            sb.AppendFormat( "        public {0}Service()" + Environment.NewLine, type.Name );
-            sb.AppendFormat( "            : base({0})" + Environment.NewLine, repoConstructorParam );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        /// </summary>" );
-            sb.AppendLine( "        /// <param name=\"repository\">The repository.</param>" );
-            sb.AppendFormat( "        public {0}Service(IRepository<{0}> repository) : base(repository)" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        {" );
-            sb.AppendLine( "        }" );
-
-            sb.AppendLine( "" );
-
-            sb.AppendLine( "        /// <summary>" );
-            sb.AppendFormat( "        /// Initializes a new instance of the <see cref=\"{0}Service\"/> class" + Environment.NewLine, type.Name );
-            sb.AppendLine( "        /// </summary>" );
             sb.AppendLine( "        /// <param name=\"context\">The context.</param>");
             sb.AppendFormat( "        public {0}Service(RockContext context) : base(context)" + Environment.NewLine, type.Name );
             sb.AppendLine( "        {" );
@@ -425,7 +406,7 @@ order by [parentTable], [columnName]
 
                 canDeleteMiddle += string.Format(
 @" 
-            if ( new Service<{0}>().Queryable().Any( a => a.{1} == item.Id ) )
+            if ( new Service<{0}>( Context ).Queryable().Any( a => a.{1} == item.Id ) )
             {{
                 errorMessage = string.Format( ""This {{0}} is assigned to a {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName );
                 return false;

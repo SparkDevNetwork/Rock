@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -34,9 +35,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parentId">An <see cref="System.Int32"/> containing the Id of the parent ExceptionLog entity to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.ExceptionLog" /> entities who's Parent ExceptionId matches the provided value..</returns>
-        public IEnumerable<ExceptionLog> GetByParentId( int? parentId )
+        public IQueryable<ExceptionLog> GetByParentId( int? parentId )
         {
-            return Repository.Find( t => ( t.ParentId == parentId || ( parentId == null && t.ParentId == null ) ) );
+            return Queryable().Where( t => ( t.ParentId == parentId || ( parentId == null && t.ParentId == null ) ) );
         }
         
         // <summary>
@@ -44,9 +45,9 @@ namespace Rock.Model
         // </summary>
         // <param name="personId">Person Id.</param>
         // <returns>An enumerable list of ExceptionLog objects.</returns>
-        //public IEnumerable<ExceptionLog> GetByPersonId( int? personId )
+        //public IQueryable<ExceptionLog> GetByPersonId( int? personId )
         //{
-        //    return Repository.Find( t => ( t.CreatedByPersonId == personId || ( personId == null && t.PersonId == null ) ) );
+        //    return Queryable().Where( t => ( t.CreatedByPersonId == personId || ( personId == null && t.PersonId == null ) ) );
         //}
         
         /// <summary>
@@ -54,9 +55,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="siteId">An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.ExceptionLog"/> entities who's SiteId matches the provided value.</returns>
-        public IEnumerable<ExceptionLog> GetBySiteId( int? siteId )
+        public IQueryable<ExceptionLog> GetBySiteId( int? siteId )
         {
-            return Repository.Find( t => ( t.SiteId == siteId || ( siteId == null && t.SiteId == null ) ) );
+            return Queryable().Where( t => ( t.SiteId == siteId || ( siteId == null && t.SiteId == null ) ) );
         }
 
 
@@ -129,9 +130,10 @@ namespace Rock.Model
                 }
 
                 // Write ExceptionLog record to database.
-                var exceptionLogService = new ExceptionLogService();
-                exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonAlias );
-                exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonAlias );
+                var rockContext = new Rock.Data.RockContext();
+                var exceptionLogService = new ExceptionLogService( rockContext );
+                exceptionLogService.Add( exceptionLog );
+                rockContext.SaveChanges();
 
                 // Recurse if inner exception is found
                 if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )

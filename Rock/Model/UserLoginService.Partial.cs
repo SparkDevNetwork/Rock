@@ -20,6 +20,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Security;
+
+using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -35,9 +37,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="apiKey">A <see cref="System.String"/> representing the API key to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.UserLogin"/> entities where the API key matches the provided value..</returns>
-        public IEnumerable<UserLogin> GetByApiKey( string apiKey )
+        public IQueryable<UserLogin> GetByApiKey( string apiKey )
         {
-            return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
+            return Queryable().Where( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
         
         /// <summary>
@@ -46,9 +48,9 @@ namespace Rock.Model
         /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by. This property is nullable
         /// to find <see cref="Rock.Model.UserLogin"/> entities that are not associated with a Person.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.UserLogin"/> entities that are associated with the provided PersonId.</returns>
-        public IEnumerable<UserLogin> GetByPersonId( int? personId )
+        public IQueryable<UserLogin> GetByPersonId( int? personId )
         {
-            return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
+            return Queryable().Where( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
         
         /// <summary>
@@ -58,96 +60,9 @@ namespace Rock.Model
         /// <returns>A <see cref="UserLogin"/> entity where the UserName matches the provided value.</returns>
         public UserLogin GetByUserName( string userName )
         {
-            return Repository
-                .AsQueryable( "Person.Aliases" )
+            return Queryable( "Person.Aliases" )
                 .Where( u => u.UserName == userName )
                 .FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="Rock.Model.UserLogin" />
-        /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
-        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
-        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
-        /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
-        public UserLogin Create( Rock.Model.Person person,
-            AuthenticationServiceType serviceType,
-            int entityTypeId,
-            string username,
-            string password,
-            bool isConfirmed )
-        {
-            if ( person != null )
-            {
-                var entityType = EntityTypeCache.Read( entityTypeId );
-                if ( entityType != null )
-                {
-                    UserLogin user = this.GetByUserName( username );
-                    if ( user != null )
-                        throw new ArgumentOutOfRangeException( "username", "Username already exists" );
-
-                    DateTime createDate = RockDateTime.Now;
-
-                    user = new UserLogin();
-                    user.Guid = Guid.NewGuid();
-                    user.EntityTypeId = entityTypeId;
-                    user.UserName = username;
-                    user.IsConfirmed = isConfirmed;
-                    user.LastPasswordChangedDateTime = createDate;
-                    user.PersonId = person.Id;
-
-
-                    if ( serviceType == AuthenticationServiceType.Internal )
-                    {
-                        var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
-                        if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                            throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
-
-                        user.Password = authenticationComponent.EncodePassword( user, password );
-                    }
-
-                this.Add( user, person.PrimaryAlias );
-                this.Save( user, person.PrimaryAlias );
-
-                    var changes = new List<string>();
-                    History.EvaluateChange(changes, "User Login", string.Empty, username);
-                    new HistoryService().SaveChanges(typeof(Person),
-                        CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes, person.PrimaryAlias);
-
-                    return user;
-                }
-                else
-                {
-                    throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
-                }
-            }
-            else
-            {
-                throw new ArgumentException( "Invalid Person, person does not exist", "person" );
-            }
-        }
-
-        /// <summary>
-        /// Updates the last login.
-        /// </summary>
-        /// <param name="userName">Name of the user.</param>
-        public void UpdateLastLogin(string userName)
-        {
-            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
-            {
-                var userLogin = GetByUserName( userName );
-                if ( userLogin != null )
-                {
-                    userLogin.LastLoginDateTime = RockDateTime.Now;
-                    Save( userLogin, null );
-                }
-            }
         }
 
         /// <summary>
@@ -166,16 +81,6 @@ namespace Rock.Model
 
             user.Password = authenticationComponent.EncodePassword( user, password );
             user.LastPasswordChangedDateTime = RockDateTime.Now;
-        }
-
-        /// <summary>
-        /// Unlocks a <see cref="Rock.Model.UserLogin"/>
-        /// </summary>
-        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to unlock.</param>
-        public void Unlock( UserLogin user )
-        {
-            user.IsLockedOut = false;
-            this.Save( user, null );
         }
 
         /// <summary>
@@ -272,19 +177,21 @@ namespace Rock.Model
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
+            var rockContext = new RockContext();
+
             string userName = UserLogin.GetCurrentUserName();
             if ( userName != string.Empty )
             {
                 if ( userName.StartsWith( "rckipid=" ) )
                 {
-                    Rock.Model.PersonService personService = new Model.PersonService();
+                    Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                     Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
                         return impersonatedPerson.ImpersonatedUser;
                 }
                 else
                 {
-                    var userLoginService = new UserLoginService();
+                    var userLoginService = new UserLoginService( rockContext );
                     UserLogin user = userLoginService.GetByUserName( userName );
 
                     if ( user != null && userIsOnline )
@@ -374,6 +281,95 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Creates a new <see cref="Rock.Model.UserLogin" />
+        /// </summary>
+        /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean" /> flag indicating if the user has been confirmed.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
+        /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
+        public static UserLogin Create( Rock.Model.Person person,
+            AuthenticationServiceType serviceType,
+            int entityTypeId,
+            string username,
+            string password,
+            bool isConfirmed )
+        {
+            if ( person != null )
+            {
+                var rockContext = new Rock.Data.RockContext();
+                var userLoginService = new UserLoginService( rockContext );
+
+                var entityType = EntityTypeCache.Read( entityTypeId );
+                if ( entityType != null )
+                {
+                    UserLogin user = userLoginService.GetByUserName( username );
+                    if ( user != null )
+                        throw new ArgumentOutOfRangeException( "username", "Username already exists" );
+
+                    DateTime createDate = RockDateTime.Now;
+
+                    user = new UserLogin();
+                    user.Guid = Guid.NewGuid();
+                    user.EntityTypeId = entityTypeId;
+                    user.UserName = username;
+                    user.IsConfirmed = isConfirmed;
+                    user.LastPasswordChangedDateTime = createDate;
+                    user.PersonId = person.Id;
+
+                    if ( serviceType == AuthenticationServiceType.Internal )
+                    {
+                        var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                        if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                            throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+
+                        user.Password = authenticationComponent.EncodePassword( user, password );
+                    }
+
+                    userLoginService.Add( user );
+                    rockContext.SaveChanges();
+
+                    var changes = new List<string>();
+                    History.EvaluateChange( changes, "User Login", string.Empty, username );
+                    HistoryService.SaveChanges( typeof( Person ), CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid() ).Guid, person.Id, changes );
+
+                    return user;
+                }
+                else
+                {
+                    throw new ArgumentException( "Invalid EntityTypeId, entity does not exist", "entityTypeId" );
+                }
+            }
+            else
+            {
+                throw new ArgumentException( "Invalid Person, person does not exist", "person" );
+            }
+        }
+
+        /// <summary>
+        /// Updates the last login.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        public static void UpdateLastLogin( string userName )
+        {
+            var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+
+            if ( !string.IsNullOrWhiteSpace( userName ) && !userName.StartsWith( "rckipid=" ) )
+            {
+                var userLogin = userLoginService.GetByUserName( userName );
+                if ( userLogin != null )
+                {
+                    userLogin.LastLoginDateTime = RockDateTime.Now;
+                    rockContext.SaveChanges();
+                }
+            }
+        }
 
         #endregion
 

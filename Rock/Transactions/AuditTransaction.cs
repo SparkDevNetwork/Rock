@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -40,13 +40,15 @@ namespace Rock.Transactions
         {
             if ( Audits != null && Audits.Count > 0 )
             {
-                var auditService = new AuditService();
+                var rockContext = new RockContext();
+                var auditService = new AuditService( rockContext );
 
                 foreach ( var audit in Audits )
                 {
-                    auditService.Add( audit, audit.PersonAlias );
-                    auditService.Save( audit, audit.PersonAlias );
+                    auditService.Add( audit );
                 }
+
+                rockContext.SaveChanges();
             }
         }
     }

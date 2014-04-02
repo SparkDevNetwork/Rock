@@ -32,7 +32,6 @@ namespace Rock.Model
     /// and how they will interact with other components of Rock.
     /// </summary>
     [Table( "GroupType" )]
-    [FriendlyTypeName( "Group Type" )]
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered
     {
@@ -374,6 +373,19 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSave( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                ChildGroupTypes.Clear();
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the GroupType that represents this instance.

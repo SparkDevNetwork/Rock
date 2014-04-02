@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ServiceJobService"/> class
         /// </summary>
-        public ServiceJobService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceJobService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public ServiceJobService(IRepository<ServiceJob> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceJobService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public ServiceJobService(RockContext context) : base(context)
         {

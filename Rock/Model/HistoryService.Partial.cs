@@ -37,9 +37,9 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, PersonAlias currentPersonAlias )
+        public static void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes )
         {
-            SaveChanges( modelType, categoryGuid, entityId, changes, null, null, null, currentPersonAlias );
+            SaveChanges( modelType, categoryGuid, entityId, changes, null, null, null );
         }
 
         /// <summary>
@@ -53,9 +53,8 @@ namespace Rock.Model
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
         /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, PersonAlias currentPersonAlias )
+        public static void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
         {
-
             var entityType = EntityTypeCache.Read(modelType);
             var category = CategoryCache.Read(categoryGuid);
             var creationDate = RockDateTime.Now;
@@ -72,6 +71,9 @@ namespace Rock.Model
 
             if (entityType != null && category != null)
             {
+                var rockContext = new RockContext();
+                var historyService = new HistoryService(rockContext);
+
                 foreach ( string message in changes.Where( m => m != null && m != "" ) )
                 {
                     var history = new History();
@@ -86,9 +88,10 @@ namespace Rock.Model
                     // Manually set creation date on these history items so that they will be grouped together
                     history.CreatedDateTime = creationDate;
 
-                    Add( history, currentPersonAlias );
-                    Save( history, currentPersonAlias );
+                    historyService.Add( history );
                 }
+
+                rockContext.SaveChanges();
             }
         }
     }

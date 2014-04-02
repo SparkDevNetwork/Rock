@@ -28,6 +28,7 @@ using DotLiquid;
 using Newtonsoft.Json;
 using Rock.Model;
 using System.Text;
+using Rock.Data;
 
 namespace Rock
 {
@@ -1538,24 +1539,20 @@ namespace Rock
 
         /// <summary>
         /// Filters a Query to rows that have matching attribute value
-        /// (must be in a UnitOfWorkScope codeblock)
         /// </summary>
         /// <example>
-        /// using ( new Rock.Data.UnitOfWorkScope() )
-        /// {
-        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "BaptizedHere", "True" ).ToList();
-        /// }
+        ///     var test = new PersonService( rockContext ).Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
         /// </example>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The source.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="attributeValue">The attribute value.</param>
         /// <returns></returns>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
         {
             int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
-            var avs = new AttributeValueService().Queryable()
+            var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.Key == attributeKey )
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId )
                 .Where( a => a.Value == attributeValue )

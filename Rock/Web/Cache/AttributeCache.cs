@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Security;
@@ -537,7 +537,8 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var attributeService = new Rock.Model.AttributeService();
+                var rockContext = new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {

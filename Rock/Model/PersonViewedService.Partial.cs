@@ -34,7 +34,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.PersonViewed"/> entities where the Id of the target <see cref="Rock.Model.Person"/> matches the provided value.</returns>
         public IEnumerable<PersonViewed> GetByTargetPersonId( int? targetPersonId )
         {
-            return Repository.Find( t => ( t.TargetPersonAlias != null && t.TargetPersonAlias.PersonId == targetPersonId ) || ( targetPersonId == null && t.TargetPersonAlias == null ) );
+            return Queryable().Where( t => ( t.TargetPersonAlias != null && t.TargetPersonAlias.PersonId == targetPersonId ) || ( targetPersonId == null && t.TargetPersonAlias == null ) );
         }
         
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.PersonViewed"/> entities where the Id of the viewer <see cref="Rock.Model.Person"/> matches the provided value.</returns>
         public IEnumerable<PersonViewed> GetByViewerPersonId( int? viewerPersonId )
         {
-            return Repository.Find( t => ( t.ViewerPersonAlias != null && t.ViewerPersonAlias.PersonId == viewerPersonId ) || ( viewerPersonId == null && t.ViewerPersonAlias == null ) );
+            return Queryable().Where( t => ( t.ViewerPersonAlias != null && t.ViewerPersonAlias.PersonId == viewerPersonId ) || ( viewerPersonId == null && t.ViewerPersonAlias == null ) );
         }
     }
 }

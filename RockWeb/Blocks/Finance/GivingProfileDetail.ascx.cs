@@ -461,6 +461,7 @@ achieve our mission.  We are so grateful for your commitment.
         private FinancialScheduledTransaction GetScheduledTransaction(bool refresh = false)
         {
             Person targetPerson = null;
+            var rockContext = new RockContext();
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             bool allowImpersonation = false;
@@ -469,7 +470,7 @@ achieve our mission.  We are so grateful for your commitment.
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
                 {
-                    targetPerson = new PersonService().GetByUrlEncodedKey( personKey );
+                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
                 }
             }
             if ( targetPerson == null )
@@ -483,7 +484,8 @@ achieve our mission.  We are so grateful for your commitment.
                 int txnId = int.MinValue;
                 if ( int.TryParse( PageParameter( "Txn" ), out txnId ) )
                 {
-                    var service = new FinancialScheduledTransactionService();
+                    rockContext = new RockContext();
+                    var service = new FinancialScheduledTransactionService( rockContext );
                     var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType" )
                         .Where( t =>
                             t.Id == txnId &&
@@ -498,7 +500,8 @@ achieve our mission.  We are so grateful for your commitment.
                         if ( refresh )
                         {
                             string errorMessages = string.Empty;
-                            service.UpdateStatus( scheduledTransaction, CurrentPersonAlias, out errorMessages );
+                            service.GetStatus( scheduledTransaction, out errorMessages );
+                            rockContext.SaveChanges();
                         }
 
                         return scheduledTransaction;

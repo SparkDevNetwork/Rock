@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
         /// </summary>
-        public AttendanceCodeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public AttendanceCodeService(IRepository<AttendanceCode> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceCodeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public AttendanceCodeService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attendance>().Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceCode.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;

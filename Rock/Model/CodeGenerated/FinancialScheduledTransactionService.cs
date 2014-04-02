@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialScheduledTransactionService"/> class
         /// </summary>
-        public FinancialScheduledTransactionService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public FinancialScheduledTransactionService(IRepository<FinancialScheduledTransaction> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public FinancialScheduledTransactionService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;

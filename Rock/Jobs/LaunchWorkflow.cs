@@ -64,7 +64,8 @@ namespace Rock.Jobs
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
-                var workflowTypeService = new WorkflowTypeService();
+                var rockContext = new Rock.Data.RockContext();
+                var workflowTypeService = new WorkflowTypeService(rockContext);
                 var workflowType = workflowTypeService.Get( workflowTypeGuid );
                 if ( workflowType != null )
                 {
@@ -75,9 +76,9 @@ namespace Rock.Jobs
                     {
                         if ( workflowType.IsPersisted )
                         {
-                            var workflowService = new Rock.Model.WorkflowService();
-                            workflowService.Add( workflow, CurrentPersonAlias );
-                            workflowService.Save( workflow, CurrentPersonAlias );
+                            var workflowService = new Rock.Model.WorkflowService(rockContext);
+                            workflowService.Add( workflow );
+                            rockContext.SaveChanges();
                         }
                     }
                 }

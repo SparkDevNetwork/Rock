@@ -437,6 +437,17 @@ namespace Rock.Model
 
         #region Methods
 
+        public override void PreSave( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                Service service = new Service( dbContext );
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add( "PageId", this.Id );
+                service.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>

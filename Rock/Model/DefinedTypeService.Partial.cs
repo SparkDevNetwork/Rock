@@ -34,9 +34,13 @@ namespace Rock.Model
         /// <see cref="Rock.Model.DefinedValue"/>
         /// </param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.DefinedType">DefinedTypes</see> that use the specified <see cref="Rock.Model.FieldType"/>.</returns>
-        public IEnumerable<Rock.Model.DefinedType> GetByFieldTypeId( int? fieldTypeId )
+        public IOrderedQueryable<Rock.Model.DefinedType> GetByFieldTypeId( int? fieldTypeId )
         {
-            return Repository.Find( t => ( t.FieldTypeId == fieldTypeId || ( fieldTypeId == null && t.FieldTypeId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable()
+                .Where( t => 
+                    ( t.FieldTypeId == fieldTypeId || 
+                        ( fieldTypeId == null && t.FieldTypeId == null ) ) )
+                .OrderBy( t => t.Order );
         }
         
         /// <summary>
@@ -46,7 +50,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.DefinedType"/> with a matching Guid identifier. If a match is not found, null is returned.</returns>
         public Rock.Model.DefinedType GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
     }
 }

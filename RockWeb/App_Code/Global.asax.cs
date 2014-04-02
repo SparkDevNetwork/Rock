@@ -211,8 +211,6 @@ namespace RockWeb
 
                 Rock.Security.Authorization.Load();
 
-                AddEventHandlers();
-
                 new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
                 new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
 
@@ -544,17 +542,12 @@ namespace RockWeb
         private void MarkOnlineUsersOffline()
         {
             UserLoginService userLoginService = new UserLoginService();
-
-            var usersOnline = userLoginService.Queryable().Where( u => u.IsOnLine == true ).ToList();
-
-            foreach ( var user in usersOnline )
+            foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
             {
                 userLoginService.Attach( user );
                 user.IsOnLine = false;
                 userLoginService.Save( user, null );
             }
-
-   
         }
 
         /// <summary>
@@ -665,17 +658,6 @@ namespace RockWeb
 
             // Add a default route for when no parameters are passed
             routes.Add( new Route( "", new Rock.Web.RockRouteHandler() ) );
-        }
-
-        /// <summary>
-        /// Adds the event handlers.
-        /// </summary>
-        private void AddEventHandlers()
-        {
-            Rock.Model.Block.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Block_Updated );
-            Rock.Model.Block.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Block_Deleting );
-            Rock.Model.Page.Updated += new EventHandler<Rock.Data.ModelUpdatedEventArgs>( Page_Updated );
-            Rock.Model.Page.Deleting += new EventHandler<Rock.Data.ModelUpdatingEventArgs>( Page_Deleting );
         }
 
         /// <summary>
@@ -807,110 +789,6 @@ namespace RockWeb
         #endregion
 
         #region Event Handlers
-
-        /// <summary>
-        /// Flushes a cached page and it's parent page's list of child pages whenever a page is updated
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        void Page_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
-        {
-            // Get a reference to the updated page
-            Rock.Model.Page page = e.Model as Rock.Model.Page;
-            if ( page != null )
-            {
-                // Check to see if the page being updated is cached
-                System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
-                {
-                    // Get the cached page
-                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
-
-                    // if the parent page has changed, flush the old parent page's list of child pages
-                    if ( cachedPage.ParentPage != null && cachedPage.ParentPage.Id != page.ParentPageId )
-                        cachedPage.ParentPage.FlushChildPages();
-
-                    // Flush the updated page from cache
-                    Rock.Web.Cache.PageCache.Flush( page.Id );
-                }
-
-                // Check to see if updated page has a parent
-                if ( page.ParentPageId.HasValue )
-                {
-                    // If the parent page is cached, flush it's list of child pages
-                    if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.ParentPageId.Value ) ) )
-                        Rock.Web.Cache.PageCache.Read( page.ParentPageId.Value ).FlushChildPages();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes a cached page and it's parent page's list of child pages whenever a page is being deleted
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        void Page_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
-        {
-            // Get a reference to the deleted page
-            Rock.Model.Page page = e.Model as Rock.Model.Page;
-            if ( page != null )
-            {
-                // Check to see if the page being updated is cached
-                System.Runtime.Caching.ObjectCache cache = System.Runtime.Caching.MemoryCache.Default;
-                if ( cache.Contains( Rock.Web.Cache.PageCache.CacheKey( page.Id ) ) )
-                {
-                    // Get the cached page
-                    var cachedPage = Rock.Web.Cache.PageCache.Read( page.Id );
-
-                    // if the parent page is not null, flush parent page's list of child pages
-                    if ( cachedPage.ParentPage != null )
-                        cachedPage.ParentPage.FlushChildPages();
-
-                    // Flush the updated page from cache
-                    Rock.Web.Cache.PageCache.Flush( page.Id );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes a block and it's parent page from cache whenever it is updated
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        void Block_Updated( object sender, Rock.Data.ModelUpdatedEventArgs e )
-        {
-            // Get a reference to the update block instance
-            Rock.Model.Block block = e.Model as Rock.Model.Block;
-            if ( block != null )
-            {
-                // Flush the block instance from cache
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
-
-                // Flush the block instance's parent page 
-                if ( block.PageId.HasValue )
-                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
-            }
-        }
-
-        /// <summary>
-        /// Flushes a block and it's parent page from cache whenever it is being deleted
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        void Block_Deleting( object sender, Rock.Data.ModelUpdatingEventArgs e )
-        {
-            // Get a reference to the deleted block instance
-            Rock.Model.Block block = e.Model as Rock.Model.Block;
-            if ( block != null )
-            {
-                // Flush the block instance from cache
-                Rock.Web.Cache.BlockCache.Flush( block.Id );
-
-                // Flush the block instance's parent page 
-                if ( block.PageId.HasValue )
-                    Rock.Web.Cache.PageCache.Flush( block.PageId.Value );
-            }
-        }
 
         /// <summary>
         /// Caches the item removed.

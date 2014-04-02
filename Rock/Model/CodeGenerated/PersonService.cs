@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonService"/> class
         /// </summary>
-        public PersonService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PersonService(IRepository<Person> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PersonService(RockContext context) : base(context)
         {
@@ -72,43 +56,43 @@ namespace Rock.Model
             
             // ignoring Communication,SenderPersonId 
  
-            if ( new Service<CommunicationRecipient>().Queryable().Any( a => a.PersonId == item.Id ) )
+            if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
+            if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
+            if ( new Service<HtmlContent>( Context ).Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<MarketingCampaign>().Queryable().Any( a => a.ContactPersonId == item.Id ) )
+            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.ContactPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<PhoneNumber>().Queryable().Any( a => a.PersonId == item.Id ) )
+            if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
                 return false;
@@ -118,7 +102,7 @@ namespace Rock.Model
             
             // ignoring PrayerRequest,RequestedByPersonId 
  
-            if ( new Service<Tag>().Queryable().Any( a => a.OwnerId == item.Id ) )
+            if ( new Service<Tag>( Context ).Queryable().Any( a => a.OwnerId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;

@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
             int id = int.MinValue;
             if (Int32.TryParse( value, out id ))
             {
-                var result = new BinaryFileService()
+                var result = new BinaryFileService( new RockContext() )
                     .Queryable()
                     .Select( f => new { f.Id, f.FileName } )
                     .Where( f => f.Id == id )

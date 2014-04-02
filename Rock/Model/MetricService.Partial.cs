@@ -35,9 +35,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Metric">Metrics</see> with a specified Type value.
         /// </returns>
-        public IEnumerable<Metric> GetByType( bool? type )
+        public IOrderedQueryable<Metric> GetByType( bool? type )
         {
-            return Repository.Find( t => ( t.Type == type || ( type == null && t.Type == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.Type == type || ( type == null && t.Type == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Metric"/> with the provided Id value. If a matching <see cref="Rock.Model.Metric"/> is not found, null will be returned.</returns>
         public Metric GetById( int? metricId )
         {
-            return Repository.FirstOrDefault( t => t.Id == metricId );
+            return Queryable().FirstOrDefault( t => t.Id == metricId );
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Metric"/> with a provided Guid value. If a <see cref="Rock.Model.Metric"/> is not found, null will be returned.</returns>
         public Metric GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
     }
 }

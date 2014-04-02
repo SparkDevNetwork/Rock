@@ -958,7 +958,30 @@ namespace Rock.Model
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
-        
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSave( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (string.IsNullOrWhiteSpace(NickName))
+            {
+                NickName = FirstName;
+            }
+
+            if ( PhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                var binaryFile = binaryFileService.Get( PhotoId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Person's FullName that represents this instance.
         /// </summary>

@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
         /// </summary>
-        public DefinedTypeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public DefinedTypeService(IRepository<DefinedType> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedTypeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public DefinedTypeService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<NoteType>().Queryable().Any( a => a.SourcesTypeId == item.Id ) )
+            if ( new Service<NoteType>( Context ).Queryable().Any( a => a.SourcesTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedType.FriendlyTypeName, NoteType.FriendlyTypeName );
                 return false;

@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.EntityType"/> with a name that matches the provided value.</returns>
         public EntityType Get( string entityName )
         {
-            return Repository.FirstOrDefault( t => t.Name == entityName );
+            return Queryable().FirstOrDefault( t => t.Name == entityName );
         }
 
         /// <summary>
@@ -52,19 +52,24 @@ namespace Rock.Model
         {
             var entityType = Get( type.FullName );
             if ( entityType != null )
+            {
                 return entityType;
+            }
 
             if ( createIfNotFound )
             {
+                // Create a new context so type can be saved independing of current context
+                var rockContext = new RockContext();
+                var EntityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = type.FullName;
                 entityType.FriendlyName = type.Name.SplitCase();
                 entityType.AssemblyName = type.AssemblyQualifiedName;
+                EntityTypeService.Add( entityType );
+                rockContext.SaveChanges();
 
-                this.Add( entityType, personAlias );
-                this.Save( entityType, personAlias );
-
-                return entityType;
+                // Read type using current context
+                return this.Get( entityType.Id );
             }
 
             return null;
@@ -79,21 +84,26 @@ namespace Rock.Model
         /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the alias of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
         /// null if the logged in person is not known (i.e. an anonymous user).</param>
         /// <returns></returns>
-        public EntityType Get( string name, bool createIfNotFound, PersonAlias personAlias )
+        public EntityType Get( string name, bool createIfNotFound )
         {
             var entityType = Get( name );
             if ( entityType != null )
+            {
                 return entityType;
+            }
 
             if ( createIfNotFound )
             {
+                // Create a new context so type can be saved independing of current context
+                var rockContext = new RockContext();
+                var EntityTypeService = new EntityTypeService( rockContext );
                 entityType = new EntityType();
                 entityType.Name = name;
+                EntityTypeService.Add( entityType );
+                rockContext.SaveChanges();
 
-                this.Add( entityType, personAlias );
-                this.Save( entityType, personAlias );
-
-                return entityType;
+                // Read type using current context
+                return this.Get( entityType.Id );
             }
 
             return null;
@@ -105,8 +115,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.EntityType"/> where the IsEntity flag is set tot true.</returns>
         public IEnumerable<EntityType> GetEntities()
         {
-            return Repository.AsQueryable()
-                .Where( e => e.IsEntity );
+            return Queryable().Where( e => e.IsEntity );
         }
 
         /// <summary>
@@ -142,7 +151,7 @@ namespace Rock.Model
         /// as an <see cref="Rock.Model.EntityType"/>.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String"/> that represents the physical path of the web application</param>
-        public void RegisterEntityTypes( string physWebAppPath )
+        public static void RegisterEntityTypes( string physWebAppPath )
         {
             var entityTypes = new Dictionary<string, EntityType>();
 
@@ -175,19 +184,21 @@ namespace Rock.Model
                 }
             }
 
+            var rockContext = new RockContext();
+            var entityTypeService = new EntityTypeService( rockContext );
+
             // Find any existing EntityTypes marked as an entity or secured that are no longer an entity or secured
-            foreach ( var oldEntityType in Repository.AsQueryable()
+            foreach ( var oldEntityType in entityTypeService.Queryable()
                 .Where( e => !entityTypes.Keys.Contains( e.Name ) && ( e.IsEntity || e.IsSecured ) )
                 .ToList() )
             {
                 oldEntityType.IsSecured = false;
                 oldEntityType.IsEntity = false;
                 oldEntityType.AssemblyName = null;
-                Save( oldEntityType, null );
             }
 
             // Update any existing entities
-            foreach ( var existingEntityType in Repository.AsQueryable()
+            foreach ( var existingEntityType in entityTypeService.Queryable()
                 .Where( e => entityTypes.Keys.Contains( e.Name ) )
                 .ToList() )
             {
@@ -202,7 +213,6 @@ namespace Rock.Model
                     existingEntityType.IsSecured = entityType.IsSecured;
                     existingEntityType.FriendlyName = existingEntityType.FriendlyName ?? entityType.FriendlyName;
                     existingEntityType.AssemblyName = entityType.AssemblyName;
-                    Save( existingEntityType, null );
                 }
                 entityTypes.Remove( entityType.Name );
             }
@@ -214,10 +224,11 @@ namespace Rock.Model
                 // added by the audit on a previous save in this method.
                 if ( entityTypeInfo.Value.Name != "Rock.Model.EntityType" )
                 {
-                    this.Add( entityTypeInfo.Value );
-                    this.Save( entityTypeInfo.Value );
+                    entityTypeService.Add( entityTypeInfo.Value );
                 }
             }
+
+            rockContext.SaveChanges();
         }
     }
 }
