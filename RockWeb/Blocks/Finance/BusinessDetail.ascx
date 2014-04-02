@@ -62,11 +62,14 @@
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
                     <div class="col-md-6">
+                        <asp:Literal ID="lDetails" runat="server" />
+                    </div>
+<%--                    <div class="col-md-6">
                         <asp:Literal ID="lAddress" runat="server" />
                     </div>
                     <div class="col-md-6">
                         <asp:Literal ID="lContactInfo" runat="server" />
-                    </div>
+                    </div>--%>
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="lbEdit_Click" />
