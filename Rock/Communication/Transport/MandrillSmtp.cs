@@ -111,11 +111,6 @@ namespace Rock.Communication.Transport
 
                 var smtpClient = GetSmtpClient();
 
-                // add mandrill headers
-                message.Headers.Add( "X-MC-Track", "opens, clicks" );
-                message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
-                message.Headers.Add( "X-MC-Metadata", String.Format( "{{ 'communication-guid':'{0}' }}", communication.Guid.ToString()) );
-
                 // Add Attachments
                 string attachmentIds = communication.GetChannelDataValue( "Attachments" );
                 if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
@@ -165,6 +160,11 @@ namespace Rock.Communication.Transport
 
                                 message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
+                                // add mandrill headers
+                                message.Headers.Add( "X-MC-Track", "opens, clicks" );
+                                message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
+                                message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
+
                                 string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
                                 string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
                                 string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
@@ -206,7 +206,7 @@ namespace Rock.Communication.Transport
                                 try
                                 {
                                     smtpClient.Send( message );
-                                    recipient.Status = CommunicationRecipientStatus.Success;
+                                    recipient.Status = CommunicationRecipientStatus.Delivered;
                                 }
                                 catch ( Exception ex )
                                 {

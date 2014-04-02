@@ -328,6 +328,7 @@ namespace RockWeb.Blocks.Reporting
                 report.CategoryId = cpCategory.SelectedValueAsInt();
                 report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 report.DataViewId = ddlDataView.SelectedValueAsInt();
+                report.FetchTop = nbFetchTop.Text.AsInteger( false );
 
                 if ( !Page.IsValid )
                 {
@@ -766,6 +767,7 @@ namespace RockWeb.Blocks.Reporting
             cpCategory.SetValue( report.CategoryId );
             ddlEntityType.SetValue( report.EntityTypeId );
             ddlDataView.SetValue( report.DataViewId );
+            nbFetchTop.Text = report.FetchTop.ToString();
 
             ReportFieldsDictionary = new List<ReportFieldInfo>();
 

@@ -108,7 +108,7 @@ namespace Rock.Communication.Transport
                                     try
                                     {
                                         twilio.SendMessage( fromPhone, twillioNumber, subject );
-                                        recipient.Status = CommunicationRecipientStatus.Success;
+                                        recipient.Status = CommunicationRecipientStatus.Delivered;
                                     }
                                     catch ( Exception ex )
                                     {

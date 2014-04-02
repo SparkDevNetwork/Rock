@@ -25,15 +25,15 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Reporting.DataSelect.Person
+namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Select an Address of the Person" )]
+    [Description( "Select the Location of the Group" )]
     [Export( typeof( DataSelectComponent ) )]
-    [ExportMetadata( "ComponentName", "Select Person's Address" )]
-    public class AddressSelect : DataSelectComponent
+    [ExportMetadata( "ComponentName", "Select Group's Location" )]
+    public class LocationSelect : DataSelectComponent
     {
         #region Properties
 
@@ -48,7 +48,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return typeof( Rock.Model.Person ).FullName;
+                return typeof( Rock.Model.Group ).FullName;
             }
         }
 
@@ -76,7 +76,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Address";
+                return "Location";
             }
         }
 
@@ -88,7 +88,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override Type ColumnFieldType
         {
-            get { return typeof( string ); }
+            get { return typeof( Rock.Model.Location ); }
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return "Address";
+                return "Location";
             }
         }
 
@@ -119,7 +119,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Address";
+            return "Location";
         }
 
         /// <summary>
@@ -133,22 +133,10 @@ namespace Rock.Reporting.DataSelect.Person
         {
             int? groupLocationTypeValueId = selection.AsInteger( false );
 
-            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
+            var groupLocationQuery = new GroupService( context ).Queryable()
+                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId).Select( gl => gl.Location).FirstOrDefault());
 
-            var groupMemberQuery = new GroupMemberService( context ).Queryable();
-
-            // NOTE: This builds the FullAddress similar to how Location.ToString() does, but using SQL functions (selecting the entire Location record then doing ToString() is slow)
-            var personLocationQuery = new PersonService( context ).Queryable()
-                .Select( p =>
-                    groupMemberQuery
-                    .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
-                    .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId )
-                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
-                    .FirstOrDefault() );
-
-            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );
+            var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationQuery, entityIdProperty, "p" );
 
             return selectExpression;
         }
@@ -170,7 +158,7 @@ namespace Rock.Reporting.DataSelect.Person
             locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
 
             locationTypeList.ID = parentControl.ID + "_grouplocationType";
-            locationTypeList.Label = "Address Type";
+            locationTypeList.Label = "Location Type";
             parentControl.Controls.Add( locationTypeList );
 
             return new System.Web.UI.Control[] { locationTypeList };

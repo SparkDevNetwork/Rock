@@ -165,7 +165,7 @@
 
             <a id="DaysOfWeekPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:DaysOfWeekPicker ID="daysOfWeekPicker" runat="server" Label="Rock:DaysOfWeekPicker" />
+                <Rock:DaysOfWeekPicker ID="daysOfWeekPicker" RepeatDirection="Horizontal" runat="server" Label="Rock:DaysOfWeekPicker" />
             </div>
 
             <a id="DayOfWeekPicker"></a>

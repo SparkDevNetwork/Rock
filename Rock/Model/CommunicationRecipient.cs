@@ -230,9 +230,9 @@ namespace Rock.Model
         Pending = 0,
 
         /// <summary>
-        /// Communication was successfully sent to recipient
+        /// Communication was successfully delivered to recipient's mail server
         /// </summary>
-        Success = 1,
+        Delivered = 1,
 
         /// <summary>
         /// Communication failed to be sent to recipient
