@@ -43,7 +43,7 @@
                     <ul class="recipients">
                         <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
                             <ItemTemplate>
-                                <li class='recipient <%# Eval("Status").ToString().ToLower() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton> <small><%# Eval("StatusNote") %></small></li>
+                                <li class='recipient <%# Eval("Status").ToString().ToLower() %>'><asp:Literal id="lRecipientName" runat="server"></asp:Literal> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>' CausesValidation="false"><i class="fa fa-times"></i></asp:LinkButton> <small><%# Eval("StatusNote") %></small></li>
                             </ItemTemplate>
                         </asp:Repeater>
                     </ul>
@@ -78,6 +78,14 @@
             <br />
             <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
         </asp:Panel>
+
+        <script type="text/javascript">
+            // change approval status to pending if any values are changed
+            Sys.Application.add_load(function () {
+                $('.recipient span').tooltip();
+            })
+        </script>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>

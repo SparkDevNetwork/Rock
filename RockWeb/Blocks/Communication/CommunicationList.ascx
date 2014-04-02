@@ -31,7 +31,7 @@
                         <Rock:Badge ID="bPending" runat="server" ToolTip="Pending" BadgeType="None"></Rock:Badge>
                         <Rock:Badge ID="bCancelled" runat="server" ToolTip="Cancelled" BadgeType="Warning"></Rock:Badge>
                         <Rock:Badge ID="bFailed" runat="server" Tooltip="Failed" BadgeType="Danger"></Rock:Badge>
-                        <Rock:Badge ID="bSuccess" runat="server" ToolTip="Successful" BadgeType="info"></Rock:Badge>
+                        <Rock:Badge ID="bDelivered" runat="server" ToolTip="Delivered" BadgeType="info"></Rock:Badge>
                         <Rock:Badge ID="bOpened" runat="server" Tooltip="Opened" BadgeType="Success"></Rock:Badge>
                     </ItemTemplate>
                 </asp:TemplateField>
