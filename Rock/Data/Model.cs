@@ -138,7 +138,7 @@ namespace Rock.Data
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
-        public virtual void PreSave(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
 
         }

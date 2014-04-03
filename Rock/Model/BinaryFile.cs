@@ -163,7 +163,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSave( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
 

@@ -442,12 +442,12 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
 
                 // Add any unregistered blocks
-                blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
 
                 // Load the block types
+                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
                 var blockTypes = blockTypeService.Queryable()
                     .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
                     .ToList();
