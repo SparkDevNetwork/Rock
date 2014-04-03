@@ -87,6 +87,7 @@ namespace RockWeb.Blocks.Finance
                     business.Email = tbEmailAddress.Text;
                     business.IsEmailActive = true;
 
+                    // Phone Number
                     var phoneNumber = business.PhoneNumbers.FirstOrDefault();
                     if ( phoneNumber != null )
                     {
@@ -103,6 +104,24 @@ namespace RockWeb.Blocks.Finance
 
                     phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
                     business.PhoneNumbers.Add(phoneNumber);
+
+                    // Group
+                    var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                    var groupService = new GroupService();
+                    var businessGroup = new Group();
+                    if ( business.GivingGroupId != null )
+                    {
+                        businessGroup = groupService.Get( (int)business.GivingGroupId );
+                    }
+
+                    businessGroup.GroupTypeId = familyGroupType.Id;
+                    businessGroup.Name = tbBusinessName.Text + " Business";
+                    businessGroup.CampusId = 1;     // **** This needs to be set to the value of a dropdown.
+                    if ( business.GivingGroupId == null )
+                    {
+                        groupService.Add( businessGroup );
+                    }
+                    groupService.Save( businessGroup );
                 } );
             }
 
