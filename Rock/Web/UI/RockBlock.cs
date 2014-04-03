@@ -24,7 +24,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -916,13 +916,10 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this._blockCache.BlockTypeId.ToString(), rockContext ) )
             {
-                if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
-                    this._blockCache.BlockTypeId.ToString(), CurrentPersonAlias ) )
-                {
-                    this._blockCache.ReloadAttributeValues();
-                }
+                this._blockCache.ReloadAttributeValues();
             }
         }
 

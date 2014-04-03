@@ -40,14 +40,14 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
         /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        public static bool UpdateAttributes( Type type, int? entityTypeId, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        public static bool UpdateAttributes( Type type, int? entityTypeId, RockContext rockContext = null )
         {
-            return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, currentPersonAlias, rockContext );
+            return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, rockContext );
         }
 
         /// <summary>
@@ -58,13 +58,12 @@ namespace Rock.Attribute
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool attributesUpdated = false;
 
@@ -97,7 +96,7 @@ namespace Rock.Attribute
             {
                 foreach ( var blockProperty in blockProperties )
                 {
-                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonAlias ) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue ) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
             }
@@ -120,20 +119,16 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
-        /// <param name="fieldTypeService">The field type service.</param>
-        /// <param name="categoryService">The category service.</param>
         /// <param name="property">The property.</param>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, PersonAlias currentPersonAlias, RockContext rockContext = null )
+        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool updated = false;
 

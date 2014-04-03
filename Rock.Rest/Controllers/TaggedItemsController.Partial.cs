@@ -109,29 +109,26 @@ namespace Rock.Rest.Controllers
         {
             var personAlias = GetPersonAlias();
 
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                if ( name.Contains( '^' ) )
-                    name = name.Split( '^' )[0];
+            if ( name.Contains( '^' ) )
+                name = name.Split( '^' )[0];
 
-                var taggedItem = Service.Queryable()
-                    .FirstOrDefault( i =>
-                        ( i.Tag.EntityTypeId == entityTypeId ) &&
-                        ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == "" || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
-                        ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == "" || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
-                        ( i.Tag.OwnerId == ownerId ) &&
-                        ( i.Tag.Name == name ) &&
-                        ( i.EntityGuid.Equals( entityGuid ) ) );
+            var taggedItem = Service.Queryable()
+                .FirstOrDefault( i =>
+                    ( i.Tag.EntityTypeId == entityTypeId ) &&
+                    ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == "" || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
+                    ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == "" || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
+                    ( i.Tag.OwnerId == ownerId ) &&
+                    ( i.Tag.Name == name ) &&
+                    ( i.EntityGuid.Equals( entityGuid ) ) );
 
-                if ( taggedItem == null )
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
+            if ( taggedItem == null )
+                throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                CheckCanEdit( taggedItem );
+            CheckCanEdit( taggedItem );
 
-                Service.Delete( taggedItem );
+            Service.Delete( taggedItem );
 
-                Service.Context.SaveChanges();
-            }
+            Service.Context.SaveChanges();
         }
 
     }
