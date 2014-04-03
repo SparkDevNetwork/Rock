@@ -103,44 +103,42 @@ namespace Rock.Web.Cache
             if ( saveValue )
             {
                 var rockContext = new RockContext();
-                using (new Rock.Data.UnitOfWorkScope())
+
+                // Save new value
+                var attributeValueService = new AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
+
+                if ( attributeValue == null )
                 {
-                    // Save new value
-                    var attributeValueService = new AttributeValueService( rockContext );
-                    var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
-
-                    if ( attributeValue == null )
+                    var attributeService = new AttributeService( rockContext );
+                    var attribute = attributeService.GetGlobalAttribute( key );
+                    if ( attribute == null )
                     {
-                        var attributeService = new AttributeService( rockContext );
-                        var attribute = attributeService.GetGlobalAttribute( key );
-                        if ( attribute == null )
-                        {
-                            attribute = new Rock.Model.Attribute();
-                            attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
-                            attribute.EntityTypeQualifierColumn = string.Empty;
-                            attribute.EntityTypeQualifierValue = string.Empty;
-                            attribute.Key = key;
-                            attribute.Name = key.SplitCase();
-                            attributeService.Add( attribute );
-                            rockContext.SaveChanges();
+                        attribute = new Rock.Model.Attribute();
+                        attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
+                        attribute.EntityTypeQualifierColumn = string.Empty;
+                        attribute.EntityTypeQualifierValue = string.Empty;
+                        attribute.Key = key;
+                        attribute.Name = key.SplitCase();
+                        attributeService.Add( attribute );
+                        rockContext.SaveChanges();
 
-                            Attributes.Add( AttributeCache.Read( attribute.Id ) );
-                        }
-
-                        attributeValue = new AttributeValue();
-                        attributeValueService.Add( attributeValue );
-                        attributeValue.IsSystem = false;
-                        attributeValue.AttributeId = attribute.Id;
-
-                        if ( !AttributeValues.Keys.Contains( key ) )
-                        {
-                            AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
-                        }
+                        Attributes.Add( AttributeCache.Read( attribute.Id ) );
                     }
 
-                    attributeValue.Value = value;
-                    rockContext.SaveChanges();
+                    attributeValue = new AttributeValue();
+                    attributeValueService.Add( attributeValue );
+                    attributeValue.IsSystem = false;
+                    attributeValue.AttributeId = attribute.Id;
+
+                    if ( !AttributeValues.Keys.Contains( key ) )
+                    {
+                        AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
+                    }
                 }
+
+                attributeValue.Value = value;
+                rockContext.SaveChanges();
             }
 
             var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
