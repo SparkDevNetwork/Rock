@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -141,7 +142,7 @@ namespace RockWeb.Blocks.Finance
                     int accountId = 0;
                     if ( int.TryParse( e.Value, out accountId ) )
                     {
-                        var service = new FinancialAccountService();
+                        var service = new FinancialAccountService( new RockContext() );
                         var account = service.Get( accountId );
                         if ( account != null )
                         {
@@ -232,23 +233,21 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gTransactions_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            FinancialTransactionService service = new FinancialTransactionService( rockContext );
+            FinancialTransaction item = service.Get( e.RowKeyId );
+            if ( item != null )
             {
-                FinancialTransactionService service = new FinancialTransactionService();
-                FinancialTransaction item = service.Get( e.RowKeyId );
-                if ( item != null )
+                string errorMessage;
+                if ( !service.CanDelete( item, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !service.CanDelete( item, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    service.Delete( item, CurrentPersonAlias );
-                    service.Save( item, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                service.Delete( item );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -266,7 +265,7 @@ namespace RockWeb.Blocks.Finance
             nreAmount.DelimitedValues = gfTransactions.GetUserPreference( "Amount Range" );
             tbTransactionCode.Text = gfTransactions.GetUserPreference( "Transaction Code" );
 
-            var accountService = new FinancialAccountService();
+            var accountService = new FinancialAccountService( new RockContext() );
             ddlAccount.Items.Add( new ListItem( string.Empty, string.Empty ) );
             foreach ( FinancialAccount account in accountService.Queryable() )
             {
@@ -309,7 +308,7 @@ namespace RockWeb.Blocks.Finance
                 if ( contextEntity is FinancialBatch )
                 {
                     var batchId = PageParameter( "financialBatchId" );
-                    var batch = new FinancialBatchService().Get( int.Parse( batchId ) );
+                    var batch = new FinancialBatchService( new RockContext() ).Get( int.Parse( batchId ) );
                     _batch = batch;
                     BindGrid();
                 }
@@ -321,7 +320,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new FinancialTransactionService().Queryable();
+            var queryable = new FinancialTransactionService( new RockContext() ).Queryable();
 
             // Set up the selection filter
             if ( _batch != null )

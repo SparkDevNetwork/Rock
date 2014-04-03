@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -59,7 +60,7 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Events
-        
+
         /// <summary>
         /// Handles the Click event of the lbSaveFinancialBatch control.
         /// </summary>
@@ -67,55 +68,50 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveFinancialBatch_Click( object sender, EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var financialBatchService = new FinancialBatchService( rockContext );
+            FinancialBatch financialBatch = null;
+
+            int financialBatchId = 0;
+            if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
             {
-                var financialBatchService = new FinancialBatchService();
-                FinancialBatch financialBatch = null;
-
-                int financialBatchId = 0;
-                if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
-                {
-                    financialBatchId = int.Parse( hfBatchId.Value );
-                }
-
-                if ( financialBatchId == 0 )
-                {
-                    financialBatch = new Rock.Model.FinancialBatch();
-                    financialBatchService.Add( financialBatch, CurrentPersonAlias );
-                }
-                else
-                {
-                    financialBatch = financialBatchService.Get( financialBatchId );
-                }
-
-                financialBatch.Name = tbName.Text;
-                financialBatch.BatchStartDateTime = drpBatchDate.LowerValue;
-                financialBatch.BatchEndDateTime = drpBatchDate.UpperValue;
-                financialBatch.CampusId = campCampus.SelectedCampusId;                
-                financialBatch.Status = (BatchStatus) ddlStatus.SelectedIndex;
-                decimal fcontrolamt = 0;
-                decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
-                financialBatch.ControlAmount = fcontrolamt;
-
-                if ( !financialBatch.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    financialBatchService.Save( financialBatch, CurrentPersonAlias );
-                    hfBatchId.SetValue( financialBatch.Id );
-                } );
+                financialBatchId = int.Parse( hfBatchId.Value );
             }
 
-            foreach( var block in RockPage.RockBlocks.OfType<RockWeb.Blocks.Finance.TransactionList>() )
+            if ( financialBatchId == 0 )
+            {
+                financialBatch = new Rock.Model.FinancialBatch();
+                financialBatchService.Add( financialBatch );
+            }
+            else
+            {
+                financialBatch = financialBatchService.Get( financialBatchId );
+            }
+
+            financialBatch.Name = tbName.Text;
+            financialBatch.BatchStartDateTime = drpBatchDate.LowerValue;
+            financialBatch.BatchEndDateTime = drpBatchDate.UpperValue;
+            financialBatch.CampusId = campCampus.SelectedCampusId;
+            financialBatch.Status = (BatchStatus)ddlStatus.SelectedIndex;
+            decimal fcontrolamt = 0;
+            decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
+            financialBatch.ControlAmount = fcontrolamt;
+
+            if ( !financialBatch.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            rockContext.SaveChanges();
+            hfBatchId.SetValue( financialBatch.Id );
+
+            foreach ( var block in RockPage.RockBlocks.OfType<RockWeb.Blocks.Finance.TransactionList>() )
             {
                 ( (RockWeb.Blocks.Finance.TransactionList)block ).RefreshList();
             }
 
-            var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
+            var savedFinancialBatch = new FinancialBatchService( rockContext ).Get( hfBatchId.ValueAsInt() );
             ShowSummary( savedFinancialBatch );
         }
 
@@ -128,7 +124,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( hfBatchId.ValueAsInt() != 0 )
             {
-                var savedFinancialBatch = new FinancialBatchService().Get( hfBatchId.ValueAsInt() );
+                var savedFinancialBatch = new FinancialBatchService( new RockContext() ).Get( hfBatchId.ValueAsInt() );
                 ShowSummary( savedFinancialBatch );
             }
             else
@@ -144,7 +140,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var financialBatchService = new FinancialBatchService();
+            var financialBatchService = new FinancialBatchService( new RockContext() );
             var financialBatch = financialBatchService.Get( hfBatchId.ValueAsInt() );
             ShowEdit( financialBatch );
         }
@@ -171,13 +167,13 @@ namespace RockWeb.Blocks.Finance
         private void ShowSummary( FinancialBatch financialBatch )
         {
             string batchDate = string.Empty;
-            if (financialBatch.BatchStartDateTime != null)
+            if ( financialBatch.BatchStartDateTime != null )
             {
                 batchDate = financialBatch.BatchStartDateTime.Value.ToShortDateString();
             }
-            
-            lTitle.Text = string.Format("{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
-            
+
+            lTitle.Text = string.Format( "{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
+
             SetEditMode( false );
 
             string campus = string.Empty;
@@ -190,7 +186,7 @@ namespace RockWeb.Blocks.Finance
             lDetailsLeft.Text = new DescriptionList()
                 .Add( "Title", financialBatch.Name )
                 .Add( "Status", financialBatch.Status.ToString() )
-                .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString("MM/dd/yyyy") )
+                .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString( "MM/dd/yyyy" ) )
                 .Html;
 
             lDetailsRight.Text = new DescriptionList()
@@ -221,8 +217,8 @@ namespace RockWeb.Blocks.Finance
             hfBatchId.Value = financialBatch.Id.ToString();
             tbName.Text = financialBatch.Name;
             tbControlAmount.Text = financialBatch.ControlAmount.ToString();
-            ddlStatus.SelectedIndex = (int)(BatchStatus) financialBatch.Status;
-            campCampus.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            ddlStatus.SelectedIndex = (int)(BatchStatus)financialBatch.Status;
+            campCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             if ( financialBatch.CampusId.HasValue )
             {
                 campCampus.SelectedCampusId = financialBatch.CampusId;
@@ -247,7 +243,7 @@ namespace RockWeb.Blocks.Finance
             FinancialBatch financialBatch = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                financialBatch = new FinancialBatchService().Get( itemKeyValue );
+                financialBatch = new FinancialBatchService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {
