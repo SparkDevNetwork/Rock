@@ -303,8 +303,7 @@ namespace Rock.Data
         /// <param name="items">The items.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void Reorder( List<T> items, int oldIndex, int newIndex, PersonAlias personAlias )
+        public virtual void Reorder( List<T> items, int oldIndex, int newIndex )
         {
             T movedItem = items[oldIndex];
             items.RemoveAt( oldIndex );

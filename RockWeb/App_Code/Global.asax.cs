@@ -701,7 +701,7 @@ namespace RockWeb
             }
 
             // Cache all the Defined Values
-            var definedValueService = new Rock.Model.DefinedValueService();
+            var definedValueService = new Rock.Model.DefinedValueService( rockContext );
             foreach ( var definedValue in definedValueService.Queryable().ToList() )
             {
                 Rock.Web.Cache.DefinedValueCache.Read( definedValue );

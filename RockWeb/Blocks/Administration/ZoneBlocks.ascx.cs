@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -150,12 +151,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            BlockService blockService = new BlockService();
+
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
+            var blocks = blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList();
+            blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
 
             BindGrids();
         }
@@ -177,15 +182,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
         {
-            BlockService blockService = new BlockService();
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
 
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
             Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( block != null )
             {
-                blockService.Delete( block, CurrentPersonAlias );
-                blockService.Save( block, CurrentPersonAlias );
+                blockService.Delete( block );
+                rockContext.SaveChanges();
                 Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
             }
 
@@ -219,12 +225,15 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            BlockService blockService = new BlockService();
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByPageAndZone( page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
+            var blocks = blockService.GetByPageAndZone( page.Id, zoneName ).ToList();
+            blockService.Reorder( blocks, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
 
             BindGrids();
         }
@@ -246,16 +255,17 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
         {
-            BlockService blockService = new BlockService();
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
             Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( block != null )
             {
-                blockService.Delete( block, CurrentPersonAlias );
-                blockService.Save( block, CurrentPersonAlias );
+                blockService.Delete( block );
+                rockContext.SaveChanges();
                 page.FlushBlocks();
             }
 
@@ -310,7 +320,8 @@ namespace RockWeb.Blocks.Administration
 
             Rock.Model.Block block;
 
-            BlockService blockService = new BlockService();
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
 
             int blockId = hfBlockId.ValueAsInt();
 
@@ -343,7 +354,7 @@ namespace RockWeb.Blocks.Administration
                     block.Order = 0;
                 }
 
-                blockService.Add( block, CurrentPersonAlias );
+                blockService.Add( block );
             }
             else
             {
@@ -353,9 +364,9 @@ namespace RockWeb.Blocks.Administration
             block.Name = tbBlockName.Text;
             block.BlockTypeId = Convert.ToInt32( ddlBlockType.SelectedValue );
 
-            blockService.Save( block, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
-            Rock.Security.Authorization.CopyAuthorization( page, block, CurrentPersonAlias );
+            Rock.Security.Authorization.CopyAuthorization( page, block );
 
             if ( block.Layout != null )
             {
@@ -412,7 +423,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindLayoutGrid()
         {
-            BlockService blockService = new BlockService();
+            BlockService blockService = new BlockService( new RockContext() );
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
@@ -426,7 +437,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindPageGrid()
         {
-            BlockService blockService = new BlockService();
+            BlockService blockService = new BlockService( new RockContext() );
             int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
@@ -447,7 +458,7 @@ namespace RockWeb.Blocks.Administration
                 BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
 
                 // Load the block types
-                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService();
+                Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( new RockContext() );
                 var blockTypes = blockTypeService.Queryable()
                     .Select( b => new { b.Id, b.Name, b.Category, b.Description } )
                     .ToList();
@@ -486,7 +497,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="blockId">The block id.</param>
         protected void ShowEdit( BlockLocation location, int blockId )
         {
-            BlockService blockService = new BlockService();
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
             Rock.Model.Block block = blockService.Get( blockId );
             hfBlockLocation.Value = location.ConvertToString();
 
@@ -503,7 +515,7 @@ namespace RockWeb.Blocks.Administration
                 hfBlockId.Value = "0";
 
                 // Select HTML Content block by default
-                var blockType = new Rock.Model.BlockTypeService().GetByGuid( new Guid( Rock.SystemGuid.BlockType.HTML_CONTENT ) );
+                var blockType = new Rock.Model.BlockTypeService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.BlockType.HTML_CONTENT ) );
                 if ( blockType != null )
                 {
                     ddlBlockType.SelectedValue = blockType.Id.ToString();
