@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new ScheduleService();
+            var service = new ScheduleService( new RockContext() );
             var item = service.Get( int.Parse( hfScheduleId.Value ) );
             ShowEditDetails( item );
         }
@@ -93,14 +93,15 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Schedule schedule;
-            ScheduleService scheduleService = new ScheduleService();
+            var rockContext = new RockContext();
+            ScheduleService scheduleService = new ScheduleService( rockContext );
 
             int scheduleId = int.Parse( hfScheduleId.Value );
 
             if ( scheduleId == 0 )
             {
                 schedule = new Schedule();
-                scheduleService.Add( schedule, CurrentPersonAlias );
+                scheduleService.Add( schedule );
             }
             else
             {
@@ -139,10 +140,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                scheduleService.Save( schedule, CurrentPersonAlias );
-            } );
+            rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ScheduleId"] = schedule.Id.ToString();
@@ -171,7 +169,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                var service = new ScheduleService();
+                var service = new ScheduleService( new RockContext() );
                 var item = service.Get( int.Parse( hfScheduleId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -186,7 +184,8 @@ namespace RockWeb.Blocks.Core
         {
             int? categoryId = null;
 
-            var service = new ScheduleService();
+            var rockContext = new RockContext();
+            var service = new ScheduleService( rockContext );
             var item = service.Get( int.Parse( hfScheduleId.Value ) );
 
             if ( item != null )
@@ -201,8 +200,8 @@ namespace RockWeb.Blocks.Core
                 {
                     categoryId = item.CategoryId;
 
-                    service.Delete( item, CurrentPersonAlias );
-                    service.Save( item, CurrentPersonAlias );
+                    service.Delete( item );
+                    rockContext.SaveChanges();
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -293,12 +292,12 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var scheduleService = new ScheduleService();
+            var scheduleService = new ScheduleService( new RockContext() );
             Schedule schedule = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                schedule = new ScheduleService().Get( itemKeyValue );
+                schedule = scheduleService.Get( itemKeyValue );
             }
             else
             {

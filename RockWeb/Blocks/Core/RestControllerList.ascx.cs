@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
-                var service = new RestControllerService();
+                var service = new RestControllerService( new RockContext() );
                 if ( !service.Queryable().Any() )
                 {
                     RefreshControllerList();
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            var service = new RestControllerService();
+            var service = new RestControllerService( new RockContext() );
             var sortProperty = gControllers.SortProperty;
 
             IQueryable<RestController> qry = null;
@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Administration
 
         private void RefreshControllerList()
         {
-            new RestControllerService().RegisterControllers( CurrentPersonAlias );
+            RestControllerService.RegisterControllers();
         }
 
         #endregion

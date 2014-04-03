@@ -129,9 +129,11 @@ namespace RockWeb.Blocks.Core
             pnlDetails.Visible = true;
             BinaryFileType binaryFileType;
 
+            var rockContext = new RockContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                binaryFileType = new BinaryFileTypeService().Get( itemKeyValue );
+                binaryFileType = new BinaryFileTypeService( rockContext ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -154,7 +156,7 @@ namespace RockWeb.Blocks.Core
                 cpStorageType.SelectedValue = binaryFileType.StorageEntityType.Guid.ToString().ToUpper();
             }
 
-            AttributeService attributeService = new AttributeService();
+            AttributeService attributeService = new AttributeService( rockContext );
 
             string qualifierValue = binaryFileType.Id.ToString();
             var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
@@ -229,85 +231,84 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+
+            BinaryFileType binaryFileType;
+
+            var rockContext = new RockContext();
+            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
+            AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
+            CategoryService categoryService = new CategoryService( rockContext );
+
+            int binaryFileTypeId = int.Parse( hfBinaryFileTypeId.Value );
+
+            if ( binaryFileTypeId == 0 )
             {
-                BinaryFileType binaryFileType;
-
-                BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
-                AttributeService attributeService = new AttributeService();
-                AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-                CategoryService categoryService = new CategoryService();
-
-                int binaryFileTypeId = int.Parse( hfBinaryFileTypeId.Value );
-
-                if ( binaryFileTypeId == 0 )
-                {
-                    binaryFileType = new BinaryFileType();
-                    binaryFileTypeService.Add( binaryFileType, CurrentPersonAlias );
-                }
-                else
-                {
-                    binaryFileType = binaryFileTypeService.Get( binaryFileTypeId );
-                }
-
-                binaryFileType.Name = tbName.Text;
-                binaryFileType.Description = tbDescription.Text;
-                binaryFileType.IconCssClass = tbIconCssClass.Text;
-                binaryFileType.AllowCaching = cbAllowCaching.Checked;
-                binaryFileType.RequiresSecurity = cbRequiresSecurity.Checked;
-
-                if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
-                {
-                    var entityTypeService = new EntityTypeService();
-                    var storageEntityType = entityTypeService.Get( new Guid( cpStorageType.SelectedValue ) );
-
-                    if ( storageEntityType != null )
-                    {
-                        binaryFileType.StorageEntityTypeId = storageEntityType.Id;
-                    }
-                }
-
-                binaryFileType.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFileType );
-
-                if ( !binaryFileType.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                    {
-                        binaryFileTypeService.Save( binaryFileType, CurrentPersonAlias );
-
-                        // get it back to make sure we have a good Id for it for the Attributes
-                        binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
-
-                        /* Take care of Binary File Attributes */
-                        var entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( BinaryFile ) ).Id;
-
-                        // delete BinaryFileAttributes that are no longer configured in the UI
-                        var attributes = attributeService.Get( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString() );
-                        var selectedAttributeGuids = BinaryFileAttributesState.Select( a => a.Guid );
-                        foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-                        {
-                            Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                            attributeService.Delete( attr, CurrentPersonAlias );
-                            attributeService.Save( attr, CurrentPersonAlias );
-                        }
-
-                        // add/update the BinaryFileAttributes that are assigned in the UI
-                        foreach ( var attributeState in BinaryFileAttributesState )
-                        {
-                            Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
-                                entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), CurrentPersonAlias );
-                        }
-
-                        // SaveAttributeValues for the BinaryFileType
-                        binaryFileType.SaveAttributeValues( CurrentPersonAlias );
-
-                    } );
+                binaryFileType = new BinaryFileType();
+                binaryFileTypeService.Add( binaryFileType );
             }
+            else
+            {
+                binaryFileType = binaryFileTypeService.Get( binaryFileTypeId );
+            }
+
+            binaryFileType.Name = tbName.Text;
+            binaryFileType.Description = tbDescription.Text;
+            binaryFileType.IconCssClass = tbIconCssClass.Text;
+            binaryFileType.AllowCaching = cbAllowCaching.Checked;
+            binaryFileType.RequiresSecurity = cbRequiresSecurity.Checked;
+
+            if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
+            {
+                var entityTypeService = new EntityTypeService( rockContext );
+                var storageEntityType = entityTypeService.Get( new Guid( cpStorageType.SelectedValue ) );
+
+                if ( storageEntityType != null )
+                {
+                    binaryFileType.StorageEntityTypeId = storageEntityType.Id;
+                }
+            }
+
+            binaryFileType.LoadAttributes( rockContext );
+            Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFileType );
+
+            if ( !binaryFileType.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+
+                // get it back to make sure we have a good Id for it for the Attributes
+                binaryFileType = binaryFileTypeService.Get( binaryFileType.Guid );
+
+                /* Take care of Binary File Attributes */
+                var entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( BinaryFile ) ).Id;
+
+                // delete BinaryFileAttributes that are no longer configured in the UI
+                var attributes = attributeService.Get( entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString() );
+                var selectedAttributeGuids = BinaryFileAttributesState.Select( a => a.Guid );
+                foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+                {
+                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                    attributeService.Delete( attr );
+                }
+                rockContext.SaveChanges();
+
+                // add/update the BinaryFileAttributes that are assigned in the UI
+                foreach ( var attributeState in BinaryFileAttributesState )
+                {
+                    Rock.Attribute.Helper.SaveAttributeEdits( attributeState, entityTypeId, "BinaryFileTypeId", binaryFileType.Id.ToString(), rockContext );
+                }
+
+                // SaveAttributeValues for the BinaryFileType
+                binaryFileType.SaveAttributeValues( rockContext );
+
+            } );
+
 
             NavigateToParentPage();
         }
