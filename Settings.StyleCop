@@ -328,6 +328,7 @@
           <Value>md</Value>
           <Value>nb</Value>
           <Value>is</Value>
+          <Value>to</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>

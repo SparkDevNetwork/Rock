@@ -16,11 +16,9 @@
 //
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Microsoft.Security.Application;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -39,7 +37,6 @@ namespace RockWeb.Blocks.Prayer
 
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "", 0, "ExpireDays" )]
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
-
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
         #region Fields
@@ -92,7 +89,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            PrayerRequestService service = new PrayerRequestService();
+            PrayerRequestService service = new PrayerRequestService( new RockContext() );
             PrayerRequest item = service.Get( hfPrayerRequestId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -137,7 +134,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                prayerRequest = new PrayerRequestService().Get( itemKeyValue );
+                prayerRequest = new PrayerRequestService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {
@@ -145,7 +142,9 @@ namespace RockWeb.Blocks.Prayer
             }
 
             if ( prayerRequest == null )
+            {
                 return;
+            }
 
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();
 
@@ -189,7 +188,7 @@ namespace RockWeb.Blocks.Prayer
 
             DescriptionList descriptionList = new DescriptionList();
             descriptionList.Add( "Name", Sanitizer.GetSafeHtmlFragment( prayerRequest.FullName ) );
-            descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : "" );
+            descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty );
             descriptionList.Add( "Request", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text ) );
             descriptionList.Add( "Answer", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Answer ) );
             lMainDetails.Text = descriptionList.Html;
@@ -197,7 +196,7 @@ namespace RockWeb.Blocks.Prayer
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
             ShowPrayerCount( prayerRequest );
 
-            if ( ! prayerRequest.IsApproved.HasValue )
+            if ( !prayerRequest.IsApproved.HasValue )
             {
                 hlblStatus.Visible = true;
                 hlblStatus.Text = "Pending Approval";
@@ -208,7 +207,7 @@ namespace RockWeb.Blocks.Prayer
                 hlblStatus.Text = "Unapproved";
             }
 
-            hlblUrgent.Visible = ( prayerRequest.IsUrgent ?? false );
+            hlblUrgent.Visible = prayerRequest.IsUrgent ?? false;
         }
 
         /// <summary>
@@ -217,7 +216,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="prayerRequest">The prayer request.</param>
         private void ShowEditDetails( PrayerRequest prayerRequest )
         {
-            SetEditMode(true);
+            SetEditMode( true );
 
             lActionTitle.Text = ( prayerRequest.Id > 0 ) ?
                 ActionTitle.Edit( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle() :
@@ -229,7 +228,7 @@ namespace RockWeb.Blocks.Prayer
 
             dtbFirstName.Text = prayerRequest.FirstName;
             dtbLastName.Text = prayerRequest.LastName;
-            dtbText.Text =  prayerRequest.Text;
+            dtbText.Text = prayerRequest.Text;
             dtbAnswer.Text = prayerRequest.Answer;
 
             // If no expiration date is set, then use the default setting.
@@ -255,7 +254,7 @@ namespace RockWeb.Blocks.Prayer
         /// Sets the edit mode.
         /// </summary>
         /// <param name="enableEdit">if set to <c>true</c> [enable edit].</param>
-        private void SetEditMode(bool enableEdit)
+        private void SetEditMode( bool enableEdit )
         {
             fieldsetViewDetails.Visible = !enableEdit;
             pnlEditDetails.Visible = enableEdit;
@@ -269,13 +268,14 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( prayerRequest.PrayerCount > 10 )
             {
-                badgePrayerCount.BadgeType="success";
+                badgePrayerCount.BadgeType = "success";
             }
 
             if ( prayerRequest.PrayerCount > 0 )
             {
                 badgePrayerCount.Text = string.Format( "{0} prayers", prayerRequest.PrayerCount ?? 0 );
             }
+
             badgePrayerCount.ToolTip = string.Format( "{0} prayers offered by the team for this request.", prayerRequest.PrayerCount ?? 0 );
         }
 
@@ -313,8 +313,9 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void SaveRequest()
         {
+            var rockContext = new RockContext();
             PrayerRequest prayerRequest;
-            PrayerRequestService prayerRequestService = new PrayerRequestService();
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
 
             int prayerRequestId = int.Parse( hfPrayerRequestId.Value );
 
@@ -322,7 +323,7 @@ namespace RockWeb.Blocks.Prayer
             if ( prayerRequestId == 0 )
             {
                 prayerRequest = new PrayerRequest();
-                prayerRequestService.Add( prayerRequest, CurrentPersonAlias );
+                prayerRequestService.Add( prayerRequest );
                 prayerRequest.EnteredDateTime = RockDateTime.Now;
             }
             else
@@ -331,10 +332,11 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // If changing from NOT-approved to approved, record who and when
-            if ( !(prayerRequest.IsApproved ?? false) && cbApproved.Checked )
+            if ( !( prayerRequest.IsApproved ?? false ) && cbApproved.Checked )
             {
                 prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
                 prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+
                 // reset the flag count only to zero ONLY if it had a value previously.
                 if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                 {
@@ -355,12 +357,13 @@ namespace RockWeb.Blocks.Prayer
 
             // If no category was selected, then use the default category if there is one.
             int? categoryId = catpCategory.SelectedValueAsInt();
-            var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" );
-            if ( categoryId == null && !string.IsNullOrEmpty( defaultCategoryGuid ) )
+            Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
+            if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
             {
-                var category = new CategoryService().Get( new Guid( defaultCategoryGuid ) );
+                var category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
                 categoryId = category.Id;
             }
+
             prayerRequest.CategoryId = categoryId;
 
             // Now record all the bits...
@@ -385,14 +388,14 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }
 
         #endregion
 
-        # region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
+        #region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
 
         /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
