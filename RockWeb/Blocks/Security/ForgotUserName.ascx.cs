@@ -70,6 +70,11 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the btnSend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
             var mergeObjects = new Dictionary<string, object>();
@@ -79,12 +84,14 @@ namespace RockWeb.Blocks.Security
             {
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
+
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
             var personDictionaries = new List<IDictionary<string, object>>();
 
-            var personService = new PersonService();
-            var userLoginService = new UserLoginService();
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var userLoginService = new UserLoginService( rockContext );
 
             foreach ( Person person in personService.GetByEmail( tbEmail.Text )
                 .Where( p => p.Users.Any()))
@@ -113,6 +120,7 @@ namespace RockWeb.Blocks.Security
                     {
                         personDictionary.Add( "Users", users );
                     }
+
                     personDictionaries.Add( personDictionary );
                 }
             }
@@ -129,11 +137,11 @@ namespace RockWeb.Blocks.Security
                 pnlSuccess.Visible = true;
             }
             else
+            {
                 pnlWarning.Visible = true;
-
+            }
         }
 
         #endregion
-
     }
 }

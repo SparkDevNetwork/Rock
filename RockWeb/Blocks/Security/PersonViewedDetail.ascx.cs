@@ -18,7 +18,9 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -84,12 +86,12 @@ namespace RockWeb.Blocks.Security
         {
             int targetId = int.Parse( PageParameter( "targetId" ) );
             int viewerId = int.Parse( PageParameter( "viewerId" ) );
-            bool viewedBy = Convert.ToBoolean(PageParameter( "viewedBy" ));
-            var personViewedService = new PersonViewedService();
+            bool viewedBy = Convert.ToBoolean( PageParameter( "viewedBy" ) );
+            var personViewedService = new PersonViewedService( new RockContext() );
             var personViewedList = personViewedService.Queryable()
-                .Where( p => 
-                    p.ViewerPersonAlias != null && 
-                    p.ViewerPersonAlias.PersonId == viewerId && 
+                .Where( p =>
+                    p.ViewerPersonAlias != null &&
+                    p.ViewerPersonAlias.PersonId == viewerId &&
                     p.TargetPersonAlias != null &&
                     p.TargetPersonAlias.PersonId == targetId )
                 .Select( p => new
@@ -104,14 +106,16 @@ namespace RockWeb.Blocks.Security
 
             if ( viewedBy )
             {
-                gridTitle.InnerText = string.Format( "{0} Viewed By {1}", 
-                    personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault(), 
+                gridTitle.InnerText = string.Format( 
+                    "{0} Viewed By {1}",
+                    personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault(),
                     personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault() );
             }
             else
             {
-                gridTitle.InnerText = string.Format( "{0} Viewed {1}", 
-                    personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault(), 
+                gridTitle.InnerText = string.Format( 
+                    "{0} Viewed {1}",
+                    personViewedList.Select( p => p.ViewerPerson.FullName ).FirstOrDefault(),
                     personViewedList.Select( p => p.TargetPerson.FullName ).FirstOrDefault() );
             }
 
@@ -127,7 +131,7 @@ namespace RockWeb.Blocks.Security
 
             gViewDetails.DataSource = personViewedList;
             gViewDetails.DataBind();
-        }        
+        }
 
         #endregion
     }

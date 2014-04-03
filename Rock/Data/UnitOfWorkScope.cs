@@ -22,6 +22,7 @@ namespace Rock.Data
     /// <summary>
     /// Class used when services need to share the same DbContext
     /// </summary>
+    [Obsolete("Getting rid of this soon")]
     public class UnitOfWorkScope : IDisposable
     {
         [ThreadStatic]
