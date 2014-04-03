@@ -2,6 +2,19 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        
+        <asp:Literal ID="lMessages" runat="server" />
+
+        <asp:Panel ID="pnlHeader" CssClass="clearfix" runat="server">
+            <div class="banner">
+                <h1><asp:Literal ID="lPersonName" runat="server" /></h1>
+            </div>
+
+            <div class="form-horizontal pull-right">
+                <Rock:DateRangePicker ID="drpDateFilter" CssClass="pull-left" runat="server" Label="Date Filter"  /> 
+                <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action pull-left" OnClick="btnFilter_Click" />
+            </div>
+        </asp:Panel>
 
         <asp:Repeater ID="rptSessions" runat="server" OnItemDataBound="rptSessions_ItemDataBound">
                 <ItemTemplate>
@@ -30,7 +43,12 @@
                 </ItemTemplate>
         </asp:Repeater>
 
-        <asp:Literal ID="lMessages" runat="server" />
+        <div class="nav-paging">
+            <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+            <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+        </div>
+
+        
 
     </ContentTemplate>
 </asp:UpdatePanel>
