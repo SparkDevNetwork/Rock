@@ -235,9 +235,9 @@ namespace RockWeb.Blocks.Cms
                     var siteCache = SiteCache.Read( site.Id );
 
                     // Create the layouts for the site, and find the first one
-                    var layoutService = new LayoutService( rockContext );
-                    layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache );
+                    LayoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache );
 
+                    var layoutService = new LayoutService( rockContext );
                     var layouts = layoutService.GetBySiteId( siteCache.Id );
                     Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals( "FullWidth", StringComparison.OrdinalIgnoreCase ) );
                     if ( layout == null )
