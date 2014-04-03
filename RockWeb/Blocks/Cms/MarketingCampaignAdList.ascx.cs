@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( new RockContext() );
             var adTypeList = marketingCampaignAdTypeService.Queryable().Select( a => new { a.Id, a.Name } ).OrderBy( a => a.Name ).ToList();
             foreach ( var adType in adTypeList )
             {
@@ -208,7 +208,7 @@ namespace RockWeb.Blocks.Cms
 
                 case "Ad Type":
 
-                    var adType = new MarketingCampaignAdTypeService().Get( e.Value.AsInteger() ?? 0 );
+                    var adType = new MarketingCampaignAdTypeService( new RockContext() ).Get( e.Value.AsInteger() ?? 0 );
                     if ( adType != null )
                     {
                         e.Value = adType.Name;
@@ -288,23 +288,22 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
-                MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( e.RowKeyId );
-                if ( marketingCampaignAd != null )
-                {
-                    string errorMessage;
-                    if ( !marketingCampaignAdService.CanDelete( marketingCampaignAd, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+            var rockContext = new RockContext();
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( rockContext );
 
-                    marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonAlias );
-                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
+            MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( e.RowKeyId );
+            if ( marketingCampaignAd != null )
+            {
+                string errorMessage;
+                if ( !marketingCampaignAdService.CanDelete( marketingCampaignAd, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                marketingCampaignAdService.Delete( marketingCampaignAd );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -324,7 +323,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( new RockContext() );
             var qry = marketingCampaignAdService.Queryable( "MarketingCampaign, MarketingCampaignAdType" );
 
             // limit to current marketingCampaign context (if there is one)

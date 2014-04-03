@@ -34,6 +34,7 @@ using Rock.Web.UI.Controls;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.ComponentModel;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -79,7 +80,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void Render()
         {
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+            var rockContext = new RockContext();
+
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( rockContext );
             var qry = marketingCampaignAdService.Queryable();
 
             // limit to date range
@@ -194,7 +197,7 @@ namespace RockWeb.Blocks.Cms
                 string detailPageGuid = GetAttributeValue( "DetailPage" );
                 if ( !string.IsNullOrWhiteSpace( detailPageGuid ) )
                 {
-                    Rock.Model.Page detailPage = new PageService().Get( new Guid( detailPageGuid ) );
+                    Rock.Model.Page detailPage = new PageService( rockContext ).Get( new Guid( detailPageGuid ) );
                     if ( detailPage != null )
                     {
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
