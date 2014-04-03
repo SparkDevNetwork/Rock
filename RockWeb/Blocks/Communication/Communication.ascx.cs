@@ -508,25 +508,22 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var service = new CommunicationService( rockContext );
+
+            var communication = UpdateCommunication( service );
+
+            if ( communication != null )
             {
-                var rockContext = new RockContext();
-                var service = new CommunicationService( rockContext );
-
-                var communication = UpdateCommunication( service );
-
-                if ( communication != null )
+                var prevStatus = communication.Status;
+                if ( communication.Status == CommunicationStatus.Transient )
                 {
-                    var prevStatus = communication.Status;
-                    if ( communication.Status == CommunicationStatus.Transient )
-                    {
-                        communication.Status = CommunicationStatus.Draft;
-                    }
-
-                    rockContext.SaveChanges();
-
-                    ShowResult( "The communication has been saved", communication );
+                    communication.Status = CommunicationStatus.Draft;
                 }
+
+                rockContext.SaveChanges();
+
+                ShowResult( "The communication has been saved", communication );
             }
         }
 
