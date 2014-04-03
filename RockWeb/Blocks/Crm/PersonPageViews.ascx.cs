@@ -37,6 +37,8 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Page Views" )]
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
+    [IntegerField("Session Count", "The number of sessions to show per page.", true, 20, "", 1)]
+    [BooleanField("Show Header", "Determines whether the header showing the person's name and date filter should be displayed", true, "", 2)]
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -76,7 +78,10 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnLoad( e );
 
-            ShowList();
+            if ( !Page.IsPostBack )
+            {
+                ShowList();
+            }
         }
 
         #endregion
@@ -145,24 +150,20 @@ namespace RockWeb.Blocks.Crm
 
         protected void rptPageViews_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            /*if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 int currentIndex = e.Item.ItemIndex;
                 if ( currentIndex > 0 )
                 {
                     var lPageViewDuration = e.Item.FindControl( "lPageViewDuration" ) as Literal;
                     var rptPageViews = sender as Repeater;
-                    //lPageViewDuration.Text = rptPageViews.Items.Count.ToString();
-                    //l.visible = e.item.dataitem("AccountID") <> s.items(e.item.itemindex-1).dataitem("AccountID")
-                    //DateTime prevPageTime = (DateTime)rptPageViews.Items[currentIndex - 1].DataItem[""]
-                    try
-                    {
-                        var item = rptPageViews.Items[currentIndex + 1];
-                        lPageViewDuration.Text = "-" + (string)DataBinder.Eval( item.DataItem, "SessionId" ); ;
-                    }
-                    catch ( Exception ex ) { }
                 }
-            }
+            }*/
+        }
+
+        protected void btnFilter_Click( object sender, EventArgs e )
+        {
+            ShowList();
         }
 
         #endregion
@@ -171,10 +172,35 @@ namespace RockWeb.Blocks.Crm
 
         void ShowList() {
 
+            int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
+
+            int pageNumber = 0;
+            if (!String.IsNullOrEmpty(PageParameter("page")) )
+            {
+                pageNumber = Int32.Parse( PageParameter("page") );
+            }
+            int skipCount = pageNumber * sessionCount;
+
+            
+
             string itemId = PageParameter( "personId" );
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 int personId = int.Parse( itemId );
+
+                if ( GetAttributeValue( "ShowHeader" ).AsBoolean() )
+                {
+                    pnlHeader.Visible = true;
+                    PersonService personService = new PersonService();
+                    var person = personService.Get( personId );
+
+                    lPersonName.Text = person.FullName.FormatAsHtmlTitle() + " Page Views";
+                }
+                else
+                {
+                    pnlHeader.Visible = false;
+                }
+
                 PageViewService pageviewService = new PageViewService();
 
                 var pageViews = pageviewService.Queryable();
@@ -195,10 +221,51 @@ namespace RockWeb.Blocks.Crm
                                     PageViews = pageViews.Where(p=> p.SessionId == s.Key.SessionId).ToList()
                     })
                     .OrderByDescending(p => p.StartDateTime)
-                    .Take(20);
+                    .Skip( skipCount )
+                    .Take( sessionCount + 1);
 
-                rptSessions.DataSource = sessionInfo.ToList();
+                rptSessions.DataSource = sessionInfo.ToList().Take(sessionCount);
                 rptSessions.DataBind();
+
+                /*if ( drpDateFilter.LowerValue.HasValue )
+                {
+                    sessionInfo.Where( s => s.DateTimeViewed > drpDateFilter.LowerValue );
+                }
+
+                if ( drpDateFilter.UpperValue.HasValue )
+                {
+                    sessionInfo.Where( s => s.DateTimeViewed < drpDateFilter.UpperValue );
+                }*/
+
+                // set next button
+                if ( sessionInfo.Count() > sessionCount )
+                {
+                    hlNext.Visible = hlNext.Enabled = true;
+                    Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
+                    queryStringNext.Add( "page", (pageNumber + 1).ToString() );
+                    queryStringNext.Add( "personId", personId.ToString() );
+                    var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
+                    hlNext.NavigateUrl = pageReferenceNext.BuildUrl();
+                }
+                else
+                {
+                    hlNext.Visible = hlNext.Enabled = false;
+                }
+
+                // set prev button
+                if ( pageNumber == 0 )
+                {
+                    hlPrev.Visible = hlPrev.Enabled = false;
+                }
+                else
+                {
+                    hlPrev.Visible = hlPrev.Enabled = true;
+                    Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
+                    queryStringPrev.Add( "page", (pageNumber - 1).ToString() );
+                    queryStringPrev.Add( "personId", personId.ToString() );
+                    var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
+                    hlPrev.NavigateUrl = pageReferencePrev.BuildUrl();
+                }
             }
             else
             {
@@ -222,6 +289,5 @@ namespace RockWeb.Blocks.Crm
             public string UserAgent { get; set; }
             public ICollection<PageView> PageViews { get; set; }
         }
-
 }
 }
