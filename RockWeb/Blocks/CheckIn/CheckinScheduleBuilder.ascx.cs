@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void AddScheduleColumns()
         {
-            ScheduleService scheduleService = new ScheduleService();
+            ScheduleService scheduleService = new ScheduleService( new RockContext() );
 
             // limit Schedules to ones that have a CheckInStartOffsetMinutes
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
@@ -139,7 +139,9 @@ namespace RockWeb.Blocks.CheckIn
             // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
             int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
 
-            GroupTypeService groupTypeService = new GroupTypeService();
+            var rockContext = new RockContext();
+
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
             var groupTypeList = groupTypeService.Queryable()
                 .Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId )
                 .ToList();
@@ -157,7 +159,7 @@ namespace RockWeb.Blocks.CheckIn
                 ddlGroupType.Visible = false;
             }
 
-            var filterCategory = new CategoryService().Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
+            var filterCategory = new CategoryService( rockContext ).Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
             pCategory.SetValue( filterCategory );
 
             pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsInteger( false ) );
@@ -223,7 +225,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 case "Parent Location":
 
-                    var location = new LocationService().Get( itemId );
+                    var location = new LocationService( new RockContext() ).Get( itemId );
                     if ( location != null )
                     {
                         e.Value = location.Name;
@@ -254,7 +256,9 @@ namespace RockWeb.Blocks.CheckIn
         {
             AddScheduleColumns();
 
-            var groupLocationService = new GroupLocationService();
+            var rockContext = new RockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
 
             var groupLocationQry = groupLocationService.Queryable();
             int groupTypeId;
@@ -289,7 +293,7 @@ namespace RockWeb.Blocks.CheckIn
             int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
-                var descendantLocationIds = new LocationService().GetAllDescendents( parentLocationId ).Select( a => a.Id );
+                var descendantLocationIds = new LocationService( rockContext ).GetAllDescendents( parentLocationId ).Select( a => a.Id );
                 qryList = qryList.Where( a => descendantLocationIds.Contains( a.LocationId ) ).ToList();
             }
 
@@ -343,58 +347,54 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+            ScheduleService scheduleService = new ScheduleService( rockContext );
+
+            var gridViewRows = gGroupLocationSchedule.Rows;
+            foreach ( GridViewRow row in gridViewRows.OfType<GridViewRow>() )
             {
-                GroupLocationService groupLocationService = new GroupLocationService();
-                ScheduleService scheduleService = new ScheduleService();
-
-                RockTransactionScope.WrapTransaction( () =>
+                int groupLocationId = int.Parse( gGroupLocationSchedule.DataKeys[row.RowIndex].Value as string );
+                GroupLocation groupLocation = groupLocationService.Get( groupLocationId );
+                if ( groupLocation != null )
                 {
-                    var gridViewRows = gGroupLocationSchedule.Rows;
-                    foreach ( GridViewRow row in gridViewRows.OfType<GridViewRow>() )
+                    foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>() )
                     {
-                        int groupLocationId = int.Parse( gGroupLocationSchedule.DataKeys[row.RowIndex].Value as string );
-                        GroupLocation groupLocation = groupLocationService.Get( groupLocationId );
-                        if ( groupLocation != null )
+                        CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
+                        if ( checkBoxTemplateField != null )
                         {
-                            foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>() )
-                            {
-                                CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
-                                if ( checkBoxTemplateField != null )
-                                {
-                                    CheckBox checkBox = fieldCell.Controls[0] as CheckBox;
-                                    string dataField = ( fieldCell.ContainingField as CheckBoxEditableField ).DataField;
-                                    int scheduleId = int.Parse( dataField.Replace( "scheduleField_", string.Empty ) );
+                            CheckBox checkBox = fieldCell.Controls[0] as CheckBox;
+                            string dataField = ( fieldCell.ContainingField as CheckBoxEditableField ).DataField;
+                            int scheduleId = int.Parse( dataField.Replace( "scheduleField_", string.Empty ) );
 
-                                    // update GroupLocationSchedule depending on if the Schedule is Checked or not
-                                    if ( checkBox.Checked )
-                                    {
-                                        // This schedule is selected, so if GroupLocationSchedule doesn't already have this schedule, add it
-                                        if ( !groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
-                                        {
-                                            var schedule = scheduleService.Get( scheduleId );
-                                            groupLocation.Schedules.Add( schedule );
-                                        }
-                                    }
-                                    else
-                                    {
-                                        // This schedule is not selected, so if GroupLocationSchedule has this schedule, delete it
-                                        if ( groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
-                                        {
-                                            groupLocation.Schedules.Remove( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
-                                        }
-                                    }
+                            // update GroupLocationSchedule depending on if the Schedule is Checked or not
+                            if ( checkBox.Checked )
+                            {
+                                // This schedule is selected, so if GroupLocationSchedule doesn't already have this schedule, add it
+                                if ( !groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
+                                {
+                                    var schedule = scheduleService.Get( scheduleId );
+                                    groupLocation.Schedules.Add( schedule );
                                 }
                             }
-
-                            groupLocationService.Save( groupLocation, CurrentPersonAlias );
+                            else
+                            {
+                                // This schedule is not selected, so if GroupLocationSchedule has this schedule, delete it
+                                if ( groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
+                                {
+                                    groupLocation.Schedules.Remove( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
+                                }
+                            }
                         }
                     }
-
-                } );
+                }
             }
 
+            rockContext.SaveChanges();
+
             NavigateToParentPage();
+
         }
 
         #endregion

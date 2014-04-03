@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.CheckIn
 
                 groupType.LoadAttributes();
                 List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
-                BinaryFileService binaryFileService = new BinaryFileService();
+                BinaryFileService binaryFileService = new BinaryFileService( new RockContext() );
 
                 foreach ( string key in labelAttributeKeys )
                 {
@@ -341,9 +341,11 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <returns></returns>
-        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType )
+        private static bool IsInheritedGroupTypeRecursive( GroupTypeCache groupType, RockContext rockContext = null )
         {
-            if ( new GroupTypeService().Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
+            rockContext = rockContext ?? new RockContext();
+
+            if ( new GroupTypeService( rockContext ).Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
             {
                 return true;
             }
@@ -367,7 +369,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbAddCheckinArea_Click( object sender, EventArgs e )
         {
             int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger() ?? 0;
-            GroupType parentGroupType = new GroupTypeService().Get( parentGroupTypeId );
+            GroupType parentGroupType = new GroupTypeService( new RockContext() ).Get( parentGroupTypeId );
 
             // CheckinArea is GroupType entity
             GroupType checkinArea = new GroupType();
@@ -464,7 +466,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupEditor_DeleteGroupClick( object sender, EventArgs e )
         {
             CheckinGroupEditor groupEditor = sender as CheckinGroupEditor;
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( new RockContext() );
             Group groupDB = groupService.Get( groupEditor.GroupGuid );
             if ( groupDB != null )
             {
@@ -498,7 +500,7 @@ namespace RockWeb.Blocks.CheckIn
 
             Guid binaryFileTypeCheckinLabelGuid = new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL );
 
-            var binaryFileService = new BinaryFileService();
+            var binaryFileService = new BinaryFileService( new RockContext() );
 
             ddlCheckinLabel.Items.Clear();
             var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) ).OrderBy( a => a.FileName ).ToList();
@@ -655,85 +657,123 @@ namespace RockWeb.Blocks.CheckIn
         {
             bool hasValidationErrors = false;
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+            GroupService groupService = new GroupService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
+            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+
+            int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
+
+            var groupTypeUIList = new List<GroupType>();
+
+            foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
             {
-                GroupTypeService groupTypeService = new GroupTypeService();
-                GroupService groupService = new GroupService();
-                AttributeService attributeService = new AttributeService();
-                GroupLocationService groupLocationService = new GroupLocationService();
+                var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                groupTypeUIList.Add( groupType );
+            }
 
-                int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
+            var groupTypeDBList = new List<GroupType>();
 
-                var groupTypeUIList = new List<GroupType>();
+            var groupTypesToDelete = new List<GroupType>();
+            var groupsToDelete = new List<Group>();
 
-                foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
+            var groupTypesToAddUpdate = new List<GroupType>();
+            var groupsToAddUpdate = new List<Group>();
+
+            GroupType parentGroupTypeDB = groupTypeService.Get( parentGroupTypeId );
+            GroupType parentGroupTypeUI = parentGroupTypeDB.Clone( false );
+            parentGroupTypeUI.ChildGroupTypes = groupTypeUIList;
+
+            PopulateDeleteLists( groupTypesToDelete, groupsToDelete, parentGroupTypeDB, parentGroupTypeUI );
+            PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
+
+            int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
+            int binaryFileTypeId = new BinaryFileTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                // delete in reverse order to get deepest child items first
+                groupsToDelete.Reverse();
+                foreach ( var groupToDelete in groupsToDelete )
                 {
-                    var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
-                    groupTypeUIList.Add( groupType );
+                    groupService.Delete( groupToDelete );
                 }
 
-                var groupTypeDBList = new List<GroupType>();
-
-                var groupTypesToDelete = new List<GroupType>();
-                var groupsToDelete = new List<Group>();
-
-                var groupTypesToAddUpdate = new List<GroupType>();
-                var groupsToAddUpdate = new List<Group>();
-
-                GroupType parentGroupTypeDB = groupTypeService.Get( parentGroupTypeId );
-                GroupType parentGroupTypeUI = parentGroupTypeDB.Clone( false );
-                parentGroupTypeUI.ChildGroupTypes = groupTypeUIList;
-
-                PopulateDeleteLists( groupTypesToDelete, groupsToDelete, parentGroupTypeDB, parentGroupTypeUI );
-                PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
-
-                int binaryFileFieldTypeID = FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() ).Id;
-                int binaryFileTypeId = new BinaryFileTypeService().Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
-
-                RockTransactionScope.WrapTransaction( () =>
+                // delete in reverse order to get deepest child items first
+                groupTypesToDelete.Reverse();
+                foreach ( var groupTypeToDelete in groupTypesToDelete )
                 {
-                    // delete in reverse order to get deepest child items first
-                    groupsToDelete.Reverse();
-                    foreach ( var groupToDelete in groupsToDelete )
+                    groupTypeService.Delete( groupTypeToDelete );
+                }
+
+                rockContext.SaveChanges();
+
+                // Add/Update grouptypes and groups that are in the UI
+                // Note:  We'll have to save all the groupTypes without changing the DB value of ChildGroupTypes, then come around again and save the ChildGroupTypes 
+                // since the ChildGroupTypes may not exist in the database yet
+                foreach ( GroupType groupTypeUI in groupTypesToAddUpdate )
+                {
+                    GroupType groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
+                    if ( groupTypeDB == null )
                     {
-                        groupService.Delete( groupToDelete, CurrentPersonAlias );
-                        groupService.Save( groupToDelete, CurrentPersonAlias );
+                        groupTypeDB = new GroupType();
+                        groupTypeDB.Id = 0;
+                        groupTypeDB.Guid = groupTypeUI.Guid;
                     }
 
-                    // delete in reverse order to get deepest child items first
-                    groupTypesToDelete.Reverse();
-                    foreach ( var groupTypeToDelete in groupTypesToDelete )
+                    groupTypeDB.Name = groupTypeUI.Name;
+                    groupTypeDB.Order = groupTypeUI.Order;
+                    groupTypeDB.InheritedGroupTypeId = groupTypeUI.InheritedGroupTypeId;
+
+                    groupTypeDB.Attributes = groupTypeUI.Attributes;
+                    groupTypeDB.AttributeValues = groupTypeUI.AttributeValues;
+
+                    if ( groupTypeDB.Id == 0 )
                     {
-                        groupTypeService.Delete( groupTypeToDelete, CurrentPersonAlias );
-                        groupTypeService.Save( groupTypeToDelete, CurrentPersonAlias );
+                        groupTypeService.Add( groupTypeDB );
                     }
 
-                    // Add/Update grouptypes and groups that are in the UI
-                    // Note:  We'll have to save all the groupTypes without changing the DB value of ChildGroupTypes, then come around again and save the ChildGroupTypes 
-                    // since the ChildGroupTypes may not exist in the database yet
-                    foreach ( GroupType groupTypeUI in groupTypesToAddUpdate )
+                    if ( !groupTypeDB.IsValid )
                     {
-                        GroupType groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
-                        if ( groupTypeDB == null )
-                        {
-                            groupTypeDB = new GroupType();
-                            groupTypeDB.Id = 0;
-                            groupTypeDB.Guid = groupTypeUI.Guid;
-                        }
+                        hasValidationErrors = true;
+                        CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
+                        groupTypeEditor.ForceContentVisible = true;
 
-                        groupTypeDB.Name = groupTypeUI.Name;
-                        groupTypeDB.Order = groupTypeUI.Order;
-                        groupTypeDB.InheritedGroupTypeId = groupTypeUI.InheritedGroupTypeId;
+                        return;
+                    }
 
-                        groupTypeDB.Attributes = groupTypeUI.Attributes;
-                        groupTypeDB.AttributeValues = groupTypeUI.AttributeValues;
+                    rockContext.SaveChanges();
 
-                        if ( groupTypeDB.Id == 0 )
-                        {
-                            groupTypeService.Add( groupTypeDB, this.CurrentPersonAlias );
-                        }
+                    groupTypeDB.SaveAttributeValues();
 
-                        if ( !groupTypeDB.IsValid )
+                    // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
+                    groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
+
+                    // rebuild the CheckinLabel attributes from the UI (brute-force)
+                    foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB ) )
+                    {
+                        var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
+                        Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                        attributeService.Delete( attribute );
+                    }
+                    rockContext.SaveChanges();
+
+                    foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
+                    {
+                        var attribute = new Rock.Model.Attribute();
+                        attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "binaryFileType", Value = binaryFileTypeId.ToString() } );
+                        attribute.Guid = Guid.NewGuid();
+                        attribute.FieldTypeId = binaryFileFieldTypeID;
+                        attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );
+                        attribute.EntityTypeQualifierColumn = "Id";
+                        attribute.EntityTypeQualifierValue = groupTypeDB.Id.ToString();
+                        attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
+                        attribute.Key = checkinLabelAttributeInfo.AttributeKey;
+                        attribute.Name = checkinLabelAttributeInfo.FileName;
+
+                        if ( !attribute.IsValid )
                         {
                             hasValidationErrors = true;
                             CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
@@ -742,141 +782,104 @@ namespace RockWeb.Blocks.CheckIn
                             return;
                         }
 
-                        groupTypeService.Save( groupTypeDB, CurrentPersonAlias );
-
-                        groupTypeDB.SaveAttributeValues( this.CurrentPersonAlias );
-
-                        // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
-                        groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
-
-                        // rebuild the CheckinLabel attributes from the UI (brute-force)
-                        foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB ) )
-                        {
-                            var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
-                            Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                            attributeService.Delete( attribute, CurrentPersonAlias );
-                        }
-
-                        foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
-                        {
-                            var attribute = new Rock.Model.Attribute();
-                            attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "binaryFileType", Value = binaryFileTypeId.ToString() } );
-                            attribute.Guid = Guid.NewGuid();
-                            attribute.FieldTypeId = binaryFileFieldTypeID;
-                            attribute.EntityTypeId = EntityTypeCache.GetId( typeof( GroupType ) );
-                            attribute.EntityTypeQualifierColumn = "Id";
-                            attribute.EntityTypeQualifierValue = groupTypeDB.Id.ToString();
-                            attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
-                            attribute.Key = checkinLabelAttributeInfo.AttributeKey;
-                            attribute.Name = checkinLabelAttributeInfo.FileName;
-
-                            if ( !attribute.IsValid )
-                            {
-                                hasValidationErrors = true;
-                                CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
-                                groupTypeEditor.ForceContentVisible = true;
-
-                                return;
-                            }
-
-                            attributeService.Add( attribute, CurrentPersonAlias );
-                            attributeService.Save( attribute, CurrentPersonAlias );
-                        }
+                        attributeService.Add( attribute );
                     }
+                    rockContext.SaveChanges();
+                }
 
-                    // Add/Update Groups
-                    foreach ( var groupUI in groupsToAddUpdate )
+                // Add/Update Groups
+                foreach ( var groupUI in groupsToAddUpdate )
+                {
+                    Group groupDB = groupService.Get( groupUI.Guid );
+                    if ( groupDB == null )
                     {
-                        Group groupDB = groupService.Get( groupUI.Guid );
-                        if ( groupDB == null )
-                        {
-                            groupDB = new Group();
-                            groupDB.Guid = groupUI.Guid;
-                        }
-
-                        groupDB.Name = groupUI.Name;
-
-                        // delete any GroupLocations that were removed in the UI
-                        foreach ( var groupLocationDB in groupDB.GroupLocations.ToList() )
-                        {
-                            if ( !groupUI.GroupLocations.Select( a => a.LocationId ).Contains( groupLocationDB.LocationId ) )
-                            {
-                                groupLocationService.Delete(groupLocationDB, CurrentPersonAlias);
-                                groupLocationService.Save(groupLocationDB, CurrentPersonAlias);
-                            }
-                        }
-
-                        // add any GroupLocations that were added in the UI
-                        foreach ( var groupLocationUI in groupUI.GroupLocations )
-                        {
-                            if ( !groupDB.GroupLocations.Select( a => a.LocationId ).Contains( groupLocationUI.LocationId ) )
-                            {
-                                GroupLocation groupLocationDB = new GroupLocation { LocationId = groupLocationUI.LocationId };
-                                groupDB.GroupLocations.Add( groupLocationDB );
-                            }
-                        }
-
-                        groupDB.Order = groupUI.Order;
-
-                        // get GroupTypeId from database in case the groupType is new
-                        groupDB.GroupTypeId = groupTypeService.Get( groupUI.GroupType.Guid ).Id;
-                        groupDB.Attributes = groupUI.Attributes;
-                        groupDB.AttributeValues = groupUI.AttributeValues;
-
-                        if ( groupDB.Id == 0 )
-                        {
-                            groupService.Add( groupDB, CurrentPersonAlias );
-                        }
-
-                        if ( !groupDB.IsValid )
-                        {
-                            hasValidationErrors = true;
-                            hasValidationErrors = true;
-                            CheckinGroupEditor groupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().First( a => a.GroupGuid == groupDB.Guid );
-                            groupEditor.ForceContentVisible = true;
-
-                            return;
-                        }
-
-                        groupService.Save( groupDB, CurrentPersonAlias );
-
-                        groupDB.SaveAttributeValues( this.CurrentPersonAlias );
+                        groupDB = new Group();
+                        groupDB.Guid = groupUI.Guid;
                     }
 
-                    /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
+                    groupDB.Name = groupUI.Name;
 
-                    // save main parentGroupType with current UI ChildGroupTypes
-                    parentGroupTypeDB.ChildGroupTypes = new List<GroupType>();
-                    parentGroupTypeDB.ChildGroupTypes.Clear();
-                    foreach ( var childGroupTypeUI in parentGroupTypeUI.ChildGroupTypes )
+                    // delete any GroupLocations that were removed in the UI
+                    foreach ( var groupLocationDB in groupDB.GroupLocations.ToList() )
+                    {
+                        if ( !groupUI.GroupLocations.Select( a => a.LocationId ).Contains( groupLocationDB.LocationId ) )
+                        {
+                            groupLocationService.Delete( groupLocationDB );
+                        }
+                    }
+
+                    // add any GroupLocations that were added in the UI
+                    foreach ( var groupLocationUI in groupUI.GroupLocations )
+                    {
+                        if ( !groupDB.GroupLocations.Select( a => a.LocationId ).Contains( groupLocationUI.LocationId ) )
+                        {
+                            GroupLocation groupLocationDB = new GroupLocation { LocationId = groupLocationUI.LocationId };
+                            groupDB.GroupLocations.Add( groupLocationDB );
+                        }
+                    }
+
+                    groupDB.Order = groupUI.Order;
+
+                    // get GroupTypeId from database in case the groupType is new
+                    groupDB.GroupTypeId = groupTypeService.Get( groupUI.GroupType.Guid ).Id;
+                    groupDB.Attributes = groupUI.Attributes;
+                    groupDB.AttributeValues = groupUI.AttributeValues;
+
+                    if ( groupDB.Id == 0 )
+                    {
+                        groupService.Add( groupDB );
+                    }
+
+                    if ( !groupDB.IsValid )
+                    {
+                        hasValidationErrors = true;
+                        hasValidationErrors = true;
+                        CheckinGroupEditor groupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().First( a => a.GroupGuid == groupDB.Guid );
+                        groupEditor.ForceContentVisible = true;
+
+                        return;
+                    }
+
+                    rockContext.SaveChanges();
+
+                    groupDB.SaveAttributeValues();
+                }
+
+                /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
+
+                // save main parentGroupType with current UI ChildGroupTypes
+                parentGroupTypeDB.ChildGroupTypes = new List<GroupType>();
+                parentGroupTypeDB.ChildGroupTypes.Clear();
+                foreach ( var childGroupTypeUI in parentGroupTypeUI.ChildGroupTypes )
+                {
+                    var childGroupTypeDB = groupTypeService.Get( childGroupTypeUI.Guid );
+                    parentGroupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
+                }
+
+                rockContext.SaveChanges();
+
+                // loop thru all the other GroupTypes in the UI and save their childgrouptypes
+                foreach ( var groupTypeUI in groupTypesToAddUpdate )
+                {
+                    var groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
+                    groupTypeDB.ChildGroupTypes = new List<GroupType>();
+                    groupTypeDB.ChildGroupTypes.Clear();
+                    foreach ( var childGroupTypeUI in groupTypeUI.ChildGroupTypes )
                     {
                         var childGroupTypeDB = groupTypeService.Get( childGroupTypeUI.Guid );
-                        parentGroupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
+                        groupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
                     }
+                }
 
-                    groupTypeService.Save( parentGroupTypeDB, CurrentPersonAlias );
+                rockContext.SaveChanges();
 
-                    // loop thru all the other GroupTypes in the UI and save their childgrouptypes
-                    foreach ( var groupTypeUI in groupTypesToAddUpdate )
-                    {
-                        var groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
-                        groupTypeDB.ChildGroupTypes = new List<GroupType>();
-                        groupTypeDB.ChildGroupTypes.Clear();
-                        foreach ( var childGroupTypeUI in groupTypeUI.ChildGroupTypes )
-                        {
-                            var childGroupTypeDB = groupTypeService.Get( childGroupTypeUI.Guid );
-                            groupTypeDB.ChildGroupTypes.Add( childGroupTypeDB );
-                        }
-
-                        groupTypeService.Save( groupTypeDB, CurrentPersonAlias );
-                    }
-                } );
-            }
+            } );
 
             if ( !hasValidationErrors )
             {
                 NavigateToParentPage();
             }
+
         }
 
         /// <summary>
@@ -980,7 +983,7 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
-            GroupTypeService groupTypeService = new GroupTypeService();
+            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
             GroupType parentGroupType = groupTypeService.Get( itemKeyValue );
 
             if ( parentGroupType == null )
