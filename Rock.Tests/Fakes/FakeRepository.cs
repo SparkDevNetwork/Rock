@@ -126,7 +126,9 @@ namespace Rock.Tests.Fakes
 
         public virtual void Add( T entity )
         {
-            db.ToList().Add( entity );
+            var list = db.ToList();
+            list.Add(entity);
+            db = list.AsQueryable();
         }
 
         public virtual void Attach( T entity )
