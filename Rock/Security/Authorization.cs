@@ -576,14 +576,17 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Copies the authorizations from one <see cref="ISecured"/> object to another
+        /// Copies the authorizations from one <see cref="ISecured" /> object to another
         /// </summary>
         /// <param name="sourceEntity">The source entity.</param>
         /// <param name="targetEntity">The target entity.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity )
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void CopyAuthorization( ISecured sourceEntity, ISecured targetEntity, RockContext rockContext = null )
         {
-            var rockContext = new RockContext();
+            rockContext = rockContext ?? new RockContext();
 
             // If there's no Authorizations object, create it
             if ( Authorizations == null )

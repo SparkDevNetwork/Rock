@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
+            var site = new SiteService( new RockContext() ).Get( int.Parse( hfSiteId.Value ) );
             ShowEditDetails( site );
         }
 
@@ -115,31 +115,27 @@ namespace RockWeb.Blocks.Cms
         {
             bool canDelete = false;
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
+            if ( site != null )
             {
-                SiteService siteService = new SiteService();
-                Site site = siteService.Get( int.Parse( hfSiteId.Value ) );
-                if ( site != null )
+                string errorMessage;
+                canDelete = siteService.CanDelete( site, out errorMessage );
+                if ( !canDelete )
                 {
-                    string errorMessage;
-                    canDelete = siteService.CanDelete( site, out errorMessage );
-                    if ( ! canDelete )
-                    {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return; // returns out of RockTransactionScope
-                    }
-
-                    siteService.Delete( site, CurrentPersonAlias );
-                    siteService.Save( site, CurrentPersonAlias );
-
-                    SiteCache.Flush( site.Id );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return; 
                 }
-            } );
 
-            if ( canDelete )
-            {
-                NavigateToParentPage();
+                siteService.Delete( site );
+
+                rockContext.SaveChanges();
+
+                SiteCache.Flush( site.Id );
             }
+
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -153,129 +149,128 @@ namespace RockWeb.Blocks.Cms
 
             if ( Page.IsValid )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var rockContext = new RockContext();
+                SiteService siteService = new SiteService( rockContext );
+                SiteDomainService siteDomainService = new SiteDomainService( rockContext );
+                bool newSite = false;
+
+                int siteId = int.Parse( hfSiteId.Value );
+
+                if ( siteId == 0 )
                 {
-                    SiteService siteService = new SiteService();
-                    SiteDomainService siteDomainService = new SiteDomainService();
-                    bool newSite = false;
+                    newSite = true;
+                    site = new Rock.Model.Site();
+                    siteService.Add( site );
+                }
+                else
+                {
+                    site = siteService.Get( siteId );
+                }
 
-                    int siteId = int.Parse( hfSiteId.Value );
+                site.Name = tbSiteName.Text;
+                site.Description = tbDescription.Text;
+                site.Theme = ddlTheme.Text;
+                site.DefaultPageId = ppDefaultPage.PageId;
+                site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
+                site.LoginPageId = ppLoginPage.PageId;
+                site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.RegistrationPageId = ppRegistrationPage.PageId;
+                site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
+                site.PageNotFoundPageId = ppPageNotFoundPage.PageId;
+                site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
+                site.ErrorPage = tbErrorPage.Text;
+                site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
+                site.FacebookAppId = tbFacebookAppId.Text;
+                site.FacebookAppSecret = tbFacebookAppSecret.Text;
 
-                    if ( siteId == 0 )
+                var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
+                site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
+
+                // Remove any deleted domains
+                foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
+                {
+                    site.SiteDomains.Remove( domain );
+                    siteDomainService.Delete( domain );
+                }
+
+                foreach ( string domain in currentDomains )
+                {
+                    SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
+                    if ( sd == null )
                     {
-                        newSite = true;
-                        site = new Rock.Model.Site();
-                        siteService.Add( site, CurrentPersonAlias );
+                        sd = new SiteDomain();
+                        sd.Domain = domain;
+                        sd.Guid = Guid.NewGuid();
+                        site.SiteDomains.Add( sd );
                     }
-                    else
+                }
+
+                if ( !site.DefaultPageId.HasValue && !newSite )
+                {
+                    ppDefaultPage.ShowErrorMessage( "Default Page is required." );
+                    return;
+                }
+
+                if ( !site.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+
+                    if ( newSite )
                     {
-                        site = siteService.Get( siteId );
+                        Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, rockContext );
                     }
+                } );
 
-                    site.Name = tbSiteName.Text;
-                    site.Description = tbDescription.Text;
-                    site.Theme = ddlTheme.Text;
-                    site.DefaultPageId = ppDefaultPage.PageId;
-                    site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
-                    site.LoginPageId = ppLoginPage.PageId;
-                    site.LoginPageRouteId = ppLoginPage.PageRouteId;
-                    site.RegistrationPageId = ppRegistrationPage.PageId;
-                    site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
-                    site.PageNotFoundPageId = ppPageNotFoundPage.PageId;
-                    site.PageNotFoundPageRouteId = ppPageNotFoundPage.PageRouteId;
-                    site.ErrorPage = tbErrorPage.Text;
-                    site.GoogleAnalyticsCode = tbGoogleAnalytics.Text;
-                    site.FacebookAppId = tbFacebookAppId.Text;
-                    site.FacebookAppSecret = tbFacebookAppSecret.Text;
+                SiteCache.Flush( site.Id );
 
-                    var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
-                    site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
+                // Create the default page is this is a new site
+                if ( !site.DefaultPageId.HasValue && newSite )
+                {
+                    var siteCache = SiteCache.Read( site.Id );
 
-                    // Remove any deleted domains
-                    foreach ( var domain in site.SiteDomains.Where( w => !currentDomains.Contains( w.Domain ) ).ToList() )
+                    // Create the layouts for the site, and find the first one
+                    var layoutService = new LayoutService( rockContext );
+                    layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache );
+
+                    var layouts = layoutService.GetBySiteId( siteCache.Id );
+                    Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals( "FullWidth", StringComparison.OrdinalIgnoreCase ) );
+                    if ( layout == null )
                     {
-                        site.SiteDomains.Remove( domain );
-                        siteDomainService.Delete( domain, CurrentPersonAlias );
+                        layout = layouts.FirstOrDefault();
                     }
-
-                    foreach ( string domain in currentDomains )
+                    if ( layout != null )
                     {
-                        SiteDomain sd = site.SiteDomains.Where( d => d.Domain == domain ).FirstOrDefault();
-                        if ( sd == null )
-                        {
-                            sd = new SiteDomain();
-                            sd.Domain = domain;
-                            sd.Guid = Guid.NewGuid();
-                            site.SiteDomains.Add( sd );
-                        }
+                        var pageService = new PageService( rockContext );
+                        var page = new Page();
+                        page.LayoutId = layout.Id;
+                        page.PageTitle = siteCache.Name + " Home Page";
+                        page.InternalName = page.PageTitle;
+                        page.BrowserTitle = page.PageTitle;
+                        page.EnableViewState = true;
+                        page.IncludeAdminFooter = true;
+                        page.MenuDisplayChildPages = true;
+
+                        var lastPage = pageService.GetByParentPageId( null ).
+                            OrderByDescending( b => b.Order ).FirstOrDefault();
+
+                        page.Order = lastPage != null ? lastPage.Order + 1 : 0;
+                        pageService.Add( page );
+
+                        rockContext.SaveChanges();
+
+                        site = siteService.Get( siteCache.Id );
+                        site.DefaultPageId = page.Id;
+
+                        rockContext.SaveChanges();
+
+                        SiteCache.Flush( site.Id );
                     }
-
-                    if (!site.DefaultPageId.HasValue && !newSite)
-                    {
-                        ppDefaultPage.ShowErrorMessage( "Default Page is required." );
-                        return;
-                    }
-
-                    if ( !site.IsValid )
-                    {
-                        // Controls will render the error messages                    
-                        return;
-                    }
-
-                    RockTransactionScope.WrapTransaction( () =>
-                    {
-                        siteService.Save( site, CurrentPersonAlias );
-
-                        if ( newSite )
-                        {
-                            Rock.Security.Authorization.CopyAuthorization( RockPage.Layout.Site, site, CurrentPersonAlias );
-                        }
-                    } );
-
-                    SiteCache.Flush( site.Id );
-
-                    // Create the default page is this is a new site
-                    if ( !site.DefaultPageId.HasValue && newSite )
-                    {
-                        var siteCache = SiteCache.Read( site.Id );
-
-                        // Create the layouts for the site, and find the first one
-                        var layoutService = new LayoutService();
-                        layoutService.RegisterLayouts( Request.MapPath( "~" ), siteCache, CurrentPersonAlias );
-
-                        var layouts = layoutService.GetBySiteId( siteCache.Id );
-                        Layout layout = layouts.FirstOrDefault( l => l.FileName.Equals("FullWidth", StringComparison.OrdinalIgnoreCase));
-                        if (layout == null)
-                        {
-                            layout = layouts.FirstOrDefault();
-                        }
-                        if ( layout != null )
-                        {
-                            var pageService = new PageService();
-                            var page = new Page();
-                            page.LayoutId = layout.Id;
-                            page.PageTitle = siteCache.Name + " Home Page";
-                            page.InternalName = page.PageTitle;
-                            page.BrowserTitle = page.PageTitle;
-                            page.EnableViewState = true;
-                            page.IncludeAdminFooter = true;
-                            page.MenuDisplayChildPages = true;
-
-                            var lastPage = pageService.GetByParentPageId( null ).
-                                OrderByDescending( b => b.Order ).FirstOrDefault();
-
-                            page.Order = lastPage != null ? lastPage.Order + 1 : 0;
-                            pageService.Add( page, CurrentPersonAlias );
-                            pageService.Save( page, CurrentPersonAlias );
-
-                            site = siteService.Get( siteCache.Id );
-                            site.DefaultPageId = page.Id;
-                            siteService.Save( site, CurrentPersonAlias );
-
-                            SiteCache.Flush( site.Id );
-                        }
-                    }
-
                 }
 
                 var qryParams = new Dictionary<string, string>();
@@ -300,7 +295,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 // Cancelling on edit, return to details
-                var site = new SiteService().Get( int.Parse( hfSiteId.Value ) );
+                var site = new SiteService(new RockContext()).Get( int.Parse( hfSiteId.Value ) );
                 ShowReadonlyDetails( site );
             }
         }
@@ -339,7 +334,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                site = new SiteService().Get( itemKeyValue );
+                site = new SiteService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {

@@ -90,33 +90,29 @@ namespace RockWeb.Blocks.Cms
         {
             bool canDelete = false;
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            LayoutService layoutService = new LayoutService(rockContext);
+
+            Layout layout = layoutService.Get( e.RowKeyId );
+            if ( layout != null )
             {
-                LayoutService layoutService = new LayoutService();
-                Layout layout = layoutService.Get( e.RowKeyId );
-                if ( layout != null )
+                string errorMessage;
+                canDelete = layoutService.CanDelete( layout, out errorMessage );
+                if ( !canDelete )
                 {
-                    string errorMessage;
-                    canDelete = layoutService.CanDelete( layout, out errorMessage );
-                    if ( ! canDelete )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return; // returns out of RockTransactionScope
-                    }
-
-                    int siteId = layout.SiteId;
-
-                    layoutService.Delete( layout, CurrentPersonAlias );
-                    layoutService.Save( layout, CurrentPersonAlias );
-
-                    LayoutCache.Flush( e.RowKeyId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return; 
                 }
-            } );
 
-            if ( canDelete )
-            {
-                BindLayoutsGrid();
+                int siteId = layout.SiteId;
+
+                layoutService.Delete( layout );
+                rockContext.SaveChanges();
+
+                LayoutCache.Flush( e.RowKeyId );
             }
+
+            BindLayoutsGrid();
         }
 
         /// <summary>
@@ -169,11 +165,11 @@ namespace RockWeb.Blocks.Cms
 
             pnlLayouts.Visible = true;
 
-            LayoutService layoutService = new LayoutService();
 
             // Add any missing layouts
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
 
+            LayoutService layoutService = new LayoutService( new RockContext() );
             var qry = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) );
 
             SortProperty sortProperty = gLayouts.SortProperty;

@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.CheckIn
             // add tooltip to header columns
             if ( e.Row.RowType == DataControlRowType.Header )
             {
-                var scheduleService = new ScheduleService();
+                var scheduleService = new ScheduleService( new RockContext() );
 
                 foreach ( var cell in e.Row.Cells.OfType<DataControlFieldCell>() )
                 {
