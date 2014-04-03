@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Communication
                     var Person = new PersonService().Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
-                        Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending, string.Empty ) );
+                        Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending, string.Empty, string.Empty, null ) );
                         ShowAllRecipients = true;
                         BindRecipients();
                     }
@@ -317,7 +317,14 @@ namespace RockWeb.Blocks.Communication
                     var lRecipientName = e.Item.FindControl( "lRecipientName" ) as Literal;
                     if ( lRecipientName != null )
                     {
-                        lRecipientName.Text = String.Format( "<span data-toggle=\"tooltip\" data-placement=\"top\" title=\"{0}\">{1}</span>", recipient.StatusNote, recipient.PersonName );
+                        if ( recipient.Status == CommunicationRecipientStatus.Opened )
+                        {
+                            lRecipientName.Text = String.Format( "<span data-toggle=\"tooltip\" data-placement=\"top\" title=\"Last Opened: {0} on {1}\">{2}</span>", recipient.OpenedDateTime, recipient.OpenedClient, recipient.PersonName );
+                        }
+                        else
+                        {
+                            lRecipientName.Text = String.Format( "<span data-toggle=\"tooltip\" data-placement=\"top\" title=\"{0}\">{1}</span>", recipient.StatusNote, recipient.PersonName );
+                        }
                     }
                 }
             }
@@ -684,7 +691,7 @@ namespace RockWeb.Blocks.Communication
             BindChannels();
 
             Recipients.Clear();
-            communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person.Id, r.Person.FullName, r.Status, r.StatusNote ) ) );
+            communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person.Id, r.Person.FullName, r.Status, r.StatusNote, r.OpenedClient, r.OpenedDateTime ) ) );
             BindRecipients();
 
             ChannelData = communication.ChannelData;
@@ -1122,17 +1129,35 @@ namespace RockWeb.Blocks.Communication
             public string StatusNote { get; set; }
 
             /// <summary>
+            /// Gets or sets the client the email was opened on.
+            /// </summary>
+            /// <value>
+            /// The opened email client.
+            /// </value>
+            public string OpenedClient { get; set; }
+
+            /// <summary>
+            /// Gets or sets the date/time the email was opened on.
+            /// </summary>
+            /// <value>
+            /// The date/time the email was opened.
+            /// </value>
+            public DateTime? OpenedDateTime { get; set; }
+
+            /// <summary>
             /// Initializes a new instance of the <see cref="Recipient" /> class.
             /// </summary>
             /// <param name="personId">The person id.</param>
             /// <param name="personName">Name of the person.</param>
             /// <param name="status">The status.</param>
-            public Recipient( int personId, string personName, CommunicationRecipientStatus status, string statusNote )
+            public Recipient( int personId, string personName, CommunicationRecipientStatus status, string statusNote, string openedClient, DateTime? openedDateTime )
             {
                 PersonId = personId;
                 PersonName = personName;
                 Status = status;
                 StatusNote = statusNote;
+                OpenedClient = openedClient;
+                OpenedDateTime = openedDateTime;
             }
         }
 
