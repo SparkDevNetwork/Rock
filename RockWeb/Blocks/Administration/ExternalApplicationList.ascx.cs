@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         {
             Guid externalApplicationGuid = Rock.SystemGuid.DefinedType.EXTERNAL_APPLICATION.AsGuid();
 
-            var definedValueService = new DefinedValueService();
+            var definedValueService = new DefinedValueService( new RockContext() );
             var queryable = definedValueService.Queryable().Where( f => f.DefinedType.Guid == externalApplicationGuid );
 
             var sortProperty = gExternalApplication.SortProperty;

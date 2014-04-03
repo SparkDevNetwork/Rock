@@ -164,9 +164,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack && _pageId.HasValue )
             {
-                LoadSites();
+                var rockContext = new RockContext();
 
-                PageService pageService = new PageService();
+                LoadSites( rockContext );
+
+                PageService pageService = new PageService( rockContext );
                 Rock.Model.Page page = pageService.Queryable( "Layout,PageRoutes" )
                     .Where( p => p.Id == _pageId.Value )
                     .FirstOrDefault();
@@ -174,7 +176,7 @@ namespace RockWeb.Blocks.Administration
                 if ( page.Layout != null )
                 {
                     ddlSite.SelectedValue = page.Layout.SiteId.ToString();
-                    LoadLayouts( SiteCache.Read( page.Layout.SiteId ) );
+                    LoadLayouts( rockContext, SiteCache.Read( page.Layout.SiteId ) );
                     ddlLayout.SelectedValue = page.Layout.Id.ToString();
                 }
 
@@ -241,7 +243,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ddlSite_SelectedIndexChanged( object sender, EventArgs e )
         {
-            LoadLayouts( SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
+            LoadLayouts( new RockContext(), SiteCache.Read( ddlSite.SelectedValueAsInt().Value ) );
         }
         
         /// <summary>
@@ -252,138 +254,137 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             Page.Validate( BlockValidationGroup );
-            if ( Page.IsValid && _pageId.HasValue)
+            if ( Page.IsValid && _pageId.HasValue )
             {
-                using ( new UnitOfWorkScope() )
+                var rockContext = new RockContext();
+                var pageService = new PageService( rockContext );
+                var routeService = new PageRouteService( rockContext );
+                var contextService = new PageContextService( rockContext );
+
+                var page = pageService.Get( _pageId.Value );
+
+                int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
+                if ( page.ParentPageId != parentPageId )
                 {
-                    var pageService = new PageService();
-                    var routeService = new PageRouteService();
-                    var contextService = new PageContextService();
-
-                    var page = pageService.Get( _pageId.Value );
-
-                    int parentPageId = ppParentPage.SelectedValueAsInt() ?? 0;
-                    if ( page.ParentPageId != parentPageId )
+                    if ( page.ParentPageId.HasValue )
                     {
-                        if ( page.ParentPageId.HasValue )
-                        {
-                            PageCache.Flush( page.ParentPageId.Value );
-                        }
-
-                        if ( parentPageId != 0 )
-                        {
-                            PageCache.Flush( parentPageId );
-                        }
+                        PageCache.Flush( page.ParentPageId.Value );
                     }
 
-                    page.InternalName = tbPageName.Text;
-                    page.PageTitle = tbPageTitle.Text;
-                    page.BrowserTitle = tbBrowserTitle.Text;
                     if ( parentPageId != 0 )
                     {
-                        page.ParentPageId = parentPageId;
-                    }
-                    else
-                    {
-                        page.ParentPageId = null;
-                    }
-
-                    page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
-
-                    int? orphanedIconFileId = null;
-
-                    page.IconCssClass = tbIconCssClass.Text;
-
-                    page.PageDisplayTitle = cbPageTitle.Checked;
-                    page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
-                    page.PageDisplayIcon = cbPageIcon.Checked;
-                    page.PageDisplayDescription = cbPageDescription.Checked;
-
-                    page.DisplayInNavWhen = (DisplayInNavWhen)Enum.Parse( typeof( DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
-                    page.MenuDisplayDescription = cbMenuDescription.Checked;
-                    page.MenuDisplayIcon = cbMenuIcon.Checked;
-                    page.MenuDisplayChildPages = cbMenuChildPages.Checked;
-
-                    page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
-                    page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
-
-                    page.RequiresEncryption = cbRequiresEncryption.Checked;
-                    page.EnableViewState = cbEnableViewState.Checked;
-                    page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
-                    page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
-                    page.Description = tbDescription.Text;
-                    page.HeaderContent = ceHeaderContent.Text;
-
-                    // new or updated route
-                    foreach ( var pageRoute in page.PageRoutes.ToList() )
-                    {
-                        var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
-                        if ( existingRoute != null )
-                        {
-                            RouteTable.Routes.Remove( existingRoute );
-                        }
-
-                        routeService.Delete( pageRoute, CurrentPersonAlias );
-                    }
-
-                    page.PageRoutes.Clear();
-
-                    foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
-                    {
-                        var pageRoute = new PageRoute();
-                        pageRoute.Route = route.TrimStart( new char[] { '/' } );
-                        pageRoute.Guid = Guid.NewGuid();
-                        page.PageRoutes.Add( pageRoute );
-                    }
-
-                    foreach ( var pageContext in page.PageContexts.ToList() )
-                    {
-                        contextService.Delete( pageContext, CurrentPersonAlias );
-                    }
-
-                    page.PageContexts.Clear();
-                    foreach ( var control in phContext.Controls )
-                    {
-                        if ( control is RockTextBox )
-                        {
-                            var tbContext = control as RockTextBox;
-                            if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
-                            {
-                                var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.ID.Substring(8).Replace('_', '.');
-                                pageContext.IdParameter = tbContext.Text;
-                                page.PageContexts.Add( pageContext );
-                            }
-                        }
-                    }
-
-                    if ( page.IsValid )
-                    {
-                        pageService.Save( page, CurrentPersonAlias );
-
-                        foreach ( var pageRoute in new PageRouteService().GetByPageId( page.Id ) )
-                        {
-                            RouteTable.Routes.AddPageRoute( pageRoute );
-                        }
-
-                        if ( orphanedIconFileId.HasValue)
-                        {
-                            BinaryFileService binaryFileService = new BinaryFileService();
-                            var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
-                            if ( binaryFile != null )
-                            {
-                                // marked the old images as IsTemporary so they will get cleaned up later
-                                binaryFile.IsTemporary = true;
-                                binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                            }
-                        }
-
-                        Rock.Web.Cache.PageCache.Flush( page.Id );
-
-                        string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
-                        ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                        PageCache.Flush( parentPageId );
                     }
                 }
+
+                page.InternalName = tbPageName.Text;
+                page.PageTitle = tbPageTitle.Text;
+                page.BrowserTitle = tbBrowserTitle.Text;
+                if ( parentPageId != 0 )
+                {
+                    page.ParentPageId = parentPageId;
+                }
+                else
+                {
+                    page.ParentPageId = null;
+                }
+
+                page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
+
+                int? orphanedIconFileId = null;
+
+                page.IconCssClass = tbIconCssClass.Text;
+
+                page.PageDisplayTitle = cbPageTitle.Checked;
+                page.PageDisplayBreadCrumb = cbPageBreadCrumb.Checked;
+                page.PageDisplayIcon = cbPageIcon.Checked;
+                page.PageDisplayDescription = cbPageDescription.Checked;
+
+                page.DisplayInNavWhen = (DisplayInNavWhen)Enum.Parse( typeof( DisplayInNavWhen ), ddlMenuWhen.SelectedValue );
+                page.MenuDisplayDescription = cbMenuDescription.Checked;
+                page.MenuDisplayIcon = cbMenuIcon.Checked;
+                page.MenuDisplayChildPages = cbMenuChildPages.Checked;
+
+                page.BreadCrumbDisplayName = cbBreadCrumbName.Checked;
+                page.BreadCrumbDisplayIcon = cbBreadCrumbIcon.Checked;
+
+                page.RequiresEncryption = cbRequiresEncryption.Checked;
+                page.EnableViewState = cbEnableViewState.Checked;
+                page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
+                page.OutputCacheDuration = int.Parse( tbCacheDuration.Text );
+                page.Description = tbDescription.Text;
+                page.HeaderContent = ceHeaderContent.Text;
+
+                // new or updated route
+                foreach ( var pageRoute in page.PageRoutes.ToList() )
+                {
+                    var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );
+                    if ( existingRoute != null )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
+                    }
+
+                    routeService.Delete( pageRoute );
+                }
+
+                page.PageRoutes.Clear();
+
+                foreach ( string route in tbPageRoute.Text.SplitDelimitedValues() )
+                {
+                    var pageRoute = new PageRoute();
+                    pageRoute.Route = route.TrimStart( new char[] { '/' } );
+                    pageRoute.Guid = Guid.NewGuid();
+                    page.PageRoutes.Add( pageRoute );
+                }
+
+                foreach ( var pageContext in page.PageContexts.ToList() )
+                {
+                    contextService.Delete( pageContext );
+                }
+
+                page.PageContexts.Clear();
+                foreach ( var control in phContext.Controls )
+                {
+                    if ( control is RockTextBox )
+                    {
+                        var tbContext = control as RockTextBox;
+                        if ( !string.IsNullOrWhiteSpace( tbContext.Text ) )
+                        {
+                            var pageContext = new PageContext();
+                            pageContext.Entity = tbContext.ID.Substring( 8 ).Replace( '_', '.' );
+                            pageContext.IdParameter = tbContext.Text;
+                            page.PageContexts.Add( pageContext );
+                        }
+                    }
+                }
+
+                if ( page.IsValid )
+                {
+                    rockContext.SaveChanges();
+
+                    foreach ( var pageRoute in new PageRouteService( rockContext ).GetByPageId( page.Id ) )
+                    {
+                        RouteTable.Routes.AddPageRoute( pageRoute );
+                    }
+
+                    if ( orphanedIconFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                        var binaryFile = binaryFileService.Get( orphanedIconFileId.Value );
+                        if ( binaryFile != null )
+                        {
+                            // marked the old images as IsTemporary so they will get cleaned up later
+                            binaryFile.IsTemporary = true;
+                            rockContext.SaveChanges();
+                        }
+                    }
+
+                    Rock.Web.Cache.PageCache.Flush( page.Id );
+
+                    string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close('PAGE_UPDATED');";
+                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
+                }
+
             }
         }
 
@@ -391,7 +392,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( _pageId.HasValue )
             {
-                var pageService = new PageService();
+                var pageService = new PageService( new RockContext() );
                 var page = pageService.Get( _pageId.Value );
                 var packageService = new PackageService();
                 var pageName = page.InternalName.Replace( " ", "_" ) + ( ( cbExportChildren.Checked ) ? "_wChildPages" : "" );
@@ -431,7 +432,7 @@ namespace RockWeb.Blocks.Administration
 
                 using ( new UnitOfWorkScope() )
                 {
-                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPersonAlias, page.Id, page.Layout.SiteId );
+                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, page.Id, page.Layout.SiteId );
                 }
 
                 if ( !importResult )
@@ -482,20 +483,21 @@ namespace RockWeb.Blocks.Administration
 
         #region Methods
 
-        private void LoadSites()
+        private void LoadSites(RockContext rockContext)
         {
             ddlSite.Items.Clear();
-            foreach(Site site in new SiteService().Queryable().OrderBy(s => s.Name))
+            foreach ( Site site in new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ) )
             {
                 ddlSite.Items.Add( new ListItem( site.Name, site.Id.ToString() ) );
             }
         }
 
-        private void LoadLayouts(SiteCache Site)
+        private void LoadLayouts(RockContext rockContext, SiteCache Site)
         {
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), Site );
+
             ddlLayout.Items.Clear();
-            var layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), Site, CurrentPersonAlias );
+            var layoutService = new LayoutService( rockContext );
             foreach ( var layout in layoutService.GetBySiteId( Site.Id ) )
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );

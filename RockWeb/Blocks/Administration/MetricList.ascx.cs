@@ -118,23 +118,22 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gMetrics_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            MetricService metricService = new MetricService( rockContext );
+            Metric metric = metricService.Get( (int)e.RowKeyValue );
+            if ( metric != null )
             {
-                MetricService metricService = new MetricService();
-                Metric metric = metricService.Get( (int)e.RowKeyValue );
-                if ( metric != null )
+                string errorMessage;
+                if ( !metricService.CanDelete( metric, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !metricService.CanDelete( metric, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    metricService.Delete( metric, CurrentPersonAlias );
-                    metricService.Save( metric, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                metricService.Delete( metric );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -162,7 +161,7 @@ namespace RockWeb.Blocks.Administration
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
-            var metricService = new MetricService();
+            var metricService = new MetricService( new RockContext() );
             var items = metricService.Queryable().
                 Where( a => a.Category != "" && a.Category != null ).
                 OrderBy( a => a.Category ).
@@ -182,7 +181,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new MetricService().Queryable();
+            var queryable = new MetricService( new RockContext() ).Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
             {

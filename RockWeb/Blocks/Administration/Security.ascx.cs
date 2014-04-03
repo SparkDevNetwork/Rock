@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Model.AuthService authService = new Rock.Model.AuthService();
         private ISecured iSecured;
 
         /// <summary>
@@ -227,7 +226,7 @@ namespace RockWeb.Blocks.Administration
             var rockContext = new RockContext();
             var authService = new Rock.Model.AuthService( rockContext );
             List<Rock.Model.Auth> rules = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
-            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            authService.Reorder( rules, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
@@ -298,7 +297,7 @@ namespace RockWeb.Blocks.Administration
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
-                    authService.Save( auth );
+                    rockContext.SaveChanges();
 
                     Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
@@ -372,6 +371,9 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
+                        var rockContext = new RockContext();
+                        var authService = new Rock.Model.AuthService( rockContext );
+
                         Rock.Model.Auth auth = new Rock.Model.Auth();
                         auth.EntityTypeId = iSecured.TypeId;
                         auth.EntityId = iSecured.Id;
@@ -381,7 +383,8 @@ namespace RockWeb.Blocks.Administration
                         auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
                         authService.Add( auth );
-                        authService.Save( auth, CurrentPersonAlias );
+
+                        rockContext.SaveChanges();
 
                         actionUpdated = true;
                     }
@@ -422,6 +425,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !alreadyExists )
                 {
+                    var rockContext = new RockContext();
+                    var authService = new Rock.Model.AuthService( rockContext );
+
                     Rock.Model.Auth auth = new Rock.Model.Auth();
                     auth.EntityTypeId = iSecured.TypeId;
                     auth.EntityId = iSecured.Id;
@@ -430,8 +436,9 @@ namespace RockWeb.Blocks.Administration
                     auth.SpecialRole = Rock.Model.SpecialRole.None;
                     auth.PersonId = personId;
                     auth.Order = ++maxOrder;
-                    authService.Add( auth, CurrentPersonAlias );
-                    authService.Save( auth, CurrentPersonAlias );
+                    authService.Add( auth );
+
+                    rockContext.SaveChanges();
 
                     actionUpdated = true;
                 }
