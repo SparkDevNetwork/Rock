@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to execute a sql command and display the result (if any)." )]
     public partial class SqlCommand : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -57,11 +57,21 @@ namespace RockWeb.Blocks.Reporting
             gReport.GridRebind += gReport_GridRebind;
         }
 
-        void gReport_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gReport_GridRebind( object sender, EventArgs e )
         {
             RunCommand();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnExec control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnExec_Click( object sender, EventArgs e )
         {
             RunCommand();
@@ -81,33 +91,33 @@ namespace RockWeb.Blocks.Reporting
             gReport.Visible = false;
 
             string query = tbQuery.Text;
+            var rockContext = new RockContext();
             if ( !string.IsNullOrWhiteSpace( query ) )
             {
                 try
                 {
                     if ( tQuery.Checked )
                     {
-
                         gReport.Visible = true;
 
-                        DataTable dataTable = new Service().GetDataTable( query, CommandType.Text, null );
+                        DataTable dataTable = new Service( rockContext ).GetDataTable( query, CommandType.Text, null );
 
                         AddGridColumns( dataTable );
 
-                        gReport.DataSource = GetSortedView( dataTable ); ;
+                        gReport.DataSource = GetSortedView( dataTable );
                         gReport.DataBind();
                     }
                     else
                     {
-                        int rows = new Service().ExecuteCommand( query );
+                        int rows = new Service( rockContext ).ExecuteCommand( query );
                         if ( rows < 0 )
                         {
                             rows = 0;
                         }
+
                         nbSuccess.Text = string.Format( "Row(s) affected: {0}", rows );
                         nbSuccess.Visible = true;
                     }
-
                 }
                 catch ( System.Exception ex )
                 {
@@ -117,7 +127,11 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-        private void AddGridColumns(DataTable dataTable)
+        /// <summary>
+        /// Adds the grid columns.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        private void AddGridColumns( DataTable dataTable )
         {
             int rowsToEval = 10;
             if ( dataTable.Rows.Count < 10 )
@@ -126,22 +140,22 @@ namespace RockWeb.Blocks.Reporting
             }
 
             gReport.Columns.Clear();
-            foreach(DataColumn dtColumn in dataTable.Columns)
+            foreach ( DataColumn dataTableColumn in dataTable.Columns )
             {
                 BoundField bf = new BoundField();
 
-                if ( dtColumn.DataType == typeof( Boolean ) )
+                if ( dataTableColumn.DataType == typeof( bool ) )
                 {
                     bf = new BoolField();
                 }
 
-                if ( dtColumn.DataType == typeof( DateTime ) )
+                if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
                     bf = new DateField();
 
                     for ( int i = 0; i < rowsToEval; i++ )
                     {
-                        object dateObj = dataTable.Rows[i][dtColumn];
+                        object dateObj = dataTable.Rows[i][dataTableColumn];
                         if ( dateObj is DateTime )
                         {
                             DateTime dateTime = (DateTime)dateObj;
@@ -154,13 +168,18 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                bf.DataField = dtColumn.ColumnName;
-                bf.SortExpression = dtColumn.ColumnName;
-                bf.HeaderText = dtColumn.ColumnName.SplitCase();
+                bf.DataField = dataTableColumn.ColumnName;
+                bf.SortExpression = dataTableColumn.ColumnName;
+                bf.HeaderText = dataTableColumn.ColumnName.SplitCase();
                 gReport.Columns.Add( bf );
             }
         }
 
+        /// <summary>
+        /// Gets the sorted view.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        /// <returns></returns>
         private System.Data.DataView GetSortedView( DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
@@ -168,15 +187,12 @@ namespace RockWeb.Blocks.Reporting
             SortProperty sortProperty = gReport.SortProperty;
             if ( sortProperty != null )
             {
-                dataView.Sort = string.Format( "{0} {1}",
-                    sortProperty.Property,
-                    sortProperty.DirectionString );
+                dataView.Sort = string.Format( "{0} {1}", sortProperty.Property, sortProperty.DirectionString );
             }
 
             return dataView;
         }
 
         #endregion
-
     }
 }
