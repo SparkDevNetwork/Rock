@@ -329,6 +329,7 @@
           <Value>nb</Value>
           <Value>is</Value>
           <Value>to</Value>
+          <Value>cc</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>
