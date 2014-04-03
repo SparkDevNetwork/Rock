@@ -434,7 +434,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, e.RowKeyId );
         }
 
         /// <summary>
