@@ -1571,10 +1571,10 @@ namespace Rock
         /// Saves the attribute values.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity )
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null)
         {
-            Rock.Attribute.Helper.SaveAttributeValues( entity );
+            Rock.Attribute.Helper.SaveAttributeValues( entity, rockContext );
         }
 
         /// <summary>

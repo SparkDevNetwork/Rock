@@ -628,11 +628,13 @@ namespace Rock.Attribute
         /// Saves the attribute values.
         /// </summary>
         /// <param name="model">The model.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( IHasAttributes model )
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
             foreach ( var attribute in model.Attributes )
-                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key] );
+            {
+                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key], rockContext );
+            }
         }
 
         /// <summary>
@@ -641,7 +643,6 @@ namespace Rock.Attribute
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValue">The new value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue )
         {
             var rockContext = new RockContext();
@@ -676,7 +677,6 @@ namespace Rock.Attribute
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValue">The new value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         public static void SaveAttributeValue(int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue)
         {
             var rockContext = new RockContext();
@@ -708,10 +708,10 @@ namespace Rock.Attribute
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValues">The new values.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues )
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, RockContext rockContext )
         {
-            var rockContext = new RockContext();
+            rockContext = rockContext ?? new RockContext();
             var attributeValueService = new Model.AttributeValueService( rockContext );
 
             var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).ToList();
