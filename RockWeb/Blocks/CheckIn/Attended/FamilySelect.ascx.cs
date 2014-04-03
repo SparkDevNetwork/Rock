@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Runtime.InteropServices;
+using Rock.Data;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -545,7 +546,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( e.CommandName == "Add" )
             {
-                GroupMemberService groupMemberService = new GroupMemberService();
+                var rockContext = new RockContext();
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                 int index = int.Parse( e.CommandArgument.ToString() );
                 int personId = int.Parse( rGridPersonResults.DataKeys[index].Value.ToString() );
 
@@ -553,18 +555,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {
                     var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
+                    checkInPerson.Person = new PersonService( rockContext ).Get( personId ).Clone( false );
                     var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
                     if ( !isPersonInFamily )
                     {
                         if ( personVisitorType.Value != "Visitor" )
                         {
+                            // TODO: DT: Is this right?  Not sure this is the best way to set family id
                             var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
                             groupMember.GroupId = family.Group.Id;
-                            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                            {
-                                groupMemberService.Save( groupMember, CurrentPersonAlias );
-                            } );
+
+                            rockContext.SaveChanges();
 
                             checkInPerson.FamilyMember = true;
                             hfSelectedPerson.Value += personId + ",";
@@ -614,7 +615,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void BindPersonGrid()
         {
-            var personService = new PersonService();
+            var personService = new PersonService( new RockContext() );
             var people = personService.Queryable();
 
             if ( !string.IsNullOrEmpty( tbFirstNameSearch.Text ) && !string.IsNullOrEmpty( tbLastNameSearch.Text ) )
@@ -811,7 +812,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="attribute">The attribute.</param>
         protected Person CreatePerson( string firstName, string lastName, DateTime? dob, int? gender, string ability, string abilityGroup )
         {
-            Person person = new Person().Clone( false );
+            Person person = new Person();
             person.FirstName = firstName;
             person.LastName = lastName;
             person.BirthDate = dob;
@@ -821,29 +822,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 person.Gender = (Gender)gender;
             }
 
-            PersonService ps = new PersonService();
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            if ( !string.IsNullOrWhiteSpace( ability ) && abilityGroup == "Grade" )
             {
-                ps.Add( person, CurrentPersonAlias );
-                ps.Save( person, CurrentPersonAlias );
-            } );
+                person.Grade = (int)ability.ConvertToEnum<GradeLevel>();
+            }
 
-            if ( !string.IsNullOrWhiteSpace( ability ) )
+            var rockContext = new RockContext();
+            PersonService ps = new PersonService( rockContext );
+            ps.Add( person );
+            rockContext.SaveChanges();
+
+            if ( !string.IsNullOrWhiteSpace( ability ) &&  abilityGroup == "Ability" )
             {
-                if ( abilityGroup == "Grade" )
+                rockContext = new RockContext();
+                Person p = new PersonService( rockContext ).Get( person.Id );
+                if ( p != null )
                 {
-                    person.Grade = (int)ability.ConvertToEnum<GradeLevel>();
-                    ps.Save( person, CurrentPersonAlias );
-                }
-                else if ( abilityGroup == "Ability" )
-                {
-                    Person p = new PersonService().Get( person.Id );
-                    if ( p != null )
-                    {
-                        p.LoadAttributes();
-                        p.SetAttributeValue( "AbilityLevel", ability );
-                        p.SaveAttributeValues( CurrentPersonAlias );
-                    }
+                    p.LoadAttributes( rockContext );
+                    p.SetAttributeValue( "AbilityLevel", ability );
+                    p.SaveAttributeValues(  );
                 }
             }
 
@@ -863,12 +860,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
             familyGroup.IsSecurityRole = false;
             familyGroup.IsSystem = false;
             familyGroup.IsActive = true;
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {
-                var gs = new GroupService();
-                gs.Add( familyGroup, CurrentPersonAlias );
-                gs.Save( familyGroup, CurrentPersonAlias );
-            } );
+
+            var rockContext = new RockContext();
+            var gs = new GroupService(rockContext);
+            gs.Add( familyGroup );
+            rockContext.SaveChanges();
 
             return familyGroup;
         }
@@ -881,25 +877,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns></returns>
         protected GroupMember AddGroupMember( int familyGroupId, Person person )
         {
-            GroupMember groupMember = new GroupMember().Clone( false );
-            GroupMemberService groupMemberService = new GroupMemberService();
+            var rockContext = new RockContext();
+
+            GroupMember groupMember = new GroupMember();
             groupMember.IsSystem = false;
             groupMember.GroupId = familyGroupId;
             groupMember.PersonId = person.Id;
             if ( person.Age >= 18 )
             {
-                groupMember.GroupRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                groupMember.GroupRoleId = new GroupTypeRoleService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
             }
             else
             {
-                groupMember.GroupRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
+                groupMember.GroupRoleId = new GroupTypeRoleService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
             }
 
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {
-                groupMemberService.Add( groupMember, CurrentPersonAlias );
-                groupMemberService.Save( groupMember, CurrentPersonAlias );
-            } );
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            groupMemberService.Add( groupMember );
+            rockContext.SaveChanges();
 
             return groupMember;
         }
@@ -911,10 +906,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="personId">The person id.</param>
         protected void AddVisitorGroupMemberRoles( CheckInFamily family, int personId )
         {
-            GroupMemberService groupMemberService = new GroupMemberService();
-            GroupTypeRoleService groupRoleService = new GroupTypeRoleService();
+            var rockContext = new RockContext();
+            var groupService = new GroupService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupRoleService = new GroupTypeRoleService( rockContext );
+            
             int ownerRoleId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id;
             int canCheckInId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id;
+            
             foreach ( var familyMember in family.People )
             {
                 var group = groupMemberService.Queryable()
@@ -926,27 +925,27 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 if ( group == null )
                 {
-                    var role = new GroupTypeRoleService().Get( ownerRoleId );
+                    var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleId );
                     if ( role != null && role.GroupTypeId.HasValue )
                     {
-                        var groupMember = new GroupMember().Clone( false );
+                        var groupMember = new GroupMember();
                         groupMember.PersonId = familyMember.Person.Id;
                         groupMember.GroupRoleId = role.Id;
 
-                        group = new Group().Clone( false );
+                        group = new Group();
                         group.Name = role.GroupType.Name;
                         group.GroupTypeId = role.GroupTypeId.Value;
                         group.Members.Add( groupMember );
 
-                        var groupService = new GroupService();
-                        groupService.Add( group, CurrentPersonAlias );
-                        groupService.Save( group, CurrentPersonAlias );
+                        groupService.Add( group );
                     }
                 }
 
                 // add the visitor to this group with CanCheckIn
                 Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonAlias );
             }
+
+            rockContext.SaveChanges();
         }
                
         #endregion
