@@ -20,10 +20,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -149,12 +149,12 @@ namespace RockWeb.Blocks.CheckIn
                         if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                         {
                             // Need to load a fully hydrated person because the person.Person is only a clone.
-                            Person p = new PersonService().Get( person.Person.Id );
+                            Person p = new PersonService( new RockContext() ).Get( person.Person.Id );
                             if ( p != null )
                             {
                                 p.LoadAttributes();
                                 p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
-                                p.SaveAttributeValues( CurrentPersonAlias );
+                                p.SaveAttributeValues();
                             }
                         }
 

@@ -22,6 +22,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -168,7 +169,7 @@ namespace RockWeb.Blocks.Checkin
         {
             drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
 
-            var attendanceService = new AttendanceService();
+            var attendanceService = new AttendanceService( new RockContext() );
             var attendanceQuery = attendanceService.Queryable();
             if ( _person != null )
             {
@@ -209,7 +210,7 @@ namespace RockWeb.Blocks.Checkin
         /// </summary>
         protected void BindGrid()
         {
-            var attendanceService = new AttendanceService();
+            var attendanceService = new AttendanceService( new RockContext() );
             var attendanceQuery = attendanceService.Queryable();
             if ( _person != null )
             {
