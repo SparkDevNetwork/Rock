@@ -234,7 +234,7 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer, this.CssClass );
             }
         }
 
