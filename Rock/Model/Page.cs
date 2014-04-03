@@ -437,7 +437,7 @@ namespace Rock.Model
 
         #region Methods
 
-        public override void PreSave( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
         {
             if (state == System.Data.Entity.EntityState.Deleted)
             {

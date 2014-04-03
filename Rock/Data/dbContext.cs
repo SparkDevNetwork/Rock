@@ -106,7 +106,7 @@ namespace Rock.Data
                     {
                         var model = entry.Entity as IModel;
 
-                        model.PreSave( this, entry.State );
+                        model.PreSaveChanges( this, entry.State );
 
                         // Update Created/Modified person and times
                         if ( entry.State == EntityState.Added )

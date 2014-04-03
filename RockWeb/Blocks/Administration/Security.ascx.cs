@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -224,8 +224,11 @@ namespace RockWeb.Blocks.Administration
         {
             int entityTypeId = iSecured.TypeId;
 
+            var rockContext = new RockContext();
+            var authService = new Rock.Model.AuthService( rockContext );
             List<Rock.Model.Auth> rules = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
             authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
@@ -244,11 +247,13 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            var authService = new Rock.Model.AuthService( rockContext );
             Rock.Model.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
-                authService.Delete( auth, CurrentPersonAlias );
-                authService.Save( auth, CurrentPersonAlias );
+                authService.Delete( auth );
+                rockContext.SaveChanges();
 
                 Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
@@ -287,11 +292,13 @@ namespace RockWeb.Blocks.Administration
             {
                 int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
+                var rockContext = new RockContext();
+                var authService = new Rock.Model.AuthService( rockContext );
                 Rock.Model.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
-                    authService.Save( auth, CurrentPersonAlias );
+                    authService.Save( auth );
 
                     Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
@@ -373,7 +380,7 @@ namespace RockWeb.Blocks.Administration
                         auth.SpecialRole = specialRole;
                         auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
-                        authService.Add( auth, CurrentPersonAlias );
+                        authService.Add( auth );
                         authService.Save( auth, CurrentPersonAlias );
 
                         actionUpdated = true;
