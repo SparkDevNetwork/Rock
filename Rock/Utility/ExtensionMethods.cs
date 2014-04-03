@@ -413,6 +413,16 @@ namespace Rock
         }
 
         /// <summary>
+        /// Determines whether the specified unique identifier is Guid.Empty.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static bool IsEmpty( this Guid guid)
+        {
+            return guid.Equals( Guid.Empty );
+        }
+
+        /// <summary>
         /// Attempts to convert string to decimal.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
