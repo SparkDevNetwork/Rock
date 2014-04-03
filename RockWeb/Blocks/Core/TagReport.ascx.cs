@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock;
 using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Core
             int tagId = int.MinValue;
             if ( int.TryParse( PageParameter( "tagId" ), out tagId ) && tagId > 0 )
             {
-                Tag _tag = new TagService().Get( tagId );
+                Tag _tag = new TagService( new RockContext() ).Get( tagId );
 
                 if ( _tag != null )
                 {
@@ -155,7 +156,8 @@ namespace RockWeb.Blocks.Core
                     Rock.Data.IEntity entity = obj as Rock.Data.IEntity;
                     if ( entity != null )
                     {
-                        var service = new TaggedItemService();
+                        var rockContext = new RockContext();
+                        var service = new TaggedItemService( rockContext );
                         var taggedItem = service.Get( TagId.Value, entity.Guid );
                         if ( taggedItem != null )
                         {
@@ -166,8 +168,8 @@ namespace RockWeb.Blocks.Core
                                 return;
                             }
 
-                            service.Delete( taggedItem, CurrentPersonAlias );
-                            service.Save( taggedItem, CurrentPersonAlias );
+                            service.Delete( taggedItem );
+                            rockContext.SaveChanges();
                         }
                     }
                 }
@@ -185,7 +187,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var guids = new TaggedItemService().Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
+            var guids = new TaggedItemService( new RockContext() ).Queryable().Where( t => t.TagId == TagId.Value ).Select( t => t.EntityGuid ).ToList();
 
             gReport.DataSource = InvokeServiceMethod( "GetByGuids", new Type[] { typeof( List<Guid> ) }, new object[] { guids } );
             gReport.DataBind();

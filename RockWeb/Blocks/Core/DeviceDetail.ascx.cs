@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -73,7 +74,7 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
 
             ddlPrinter.Items.Clear();
-            ddlPrinter.DataSource = new DeviceService()
+            ddlPrinter.DataSource = new DeviceService( new RockContext() )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
                 .ToList();
             ddlPrinter.DataBind();
@@ -93,14 +94,14 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            using (new Rock.Data.UnitOfWorkScope())
-            {
             pnlDetails.Visible = true;
             Device Device = null;
 
+            var rockContext = new RockContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                Device = new DeviceService().Get( itemKeyValue );
+                Device = new DeviceService( rockContext ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -127,7 +128,7 @@ namespace RockWeb.Blocks.Core
                 Guid locGuid = Guid.Empty;
                 if ( Guid.TryParse( orgLocGuid, out locGuid ) )
                 {
-                    var location = new LocationService().Get( locGuid );
+                    var location = new LocationService( rockContext ).Get( locGuid );
                     if ( location != null )
                     {
                         gpGeoPoint.CenterPoint = location.GeoPoint;
@@ -167,7 +168,6 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-            }
         }
 
         #endregion
@@ -192,15 +192,16 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Device Device;
-            DeviceService DeviceService = new DeviceService();
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            DeviceService DeviceService = new DeviceService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
 
             int DeviceId = int.Parse( hfDeviceId.Value );
 
             if ( DeviceId == 0 )
             {
                 Device = new Device();
-                DeviceService.Add( Device, CurrentPersonAlias );
+                DeviceService.Add( Device );
             }
             else
             {
@@ -228,7 +229,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            DeviceService.Save( Device, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }

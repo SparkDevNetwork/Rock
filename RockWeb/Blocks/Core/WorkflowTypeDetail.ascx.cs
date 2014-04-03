@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                WorkflowTypeService service = new WorkflowTypeService();
+                WorkflowTypeService service = new WorkflowTypeService( new RockContext() );
                 WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            WorkflowTypeService service = new WorkflowTypeService();
+            WorkflowTypeService service = new WorkflowTypeService( new RockContext() );
             WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
             ShowEditDetails( item );
         }
@@ -258,8 +258,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             WorkflowType workflowType;
-            WorkflowTypeService service = new WorkflowTypeService();
+            WorkflowTypeService service = new WorkflowTypeService( rockContext );
 
             int workflowTypeId = int.Parse( hfWorkflowTypeId.Value );
 
@@ -304,7 +306,7 @@ namespace RockWeb.Blocks.Core
                 List<WorkflowActivityTypeEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityTypeEditor>().ToList();
 
                 // delete WorkflowActionTypes that aren't assigned in the UI anymore
-                WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService();
+                WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
                 List<WorkflowActionType> actionTypesInDB = workflowActionTypeService.Queryable().Where( a => a.ActivityType.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActionType> actionTypesInUI = new List<WorkflowActionType>();
                 foreach ( WorkflowActivityTypeEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
@@ -321,12 +323,12 @@ namespace RockWeb.Blocks.Core
 
                 deletedActionTypes.ToList().ForEach( actionType =>
                 {
-                    workflowActionTypeService.Delete( actionType, CurrentPersonAlias );
-                    workflowActionTypeService.Save( actionType, CurrentPersonAlias );
+                    workflowActionTypeService.Delete( actionType );
                 } );
+                rockContext.SaveChanges();
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
-                WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService();
+                WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
                 List<WorkflowActivityType> activityTypesInDB = workflowActivityTypeService.Queryable().Where( a => a.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActivityType> activityTypesInUI = workflowActivityTypeEditorList.Select( a => a.GetWorkflowActivityType() ).ToList();
 
@@ -336,9 +338,9 @@ namespace RockWeb.Blocks.Core
 
                 deletedActivityTypes.ToList().ForEach( activityType =>
                 {
-                    workflowActivityTypeService.Delete( activityType, CurrentPersonAlias );
-                    workflowActivityTypeService.Save( activityType, CurrentPersonAlias );
+                    workflowActivityTypeService.Delete( activityType );
                 } );
+                rockContext.SaveChanges();
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
                 int workflowActivityTypeOrder = 0;
@@ -389,16 +391,16 @@ namespace RockWeb.Blocks.Core
 
                 if ( workflowType.Id.Equals( 0 ) )
                 {
-                    service.Add( workflowType, CurrentPersonAlias );
+                    service.Add( workflowType );
                 }
 
-                service.Save( workflowType, CurrentPersonAlias );
+                rockContext.SaveChanges();
 
                 foreach ( var activityType in workflowType.ActivityTypes )
                 {
                     foreach ( var workflowActionType in activityType.ActionTypes )
                     {
-                        workflowActionType.SaveAttributeValues( CurrentPersonAlias );
+                        workflowActionType.SaveAttributeValues( rockContext );
                     }
                 }
 
@@ -450,7 +452,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                workflowType = new WorkflowTypeService().Get( itemKeyValue );
+                workflowType = new WorkflowTypeService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {
@@ -649,7 +651,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                AttributeService attributeService = new AttributeService();
+                AttributeService attributeService = new AttributeService( new RockContext() );
                 attribute = attributeService.Get( attributeGuid );
                 edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
             }
@@ -665,7 +667,8 @@ namespace RockWeb.Blocks.Core
         protected void gWorkflowTypeAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            AttributeService attributeService = new AttributeService( rockContext );
             Attribute attribute = attributeService.Get( attributeGuid );
 
             if ( attribute != null )
@@ -678,8 +681,8 @@ namespace RockWeb.Blocks.Core
                 }
 
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                attributeService.Delete( attribute, CurrentPersonAlias );
-                attributeService.Save( attribute, CurrentPersonAlias );
+                attributeService.Delete( attribute );
+                rockContext.SaveChanges();
 
                 // reload page so that other blocks respond to any data that was changed
                 var qryParams = new Dictionary<string, string>();
@@ -705,8 +708,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
         {
-            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtWorkflowTypeAttributes, EntityTypeCache.Read( typeof( Workflow ) ).Id,
-                "WorkflowTypeId", hfWorkflowTypeId.Value, CurrentPersonAlias );
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtWorkflowTypeAttributes, EntityTypeCache.Read( typeof( Workflow ) ).Id, "WorkflowTypeId", hfWorkflowTypeId.Value );
 
             // Attribute will be null if it was not valid
             if ( attribute == null )
@@ -739,7 +741,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindWorkflowTypeAttributesGrid()
         {
-            AttributeService attributeService = new AttributeService();
+            AttributeService attributeService = new AttributeService( new RockContext() );
 
             int workflowTypeId = hfWorkflowTypeId.ValueAsInt();
 

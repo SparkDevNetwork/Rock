@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.Core
         private List<ExceptionLog> GetExceptionLogs( ExceptionLog baseException )
         {
             List<ExceptionLog> exceptionList = new List<ExceptionLog>();
-            ExceptionLogService svc = new ExceptionLogService();
+            ExceptionLogService svc = new ExceptionLogService( new RockContext() );
 
             //load the base exception 
             exceptionList.Add( baseException );
@@ -157,7 +158,7 @@ namespace RockWeb.Blocks.Core
             }
 
             //Get exception
-            var baseException = new ExceptionLogService().Get( itemKeyValue );
+            var baseException = new ExceptionLogService( new RockContext() ).Get( itemKeyValue );
 
             //set fields
             if ( baseException == null )

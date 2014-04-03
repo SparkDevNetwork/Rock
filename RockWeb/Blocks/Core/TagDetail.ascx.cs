@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -102,7 +103,7 @@ namespace RockWeb.Blocks.Core
             int? tagId = PageParameter( "tagId" ).AsInteger( false );
             if (tagId.HasValue)
             {
-                Tag tag = new TagService().Get( tagId.Value );
+                Tag tag = new TagService( new RockContext() ).Get( tagId.Value );
                 if (tag != null)
                 {
                     pageTitle = tag.Name;
@@ -126,7 +127,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var tag = new TagService().Get( int.Parse( hfId.Value ) );
+            var tag = new TagService( new RockContext() ).Get( int.Parse( hfId.Value ) );
             ShowEditDetails( tag );
         }
 
@@ -137,7 +138,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            var tagService = new Rock.Model.TagService();
+            var rockContext = new RockContext();
+            var tagService = new Rock.Model.TagService( rockContext );
             var tag = tagService.Get( int.Parse( hfId.Value ) );
 
             if ( tag != null )
@@ -149,8 +151,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                tagService.Delete( tag, CurrentPersonAlias );
-                tagService.Save( tag, CurrentPersonAlias );
+                tagService.Delete( tag );
+                rockContext.SaveChanges();
 
                 NavigateToParentPage();
             }
@@ -163,7 +165,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            var tagService = new Rock.Model.TagService();
+            var rockContext = new RockContext();
+            var tagService = new Rock.Model.TagService( rockContext );
             Tag tag = null;
 
             int tagId = int.Parse( hfId.Value );
@@ -177,7 +180,7 @@ namespace RockWeb.Blocks.Core
             {
                 tag = new Tag();
                 tag.IsSystem = false;
-                tagService.Add( tag, CurrentPersonAlias );
+                tagService.Add( tag );
             }
 
             string name = tbName.Text;
@@ -209,7 +212,7 @@ namespace RockWeb.Blocks.Core
                 tag.EntityTypeId = entityTypeId;
                 tag.EntityTypeQualifierColumn = qualifierCol;
                 tag.EntityTypeQualifierValue = qualifierVal;
-                tagService.Save( tag, CurrentPersonAlias );
+                rockContext.SaveChanges();
 
                 var qryParams = new Dictionary<string, string>();
                 qryParams["tagId"] = tag.Id.ToString();
@@ -232,7 +235,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                var tag = new TagService().Get( int.Parse( hfId.Value ) );
+                var tag = new TagService( new RockContext() ).Get( int.Parse( hfId.Value ) );
                 ShowReadonlyDetails( tag );
             }
         }
@@ -299,7 +302,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                tag = new TagService().Get( itemKeyValue );
+                tag = new TagService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {
@@ -384,7 +387,7 @@ namespace RockWeb.Blocks.Core
             ppOwner.SetValue( tag.Owner );
 
             ddlEntityType.Items.Clear();
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+            new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
             ddlEntityType.SelectedValue = tag.EntityTypeId.ToString();
             tbEntityTypeQualifierColumn.Text = tag.EntityTypeQualifierColumn;
             tbEntityTypeQualifierValue.Text = tag.EntityTypeQualifierValue;

@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
         private void DisplayTags(int? ownerId, int entityId)
         {
             // get tags
-            var qry = new TagService()
+            var qry = new TagService( new RockContext() )
                 .Queryable()
                 .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
                 .Select(t => new

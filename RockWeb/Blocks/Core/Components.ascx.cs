@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Extension;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -159,18 +160,16 @@ namespace RockWeb.Blocks.Core
             else
                 components.Insert( e.NewIndex, movedItem );
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            int order = 0;
+            foreach ( var item in components )
             {
-                int order = 0;
-                foreach ( var item in components )
+                Component component = item.Value.Value;
+                if (  component.Attributes.ContainsKey("Order") )
                 {
-                    Component component = item.Value.Value;
-                    if (  component.Attributes.ContainsKey("Order") )
-                    {
-                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonAlias );
-                    }
-                    order++;
+                    Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), rockContext );
                 }
+                order++;
             }
 
             _container.Refresh();
@@ -230,7 +229,7 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
-            component.SaveAttributeValues( CurrentPersonAlias );
+            component.SaveAttributeValues();
 
             HideDialog();
 
@@ -263,13 +262,11 @@ namespace RockWeb.Blocks.Core
             foreach ( var component in _container.Dictionary )
             {
                 Type type = component.Value.Value.GetType();
-                using ( new Rock.Data.UnitOfWorkScope() )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
                 {
-                    if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
-                    {
-                        component.Value.Value.LoadAttributes();
-                    }
+                    component.Value.Value.LoadAttributes();
                 }
+
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );
             }
 
