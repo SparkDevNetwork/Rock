@@ -30,7 +30,6 @@ namespace Rock.Model
         /// <summary>
         /// Registers the controllers.
         /// </summary>
-        /// <param name="personAlias">The person alias.</param>
         public static void RegisterControllers()
         {
             var rockContext = new RockContext();

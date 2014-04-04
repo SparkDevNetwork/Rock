@@ -48,12 +48,11 @@ namespace Rock.Communication.Transport
         string serverName = "smtp.mandrillapp.com";
         int serverPort = 25;
         bool inlineCss = true;
-        
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication )
         {

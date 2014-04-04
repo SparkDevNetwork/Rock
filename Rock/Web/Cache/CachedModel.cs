@@ -244,7 +244,6 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
-        /// <param name="personAlias">The person alias.</param>
         public virtual void SaveAttributeValues()
         {
             var rockContext = new Rock.Data.RockContext();
@@ -298,7 +297,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues()" /> method to save all values to database
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>

@@ -29,13 +29,13 @@ namespace Rock.Model
     public partial class WorkflowService 
     {
         /// <summary>
-        /// Activates a new <see cref="Rock.Model.Workflow"/> instance.
+        /// Activates a new <see cref="Rock.Model.Workflow" /> instance.
         /// </summary>
-        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/> to be activated.</param>
-        /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
-        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
-        /// <returns>The activated <see cref="Rock.Model.Workflow"/> instance</returns>
+        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" /> to be activated.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
+        /// <returns>
+        /// The activated <see cref="Rock.Model.Workflow" /> instance
+        /// </returns>
         public Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = Workflow.Activate( workflowType, name );
@@ -47,12 +47,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Processes the specified <see cref="Rock.Model.Workflow"/>
+        /// Processes the specified <see cref="Rock.Model.Workflow" />
         /// </summary>
-        /// <param name="workflow">The <see cref="Rock.Model.Workflow"/> instance to process.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
-        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow"/>.</param>
+        /// <param name="workflow">The <see cref="Rock.Model.Workflow" /> instance to process.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}" /> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow" />.</param>
         public void Process( Workflow workflow, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;

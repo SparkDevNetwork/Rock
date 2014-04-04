@@ -152,10 +152,10 @@ namespace Rock.Model
         /// <summary>
         /// Adds the person to a new family record
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
         {
@@ -177,10 +177,10 @@ namespace Rock.Model
         /// <summary>
         /// Saves the new family.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="familyMembers">The family members.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
         public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
@@ -338,6 +338,7 @@ namespace Rock.Model
         /// <summary>
         /// Adds the new family address.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="family">The family.</param>
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="street1">The street1.</param>
@@ -345,7 +346,6 @@ namespace Rock.Model
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="zip">The zip.</param>
-        /// <param name="personAlias">The person alias.</param>
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
@@ -394,9 +394,10 @@ namespace Rock.Model
         /// <summary>
         /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
-        /// <param name="item">The <see cref="Rock.Model.Group"/> to delete.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns>A <see cref="System.Boolean"/> that indicates if the <see cref="Rock.Model.Group"/> was deleted successfully.</returns>
+        /// <param name="item">The <see cref="Rock.Model.Group" /> to delete.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> that indicates if the <see cref="Rock.Model.Group" /> was deleted successfully.
+        /// </returns>
         public override bool Delete( Group item )
         {
             string message;

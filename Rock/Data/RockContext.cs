@@ -32,7 +32,7 @@ namespace Rock.Data
     /// <summary>
     /// Entity Framework Context
     /// </summary>
-    public partial class RockContext : Rock.Data.DbContext
+    public class RockContext : Rock.Data.DbContext
     {
 
         //public RockContext()

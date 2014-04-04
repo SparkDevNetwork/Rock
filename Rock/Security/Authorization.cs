@@ -337,13 +337,12 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// Makes the entity private by setting up two authorization rules, one granting the selected person, and 
+        /// Makes the entity private by setting up two authorization rules, one granting the selected person, and
         /// then another that denies all other users.
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
         public static void MakePrivate( ISecured entity, string action, Person person )
         {
             if ( !IsPrivate( entity, action, person ) )
@@ -422,7 +421,6 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
         public static void MakeUnPrivate( ISecured entity, string action, Person person )
         {
             if ( IsPrivate( entity, action, person ) )
@@ -449,7 +447,6 @@ namespace Rock.Security
         /// <param name="entity">The entity.</param>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
         public static void AllowPerson( ISecured entity, string action, Person person )
         {
             if ( person != null )

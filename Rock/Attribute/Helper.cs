@@ -508,10 +508,10 @@ namespace Rock.Attribute
         /// Saves any attribute edits made using an Attribute Editor control
         /// </summary>
         /// <param name="edtAttribute">The edt attribute.</param>
-        /// <param name="attributeService">The attribute service.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
@@ -529,10 +529,10 @@ namespace Rock.Attribute
         /// Saves any attribute edits made to an attribute
         /// </summary>
         /// <param name="newAttribute">The new attribute.</param>
-        /// <param name="attributeService">The attribute service.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context

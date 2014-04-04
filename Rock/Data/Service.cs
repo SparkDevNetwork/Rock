@@ -415,9 +415,9 @@ namespace Rock.Data
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Service&lt;T&gt;"/> class.
+        /// Initializes a new instance of the <see cref="Service&lt;T&gt;" /> class.
         /// </summary>
-        /// <param name="repository">The repository.</param>
+        /// <param name="dbContext">The database context.</param>
         public Service( Rock.Data.DbContext dbContext )
         {
             _context = dbContext;

@@ -47,7 +47,6 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="CurrentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication )
         {

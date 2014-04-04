@@ -934,7 +934,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\RockContext.cs" />
-    <Compile Include="Data\UnitOfWorkScope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Service References\MelissaData.AddressCheck\Reference.cs">
       <AutoGen>True</AutoGen>

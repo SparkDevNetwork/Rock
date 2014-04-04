@@ -179,7 +179,6 @@ namespace Rock.Model
         /// Performs Address Verification on the provided <see cref="Rock.Model.Location" />.
         /// </summary>
         /// <param name="location">A <see cref="Rock.Model.Location" /> to verify.</param>
-        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias" /> that represents the <see cref="Rock.Model.Person" /> requesting the address verification.</param>
         /// <param name="reVerify">if set to <c>true</c> [re verify].</param>
         public void Verify( Location location, bool reVerify )
         {

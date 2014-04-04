@@ -72,7 +72,6 @@ namespace Rock.Model
         /// Sets the status.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public bool GetStatus(FinancialScheduledTransaction scheduledTransaction, out string errorMessages)
