@@ -248,23 +248,24 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-
-        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var categories = GetCategories();
+            if ( categories != null )
             {
-                var categories = GetCategories();
-                if ( categories != null )
-                {
-                    var rockContext = new RockContext();
-                    new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
-                    rockContext.SaveChanges();
-                }
-
-                BindGrid();
+                var rockContext = new RockContext();
+                new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
             }
+
+            BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
@@ -313,7 +314,7 @@ namespace RockWeb.Blocks.Core
             category.IconCssClass = tbIconCssClass.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
-           
+
             if ( category.IsValid )
             {
                 BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -368,9 +369,9 @@ namespace RockWeb.Blocks.Core
         {
             string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
-            var attributeEntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.Attribute)).Id;
+            var attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
             var queryable = new CategoryService( new RockContext() ).Queryable()
-                .Where( c => c.EntityTypeId == attributeEntityTypeId);
+                .Where( c => c.EntityTypeId == attributeEntityTypeId );
 
             if ( !string.IsNullOrWhiteSpace( selectedValue ) )
             {
@@ -441,5 +442,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-}
+    }
 }
