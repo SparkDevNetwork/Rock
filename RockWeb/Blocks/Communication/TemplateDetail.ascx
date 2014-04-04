@@ -24,16 +24,18 @@
             </div>
         </div>
 
-        <ul class="nav nav-pills nav-pagelist">
-            <asp:Repeater ID="rptChannels" runat="server">
-                <ItemTemplate>
-                    <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
-                        <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click" CausesValidation="false">
-                        </asp:LinkButton>
-                    </li>
-                </ItemTemplate>
-            </asp:Repeater>
-        </ul>
+        <div class="nav navbar nav-pagelist">
+            <ul class="nav nav-pills">
+                <asp:Repeater ID="rptChannels" runat="server">
+                    <ItemTemplate>
+                        <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
+                            <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click" CausesValidation="false">
+                            </asp:LinkButton>
+                        </li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </div>
         
         <asp:PlaceHolder ID="phContent" runat="server" />
 
