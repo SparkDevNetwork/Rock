@@ -157,12 +157,12 @@ namespace Rock.Model
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( Person person, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
         {
             var groupMember = new GroupMember();
             groupMember.Person = person;
 
-            var adultRole = new GroupTypeRoleService( (RockContext)Context ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
+            var adultRole = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
             if (adultRole != null)
             {
                 groupMember.GroupRoleId = adultRole.Id;
@@ -171,7 +171,7 @@ namespace Rock.Model
             var groupMembers = new List<GroupMember>();
             groupMembers.Add( groupMember );
 
-            return SaveNewFamily( (RockContext)Context, groupMembers, campusId, savePersonAttributes, personAlias );
+            return SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Rock.Model
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
         /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -318,13 +318,13 @@ namespace Rock.Model
                             rockContext.SaveChanges();
                         }
 
-                        HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), 
                             person.Id, changes );
 
-                        HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
                             person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id );
 
-                        HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
                             person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id );
                     }
                 }
@@ -385,7 +385,7 @@ namespace Rock.Model
 
                 foreach(var fm in family.Members)
                 {
-                    HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
                         fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id );
                 }
             }

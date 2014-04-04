@@ -26,6 +26,7 @@ using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
             if ( Person != null )
             {
-                var personService = new PersonService();
+                var personService = new PersonService( new RockContext() );
                 foreach ( var family in personService.GetFamilies( Person.Id ) )
                 {
                     ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
@@ -150,7 +151,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Rock.Data.RockTransactionScope.WrapTransaction( () =>
                 {
-                    var personService = new PersonService();
+                    var rockContext = new RockContext();
+                    var personService = new PersonService( rockContext );
 
                     var changes = new List<string>();
 
@@ -296,7 +298,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
 
                     // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService();
+                    var phoneNumberService = new PhoneNumberService( new RockContext() );
                     foreach ( var phoneNumber in person.PhoneNumbers
                         .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                         .ToList() )
@@ -306,7 +308,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             phoneNumber.NumberFormatted, string.Empty );
 
                         person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
+                        phoneNumberService.Delete( phoneNumber );
                     }
 
                     History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
@@ -338,23 +340,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( person.IsValid )
                     {
-                        if ( personService.Save( person, CurrentPersonAlias ) )
+                        if ( rockContext.SaveChanges() > 0 )
                         {
                             if ( changes.Any() )
                             {
-                                new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    Person.Id, changes, CurrentPersonAlias );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                    Person.Id, changes);
                             }
 
                             if ( orphanedPhotoId.HasValue )
                             {
-                                BinaryFileService binaryFileService = new BinaryFileService( personService.RockContext );
+                                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
                                 var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
                                 if ( binaryFile != null )
                                 {
                                     // marked the old images as IsTemporary so they will get cleaned up later
                                     binaryFile.IsTemporary = true;
-                                    binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                                    rockContext.SaveChanges();
                                 }
                             }
 

@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -100,7 +101,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             lCategoryName.Text = category.Name;
                         }
 
-                        var orderedAttributeList = new AttributeService().GetByCategoryId( category.Id )
+                        var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id )
                             .OrderBy( a => a.Order ).ThenBy( a => a.Name );
                         foreach ( var attribute in orderedAttributeList )
                         {
@@ -166,10 +167,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
+                    var rockContext = new RockContext();
                     Rock.Data.RockTransactionScope.WrapTransaction( () =>
                     {
                         var changes = new List<string>();
-                        var historyService = new HistoryService();
 
                         foreach ( int attributeId in AttributeList )
                         {
@@ -182,7 +183,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 {
                                     string originalValue = Person.GetAttributeValue( attribute.Key );
                                     string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonAlias );
+                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
 
                                     // Check for changes to write to history
                                     if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
@@ -207,8 +208,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         if ( changes.Any() )
                         {
-                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes, CurrentPersonAlias );
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                Person.Id, changes );
                         }
                     } );
                 }

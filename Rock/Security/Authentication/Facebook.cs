@@ -167,15 +167,13 @@ namespace Rock.Security.ExternalAuthentication
 
                                     if ( person.BirthDay == null )
                                     {
+                                        History.EvaluateChange( PersonChanges, "Birth Date", person.BirthDate, person.BirthDate );
                                         person.BirthDate = birthdate;
-                                        History.EvaluateChange( PersonChanges, "Birth Date", null, person.BirthDate );
 
                                         rockContext.SaveChanges();
-                                            
-                                        HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                             person.Id, PersonChanges );
                                     }
-
                                 }
                                 else
                                 {
@@ -195,12 +193,11 @@ namespace Rock.Security.ExternalAuthentication
                                     person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
                                     person.EmailPreference = EmailPreference.EmailAllowed;
 
-                                    new GroupService( rockContext ).SaveNewFamily( person, null, false, null );
+                                    GroupService.SaveNewFamily( rockContext, person, null, false );
                                 }
 
-                                rockContext.SaveChanges();
-
                                 user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
+
                             }
                             catch ( Exception ex )
                             {
