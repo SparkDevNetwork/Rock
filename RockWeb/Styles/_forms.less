@@ -48,6 +48,24 @@ a.aspNetDisabled {
     line-height: @line-height-base;
 }
 
+// styling to get rock controls to layout horizontal
+.form-horizontal {
+    .form-group {
+        margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
+        label {
+            float: left;
+            width: 120px;
+            padding-right: 12px;
+        }
+
+        .form-control-group,
+        .form-control {
+            float: left;
+        }
+    }
+}
+
+
 // 2. Data Lists
 // -------------------------
 
