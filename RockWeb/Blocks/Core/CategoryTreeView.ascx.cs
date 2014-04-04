@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Core
                                     Type serviceType = typeof( Rock.Data.Service<> );
                                     Type[] modelType = { entityType };
                                     Type service = serviceType.MakeGenericType( modelType );
-                                    var serviceInstance = Activator.CreateInstance( service );
+                                    var serviceInstance = Activator.CreateInstance( service, new object[] { new RockContext() } );
                                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                                     ICategorized entity = getMethod.Invoke( serviceInstance, new object[] { id } ) as ICategorized;
 
