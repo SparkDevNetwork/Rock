@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Linq;
 using Rock.Data;
 using Rock.Model;
 
@@ -43,7 +44,7 @@ namespace Rock.Transactions
                 var rockContext = new RockContext();
                 var auditService = new AuditService( rockContext );
 
-                foreach ( var audit in Audits )
+                foreach ( var audit in Audits.Where( a => a.Details.Any() ) )
                 {
                     auditService.Add( audit );
                 }

@@ -86,7 +86,10 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
-            foreach ( var entry in dbContext.ChangeTracker.Entries().Where( c => c.Entity is IEntity ) )
+            foreach ( var entry in dbContext.ChangeTracker.Entries()
+                .Where( c => 
+                    c.Entity is IEntity &&
+                    (c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted) ) )
             {
                 // Cast entry as IEntity
                 var entity = entry.Entity as IEntity;
