@@ -642,7 +642,7 @@ namespace RockWeb.Blocks.Cms
             int audienceTypeValueId = int.Parse( ddlMarketingCampaignAudiences.SelectedValue );
             MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
             marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
-            marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
+            marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.AsBoolean();
 
             MarketingCampaignAudiencesState.Add( marketingCampaignAudience.Clone() as MarketingCampaignAudience );
 

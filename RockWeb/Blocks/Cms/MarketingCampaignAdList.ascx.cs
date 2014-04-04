@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Cms
             gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
 
             Dictionary<string, BoundField> boundFields = gMarketingCampaignAds.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["MarketingCampaign.Title"].Visible = GetAttributeValue( "ShowMarketingCampaignTitle" ).FromTrueFalse();
+            boundFields["MarketingCampaign.Title"].Visible = GetAttributeValue( "ShowMarketingCampaignTitle" ).AsBoolean();
         }
 
         /// <summary>
