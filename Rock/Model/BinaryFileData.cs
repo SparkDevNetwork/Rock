@@ -41,7 +41,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
+        [DataMember]
         public byte[] Content { get; set; }
+
+        //// ** NOTE:  We need [DataMember] so that REST can GET and POST BinaryFileData. 
+        //// ** However, we don't have to worry about Liquid serializing this since BinaryFile.Data is not marked with [DataMember]
+        //// ** So the only way you would get serialized Content if you intentionally requested to serialise BinaryFileData
 
         #endregion
 
