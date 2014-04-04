@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
-                Location Location = ( new LocationService() ).Get( int.Parse( _LocationId ) );
+                Location Location = ( new LocationService( new RockContext() ) ).Get( int.Parse( _LocationId ) );
                 lbAddLocationChild.Enabled = Location != null;
 
                 // get the parents of the selected item so we can tell the treeview to expand those
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
 
         private Location FindFirstLocation()
         {
-            return new LocationService().Queryable()
+            return new LocationService( new RockContext() ).Queryable()
                 .Where( l => 
                     l.Name != null && 
                     l.Name != string.Empty &&

@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="LayoutService"/> class
         /// </summary>
-        public LayoutService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LayoutService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public LayoutService(IRepository<Layout> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LayoutService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public LayoutService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Page>().Queryable().Any( a => a.LayoutId == item.Id ) )
+            if ( new Service<Page>( Context ).Queryable().Any( a => a.LayoutId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Layout.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;

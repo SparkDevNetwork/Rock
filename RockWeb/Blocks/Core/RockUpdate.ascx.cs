@@ -36,6 +36,7 @@ using Rock.Services.NuGet;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -210,7 +211,7 @@ namespace RockWeb.Blocks.Core
                 // register any new REST controllers
                 try
                 {
-                    new RestControllerService().RegisterControllers( CurrentPersonAlias );
+                    RestControllerService.RegisterControllers();
                 }
                 catch (Exception ex)
                 {
@@ -460,18 +461,20 @@ namespace RockWeb.Blocks.Core
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
 
+                        var rockContext = new RockContext();
+
                         // Fetch their organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                         if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
                         {
-                            var location = new Rock.Model.LocationService().Get( organizationAddressLocationGuid );
+                            var location = new Rock.Model.LocationService( rockContext ).Get( organizationAddressLocationGuid );
                             if ( location != null )
                             {
                                 organizationAddress = location.GetFullStreetAddress();
                             }
                         }
 
-                        numberOfActiveRecords = new PersonService().Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                        numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
                     }
 
                     // TODO now send them to SDN

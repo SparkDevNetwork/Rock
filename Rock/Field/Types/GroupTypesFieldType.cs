@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Field.Types
@@ -35,7 +36,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                GroupTypeService groupTypeService = new GroupTypeService();
+                GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
                 return groupTypeService.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }
         }

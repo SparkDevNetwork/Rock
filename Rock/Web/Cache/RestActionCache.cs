@@ -18,7 +18,7 @@ using System;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -169,7 +169,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService();
+                var RestActionService = new RestActionService( new RockContext() );
                 var RestActionModel = RestActionService.Get( id );
                 if ( RestActionModel != null )
                 {
@@ -204,7 +204,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService();
+                var RestActionService = new RestActionService( new RockContext() );
                 var RestActionModel = RestActionService.Get( guid );
                 if ( RestActionModel != null )
                 {
@@ -239,7 +239,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService();
+                var RestActionService = new RestActionService( new RockContext() );
                 var RestActionModel = RestActionService.Queryable()
                     .Where( a => a.ApiId == apiId)
                     .FirstOrDefault();

@@ -15,23 +15,26 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-
 using Rock.Model;
 using Rock.Utility;
+using Rock.Workflow;
 
 namespace Rock.Data
 {
     /// <summary>
     /// Entity Framework Context
     /// </summary>
-    public partial class RockContext : DbContext
+    public class RockContext : Rock.Data.DbContext
     {
+
         //public RockContext()
         //{
         //    this.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
@@ -739,39 +742,6 @@ namespace Rock.Data
             ContextHelper.AddConfigurations( modelBuilder );
         }
 
-        /// <summary>
-        /// Saves all changes made in this context to the underlying database.
-        /// </summary>
-        /// <returns>
-        /// The number of objects written to the underlying database.
-        /// </returns>
-        public override int SaveChanges()
-        {
-            ContextHelper.AddAuditData( this.ChangeTracker, HttpContext.Current );
-            return base.SaveChanges();
-        }
-
-        /// <summary>
-        /// Gets the name of the entity from table.
-        /// </summary>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns></returns>
-        public static Type GetEntityFromTableName( string tableName )
-        {
-            var thisType = typeof( RockContext );
-            var props = thisType.GetProperties();
-            foreach ( PropertyInfo pi in props )
-            {
-                Type modelType = pi.PropertyType.GetGenericArguments()[0];
-                TableAttribute tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
-                if ( tableAttribute.Name.Equals( tableName, StringComparison.OrdinalIgnoreCase ) )
-                {
-                    return modelType;
-                }
-            }
-
-            return null;
-        }
     }
 
     /// <summary>
@@ -786,7 +756,7 @@ namespace Rock.Data
         public static void AddConfigurations(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
+            
             modelBuilder.Configurations.Add( new AttendanceConfiguration() );
             modelBuilder.Configurations.Add( new AttendanceCodeConfiguration() );
             modelBuilder.Configurations.Add( new AttributeConfiguration() );
@@ -874,63 +844,5 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );
         }
 
-        /// <summary>
-        /// Updates the Created/Modified data for any model being created or modified
-        /// </summary>
-        /// <param name="changeTracker">The current DbChangeTracker object.</param>
-        /// <param name="context">The current HttpContext.</param>
-        public static void AddAuditData(System.Data.Entity.Infrastructure.DbChangeTracker changeTracker, HttpContext context)
-        {
-            // Try to get the current person alias
-            int? personAliasId = null;
-            if ( context != null && context.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = context.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAliasId = currentPerson.PrimaryAlias.Id;
-                }
-            }
-
-            var changeSet = changeTracker.Entries().Where( e => e.Entity is IModel );
-            if ( changeSet != null )
-            {
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Added )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    if ( !entry.CreatedDateTime.HasValue )
-                    {
-                        entry.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !entry.CreatedByPersonAliasId.HasValue )
-                    {
-                        entry.CreatedByPersonAliasId = personAliasId;
-                    }
-
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Modified )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var person in changeSet
-                    .Where( c =>
-                        ( c.State == EntityState.Added || c.State == EntityState.Modified ) &&
-                        ( c.Entity is Person ) )
-                    .Select( c => c.Entity as Person ) )
-                {
-                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
-
-        }
     }
 }

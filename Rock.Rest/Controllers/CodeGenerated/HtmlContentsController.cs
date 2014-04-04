@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class HtmlContentsController : Rock.Rest.ApiController<Rock.Model.HtmlContent>
     {
-        public HtmlContentsController() : base( new Rock.Model.HtmlContentService() ) { } 
+        public HtmlContentsController() : base( new Rock.Model.HtmlContentService( new Rock.Data.RockContext() ) ) { } 
     }
 }

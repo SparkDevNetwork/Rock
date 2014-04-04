@@ -31,9 +31,9 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a DataView associated with them.
         /// </summary>
         /// <returns>An enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> that have a <see cref="Rock.Model.DataView" /> associated with them.</returns>
-        public IEnumerable<Rock.Model.EntityType> GetAvailableEntityTypes()
+        public IQueryable<Rock.Model.EntityType> GetAvailableEntityTypes()
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Select( d => d.EntityType )
                 .Distinct();
         }
@@ -43,9 +43,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.DataView">DataViews</see> that are associated with the specified <see cref="Rock.Model.EntityType"/>.</returns>
-        public IEnumerable<Rock.Model.DataView> GetByEntityTypeId( int entityTypeId )
+        public IQueryable<Rock.Model.DataView> GetByEntityTypeId( int entityTypeId )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( d => d.EntityTypeId == entityTypeId )
                 .OrderBy( d => d.Name );
         }

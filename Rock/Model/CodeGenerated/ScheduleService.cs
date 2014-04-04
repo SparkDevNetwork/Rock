@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduleService"/> class
         /// </summary>
-        public ScheduleService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public ScheduleService(IRepository<Schedule> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public ScheduleService(RockContext context) : base(context)
         {

@@ -36,7 +36,7 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrWhiteSpace( transactionCode ) )
             {
-                return Repository.AsQueryable()
+                return Queryable()
                     .Where( t => t.TransactionCode.Equals( transactionCode.Trim(), StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
             }

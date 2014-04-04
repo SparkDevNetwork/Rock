@@ -233,7 +233,7 @@ function () {
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? memberCountValue = values[1].AsInteger( false );
 
-            var memberCountQuery = new GroupService( serviceInstance.RockContext ).Queryable();
+            var memberCountQuery = new GroupService( (RockContext)serviceInstance.Context ).Queryable();
 
             switch ( comparisonType )
             {

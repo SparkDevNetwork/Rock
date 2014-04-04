@@ -17,6 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -137,7 +138,7 @@ namespace Rock.Web.UI.Controls
                         {
                             if ( _pointPicker.SelectedValue != null )
                             {
-                                return new LocationService().GetByGeoPoint( _pointPicker.SelectedValue );
+                                return new LocationService( new RockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
                             }
                             else
                             {
@@ -148,7 +149,7 @@ namespace Rock.Web.UI.Controls
                         {
                             if ( _polygonPicker.SelectedValue != null )
                             {
-                                return new LocationService().GetByGeoFence( _polygonPicker.SelectedValue );
+                                return new LocationService( new RockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
                             }
                             else
                             {
@@ -157,7 +158,7 @@ namespace Rock.Web.UI.Controls
                         }
                     default:
                         {
-                            return new LocationService().Get( _namedPicker.SelectedValueAsId() ?? 0 );
+                            return new LocationService( new RockContext() ).Get( _namedPicker.SelectedValueAsId() ?? 0 );
                         }
                 }
             }
@@ -230,6 +231,12 @@ namespace Rock.Web.UI.Controls
             return LocationPickerMode.Named;
         }
 
+        /// <summary>
+        /// Gets or sets the map style.
+        /// </summary>
+        /// <value>
+        /// The map style.
+        /// </value>
         public string MapStyle
         {
             get
@@ -391,7 +398,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _pointPicker_SelectGeography( object sender, EventArgs e )
         {
-            Location = new LocationService().GetByGeoPoint( _pointPicker.SelectedValue );
+            Location = new LocationService( new RockContext() ).GetByGeoPoint( _pointPicker.SelectedValue );
         }
 
         /// <summary>
@@ -401,7 +408,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _polygonPicker_SelectGeography( object sender, EventArgs e )
         {
-            Location = new LocationService().GetByGeoFence( _polygonPicker.SelectedValue );
+            Location = new LocationService( new RockContext() ).GetByGeoFence( _polygonPicker.SelectedValue );
         }
 
         /// <summary>

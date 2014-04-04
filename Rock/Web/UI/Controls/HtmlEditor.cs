@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -503,7 +504,7 @@ CKEDITOR.replace('{0}', {{
             }
 
             // only show the File/Image plugin if they have Auth to the file browser page
-            var fileBrowserPage = new Rock.Model.PageService().Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
             if ( fileBrowserPage != null )
             {
                 var currentPerson = this.RockBlock().CurrentPerson;

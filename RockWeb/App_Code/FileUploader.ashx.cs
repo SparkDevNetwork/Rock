@@ -172,7 +172,8 @@ namespace RockWeb
 
             var binaryFileService = new BinaryFileService( rockContext );
             binaryFileService.Add( binaryFile );
-            binaryFileService.Save( binaryFile );
+
+            rockContext.SaveChanges();
 
             var response = new
             {

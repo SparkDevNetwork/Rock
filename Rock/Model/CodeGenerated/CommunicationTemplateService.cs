@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
         /// </summary>
-        public CommunicationTemplateService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public CommunicationTemplateService(IRepository<CommunicationTemplate> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public CommunicationTemplateService(RockContext context) : base(context)
         {

@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
             Guid binaryFileTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out binaryFileTypeGuid ))
             {
-                var binaryFiletype = new BinaryFileTypeService().Get( binaryFileTypeGuid );
+                var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeGuid );
                 if ( binaryFiletype != null )
                 {
                     formattedValue = binaryFiletype.Name;
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
                 int id = int.MinValue;
                 if ( Int32.TryParse( ( (BinaryFileTypePicker)control ).SelectedValue, out id ) )
                 {
-                    var binaryFiletype = new BinaryFileTypeService().Get( id );
+                    var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( id );
                     if ( binaryFiletype != null )
                     {
                         return binaryFiletype.Guid.ToString();
@@ -107,7 +107,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is BinaryFileTypePicker )
                 {
-                    var binaryFiletype = new BinaryFileTypeService().Get( binaryFileTypeGuid );
+                    var binaryFiletype = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeGuid );
                     if ( binaryFiletype != null )
                     {
                         ( (BinaryFileTypePicker)control ).SetValue( binaryFiletype.Id.ToString() );

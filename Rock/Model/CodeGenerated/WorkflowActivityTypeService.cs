@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowActivityTypeService"/> class
         /// </summary>
-        public WorkflowActivityTypeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActivityTypeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public WorkflowActivityTypeService(IRepository<WorkflowActivityType> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActivityTypeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public WorkflowActivityTypeService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<WorkflowActivity>().Queryable().Any( a => a.ActivityTypeId == item.Id ) )
+            if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.ActivityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActivityType.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
                 return false;

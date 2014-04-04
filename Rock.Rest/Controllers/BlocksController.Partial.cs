@@ -55,10 +55,9 @@ namespace Rock.Rest.Controllers
         {
             var person = GetPerson();
 
-            var service = new BlockService();
             block.Id = id;
             Block model;
-            if ( !service.TryGet( id, out model ) )
+            if ( !Service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
 
             CheckCanEdit( model, person );
@@ -82,8 +81,8 @@ namespace Rock.Rest.Controllers
 
             if ( model.IsValid )
             {
-                model.Order = service.GetMaxOrder( model );
-                service.Save( model, person != null ? person.PrimaryAlias : null );
+                model.Order = ((BlockService)Service).GetMaxOrder( model );
+                Service.Context.SaveChanges();
             }
             else
             {

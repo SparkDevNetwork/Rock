@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class SiteDomainsController : Rock.Rest.ApiController<Rock.Model.SiteDomain>
     {
-        public SiteDomainsController() : base( new Rock.Model.SiteDomainService() ) { } 
+        public SiteDomainsController() : base( new Rock.Model.SiteDomainService( new Rock.Data.RockContext() ) ) { } 
     }
 }

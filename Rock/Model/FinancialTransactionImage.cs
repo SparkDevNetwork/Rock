@@ -91,6 +91,28 @@ namespace Rock.Model
         public virtual DefinedValue TransactionImageTypeValue { get; set; }
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state != System.Data.Entity.EntityState.Deleted)
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                var binaryFile = binaryFileService.Get( BinaryFileId );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+        
+        #endregion
     }
 
     #region Entity Configuration

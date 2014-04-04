@@ -20,8 +20,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Workflow;
@@ -136,11 +136,9 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 var action = EntityTypeCache.Read( value.EntityTypeId );
                 if ( action != null )
                 {
-                    using ( new Rock.Data.UnitOfWorkScope() )
-                    {
-                        Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), value.TypeId, "EntityTypeId", value.EntityTypeId.ToString(), null );
-                    }
-                    value.LoadAttributes();
+                    var rockContext = new RockContext();
+                    Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), value.TypeId, "EntityTypeId", value.EntityTypeId.ToString(), rockContext );
+                    value.LoadAttributes( rockContext );
                 }
 
                 _phActionAttributes.Controls.Clear();

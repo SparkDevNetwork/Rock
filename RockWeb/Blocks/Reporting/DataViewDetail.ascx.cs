@@ -134,7 +134,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var service = new DataViewService();
+            var service = new DataViewService(new RockContext());
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowEditDetails( item );
         }
@@ -143,10 +143,10 @@ $(document).ready(function() {
         /// Set the Guids on the datafilter and it's children to Guid.NewGuid
         /// </summary>
         /// <param name="dataViewFilter">The data view filter.</param>
-        private void SetNewDataFilterGuids(DataViewFilter dataViewFilter)
+        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
         {
             dataViewFilter.Guid = Guid.NewGuid();
-            foreach (var childFilter in dataViewFilter.ChildFilters)
+            foreach ( var childFilter in dataViewFilter.ChildFilters )
             {
                 SetNewDataFilterGuids( childFilter );
             }
@@ -161,65 +161,60 @@ $(document).ready(function() {
         {
             DataView dataView = null;
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            DataViewService service = new DataViewService( rockContext );
+
+            int dataViewId = int.Parse( hfDataViewId.Value );
+            int? dataViewFilterId = null;
+
+            if ( dataViewId == 0 )
             {
-                DataViewService service = new DataViewService();
-
-                int dataViewId = int.Parse( hfDataViewId.Value );
-                int? dataViewFilterId = null;
-
-                if ( dataViewId == 0 )
-                {
-                    dataView = new DataView();
-                    dataView.IsSystem = false;
-                }
-                else
-                {
-                    dataView = service.Get( dataViewId );
-                    dataViewFilterId = dataView.DataViewFilterId;
-                }
-
-                dataView.Name = tbName.Text;
-                dataView.Description = tbDescription.Text;
-                dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
-                dataView.EntityTypeId = ddlEntityType.SelectedValueAsInt();
-                dataView.CategoryId = cpCategory.SelectedValueAsInt();
-
-                dataView.DataViewFilter = GetFilterControl();
-
-                // update Guids since we are creating a new dataFilter and children and deleting the old one
-                SetNewDataFilterGuids( dataView.DataViewFilter );
-
-                if ( !Page.IsValid )
-                {
-                    return;
-                }
-
-                if ( !dataView.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    if ( dataView.Id.Equals( 0 ) )
-                    {
-                        service.Add( dataView, CurrentPersonAlias );
-                    }
-
-                    service.Save( dataView, CurrentPersonAlias );
-
-                    // Delete old report filter
-                    if ( dataViewFilterId.HasValue )
-                    {
-                        DataViewFilterService dataViewFilterService = new DataViewFilterService();
-                        DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                        DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
-                        dataViewFilterService.Save( dataViewFilter, CurrentPersonAlias );
-                    }
-                } );
+                dataView = new DataView();
+                dataView.IsSystem = false;
             }
+            else
+            {
+                dataView = service.Get( dataViewId );
+                dataViewFilterId = dataView.DataViewFilterId;
+            }
+
+            dataView.Name = tbName.Text;
+            dataView.Description = tbDescription.Text;
+            dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
+            dataView.EntityTypeId = ddlEntityType.SelectedValueAsInt();
+            dataView.CategoryId = cpCategory.SelectedValueAsInt();
+
+            dataView.DataViewFilter = GetFilterControl();
+
+            // update Guids since we are creating a new dataFilter and children and deleting the old one
+            SetNewDataFilterGuids( dataView.DataViewFilter );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !dataView.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+
+            if ( dataView.Id.Equals( 0 ) )
+            {
+                service.Add( dataView );
+            }
+
+            // Delete old report filter
+            if ( dataViewFilterId.HasValue )
+            {
+                DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+                DataViewFilter dataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
+                DeleteDataViewFilter( dataViewFilter, dataViewFilterService );
+            }
+
+            rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["DataViewId"] = dataView.Id.ToString();
@@ -249,7 +244,7 @@ $(document).ready(function() {
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DataViewService service = new DataViewService();
+                DataViewService service = new DataViewService(new RockContext());
                 DataView item = service.Get( int.Parse( hfDataViewId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -264,7 +259,8 @@ $(document).ready(function() {
         {
             int? categoryId = null;
 
-            var dataViewService = new DataViewService();
+            var rockContext = new RockContext();
+            var dataViewService = new DataViewService( rockContext );
             var dataView = dataViewService.Get( int.Parse( hfDataViewId.Value ) );
 
             if ( dataView != null )
@@ -279,8 +275,8 @@ $(document).ready(function() {
                 {
                     categoryId = dataView.CategoryId;
 
-                    dataViewService.Delete( dataView, CurrentPersonAlias );
-                    dataViewService.Save( dataView, CurrentPersonAlias );
+                    dataViewService.Delete( dataView );
+                    rockContext.SaveChanges();
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -303,11 +299,11 @@ $(document).ready(function() {
         /// </summary>
         private void LoadDropDowns( DataView dataView )
         {
-            var entityTypeService = new EntityTypeService();
+            var entityTypeService = new EntityTypeService(new RockContext());
 
             ddlEntityType.Items.Clear();
             ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+            entityTypeService.GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
         }
 
         /// <summary>
@@ -355,7 +351,7 @@ $(document).ready(function() {
                 return;
             }
 
-            var dataViewService = new DataViewService();
+            var dataViewService = new DataViewService(new RockContext());
             DataView dataView = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -615,7 +611,7 @@ $(document).ready(function() {
         private bool BindGrid( Grid grid, DataView dataView, int? fetchRowCount = null )
         {
             var errorMessages = new List<string>();
-            grid.DataSource=null;
+            grid.DataSource = null;
 
             if ( dataView.EntityTypeId.HasValue )
             {
@@ -628,21 +624,18 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        using ( new Rock.Data.UnitOfWorkScope() )
+                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+
+                        if ( fetchRowCount.HasValue )
                         {
-                            var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
-
-                            if ( fetchRowCount.HasValue)
-                            {
-                                qry = qry.Take( fetchRowCount.Value );
-                            }
-
-                            grid.DataSource = qry.AsNoTracking().ToList();
+                            qry = qry.Take( fetchRowCount.Value );
                         }
+
+                        grid.DataSource = qry.AsNoTracking().ToList();
                     }
                 }
             }
-            
+
             if ( grid.DataSource != null )
             {
                 if ( errorMessages.Any() )
@@ -673,7 +666,7 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            var service = new DataViewService();
+            var service = new DataViewService(new RockContext());
             var item = service.Get( int.Parse( hfDataViewId.Value ) );
             ShowReport( item );
         }
@@ -760,7 +753,7 @@ $(document).ready(function() {
                     DeleteDataViewFilter( childFilter, service );
                 }
 
-                service.Delete( dataViewFilter, CurrentPersonAlias );
+                service.Delete( dataViewFilter );
             }
         }
 
@@ -794,7 +787,7 @@ $(document).ready(function() {
                 var filterControl = new FilterField();
                 parentControl.Controls.Add( filterControl );
                 filterControl.DataViewFilterGuid = filter.Guid;
-                filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString("N") );
+                filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = filteredEntityTypeName;
                 if ( filter.EntityTypeId.HasValue )
                 {
@@ -818,7 +811,7 @@ $(document).ready(function() {
                 var groupControl = new FilterGroup();
                 parentControl.Controls.Add( groupControl );
                 groupControl.DataViewFilterGuid = filter.Guid;
-                groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString("N") );
+                groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
                 groupControl.FilteredEntityTypeName = filteredEntityTypeName;
                 groupControl.IsDeleteEnabled = parentControl is FilterGroup;
                 if ( setSelection )

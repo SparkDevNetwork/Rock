@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -57,7 +58,7 @@ namespace RockWeb.Blocks.Core
             _canConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             // Load Entity Type Filter
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+            new EntityTypeService( new RockContext() ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
 
             ppOwner.Visible = _canConfigure;
 
@@ -122,7 +123,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            var tagService = new Rock.Model.TagService();
+            var rockContext = new RockContext();
+            var tagService = new Rock.Model.TagService( rockContext );
             var tag = tagService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
 
             if ( tag != null )
@@ -134,8 +136,8 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                tagService.Delete( tag, CurrentPersonAlias );
-                tagService.Save( tag, CurrentPersonAlias );
+                tagService.Delete( tag );
+                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -148,16 +150,16 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var tags = GetTags();
+            if ( tags != null )
             {
-                var tags = GetTags();
-                if ( tags != null )
-                {
-                    new TagService().Reorder( tags.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
-                }
-
-                BindGrid();
+                var rockContext = new RockContext();
+                var tagService = new TagService( rockContext );
+                tagService.Reorder( tags.ToList(), e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
             }
+
+            BindGrid();
         }
 
         /// <summary>
@@ -206,7 +208,7 @@ namespace RockWeb.Blocks.Core
                     int? personId = e.Value.AsInteger( false );
                     if ( personId.HasValue )
                     {
-                        var person = new PersonService().Get( personId.Value );
+                        var person = new PersonService( new RockContext() ).Get( personId.Value );
                         if ( person != null )
                         {
                             e.Value = person.FullNameReversed;
@@ -273,7 +275,7 @@ namespace RockWeb.Blocks.Core
                     int? savedOwnerId = rFilter.GetUserPreference( "Owner" ).AsInteger( false );
                     if ( savedOwnerId.HasValue )
                     {
-                        var person = new PersonService().Queryable()
+                        var person = new PersonService( new RockContext() ).Queryable()
                             .Where( p => p.Id == savedOwnerId.Value )
                             .FirstOrDefault();
 
@@ -336,7 +338,7 @@ namespace RockWeb.Blocks.Core
             int? entityTypeId = rFilter.GetUserPreference( "EntityType" ).AsInteger( false );
             if ( entityTypeId.HasValue )
             {
-                var queryable = new Rock.Model.TagService().Queryable().
+                var queryable = new Rock.Model.TagService( new RockContext() ).Queryable().
                     Where( t => t.EntityTypeId == entityTypeId.Value );
 
                 if ( rFilter.GetUserPreference( "Scope" ) == "Organization" )

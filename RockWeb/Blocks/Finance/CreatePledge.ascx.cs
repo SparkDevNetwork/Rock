@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -58,7 +59,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     int cacheDuration;
                     int.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration );
-                    var accountService = new FinancialAccountService();
+                    var accountService = new FinancialAccountService( new RockContext() );
                     accounts = accountService.Queryable().Where( a => AccountGuids.Contains( a.Guid ) ).ToList();
                     AddCacheItem( cacheKey, accounts, cacheDuration );
                 }
@@ -105,40 +106,38 @@ namespace RockWeb.Blocks.Finance
         /// <exception cref="System.NotImplementedException"></exception>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
+            var person = FindPerson( rockContext );
+            var pledges = GetPledges( person ).ToList();
+
+            // Does this person already have a pledge for these accounts?
+            // If so, give them the option to create a new one?
+            var personPledgeAccountIds = pledgeService.Queryable()
+                .Where( p => p.PersonId == person.Id )
+                .Select( p => p.AccountId )
+                .ToList();
+
+            if ( Accounts.Any( a => personPledgeAccountIds.Contains( a.Id ) ) )
             {
-                RockTransactionScope.WrapTransaction( () =>
-                    {
-                        var pledgeService = new FinancialPledgeService();
-                        var person = FindPerson();
-                        var pledges = GetPledges( person ).ToList();
-
-                        // Does this person already have a pledge for these accounts?
-                        // If so, give them the option to create a new one?
-                        var personPledgeAccountIds = pledgeService.Queryable()
-                            .Where( p => p.PersonId == person.Id )
-                            .Select( p => p.AccountId )
-                            .ToList();
-
-                        if ( Accounts.Any( a => personPledgeAccountIds.Contains( a.Id ) ) )
-                        {
-                            pnlConfirm.Visible = true;
-                            Session.Add( "CachedPledges", pledges );
-                            return;
-                        }
-
-                        foreach ( var pledge in pledges )
-                        {
-                            if ( !pledge.IsValid )
-                                continue;
-
-                            pledgeService.Add( pledge, CurrentPersonAlias );
-                            pledgeService.Save( pledge, CurrentPersonAlias );
-                        }
-
-                        ShowReceipt( pledges.Select( p => p.Id ) );
-                    } );
+                pnlConfirm.Visible = true;
+                Session.Add( "CachedPledges", pledges );
+                return;
             }
+
+            foreach ( var pledge in pledges )
+            {
+                if ( !pledge.IsValid )
+                {
+                    continue;
+                }
+
+                pledgeService.Add( pledge );
+            }
+
+            rockContext.SaveChanges();
+
+            ShowReceipt( pledges.Select( p => p.Id ) );
         }
 
         /// <summary>
@@ -151,23 +150,26 @@ namespace RockWeb.Blocks.Finance
             var pledges = Session["CachedPledges"] as List<FinancialPledge>;
 
             if ( pledges == null )
+            {
                 return;
+            }
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
+            foreach ( var pledge in pledges )
+            {
+                if ( pledge == null || !pledge.IsValid )
                 {
-                    foreach ( var pledge in pledges )
-                    {
-                        if ( pledge == null || !pledge.IsValid )
-                            continue;
+                    continue;
+                }
+                
+                pledgeService.Add( pledge );
+            }
 
-                        var pledgeService = new FinancialPledgeService();
-                        pledgeService.Add( pledge, CurrentPersonAlias );
-                        pledgeService.Save( pledge, CurrentPersonAlias );
-                    }
+            rockContext.SaveChanges();
 
-                    Session.Remove( "CachedPledges" );
-                    ShowReceipt( pledges.Select( p => p.Id ) );
-                } );
+            Session.Remove( "CachedPledges" );
+            ShowReceipt( pledges.Select( p => p.Id ) );
         }
 
         /// <summary>
@@ -202,7 +204,9 @@ namespace RockWeb.Blocks.Finance
             var hiddenField = e.Item.FindControl( "hfId" ) as HiddenField;
 
             if ( textbox == null || hiddenField == null || account == null )
+            {
                 return;
+            }
 
             textbox.Label = account.PublicName;
             hiddenField.Value = account.Id.ToString();
@@ -222,7 +226,9 @@ namespace RockWeb.Blocks.Finance
             var accountName = e.Item.FindControl( "lAccountName" ) as Literal;
 
             if ( pledge == null || amount == null || frequency == null || accountName == null )
+            {
                 return;
+            }
 
             amount.Text = pledge.TotalAmount.ToString( "C" );
             var pledgeFrequency = DefinedValueCache.Read( pledge.PledgeFrequencyValueId ?? 0 );
@@ -255,29 +261,41 @@ namespace RockWeb.Blocks.Finance
             var end = GetAttributeValue( "DefaultEndDate" );
 
             if ( string.IsNullOrWhiteSpace( start ) )
+            {
                 dtpStartDate.Visible = true;
+            }
 
             if ( string.IsNullOrWhiteSpace( end ) )
+            {
                 dtpEndDate.Visible = true;
+            }
 
             var pledge = Session["CachedPledge"] as FinancialPledge;
 
             if ( pledge != null )
+            {
                 pnlConfirm.Visible = true;
+            }
         }
 
+        /// <summary>
+        /// Shows the receipt.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
         private void ShowReceipt( IEnumerable<int> ids )
         {
             // Pledges need to be loaded fresh from the database so they can
             // be attached to a context and be fully hydrated with data.
-            var pledgeService = new FinancialPledgeService();
+            var pledgeService = new FinancialPledgeService( new RockContext() );
             var pledges = pledgeService.Queryable().Where( p => ids.Contains( p.Id ) );
             var person = pledges.Select( p => p.Person ).FirstOrDefault();
             rptCompletedPledges.DataSource = pledges.ToList();
             rptCompletedPledges.DataBind();
 
             if ( person != null )
+            {
                 lPersonFullName.Text = person.FullName;
+            }
 
             pnlForm.Visible = false;
             pnlReceipt.Visible = true;
@@ -286,11 +304,12 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Finds the person if they're logged in, or by email and name. If not found, creates a new person.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Person FindPerson()
+        private Person FindPerson(RockContext rockContext)
         {
             Person person;
-            var personService = new PersonService();
+            var personService = new PersonService( rockContext );
 
             if ( CurrentPerson != null )
             {
@@ -322,7 +341,7 @@ namespace RockWeb.Blocks.Finance
                     ConnectionStatusValueId = definedValue.Id,
                 };
 
-                new GroupService().SaveNewFamily( person, null, false, CurrentPersonAlias );
+                GroupService.SaveNewFamily( rockContext, person, null, false );
             }
 
             return person;
@@ -338,7 +357,9 @@ namespace RockWeb.Blocks.Finance
             var pledges = Session["CachedPledges"] as List<FinancialPledge> ?? new List<FinancialPledge>();
 
             if ( pledges.Any() )
+            {
                 return pledges;
+            }
 
             var startSetting = GetAttributeValue( "DefaultStartDate" );
             var startDate = !string.IsNullOrWhiteSpace( startSetting ) ? DateTime.Parse( startSetting ) : DateTime.Parse( dtpStartDate.Text );

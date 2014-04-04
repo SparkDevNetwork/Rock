@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -343,7 +344,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var page = new PageService().Get( int.Parse( ItemId ) );
+            var page = new PageService( new RockContext() ).Get( int.Parse( ItemId ) );
 
             this.SetValue( page );
         }
@@ -353,7 +354,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var pages = new PageService().Queryable().Where( p => ItemIds.Contains( p.Id.ToString() ) );
+            var pages = new PageService( new RockContext() ).Queryable().Where( p => ItemIds.Contains( p.Id.ToString() ) );
             this.SetValues( pages );
         }
 
@@ -420,7 +421,7 @@ namespace Rock.Web.UI.Controls
 
             // pluck the selectedValueId of the Page Params in case the ViewState is shut off
             int selectedValueId = this.Page.Request.Params[_rblSelectPageRoute.UniqueID].AsInteger() ?? 0;
-            PageRoute pageRoute = new PageRouteService().Get( selectedValueId );
+            PageRoute pageRoute = new PageRouteService( new RockContext() ).Get( selectedValueId );
             SetValue( pageRoute );
         }
 

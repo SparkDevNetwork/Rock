@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -114,7 +115,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new CategoryService().Get( int.Parse( ItemId ) );
+            var item = new CategoryService( new RockContext() ).Get( int.Parse( ItemId ) );
             this.SetValue( item );
         }
 
@@ -124,7 +125,7 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var ids = this.SelectedValuesAsInt().ToList();
-            var items = new CategoryService().Queryable().Where( i => ids.Contains( i.Id ) );
+            var items = new CategoryService( new RockContext() ).Queryable().Where( i => ids.Contains( i.Id ) );
             this.SetValues( items );
         }
 

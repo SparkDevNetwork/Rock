@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns>A queryable collection that contains all active <see cref="Rock.Model.ServiceJob">Jobs</see></returns>
         public IQueryable<ServiceJob> GetActiveJobs()
         {
-            return Repository.AsQueryable().Where( t => t.IsActive == true );
+            return Queryable().Where( t => t.IsActive == true );
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of all <see cref="Rock.Model.ServiceJob"/>Jobs</returns>
         public IQueryable<ServiceJob> GetAllJobs()
         {
-            return Repository.AsQueryable();
+            return Queryable();
         }
 
         /// <summary>

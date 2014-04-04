@@ -106,9 +106,10 @@ namespace RockWeb.Blocks.Administration
             if (_page != null)
                 parentPageId = _page.Id;
 
-            var pageService = new PageService();
-            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(),
-                e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            pageService.Reorder( pageService.GetByParentPageId( parentPageId ).ToList(), e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
 
             BindGrid();
         }
@@ -120,60 +121,49 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            var siteService = new SiteService( rockContext );
+
+            var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
+            if ( page != null )
             {
-                var pageService = new PageService();
-                var siteService = new SiteService();
-
-                var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
-                if ( page != null )
+                string errorMessage = string.Empty;
+                if ( !pageService.CanDelete( page, out errorMessage ) )
                 {
-                    string errorMessage = string.Empty;
-                    if ( ! pageService.CanDelete( page, out errorMessage ) )
+                    //errorMessage = "The page is the parent page of another page.";
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
+                }
+
+                foreach ( var site in siteService.Queryable() )
+                {
+                    if ( site.DefaultPageId == page.Id )
                     {
-                        //errorMessage = "The page is the parent page of another page.";
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return;
+                        site.DefaultPageId = null;
+                        site.DefaultPageRouteId = null;
                     }
-
-                    RockTransactionScope.WrapTransaction( () =>
+                    if ( site.LoginPageId == page.Id )
                     {
-                        foreach ( var site in siteService.Queryable() )
-                        {
-                            bool updateSite = false;
-                            if (site.DefaultPageId == page.Id)
-                            {
-                                site.DefaultPageId = null;
-                                site.DefaultPageRouteId = null;
-                                updateSite = true;
-                            }
-                            if (site.LoginPageId == page.Id)
-                            {
-                                site.LoginPageId = null;
-                                site.LoginPageRouteId = null;
-                                updateSite = true;
-                            }
-                            if (site.RegistrationPageId == page.Id)
-                            {
-                                site.RegistrationPageId = null;
-                                site.RegistrationPageRouteId = null;
-                                updateSite = true;
-                            }
+                        site.LoginPageId = null;
+                        site.LoginPageRouteId = null;
+                    }
+                    if ( site.RegistrationPageId == page.Id )
+                    {
+                        site.RegistrationPageId = null;
+                        site.RegistrationPageRouteId = null;
+                    }
+                }
 
-                            if (updateSite)
-                            {
-                                siteService.Save( site, CurrentPersonAlias );
-                            }
-                        }
+                pageService.Delete( page );
 
-                        pageService.Delete( page, CurrentPersonAlias );
-                        pageService.Save( page, CurrentPersonAlias );
+                rockContext.SaveChanges();
 
-                        Rock.Web.Cache.PageCache.Flush( page.Id );
+                Rock.Web.Cache.PageCache.Flush( page.Id );
 
-                        if ( _page != null )
-                            _page.FlushChildPages();
-                    } );
+                if ( _page != null )
+                {
+                    _page.FlushChildPages();
                 }
             }
 
@@ -205,12 +195,11 @@ namespace RockWeb.Blocks.Administration
             if ( Page.IsValid )
             {
                 Rock.Model.Page page;
-                var pageService = new PageService();
 
-                int pageId = 0;
-                if ( !Int32.TryParse( hfPageId.Value, out pageId ) )
-                    pageId = 0;
+                var rockContext = new RockContext();
+                var pageService = new PageService( rockContext );
 
+                int pageId = hfPageId.Value.AsInteger() ?? 0;
                 if ( pageId == 0 )
                 {
                     page = new Rock.Model.Page();
@@ -240,7 +229,7 @@ namespace RockWeb.Blocks.Administration
                     else
                         page.Order = 0;
 
-                    pageService.Add( page, CurrentPersonAlias );
+                    pageService.Add( page );
 
                 }
                 else
@@ -253,11 +242,12 @@ namespace RockWeb.Blocks.Administration
 
                 if ( page.IsValid )
                 {
-                    pageService.Save( page, CurrentPersonAlias );
+                    rockContext.SaveChanges();
 
+                    PageCache.Flush( page.Id );
                     if ( _page != null )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( _page, page, CurrentPersonAlias );
+                        Rock.Security.Authorization.CopyAuthorization( _page, page );
                         _page.FlushChildPages();
                     }
 
@@ -281,7 +271,7 @@ namespace RockWeb.Blocks.Administration
             if ( _page != null )
                 parentPageId = _page.Id;
 
-            rGrid.DataSource = new PageService().GetByParentPageId( parentPageId ).ToList();
+            rGrid.DataSource = new PageService( new RockContext() ).GetByParentPageId( parentPageId ).ToList();
             rGrid.DataBind();
         }
 
@@ -289,7 +279,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlLayout.Items.Clear();
             int siteId = _page != null ? _page.Layout.SiteId : RockPage.Layout.SiteId;
-            foreach(var layout in new LayoutService().GetBySiteId(siteId))
+            foreach ( var layout in new LayoutService( new RockContext() ).GetBySiteId( siteId ) )
             {
                 ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
             }
@@ -297,7 +287,7 @@ namespace RockWeb.Blocks.Administration
 
         protected void ShowEdit( int pageId )
         {
-            var page = new PageService().Get( pageId );
+            var page = new PageService( new RockContext() ).Get( pageId );
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();

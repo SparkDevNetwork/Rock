@@ -126,7 +126,8 @@ namespace RockWeb.Blocks.Administration
         {
             RockTransactionScope.WrapTransaction( () =>
             {
-                MetricValueService service = new MetricValueService();
+                var rockContext = new RockContext();
+                MetricValueService service = new MetricValueService(rockContext);
                 MetricValue item = service.Get( (int)e.RowKeyValue );
                 if ( item != null )
                 {
@@ -137,8 +138,9 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    service.Delete( item, CurrentPersonAlias );
-                    service.Save( item, CurrentPersonAlias );
+                    service.Delete( item);
+
+                    rockContext.SaveChanges();
                 }
             } );
 
@@ -152,39 +154,39 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveValue_Click( object sender, EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            int metricValueId = hfMetricValueId.ValueAsInt();
+
+            var rockContext = new RockContext();
+            var metricValueService = new MetricValueService( rockContext );
+            MetricValue metricValue;
+
+            if ( metricValueId == 0 )
             {
-                int metricValueId = hfMetricValueId.ValueAsInt();
-                var metricValueService = new MetricValueService();
-                MetricValue metricValue;
-
-                if ( metricValueId == 0 )
-                {
-                    metricValue = new MetricValue();
-                    metricValue.IsSystem = false;
-                    metricValue.MetricId = hfMetricId.ValueAsInt();
-                    metricValueService.Add( metricValue, CurrentPersonAlias );
-                }
-                else
-                {
-                    metricValue = metricValueService.Get( metricValueId );
-                }
-
-                metricValue.Value = tbValue.Text;
-                metricValue.Description = tbValueDescription.Text;
-                metricValue.xValue = tbXValue.Text;
-                metricValue.Label = tbLabel.Text;
-                metricValue.isDateBased = cbIsDateBased.Checked;
-                metricValue.MetricId = Int32.Parse(ddlMetricFilter.SelectedValue);
-
-                if ( metricValue.IsValid )
-                {
-                    metricValueService.Save( metricValue, CurrentPersonAlias );
-                    BindGrid();
-                    hfMetricValueId.Value = string.Empty;
-                    mdValueDialog.Hide();
-                }
+                metricValue = new MetricValue();
+                metricValue.IsSystem = false;
+                metricValue.MetricId = hfMetricId.ValueAsInt();
+                metricValueService.Add( metricValue );
             }
+            else
+            {
+                metricValue = metricValueService.Get( metricValueId );
+            }
+
+            metricValue.Value = tbValue.Text;
+            metricValue.Description = tbValueDescription.Text;
+            metricValue.xValue = tbXValue.Text;
+            metricValue.Label = tbLabel.Text;
+            metricValue.isDateBased = cbIsDateBased.Checked;
+            metricValue.MetricId = Int32.Parse( ddlMetricFilter.SelectedValue );
+
+            if ( metricValue.IsValid )
+            {
+                rockContext.SaveChanges();
+                BindGrid();
+                hfMetricValueId.Value = string.Empty;
+                mdValueDialog.Hide();
+            }
+
         }
 
         /// <summary>
@@ -216,7 +218,7 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             int metricId = hfMetricId.ValueAsInt();
-            var queryable = new MetricValueService().Queryable()
+            var queryable = new MetricValueService( new RockContext() ).Queryable()
                 .Where( a => a.MetricId == metricId );
 
             SortProperty sortProperty = gMetricValues.SortProperty;
@@ -240,7 +242,7 @@ namespace RockWeb.Blocks.Administration
         {
             ddlMetricFilter.Items.Clear();
 
-            var metricList = new MetricService().Queryable().OrderBy( m => m.Title ).ToList();
+            var metricList = new MetricService( new RockContext() ).Queryable().OrderBy( m => m.Title ).ToList();
 
             foreach ( Metric metric in metricList )
             {
@@ -255,12 +257,14 @@ namespace RockWeb.Blocks.Administration
         protected void ShowEdit( int valueId )
         {
             var metricId = hfMetricId.ValueAsInt();
-            var metric = new MetricService().Get( metricId );
+
+            var rockContext = new RockContext();
+            var metric = new MetricService( rockContext ).Get( metricId );
 
             MetricValue metricValue = null;
             if ( !valueId.Equals( 0 ) )
             {
-                metricValue = new MetricValueService().Get( valueId );
+                metricValue = new MetricValueService( rockContext ).Get( valueId );
                 if ( metric != null )
                 {
                     lActionTitle.Text = ActionTitle.Edit( "metric value for " + metric.Title );

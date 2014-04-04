@@ -57,8 +57,7 @@ namespace Rock.Model
         /// <param name="binaryFile">The binary file.</param>
         private void GetFileContentFromStorageProvider( BinaryFile binaryFile )
         {
-            Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( binaryFile );
-
+            Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)Context, binaryFile );
             if ( storageProvider != null )
             {
                 binaryFile.Data = binaryFile.Data ?? new BinaryFileData();
@@ -67,81 +66,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the specified <see cref="Rock.Model.BinaryFile"/>.
-        /// </summary>
-        /// <param name="item">A <see cref="Rock.Model.BinaryFile"/> to save.</param>
-        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
-        /// <returns></returns>
-        public override bool Save( BinaryFile item, PersonAlias personAlias )
-        {
-            Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
-
-            if ( storageProvider != null )
-            {
-                //// if this file is getting replaced, and we can determine the StorageProvider, use the provider to get and remove the file from the provider's 
-                //// external storage medium before we save it again. This especially important in cases where the provider for this filetype has changed 
-                //// since it was last saved
-
-                // first get the FileContent from the old/current fileprovider in case we need to save it somewhere else
-                item.Data = item.Data ?? new BinaryFileData();
-                item.Data.Content = storageProvider.GetFileContent( item, HttpContext.Current );
-
-                // now, remove it from the old/current fileprovider
-                storageProvider.RemoveFile( item, HttpContext.Current );
-            }
-
-            // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
-            if ( item.BinaryFileType != null )
-            {
-                // make sure that it updated to use the same storage as specified by the BinaryFileType
-                if ( item.StorageEntityTypeId != item.BinaryFileType.StorageEntityTypeId )
-                {
-                    item.SetStorageEntityTypeId( item.BinaryFileType.StorageEntityTypeId );
-                    storageProvider = DetermineBinaryFileStorageProvider( item );
-                }
-            }
-
-            if ( storageProvider != null )
-            {
-                // save the file to the provider's new storage medium
-                storageProvider.SaveFile( item, HttpContext.Current );
-            }
-
-            return base.Save( item, personAlias );
-        }
-
-        /// <summary>
-        /// Deletes the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        public override bool Delete( BinaryFile item, PersonAlias personAlias )
-        {
-            // if we can determine the StorageProvider, use the provider to remove the file from the provider's external storage medium
-            Rock.Storage.ProviderComponent storageProvider = DetermineBinaryFileStorageProvider( item );
-
-            if ( storageProvider != null )
-            {
-                storageProvider.RemoveFile( item, HttpContext.Current );
-            }
-
-            // delete the record from the database
-            return base.Delete( item, personAlias );
-        }
-
-        /// <summary>
         /// Determines the storage provider that was used the last time the file was saved
         /// </summary>
+        /// <param name="dbContext">The database context.</param>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        private Storage.ProviderComponent DetermineBinaryFileStorageProvider( BinaryFile item )
+        public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext dbContext, BinaryFile item )
         {
             Rock.Storage.ProviderComponent storageProvider = null;
 
             if ( item != null )
             {
-                item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService( this.RockContext ).Get( item.StorageEntityTypeId ?? 0 );
+                item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService( dbContext ).Get( item.StorageEntityTypeId ?? 0 );
                 if ( item.StorageEntityType != null )
                 {
                     storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );

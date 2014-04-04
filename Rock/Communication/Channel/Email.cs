@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Web.UI.Controls.Communication;
@@ -58,10 +59,11 @@ namespace Rock.Communication.Channel
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        public override void Send( Model.Communication communication, Model.PersonAlias personAlias )
+        public override void Send( Model.Communication communication )
         {
-            var communicationService = new CommunicationService();
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+
             communication = communicationService.Get( communication.Id );
 
             if ( communication != null &&
@@ -72,7 +74,7 @@ namespace Rock.Communication.Channel
                 bool bulkEmail = communication.GetChannelDataValue( "BulkEmail" ).AsBoolean();
 
                 // Update any recipients that should not get sent the communication
-                var recipientService = new CommunicationRecipientService( communicationService.RockContext );
+                var recipientService = new CommunicationRecipientService( rockContext );
                 foreach ( var recipient in recipientService.Queryable( "Person" )
                     .Where( r => 
                         r.CommunicationId == communication.Id &&
@@ -84,13 +86,11 @@ namespace Rock.Communication.Channel
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email Preference of 'Do Not Email!'";
-                        recipientService.Save( recipient, null );
                     }
                     else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && bulkEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email Preference of 'No Mass Emails!'";
-                        recipientService.Save( recipient, null );
                     }
                 }
 
@@ -101,12 +101,13 @@ namespace Rock.Communication.Channel
                     if ( !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
                     {
                         communication.SetChannelDataValue( "UnsubscribeHTML", unsubscribeHtml );
-                        communicationService.Save( communication, null );
                     }
                 }
+
+                rockContext.SaveChanges();
             }
 
-            base.Send( communication, personAlias );
+            base.Send( communication );
         }
     }
 }

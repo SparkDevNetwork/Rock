@@ -104,8 +104,7 @@ namespace Rock.Rest.Controllers
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                        serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
                     }
                 }
             }

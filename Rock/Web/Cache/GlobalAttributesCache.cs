@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -79,7 +79,8 @@ namespace Rock.Web.Cache
                 var attributeCache = Attributes.FirstOrDefault(a => a.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
                 if ( attributeCache != null )
                 {
-                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
+                    var rockContext = new RockContext();
+                    var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
                     AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
 
@@ -95,50 +96,48 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
-        public void SetValue( string key, string value, PersonAlias currentPersonAlias, bool saveValue )
+        public void SetValue( string key, string value, bool saveValue )
         {
             if ( saveValue )
             {
-                using (new Rock.Data.UnitOfWorkScope())
+                var rockContext = new RockContext();
+
+                // Save new value
+                var attributeValueService = new AttributeValueService( rockContext );
+                var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
+
+                if ( attributeValue == null )
                 {
-                    // Save new value
-                    var attributeValueService = new AttributeValueService();
-                    var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
-
-                    if ( attributeValue == null )
+                    var attributeService = new AttributeService( rockContext );
+                    var attribute = attributeService.GetGlobalAttribute( key );
+                    if ( attribute == null )
                     {
-                        var attributeService = new AttributeService();
-                        var attribute = attributeService.GetGlobalAttribute( key );
-                        if ( attribute == null )
-                        {
-                            attribute = new Rock.Model.Attribute();
-                            attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
-                            attribute.EntityTypeQualifierColumn = string.Empty;
-                            attribute.EntityTypeQualifierValue = string.Empty;
-                            attribute.Key = key;
-                            attribute.Name = key.SplitCase();
-                            attributeService.Add( attribute, currentPersonAlias );
-                            attributeService.Save( attribute, currentPersonAlias );
+                        attribute = new Rock.Model.Attribute();
+                        attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
+                        attribute.EntityTypeQualifierColumn = string.Empty;
+                        attribute.EntityTypeQualifierValue = string.Empty;
+                        attribute.Key = key;
+                        attribute.Name = key.SplitCase();
+                        attributeService.Add( attribute );
+                        rockContext.SaveChanges();
 
-                            Attributes.Add( AttributeCache.Read( attribute.Id ) );
-                        }
-
-                        attributeValue = new AttributeValue();
-                        attributeValueService.Add( attributeValue, currentPersonAlias );
-                        attributeValue.IsSystem = false;
-                        attributeValue.AttributeId = attribute.Id;
-
-                        if ( !AttributeValues.Keys.Contains( key ) )
-                        {
-                            AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
-                        }
+                        Attributes.Add( AttributeCache.Read( attribute.Id ) );
                     }
 
-                    attributeValue.Value = value;
-                    attributeValueService.Save( attributeValue, currentPersonAlias );
+                    attributeValue = new AttributeValue();
+                    attributeValueService.Add( attributeValue );
+                    attributeValue.IsSystem = false;
+                    attributeValue.AttributeId = attribute.Id;
+
+                    if ( !AttributeValues.Keys.Contains( key ) )
+                    {
+                        AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
+                    }
                 }
+
+                attributeValue.Value = value;
+                rockContext.SaveChanges();
             }
 
             var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
@@ -186,8 +185,9 @@ namespace Rock.Web.Cache
                 globalAttributes.Attributes = new List<AttributeCache>();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
-                var attributeService = new Rock.Model.AttributeService();
-                var attributeValueService = new Rock.Model.AttributeValueService();
+                var rockContext = new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
+                var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
                 foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes() )
                 {

@@ -106,24 +106,22 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
+            BinaryFileType binaryFileType = binaryFileTypeService.Get( e.RowKeyId );
+
+            if ( binaryFileType != null )
             {
-                BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
-                BinaryFileType binaryFileType = binaryFileTypeService.Get( e.RowKeyId );
-
-                if ( binaryFileType != null )
+                string errorMessage;
+                if ( !binaryFileTypeService.CanDelete( binaryFileType, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !binaryFileTypeService.CanDelete( binaryFileType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    binaryFileTypeService.Delete( binaryFileType, CurrentPersonAlias );
-                    binaryFileTypeService.Save( binaryFileType, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                binaryFileTypeService.Delete( binaryFileType );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -147,8 +145,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            // use the same rockContext for both services so we can join
-            // TODO: Can/Should this be refactored to use UnitOfWorkScope?
             RockContext rockContext = new RockContext();
             BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );

@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
         /// </summary>
-        public DefinedValueService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public DefinedValueService(IRepository<DefinedValue> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public DefinedValueService(RockContext context) : base(context)
         {
@@ -72,13 +56,13 @@ namespace Rock.Model
             
             // ignoring Attendance,SearchTypeValueId 
  
-            if ( new Service<Device>().Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
+            if ( new Service<Device>( Context ).Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialAccount>().Queryable().Any( a => a.AccountTypeValueId == item.Id ) )
+            if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.AccountTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
                 return false;
@@ -88,13 +72,13 @@ namespace Rock.Model
             
             // ignoring FinancialPersonSavedAccount,CurrencyTypeValueId 
  
-            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
+            if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.PledgeFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
@@ -108,43 +92,43 @@ namespace Rock.Model
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
  
-            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
+            if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialTransactionRefund>().Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
+            if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<GroupLocation>().Queryable().Any( a => a.GroupLocationTypeValueId == item.Id ) )
+            if ( new Service<GroupLocation>( Context ).Queryable().Any( a => a.GroupLocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, GroupLocation.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<GroupType>().Queryable().Any( a => a.GroupTypePurposeValueId == item.Id ) )
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.GroupTypePurposeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
+            if ( new Service<Location>( Context ).Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Metric>().Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Note>().Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
+            if ( new Service<Note>( Context ).Queryable().Any( a => a.SourceTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Note.FriendlyTypeName );
                 return false;
@@ -164,7 +148,7 @@ namespace Rock.Model
             
             // ignoring Person,TitleValueId 
  
-            if ( new Service<PhoneNumber>().Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
+            if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
                 return false;

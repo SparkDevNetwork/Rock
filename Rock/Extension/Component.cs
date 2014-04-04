@@ -324,10 +324,9 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void MakePrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
+        public void MakePrivate( string action, Model.Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -335,10 +334,9 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void MakeUnPrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
+        public void MakeUnPrivate( string action, Model.Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }
     }
 }

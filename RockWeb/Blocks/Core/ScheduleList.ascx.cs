@@ -101,23 +101,21 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            ScheduleService scheduleService = new ScheduleService( rockContext );
+            Schedule schedule = scheduleService.Get( (int)e.RowKeyValue );
+            if ( schedule != null )
             {
-                ScheduleService scheduleService = new ScheduleService();
-                Schedule schedule = scheduleService.Get( (int)e.RowKeyValue );
-                if ( schedule != null )
+                string errorMessage;
+                if ( !scheduleService.CanDelete( schedule, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !scheduleService.CanDelete( schedule, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    scheduleService.Delete( schedule, CurrentPersonAlias );
-                    scheduleService.Save( schedule, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                scheduleService.Delete( schedule );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -141,7 +139,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            ScheduleService scheduleService = new ScheduleService();
+            ScheduleService scheduleService = new ScheduleService( new RockContext() );
             SortProperty sortProperty = gSchedules.SortProperty;
             var qry = scheduleService.Queryable().Select( a =>
                 new

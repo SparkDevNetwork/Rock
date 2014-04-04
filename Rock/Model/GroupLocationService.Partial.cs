@@ -29,9 +29,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Location"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.GroupLocation"/> which are associated with the provided <see cref="Rock.Model.Location"/> </returns>
-        public IEnumerable<GroupLocation> GetByLocation( int locationId )
+        public IQueryable<GroupLocation> GetByLocation( int locationId )
         {
-            return Repository.Find( g => g.LocationId == locationId );
+            return Queryable().Where( g => g.LocationId == locationId );
         }
 
         /// <summary>
@@ -39,12 +39,12 @@ namespace Rock.Model
         /// </summary>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> to search by.</param>
         /// <returns></returns>
-        public IEnumerable<GroupLocation> GetActiveByLocation( int locationId )
+        public IQueryable<GroupLocation> GetActiveByLocation( int locationId )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( g =>
                     g.LocationId == locationId &&
-                    g.Group.IsActive ).ToList();
+                    g.Group.IsActive );
 
         }
 

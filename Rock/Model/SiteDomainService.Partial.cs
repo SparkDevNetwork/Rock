@@ -34,7 +34,7 @@ namespace Rock.Model
         /// <returns>A <see cref="Rock.Model.SiteDomain"/> where the Domain matches the provided value. If not results found, will return null.</returns>
         public SiteDomain GetByDomain( string domain )
         {
-            return Repository.FirstOrDefault( t => t.Domain == domain );
+            return Queryable().FirstOrDefault( t => t.Domain == domain );
         }
         
         /// <summary>
@@ -42,9 +42,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="siteId">An <see cref="System.Int32"/> that contains the Id a <see cref="Rock.Model.Site"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.SiteDomain">SiteDomains</see> that reference the provided SiteId.</returns>
-        public IEnumerable<SiteDomain> GetBySiteId( int siteId )
+        public IQueryable<SiteDomain> GetBySiteId( int siteId )
         {
-            return Repository.Find( t => t.SiteId == siteId );
+            return Queryable().Where( t => t.SiteId == siteId );
         }
         
         /// <summary>
@@ -53,9 +53,9 @@ namespace Rock.Model
         /// <param name="siteId">An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> to search by.</param>
         /// <param name="domain">A <see cref="System.String"/> containing the domain to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.SiteDomain">SiteDomains</see> that match the SiteId and Domain that was provided..</returns>
-        public IEnumerable<SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
+        public IQueryable<SiteDomain> GetBySiteIdAndDomain( int siteId, string domain )
         {
-            return Repository.Find( t => t.SiteId == siteId && t.Domain == domain );
+            return Queryable().Where( t => t.SiteId == siteId && t.Domain == domain );
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rock.Model
         /// <returns>The first matching <see cref="Rock.Model.SiteDomain"/> where the domain partially/fully matches the provided value. </returns>
         public SiteDomain GetByDomainContained( string domain )
         {
-            return Repository.FirstOrDefault( t => domain.ToLower().Contains( t.Domain.ToLower() ) );
+            return Queryable().FirstOrDefault( t => domain.ToLower().Contains( t.Domain.ToLower() ) );
         }
     }
 }

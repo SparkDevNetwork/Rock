@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class LayoutsController : Rock.Rest.ApiController<Rock.Model.Layout>
     {
-        public LayoutsController() : base( new Rock.Model.LayoutService() ) { } 
+        public LayoutsController() : base( new Rock.Model.LayoutService( new Rock.Data.RockContext() ) ) { } 
     }
 }

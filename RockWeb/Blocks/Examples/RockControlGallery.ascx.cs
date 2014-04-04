@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Examples
     [Description( "Allows you to see and try various Rock UI controls." )]
     public partial class RockControlGallery : RockBlock
     {
-        Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );
+        private Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -145,7 +145,8 @@ namespace RockWeb.Blocks.Examples
                         rgx = new Regex( @"^\s{" + numSpaces + "}" );
                         firstLine = false;
                     }
-                    sb.AppendLine( rgx.Replace( line, "" ) );
+
+                    sb.AppendLine( rgx.Replace( line, string.Empty ) );
                 }
             }
 
@@ -218,7 +219,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void toggleShowPreview_CheckedChanged( object sender, EventArgs e )
         {
-            toggleShowPreview.Help = "you just set it to : " + ( ( toggleShowPreview.Checked ) ? "on" : "off" );
+            toggleShowPreview.Help = "you just set it to : " + ( toggleShowPreview.Checked ? "on" : "off" );
         }
 
         /// <summary>
@@ -276,7 +277,7 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gExample_GridRebind( object sender, EventArgs e )
+        protected void gExample_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -324,7 +325,7 @@ namespace RockWeb.Blocks.Examples
             /// <value>
             /// Some boolean.
             /// </value>
-            public Boolean SomeBoolean { get; set; }
+            public bool SomeBoolean { get; set; }
         }
 
         /// <summary>
@@ -404,7 +405,6 @@ namespace RockWeb.Blocks.Examples
         protected void geoPicker_SelectGeography( object sender, EventArgs e )
         {
             string debug = geoPicker.SelectedValue.AsText();
-
         }
 
         /// <summary>
@@ -414,8 +414,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fupContentFile_FileUploaded( object sender, EventArgs e )
         {
-            string physicalFileName =  this.Request.MapPath( fupContentFile.UploadedContentFilePath );
+            string physicalFileName = this.Request.MapPath( fupContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
-}
+    }
 }

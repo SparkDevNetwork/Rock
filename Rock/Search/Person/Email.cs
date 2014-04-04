@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -55,7 +55,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            var personService = new PersonService();
+            var personService = new PersonService( new RockContext() );
 
             return personService.Queryable().
                 Where( p => p.Email.Contains( searchterm ) ).

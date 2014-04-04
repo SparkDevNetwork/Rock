@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 public partial class error : System.Web.UI.Page
@@ -74,22 +74,25 @@ public partial class error : System.Web.UI.Page
                 // check to see if the user is an admin, if so allow them to view the error details
                 var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
 
-                GroupService service = new GroupService();
-                Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
-
-                if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
+                try
                 {
+                    GroupService service = new GroupService( new RockContext() );
+                    Group adminGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS ) );
 
-
-                    // get exception from Session
-                    if ( Session["Exception"] != null )
+                    if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
                     {
-                        // is an admin
-                        lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                        // get exception from Session
+                        if ( Session["Exception"] != null )
+                        {
+                            // is an admin
+                            lErrorInfo.Text = "<h3>Exception Log:</h3>";
 
-                        ProcessException( (Exception)Session["Exception"], " " );
+                            ProcessException( (Exception)Session["Exception"], " " );
+                        }
                     }
                 }
+                catch { }
+
                 break;
 
             case 66: // massive errors from global.asax.cs

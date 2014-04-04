@@ -19,13 +19,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
@@ -34,7 +33,7 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer > Admin" )]
     [Description( "Displays a list of prayer comments for the configured top-level group category." )]
 
-    [LinkedPage( "Detail Page", Order = 0 ), ]
+    [LinkedPage( "Detail Page", Order = 0 ),]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests comments under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
@@ -43,30 +42,31 @@ namespace RockWeb.Blocks.Prayer
         /// The prayer comment key parameter seen in the QueryString
         /// </summary>
         private static readonly string _prayerCommentKeyParameter = "noteId";
+
         /// <summary>
         /// The prayer request key parameter seen in the QueryString
         /// </summary>
         private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
+
         /// <summary>
         /// The block instance configured group category id.  This causes only comments for the appropriate root/group-level category to be seen.
         /// </summary>
-        protected int _blockInstanceGroupCategoryId = -1;
+        private int _blockInstanceGroupCategoryId = -1;
+
         /// <summary>
         /// The PrayerRequest entity type id.  This causes only comments/categories that are appropriate to the PrayerRequest entity to be listed.
         /// </summary>
-        protected int? _prayerRequestEntityTypeId = null;
-        /// <summary>
-        /// The NoteType which corresponds to "Prayer Comments".
-        /// </summary>
-        protected NoteType _noteType;
+        private int? _prayerRequestEntityTypeId = null;
+
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
         /// </summary>
-        bool _canAddEditDelete = false;
+        private bool _canAddEditDelete = false;
+
         /// <summary>
         /// Holds whether or not the person can approve.
         /// </summary>
-        bool _canApprove = false;
+        private bool _canApprove = false;
 
         #endregion
 
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            Int32.TryParse( GetAttributeValue( "GroupCategoryId" ), out _blockInstanceGroupCategoryId );
+            _blockInstanceGroupCategoryId = GetAttributeValue( "GroupCategoryId" ).AsInteger() ?? 0;
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
             _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
@@ -141,13 +141,14 @@ namespace RockWeb.Blocks.Prayer
 
             if ( e.RowKeyValues != null )
             {
-                NoteService noteService = new NoteService();
+                var rockContext = new RockContext();
+                NoteService noteService = new NoteService( rockContext );
                 Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
                 if ( prayerComment != null )
                 {
                     failure = false;
-                    noteService.Save( prayerComment, CurrentPersonAlias );
+                    rockContext.SaveChanges();
                 }
 
                 BindCommentsGrid();
@@ -159,7 +160,6 @@ namespace RockWeb.Blocks.Prayer
             }
         }
 
-
         /// <summary>
         /// Handles the Delete event of the gPrayerComments control.
         /// </summary>
@@ -167,24 +167,22 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerComments_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            NoteService noteService = new NoteService( rockContext );
+            Note note = noteService.Get( (int)e.RowKeyValues["id"] );
+
+            if ( note != null )
             {
-                NoteService noteService = new NoteService();
-                Note note = noteService.Get( (int)e.RowKeyValues["id"] );
-
-                if ( note != null )
+                string errorMessage;
+                if ( !noteService.CanDelete( note, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !noteService.CanDelete( note, out errorMessage ) )
-                    {
-                        maGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    noteService.Delete( note, CurrentPersonAlias );
-                    noteService.Save( note, CurrentPersonAlias );
+                    maGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                noteService.Delete( note );
+                rockContext.SaveChanges();
+            }
 
             BindCommentsGrid();
         }
@@ -207,7 +205,9 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerComments_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( _canApprove )
+            {
                 return;
+            }
 
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -257,11 +257,13 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindCommentsGrid()
         {
-            var noteTypeService = new NoteTypeService();
+            var rockContext = new RockContext();
+
+            var noteTypeService = new NoteTypeService( rockContext );
             var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, "Prayer Comment" );
             // TODO log exception if noteType is null
 
-            var noteService = new NoteService();
+            var noteService = new NoteService( rockContext );
             var prayerComments = noteService.GetByNoteTypeId( noteType.Id );
 
             SortProperty sortProperty = gPrayerComments.SortProperty;
@@ -329,6 +331,5 @@ namespace RockWeb.Blocks.Prayer
             public static readonly string ToDate = "To Date";
             public static readonly string ApprovalStatus = "Approval Status";
         }
-
     }
 }

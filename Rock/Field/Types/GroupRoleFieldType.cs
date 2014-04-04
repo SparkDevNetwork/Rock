@@ -20,9 +20,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -49,7 +49,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
+                var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( guid );
                 if ( groupRole != null )
                 {
                     formattedValue = groupRole.Name;
@@ -89,7 +89,7 @@ namespace Rock.Field.Types
 
             ddl.Items.Add( new ListItem() );
 
-            var groupTypeService = new Rock.Model.GroupTypeService();
+            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
             var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
             groupTypes.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
@@ -172,7 +172,7 @@ namespace Rock.Field.Types
             {
                 if ( groupRolePicker.GroupRoleId.HasValue )
                 {
-                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( groupRolePicker.GroupRoleId.Value );
+                    var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( groupRolePicker.GroupRoleId.Value );
                     if ( groupRole != null )
                     {
                         return groupRole.Guid.ToString();
@@ -197,7 +197,7 @@ namespace Rock.Field.Types
                 GroupRolePicker groupRolePicker = control as GroupRolePicker;
                 if ( groupRolePicker != null )
                 {
-                    var groupRole = new Rock.Model.GroupTypeRoleService().Get( guid );
+                    var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;

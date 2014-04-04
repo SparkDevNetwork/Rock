@@ -28,6 +28,7 @@ using DotLiquid;
 using Newtonsoft.Json;
 using Rock.Model;
 using System.Text;
+using Rock.Data;
 
 namespace Rock
 {
@@ -108,33 +109,25 @@ namespace Rock
         /// <returns></returns>
         public static string GetFriendlyTypeName( this Type type )
         {
-            Rock.Data.FriendlyTypeNameAttribute attrib = type.GetTypeInfo().GetCustomAttribute<Rock.Data.FriendlyTypeNameAttribute>();
-            if ( attrib != null )
+            if ( type.Namespace == null )
             {
-                return attrib.FriendlyTypeName;
+                // Anonymous types will not have a namespace
+                return "Item";
+            }
+
+            if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
+            {
+                type = type.BaseType;
+            }
+
+            if ( type.Namespace.Equals( "Rock.Model" ) )
+            {
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
+                return entityType.FriendlyName ?? SplitCase( type.Name );
             }
             else
             {
-                if ( type.Namespace == null )
-                {
-                    // Anonymous types will not have a namespace
-                    return "Item";
-                }
-
-                if ( type.Namespace.Equals( "System.Data.Entity.DynamicProxies" ) )
-                {
-                    type = type.BaseType;
-                }
-
-                if ( type.Namespace.Equals( "Rock.Model" ) )
-                {
-                    var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                    return entityType.FriendlyName ?? SplitCase( type.Name );
-                }
-                else
-                {
-                    return SplitCase( type.Name );
-                }
+                return SplitCase( type.Name );
             }
         }
 
@@ -357,17 +350,18 @@ namespace Rock
         }
 
         /// <summary>
-        /// Returns True for 'True', 'Yes', 'T', 'Y', '1'
+        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive)
         /// </summary>
         /// <param name="str">The string.</param>
+        /// <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
         /// <returns></returns>
-        public static bool AsBoolean( this string str )
+        public static bool AsBoolean( this string str, bool resultIfNullOrEmpty = false )
         {
             string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
 
             if ( string.IsNullOrWhiteSpace( str ) )
             {
-                return false;
+                return resultIfNullOrEmpty;
             }
 
             return trueStrings.Contains( str.ToLower() );
@@ -416,6 +410,16 @@ namespace Rock
             {
                 return Guid.Empty;
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified unique identifier is Guid.Empty.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public static bool IsEmpty( this Guid guid)
+        {
+            return guid.Equals( Guid.Empty );
         }
 
         /// <summary>
@@ -709,6 +713,7 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
+        [Obsolete("Use AsBoolean() instead")]
         public static bool FromTrueFalse( this string value )
         {
             return value.Equals( "True" );
@@ -1571,24 +1576,21 @@ namespace Rock
 
         /// <summary>
         /// Filters a Query to rows that have matching attribute value
-        /// (must be in a UnitOfWorkScope codeblock)
         /// </summary>
-        /// <example>
-        /// using ( new Rock.Data.UnitOfWorkScope() )
-        /// {
-        ///     var test = new PersonService().Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( "BaptizedHere", "True" ).ToList();
-        /// }
-        /// </example>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="attributeValue">The attribute value.</param>
         /// <returns></returns>
-        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
+        /// <example>
+        /// var test = new PersonService( rockContext ).Queryable().Where( a =&gt; a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
+        ///   </example>
+        public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
         {
             int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
-            var avs = new AttributeValueService().Queryable()
+            var avs = new AttributeValueService( rockContext ).Queryable()
                 .Where( a => a.Attribute.Key == attributeKey )
                 .Where( a => a.Attribute.EntityTypeId == entityTypeId )
                 .Where( a => a.Value == attributeValue )
@@ -1606,19 +1608,20 @@ namespace Rock
         /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity )
+        /// <param name="rockContext">The rock context.</param>
+        public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
-            Rock.Attribute.Helper.LoadAttributes( entity );
+            Rock.Attribute.Helper.LoadAttributes( entity, rockContext );
         }
 
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, PersonAlias currentPersonAlias )
+        /// <param name="rockContext">The rock context.</param>
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null)
         {
-            Rock.Attribute.Helper.SaveAttributeValues( entity, currentPersonAlias );
+            Rock.Attribute.Helper.SaveAttributeValues( entity, rockContext );
         }
 
         /// <summary>

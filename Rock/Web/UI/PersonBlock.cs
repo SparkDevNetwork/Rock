@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
 
@@ -135,7 +135,7 @@ namespace Rock.Web.UI
                 return null;
             }
 
-            var service = new GroupMemberService();
+            var service = new GroupMemberService( new RockContext() );
             groups = service.Queryable()
                 .Where( m =>
                     m.PersonId == Person.Id &&

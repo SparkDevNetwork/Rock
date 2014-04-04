@@ -24,7 +24,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -466,12 +466,11 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the block attribute values.
         /// </summary>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveAttributeValues( PersonAlias currentPersonAlias )
+        public void SaveAttributeValues()
         {
             if ( _blockCache != null )
             {
-                _blockCache.SaveAttributeValues( currentPersonAlias );
+                _blockCache.SaveAttributeValues();
             }
         }
 
@@ -507,10 +506,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
+        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues()" /> method to save all values to database
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the block attribute's key name.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value of the attribute.</param>
+        /// <param name="key">A <see cref="System.String" /> representing the block attribute's key name.</param>
+        /// <param name="value">A <see cref="System.String" /> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
             if ( _blockCache != null )
@@ -916,13 +915,10 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this._blockCache.BlockTypeId.ToString(), rockContext ) )
             {
-                if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
-                    this._blockCache.BlockTypeId.ToString(), CurrentPersonAlias ) )
-                {
-                    this._blockCache.ReloadAttributeValues();
-                }
+                this._blockCache.ReloadAttributeValues();
             }
         }
 

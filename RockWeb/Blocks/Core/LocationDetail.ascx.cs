@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            LocationService locationService = new LocationService();
+            LocationService locationService = new LocationService( new RockContext() );
             Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
             ShowEditDetails( location );
         }
@@ -133,34 +133,32 @@ namespace RockWeb.Blocks.Core
         {
             int? parentLocationId = null;
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            LocationService locationService = new LocationService( rockContext );
+            Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
+
+            if ( location != null )
             {
-                LocationService locationService = new LocationService();
-                Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
-
-                if ( location != null )
+                parentLocationId = location.ParentLocationId;
+                string errorMessage;
+                if ( !locationService.CanDelete( location, out errorMessage ) )
                 {
-                    parentLocationId = location.ParentLocationId;
-                    string errorMessage;
-                    if ( !locationService.CanDelete( location, out errorMessage ) )
-                    {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    locationService.Delete( location, CurrentPersonAlias );
-                    locationService.Save( location, CurrentPersonAlias );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
 
-                // reload page, selecting the deleted location's parent
-                var qryParams = new Dictionary<string, string>();
-                if ( parentLocationId != null )
-                {
-                    qryParams["locationId"] = parentLocationId.ToString();
-                }
+                locationService.Delete( location );
+                rockContext.SaveChanges();
+            }
 
-                NavigateToPage( RockPage.Guid, qryParams );
-            } );
+            // reload page, selecting the deleted location's parent
+            var qryParams = new Dictionary<string, string>();
+            if ( parentLocationId != null )
+            {
+                qryParams["locationId"] = parentLocationId.ToString();
+            }
+
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -172,73 +170,72 @@ namespace RockWeb.Blocks.Core
         {
             Location location;
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            LocationService locationService = new LocationService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
+            AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
+
+            int locationId = int.Parse( hfLocationId.Value );
+
+            if ( locationId == 0 )
             {
-                LocationService locationService = new LocationService();
-                AttributeService attributeService = new AttributeService();
-                AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-
-                int locationId = int.Parse( hfLocationId.Value );
-
-                if ( locationId == 0 )
-                {
-                    location = new Location();
-                    location.Name = string.Empty;
-                }
-                else
-                {
-                    location = locationService.Get( locationId );
-                }
-
-                location.Name = tbName.Text;
-                location.IsActive = cbIsActive.Checked;
-                location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
-                location.ParentLocation = gpParentLocation.Location;;
-
-                var addrLocation = locapAddress.Location;
-                if ( addrLocation != null )
-                {
-                    location.Street1 = addrLocation.Street1;
-                    location.Street2 = addrLocation.Street2;
-                    location.City = addrLocation.City;
-                    location.State = addrLocation.State;
-                    location.Zip = addrLocation.Zip;
-                }
-
-                location.GeoPoint = geopPoint.SelectedValue;
-                if ( geopPoint.SelectedValue != null )
-                {
-                    location.IsGeoPointLocked = true;
-                }
-                location.GeoFence = geopFence.SelectedValue;
-
-                location.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
-
-                if ( !Page.IsValid )
-                {
-                    return;
-                }
-
-                if ( !location.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    if ( location.Id.Equals( 0 ) )
-                    {
-                        locationService.Add( location, CurrentPersonAlias );
-                    }
-
-                    locationService.Save( location, CurrentPersonAlias );
-                    location.SaveAttributeValues( CurrentPersonAlias );
-
-                } );
-
+                location = new Location();
+                location.Name = string.Empty;
             }
+            else
+            {
+                location = locationService.Get( locationId );
+            }
+
+            location.Name = tbName.Text;
+            location.IsActive = cbIsActive.Checked;
+            location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
+            location.ParentLocation = gpParentLocation.Location; ;
+
+            var addrLocation = locapAddress.Location;
+            if ( addrLocation != null )
+            {
+                location.Street1 = addrLocation.Street1;
+                location.Street2 = addrLocation.Street2;
+                location.City = addrLocation.City;
+                location.State = addrLocation.State;
+                location.Zip = addrLocation.Zip;
+            }
+
+            location.GeoPoint = geopPoint.SelectedValue;
+            if ( geopPoint.SelectedValue != null )
+            {
+                location.IsGeoPointLocked = true;
+            }
+            location.GeoFence = geopFence.SelectedValue;
+
+            location.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !location.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                if ( location.Id.Equals( 0 ) )
+                {
+                    locationService.Add( location );
+                }
+                rockContext.SaveChanges();
+
+                location.SaveAttributeValues( rockContext );
+
+            } );
+
+
 
             var qryParams = new Dictionary<string, string>();
             qryParams["locationId"] = location.Id.ToString();
@@ -277,7 +274,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                LocationService locationService = new LocationService();
+                LocationService locationService = new LocationService( new RockContext() );
                 Location location = locationService.Get( int.Parse( hfLocationId.Value ) );
                 ShowReadonlyDetails( location );
             }
@@ -291,7 +288,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlLocationType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var location = new LocationService().Get( hfLocationId.Value.AsInteger() ?? 0 );
+            var location = new LocationService( new RockContext() ).Get( hfLocationId.Value.AsInteger() ?? 0 );
             if ( location == null )
             {
                 location = new Location();
@@ -336,7 +333,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                location = new LocationService().Get( itemKeyValue );
+                location = new LocationService( new RockContext() ).Get( itemKeyValue );
                 if ( location != null )
                 {
                     editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
@@ -411,28 +408,26 @@ namespace RockWeb.Blocks.Core
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var locationService = new LocationService( rockContext );
+            var attributeService = new AttributeService( rockContext );
+
+            ddlLocationType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ), true );
+
+            gpParentLocation.Location = location.ParentLocation ?? locationService.Get( location.ParentLocationId ?? 0 );
+
+            // LocationType depends on Selected ParentLocation
+            if ( location.Id == 0 && ddlLocationType.Items.Count > 1 )
             {
-                var locationService = new LocationService();
-                var attributeService = new AttributeService();
-
-                ddlLocationType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() ), true );
-
-                gpParentLocation.Location = location.ParentLocation ?? locationService.Get( location.ParentLocationId ?? 0 );
-
-                // LocationType depends on Selected ParentLocation
-                if ( location.Id == 0 && ddlLocationType.Items.Count > 1 )
-                {
-                    // if this is a new location 
-                    ddlLocationType.SelectedIndex = 0;
-                }
-                else
-                {
-                    ddlLocationType.SetValue( location.LocationTypeValueId );
-                }
+                // if this is a new location 
+                ddlLocationType.SelectedIndex = 0;
+            }
+            else
+            {
+                ddlLocationType.SetValue( location.LocationTypeValueId );
             }
 
-            location.LoadAttributes();
+            location.LoadAttributes( rockContext );
             BuildAttributeEdits( location, true );
         }
 

@@ -33,12 +33,12 @@ namespace Rock.Data
         ParameterExpression ParameterExpression { get; }
 
         /// <summary>
-        /// Gets the rock context.
+        /// Gets the context.
         /// </summary>
         /// <value>
-        /// The rock context.
+        /// The context.
         /// </value>
-        RockContext RockContext { get; }
+        DbContext Context { get; }
 
         /// <summary>
         /// Gets the ids.
