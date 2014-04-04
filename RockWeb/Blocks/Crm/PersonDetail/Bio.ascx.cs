@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     lName.Text = Person.FullName.FormatAsHtmlTitle();
                 }
                 else {
-                    lName.Text = String.Format( "{0} ({1}) {2}", Person.NickName, Person.FirstName, Person.LastName ).FormatAsHtmlTitle();
+                    lName.Text = String.Format( "{0} <span class='full-name'>({1})</span> {2}", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
                 }
 
                 // Setup Image
