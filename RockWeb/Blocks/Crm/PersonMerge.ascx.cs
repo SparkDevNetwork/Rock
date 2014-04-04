@@ -263,7 +263,6 @@ namespace RockWeb.Blocks.Crm
                 var familyMemberService = new GroupMemberService( rockContext );
                 var binaryFileService = new BinaryFileService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                var historyService = new HistoryService( rockContext );
 
                 Person primaryPerson = personService.Get( MergeData.PrimaryPersonId ?? 0 );
                 if ( primaryPerson != null )
@@ -304,7 +303,7 @@ namespace RockWeb.Blocks.Crm
                     primaryPerson.Email = GetNewStringValue( "Email", changes );
                     primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive", changes );
                     primaryPerson.EmailNote = GetNewStringValue( "EmailNote", changes );
-                    primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "DoNotEmail", typeof( EmailPreference ), changes );
+                    primaryPerson.EmailPreference = (EmailPreference)GetNewEnumValue( "EmailPreference", typeof( EmailPreference ), changes );
                     primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote", changes );
                     primaryPerson.SystemNote = GetNewStringValue( "SystemNote", changes );
 
@@ -1013,7 +1012,7 @@ namespace RockWeb.Blocks.Crm
 
         private void AddProperty( string key, int personId, Enum value, bool selected = false )
         {
-            AddProperty( key, personId, value.ConvertToString(), selected );
+            AddProperty( key, key.SplitCase(), personId, value.ConvertToString(false), value.ConvertToString(), selected );
         }
 
         public PersonProperty GetProperty( string key, bool createIfNotFound = false, string label = "")
