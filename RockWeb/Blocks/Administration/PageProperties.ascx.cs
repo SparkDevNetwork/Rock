@@ -429,11 +429,8 @@ namespace RockWeb.Blocks.Administration
 
                 var packageService = new PackageService();
                 bool importResult;
-
-                using ( new UnitOfWorkScope() )
-                {
-                    importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, page.Id, page.Layout.SiteId );
-                }
+                
+                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, page.Id, page.Layout.SiteId );
 
                 if ( !importResult )
                 {
