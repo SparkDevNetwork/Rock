@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,9 +34,12 @@ namespace Rock.Model
         /// <param name="definedTypeId">A <see cref="System.Int32"/> representing the DefinedTypeId of the <see cref="Rock.Model.DefinedType"/> to retrieve <see cref="Rock.Model.DefinedValue">DefinedValues</see> for.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.DefinedValue">DefinedValues</see> that belong to the specified <see cref="Rock.Model.DefinedType"/>. The <see cref="Rock.Model.DefinedValue">DefinedValues</see> will 
         /// be ordered by the <see cref="DefinedValue">DefinedValue's</see> Order property.</returns>
-        public IEnumerable<DefinedValue> GetByDefinedTypeId( int definedTypeId )
+        public IOrderedQueryable<DefinedValue> GetByDefinedTypeId( int definedTypeId )
         {
-            return Repository.Find( t => t.DefinedTypeId == definedTypeId ).OrderBy( t => t.Order ).ThenBy( a => a.Name );
+            return Queryable()
+                .Where( t => t.DefinedTypeId == definedTypeId )
+                .OrderBy( t => t.Order )
+                .ThenBy( a => a.Name );
         }
 
         /// <summary>
@@ -45,10 +49,17 @@ namespace Rock.Model
         /// for.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.DefinedValue">DefinedValues</see> that belong to the <see cref="Rock.Model.DefinedType"/> specified by the provided Guid. If a match
         /// is not found, an empty collection will be returned.</returns>
-        public IEnumerable<DefinedValue> GetByDefinedTypeGuid( Guid definedTypeGuid )
+        public IOrderedQueryable<DefinedValue> GetByDefinedTypeGuid( Guid definedTypeGuid )
         {
-            var definedType = new DefinedTypeService().GetByGuid( definedTypeGuid );
-            return GetByDefinedTypeId( definedType.Id );
+            var definedTypeCache = DefinedTypeCache.Read( definedTypeGuid );
+            if ( definedTypeCache != null )
+            {
+                return GetByDefinedTypeId( definedTypeCache.Id );
+            }
+            else
+            {
+                return null;
+            }
         }
         
         /// <summary>
@@ -58,7 +69,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.DefinedValue"/> specified by the provided Guid. If a match is not found, a null value will be returned.</returns>
         public DefinedValue GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
@@ -69,7 +80,7 @@ namespace Rock.Model
         /// a null value will be returned.</returns>
         public int? GetIdByGuid( Guid guid )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t => t.Guid == guid )
                 .Select( t => t.Id )
                 .FirstOrDefault();

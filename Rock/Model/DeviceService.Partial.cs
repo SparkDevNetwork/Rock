@@ -37,7 +37,7 @@ namespace Rock.Model
         /// <returns>A queryable co</returns>
         public IQueryable<Device> GetByDeviceTypeGuid( Guid guid )
         {
-            return Repository.AsQueryable().Where( d => d.DeviceType.Guid == guid );
+            return Queryable().Where( d => d.DeviceType.Guid == guid );
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Rock.Model
             Device device = null;
             DbGeography aLocation = DbGeography.FromText( string.Format("POINT({0} {1})", longitude, latitude) );
 
-            device = Repository.AsQueryable()
+            device = Queryable()
                 .Where( d => 
                     d.DeviceTypeValueId == deviceTypeValueId &&
                     d.Location != null &&
@@ -104,7 +104,7 @@ namespace Rock.Model
             if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
             {
                 // find by IP
-                device = Repository.AsQueryable()
+                device = Queryable()
                     .Where( d =>
                         d.DeviceTypeValueId == deviceTypeValueId &&
                         d.IPAddress == hostValue)
@@ -113,7 +113,7 @@ namespace Rock.Model
             else
             {
                 // find by name
-                device = Repository.AsQueryable()
+                device = Queryable()
                     .Where( d =>
                         d.DeviceTypeValueId == deviceTypeValueId &&
                         d.Name == hostValue )

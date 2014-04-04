@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var metricService = new MetricService();
+            var metricService = new MetricService( new RockContext() );
             var metric = metricService.Get( hfMetricId.ValueAsInt() );
             ShowEdit( metric );
         }
@@ -87,45 +88,45 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            int metricId = hfMetricId.ValueAsInt();
+            var metricService = new MetricService( rockContext );
+            Metric metric = null;
+
+            if ( metricId == 0 )
             {
-                int metricId = hfMetricId.ValueAsInt();
-                var metricService = new MetricService();
-                Metric metric = null;                
-
-                if ( metricId == 0 )
-                {
-                    metric = new Metric();
-                    metric.IsSystem = false;
-                    metricService.Add( metric, CurrentPersonAlias );
-                }
-                else
-                {
-                    metric = metricService.Get( metricId );
-                }
-
-                metric.Category = tbCategory.Text;
-                metric.Title = tbTitle.Text;
-                metric.Subtitle = tbSubtitle.Text;
-                metric.Description = tbDescription.Text;
-                metric.MinValue = tbMinValue.Text.AsType<int?>();
-                metric.MaxValue = tbMaxValue.Text.AsType<int?>();
-                metric.Type = cbType.Checked;
-                metric.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
-                metric.Source = tbSource.Text;
-                metric.SourceSQL = tbSourceSQL.Text;
-
-                if ( !metric.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                metricService.Save( metric, CurrentPersonAlias );
-                hfMetricId.SetValue( metric.Id );
+                metric = new Metric();
+                metric.IsSystem = false;
+                metricService.Add( metric );
+            }
+            else
+            {
+                metric = metricService.Get( metricId );
             }
 
-            var savedMetric = new MetricService().Get( hfMetricId.ValueAsInt() );
+            metric.Category = tbCategory.Text;
+            metric.Title = tbTitle.Text;
+            metric.Subtitle = tbSubtitle.Text;
+            metric.Description = tbDescription.Text;
+            metric.MinValue = tbMinValue.Text.AsType<int?>();
+            metric.MaxValue = tbMaxValue.Text.AsType<int?>();
+            metric.Type = cbType.Checked;
+            metric.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
+            metric.Source = tbSource.Text;
+            metric.SourceSQL = tbSourceSQL.Text;
+
+            if ( !metric.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            rockContext.SaveChanges();
+
+            hfMetricId.SetValue( metric.Id );
+
+            var savedMetric = new MetricService( new RockContext() ).Get( hfMetricId.ValueAsInt() );
             ShowReadOnly( savedMetric );
         }
 
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            var metric = new MetricService().Get( hfMetricId.ValueAsInt() );
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.ValueAsInt() );
             ShowReadOnly( metric );
         }
         
@@ -241,7 +242,7 @@ namespace RockWeb.Blocks.Administration
             Metric metric = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                metric = new MetricService().Get( itemKeyValue );                
+                metric = new MetricService( new RockContext() ).Get( itemKeyValue );                
             }
             else
             {

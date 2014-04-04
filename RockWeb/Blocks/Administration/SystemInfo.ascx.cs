@@ -30,6 +30,7 @@ using System.Web;
 
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -72,52 +73,54 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e"></param>
         protected void btnClearCache_Click( object sender, EventArgs e )
         {
-            foreach ( var attribute in new Rock.Model.AttributeService().Queryable().ToList() )
+            var rockContext = new RockContext();
+
+            foreach ( var attribute in new Rock.Model.AttributeService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
             }
 
-            foreach ( var blockType in new Rock.Model.BlockTypeService().Queryable().ToList() )
+            foreach ( var blockType in new Rock.Model.BlockTypeService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
             }
 
-            foreach ( var block in new Rock.Model.BlockService().Queryable().ToList() )
+            foreach ( var block in new Rock.Model.BlockService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.BlockCache.Flush( block.Id );
             }
 
-            foreach ( var page in new Rock.Model.PageService().Queryable().ToList() )
+            foreach ( var page in new Rock.Model.PageService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.PageCache.Flush( page.Id );
             }
 
-            foreach ( var definedType in new Rock.Model.DefinedTypeService().Queryable().ToList() )
+            foreach ( var definedType in new Rock.Model.DefinedTypeService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.DefinedTypeCache.Flush( definedType.Id );
             }
 
-            foreach ( var definedValue in new Rock.Model.DefinedValueService().Queryable().ToList() )
+            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
             }
 
-            foreach ( var group in new Rock.Model.GroupTypeService().Queryable().ToList() )
+            foreach ( var group in new Rock.Model.GroupTypeService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.GroupTypeCache.Flush( group.Id );
             }
 
-            foreach ( var campus in new Rock.Model.CampusService().Queryable().ToList() )
+            foreach ( var campus in new Rock.Model.CampusService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.CampusCache.Flush( campus.Id );
             }
 
-            foreach ( var category in new Rock.Model.CategoryService().Queryable().ToList() )
+            foreach ( var category in new Rock.Model.CategoryService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.CategoryCache.Flush( category.Id );
             }
 
-            foreach ( var layout in new Rock.Model.LayoutService().Queryable().ToList() )
+            foreach ( var layout in new Rock.Model.LayoutService( rockContext ).Queryable().ToList() )
             {
                 Rock.Web.Cache.LayoutCache.Flush( layout.Id );
             }

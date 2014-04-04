@@ -204,6 +204,7 @@
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
+    <Compile Include="Data\DbContext.cs" />
     <Compile Include="Field\Types\DaysOfWeekFieldType.cs" />
     <Compile Include="Field\Types\DayOfWeekFieldType.cs" />
     <Compile Include="Field\Types\RemoteAuthsFieldType.cs" />
@@ -233,6 +234,7 @@
     <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\FinancialPersonBankAccountService.Partial.cs" />
+    <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
@@ -250,7 +252,6 @@
     <Compile Include="Model\DbGeographyConverter.cs" />
     <Compile Include="Model\RestAction.cs" />
     <Compile Include="Model\RestController.cs" />
-    <Compile Include="Model\FinancialTransactionImageService.partial.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\LayoutService.Partial.cs" />
@@ -470,7 +471,6 @@
     <Compile Include="Model\Communication.cs" />
     <Compile Include="Model\CommunicationRecipient.cs" />
     <Compile Include="Model\FinancialScheduledTransaction.cs" />
-    <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs">
@@ -719,11 +719,8 @@
     <Compile Include="Model\PhoneNumberService.Partial.cs" />
     <Compile Include="Model\DiscService.cs" />
     <Compile Include="Data\AlternateKeyAttribute.cs" />
-    <Compile Include="Data\FriendlyTypeNameAttribute.cs" />
     <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IEntity.cs" />
-    <Compile Include="Data\IRepository.cs" />
-    <Compile Include="Data\RepositoryFactory.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
     <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
@@ -840,7 +837,6 @@
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetStatus.cs" />
-    <Compile Include="Model\WorkflowTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
@@ -942,9 +938,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\RockContext.cs" />
-    <Compile Include="Data\UnitOfWorkScope.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Data\EFRepository.cs" />
     <Compile Include="Service References\MelissaData.AddressCheck\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

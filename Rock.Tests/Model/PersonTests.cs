@@ -113,13 +113,13 @@ namespace Rock.Tests.Model
             {
                 DateTime today = RockDateTime.Now;
                 GlobalAttributesCache globalAttributes = GlobalAttributesCache.Read();
-                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), null, false );
+                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", today.Month, today.Day ), false );
             }
 
             private static void SetGradeTransitionDateGlobalAttribute( int month, int day )
             {
                 GlobalAttributesCache globalAttributes = GlobalAttributesCache.Read();
-                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", month, day ), null, false );
+                globalAttributes.SetValue( "GradeTransitionDate", string.Format( "{0}/{1}", month, day ), false );
             }
 
 

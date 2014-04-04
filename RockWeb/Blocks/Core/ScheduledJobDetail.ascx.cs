@@ -93,14 +93,15 @@ namespace RockWeb.Blocks.Administration
         protected void btnSave_Click( object sender, EventArgs e )
         {
             ServiceJob job;
-            ServiceJobService jobService = new ServiceJobService();
+            var rockContext = new RockContext();
+            ServiceJobService jobService = new ServiceJobService( rockContext );
 
             int jobId = int.Parse( hfId.Value );
 
             if ( jobId == 0 )
             {
                 job = new ServiceJob();
-                jobService.Add( job, CurrentPersonAlias );
+                jobService.Add( job );
             }
             else
             {
@@ -122,12 +123,14 @@ namespace RockWeb.Blocks.Administration
             }
 
             RockTransactionScope.WrapTransaction( () =>
-                {
-                    jobService.Save( job, CurrentPersonAlias );
-                    job.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, job );
-                    job.SaveAttributeValues( CurrentPersonAlias );
-                } );
+            {
+                rockContext.SaveChanges();
+
+                job.LoadAttributes( rockContext );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, job );
+                job.SaveAttributeValues( rockContext );
+
+            } );
 
             NavigateToParentPage();
         }
@@ -142,7 +145,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                job = new ServiceJobService().Get( itemId );
+                job = new ServiceJobService( new RockContext() ).Get( itemId );
             }
 
             job.Class = ddlJobTypes.SelectedValue;
@@ -172,7 +175,7 @@ namespace RockWeb.Blocks.Administration
             ServiceJob job;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                job = new ServiceJobService().Get( itemKeyValue );
+                job = new ServiceJobService( new RockContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -253,12 +256,11 @@ namespace RockWeb.Blocks.Administration
             int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.ServiceJob" ).Id;
 
             var jobs = Rock.Reflection.FindTypes( typeof( Quartz.IJob ) ).Values;
-            using ( new UnitOfWorkScope() )
+
+            var rockContext = new RockContext();
+            foreach ( var job in jobs )
             {
-                foreach(var job in jobs)
-                {
-                    Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, null );
-                }
+                Rock.Attribute.Helper.UpdateAttributes( job, jobEntityTypeId, "Class", job.FullName, rockContext );
             }
 
             ddlJobTypes.DataSource = jobs;

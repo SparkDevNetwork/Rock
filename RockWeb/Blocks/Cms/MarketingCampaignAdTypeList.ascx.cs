@@ -101,24 +101,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaignAdType_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( rockContext );
+            MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( (int)e.RowKeyValue );
+
+            if ( marketingCampaignAdType != null )
             {
-                MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-                MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( (int)e.RowKeyValue );
-
-                if ( marketingCampaignAdType != null )
+                string errorMessage;
+                if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonAlias );
-                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                marketingCampaignAdTypeService.Delete( marketingCampaignAdType );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -142,7 +141,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( new RockContext() );
             SortProperty sortProperty = gMarketingCampaignAdType.SortProperty;
 
             if ( sortProperty != null )

@@ -45,47 +45,46 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
-            if (checkInState != null)
+            if ( checkInState != null )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var rockContext = new Rock.Data.RockContext();
+
+                var personService = new PersonService( rockContext );
+                var memberService = new GroupMemberService( rockContext );
+                IQueryable<Person> people = null;
+
+                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
-                    var personService = new PersonService();
-                    var memberService = new GroupMemberService();
-                    IQueryable<Person> people = null;
+                    people = personService.GetByPhonePartial( checkInState.CheckIn.SearchValue );
+                }
+                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
+                {
+                    people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false );
+                }
+                else
+                {
+                    errorMessages.Add( "Invalid Search Type" );
+                    return false;
+                }
 
-                    if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                foreach ( var person in people.ToList() )
+                {
+                    foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ).ToList() )
                     {
-                        people = personService.GetByPhonePartial( checkInState.CheckIn.SearchValue );
-                    }
-                    else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
-                    {
-                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue, false );
-                    }
-                    else
-                    {
-                        errorMessages.Add( "Invalid Search Type" );
-                        return false;
-                    }
-
-                    foreach ( var person in people.ToList() )
-                    {
-                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ).ToList() )
+                        var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                        if ( family == null )
                         {
-                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                            if ( family == null )
-                            {
-                                family = new CheckInFamily();
-                                family.Group = group.Clone( false );
-                                family.Group.LoadAttributes();
-                                family.Caption = group.ToString();
-                                family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                checkInState.CheckIn.Families.Add( family );
-                            }
+                            family = new CheckInFamily();
+                            family.Group = group.Clone( false );
+                            family.Group.LoadAttributes();
+                            family.Caption = group.ToString();
+                            family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                            checkInState.CheckIn.Families.Add( family );
                         }
                     }
-
-                    return true;
                 }
+
+                return true;
             }
 
             errorMessages.Add( "Invalid Check-in State" );

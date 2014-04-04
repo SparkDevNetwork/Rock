@@ -21,10 +21,10 @@ using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Security
     [Description( "Block allows users to create a new login account." )]
 
     [BooleanField( "Check for Duplicates", "Should people with the same email and last name be presented as a possible pre-existing record for user to choose from.", true, "", 0, "Duplicates" )]
-    [TextField( "Found Duplicate Caption", "", false,"There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
+    [TextField( "Found Duplicate Caption", "", false, "There are already one or more people in our system that have the same email address and last name as you do.  Are any of these people you?", "Captions", 1 )]
     [TextField( "Existing Account Caption", "", false, "{0}, you already have an existing account.  Would you like us to email you the username?", "Captions", 2 )]
     [TextField( "Sent Login Caption", "", false, "Your username has been emailed to you.  If you've forgotten your password, the email includes a link to reset your password.", "Captions", 3 )]
     [TextField( "Confirm Caption", "", false, "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We've sent you an email that contains a link for confirming.  Please click the link in your email to continue.", "Captions", 4 )]
@@ -51,10 +51,9 @@ namespace RockWeb.Blocks.Security
     [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
     public partial class NewAccount : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
-        PlaceHolder[] PagePanels = new PlaceHolder[6];
+        private PlaceHolder[] PagePanels = new PlaceHolder[6];
 
         #endregion
 
@@ -71,8 +70,9 @@ namespace RockWeb.Blocks.Security
             get
             {
                 string password = ViewState["Password"] as string;
-                return password ?? "";
+                return password ?? string.Empty;
             }
+
             set
             {
                 ViewState["Password"] = value;
@@ -90,8 +90,9 @@ namespace RockWeb.Blocks.Security
             get
             {
                 string password = ViewState["PasswordConfirm"] as string;
-                return password ?? "";
+                return password ?? string.Empty;
             }
+
             set
             {
                 ViewState["PasswordConfirm"] = value;
@@ -148,9 +149,14 @@ namespace RockWeb.Blocks.Security
             base.OnPreRender( e );
 
             if ( tbPassword.Text == string.Empty && Password != string.Empty )
+            {
                 tbPassword.Text = Password;
+            }
+
             if ( tbPasswordConfirm.Text == string.Empty && PasswordConfirm != string.Empty )
+            {
                 tbPasswordConfirm.Text = PasswordConfirm;
+            }
         }
 
         #endregion
@@ -173,13 +179,17 @@ namespace RockWeb.Blocks.Security
             {
                 if ( UserLoginService.IsPasswordValid( Password ) )
                 {
-                    var userLoginService = new Rock.Model.UserLoginService();
+                    var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
                     var userLogin = userLoginService.GetByUserName( tbUserName.Text );
 
                     if ( userLogin == null )
+                    {
                         DisplayDuplicates( Direction.Forward );
+                    }
                     else
+                    {
                         ShowErrorMessage( "Username already exists" );
+                    }
                 }
                 else
                 {
@@ -209,16 +219,20 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
-            int personId = Int32.Parse( Request.Form["DuplicatePerson"] );
+            int personId = Request.Form["DuplicatePerson"].AsInteger() ?? 0;
             if ( personId > 0 )
             {
-                var userLoginService = new Rock.Model.UserLoginService();
-                var userLogins = userLoginService.GetByPersonId(personId).ToList();
-                if (userLogins.Count > 0)
+                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
+                var userLogins = userLoginService.GetByPersonId( personId ).ToList();
+                if ( userLogins.Count > 0 )
+                {
                     DisplaySendLogin( personId, Direction.Forward );
+                }
                 else
+                {
                     DisplayConfirmation( personId );
-            }                        
+                }
+            }
             else
             {
                 DisplaySuccess( CreateUser( CreatePerson(), true ) );
@@ -263,10 +277,10 @@ namespace RockWeb.Blocks.Security
             }
 
             string returnUrl = Request.QueryString["returnurl"];
-            if ( !string.IsNullOrWhiteSpace( returnUrl ) && !loginUrl.Contains("returnurl"))
+            if ( !string.IsNullOrWhiteSpace( returnUrl ) && !loginUrl.Contains( "returnurl" ) )
             {
                 string delimiter = "?";
-                if (loginUrl.Contains('?'))
+                if ( loginUrl.Contains( '?' ) )
                 {
                     delimiter = "&";
                 }
@@ -294,30 +308,38 @@ namespace RockWeb.Blocks.Security
 
         #region Methods
 
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
         private void ShowErrorMessage( string message )
         {
             pnlMessage.Controls.Add( new LiteralControl( message ) );
             pnlMessage.Visible = true;
         }
 
+        /// <summary>
+        /// Displays the user information.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
         private void DisplayUserInfo( Direction direction )
         {
             ShowPanel( 0 );
         }
 
+        /// <summary>
+        /// Displays the duplicates.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
         private void DisplayDuplicates( Direction direction )
         {
             bool displayed = false;
 
             if ( Convert.ToBoolean( GetAttributeValue( "Duplicates" ) ) )
             {
-                PersonService personService = new PersonService();
-                var matches = personService.
-                    Queryable().
-                    Where( p =>
-                        p.Email.ToLower() == tbEmail.Text.ToLower() &&
-                        p.LastName.ToLower() == tbLastName.Text.ToLower() ).
-                    ToList();
+                PersonService personService = new PersonService( new RockContext() );
+                var matches = personService.Queryable().Where( p =>
+                        p.Email.ToLower() == tbEmail.Text.ToLower() && p.LastName.ToLower() == tbLastName.Text.ToLower() ).ToList();
 
                 if ( matches.Count > 0 )
                 {
@@ -332,19 +354,29 @@ namespace RockWeb.Blocks.Security
                     displayed = true;
                 }
                 else
+                {
                     displayed = false;
-
+                }
             }
 
             if ( !displayed )
             {
                 if ( direction == Direction.Forward )
-                    DisplaySuccess( CreateUser (CreatePerson(), true));
+                {
+                    DisplaySuccess( CreateUser( CreatePerson(), true ) );
+                }
                 else
+                {
                     DisplayUserInfo( direction );
+                }
             }
         }
 
+        /// <summary>
+        /// Displays the send login.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="direction">The direction.</param>
         private void DisplaySendLogin( int personId, Direction direction )
         {
             hfSendPersonId.Value = personId.ToString();
@@ -352,81 +384,93 @@ namespace RockWeb.Blocks.Security
             lExistingAccountCaption.Text = GetAttributeValue( "ExistingAccountCaption" );
             if ( lExistingAccountCaption.Text.Contains( "{0}" ) )
             {
-                PersonService personService = new PersonService();
+                PersonService personService = new PersonService( new RockContext() );
                 Person person = personService.Get( personId );
                 if ( person != null )
+                {
                     lExistingAccountCaption.Text = string.Format( lExistingAccountCaption.Text, person.FirstName );
+                }
             }
 
             ShowPanel( 2 );
         }
 
+        /// <summary>
+        /// Displays the sent login.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
         private void DisplaySentLogin( Direction direction )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            PersonService personService = new PersonService( rockContext );
+            Person person = personService.Get( hfSendPersonId.Value.AsInteger() ?? 0 );
+            if ( person != null )
             {
-                PersonService personService = new PersonService();
-                Person person = personService.Get( Int32.Parse( hfSendPersonId.Value ) );
-                if ( person != null )
+                string url = LinkedPageUrl( "ConfirmationPage" );
+                if ( string.IsNullOrWhiteSpace( url ) )
                 {
-                    string url = LinkedPageUrl( "ConfirmationPage" );
-                    if (string.IsNullOrWhiteSpace(url))
-                    {
-                        url = ResolveRockUrl( "~/ConfirmAccount" );
-                    }
-                    var mergeObjects = new Dictionary<string, object>();
-                    mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart(new char[]{'/'}) );
-
-                    var personDictionaries = new List<IDictionary<string, object>>();
-
-                    var users = new List<UserLogin>();
-                    var userLoginService = new UserLoginService();
-                    foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
-                    {
-                        if ( user.EntityType != null )
-                        {
-                            var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
-                            if ( component.ServiceType == AuthenticationServiceType.Internal )
-                            {
-                                users.Add( user );
-                            }
-                        }
-                    }
-
-                    if ( users.Count > 0 )
-                    {
-                        var personDictionary = person.ToLiquid() as Dictionary<string, object>;
-                        if ( personDictionary.Keys.Contains( "Users" ) )
-                        {
-                            personDictionary["Users"] = users;
-                        }
-                        else
-                        {
-                            personDictionary.Add( "Users", users );
-                        }
-                        personDictionaries.Add( personDictionary );
-                    }
-
-                    mergeObjects.Add( "Persons", personDictionaries.ToArray() );
-
-                    var recipients = new Dictionary<string, Dictionary<string, object>>();
-                    recipients.Add( person.Email, mergeObjects );
-
-                    Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+                    url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
-                else
-                    ShowErrorMessage( "Invalid Person" );
+
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
+
+                var personDictionaries = new List<IDictionary<string, object>>();
+
+                var users = new List<UserLogin>();
+                var userLoginService = new UserLoginService( rockContext );
+                foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
+                {
+                    if ( user.EntityType != null )
+                    {
+                        var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
+                        if ( component.ServiceType == AuthenticationServiceType.Internal )
+                        {
+                            users.Add( user );
+                        }
+                    }
+                }
+
+                if ( users.Count > 0 )
+                {
+                    var personDictionary = person.ToLiquid() as Dictionary<string, object>;
+                    if ( personDictionary.Keys.Contains( "Users" ) )
+                    {
+                        personDictionary["Users"] = users;
+                    }
+                    else
+                    {
+                        personDictionary.Add( "Users", users );
+                    }
+
+                    personDictionaries.Add( personDictionary );
+                }
+
+                mergeObjects.Add( "Persons", personDictionaries.ToArray() );
+
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
+                recipients.Add( person.Email, mergeObjects );
+
+                Email.Send( GetAttributeValue( "ForgotUsernameTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+            }
+            else
+            {
+                ShowErrorMessage( "Invalid Person" );
             }
 
             ShowPanel( 3 );
         }
 
+        /// <summary>
+        /// Displays the confirmation.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
         private void DisplayConfirmation( int personId )
         {
-            PersonService personService = new PersonService();
-            Person person = personService.Get(personId);
+            PersonService personService = new PersonService( new RockContext() );
+            Person person = personService.Get( personId );
 
-            if (person != null)
+            if ( person != null )
             {
                 Rock.Model.UserLogin user = CreateUser( person, false );
 
@@ -435,6 +479,7 @@ namespace RockWeb.Blocks.Security
                 {
                     url = ResolveRockUrl( "~/ConfirmAccount" );
                 }
+
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
@@ -450,9 +495,15 @@ namespace RockWeb.Blocks.Security
                 ShowPanel( 4 );
             }
             else
-                ShowErrorMessage("Invalid Person");
+            {
+                ShowErrorMessage( "Invalid Person" );
+            }
         }
 
+        /// <summary>
+        /// Displays the success.
+        /// </summary>
+        /// <param name="user">The user.</param>
         private void DisplaySuccess( Rock.Model.UserLogin user )
         {
             FormsAuthentication.SignOut();
@@ -460,18 +511,19 @@ namespace RockWeb.Blocks.Security
 
             if ( user != null && user.PersonId.HasValue )
             {
-                PersonService personService = new PersonService();
+                PersonService personService = new PersonService( new RockContext() );
                 Person person = personService.Get( user.PersonId.Value );
 
                 if ( person != null )
                 {
-                    try 
+                    try
                     {
                         string url = LinkedPageUrl( "ConfirmationPage" );
                         if ( string.IsNullOrWhiteSpace( url ) )
                         {
                             url = ResolveRockUrl( "~/ConfirmAccount" );
                         }
+
                         var mergeObjects = new Dictionary<string, object>();
                         mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
@@ -484,9 +536,9 @@ namespace RockWeb.Blocks.Security
 
                         Email.Send( GetAttributeValue( "AccountCreatedTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                     }
-                    catch(SystemException ex)
+                    catch ( SystemException ex )
                     {
-                        ExceptionLogService.LogException(ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias);
+                        ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
                     }
 
                     string returnUrl = Request.QueryString["returnurl"];
@@ -494,26 +546,43 @@ namespace RockWeb.Blocks.Security
 
                     lSuccessCaption.Text = GetAttributeValue( "SuccessCaption" );
                     if ( lSuccessCaption.Text.Contains( "{0}" ) )
+                    {
                         lSuccessCaption.Text = string.Format( lSuccessCaption.Text, person.FirstName );
+                    }
 
                     ShowPanel( 5 );
                 }
                 else
+                {
                     ShowErrorMessage( "Invalid Person" );
+                }
             }
             else
+            {
                 ShowErrorMessage( "Invalid User" );
+            }
         }
 
+        /// <summary>
+        /// Shows the panel.
+        /// </summary>
+        /// <param name="panel">The panel.</param>
         private void ShowPanel( int panel )
         {
             for ( int i = 0; i < PagePanels.Length; i++ )
+            {
                 PagePanels[i].Visible = i == panel;
+            }
         }
 
+        /// <summary>
+        /// Creates the person.
+        /// </summary>
+        /// <returns></returns>
         private Person CreatePerson()
         {
-            Rock.Model.PersonService personService = new PersonService();
+            var rockContext = new RockContext();
+            Rock.Model.PersonService personService = new PersonService( rockContext );
 
             Person person = new Person();
             person.FirstName = tbFirstName.Text;
@@ -521,7 +590,7 @@ namespace RockWeb.Blocks.Security
             person.Email = tbEmail.Text;
             person.EmailPreference = EmailPreference.EmailAllowed;
 
-            switch(ddlGender.SelectedValue)
+            switch ( ddlGender.SelectedValue )
             {
                 case "M":
                     person.Gender = Gender.Male;
@@ -545,27 +614,40 @@ namespace RockWeb.Blocks.Security
                 }
             }
 
-            new GroupService().SaveNewFamily( person, null, false, null );
+            GroupService.SaveNewFamily( rockContext, person, null, false );
             return person;
         }
 
+        /// <summary>
+        /// Creates the user.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="confirmed">if set to <c>true</c> [confirmed].</param>
+        /// <returns></returns>
         private Rock.Model.UserLogin CreateUser( Person person, bool confirmed )
         {
-            var userLoginService = new Rock.Model.UserLoginService();
-            return userLoginService.Create( person, Rock.Model.AuthenticationServiceType.Internal, 
-                EntityTypeCache.Read(Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid()).Id, 
-                tbUserName.Text, Password, confirmed );
+            var rockContext = new RockContext();
+            var userLoginService = new Rock.Model.UserLoginService( rockContext );
+            return UserLoginService.Create( 
+                rockContext, 
+                person, 
+                Rock.Model.AuthenticationServiceType.Internal,
+                EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
+                tbUserName.Text, 
+                Password, 
+                confirmed );
+        }
+
+        #endregion
+        
+        #region Enumerations
+
+        private enum Direction
+        {
+            Forward,
+            Back
         }
 
         #endregion
     }
-
-    #region Enumerations
-
-    enum Direction {
-        Forward,
-        Back
-    }
-
-    #endregion
 }

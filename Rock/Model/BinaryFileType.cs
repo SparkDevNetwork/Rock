@@ -130,7 +130,7 @@ namespace Rock.Model
         {
             get
             {
-                var fileService = new BinaryFileService();
+                var fileService = new BinaryFileService( new RockContext() );
                 var qry = fileService.Queryable()
                     .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
                 return qry;

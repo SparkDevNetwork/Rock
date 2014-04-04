@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="HistoryService"/> class
         /// </summary>
-        public HistoryService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HistoryService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public HistoryService(IRepository<History> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HistoryService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public HistoryService(RockContext context) : base(context)
         {

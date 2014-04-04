@@ -18,13 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -43,30 +41,31 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
 
-    [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )] 
+    [BooleanField( "Update Page", "If True, provides fields for updating the parent page's Name and Description", true, "", 0 )]
     [CodeEditorField( "Query", "The query to execute", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "", 1 )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "", 2 )]
     [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "", 3 )]
-    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 4)]
+    [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "", 4 )]
     [TextField( "Columns", "The columns to hide or show", false, "", "", 5 )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",
         CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, "", "", 7 )]
     [BooleanField( "Person Report", "Is this report a list of people.?", false, "", 8 )]
     [TextField( "Merge Fields", "Any fields to make available as merge fields for any new communications", false, "", "", 9 )]
     public partial class DynamicData : RockBlock
-    { 
+    {
         #region Control Methods
 
         bool updatePage = true;
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            if ( !bool.TryParse( GetAttributeValue( "UpdatePage" ), out updatePage ) )
-            {
-                updatePage = true;
-            }
+            updatePage = GetAttributeValue( "UpdatePage" ).AsBoolean( true );
 
             string scriptKey = "edit-report";
             if ( !this.Page.ClientScript.IsClientScriptBlockRegistered( scriptKey ) )
@@ -74,12 +73,11 @@ namespace RockWeb.Blocks.Reporting
                 string script = @"
     function toggleDetails() {
         $('.dynamic-report-details').slideToggle();
-    }"
-;
+    }";
                 this.Page.ClientScript.RegisterStartupScript( this.Page.GetType(), scriptKey, script, true );
             }
-
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -112,10 +110,10 @@ namespace RockWeb.Blocks.Reporting
                     ceQuery.Text = GetAttributeValue( "Query" );
                     tbParams.Text = GetAttributeValue( "QueryParams" );
                     tbUrlMask.Text = GetAttributeValue( "UrlMask" );
-                    ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns");
+                    ddlHideShow.SelectedValue = GetAttributeValue( "ShowColumns" );
                     tbColumns.Text = GetAttributeValue( "Columns" );
                     ceFormattedOutput.Text = GetAttributeValue( "FormattedOutput" );
-                    cbPersonReport.Checked = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
+                    cbPersonReport.Checked = GetAttributeValue( "PersonReport" ).AsBoolean();
                     tbMergeFields.Text = GetAttributeValue( "MergeFields" );
                 }
 
@@ -123,7 +121,12 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-        void gReport_RowSelected( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the RowSelected event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gReport_RowSelected( object sender, RowEventArgs e )
         {
             string url = GetAttributeValue( "UrlMask" );
             if ( !string.IsNullOrWhiteSpace( url ) )
@@ -132,15 +135,26 @@ namespace RockWeb.Blocks.Reporting
                 {
                     url = url.Replace( "{" + key + "}", gReport.DataKeys[e.RowIndex][key].ToString() );
                 }
+
                 Response.Redirect( url, false );
             }
         }
 
-        void gReport_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gReport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gReport_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             if ( updatePage )
@@ -149,19 +163,20 @@ namespace RockWeb.Blocks.Reporting
                 if ( pageCache != null &&
                     ( pageCache.PageTitle != tbName.Text || pageCache.Description != tbDesc.Text ) )
                 {
-                    var service = new PageService();
+                    var rockContext = new RockContext();
+                    var service = new PageService( rockContext );
                     var page = service.Get( pageCache.Id );
                     page.InternalName = tbName.Text;
                     page.PageTitle = tbName.Text;
                     page.BrowserTitle = tbName.Text;
                     page.Description = tbDesc.Text;
-                    service.Save( page, CurrentPersonAlias );
+                    rockContext.SaveChanges();
 
                     Rock.Web.Cache.PageCache.Flush( page.Id );
                     pageCache = PageCache.Read( RockPage.PageId );
 
                     var breadCrumb = RockPage.BreadCrumbs.Where( c => c.Url == RockPage.PageReference.BuildUrl() ).FirstOrDefault();
-                    if (breadCrumb != null)
+                    if ( breadCrumb != null )
                     {
                         breadCrumb.Name = pageCache.BreadCrumbText;
                     }
@@ -174,9 +189,9 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "Columns", tbColumns.Text );
             SetAttributeValue( "ShowColumns", ddlHideShow.SelectedValue );
             SetAttributeValue( "FormattedOutput", ceFormattedOutput.Text );
-            SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString());
+            SetAttributeValue( "PersonReport", cbPersonReport.Checked.ToString() );
             SetAttributeValue( "MergeFields", tbMergeFields.Text );
-            SaveAttributeValues( CurrentPersonAlias );
+            SaveAttributeValues();
 
             BindGrid();
         }
@@ -190,9 +205,9 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
-            bool personReport = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
-            
-            if (personReport)
+            bool personReport = GetAttributeValue( "PersonReport" ).AsBoolean();
+
+            if ( personReport )
             {
                 gReport.PersonIdField = "Id";
             }
@@ -213,30 +228,31 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    DataTable dataTable = new Service().GetDataTable( query, ( parameters != null ? CommandType.StoredProcedure : CommandType.Text ), parameters );
+                    DataTable dataTable = new Service( new RockContext() ).GetDataTable( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
 
-                    if (string.IsNullOrWhiteSpace(ceFormattedOutput.Text))
+                    if ( string.IsNullOrWhiteSpace( ceFormattedOutput.Text ) )
                     {
                         gReport.Visible = true;
                         phHtml.Visible = false;
 
                         AddGridColumns( dataTable );
                         SetDataKeyNames();
-                        gReport.DataSource = GetSortedView( dataTable ); ;
+                        gReport.DataSource = GetSortedView( dataTable );
                         gReport.DataBind();
                     }
                     else
                     {
                         gReport.Visible = false;
                         phHtml.Visible = true;
-                        
+
                         var dropRows = new List<DataRowDrop>();
-                        foreach(DataRow row in dataTable.Rows)
+                        foreach ( DataRow row in dataTable.Rows )
                         {
-                            dropRows.Add(new DataRowDrop(row));
+                            dropRows.Add( new DataRowDrop( row ) );
                         }
+
                         var dropTable = new Dictionary<string, object>();
-                        dropTable.Add("rows", dropRows);
+                        dropTable.Add( "rows", dropRows );
 
                         phHtml.Controls.Add( new LiteralControl( ceFormattedOutput.Text.ResolveMergeFields( dropTable ) ) );
                     }
@@ -252,6 +268,9 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
+        /// <summary>
+        /// Sets the data key names.
+        /// </summary>
         private void SetDataKeyNames()
         {
             string urlMask = GetAttributeValue( "UrlMask" );
@@ -266,45 +285,49 @@ namespace RockWeb.Blocks.Reporting
                     {
                         keyNames[i] = matches[i].Value.TrimStart( '{' ).TrimEnd( '}' );
                     }
+
                     gReport.DataKeyNames = keyNames;
                 }
             }
         }
 
+        /// <summary>
+        /// Gets the parameters.
+        /// </summary>
+        /// <returns></returns>
         private Dictionary<string, object> GetParameters()
         {
-            string[] queryParams = GetAttributeValue("QueryParams").SplitDelimitedValues();
+            string[] queryParams = GetAttributeValue( "QueryParams" ).SplitDelimitedValues();
             if ( queryParams.Length > 0 )
             {
                 var parameters = new Dictionary<string, object>();
-                foreach(string queryParam in queryParams)
+                foreach ( string queryParam in queryParams )
                 {
-                    string[] paramParts = queryParam.Split('=');
-                    if (paramParts.Length == 2)
+                    string[] paramParts = queryParam.Split( '=' );
+                    if ( paramParts.Length == 2 )
                     {
                         string queryParamName = paramParts[0];
                         string queryParamValue = paramParts[1];
 
                         // Remove leading '@' character if was included
-                        if (queryParamName.StartsWith("@"))
+                        if ( queryParamName.StartsWith( "@" ) )
                         {
-                            queryParamName = queryParamName.Substring(1);
+                            queryParamName = queryParamName.Substring( 1 );
                         }
 
                         // If a page parameter (query or form) value matches, use it's value instead
-                        string pageValue = PageParameter(queryParamName);
-                        if (!string.IsNullOrWhiteSpace(pageValue))
+                        string pageValue = PageParameter( queryParamName );
+                        if ( !string.IsNullOrWhiteSpace( pageValue ) )
                         {
                             queryParamValue = pageValue;
                         }
-
-                        // If current person id, use the value of the current person id
-                        else if (queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null)
+                        else if ( queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null )
                         {
+                            // If current person id, use the value of the current person id
                             queryParamValue = CurrentPerson.Id.ToString();
                         }
 
-                        parameters.Add(queryParamName, queryParamValue);
+                        parameters.Add( queryParamName, queryParamValue );
                     }
                 }
 
@@ -314,7 +337,11 @@ namespace RockWeb.Blocks.Reporting
             return null;
         }
 
-        private void AddGridColumns(DataTable dataTable)
+        /// <summary>
+        /// Adds the grid columns.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        private void AddGridColumns( DataTable dataTable )
         {
             bool showColumns = bool.Parse( GetAttributeValue( "ShowColumns" ) );
             var columnList = GetAttributeValue( "Columns" ).SplitDelimitedValues().ToList();
@@ -327,34 +354,34 @@ namespace RockWeb.Blocks.Reporting
 
             gReport.Columns.Clear();
 
-            if (!string.IsNullOrWhiteSpace(gReport.PersonIdField))
+            if ( !string.IsNullOrWhiteSpace( gReport.PersonIdField ) )
             {
                 gReport.Columns.Add( new SelectField() );
             }
 
-            foreach(DataColumn dtColumn in dataTable.Columns)
+            foreach ( DataColumn dataTableColumn in dataTable.Columns )
             {
-                if ( columnList.Count > 0 && 
-                    ((showColumns && !columnList.Contains(dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase)) ||
-                        ( !showColumns && columnList.Contains( dtColumn.ColumnName, StringComparer.OrdinalIgnoreCase ) ) ) )
+                if ( columnList.Count > 0 &&
+                    ( ( showColumns && !columnList.Contains( dataTableColumn.ColumnName, StringComparer.OrdinalIgnoreCase ) ) ||
+                        ( !showColumns && columnList.Contains( dataTableColumn.ColumnName, StringComparer.OrdinalIgnoreCase ) ) ) )
                 {
                     continue;
                 }
 
                 BoundField bf = new BoundField();
 
-                if ( dtColumn.DataType == typeof( Boolean ) )
+                if ( dataTableColumn.DataType == typeof( bool ) )
                 {
                     bf = new BoolField();
                 }
 
-                if ( dtColumn.DataType == typeof( DateTime ) )
+                if ( dataTableColumn.DataType == typeof( DateTime ) )
                 {
                     bf = new DateField();
 
                     for ( int i = 0; i < rowsToEval; i++ )
                     {
-                        object dateObj = dataTable.Rows[i][dtColumn];
+                        object dateObj = dataTable.Rows[i][dataTableColumn];
                         if ( dateObj is DateTime )
                         {
                             DateTime dateTime = (DateTime)dateObj;
@@ -367,13 +394,18 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                bf.DataField = dtColumn.ColumnName;
-                bf.SortExpression = dtColumn.ColumnName;
-                bf.HeaderText = dtColumn.ColumnName.SplitCase();
+                bf.DataField = dataTableColumn.ColumnName;
+                bf.SortExpression = dataTableColumn.ColumnName;
+                bf.HeaderText = dataTableColumn.ColumnName.SplitCase();
                 gReport.Columns.Add( bf );
             }
         }
 
+        /// <summary>
+        /// Gets the sorted view.
+        /// </summary>
+        /// <param name="dataTable">The data table.</param>
+        /// <returns></returns>
         private System.Data.DataView GetSortedView( DataTable dataTable )
         {
             System.Data.DataView dataView = dataTable.DefaultView;
@@ -381,9 +413,7 @@ namespace RockWeb.Blocks.Reporting
             SortProperty sortProperty = gReport.SortProperty;
             if ( sortProperty != null )
             {
-                dataView.Sort = string.Format( "{0} {1}",
-                    sortProperty.Property,
-                    sortProperty.DirectionString );
+                dataView.Sort = string.Format( "{0} {1}", sortProperty.Property, sortProperty.DirectionString );
             }
 
             return dataView;
@@ -391,11 +421,14 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        class DataRowDrop : DotLiquid.Drop
+        /// <summary>
+        /// 
+        /// </summary>
+        private class DataRowDrop : DotLiquid.Drop
         {
             private readonly DataRow _dataRow;
 
-            public DataRowDrop(DataRow dataRow)
+            public DataRowDrop( DataRow dataRow )
             {
                 _dataRow = dataRow;
             }
@@ -406,9 +439,9 @@ namespace RockWeb.Blocks.Reporting
                 {
                     return _dataRow[method];
                 }
+
                 return null;
             }
-
         }
     }
 }

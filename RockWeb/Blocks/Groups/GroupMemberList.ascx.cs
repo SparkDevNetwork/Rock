@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -31,8 +32,9 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Member List" )]
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
+
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock
     {
         #region Private Variables
@@ -58,11 +60,11 @@ namespace RockWeb.Blocks.Groups
                 groupId = PageParameter( "groupId" ).AsInteger() ?? 0;
                 if ( groupId != 0 )
                 {
-                    string key = string.Format("Group:{0}", groupId);
+                    string key = string.Format( "Group:{0}", groupId );
                     _group = RockPage.GetSharedItem( key ) as Group;
                     if ( _group == null )
                     {
-                        _group = new GroupService().Queryable( "GroupType" )
+                        _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
                             .Where( g => g.Id == groupId )
                             .FirstOrDefault();
                         RockPage.SaveSharedItem( key, _group );
@@ -95,7 +97,6 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
-
         }
 
         /// <summary>
@@ -160,7 +161,6 @@ namespace RockWeb.Blocks.Groups
                     e.Value = string.Empty;
                     break;
             }
-
         }
 
         /// <summary>
@@ -170,33 +170,31 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteGroupMember_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            RockContext rockContext = new RockContext();
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
+            if ( groupMember != null )
             {
-                GroupMemberService groupMemberService = new GroupMemberService();
-                GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
-                if ( groupMember != null )
+                string errorMessage;
+                if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    int groupId = groupMember.GroupId;
-
-                    groupMemberService.Delete( groupMember, CurrentPersonAlias );
-                    groupMemberService.Save( groupMember, CurrentPersonAlias );
-
-                    Group group = new GroupService().Get( groupId );
-                    if ( group.IsSecurityRole || group.GroupType.Guid.Equals(Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ))
-                    {
-                        // person removed from SecurityRole, Flush
-                        Rock.Security.Role.Flush( group.Id );
-                        Rock.Security.Authorization.Flush();
-                    }
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                int groupId = groupMember.GroupId;
+
+                groupMemberService.Delete( groupMember );
+                rockContext.SaveChanges();
+
+                Group group = new GroupService( rockContext ).Get( groupId );
+                if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                {
+                    // person removed from SecurityRole, Flush
+                    Rock.Security.Role.Flush( group.Id );
+                    Rock.Security.Authorization.Flush();
+                }
+            }
 
             BindGroupMembersGrid();
         }
@@ -219,7 +217,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", e.RowKeyId );
         }
 
         /// <summary>
@@ -251,6 +249,9 @@ namespace RockWeb.Blocks.Groups
             cblStatus.BindToEnum( typeof( GroupMemberStatus ) );
         }
 
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
         private void AddAttributeColumns()
         {
             // Remove attribute columns
@@ -265,13 +266,12 @@ namespace RockWeb.Blocks.Groups
                 int entityTypeId = new GroupMember().TypeId;
                 string groupQualifier = _group.Id.ToString();
                 string groupTypeQualifier = _group.GroupTypeId.ToString();
-                foreach ( var attribute in new AttributeService().Queryable()
+                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ||
-                         a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) )
-                         )
+                        ( ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ) ||
+                         ( a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) ) ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
@@ -305,94 +305,96 @@ namespace RockWeb.Blocks.Groups
             {
                 pnlGroupMembers.Visible = true;
 
-                using ( new UnitOfWorkScope() )
+                lHeading.Text = string.Format( "{0} {1}", _group.GroupType.GroupTerm, _group.GroupType.GroupMemberTerm.Pluralize() );
+
+                if ( _group.GroupType.Roles.Any() )
                 {
-                    lHeading.Text = string.Format( "{0} {1}", _group.GroupType.GroupTerm, _group.GroupType.GroupMemberTerm.Pluralize() );
+                    nbRoleWarning.Visible = false;
+                    rFilter.Visible = true;
+                    gGroupMembers.Visible = true;
 
-                    if ( _group.GroupType.Roles.Any() )
+                    GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
+                    var qry = groupMemberService.Queryable( "Person,GroupRole" )
+                        .Where( m => m.GroupId == _group.Id );
+
+                    // Filter by First Name
+                    string firstName = rFilter.GetUserPreference( "First Name" );
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
                     {
-                        nbRoleWarning.Visible = false;
-                        rFilter.Visible = true;
-                        gGroupMembers.Visible = true;
+                        qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
+                    }
 
-                        GroupMemberService groupMemberService = new GroupMemberService();
-                        var qry = groupMemberService.Queryable( "Person,GroupRole" )
-                            .Where( m => m.GroupId == _group.Id );
+                    // Filter by Last Name
+                    string lastName = rFilter.GetUserPreference( "Last Name" );
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        qry = qry.Where( m => m.Person.LastName.StartsWith( lastName ) );
+                    }
 
-                        // Filter by First Name
-                        string firstName = rFilter.GetUserPreference( "First Name" );
-                        if ( !string.IsNullOrWhiteSpace( firstName ) )
+                    // Filter by role
+                    var roles = new List<int>();
+                    foreach ( string role in rFilter.GetUserPreference( "Role" ).Split( ';' ) )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( role ) )
                         {
-                            qry = qry.Where( m => m.Person.FirstName.StartsWith( firstName ) );
-                        }
-
-                        // Filter by Last Name
-                        string lastName = rFilter.GetUserPreference( "Last Name" );
-                        if ( !string.IsNullOrWhiteSpace( lastName ) )
-                        {
-                            qry = qry.Where( m => m.Person.LastName.StartsWith( lastName ) );
-                        }
-
-                        // Filter by role
-                        var roles = new List<int>();
-                        foreach ( string role in rFilter.GetUserPreference( "Role" ).Split( ';' ) )
-                        {
-                            if ( !string.IsNullOrWhiteSpace( role ) )
+                            int roleId = int.MinValue;
+                            if ( int.TryParse( role, out roleId ) )
                             {
-                                int roleId = int.MinValue;
-                                if ( int.TryParse( role, out roleId ) )
-                                {
-                                    roles.Add( roleId );
-                                }
+                                roles.Add( roleId );
                             }
                         }
-                        if ( roles.Any() )
-                        {
-                            qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
-                        }
+                    }
 
-                        // Filter by Sttus
-                        var statuses = new List<GroupMemberStatus>();
-                        foreach ( string status in rFilter.GetUserPreference( "Status" ).Split( ';' ) )
-                        {
-                            if ( !string.IsNullOrWhiteSpace( status ) )
-                            {
-                                statuses.Add( status.ConvertToEnum<GroupMemberStatus>() );
-                            }
-                        }
-                        if ( statuses.Any() )
-                        {
-                            qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
-                        }
+                    if ( roles.Any() )
+                    {
+                        qry = qry.Where( m => roles.Contains( m.GroupRoleId ) );
+                    }
 
-                        SortProperty sortProperty = gGroupMembers.SortProperty;
-
-                        if ( sortProperty != null )
+                    // Filter by Sttus
+                    var statuses = new List<GroupMemberStatus>();
+                    foreach ( string status in rFilter.GetUserPreference( "Status" ).Split( ';' ) )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( status ) )
                         {
-                            gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
+                            statuses.Add( status.ConvertToEnum<GroupMemberStatus>() );
                         }
-                        else
-                        {
-                            gGroupMembers.DataSource = qry.OrderBy(a => a.GroupRole.Order).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
-                        }
+                    }
 
-                        gGroupMembers.DataBind();
+                    if ( statuses.Any() )
+                    {
+                        qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
+                    }
+
+                    SortProperty sortProperty = gGroupMembers.SortProperty;
+
+                    if ( sortProperty != null )
+                    {
+                        gGroupMembers.DataSource = qry.Sort( sortProperty ).ToList();
                     }
                     else
                     {
-                        nbRoleWarning.Text = string.Format( "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
-                            _group.GroupType.GroupMemberTerm.Pluralize(), _group.GroupType.GroupTerm, _group.GroupType.Name );
-                        nbRoleWarning.Visible = true;
-                        rFilter.Visible = false;
-                        gGroupMembers.Visible = false;
+                        gGroupMembers.DataSource = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
                     }
+
+                    gGroupMembers.DataBind();
+                }
+                else
+                {
+                    nbRoleWarning.Text = string.Format(
+                        "{0} cannot be added to this {1} because the '{2}' group type does not have any roles defined.",
+                        _group.GroupType.GroupMemberTerm.Pluralize(),
+                        _group.GroupType.GroupTerm,
+                        _group.GroupType.Name );
+
+                    nbRoleWarning.Visible = true;
+                    rFilter.Visible = false;
+                    gGroupMembers.Visible = false;
                 }
             }
             else
             {
                 pnlGroupMembers.Visible = false;
             }
-
         }
 
         /// <summary>
@@ -406,10 +408,10 @@ namespace RockWeb.Blocks.Groups
         {
             var selectedItems = new List<string>();
 
-            for(int i = 0; i < checkBoxList.Items.Count; i++)
+            for ( int i = 0; i < checkBoxList.Items.Count; i++ )
             {
                 string value = Request.Form[checkBoxList.UniqueID + "$" + i.ToString()];
-                if (value != null)
+                if ( value != null )
                 {
                     checkBoxList.Items[i].Selected = true;
                     selectedItems.Add( value );
@@ -420,7 +422,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            return selectedItems.AsDelimited(";");
+            return selectedItems.AsDelimited( ";" );
         }
 
         /// <summary>
@@ -446,7 +448,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
-
 
         #region ISecondaryBlock
 

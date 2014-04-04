@@ -324,31 +324,31 @@ namespace Rock.Model
                 switch (attrib)
                 {
                     case "AdaptiveD":
-                        Rock.Attribute.Helper.SaveAttributeValue(person, person.Attributes[attrib], ABd, person.PrimaryAlias);
+                        Rock.Attribute.Helper.SaveAttributeValue(person, person.Attributes[attrib], ABd );
                         break;
                     case "AdaptiveI":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABi, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABi );
                         break;
                     case "AdaptiveS":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABs, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABs );
                         break;
                     case "AdaptiveC":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABc, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABc );
                         break;
                     case "NaturalD":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBd, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBd );
                         break;
                     case "NaturalI":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBi, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBi );
                         break;
                     case "NaturalS":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBs, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBs );
                         break;
                     case "NaturalC":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc, person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc );
                         break;
                     case "LastSaveDate":
-                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString(), person.PrimaryAlias );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString() );
                         break;
                 }
             }

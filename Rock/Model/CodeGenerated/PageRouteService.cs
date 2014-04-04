@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PageRouteService"/> class
         /// </summary>
-        public PageRouteService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PageRouteService(IRepository<PageRoute> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageRouteService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PageRouteService(RockContext context) : base(context)
         {

@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemEmailService"/> class
         /// </summary>
-        public SystemEmailService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public SystemEmailService(IRepository<SystemEmail> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public SystemEmailService(RockContext context) : base(context)
         {

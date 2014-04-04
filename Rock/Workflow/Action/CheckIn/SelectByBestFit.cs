@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( location == null )
                                     {
                                         // this works when a group is only meeting at one location per campus
-                                        int primaryGroupLocationId = new GroupLocationService().Queryable().Where( gl => gl.GroupId == group.Group.Id )
+                                        int primaryGroupLocationId = new GroupLocationService( new RockContext() ).Queryable().Where( gl => gl.GroupId == group.Group.Id )
                                             .Select( gl => gl.LocationId ).ToList().FirstOrDefault();
                                         location = group.Locations.Where( l => l.Location.Id == primaryGroupLocationId ).FirstOrDefault();
                                     }

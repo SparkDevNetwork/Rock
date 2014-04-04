@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -221,7 +221,7 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService();
+            var entityTypeService = new EntityTypeService( new RockContext() );
             var entityTypeModel = entityTypeService.Get( type, true, null );
             return Read( entityTypeModel );
         }
@@ -260,8 +260,8 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService();
-            var entityTypeModel = entityTypeService.Get( name, createNew, null );
+            var entityTypeService = new EntityTypeService( new RockContext() );
+            var entityTypeModel = entityTypeService.Get( name, createNew );
             if ( entityTypeModel != null )
             {
                 return Read( entityTypeModel );
@@ -291,7 +291,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var entityTypeService = new EntityTypeService();
+                var entityTypeService = new EntityTypeService( new RockContext() );
                 var entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
@@ -326,7 +326,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var entityTypeService = new EntityTypeService();
+                var entityTypeService = new EntityTypeService( new RockContext() );
                 var entityTypeModel = entityTypeService.Get( guid );
                 if ( entityTypeModel != null )
                 {

@@ -17,8 +17,8 @@
 using System;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -179,7 +179,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService();
+                var definedValueService = new DefinedValueService( new RockContext() );
                 var definedValueModel = definedValueService.Get( id );
                 if ( definedValueModel != null )
                 {
@@ -231,7 +231,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService();
+                var definedValueService = new DefinedValueService( new RockContext() );
                 var definedValueModel = definedValueService.Get( guid );
                 if ( definedValueModel != null )
                 {

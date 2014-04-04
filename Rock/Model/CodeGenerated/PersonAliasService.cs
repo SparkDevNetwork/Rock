@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonAliasService"/> class
         /// </summary>
-        public PersonAliasService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonAliasService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PersonAliasService(IRepository<PersonAlias> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonAliasService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PersonAliasService(RockContext context) : base(context)
         {
@@ -127,8 +111,6 @@ namespace Rock.Model
             // ignoring CommunicationTemplate,CreatedByPersonAliasId 
             
             // ignoring CommunicationTemplate,ModifiedByPersonAliasId 
-            
-            // ignoring CommunicationTemplate,OwnerPersonAliasId 
             
             // ignoring CommunicationTemplate,SenderPersonAliasId 
             
@@ -292,7 +274,7 @@ namespace Rock.Model
             
             // ignoring PageRoute,ModifiedByPersonAliasId 
  
-            if ( new Service<PageView>().Queryable().Any( a => a.PersonAliasId == item.Id ) )
+            if ( new Service<PageView>( Context ).Queryable().Any( a => a.PersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageView.FriendlyTypeName );
                 return false;

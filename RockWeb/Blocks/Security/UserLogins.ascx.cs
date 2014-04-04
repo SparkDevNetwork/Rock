@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Security
     {
         #region Fields
 
-        int? _personId = null;
-        bool _canEdit = false;
+        private int? _personId = null;
+        private bool _canEdit = false;
 
         #endregion
 
@@ -68,7 +68,8 @@ namespace RockWeb.Blocks.Security
 
                 // Hide the person name column
                 gUserLogins.Columns[1].Visible = false;
-            } 
+            }
+
             _canEdit = IsUserAuthorized( Authorization.EDIT );
 
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
@@ -80,7 +81,7 @@ namespace RockWeb.Blocks.Security
             gUserLogins.IsDeleteEnabled = _canEdit;
             gUserLogins.GridRebind += gUserLogins_GridRebind;
 
-            if (_canEdit)
+            if ( _canEdit )
             {
                 gUserLogins.RowSelected += gUserLogins_Edit;
             }
@@ -108,8 +109,8 @@ namespace RockWeb.Blocks.Security
                     SetPasswordState();
                     mdDetails.Show();
                 }
-            } 
-            
+            }
+
             base.OnLoad( e );
         }
 
@@ -117,7 +118,12 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
-        void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        /// <summary>
+        /// Gfs the settings_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
             {
@@ -138,6 +144,7 @@ namespace RockWeb.Blocks.Security
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
+
                 case "Is Confirmed":
                 case "Is Locked Out":
                     {
@@ -146,12 +153,18 @@ namespace RockWeb.Blocks.Security
                         {
                             e.Value = value ? "Yes" : "No";
                         }
+
                         break;
                     }
             }
         }
 
-        void gfSettings_ApplyFilterClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Username", tbUserNameFilter.Text );
             gfSettings.SaveUserPreference( "Authentication Provider", compProviderFilter.SelectedValue );
@@ -198,8 +211,9 @@ namespace RockWeb.Blocks.Security
         {
             if ( _canEdit )
             {
-                var service = new UserLoginService();
-                var userLogin = service.Get( (int)e.RowKeyValue );
+                var rockContext = new RockContext();
+                var service = new UserLoginService( rockContext );
+                var userLogin = service.Get( e.RowKeyId );
 
                 if ( userLogin != null )
                 {
@@ -210,11 +224,11 @@ namespace RockWeb.Blocks.Security
                         return;
                     }
 
-                    service.Delete( userLogin, CurrentPersonAlias );
-                    service.Save( userLogin, CurrentPersonAlias );
-
+                    service.Delete( userLogin );
+                    rockContext.SaveChanges();
                 }
             }
+
             BindGrid();
         }
 
@@ -237,8 +251,9 @@ namespace RockWeb.Blocks.Security
         {
             if ( _canEdit )
             {
+                var rockContext = new RockContext();
                 UserLogin userLogin = null;
-                var service = new UserLoginService();
+                var service = new UserLoginService( rockContext );
 
                 int userLoginId = int.Parse( hfIdValue.Value );
 
@@ -263,14 +278,15 @@ namespace RockWeb.Blocks.Security
                         return;
                     }
 
-                    if (service.GetByUserName(tbUserName.Text.Trim()) != null)
+                    if ( service.GetByUserName( tbUserName.Text.Trim() ) != null )
                     {
                         nbErrorMessage.Title = "Invalid User Name";
                         nbErrorMessage.Text = "The User Name you selected already exists.  Please select a different User Name.";
                         nbErrorMessage.Visible = true;
                         return;
                     }
-                    service.Add( userLogin, CurrentPersonAlias );
+
+                    service.Add( userLogin );
                 }
 
                 userLogin.UserName = tbUserName.Text.Trim();
@@ -319,10 +335,7 @@ namespace RockWeb.Blocks.Security
                     return;
                 }
 
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    service.Save( userLogin, CurrentPersonAlias );
-                } );
+                rockContext.SaveChanges();
 
                 mdDetails.Hide();
                 BindGrid();
@@ -336,13 +349,15 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
         }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
             tbUserNameFilter.Text = gfSettings.GetUserPreference( "Username" );
@@ -353,21 +368,24 @@ namespace RockWeb.Blocks.Security
             ddlLockedOutFilter.SetValue( gfSettings.GetUserPreference( "Is Locked Out" ) );
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
-            var qry = new UserLoginService().Queryable()
+            var qry = new UserLoginService( new RockContext() ).Queryable()
                 .Where( l => !_personId.HasValue || l.PersonId == _personId.Value );
 
             // username filter
-            string usernameFilter =  gfSettings.GetUserPreference( "Username" );
-            if (!string.IsNullOrWhiteSpace(usernameFilter))
+            string usernameFilter = gfSettings.GetUserPreference( "Username" );
+            if ( !string.IsNullOrWhiteSpace( usernameFilter ) )
             {
                 qry = qry.Where( l => l.UserName.StartsWith( usernameFilter ) );
             }
 
             // provider filter
             Guid guid = Guid.Empty;
-            if (Guid.TryParse(gfSettings.GetUserPreference( "Authentication Provider" ), out guid))
+            if ( Guid.TryParse( gfSettings.GetUserPreference( "Authentication Provider" ), out guid ) )
             {
                 qry = qry.Where( l => l.EntityType.Guid.Equals( guid ) );
             }
@@ -379,6 +397,7 @@ namespace RockWeb.Blocks.Security
             {
                 qry = qry.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime.Value >= drp.LowerValue.Value );
             }
+
             if ( drp.UpperValue.HasValue )
             {
                 DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
@@ -392,6 +411,7 @@ namespace RockWeb.Blocks.Security
             {
                 qry = qry.Where( l => l.LastLoginDateTime >= drp2.LowerValue.Value );
             }
+
             if ( drp2.UpperValue.HasValue )
             {
                 DateTime upperDate = drp2.UpperValue.Value.Date.AddDays( 1 );
@@ -400,7 +420,7 @@ namespace RockWeb.Blocks.Security
 
             // Is Confirmed filter
             bool isConfirmed = false;
-            if (bool.TryParse(gfSettings.GetUserPreference( "Is Confirmed" ), out isConfirmed))
+            if ( bool.TryParse( gfSettings.GetUserPreference( "Is Confirmed" ), out isConfirmed ) )
             {
                 qry = qry.Where( l => l.IsConfirmed == isConfirmed || ( !isConfirmed && l.IsConfirmed == null ) );
             }
@@ -431,11 +451,9 @@ namespace RockWeb.Blocks.Security
                         LastLoginDateTime = l.LastLoginDateTime,
                         IsConfirmed = l.IsConfirmed,
                         IsLockedOut = l.IsLockedOut
-                    }
-                ).ToList();
+                    } ).ToList();
             gUserLogins.DataBind();
         }
-
 
         /// <summary>
         /// Shows the edit.
@@ -444,13 +462,13 @@ namespace RockWeb.Blocks.Security
         protected void ShowEdit( int userLoginId )
         {
             UserLogin userLogin = null;
-            if (userLoginId > 0)
+            if ( userLoginId > 0 )
             {
-                userLogin = new UserLoginService().Get( userLoginId );
+                userLogin = new UserLoginService( new RockContext() ).Get( userLoginId );
             }
 
-            if (userLogin == null)
-            { 
+            if ( userLogin == null )
+            {
                 userLogin = new UserLogin { Id = 0, IsConfirmed = true };
             }
 
@@ -467,8 +485,11 @@ namespace RockWeb.Blocks.Security
             SetPasswordState();
 
             mdDetails.Show();
-        }        
-        
+        }
+
+        /// <summary>
+        /// Sets the state of the password.
+        /// </summary>
         private void SetPasswordState()
         {
             tbPassword.Enabled = false;
@@ -477,12 +498,12 @@ namespace RockWeb.Blocks.Security
             tbPasswordConfirm.Required = false;
 
             var entityType = EntityTypeCache.Read( compProvider.SelectedValue.AsGuid() );
-            if (entityType != null)
+            if ( entityType != null )
             {
                 var component = AuthenticationContainer.GetComponent( entityType.Name );
-                if (component != null)
+                if ( component != null )
                 {
-                    if (component.ServiceType == AuthenticationServiceType.Internal)
+                    if ( component.ServiceType == AuthenticationServiceType.Internal )
                     {
                         tbPassword.Enabled = true;
                         tbPasswordConfirm.Enabled = true;
@@ -496,7 +517,7 @@ namespace RockWeb.Blocks.Security
                 }
             }
         }
-        
+
         #endregion
     }
 }

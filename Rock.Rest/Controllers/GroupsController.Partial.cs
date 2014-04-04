@@ -58,9 +58,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
-            var groupService = new GroupService();
-            groupService.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
-            var qry = groupService.GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
+            var qry = ((GroupService)Service).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();

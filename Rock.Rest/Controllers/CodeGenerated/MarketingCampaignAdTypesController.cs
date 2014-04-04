@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MarketingCampaignAdTypesController : Rock.Rest.ApiController<Rock.Model.MarketingCampaignAdType>
     {
-        public MarketingCampaignAdTypesController() : base( new Rock.Model.MarketingCampaignAdTypeService() ) { } 
+        public MarketingCampaignAdTypesController() : base( new Rock.Model.MarketingCampaignAdTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

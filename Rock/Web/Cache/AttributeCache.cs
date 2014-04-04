@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Security;
@@ -492,10 +492,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -503,10 +502,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }        
         
         #endregion
@@ -537,7 +535,8 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var attributeService = new Rock.Model.AttributeService();
+                var rockContext = new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {

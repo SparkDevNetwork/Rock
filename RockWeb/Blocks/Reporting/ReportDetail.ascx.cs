@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -158,7 +159,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gReport_GridRebind( object sender, EventArgs e )
         {
-            BindGrid( new ReportService().Get( hfReportId.ValueAsInt() ) );
+            BindGrid( new ReportService(new RockContext()).Get( hfReportId.ValueAsInt() ) );
         }
 
         /// <summary>
@@ -250,7 +251,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var item = new ReportService().Get( int.Parse( hfReportId.Value ) );
+            var item = new ReportService( new RockContext() ).Get( int.Parse( hfReportId.Value ) );
             ShowEditDetails( item );
         }
 
@@ -262,9 +263,9 @@ namespace RockWeb.Blocks.Reporting
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             int? categoryId = null;
-
-            var reportService = new ReportService();
-            var report = reportService.Get( int.Parse( hfReportId.Value ) );
+            var rockContext = new RockContext();
+            var reportService = new ReportService( rockContext );
+            var report = reportService.Get( hfReportId.Value.AsInteger() ?? 0 );
 
             if ( report != null )
             {
@@ -279,11 +280,8 @@ namespace RockWeb.Blocks.Reporting
                 {
                     categoryId = report.CategoryId;
 
-                    RockTransactionScope.WrapTransaction( () =>
-                    {
-                        reportService.Delete( report, CurrentPersonAlias );
-                        reportService.Save( report, CurrentPersonAlias );
-                    } );
+                    reportService.Delete( report );
+                    rockContext.SaveChanges();
 
                     // reload page, selecting the deleted data view's parent
                     var qryParams = new Dictionary<string, string>();
@@ -306,115 +304,108 @@ namespace RockWeb.Blocks.Reporting
         {
             Report report = null;
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            ReportService service = new ReportService( rockContext );
+            ReportFieldService reportFieldService = new ReportFieldService( rockContext );
+
+            int reportId = int.Parse( hfReportId.Value );
+
+            if ( reportId == 0 )
             {
-                ReportService service = new ReportService();
-                ReportFieldService reportFieldService = new ReportFieldService();
+                report = new Report();
+                report.IsSystem = false;
+            }
+            else
+            {
+                report = service.Get( reportId );
+            }
 
-                int reportId = int.Parse( hfReportId.Value );
+            report.Name = tbName.Text;
+            report.Description = tbDescription.Text;
+            report.CategoryId = cpCategory.SelectedValueAsInt();
+            report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
+            report.DataViewId = ddlDataView.SelectedValueAsInt();
 
-                if ( reportId == 0 )
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !report.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            // delete all the reportFields so we can cleanly add them
+            foreach ( var reportField in report.ReportFields.ToList() )
+            {
+                var field = reportFieldService.Get( reportField.Guid );
+                reportFieldService.Delete( field );
+            }
+
+            report.ReportFields.Clear();
+
+            var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
+            int displayOrder = 0;
+            foreach ( var panelWidget in allPanelWidgets )
+            {
+                string ddlFieldsId = panelWidget.ID + "_ddlFields";
+                RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
+                ReportFieldType reportFieldType = ReportFieldType.Property;
+                string fieldSelection = string.Empty;
+
+                string fieldSelectionValue = ddlFields.SelectedItem.Value;
+                string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
+                if ( fieldSelectionValueParts.Count() == 2 )
                 {
-                    report = new Report();
-                    report.IsSystem = false;
+                    reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
+                    fieldSelection = fieldSelectionValueParts[1];
                 }
                 else
                 {
-                    report = service.Get( reportId );
+                    // skip over fields that have nothing selected in ddlFields
+                    continue;
                 }
 
-                report.Name = tbName.Text;
-                report.Description = tbDescription.Text;
-                report.CategoryId = cpCategory.SelectedValueAsInt();
-                report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
-                report.DataViewId = ddlDataView.SelectedValueAsInt();
-                report.FetchTop = nbFetchTop.Text.AsInteger( false );
+                ReportField reportField = new ReportField();
+                reportField.ReportFieldType = reportFieldType;
 
-                if ( !Page.IsValid )
+                string showInGridCheckBoxId = string.Format( "{0}_showInGridCheckBox", panelWidget.ID );
+                RockCheckBox showInGridCheckBox = phReportFields.ControlsOfTypeRecursive<RockCheckBox>().First( a => a.ID == showInGridCheckBoxId );
+                reportField.ShowInGrid = showInGridCheckBox.Checked;
+
+                string columnHeaderTextTextBoxId = string.Format( "{0}_columnHeaderTextTextBox", panelWidget.ID );
+                RockTextBox columnHeaderTextTextBox = phReportFields.ControlsOfTypeRecursive<RockTextBox>().First( a => a.ID == columnHeaderTextTextBoxId );
+                reportField.ColumnHeaderText = columnHeaderTextTextBox.Text;
+
+                reportField.Order = displayOrder++;
+
+                if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
-                    return;
+                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
+
+                    string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
+                    DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
+
+                    string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
+                    var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
+                    reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                }
+                else
+                {
+                    reportField.Selection = fieldSelection;
                 }
 
-                if ( !report.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    // delete all the reportFields so we can cleanly add them
-                    foreach ( var reportField in report.ReportFields.ToList() )
-                    {
-                        var field = reportFieldService.Get( reportField.Guid );
-                        reportFieldService.Delete( field, this.CurrentPersonAlias );
-                        reportFieldService.Save( field, this.CurrentPersonAlias );
-                    }
-
-                    report.ReportFields.Clear();
-
-                    var allPanelWidgets = phReportFields.ControlsOfTypeRecursive<PanelWidget>();
-                    int displayOrder = 0;
-                    foreach ( var panelWidget in allPanelWidgets )
-                    {
-                        string ddlFieldsId = panelWidget.ID + "_ddlFields";
-                        RockDropDownList ddlFields = phReportFields.ControlsOfTypeRecursive<RockDropDownList>().First( a => a.ID == ddlFieldsId );
-                        ReportFieldType reportFieldType = ReportFieldType.Property;
-                        string fieldSelection = string.Empty;
-
-                        string fieldSelectionValue = ddlFields.SelectedItem.Value;
-                        string[] fieldSelectionValueParts = fieldSelectionValue.Split( '|' );
-                        if ( fieldSelectionValueParts.Count() == 2 )
-                        {
-                            reportFieldType = fieldSelectionValueParts[0].ConvertToEnum<ReportFieldType>();
-                            fieldSelection = fieldSelectionValueParts[1];
-                        }
-                        else
-                        {
-                            // skip over fields that have nothing selected in ddlFields
-                            continue;
-                        }
-
-                        ReportField reportField = new ReportField();
-                        reportField.ReportFieldType = reportFieldType;
-
-                        string showInGridCheckBoxId = string.Format( "{0}_showInGridCheckBox", panelWidget.ID );
-                        RockCheckBox showInGridCheckBox = phReportFields.ControlsOfTypeRecursive<RockCheckBox>().First( a => a.ID == showInGridCheckBoxId );
-                        reportField.ShowInGrid = showInGridCheckBox.Checked;
-
-                        string columnHeaderTextTextBoxId = string.Format( "{0}_columnHeaderTextTextBox", panelWidget.ID );
-                        RockTextBox columnHeaderTextTextBox = phReportFields.ControlsOfTypeRecursive<RockTextBox>().First( a => a.ID == columnHeaderTextTextBoxId );
-                        reportField.ColumnHeaderText = columnHeaderTextTextBox.Text;
-
-                        reportField.Order = displayOrder++;
-
-                        if ( reportFieldType == ReportFieldType.DataSelectComponent )
-                        {
-                            reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
-
-                            string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
-                            DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
-
-                            string placeHolderId = string.Format( "{0}_phDataSelectControls", panelWidget.ID );
-                            var placeHolder = phReportFields.ControlsOfTypeRecursive<PlaceHolder>().Where( a => a.ID == placeHolderId ).FirstOrDefault();
-                            reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
-                        }
-                        else
-                        {
-                            reportField.Selection = fieldSelection;
-                        }
-
-                        report.ReportFields.Add( reportField );
-                    }
-
-                    if ( report.Id.Equals( 0 ) )
-                    {
-                        service.Add( report, CurrentPersonAlias );
-                    }
-
-                    service.Save( report, CurrentPersonAlias );
-                } );
+                report.ReportFields.Add( reportField );
             }
+
+            if ( report.Id.Equals( 0 ) )
+            {
+                service.Add( report );
+            }
+
+            rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["ReportId"] = report.Id.ToString();
@@ -444,7 +435,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ReportService service = new ReportService();
+                ReportService service = new ReportService( new RockContext() );
                 Report item = service.Get( int.Parse( hfReportId.Value ) );
                 ShowReadonlyDetails( item );
             }
@@ -492,7 +483,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlEntityType.DataSource = new DataViewService().GetAvailableEntityTypes().ToList();
+            ddlEntityType.DataSource = new DataViewService( new RockContext() ).GetAvailableEntityTypes().ToList();
             ddlEntityType.DataBind();
             ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
         }
@@ -506,7 +497,7 @@ namespace RockWeb.Blocks.Reporting
             if ( entityTypeId.HasValue )
             {
                 ddlDataView.Enabled = true;
-                ddlDataView.DataSource = new DataViewService().GetByEntityTypeId( entityTypeId.Value ).ToList();
+                ddlDataView.DataSource = new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId.Value ).ToList();
                 ddlDataView.DataBind();
                 ddlDataView.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
             }
@@ -604,7 +595,7 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            var reportService = new ReportService();
+            var reportService = new ReportService( new RockContext() );
             Report report = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -896,7 +887,6 @@ namespace RockWeb.Blocks.Reporting
                             boundField.SortExpression = entityField.Name;
                             boundField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( boundField );
-
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
@@ -932,7 +922,6 @@ namespace RockWeb.Blocks.Reporting
                             boundField.Visible = reportField.ShowInGrid;
                             // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
                             gReport.Columns.Add( boundField );
-
                         }
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.DataSelectComponent )

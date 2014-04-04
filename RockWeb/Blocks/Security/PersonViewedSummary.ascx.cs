@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Person Viewed" )]
     [Category( "Security" )]
     [Description( "Block for displaying people who have viewed this person's profile and whose profile's this person has viewed. A block level attribute determines which view is displayed." )]
+
     [BooleanField( "See Profiles Viewed", "Flag indicating whether this block will show you a list of people this person has viewed or a list of people who have viewed this person (this is the default).", false )]
     [ContextAware( typeof( Person ) )]
     [LinkedPage( "Detail Page" )]
@@ -57,7 +58,7 @@ namespace RockWeb.Blocks.Security
             gViewed.DataKeyNames = new string[] { "id" };
             gViewedBy.DataKeyNames = new string[] { "id" };
             var person = ContextEntity<Person>();
-            if (person != null)
+            if ( person != null )
             {
                 personId = person.Id;
             }
@@ -73,7 +74,7 @@ namespace RockWeb.Blocks.Security
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
@@ -141,103 +142,100 @@ namespace RockWeb.Blocks.Security
         protected void BindGrid()
         {
             var showProfilesViewed = GetAttributeValue( "SeeProfilesViewed" ).AsBoolean();
+            var rockContext = new RockContext();
 
-            using ( new UnitOfWorkScope() )
+            var personViewedService = new PersonViewedService( rockContext );
+            var personService = new PersonService( rockContext );
+            if ( showProfilesViewed )
             {
+                // This grid should show the profiles viewed by this person.
+                pnlViewed.Visible = true;
+                pnlViewedBy.Visible = false;
 
-                var personViewedService = new PersonViewedService();
-                var personService = new PersonService();
-                if ( showProfilesViewed )
+                var viewedList = personViewedService.Queryable()
+                    .Where( p => p.ViewerPersonAlias != null && p.ViewerPersonAlias.PersonId == personId )
+                    .GroupBy( p => p.TargetPersonAlias.PersonId )
+                    .Select( p => new
+                    {
+                        TargetPersonId = p.Key,
+                        FirstViewed = p.Min( g => g.ViewDateTime ),
+                        LastViewed = p.Max( g => g.ViewDateTime ),
+                        ViewedCount = p.Count()
+                    } );
+
+                var pQry = personService.Queryable();
+
+                var qry = viewedList
+                    .Join( pQry, v => v.TargetPersonId, p => p.Id, ( v, p ) => new
+                    {
+                        p.Id,
+                        FullName = p.NickName + " " + p.LastName,
+                        p.BirthDate,
+                        p.Gender,
+                        FirstViewedDate = v.FirstViewed,
+                        LastViewedDate = v.LastViewed,
+                        ViewedCount = v.ViewedCount
+                    } );
+
+                SortProperty sortProperty = gViewed.SortProperty;
+                if ( sortProperty != null )
                 {
-                    // This grid should show the profiles viewed by this person.
-                    pnlViewed.Visible = true;
-                    pnlViewedBy.Visible = false;
-
-                    var viewedList = personViewedService.Queryable()
-                        .Where( p => p.ViewerPersonAlias != null && p.ViewerPersonAlias.PersonId == personId )
-                        .GroupBy( p => p.TargetPersonAlias.PersonId )
-                        .Select( p => new
-                        {
-                            TargetPersonId = p.Key,
-                            FirstViewed = p.Min( g => g.ViewDateTime ),
-                            LastViewed = p.Max( g => g.ViewDateTime ),
-                            ViewedCount = p.Count()
-                        } );
-
-                    var pQry = personService.Queryable();
-
-                    var qry = viewedList
-                        .Join( pQry, v => v.TargetPersonId, p => p.Id, ( v, p ) => new
-                        {
-                            p.Id,
-                            FullName = p.NickName + " " + p.LastName,
-                            p.BirthDate,
-                            p.Gender,
-                            FirstViewedDate = v.FirstViewed,
-                            LastViewedDate = v.LastViewed,
-                            ViewedCount = v.ViewedCount
-                        } );
-
-                    SortProperty sortProperty = gViewed.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        qry = qry.Sort( sortProperty );
-                    }
-                    else
-                    {
-                        qry = qry.OrderByDescending( q => q.LastViewedDate );
-                    }
-
-                    gViewed.DataSource = qry.ToList();
-                    gViewed.DataBind();
+                    qry = qry.Sort( sortProperty );
                 }
                 else
                 {
-                    // This grid should show the profiles that have viewed this person.
-                    pnlViewed.Visible = false;
-                    pnlViewedBy.Visible = true;
-
-                    var viewedList = personViewedService.Queryable()
-                        .Where( p => p.TargetPersonAlias != null && p.TargetPersonAlias.PersonId == personId )
-                        .GroupBy( p => p.ViewerPersonAlias.PersonId )
-                        .Select( p => new
-                        {
-                            ViewerPersonId = p.Key,
-                            FirstViewed = p.Min( g => g.ViewDateTime ),
-                            LastViewed = p.Max( g => g.ViewDateTime ),
-                            ViewedCount = p.Count()
-                        } );
-
-                    var pQry = personService.Queryable();
-
-                    var qry = viewedList
-                        .Join( pQry, v => v.ViewerPersonId, p => p.Id, ( v, p ) => new
-                        {
-                            p.Id,
-                            FullName = p.NickName + " " + p.LastName,
-                            p.BirthDate,
-                            p.Gender,
-                            FirstViewedDate = v.FirstViewed,
-                            LastViewedDate = v.LastViewed,
-                            ViewedCount = v.ViewedCount
-                        } );
-
-                    SortProperty sortProperty = gViewedBy.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        qry = qry.Sort( sortProperty );
-                    }
-                    else
-                    {
-                        qry = qry.OrderByDescending( q => q.LastViewedDate );
-                    }
-
-                    gViewedBy.DataSource = qry.ToList();
-                    gViewedBy.DataBind();
+                    qry = qry.OrderByDescending( q => q.LastViewedDate );
                 }
+
+                gViewed.DataSource = qry.ToList();
+                gViewed.DataBind();
+            }
+            else
+            {
+                // This grid should show the profiles that have viewed this person.
+                pnlViewed.Visible = false;
+                pnlViewedBy.Visible = true;
+
+                var viewedList = personViewedService.Queryable()
+                    .Where( p => p.TargetPersonAlias != null && p.TargetPersonAlias.PersonId == personId )
+                    .GroupBy( p => p.ViewerPersonAlias.PersonId )
+                    .Select( p => new
+                    {
+                        ViewerPersonId = p.Key,
+                        FirstViewed = p.Min( g => g.ViewDateTime ),
+                        LastViewed = p.Max( g => g.ViewDateTime ),
+                        ViewedCount = p.Count()
+                    } );
+
+                var pQry = personService.Queryable();
+
+                var qry = viewedList
+                    .Join( pQry, v => v.ViewerPersonId, p => p.Id, ( v, p ) => new
+                    {
+                        p.Id,
+                        FullName = p.NickName + " " + p.LastName,
+                        p.BirthDate,
+                        p.Gender,
+                        FirstViewedDate = v.FirstViewed,
+                        LastViewedDate = v.LastViewed,
+                        ViewedCount = v.ViewedCount
+                    } );
+
+                SortProperty sortProperty = gViewedBy.SortProperty;
+                if ( sortProperty != null )
+                {
+                    qry = qry.Sort( sortProperty );
+                }
+                else
+                {
+                    qry = qry.OrderByDescending( q => q.LastViewedDate );
+                }
+
+                gViewedBy.DataSource = qry.ToList();
+                gViewedBy.DataBind();
             }
         }
 
         #endregion
-}
+    }
 }

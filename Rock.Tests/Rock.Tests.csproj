@@ -84,8 +84,6 @@
     <Compile Include="Model\PageTests.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Fakes\FakeEntityTypeRepository.cs" />
-    <Compile Include="Fakes\FakeRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -99,6 +97,9 @@
       <Project>{8F8C2A79-24F4-4157-8B99-45F75FA85799}</Project>
       <Name>Rock</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Fakes\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

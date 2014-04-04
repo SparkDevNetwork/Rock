@@ -21,14 +21,13 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
@@ -36,10 +35,9 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer > Admin" )]
     [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
 
-    [ContextAware(typeof(PrayerRequest))]
+    [ContextAware( typeof( PrayerRequest ) )]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment", "Behavior", 0, "NoteType" )]
     [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 1 )]
-
     public partial class PrayerCommentDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
@@ -84,7 +82,7 @@ namespace RockWeb.Blocks.Prayer
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
 
-                    prayerComment = new NoteService().Get( int.Parse( noteId ) );
+                    prayerComment = new NoteService( new RockContext() ).Get( int.Parse( noteId ) );
                 }
                 else
                 {
@@ -97,7 +95,7 @@ namespace RockWeb.Blocks.Prayer
             if ( contextEntity != null )
             {
                 GetNoteType();
-                
+
                 if ( !Page.IsPostBack )
                 {
                     // This will produce a complete list of related context entity notes with the editible one
@@ -107,12 +105,13 @@ namespace RockWeb.Blocks.Prayer
             }
             else if ( !string.IsNullOrWhiteSpace( noteId ) && !Page.IsPostBack )
             {
-                ShowEditDetails(prayerComment); 
+                ShowEditDetails( prayerComment );
             }
-
-
         }
 
+        /// <summary>
+        /// Registers the scripts.
+        /// </summary>
         private void RegisterScripts()
         {
             // script for handling the "+add" note button.
@@ -151,9 +150,10 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void lbAddNote_Click( object sender, EventArgs e )
+        protected void lbAddNote_Click( object sender, EventArgs e )
         {
-            var service = new NoteService();
+            var rockContext = new RockContext();
+            var service = new NoteService( rockContext );
 
             var note = new Note();
             note.IsSystem = false;
@@ -171,17 +171,21 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            service.Add( note, CurrentPersonAlias );
-            service.Save( note, CurrentPersonAlias );
+            service.Add( note );
+            rockContext.SaveChanges();
 
             ShowNotes();
         }
 
+        /// <summary>
+        /// Gets the type of the note.
+        /// </summary>
         private void GetNoteType()
         {
             string noteTypeName = GetAttributeValue( "NoteType" );
 
-            var service = new NoteTypeService();
+            var rockContext = new RockContext();
+            var service = new NoteTypeService( rockContext );
             noteType = service.Get( contextEntity.TypeId, noteTypeName );
 
             // If a note type with the specified name does not exist for the context entity type, create one
@@ -193,17 +197,21 @@ namespace RockWeb.Blocks.Prayer
                 noteType.EntityTypeQualifierColumn = string.Empty;
                 noteType.EntityTypeQualifierValue = string.Empty;
                 noteType.Name = noteTypeName;
-                service.Add( noteType, CurrentPersonAlias );
-                service.Save( noteType, CurrentPersonAlias );
+                service.Add( noteType );
+                rockContext.SaveChanges();
             }
         }
 
+        /// <summary>
+        /// Shows the notes.
+        /// </summary>
         private void ShowNotes()
         {
             phNotesBefore.Controls.Clear();
             phNotesAfter.Controls.Clear();
 
-            var service = new NoteService();
+            var rockContext = new RockContext();
+            var service = new NoteService( rockContext );
 
             foreach ( var note in service.Get( noteType.Id, contextEntity.Id ) )
             {
@@ -225,7 +233,7 @@ namespace RockWeb.Blocks.Prayer
         /// Adds the note HTML in the form:
         ///    <article class="alert alert-info">
         ///    <i class="fa fa-comment"></i>
-	    ///      <div class="detail"> <strong>Name/Caption</strong> <span class="muted">relative date</span><br>
+        ///      <div class="detail"> <strong>Name/Caption</strong> <span class="muted">relative date</span><br>
         ///          <p>text</p>
         ///      </div>
         ///   </article>
@@ -234,7 +242,7 @@ namespace RockWeb.Blocks.Prayer
         private void AddNoteHtml( Note note )
         {
             var article = new HtmlGenericControl( "article" );
-            PlaceHolder phNotes = ( useTheAfterPH ) ? phNotesAfter : phNotesBefore;
+            PlaceHolder phNotes = useTheAfterPH ? phNotesAfter : phNotesBefore;
             phNotes.Controls.Add( article );
             article.AddCssClass( "alert alert-info" );
 
@@ -247,15 +255,16 @@ namespace RockWeb.Blocks.Prayer
 
             // Add the name/caption
             string caption = note.Caption;
-            if (string.IsNullOrWhiteSpace(caption) && note.CreatedByPersonAlias != null && note.CreatedByPersonAlias.Person != null )
+            if ( string.IsNullOrWhiteSpace( caption ) && note.CreatedByPersonAlias != null && note.CreatedByPersonAlias.Person != null )
             {
                 caption = note.CreatedByPersonAlias.Person.FullName;
             }
+
             divDetail.Controls.Add( new LiteralControl( string.Format( "<strong>{0}</strong> <span class='text-muted'>{1}</span>", caption, note.CreatedDateTime.ToRelativeDateString() ) ) );
 
-            var pText = new HtmlGenericControl( "p" );
-            divDetail.Controls.Add( pText );
-            pText.Controls.Add( new LiteralControl( HttpUtility.HtmlEncode( note.Text ) ) );
+            var paragraphText = new HtmlGenericControl( "p" );
+            divDetail.Controls.Add( paragraphText );
+            paragraphText.Controls.Add( new LiteralControl( HttpUtility.HtmlEncode( note.Text ) ) );
         }
 
         /// <summary>
@@ -268,6 +277,11 @@ namespace RockWeb.Blocks.Prayer
             ShowEditDetails( prayerComment );
         }
 
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             if ( !itemKey.Equals( PrayerCommentKeyParameter ) )
@@ -279,14 +293,22 @@ namespace RockWeb.Blocks.Prayer
 
         #region View & Edit Details
 
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
         private void ShowReadonlyDetails( PrayerRequest prayerRequest )
         {
             SetEditMode( false );
         }
 
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="prayerComment">The prayer comment.</param>
         private void ShowEditDetails( Note prayerComment )
         {
-            SetEditMode(true);
+            SetEditMode( true );
 
             useTheAfterPH = true;
             fieldsetEditDetails.Visible = true;
@@ -301,26 +323,35 @@ namespace RockWeb.Blocks.Prayer
         /// Sets the edit mode.
         /// </summary>
         /// <param name="enableEdit">if set to <c>true</c> [enable edit].</param>
-        private void SetEditMode(bool enableEdit)
+        private void SetEditMode( bool enableEdit )
         {
             fieldsetEditDetails.Visible = enableEdit;
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             SaveNote();
-            NavigateToParentPage();     
+            NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Saves the note.
+        /// </summary>
         private void SaveNote()
         {
-            int noteId = 0;
-            if ( ! int.TryParse( hfNoteId.Value, out noteId ) )
+            int noteId = hfNoteId.Value.AsInteger() ?? 0;
+            if ( noteId == 0 )
             {
                 return;
             }
 
-            NoteService noteService = new NoteService();
+            var rockContext = new RockContext();
+            NoteService noteService = new NoteService( rockContext );
             Note note = noteService.Get( noteId );
             if ( note != null )
             {
@@ -338,14 +369,20 @@ namespace RockWeb.Blocks.Prayer
                     return;
                 }
 
-                noteService.Save( note, CurrentPersonAlias );
+                rockContext.SaveChanges();
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();       
+            NavigateToParentPage();
         }
+
         #endregion
     }
 }

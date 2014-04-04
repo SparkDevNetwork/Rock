@@ -32,9 +32,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="attributeId">A <see cref="System.Int32" /> that represents the AttributeId of the <see cref="Rock.Model.Attribute"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by the specified <see cref="Rock.Model.Attribute"/>.</returns>
-        public IEnumerable<AttributeValue> GetByAttributeId( int attributeId )
+        public IQueryable<AttributeValue> GetByAttributeId( int attributeId )
         {
-            return Repository.Find( t => t.AttributeId == attributeId );
+            return Queryable().Where( t => t.AttributeId == attributeId );
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace Rock.Model
         /// <param name="attributeId">Attribute Id.</param>
         /// <param name="entityId">Entity Id.</param>
         /// <returns>An enumerable list of AttributeValue objects.</returns>
-        public IEnumerable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
+        public IQueryable<AttributeValue> GetByAttributeIdAndEntityId( int attributeId, int? entityId )
         {
-            return Repository.Find( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Queryable().Where( t => t.AttributeId == attributeId && ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityId">A <see cref="System.Int32"/> representing the EntityId to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.AttributeValue">AttributeValues</see> by EntityId.</returns>
-        public IEnumerable<AttributeValue> GetByEntityId( int? entityId )
+        public IQueryable<AttributeValue> GetByEntityId( int? entityId )
         {
-            return Repository.Find( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+            return Queryable().Where( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.AttributeValue" /> of the global <see cref="Rock.Model.Attribute"/>.</returns>
         public AttributeValue GetGlobalAttributeValue( string key )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( v =>
                     !v.Attribute.EntityTypeId.HasValue &&
                     v.Attribute.EntityTypeQualifierColumn == string.Empty &&
@@ -75,38 +75,5 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
-        /// <summary>
-        /// Saves the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        public override bool Save( AttributeValue item, PersonAlias personAlias )
-        {
-            var attribute = item.Attribute ?? new AttributeService( this.RockContext ).Get( item.AttributeId );
-            
-            if ( attribute != null )
-            {
-                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
-                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
-
-                if ( attribute.FieldTypeId == fieldTypeImage.Id || attribute.FieldTypeId == fieldTypeBinaryFile.Id )
-                {
-                    int? binaryFileId = item.Value.AsInteger();
-                    if ( binaryFileId.HasValue )
-                    {
-                        BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
-                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
-                        if ( binaryFile != null && binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-                    }
-                }
-            }
-
-            return base.Save( item, personAlias );
-        }
     }
 }

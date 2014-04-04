@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -666,14 +667,10 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if (rockPage != null && NoteTypeId.HasValue)
             {
-                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
-                if (currentPerson != null)
-                {
-                    personAlias = currentPerson.PrimaryAlias;
-                }
 
-                var service = new NoteService();
+                var rockContext = new RockContext();
+                var service = new NoteService( rockContext );
                 Note note = null;
 
                 if ( NoteId.HasValue )
@@ -692,28 +689,28 @@ namespace Rock.Web.UI.Controls
                     note.NoteTypeId = NoteTypeId.Value;
                     note.EntityId = EntityId;
                     note.SourceTypeValueId = SourceTypeValueId;
-                    service.Add( note, personAlias );
+                    service.Add( note );
                 }
 
                 note.Caption = IsPrivate ? "You - Personal Note" : string.Empty;
                 note.Text = Text;
                 note.IsAlert = IsAlert;
 
-                service.Save( note, personAlias );
+                rockContext.SaveChanges();
 
                 if ( newNote )
                 {
-                    note.AllowPerson( Authorization.EDIT, currentPerson, personAlias );
+                    note.AllowPerson( Authorization.EDIT, currentPerson );
                 }
 
                 if ( IsPrivate && !note.IsPrivate( Authorization.VIEW, currentPerson ) )
                 {
-                    note.MakePrivate( Authorization.VIEW, currentPerson, personAlias );
+                    note.MakePrivate( Authorization.VIEW, currentPerson );
                 }
 
                 if ( !IsPrivate && note.IsPrivate( Authorization.VIEW, currentPerson ) )
                 {
-                    note.MakeUnPrivate( Authorization.VIEW, currentPerson, personAlias );
+                    note.MakeUnPrivate( Authorization.VIEW, currentPerson );
                 }
 
 
@@ -734,14 +731,10 @@ namespace Rock.Web.UI.Controls
             var rockPage = this.Page as RockPage;
             if ( rockPage != null )
             {
-                PersonAlias personAlias = null;
                 var currentPerson = rockPage.CurrentPerson;
-                if ( currentPerson != null )
-                {
-                    personAlias = currentPerson.PrimaryAlias;
-                }
 
-                var service = new NoteService();
+                var rockContext = new RockContext();
+                var service = new NoteService( rockContext );
                 Note note = null;
 
                 if ( NoteId.HasValue )
@@ -749,9 +742,8 @@ namespace Rock.Web.UI.Controls
                     note = service.Get( NoteId.Value );
                     if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
-                        service.Delete( note, personAlias );
-                        service.Save( note, personAlias );
-
+                        service.Delete( note );
+                        rockContext.SaveChanges();
                     }
                 }
 

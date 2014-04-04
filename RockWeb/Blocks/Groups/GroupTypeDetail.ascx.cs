@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -91,6 +92,7 @@ namespace RockWeb.Blocks.Groups
             {
                 return ViewState["GroupTypeAttributesInheritedState"] as List<InheritedAttribute>;
             }
+
             set
             {
                 ViewState["GroupTypeAttributesInheritedState"] = value;
@@ -128,6 +130,7 @@ namespace RockWeb.Blocks.Groups
             {
                 return ViewState["GroupAttributesInheritedState"] as List<InheritedAttribute>;
             }
+
             set
             {
                 ViewState["GroupAttributesInheritedState"] = value;
@@ -165,6 +168,7 @@ namespace RockWeb.Blocks.Groups
             {
                 return ViewState["GroupMemberAttributesInheritedState"] as List<InheritedAttribute>;
             }
+
             set
             {
                 ViewState["GroupMemberAttributesInheritedState"] = value;
@@ -209,12 +213,18 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Gets or sets the default role unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default role unique identifier.
+        /// </value>
         protected Guid DefaultRoleGuid
         {
-            get 
-            { 
+            get
+            {
                 object value = ViewState["DefaultRoleGuid"];
-                if (value != null)
+                if ( value != null )
                 {
                     return (Guid)value;
                 }
@@ -223,9 +233,10 @@ namespace RockWeb.Blocks.Groups
                     return Guid.Empty;
                 }
             }
-            set 
-            { 
-                ViewState["DefaultRoleGuid"] = value; 
+
+            set
+            {
+                ViewState["DefaultRoleGuid"] = value;
             }
         }
 
@@ -372,7 +383,7 @@ namespace RockWeb.Blocks.Groups
             int? groupTypeId = PageParameter( pageReference, "groupTypeId" ).AsInteger();
             if ( groupTypeId != null )
             {
-                GroupType groupType = new GroupTypeService().Get( groupTypeId.Value );
+                GroupType groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId.Value );
                 if ( groupType != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( groupType.Name, pageReference ) );
@@ -404,145 +415,141 @@ namespace RockWeb.Blocks.Groups
         protected void btnSave_Click( object sender, EventArgs e )
         {
             GroupType groupType;
+            var rockContext = new RockContext();
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+            GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
+            AttributeQualifierService qualifierService = new AttributeQualifierService( rockContext );
+            CategoryService categoryService = new CategoryService( rockContext );
 
-            using ( new UnitOfWorkScope() )
+            int groupTypeId = int.Parse( hfGroupTypeId.Value );
+
+            if ( groupTypeId == 0 )
             {
-                GroupTypeService groupTypeService = new GroupTypeService();
-                GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService();
-                AttributeService attributeService = new AttributeService();
-                AttributeQualifierService qualifierService = new AttributeQualifierService();
-                CategoryService categoryService = new CategoryService();
+                groupType = new GroupType();
+                groupTypeService.Add( groupType );
+            }
+            else
+            {
+                groupType = groupTypeService.Get( groupTypeId );
 
-                int groupTypeId = int.Parse( hfGroupTypeId.Value );
-
-                if ( groupTypeId == 0 )
+                // selected roles
+                var selectedRoleGuids = GroupTypeRolesState.Select( r => r.Guid );
+                foreach ( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid ) ).ToList() )
                 {
-                    groupType = new GroupType();
-                    groupTypeService.Add( groupType, CurrentPersonAlias );
+                    groupType.Roles.Remove( role );
+                    groupTypeRoleService.Delete( role );
+                }
+            }
+
+            foreach ( var roleState in GroupTypeRolesState )
+            {
+                GroupTypeRole role = groupType.Roles.Where( r => r.Guid == roleState.Guid ).FirstOrDefault();
+                if ( role == null )
+                {
+                    role = new GroupTypeRole();
+                    groupType.Roles.Add( role );
                 }
                 else
                 {
-                    groupType = groupTypeService.Get( groupTypeId );
-
-                    // selected roles
-                    var selectedRoleGuids = GroupTypeRolesState.Select( r => r.Guid );
-                    foreach ( var role in groupType.Roles.Where( r => !selectedRoleGuids.Contains( r.Guid ) ).ToList() )
-                    {
-                        groupType.Roles.Remove( role );
-                        groupTypeRoleService.Delete( role, CurrentPersonAlias );
-                    }
+                    roleState.Id = role.Id;
+                    roleState.Guid = role.Guid;
                 }
 
-                foreach ( var roleState in GroupTypeRolesState )
-                {
-                    GroupTypeRole role = groupType.Roles.Where( r => r.Guid == roleState.Guid ).FirstOrDefault();
-                    if ( role == null )
-                    {
-                        role = new GroupTypeRole();
-                        groupType.Roles.Add( role );
-                    }
-                    else
-                    {
-                        roleState.Id = role.Id;
-                        roleState.Guid = role.Guid;
-                    }
-
-                    role.CopyPropertiesFrom( roleState );
-                }
-
-                GroupLocationPickerMode locationSelectionMode = GroupLocationPickerMode.None;
-                foreach(ListItem li in cblLocationSelectionModes.Items)
-                {
-                    if ( li.Selected )
-                    {
-                        locationSelectionMode = locationSelectionMode | (GroupLocationPickerMode)li.Value.AsInteger().Value;
-                    }
-                }
-
-                groupType.Name = tbName.Text;
-                groupType.Description = tbDescription.Text;
-                groupType.GroupTerm = tbGroupTerm.Text;
-                groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
-                groupType.ShowInGroupList = cbShowInGroupList.Checked;
-                groupType.ShowInNavigation = cbShowInNavigation.Checked;
-                groupType.IconCssClass = tbIconCssClass.Text;
-                groupType.TakesAttendance = cbTakesAttendance.Checked;
-                groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
-                groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
-                groupType.LocationSelectionMode = locationSelectionMode;
-                groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
-                groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
-                groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
-
-                groupType.ChildGroupTypes = new List<GroupType>();
-                groupType.ChildGroupTypes.Clear();
-                foreach ( var item in ChildGroupTypesDictionary )
-                {
-                    var childGroupType = groupTypeService.Get( item.Key );
-                    if ( childGroupType != null )
-                    {
-                        groupType.ChildGroupTypes.Add( childGroupType );
-                    }
-                }
-
-                DefinedValueService definedValueService = new DefinedValueService();
-
-                groupType.LocationTypes = new List<GroupTypeLocationType>();
-                groupType.LocationTypes.Clear();
-                foreach ( var item in LocationTypesDictionary )
-                {
-                    var locationType = definedValueService.Get( item.Key );
-                    if ( locationType != null )
-                    {
-                        groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
-                    }
-                }
-
-                if ( !groupType.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                    {
-                        groupTypeService.Save( groupType, CurrentPersonAlias );
-
-                        /* Save Attributes */
-                        string qualifierValue = groupType.Id.ToString();
-                        SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, attributeService, qualifierService, categoryService );
-                        SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, attributeService, qualifierService, categoryService );
-                        SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, attributeService, qualifierService, categoryService );
-
-                        // Reload to save default role
-                        groupType = groupTypeService.Get( groupType.Id );
-                        groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( DefaultRoleGuid ) );
-                        if ( groupType.DefaultGroupRole == null )
-                        {
-                            groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault();
-                        }
-                        groupTypeService.Save( groupType, CurrentPersonAlias );
-
-                        // Reload the roles and apply their attribute values
-                        foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
-                        {
-                            role.LoadAttributes();
-                            var roleState = GroupTypeRolesState.Where( r => r.Guid.Equals( role.Guid ) ).FirstOrDefault();
-                            if ( roleState != null && roleState.AttributeValues != null )
-                            {
-                                foreach ( var attributeValue in roleState.AttributeValues )
-                                {
-                                    role.SetAttributeValue( attributeValue.Key, roleState.GetAttributeValue( attributeValue.Key ) );
-                                }
-                                role.SaveAttributeValues( CurrentPersonAlias );
-                            }
-                        }
-
-                    } );
-
-                GroupTypeCache.Flush( groupType.Id );
-
+                role.CopyPropertiesFrom( roleState );
             }
+
+            GroupLocationPickerMode locationSelectionMode = GroupLocationPickerMode.None;
+            foreach ( ListItem li in cblLocationSelectionModes.Items )
+            {
+                if ( li.Selected )
+                {
+                    locationSelectionMode = locationSelectionMode | (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                }
+            }
+
+            groupType.Name = tbName.Text;
+            groupType.Description = tbDescription.Text;
+            groupType.GroupTerm = tbGroupTerm.Text;
+            groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
+            groupType.ShowInGroupList = cbShowInGroupList.Checked;
+            groupType.ShowInNavigation = cbShowInNavigation.Checked;
+            groupType.IconCssClass = tbIconCssClass.Text;
+            groupType.TakesAttendance = cbTakesAttendance.Checked;
+            groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
+            groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.LocationSelectionMode = locationSelectionMode;
+            groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
+            groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
+            groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
+
+            groupType.ChildGroupTypes = new List<GroupType>();
+            groupType.ChildGroupTypes.Clear();
+            foreach ( var item in ChildGroupTypesDictionary )
+            {
+                var childGroupType = groupTypeService.Get( item.Key );
+                if ( childGroupType != null )
+                {
+                    groupType.ChildGroupTypes.Add( childGroupType );
+                }
+            }
+
+            DefinedValueService definedValueService = new DefinedValueService( rockContext );
+
+            groupType.LocationTypes = new List<GroupTypeLocationType>();
+            groupType.LocationTypes.Clear();
+            foreach ( var item in LocationTypesDictionary )
+            {
+                var locationType = definedValueService.Get( item.Key );
+                if ( locationType != null )
+                {
+                    groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
+                }
+            }
+
+            if ( !groupType.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            // need WrapTransaction due to Attribute saves    
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                /* Save Attributes */
+                string qualifierValue = groupType.Id.ToString();
+                SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, rockContext );
+                SaveAttributes( new Group().TypeId, "GroupTypeId", qualifierValue, GroupAttributesState, rockContext );
+                SaveAttributes( new GroupMember().TypeId, "GroupTypeId", qualifierValue, GroupMemberAttributesState, rockContext );
+
+                // Reload to save default role
+                groupType = groupTypeService.Get( groupType.Id );
+                groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault( r => r.Guid.Equals( DefaultRoleGuid ) );
+                if ( groupType.DefaultGroupRole == null )
+                {
+                    groupType.DefaultGroupRole = groupType.Roles.FirstOrDefault();
+                }
+
+                rockContext.SaveChanges();
+
+                // Reload the roles and apply their attribute values
+                foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
+                {
+                    role.LoadAttributes();
+                    var roleState = GroupTypeRolesState.Where( r => r.Guid.Equals( role.Guid ) ).FirstOrDefault();
+                    if ( roleState != null && roleState.AttributeValues != null )
+                    {
+                        foreach ( var attributeValue in roleState.AttributeValues )
+                        {
+                            role.SetAttributeValue( attributeValue.Key, roleState.GetAttributeValue( attributeValue.Key ) );
+                        }
+
+                        role.SaveAttributeValues( rockContext );
+                    }
+                }
+            } );
+
+            GroupTypeCache.Flush( groupType.Id );
 
             NavigateToParentPage();
         }
@@ -568,12 +575,10 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gtpInheritedGroupType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
-            {
-                var groupTypeService = new GroupTypeService();
-                var attributeService = new AttributeService();
-                BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
-            }
+            var rockContext = new RockContext();
+            var groupTypeService = new GroupTypeService( rockContext );
+            var attributeService = new AttributeService( rockContext );
+            BindInheritedAttributes( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService );
         }
 
         #endregion
@@ -602,7 +607,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                groupType = new GroupTypeService().Get( itemKeyValue );
+                groupType = new GroupTypeService( new RockContext() ).Get( itemKeyValue );
                 editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else
@@ -653,6 +658,10 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
         private void ShowEditDetails( GroupType groupType )
         {
             hlType.Visible = false;
@@ -672,105 +681,105 @@ namespace RockWeb.Blocks.Groups
 
             SetEditMode( true );
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            var groupTypeService = new GroupTypeService( rockContext );
+            var attributeService = new AttributeService( rockContext );
+
+            LoadDropDowns( groupType.Id );
+
+            // General
+            tbName.ReadOnly = groupType.IsSystem;
+            tbName.Text = groupType.Name;
+
+            tbDescription.ReadOnly = groupType.IsSystem;
+            tbDescription.Text = groupType.Description;
+
+            tbGroupTerm.ReadOnly = groupType.IsSystem;
+            tbGroupTerm.Text = groupType.GroupTerm;
+
+            tbGroupMemberTerm.ReadOnly = groupType.IsSystem;
+            tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
+
+            ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
+            ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
+
+            ChildGroupTypesDictionary = new Dictionary<int, string>();
+            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
+            BindChildGroupTypesGrid();
+
+            // Display
+            cbShowInGroupList.Checked = groupType.ShowInGroupList;
+            cbShowInNavigation.Checked = groupType.ShowInNavigation;
+            tbIconCssClass.Text = groupType.IconCssClass;
+
+            // Locations
+            cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
+            cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
+
+            cblLocationSelectionModes.Enabled = !groupType.IsSystem;
+            cblLocationSelectionModes.Enabled = true;
+            foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
-                var groupTypeService = new GroupTypeService();
-                var attributeService = new AttributeService();
-
-                LoadDropDowns( groupType.Id );
-
-                // General
-                tbName.ReadOnly = groupType.IsSystem;
-                tbName.Text = groupType.Name;
-
-                tbDescription.ReadOnly = groupType.IsSystem;
-                tbDescription.Text = groupType.Description;
-
-                tbGroupTerm.ReadOnly = groupType.IsSystem;
-                tbGroupTerm.Text = groupType.GroupTerm;
-
-                tbGroupMemberTerm.ReadOnly = groupType.IsSystem;
-                tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
-
-                ddlGroupTypePurpose.Enabled = !groupType.IsSystem;
-                ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
-
-                ChildGroupTypesDictionary = new Dictionary<int, string>();
-                groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
-                BindChildGroupTypesGrid();
-
-                // Display
-                cbShowInGroupList.Checked = groupType.ShowInGroupList;
-                cbShowInNavigation.Checked = groupType.ShowInNavigation;
-                tbIconCssClass.Text = groupType.IconCssClass;
-
-                // Locations
-                cbAllowMultipleLocations.Enabled = !groupType.IsSystem;
-                cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
-
-                cblLocationSelectionModes.Enabled = !groupType.IsSystem;
-                cblLocationSelectionModes.Enabled = true;
-                foreach(ListItem li in cblLocationSelectionModes.Items)
-                {
-                    GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger().Value;
-                    li.Selected = (groupType.LocationSelectionMode & mode) == mode;
-                }
-
-                LocationTypesDictionary = new Dictionary<int, string>();
-                groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
-                BindLocationTypesGrid();
-
-                // Check In
-                cbTakesAttendance.Checked = groupType.TakesAttendance;
-                ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
-                ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
-
-                // Attributes
-                gtpInheritedGroupType.Enabled = !groupType.IsSystem;
-                gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
-
-                GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
-                foreach(var role in groupType.Roles)
-                {
-                    role.LoadAttributes();
-                    GroupTypeRolesState.Add( role );
-                }
-                BindGroupTypeRolesGrid();
-
-                string qualifierValue = groupType.Id.ToString();
-
-                GroupTypeAttributesState = new ViewStateList<Attribute>();
-                GroupTypeAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList() );
-                BindGroupTypeAttributesGrid();
-
-                GroupAttributesState = new ViewStateList<Attribute>();
-                GroupAttributesState.AddAll( attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList() );
-                BindGroupAttributesGrid();
-
-                GroupMemberAttributesState = new ViewStateList<Attribute>();
-                GroupMemberAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
-                    .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                        a.EntityTypeQualifierValue.Equals( qualifierValue ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList() );
-                BindGroupMemberAttributesGrid();
-
-                BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
+                GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                li.Selected = ( groupType.LocationSelectionMode & mode ) == mode;
             }
+
+            LocationTypesDictionary = new Dictionary<int, string>();
+            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+            BindLocationTypesGrid();
+
+            // Check In
+            cbTakesAttendance.Checked = groupType.TakesAttendance;
+            ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
+            ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
+
+            // Attributes
+            gtpInheritedGroupType.Enabled = !groupType.IsSystem;
+            gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
+
+            GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
+            foreach ( var role in groupType.Roles )
+            {
+                role.LoadAttributes();
+                GroupTypeRolesState.Add( role );
+            }
+
+            BindGroupTypeRolesGrid();
+
+            string qualifierValue = groupType.Id.ToString();
+
+            GroupTypeAttributesState = new ViewStateList<Attribute>();
+            GroupTypeAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList() );
+            BindGroupTypeAttributesGrid();
+
+            GroupAttributesState = new ViewStateList<Attribute>();
+            GroupAttributesState.AddAll( attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList() );
+            BindGroupAttributesGrid();
+
+            GroupMemberAttributesState = new ViewStateList<Attribute>();
+            GroupMemberAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList() );
+            BindGroupMemberAttributesGrid();
+
+            BindInheritedAttributes( groupType.InheritedGroupTypeId, groupTypeService, attributeService );
         }
 
         /// <summary>
@@ -796,7 +805,7 @@ namespace RockWeb.Blocks.Groups
             lGroupTypeDescription.Text = groupType.Description;
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "", "" );
+            descriptionList.Add( string.Empty, string.Empty );
             lblMainDetails.Text = descriptionList.Html;
         }
 
@@ -827,11 +836,12 @@ namespace RockWeb.Blocks.Groups
             cblLocationSelectionModes.Items.Add( new ListItem( "Geo-fence", "8" ) );
             cblLocationSelectionModes.Items.Add( new ListItem( "Group Member Address", "16" ) );
 
-            gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
+            var rockContext = new RockContext();
+            gtpInheritedGroupType.GroupTypes = new GroupTypeService( rockContext ).Queryable()
                 .Where( g => g.Id != groupTypeId )
                 .ToList();
 
-            var groupTypePurposeList = new DefinedValueService().GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Name ).ToList();
+            var groupTypePurposeList = new DefinedValueService( rockContext ).GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ) ).OrderBy( a => a.Name ).ToList();
 
             ddlGroupTypePurpose.Items.Clear();
             ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
@@ -841,12 +851,21 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( string dialog, bool setValues = false )
         {
             hfActiveDialog.Value = dialog.ToUpper().Trim();
             ShowDialog( setValues );
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void ShowDialog( bool setValues = false )
         {
             switch ( hfActiveDialog.Value )
@@ -880,6 +899,9 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
         private void HideDialog()
         {
             switch ( hfActiveDialog.Value )
@@ -907,6 +929,12 @@ namespace RockWeb.Blocks.Groups
             hfActiveDialog.Value = string.Empty;
         }
 
+        /// <summary>
+        /// Binds the inherited attributes.
+        /// </summary>
+        /// <param name="inheritedGroupTypeId">The inherited group type identifier.</param>
+        /// <param name="groupTypeService">The group type service.</param>
+        /// <param name="attributeService">The attribute service.</param>
         private void BindInheritedAttributes( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService )
         {
             GroupTypeAttributesInheritedState = new List<InheritedAttribute>();
@@ -928,8 +956,11 @@ namespace RockWeb.Blocks.Groups
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
-                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                        GroupTypeAttributesInheritedState.Add( new InheritedAttribute(
+                            attribute.Name,
+                            attribute.Description,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
+                            inheritedGroupType.Name ) );
                     }
 
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
@@ -940,8 +971,11 @@ namespace RockWeb.Blocks.Groups
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
-                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                        GroupAttributesInheritedState.Add( new InheritedAttribute(
+                            attribute.Name,
+                            attribute.Description,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
+                            inheritedGroupType.Name ) );
                     }
 
                     foreach ( var attribute in attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
@@ -952,8 +986,11 @@ namespace RockWeb.Blocks.Groups
                         .ThenBy( a => a.Name )
                         .ToList() )
                     {
-                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute( attribute.Name, attribute.Description,
-                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ), inheritedGroupType.Name ) );
+                        GroupMemberAttributesInheritedState.Add( new InheritedAttribute(
+                            attribute.Name,
+                            attribute.Description,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
+                            inheritedGroupType.Name ) );
                     }
 
                     inheritedGroupTypeId = inheritedGroupType.InheritedGroupTypeId;
@@ -969,12 +1006,22 @@ namespace RockWeb.Blocks.Groups
             BindGroupMemberAttributesInheritedGrid();
         }
 
+        /// <summary>
+        /// Sets the group type role list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
         private void SetGroupTypeRoleListOrder( ViewStateList<GroupTypeRole> itemList )
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
         }
 
+        /// <summary>
+        /// Reorders the group type role list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
         private void ReorderGroupTypeRoleList( ViewStateList<GroupTypeRole> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
@@ -1000,12 +1047,23 @@ namespace RockWeb.Blocks.Groups
                 movedItem.Order = newIndex;
             }
         }
+
+        /// <summary>
+        /// Sets the attribute list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
         private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
         }
 
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
         private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
@@ -1032,27 +1090,35 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes,
-            AttributeService attributeService, AttributeQualifierService qualifierService, CategoryService categoryService )
+        /// <summary>
+        /// Saves the attributes.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="qualifierColumn">The qualifier column.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <param name="viewStateAttributes">The view state attributes.</param>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="qualifierService">The qualifier service.</param>
+        /// <param name="categoryService">The category service.</param>
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
             var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
 
             // Delete any of those attributes that were removed in the UI
             var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
                 Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-
-                attributeService.Delete( attr, CurrentPersonAlias );
-                attributeService.Save( attr, CurrentPersonAlias );
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, attributeService, qualifierService, categoryService,
-                    entityTypeId, qualifierColumn, qualifierValue, CurrentPersonAlias );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
             }
         }
 
@@ -1108,14 +1174,18 @@ namespace RockWeb.Blocks.Groups
 
             string groupTerm = string.IsNullOrWhiteSpace( tbGroupTerm.Text ) ? "Group" : tbGroupTerm.Text;
             string memberTerm = string.IsNullOrWhiteSpace( tbGroupMemberTerm.Text ) ? "Member" : tbGroupMemberTerm.Text;
-            
-            nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : "";
-            nbMinimumRequired.Help = string.Format( "The minimum number of {0} in this {1} that are required to have this role.",
-                memberTerm.Pluralize(), groupTerm );
 
-            nbMaximumAllowed.Text = groupTypeRole.MaxCount.HasValue ? groupTypeRole.MaxCount.ToString() : "";
-            nbMaximumAllowed.Help = string.Format( "The maximum number of {0} in this {1} that are allowed to have this role.",
-                memberTerm.Pluralize(), groupTerm );
+            nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
+            nbMinimumRequired.Help = string.Format(
+                "The minimum number of {0} in this {1} that are required to have this role.",
+                memberTerm.Pluralize(),
+                groupTerm );
+
+            nbMaximumAllowed.Text = groupTypeRole.MaxCount.HasValue ? groupTypeRole.MaxCount.ToString() : string.Empty;
+            nbMaximumAllowed.Help = string.Format(
+                "The maximum number of {0} in this {1} that are allowed to have this role.",
+                memberTerm.Pluralize(),
+                groupTerm );
 
             ShowDialog( "GroupTypeRoles", true );
         }
@@ -1255,7 +1325,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gChildGroupTypes_Add( object sender, EventArgs e )
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
+            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
             int currentGroupTypeId = int.Parse( hfGroupTypeId.Value );
 
             // populate dropdown with all grouptypes that aren't already childgroups
@@ -1284,7 +1354,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gChildGroupTypes_Delete( object sender, RowEventArgs e )
         {
-            int childGroupTypeId = (int)e.RowKeyValue;
+            int childGroupTypeId = e.RowKeyId;
             ChildGroupTypesDictionary.Remove( childGroupTypeId );
             BindChildGroupTypesGrid();
         }
@@ -1331,7 +1401,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocationTypes_Add( object sender, EventArgs e )
         {
-            DefinedValueService definedValueService = new DefinedValueService();
+            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
 
             // populate dropdown with all locationtypes that aren't already locationtypes
             var qry = from dlt in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE ) )
@@ -1359,7 +1429,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gLocationTypes_Delete( object sender, RowEventArgs e )
         {
-            int locationTypeId = (int)e.RowKeyValue;
+            int locationTypeId = e.RowKeyId;
             LocationTypesDictionary.Remove( locationTypeId );
             BindLocationTypesGrid();
         }
@@ -1478,6 +1548,7 @@ namespace RockWeb.Blocks.Groups
         {
             BindGroupTypeAttributesInheritedGrid();
         }
+
         /// <summary>
         /// Handles the GridRebind event of the gGroupTypeAttributes control.
         /// </summary>
@@ -1808,7 +1879,6 @@ namespace RockWeb.Blocks.Groups
             gGroupMemberAttributesInherited.DataSource = GroupMemberAttributesInheritedState;
             gGroupMemberAttributesInherited.DataBind();
             rcGroupMemberAttributesInherited.Visible = GroupMemberAttributesInheritedState.Any();
-
         }
 
         /// <summary>

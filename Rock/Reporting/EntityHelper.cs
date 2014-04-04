@@ -132,7 +132,8 @@ namespace Rock.Reporting
 
             // Get Attributes
             int entityTypeId = EntityTypeCache.Read( entityType ).Id;
-            foreach ( var attribute in new AttributeService().Get( entityTypeId, string.Empty, string.Empty ) )
+            var rockContext = new RockContext();
+            foreach ( var attribute in new AttributeService( rockContext ).Get( entityTypeId, string.Empty, string.Empty ) )
             {
                 // Ensure prop name is unique
                 string propName = attribute.Name;

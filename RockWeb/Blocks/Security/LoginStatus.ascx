@@ -17,5 +17,5 @@
         </ul>
     </li>
 </ul>
-<asp:HiddenField ID="hfTest" runat="server" />
+<asp:HiddenField ID="hfActionType" runat="server" />
 

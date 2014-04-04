@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupService"/> class
         /// </summary>
-        public GroupService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public GroupService(IRepository<Group> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public GroupService(RockContext context) : base(context)
         {
@@ -68,19 +52,19 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Group>().Queryable().Any( a => a.ParentGroupId == item.Id ) )
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<MarketingCampaign>().Queryable().Any( a => a.EventGroupId == item.Id ) )
+            if ( new Service<MarketingCampaign>( Context ).Queryable().Any( a => a.EventGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Person>().Queryable().Any( a => a.GivingGroupId == item.Id ) )
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;

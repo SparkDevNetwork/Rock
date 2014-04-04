@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
         /// </summary>
-        public ExceptionLogService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public ExceptionLogService(IRepository<ExceptionLog> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ExceptionLogService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public ExceptionLogService(RockContext context) : base(context)
         {

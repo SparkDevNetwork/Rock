@@ -21,6 +21,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -143,7 +144,7 @@ namespace Rock.Storage.Provider
         /// </value>
         private string GetRootPath( int binaryFileTypeId )
         {
-            BinaryFileType binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId );
+            BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId );
             binaryFileType.LoadAttributes();
             string rootPath = binaryFileType.GetAttributeValue( "RootPath" );
             return rootPath;

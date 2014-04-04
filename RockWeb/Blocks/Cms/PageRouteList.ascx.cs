@@ -103,26 +103,25 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            PageRouteService pageRouteService = new PageRouteService( rockContext );
+            PageRoute pageRoute = pageRouteService.Get( (int)e.RowKeyValue );
+
+            if ( pageRoute != null )
             {
-                PageRouteService pageRouteService = new PageRouteService();
-                PageRoute pageRoute = pageRouteService.Get( (int)e.RowKeyValue );
-
-                if ( pageRoute != null )
+                string errorMessage;
+                if ( !pageRouteService.CanDelete( pageRoute, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !pageRouteService.CanDelete( pageRoute, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    pageRouteService.Delete( pageRoute, CurrentPersonAlias );
-                    pageRouteService.Save( pageRoute, CurrentPersonAlias );
-
-                    RemovePageRoute( pageRoute );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                pageRouteService.Delete( pageRoute );
+
+                rockContext.SaveChanges();
+
+                RemovePageRoute( pageRoute );
+            }
 
             BindGrid();
         }
@@ -159,7 +158,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            PageRouteService pageRouteService = new PageRouteService();
+            PageRouteService pageRouteService = new PageRouteService( new RockContext() );
             SortProperty sortProperty = gPageRoutes.SortProperty;
 
             var qry = pageRouteService.Queryable().Select( a =>

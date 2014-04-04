@@ -174,7 +174,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                 .Where( p => p.PhotoId.HasValue == ( selection == "1" ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

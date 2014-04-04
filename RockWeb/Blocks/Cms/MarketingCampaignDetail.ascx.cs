@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Cms
             int id = int.MinValue;
             if ( int.TryParse( PageParameter( pageReference, "marketingCampaignId" ), out id ) )
             {
-                var service = new MarketingCampaignService();
+                var service = new MarketingCampaignService( new RockContext() );
                 var item = service.Get( id );
                 if ( item != null )
                 {
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 // Cancelling on Edit.  Return to Details
-                MarketingCampaignService service = new MarketingCampaignService();
+                MarketingCampaignService service = new MarketingCampaignService( new RockContext() );
                 MarketingCampaign item = service.Get( hfMarketingCampaignId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            MarketingCampaignService service = new MarketingCampaignService();
+            MarketingCampaignService service = new MarketingCampaignService( new RockContext() );
             MarketingCampaign item = service.Get( hfMarketingCampaignId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -197,15 +197,18 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             MarketingCampaign marketingCampaign;
-            MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
+
+            MarketingCampaignService marketingCampaignService = new MarketingCampaignService( rockContext );
 
             int marketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
 
             if ( marketingCampaignId == 0 )
             {
                 marketingCampaign = new MarketingCampaign();
-                marketingCampaignService.Add( marketingCampaign, CurrentPersonAlias );
+                marketingCampaignService.Add( marketingCampaign );
             }
             else
             {
@@ -250,7 +253,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // delete Audiences that aren't assigned in the UI anymore
-                MarketingCampaignAudienceService marketingCampaignAudienceService = new MarketingCampaignAudienceService();
+                MarketingCampaignAudienceService marketingCampaignAudienceService = new MarketingCampaignAudienceService( rockContext );
                 var deletedAudiences = from audienceInDB in marketingCampaign.MarketingCampaignAudiences.AsQueryable()
                                        where !( from audienceStateItem in MarketingCampaignAudiencesState
                                                 select audienceStateItem.AudienceTypeValueId ).Contains( audienceInDB.AudienceTypeValueId )
@@ -258,9 +261,10 @@ namespace RockWeb.Blocks.Cms
                 deletedAudiences.ToList().ForEach( a =>
                 {
                     var aud = marketingCampaignAudienceService.Get( a.Guid );
-                    marketingCampaignAudienceService.Delete( aud, CurrentPersonAlias );
-                    marketingCampaignAudienceService.Save( aud, CurrentPersonAlias );
+                    marketingCampaignAudienceService.Delete( aud );
                 } );
+
+                rockContext.SaveChanges();
 
                 // add or update the Audiences that are assigned in the UI
                 foreach ( var item in MarketingCampaignAudiencesState )
@@ -285,7 +289,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // take care of deleted Campuses
-                MarketingCampaignCampusService marketingCampaignCampusService = new MarketingCampaignCampusService();
+                MarketingCampaignCampusService marketingCampaignCampusService = new MarketingCampaignCampusService( rockContext );
                 var deletedCampuses = from mcc in marketingCampaign.MarketingCampaignCampuses.AsQueryable()
                                       where !cpCampuses.SelectedCampusIds.Contains( mcc.CampusId )
                                       select mcc;
@@ -293,9 +297,10 @@ namespace RockWeb.Blocks.Cms
                 deletedCampuses.ToList().ForEach( a =>
                 {
                     var c = marketingCampaignCampusService.Get( a.Guid );
-                    marketingCampaignCampusService.Delete( c, CurrentPersonAlias );
-                    marketingCampaignCampusService.Save( c, CurrentPersonAlias );
+                    marketingCampaignCampusService.Delete( c );
                 } );
+
+                rockContext.SaveChanges();
 
                 // add or update the Campuses that are assigned in the UI
                 foreach ( int campusId in cpCampuses.SelectedCampusIds )
@@ -310,7 +315,7 @@ namespace RockWeb.Blocks.Cms
                     marketingCampaignCampus.CampusId = campusId;
                 }
 
-                marketingCampaignService.Save( marketingCampaign, CurrentPersonAlias );
+                rockContext.SaveChanges();
             } );
 
 
@@ -329,7 +334,7 @@ namespace RockWeb.Blocks.Cms
         private void LoadDropDowns()
         {
             // Controls on Main Campaign Panel
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( new RockContext() );
             List<Group> groups = groupService.Queryable().Where( a => a.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_EVENTATTENDEES ) ) ).OrderBy( a => a.Name ).ToList();
             groups.Insert( 0, new Group { Id = None.Id, Name = None.Text } );
             ddlEventGroup.DataSource = groups;
@@ -341,7 +346,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadCampusPicker()
         {
-            CampusService campusService = new CampusService();
+            CampusService campusService = new CampusService( new RockContext() );
 
             cpCampuses.Campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
             cpCampuses.Visible = cpCampuses.AvailableCampusIds.Count > 0;
@@ -363,7 +368,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
+                MarketingCampaignService marketingCampaignService = new MarketingCampaignService( new RockContext() );
                 marketingCampaign = marketingCampaignService.Get( itemKeyValue );
             }
             else
@@ -465,7 +470,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
                 {
-                    var page = new PageService().Get( new Guid( eventPageGuid ) );
+                    var page = new PageService( new RockContext() ).Get( new Guid( eventPageGuid ) );
 
                     Dictionary<string, string> queryString = new Dictionary<string, string>();
                     queryString.Add( "groupId", marketingCampaign.EventGroupId.ToString() );
@@ -514,7 +519,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ppContactPerson_SelectPerson( object sender, EventArgs e )
         {
-            Person contactPerson = new PersonService().Get( ppContactPerson.PersonId ?? 0 );
+            Person contactPerson = new PersonService( new RockContext() ).Get( ppContactPerson.PersonId ?? 0 );
             if ( contactPerson != null )
             {
                 tbContactEmail.Text = contactPerson.Email;
@@ -565,7 +570,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="primaryAudience">if set to <c>true</c> [is primary].</param>
         private void gMarketingCampaignAudiencesAdd( bool primaryAudience )
         {
-            DefinedValueService definedValueService = new DefinedValueService();
+            DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
 
             // populate dropdown with all MarketingCampaignAudiences that aren't already MarketingCampaignAudiences
             var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ) ).AsQueryable()
@@ -637,7 +642,7 @@ namespace RockWeb.Blocks.Cms
             int audienceTypeValueId = int.Parse( ddlMarketingCampaignAudiences.SelectedValue );
             MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
             marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
-            marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
+            marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.AsBoolean();
 
             MarketingCampaignAudiencesState.Add( marketingCampaignAudience.Clone() as MarketingCampaignAudience );
 

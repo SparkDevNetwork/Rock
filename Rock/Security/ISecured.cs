@@ -90,15 +90,13 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        void MakePrivate( string action, Person person, PersonAlias personAlias );
+        void MakePrivate( string action, Person person );
 
         /// <summary>
         /// If action on the current entity is private, removes security that made it private.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
-        void MakeUnPrivate( string action, Person person, PersonAlias personAlias );
+        void MakeUnPrivate( string action, Person person );
     }
 }
