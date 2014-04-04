@@ -32,10 +32,15 @@ namespace Rock.Data
     /// <summary>
     /// Entity Framework Context
     /// </summary>
-    public partial class DbContext : System.Data.Entity.DbContext
+    public abstract class DbContext : System.Data.Entity.DbContext
     {
-
-        public virtual List<string> SaveErrorMessages { get; set; }
+        /// <summary>
+        /// Gets any error messages that occurred during a SaveChanges
+        /// </summary>
+        /// <value>
+        /// The save error messages.
+        /// </value>
+        public virtual List<string> SaveErrorMessages { get; private set; }
 
         /// <summary>
         /// Saves all changes made in this context to the underlying database.
@@ -46,6 +51,7 @@ namespace Rock.Data
         public override int SaveChanges()
         {
             int result = 0;
+
             SaveErrorMessages = new List<string>();
 
             // Try to get the current person alias and id
@@ -59,12 +65,20 @@ namespace Rock.Data
                 }
             }
 
+            // Evaluate the current context for items that have changes
             var updatedItems = RockPreSave( this, personAlias );
-            if ( updatedItems.Any() )
+
+            // If update was not cancelled by triggered workflow 
+            if ( updatedItems != null )
             {
+                // Save the context changes
                 result = base.SaveChanges();
 
-                RockPostSave( updatedItems, personAlias );
+                // If any items changed process audit and triggers
+                if ( updatedItems.Any() )
+                {
+                    RockPostSave( updatedItems, personAlias );
+                }
             }
 
             return result;
@@ -73,19 +87,18 @@ namespace Rock.Data
         /// <summary>
         /// Updates the Created/Modified data for any model being created or modified
         /// </summary>
-        /// <param name="changeTracker">The current DbChangeTracker object.</param>
-        /// <param name="context">The current HttpContext.</param>
-        private List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias )
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="personAlias">The person alias.</param>
+        /// <returns></returns>
+        protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias )
         {
-            // List of items being updated 
-            var updatedItems = new List<ContextItem>();
-
             int? personAliasId = null;
             if (personAlias != null)
             {
                 personAliasId = personAlias.Id;
             }
 
+            var updatedItems = new List<ContextItem>();
             foreach ( var entry in dbContext.ChangeTracker.Entries()
                 .Where( c => 
                     c.Entity is IEntity &&
@@ -155,7 +168,12 @@ namespace Rock.Data
             return updatedItems;
         }
 
-        private void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
+        /// <summary>
+        /// Creates audit logs and/or triggers workflows for items that were changed
+        /// </summary>
+        /// <param name="updatedItems">The updated items.</param>
+        /// <param name="personAlias">The person alias.</param>
+        protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
         {
             var audits = updatedItems.Select( i => i.Audit).ToList();
             if (audits.Any())
@@ -326,17 +344,46 @@ namespace Rock.Data
             return false;
         }
 
-        internal class ContextItem
+        /// <summary>
+        /// State of entity being changed during a context save
+        /// </summary>
+        protected class ContextItem
         {
+            /// <summary>
+            /// Gets or sets the entity.
+            /// </summary>
+            /// <value>
+            /// The entity.
+            /// </value>
             public IEntity Entity { get; set; }
+
+            /// <summary>
+            /// Gets or sets the state.
+            /// </summary>
+            /// <value>
+            /// The state.
+            /// </value>
             public EntityState State { get; set; }
+
+            /// <summary>
+            /// Gets or sets the audit.
+            /// </summary>
+            /// <value>
+            /// The audit.
+            /// </value>
             public Audit Audit { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ContextItem"/> class.
+            /// </summary>
+            /// <param name="entity">The entity.</param>
+            /// <param name="state">The state.</param>
             public ContextItem( IEntity entity, EntityState state )
             {
                 Entity = entity;
                 State = state;
-
                 Audit = new Audit();
+
                 switch ( state )
                 {
                     case EntityState.Added:

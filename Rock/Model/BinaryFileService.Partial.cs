@@ -68,6 +68,7 @@ namespace Rock.Model
         /// <summary>
         /// Determines the storage provider that was used the last time the file was saved
         /// </summary>
+        /// <param name="dbContext">The database context.</param>
         /// <param name="item">The item.</param>
         /// <returns></returns>
         public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext dbContext, BinaryFile item )

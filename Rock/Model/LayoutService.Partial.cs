@@ -44,7 +44,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="site">The site.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged in <see cref="Rock.Model.Person" />.</param>
         public static void RegisterLayouts( string physWebAppPath, SiteCache site )
         {
             // Dictionary for block types.  Key is path, value is friendly name

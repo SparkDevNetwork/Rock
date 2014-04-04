@@ -267,21 +267,6 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
-        /// </returns>
-        //public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
-        //{
-        //    var dictionary = base.ToDictionary();
-        //    dictionary.Add( "Person", Person );
-        //    dictionary.Add( "ConfirmationCode", ConfirmationCode );
-        //    dictionary.Add( "ConfirmationCodeEncoded", ConfirmationCodeEncoded );
-        //    return dictionary;
-        //}
-
-        /// <summary>
         /// Returns a boolean flag indicating if the provided action is allowed by default
         /// </summary>
         /// <param name="action">A <see cref="System.String"/> representing the action.</param>

@@ -1544,14 +1544,15 @@ namespace Rock
         /// <summary>
         /// Filters a Query to rows that have matching attribute value
         /// </summary>
-        /// <example>
-        ///     var test = new PersonService( rockContext ).Queryable().Where( a => a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
-        /// </example>
         /// <typeparam name="T"></typeparam>
         /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="attributeValue">The attribute value.</param>
         /// <returns></returns>
+        /// <example>
+        /// var test = new PersonService( rockContext ).Queryable().Where( a =&gt; a.FirstName == "Bob" ).WhereAttributeValue( rockContext, "BaptizedHere", "True" ).ToList();
+        ///   </example>
         public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Rock.Data.Model<T>, new()
         {
             int entityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( typeof( T ) ) ?? 0;
@@ -1574,6 +1575,7 @@ namespace Rock
         /// Loads the attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
+        /// <param name="rockContext">The rock context.</param>
         public static void LoadAttributes( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
             Rock.Attribute.Helper.LoadAttributes( entity, rockContext );

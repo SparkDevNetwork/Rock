@@ -231,6 +231,12 @@ namespace Rock.Web.UI.Controls
             return LocationPickerMode.Named;
         }
 
+        /// <summary>
+        /// Gets or sets the map style.
+        /// </summary>
+        /// <value>
+        /// The map style.
+        /// </value>
         public string MapStyle
         {
             get

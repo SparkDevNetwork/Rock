@@ -66,7 +66,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
-        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias" /> for the currently logged on <see cref="Rock.Model.Person" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
         public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false)
         {

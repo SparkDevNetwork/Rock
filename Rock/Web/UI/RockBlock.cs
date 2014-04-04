@@ -466,7 +466,6 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the block attribute values.
         /// </summary>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         public void SaveAttributeValues()
         {
             if ( _blockCache != null )
@@ -507,10 +506,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
+        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues()" /> method to save all values to database
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the block attribute's key name.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value of the attribute.</param>
+        /// <param name="key">A <see cref="System.String" /> representing the block attribute's key name.</param>
+        /// <param name="value">A <see cref="System.String" /> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
             if ( _blockCache != null )

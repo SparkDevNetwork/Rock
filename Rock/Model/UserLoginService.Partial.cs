@@ -289,6 +289,7 @@ namespace Rock.Model
         /// <summary>
         /// Creates a new <see cref="Rock.Model.UserLogin" />
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
         /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
         /// <param name="entityTypeId">The entity type identifier.</param>

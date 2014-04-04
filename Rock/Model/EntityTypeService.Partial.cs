@@ -79,10 +79,8 @@ namespace Rock.Model
         /// Gets an <see cref="Rock.Model.EntityType" /> by it's name. If a match is not found, a new <see cref="Rock.Model.EntityType" /> can optionally be created.
         /// </summary>
         /// <param name="name">A <see cref="System.String" /> representing the name of the object/entity type to search for.</param>
-        /// <param name="createIfNotFound">A <see cref="System.Boolean"/> value that indicates if a new <see cref="Rock.Model.EntityType"/> should be created if a match is not found. This value
-        /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType"/> should be created if there is not a match; otherwise <c>false</c>/</param>
-        /// <param name="personAlias">A <see cref="Rock.Model.PersonAlias"/> representing the alias of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
-        /// null if the logged in person is not known (i.e. an anonymous user).</param>
+        /// <param name="createIfNotFound">A <see cref="System.Boolean" /> value that indicates if a new <see cref="Rock.Model.EntityType" /> should be created if a match is not found. This value
+        /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType" /> should be created if there is not a match; otherwise <c>false</c>/</param>
         /// <returns></returns>
         public EntityType Get( string name, bool createIfNotFound )
         {

@@ -300,6 +300,8 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="user">The user.</param>
         /// <param name="oldPassword">The old password.</param>
         /// <param name="newPassword">The new password.</param>
+        /// <param name="warningMessage">The warning message.</param>
+        /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
         {

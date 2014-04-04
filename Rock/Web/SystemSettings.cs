@@ -87,7 +87,6 @@ namespace Rock.Web
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         public static void SetValue( string key, string value )
         {
             var rockContext = new Rock.Data.RockContext();

@@ -96,7 +96,6 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
         public void SetValue( string key, string value, bool saveValue )
         {

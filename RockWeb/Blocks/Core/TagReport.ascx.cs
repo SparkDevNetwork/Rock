@@ -213,24 +213,18 @@ namespace RockWeb.Blocks.Core
             {
                 contextType = contexts.First().Value;
             }
+            else
+            {
+                contextType = typeof( RockContext );
+            }
 
             Type genericServiceType = typeof( Rock.Data.Service<> );
             Type modelServiceType = genericServiceType.MakeGenericType( new Type[] { modelType } );
 
             if ( modelServiceType != null )
             {
-                Object serviceInstance = null;
-
-                if ( contextType != null )
-                {
-                    var context = Activator.CreateInstance( contextType );
-                    serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
-                }
-                else
-                {
-                    serviceInstance = Activator.CreateInstance( modelServiceType );
-                }
-
+                var context = Activator.CreateInstance( contextType );
+                Object serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { context } );
                 if ( serviceInstance != null )
                 {
                     MethodInfo method = serviceInstance.GetType().GetMethod( methodName, types );
