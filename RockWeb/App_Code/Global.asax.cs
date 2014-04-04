@@ -736,16 +736,19 @@ namespace RockWeb
 
                 while ( RockQueue.TransactionQueue.Count != 0 )
                 {
-                    ITransaction transaction = RockQueue.TransactionQueue.Dequeue() as ITransaction;
-                    if ( transaction != null )
+                    ITransaction transaction;
+                    if ( RockQueue.TransactionQueue.TryDequeue( out transaction ) )
                     {
-                        try
+                        if ( transaction != null )
                         {
-                            transaction.Execute();
-                        }
-                        catch ( Exception ex )
-                        {
-                            LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
+                            try
+                            {
+                                transaction.Execute();
+                            }
+                            catch ( Exception ex )
+                            {
+                                LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
+                            }
                         }
                     }
                 }

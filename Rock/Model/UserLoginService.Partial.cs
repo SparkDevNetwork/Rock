@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Data Access/Service class for <see cref="Rock.Model.UserLogin"/> entities.
     /// </summary>
-    public partial class UserLoginService 
+    public partial class UserLoginService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by their API Key.
@@ -41,7 +41,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
-        
+
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by a <see cref="Rock.Model.Person">Person's</see> PersonId.
         /// </summary>
@@ -52,7 +52,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
-        
+
         /// <summary>
         /// Gets<see cref="Rock.Model.UserLogin"/> by User Name
         /// </summary>
@@ -201,7 +201,7 @@ namespace Rock.Model
                         transaction.UserId = user.Id;
                         transaction.LastActivityDate = RockDateTime.Now;
 
-                        if ( (user.IsConfirmed ?? true) && !(user.IsLockedOut ?? false) )
+                        if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
                         {
 
                             if ( HttpContext.Current.Session["RockUserId"] != null )
@@ -211,16 +211,11 @@ namespace Rock.Model
 
                             HttpContext.Current.Session["RockUserId"] = user.Id;
 
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-
-                            /* TODO... 
-                            Transactions.ITransaction[] listCopy = Rock.Transactions.RockQueue.TransactionQueue.ToArray();
-
                             // see if there is already a LastActivitytransaction queued for this user, and just update its LastActivityDate instead of adding another to the queue
-                            var userLastActivity = listCopy.OfType<Rock.Transactions.UserLastActivityTransaction>()
+                            var userLastActivity = Rock.Transactions.RockQueue.TransactionQueue.ToArray().OfType<Rock.Transactions.UserLastActivityTransaction>()
                                 .Where( a => a.UserId == transaction.UserId && a.SessionUserId == transaction.SessionUserId ).FirstOrDefault();
-                            
-                            if (userLastActivity != null)
+
+                            if ( userLastActivity != null )
                             {
                                 userLastActivity.LastActivityDate = transaction.LastActivityDate;
                             }
@@ -228,8 +223,6 @@ namespace Rock.Model
                             {
                                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                             }
-                             * */
-                            
                         }
                         else
                         {
