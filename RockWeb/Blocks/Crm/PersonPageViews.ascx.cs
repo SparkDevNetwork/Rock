@@ -170,7 +170,9 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
-        void ShowList() {
+        void ShowList() 
+        {
+            var rockContext = new RockContext();
 
             int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
 
@@ -181,8 +183,6 @@ namespace RockWeb.Blocks.Crm
             }
             int skipCount = pageNumber * sessionCount;
 
-            
-
             string itemId = PageParameter( "personId" );
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
@@ -191,7 +191,7 @@ namespace RockWeb.Blocks.Crm
                 if ( GetAttributeValue( "ShowHeader" ).AsBoolean() )
                 {
                     pnlHeader.Visible = true;
-                    PersonService personService = new PersonService();
+                    PersonService personService = new PersonService( rockContext );
                     var person = personService.Get( personId );
 
                     lPersonName.Text = person.FullName.FormatAsHtmlTitle() + " Page Views";
@@ -201,7 +201,7 @@ namespace RockWeb.Blocks.Crm
                     pnlHeader.Visible = false;
                 }
 
-                PageViewService pageviewService = new PageViewService();
+                PageViewService pageviewService = new PageViewService( rockContext );
 
                 var pageViews = pageviewService.Queryable();
                 

@@ -111,7 +111,7 @@ function() {
             if ( selectionValues.Length >= 3 )
             {
                 int? locationId = selectionValues[1].AsInteger();
-                var location = new LocationService().Get( locationId ?? 0 );
+                var location = new LocationService( new RockContext() ).Get( locationId ?? 0 );
                 double miles = selectionValues[2].AsDouble() ?? 0;
 
                 result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
@@ -208,7 +208,7 @@ function() {
                 groupLocationType.SetValue( selectionValues[0] );
 
                 var locationPicker = controls[1] as LocationPicker;
-                var selectedLocation = new LocationService().Get( selectionValues[1].AsInteger() ?? 0 );
+                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsInteger() ?? 0 );
                 locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 
@@ -232,7 +232,7 @@ function() {
             {
                 int? groupLocationTypeValueId = selectionValues[0].AsInteger( false );
                 
-                Location location = new LocationService( serviceInstance.RockContext ).Get( selectionValues[1].AsInteger() ?? 0 );
+                Location location = new LocationService( (RockContext)serviceInstance.Context ).Get( selectionValues[1].AsInteger() ?? 0 );
 
                 if ( location == null )
                 {
@@ -243,7 +243,7 @@ function() {
                 double miles = selectionValues[2].AsDouble() ?? 0;
                 double meters = miles * 1609.344;
 
-                GroupService groupService = new GroupService( serviceInstance.RockContext );
+                GroupService groupService = new GroupService( (RockContext)serviceInstance.Context );
 
                 var qry = groupService.Queryable()
                     .Where( p => p.GroupLocations
