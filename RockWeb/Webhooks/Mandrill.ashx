@@ -44,7 +44,8 @@ public class Mandrill : IHttpHandler
                 unsavedCommunicationCount++;
 
                 // process the communication recipient
-                if ( item.Msg.Metadata.ContainsKey( "communication_recipient_guid" ) )
+
+                if (item.Msg.Metadata != null && item.Msg.Metadata.ContainsKey("communication_recipient_guid") )
                 {
                     Guid communicationRecipientGuid;
                     if ( Guid.TryParse( item.Msg.Metadata["communication_recipient_guid"], out communicationRecipientGuid ) )
