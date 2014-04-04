@@ -94,31 +94,30 @@ namespace Rock.Communication.Transport
                                 recipient.StatusNote = "No Phone Number with Messaging Enabled";
                             }
                             else
+                            {
+                                // Create merge field dictionary
+                                var mergeObjects = MergeValues( globalConfigValues, recipient );
+                                string subject = communication.Subject.ResolveMergeFields( mergeObjects );
+                                string twillioNumber = phoneNumber.Number;
+                                if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
                                 {
-                                    // Create merge field dictionary
-                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
-                                    string subject = communication.Subject.ResolveMergeFields( mergeObjects );
-                                    string twillioNumber = phoneNumber.Number;
-                                    if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
-                                    {
-                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                    }
-
-                                    try
-                                    {
-                                        twilio.SendMessage( fromPhone, twillioNumber, subject );
-                                        recipient.Status = CommunicationRecipientStatus.Delivered;
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "Twilio Exception: " + ex.Message;
-                                    }
+                                    twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                 }
+
+                                try
+                                {
+                                    twilio.SendMessage( fromPhone, twillioNumber, subject );
+                                    recipient.Status = CommunicationRecipientStatus.Delivered;
+                                }
+                                catch ( Exception ex )
+                                {
+                                    recipient.Status = CommunicationRecipientStatus.Failed;
+                                    recipient.StatusNote = "Twilio Exception: " + ex.Message;
                                 }
                             }
 
                             rockContext.SaveChanges();
+
                         }
                         else
                         {

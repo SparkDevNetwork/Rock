@@ -192,7 +192,7 @@ namespace Rock.Communication.Transport
                                 message.AlternateViews.Add( plainTextView );
                             }
 
-<<                          if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
                                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                                 htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     

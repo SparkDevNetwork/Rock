@@ -139,7 +139,7 @@ namespace Rock.Reporting.DataSelect.Group
             if ( selectionValues.Count() >= 2 )
             {
                 // the selected Location 
-                selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
 
                 // which group location type type () to use as the group's location
                 groupLocationTypeValueId = selectionValues[1].AsInteger( false );
@@ -250,7 +250,7 @@ namespace Rock.Reporting.DataSelect.Group
                 if ( selectionValues.Length >= 2 )
                 {
                     var locationPicker = controls[0] as LocationPicker;
-                    var selectedLocation = new LocationService().Get( selectionValues[0].AsInteger() ?? 0 );
+                    var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
                     locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                     locationPicker.Location = selectedLocation;
 

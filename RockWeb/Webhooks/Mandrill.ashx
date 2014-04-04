@@ -8,16 +8,17 @@ using System.Linq;
 using Newtonsoft.Json;
 using Rock.Model;
 
-public class Mandrill : IHttpHandler {
-
+public class Mandrill : IHttpHandler
+{
     private HttpRequest request;
     private HttpResponse response;
     private int transactionCount = 0;
-    
-    public void ProcessRequest (HttpContext context) {
+
+    public void ProcessRequest( HttpContext context )
+    {
         request = context.Request;
         response = context.Response;
-        
+
         response.ContentType = "text/plain";
 
         if ( request.HttpMethod != "POST" )
@@ -30,24 +31,28 @@ public class Mandrill : IHttpHandler {
         {
             string postedData = request.Form["mandrill_events"];
 
-            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService();
-            
+            var rockContext = new Rock.Data.RockContext();
+
+            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+
             var payload = JsonConvert.DeserializeObject<IEnumerable<MailEvent>>( postedData );
             int unsavedCommunicationCount = 0;
-            
+
             foreach ( var item in payload )
             {
                 transactionCount++;
                 unsavedCommunicationCount++;
-                
+
                 // process the communication recipient
-                if (item.Msg.Metadata.ContainsKey("communication_recipient_guid") )
+                if ( item.Msg.Metadata.ContainsKey( "communication_recipient_guid" ) )
                 {
                     Guid communicationRecipientGuid;
-                    if (Guid.TryParse(item.Msg.Metadata["communication_recipient_guid"], out communicationRecipientGuid )) {
+                    if ( Guid.TryParse( item.Msg.Metadata["communication_recipient_guid"], out communicationRecipientGuid ) )
+                    {
                         var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid );
 
-                        if (communicationRecipient != null) {
+                        if ( communicationRecipient != null )
+                        {
                             switch ( item.EventType )
                             {
                                 case MandrillEventType.Send:
@@ -57,17 +62,17 @@ public class Mandrill : IHttpHandler {
                                 case MandrillEventType.Opened:
                                     communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                                     communicationRecipient.OpenedDateTime = item.EventDateTime;
-                                    communicationRecipient.OpenedClient = String.Format("{0} {1} ({2})", 
-                                                                            item.UserAgent.OperatingSystemName, 
+                                    communicationRecipient.OpenedClient = String.Format( "{0} {1} ({2})",
+                                                                            item.UserAgent.OperatingSystemName,
                                                                             item.UserAgent.UserAgentName,
-                                                                            item.UserAgent.Type);
+                                                                            item.UserAgent.Type );
                                     CommunicationRecipientActivity openActivity = new CommunicationRecipientActivity();
                                     openActivity.ActivityType = "Opened";
                                     openActivity.ActivityDateTime = item.EventDateTime;
                                     openActivity.ActivityDetail = string.Format( "Opened from {0} on {1} ({2})",
                                                                     item.UserAgent.UserAgentName,
-                                                                    item.UserAgent.OperatingSystemName, 
-                                                                    item.IpAddress);
+                                                                    item.UserAgent.OperatingSystemName,
+                                                                    item.IpAddress );
                                     communicationRecipient.Activities.Add( openActivity );
                                     break;
                                 case MandrillEventType.Clicked:
@@ -80,7 +85,7 @@ public class Mandrill : IHttpHandler {
                                                                     item.UserAgent.OperatingSystemName,
                                                                     item.UserAgent.UserAgentFamily,
                                                                     item.UserAgent.UserAgentVersion,
-                                                                    item.UserAgent.Type);
+                                                                    item.UserAgent.Type );
                                     communicationRecipient.Activities.Add( clickActivity );
                                     break;
                                 case MandrillEventType.SoftBounced:
@@ -98,13 +103,14 @@ public class Mandrill : IHttpHandler {
                     // save every 100 changes
                     if ( unsavedCommunicationCount >= 100 )
                     {
-                        communicationRecipientService.RockContext.SaveChanges();
+                        rockContext.SaveChanges();
+                        unsavedCommunicationCount = 0;
                     }
                 }
 
                 // final save
-                communicationRecipientService.RockContext.SaveChanges();
-                
+                rockContext.SaveChanges();
+
                 // if bounced process the bounced message
                 if ( item.EventType == MandrillEventType.HardBounced )
                 {
@@ -120,37 +126,40 @@ public class Mandrill : IHttpHandler {
                             bounceDescription = "Domain is invalid";
                         }
                     }
-                    
-                    
-                    if ( !string.IsNullOrEmpty( item.Msg.Email)) {
-                        PersonService personService = new PersonService();
+
+
+                    if ( !string.IsNullOrEmpty( item.Msg.Email ) )
+                    {
+                        PersonService personService = new PersonService( rockContext );
                         var peopleWithEmail = personService.Queryable().Where( p => p.Email == item.Msg.Email );
 
                         foreach ( var person in peopleWithEmail )
                         {
                             person.IsEmailActive = false;
-                            person.EmailNote = String.Format("{0} ({1})", bounceDescription, item.EventDateTime.ToShortDateString());
+                            person.EmailNote = String.Format( "{0} ({1})", bounceDescription, item.EventDateTime.ToShortDateString() );
                         }
-                        
-                        personService.RockContext.SaveChanges();
+
+                        rockContext.SaveChanges();
                     }
                 }
             }
         }
 
-        response.Write( String.Format("Success: Processed {0} transactions.", transactionCount.ToString()) );
+        response.Write( String.Format( "Success: Processed {0} transactions.", transactionCount.ToString() ) );
 
         // must do this or Mandrill will not accept your webhook!
         response.StatusCode = 200;
-        
+
     }
 
     // see mandrill webhook format definitions at: http://help.mandrill.com/entries/24466132-Webhook-Format
-    
+
     public enum MandrillEventType { Send, HardBounced, Opened, Spam, Rejected, Delayed, Clicked, SoftBounced, Unsubscribe, Unknown };
-    
-    public bool IsReusable {
-        get {
+
+    public bool IsReusable
+    {
+        get
+        {
             return false;
         }
     }
@@ -162,7 +171,8 @@ public class Mandrill : IHttpHandler {
 
         public DateTime EventDateTime
         {
-            get {
+            get
+            {
                 // Unix timestamp is seconds past epoch
                 double timeStampSeconds = Double.TryParse( TimeStamp, out timeStampSeconds ) ? timeStampSeconds : 0;
                 System.DateTime dtDateTime = new DateTime( 1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc );
@@ -176,19 +186,22 @@ public class Mandrill : IHttpHandler {
 
         [JsonProperty( PropertyName = "url" )]
         public string UrlAddress { get; set; }
-        
+
         [JsonProperty( PropertyName = "user_agent_parsed" )]
         public UserAgent UserAgent { get; set; }
 
         [JsonProperty( PropertyName = "location" )]
         public EventLocation EventLocation { get; set; }
-        
+
         [JsonProperty( PropertyName = "event" )]
         public string Event { get; set; }
-        
-        public MandrillEventType EventType {
-            get {
-                if (Event == "open") {
+
+        public MandrillEventType EventType
+        {
+            get
+            {
+                if ( Event == "open" )
+                {
                     return MandrillEventType.Opened;
                 }
                 else if ( Event == "click" )
@@ -219,7 +232,7 @@ public class Mandrill : IHttpHandler {
                 {
                     return MandrillEventType.SoftBounced;
                 }
-                
+
                 return MandrillEventType.Unknown;
             }
         }
@@ -281,11 +294,11 @@ public class Mandrill : IHttpHandler {
 
     [JsonDictionary()]
     public class Header : Dictionary<string, object>
-    {}
+    { }
 
     [JsonDictionary()]
     public class Metadata : Dictionary<string, string>
-    {}
+    { }
 
     public class EventLocation
     {
@@ -361,7 +374,7 @@ public class Mandrill : IHttpHandler {
         [JsonProperty( PropertyName = "ua_version" )]
         public string UserAgentVersion { get; set; }
     }
-    
+
     public class SpamReport
     {
         [JsonProperty( PropertyName = "score" )]
