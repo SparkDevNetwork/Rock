@@ -98,7 +98,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int groupMemberId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out groupMemberId ) )
             {
-                var service = new GroupMemberService();
+                var rockContext = new RockContext();
+                var service = new GroupMemberService( rockContext );
                 var groupMember = service.Get( groupMemberId );
                 if ( groupMember != null )
                 {
@@ -114,12 +115,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
                             if ( inverseGroupMember != null )
                             {
-                                service.Delete( inverseGroupMember, CurrentPersonAlias );
+                                service.Delete( inverseGroupMember );
                             }
                         }
 
-                        service.Delete( groupMember, CurrentPersonAlias );
-                        service.Save( groupMember, CurrentPersonAlias );
+                        service.Delete( groupMember );
+
+                        rockContext.SaveChanges();
 
                         BindData();
                     }
@@ -134,62 +136,62 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int? roleId = grpRole.GroupRoleId;
                 if ( roleId.HasValue )
                 {
-                    using ( new UnitOfWorkScope() )
+                    var rockContext = new RockContext();
+                    var memberService = new GroupMemberService( rockContext );
+
+                    var group = memberService.Queryable()
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.GroupRole.Guid == ownerRoleGuid
+                        )
+                        .Select( m => m.Group )
+                        .FirstOrDefault();
+
+                    if ( group != null )
                     {
-                        var memberService = new GroupMemberService();
-
-                        var group = memberService.Queryable()
-                            .Where( m =>
-                                m.PersonId == Person.Id &&
-                                m.GroupRole.Guid == ownerRoleGuid
-                            )
-                            .Select( m => m.Group )
-                            .FirstOrDefault();
-
-                        if ( group != null )
+                        GroupMember groupMember = null;
+                        int? groupMemberId = hfRoleId.Value.AsInteger( false );
+                        if ( groupMemberId.HasValue )
                         {
-                            GroupMember groupMember = null;
-                            int? groupMemberId = hfRoleId.Value.AsInteger( false );
-                            if ( groupMemberId.HasValue )
-                            {
-                                groupMember = memberService.Queryable()
-                                .Where( m => m.Id == groupMemberId.Value )
-                                .FirstOrDefault();
-                            }
+                            groupMember = memberService.Queryable()
+                            .Where( m => m.Id == groupMemberId.Value )
+                            .FirstOrDefault();
+                        }
 
-                            if ( groupMember == null )
-                            {
-                                groupMember = new GroupMember();
-                                groupMember.GroupId = group.Id;
-                                memberService.Add( groupMember, CurrentPersonAlias );
-                            }
+                        if ( groupMember == null )
+                        {
+                            groupMember = new GroupMember();
+                            groupMember.GroupId = group.Id;
+                            memberService.Add( groupMember );
+                        }
 
-                            GroupMember formerInverseGroupMember = null;
-                            if ( IsKnownRelationships )
-                            {
-                                formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
-                            }
+                        GroupMember formerInverseGroupMember = null;
+                        if ( IsKnownRelationships )
+                        {
+                            formerInverseGroupMember = memberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                        }
 
-                            groupMember.PersonId = ppPerson.PersonId.Value;
-                            groupMember.GroupRoleId = roleId.Value;
+                        groupMember.PersonId = ppPerson.PersonId.Value;
+                        groupMember.GroupRoleId = roleId.Value;
 
-                            memberService.Save( groupMember, CurrentPersonAlias );
-                            if ( IsKnownRelationships )
+                        rockContext.SaveChanges();
+
+                        if ( IsKnownRelationships )
+                        {
+                            var inverseGroupMember = memberService.GetInverseRelationship(
+                                groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
+                            if ( inverseGroupMember != null )
                             {
-                                var inverseGroupMember = memberService.GetInverseRelationship(
-                                    groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonAlias );
-                                if ( inverseGroupMember != null )
+                                rockContext.SaveChanges();
+                                if ( formerInverseGroupMember != null && formerInverseGroupMember.Id != inverseGroupMember.Id )
                                 {
-                                    memberService.Save( inverseGroupMember, CurrentPersonAlias );
-                                    if (formerInverseGroupMember != null && formerInverseGroupMember.Id != inverseGroupMember.Id)
-                                    {
-                                        memberService.Delete( formerInverseGroupMember, CurrentPersonAlias );
-                                        memberService.Save( formerInverseGroupMember, CurrentPersonAlias );
-                                    }
+                                    memberService.Delete( formerInverseGroupMember );
+                                    rockContext.SaveChanges();
                                 }
                             }
                         }
                     }
+
                 }
 
             }
@@ -208,67 +210,66 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( ownerRoleGuid != Guid.Empty )
                 {
-                    using ( new UnitOfWorkScope() )
+                    var rockContext = new RockContext();
+                    var memberService = new GroupMemberService( rockContext );
+                    var group = memberService.Queryable()
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.GroupRole.Guid == ownerRoleGuid
+                        )
+                        .Select( m => m.Group )
+                        .FirstOrDefault();
+
+                    if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
                     {
-                        var memberService = new GroupMemberService();
-                        var group = memberService.Queryable()
-                            .Where( m =>
-                                m.PersonId == Person.Id &&
-                                m.GroupRole.Guid == ownerRoleGuid
-                            )
-                            .Select( m => m.Group )
-                            .FirstOrDefault();
-
-                        if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
+                        var role = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
+                        if ( role != null && role.GroupTypeId.HasValue )
                         {
-                            var role = new GroupTypeRoleService().Get( ownerRoleGuid );
-                            if ( role != null && role.GroupTypeId.HasValue )
-                            {
-                                var groupMember = new GroupMember();
-                                groupMember.PersonId = Person.Id;
-                                groupMember.GroupRoleId = role.Id;
+                            var groupMember = new GroupMember();
+                            groupMember.PersonId = Person.Id;
+                            groupMember.GroupRoleId = role.Id;
 
-                                group = new Group();
-                                group.Name = role.GroupType.Name;
-                                group.GroupTypeId = role.GroupTypeId.Value;
-                                group.Members.Add( groupMember );
+                            group = new Group();
+                            group.Name = role.GroupType.Name;
+                            group.GroupTypeId = role.GroupTypeId.Value;
+                            group.Members.Add( groupMember );
 
-                                var groupService = new GroupService();
-                                groupService.Add( group, CurrentPersonAlias );
-                                groupService.Save( group, CurrentPersonAlias );
+                            var groupService = new GroupService( rockContext );
+                            groupService.Add( group );
+                            rockContext.SaveChanges();
 
-                                group = groupService.Get( group.Id );
-                            }
-                        }
-
-                        if ( group != null )
-                        {
-                            if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                phGroupTypeIcon.Controls.Clear();
-                                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
-                                {
-                                    phGroupTypeIcon.Controls.Add(
-                                        new LiteralControl(
-                                            string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
-                                }
-
-                                lGroupName.Text = group.Name;
-
-                                phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
-
-                                // TODO: How many implied relationships should be displayed
-
-                                rGroupMembers.DataSource = new GroupMemberService().GetByGroupId( group.Id )
-                                    .Where( m => m.PersonId != Person.Id )
-                                    .OrderBy( m => m.Person.LastName )
-                                    .ThenBy( m => m.Person.FirstName )
-                                    .Take( 50 )
-                                    .ToList();
-                                rGroupMembers.DataBind();
-                            }
+                            group = groupService.Get( group.Id );
                         }
                     }
+
+                    if ( group != null )
+                    {
+                        if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            phGroupTypeIcon.Controls.Clear();
+                            if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                            {
+                                phGroupTypeIcon.Controls.Add(
+                                    new LiteralControl(
+                                        string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
+                            }
+
+                            lGroupName.Text = group.Name;
+
+                            phEditActions.Visible = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+                            // TODO: How many implied relationships should be displayed
+
+                            rGroupMembers.DataSource = new GroupMemberService( rockContext ).GetByGroupId( group.Id )
+                                .Where( m => m.PersonId != Person.Id )
+                                .OrderBy( m => m.Person.LastName )
+                                .ThenBy( m => m.Person.FirstName )
+                                .Take( 50 )
+                                .ToList();
+                            rGroupMembers.DataBind();
+                        }
+                    }
+
                 }
             }
         }
@@ -278,10 +279,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Guid roleGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
             {
-                var role = new GroupTypeRoleService().Get( ownerRoleGuid );
+                var groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
+                var role = groupTypeRoleService.Get( ownerRoleGuid );
                 grpRole.ExcludeGroupRoles.Add( role.Id );
 
-                grpRole.GroupTypeId = new GroupTypeRoleService().Queryable()
+                grpRole.GroupTypeId = groupTypeRoleService.Queryable()
                     .Where( r => r.Guid == roleGuid )
                     .Select( r => r.GroupTypeId )
                     .FirstOrDefault();
