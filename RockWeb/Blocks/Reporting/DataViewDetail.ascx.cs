@@ -624,17 +624,14 @@ $(document).ready(function() {
                     {
                         grid.CreatePreviewColumns( entityType );
 
-                        using ( new Rock.Data.UnitOfWorkScope() )
+                        var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
+
+                        if ( fetchRowCount.HasValue )
                         {
-                            var qry = dataView.GetQuery( grid.SortProperty, out errorMessages );
-
-                            if ( fetchRowCount.HasValue )
-                            {
-                                qry = qry.Take( fetchRowCount.Value );
-                            }
-
-                            grid.DataSource = qry.AsNoTracking().ToList();
+                            qry = qry.Take( fetchRowCount.Value );
                         }
+
+                        grid.DataSource = qry.AsNoTracking().ToList();
                     }
                 }
             }

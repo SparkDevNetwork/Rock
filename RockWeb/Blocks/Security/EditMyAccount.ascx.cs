@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Security
 
                 if ( changes.Any() )
                 {
-                    HistoryService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), person.Id, changes );
                 }
 
                 NavigateToParentPage();

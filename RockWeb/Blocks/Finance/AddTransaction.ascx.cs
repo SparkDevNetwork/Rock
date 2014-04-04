@@ -905,8 +905,7 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         // Create Family
-                        var groupService = new GroupService( rockContext );
-                        var familyGroup = groupService.SaveNewFamily( person, null, false, CurrentPersonAlias );
+                        var familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false  );
                         if ( familyGroup != null )
                         {
                             GroupService.AddNewFamilyAddress(

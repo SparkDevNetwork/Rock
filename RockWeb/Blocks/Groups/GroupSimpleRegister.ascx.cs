@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Groups
                 person.Email = txtEmail.Text;
                 person.EmailPreference = EmailPreference.EmailAllowed;
 
-                new GroupService( rockContext ).SaveNewFamily( person, null, false, CurrentPersonAlias );
+                GroupService.SaveNewFamily( rockContext, person, null, false );
 
                 return personService.Get( person.Id );
             }
