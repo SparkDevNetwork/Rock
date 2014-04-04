@@ -89,7 +89,7 @@ namespace Rock.Model
                 }
             }
 
-            return Queryable( includes )
+            return base.Queryable( includes )
                 .Where( p =>
                     ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
         }
