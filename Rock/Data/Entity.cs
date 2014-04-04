@@ -155,6 +155,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets a publicly viewable unique key for the entity.
+        /// NOTE: Will result in an empty string in a non-web app.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents a viewable version of the entity's unique key.
@@ -165,7 +166,19 @@ namespace Rock.Data
             get
             {
                 string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
+                string result = string.Empty;
+
+                //// Non-web apps might not have the dataencryptionkey
+                //// so just return empty string if we can't encrypt
+
+                if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
+                {
+                    return result;
+                }
+                else
+                {
+                    return string.Empty; ;
+                }
             }
         }
 
