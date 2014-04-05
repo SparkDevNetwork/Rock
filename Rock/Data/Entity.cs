@@ -72,6 +72,16 @@ namespace Rock.Data
         }
         private Guid _guid = Guid.NewGuid();
 
+        /// <summary>
+        /// Gets or sets an optional foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string ForeignId { get; set; }
+
         #endregion
 
         #region Virtual Properties

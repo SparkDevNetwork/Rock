@@ -804,6 +804,10 @@
     <Compile Include="Migrations\201404011847059_ReportFetchTop.Designer.cs">
       <DependentUpon>201404011847059_ReportFetchTop.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404050016302_AddForeignId.cs" />
+    <Compile Include="Migrations\201404050016302_AddForeignId.Designer.cs">
+      <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1387,6 +1391,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404011847059_ReportFetchTop.resx">
       <DependentUpon>201404011847059_ReportFetchTop.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404050016302_AddForeignId.resx">
+      <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
