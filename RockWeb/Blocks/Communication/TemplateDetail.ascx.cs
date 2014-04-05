@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Communication
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 template = new CommunicationTemplateService( new RockContext() )
-                    .Queryable( "OwnerPersonAlias.Person" )
+                    .Queryable()
                     .Where( c => c.Id == itemKeyValue )
                     .FirstOrDefault();
                 if ( template != null )
