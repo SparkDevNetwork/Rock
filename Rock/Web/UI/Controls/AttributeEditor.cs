@@ -403,7 +403,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/liquid.min.js" ) );
         }
 
