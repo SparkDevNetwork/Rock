@@ -94,6 +94,7 @@ namespace Rock.Model
             target.Source = source.Source;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

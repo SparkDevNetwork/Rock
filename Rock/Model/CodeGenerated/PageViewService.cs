@@ -99,6 +99,7 @@ namespace Rock.Model
             target.IpAddress = source.IpAddress;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

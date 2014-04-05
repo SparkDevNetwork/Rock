@@ -417,6 +417,7 @@ namespace Rock.Model
             target.AliasPersonGuid = source.AliasPersonGuid;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }
