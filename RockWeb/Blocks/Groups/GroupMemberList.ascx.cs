@@ -272,7 +272,8 @@ namespace RockWeb.Blocks.Groups
                         a.IsGridColumn &&
                         ( ( a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupQualifier ) ) ||
                          ( a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) && a.EntityTypeQualifierValue.Equals( groupTypeQualifier ) ) ) )
-                    .OrderBy( a => a.Order )
+                    .OrderByDescending( a => a.EntityTypeQualifierColumn )
+                    .ThenBy( a => a.Order )
                     .ThenBy( a => a.Name ) )
                 {
                     string dataFieldExpression = attribute.Key;

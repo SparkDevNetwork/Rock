@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Groups
                 // Reload the roles and apply their attribute values
                 foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
                 {
-                    role.LoadAttributes();
+                    role.LoadAttributes( rockContext );
                     var roleState = GroupTypeRolesState.Where( r => r.Guid.Equals( role.Guid ) ).FirstOrDefault();
                     if ( roleState != null && roleState.AttributeValues != null )
                     {
@@ -1577,6 +1577,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
+                attribute.Order = GroupTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
                 GroupTypeAttributesState.RemoveEntity( attribute.Guid );
             }
             else
@@ -1722,8 +1723,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            GroupAttributesState.RemoveEntity( attribute.Guid );
-            attribute.Order = GroupAttributesState.Any() ? GroupAttributesState.Max( a => a.Order ) + 1 : 0;
+            if ( GroupAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = GroupAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                GroupAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = GroupAttributesState.Any() ? GroupAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
             GroupAttributesState.Add( attribute );
 
             BindGroupAttributesGrid();
@@ -1862,8 +1870,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            GroupMemberAttributesState.RemoveEntity( attribute.Guid );
-            attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
+            if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                GroupMemberAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();

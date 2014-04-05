@@ -1205,17 +1205,29 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Reorders the attribute list.
         /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
+        /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        public virtual void ReorderAttributeList( ViewStateList<Attribute> attributeList, int oldIndex, int newIndex )
+        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
         {
-            var movedItem = attributeList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
             {
-                foreach ( var otherItem in attributeList.Where( a => a.Order != oldIndex && a.Order >= newIndex ) )
+                if ( newIndex < oldIndex )
                 {
-                    otherItem.Order = otherItem.Order + 1;
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
                 }
 
                 movedItem.Order = newIndex;
@@ -1597,8 +1609,15 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            GroupMemberAttributesState.RemoveEntity( attribute.Guid );
-            attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
+            if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                GroupMemberAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = GroupMemberAttributesState.Any() ? GroupMemberAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
             GroupMemberAttributesState.Add( attribute );
 
             BindGroupMemberAttributesGrid();
@@ -1624,7 +1643,7 @@ namespace RockWeb.Blocks.Groups
         {
             gGroupMemberAttributes.AddCssClass( "attribute-grid" );
             SetAttributeListOrder( GroupMemberAttributesState );
-            gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupMemberAttributes.DataSource = GroupMemberAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gGroupMemberAttributes.DataBind();
         }
 

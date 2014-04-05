@@ -394,7 +394,7 @@ namespace RockWeb.Blocks.Groups
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, "", true );
             if ( readOnly )
             {
                 Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
