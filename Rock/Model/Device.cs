@@ -43,7 +43,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> representing the Name of the device.
         /// </value>
         [Required]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
