@@ -84,40 +84,48 @@ namespace Rock.Communication.Transport
                         var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
                         if ( recipient != null )
                         {
-                            var phoneNumber = recipient.Person.PhoneNumbers
-                                .Where( p => p.IsMessagingEnabled )
-                                .FirstOrDefault();
-
-                            if ( phoneNumber == null || string.IsNullOrWhiteSpace(phoneNumber.Number))
+                            try
                             {
-                                recipient.Status = CommunicationRecipientStatus.Failed;
-                                recipient.StatusNote = "No Phone Number with Messaging Enabled";
-                            }
-                            else
-                            {
-                                // Create merge field dictionary
-                                var mergeObjects = MergeValues( globalConfigValues, recipient );
-                                string subject = communication.Subject.ResolveMergeFields( mergeObjects );
-                                string twillioNumber = phoneNumber.Number;
-                                if (!string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
-                                {
-                                    twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                }
+                                var phoneNumbers = recipient.Person.PhoneNumbers
+                                    .Where( p => 
+                                        p.IsMessagingEnabled &&
+                                        p.Number != null &&
+                                        p.Number != "" )
+                                    .ToList();
 
-                                try
+                                if (phoneNumbers.Any())
                                 {
-                                    twilio.SendMessage( fromPhone, twillioNumber, subject );
+                                    // Create merge field dictionary
+                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
+                                    string subject = communication.Subject.ResolveMergeFields( mergeObjects );
+
+                                    foreach ( var phoneNumber in phoneNumbers )
+                                    {
+                                        string twillioNumber = phoneNumber.Number;
+                                        if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                        {
+                                            twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                        }
+
+                                        twilio.SendMessage( fromPhone, twillioNumber, subject );
+                                    }
+
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
+
                                 }
-                                catch ( Exception ex )
+                                else
                                 {
                                     recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "Twilio Exception: " + ex.Message;
+                                    recipient.StatusNote = "No Phone Number with Messaging Enabled";
                                 }
+                            }
+                            catch ( Exception ex )
+                            {
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "Twilio Exception: " + ex.Message;
                             }
 
                             rockContext.SaveChanges();
-
                         }
                         else
                         {
