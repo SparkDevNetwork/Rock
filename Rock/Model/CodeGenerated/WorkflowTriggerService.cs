@@ -97,6 +97,7 @@ namespace Rock.Model
             target.WorkflowName = source.WorkflowName;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

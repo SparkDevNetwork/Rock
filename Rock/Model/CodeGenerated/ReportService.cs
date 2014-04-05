@@ -93,12 +93,14 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.EntityTypeId = source.EntityTypeId;
             target.DataViewId = source.DataViewId;
+            target.FetchTop = source.FetchTop;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

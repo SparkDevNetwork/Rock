@@ -162,12 +162,6 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<ReportField>( Context ).Queryable().Any( a => a.DataSelectComponentEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, ReportField.FriendlyTypeName );
-                return false;
-            }  
- 
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
@@ -229,6 +223,7 @@ namespace Rock.Model
             target.IsCommon = source.IsCommon;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

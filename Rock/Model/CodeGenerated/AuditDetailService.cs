@@ -93,6 +93,7 @@ namespace Rock.Model
             target.CurrentValue = source.CurrentValue;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }
