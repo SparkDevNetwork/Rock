@@ -261,6 +261,46 @@
     }
 }
 
+.badge-lastvisitonsite {
+
+    .badge-content {
+        position: relative;
+
+        color: #4f89bd;
+
+        &.recent {
+            opacity: .8;
+        }
+
+        &.moderate {
+            opacity: .6;
+        }
+
+        &.not-recent {
+            opacity: .4;
+        }
+
+        &.old {
+            opacity: .2;
+        }
+
+        i {
+            font-size: 40px;
+        }
+
+        span.duration {
+            position: absolute;
+            top: 6px;
+            font-size: 16px;
+            font-weight: @font-weight-bold;
+            text-align: center;
+            right: 50%;
+            width: 36px;
+            margin-right: -17px;
+        }
+    }
+}
+
 @-webkit-keyframes bar-grow {
   0% {
     height: 0;
@@ -522,9 +562,16 @@ span.field-value {
 
 // 12. Person Page Views
 // -------------------------
-.pageviewsession {
+.panel-widget.pageviewsession {
+
+    .panel-heading {
+        small {
+            color: @accent-bold-color;
+        }
+    }
 
     .pageviewsession-client {
+        color: @accent-bold-color;
         text-align: right;
         line-height: 1;
     }

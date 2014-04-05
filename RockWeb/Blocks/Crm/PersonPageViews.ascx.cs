@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Crm
         private DateTime startDate = DateTime.MinValue;
         private DateTime endDate = DateTime.MaxValue;
         private int pageNumber = 0;
+        private int siteId = -1;
 
         #endregion
 
@@ -100,9 +101,14 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                if ( !String.IsNullOrEmpty( PageParameter( "page" ) ) )
+                if ( !String.IsNullOrEmpty( PageParameter( "Page" ) ) )
                 {
-                    pageNumber = Int32.Parse( PageParameter( "page" ) );
+                    pageNumber = Int32.Parse( PageParameter( "Page" ) );
+                }
+
+                if ( !String.IsNullOrEmpty( PageParameter( "SiteId" ) ) )
+                {
+                    siteId = Int32.Parse( PageParameter( "SiteId" ) );
                 }
 
                 ShowList();
@@ -264,6 +270,11 @@ namespace RockWeb.Blocks.Crm
                     sessionInfo = sessionInfo.Where( s => s.StartDateTime < drpDateFilter.UpperValue );
                 }
 
+                if ( siteId != -1 )
+                {
+                    sessionInfo = sessionInfo.Where( s => s.SiteId == siteId );
+                }
+
                 sessionInfo = sessionInfo.OrderByDescending(p => p.StartDateTime)
                                 .Skip( skipCount )
                                 .Take( sessionCount + 1);
@@ -276,8 +287,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
-                    queryStringNext.Add( "page", (pageNumber + 1).ToString() );
+                    queryStringNext.Add( "Page", (pageNumber + 1).ToString() );
                     queryStringNext.Add( "PersonId", personId.ToString() );
+                    if ( siteId != -1 )
+                    {
+                        queryStringNext.Add( "SiteId", siteId.ToString() );
+                    }
                     if ( startDate != DateTime.MinValue )
                     {
                         queryStringNext.Add( "StartDate", startDate.ToShortDateString() );
@@ -303,8 +318,12 @@ namespace RockWeb.Blocks.Crm
                 {
                     hlPrev.Visible = hlPrev.Enabled = true;
                     Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
-                    queryStringPrev.Add( "page", (pageNumber - 1).ToString() );
+                    queryStringPrev.Add( "Page", (pageNumber - 1).ToString() );
                     queryStringPrev.Add( "PersonId", personId.ToString() );
+                    if ( siteId != -1 )
+                    {
+                        queryStringPrev.Add( "SiteId", siteId.ToString() );
+                    }
                     if ( startDate != DateTime.MinValue )
                     {
                         queryStringPrev.Add( "StartDate", startDate.ToShortDateString() );
