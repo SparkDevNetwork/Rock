@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             var communications = new CommunicationTemplateService( new RockContext() )
-                .Queryable( "OwnerPersonAlias.Person" );
+                .Queryable( "ChannelEntityType,CreatedByPersonAlias.Person" );
 
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
