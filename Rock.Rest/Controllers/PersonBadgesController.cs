@@ -58,6 +58,15 @@ namespace Rock.Rest.Controllers
                 });
 
             routes.MapHttpRoute(
+                name: "GetLastVisitOnSite",
+                routeTemplate: "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}",
+                defaults: new
+                {
+                    controller = "PersonBadges",
+                    action = "GetLastVisitOnSite"
+                } );
+
+            routes.MapHttpRoute(
                 name: "GetInGroupOfType",
                 routeTemplate: "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}",
                 defaults: new
@@ -137,6 +146,29 @@ namespace Rock.Rest.Controllers
             if (result != null)
             {
                 return (int)result;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public int GetLastVisitOnSite( int personId, int siteId )
+        {
+            PageView mostRecentPageView = new PageViewService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                                                .Where( p => p.PersonAlias.PersonId == personId && p.SiteId == siteId )
+                                                .OrderByDescending( p => p.DateTimeViewed )
+                                                .FirstOrDefault();
+
+            if ( mostRecentPageView != null && mostRecentPageView.DateTimeViewed.HasValue)
+            {
+                TimeSpan duration = RockDateTime.Now - mostRecentPageView.DateTimeViewed.Value;
+                return duration.Days;
             }
 
             return -1;
