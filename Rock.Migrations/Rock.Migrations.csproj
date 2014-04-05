@@ -33,13 +33,11 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -808,6 +806,10 @@
     <Compile Include="Migrations\201404050016302_AddForeignId.Designer.cs">
       <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404050034562_EF61.cs" />
+    <Compile Include="Migrations\201404050034562_EF61.Designer.cs">
+      <DependentUpon>201404050034562_EF61.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1394,6 +1396,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404050016302_AddForeignId.resx">
       <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404050034562_EF61.resx">
+      <DependentUpon>201404050034562_EF61.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

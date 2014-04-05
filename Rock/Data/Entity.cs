@@ -63,7 +63,7 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember]
         public Guid Guid
         {
@@ -109,7 +109,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
-        public virtual string TypeName 
+        public virtual string TypeName
         {
             get
             {
@@ -256,7 +256,7 @@ namespace Rock.Data
         {
             var dictionary = new Dictionary<string, object>();
 
-            foreach(var propInfo in this.GetType().GetProperties())
+            foreach ( var propInfo in this.GetType().GetProperties() )
             {
                 if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" )
                 {
@@ -302,7 +302,7 @@ namespace Rock.Data
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public virtual object ToLiquid(bool debug = false)
+        public virtual object ToLiquid( bool debug = false )
         {
             var dictionary = new Dictionary<string, object>();
 
@@ -338,9 +338,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
         /// <returns>An instance of the entity object based on the provided JSON string.</returns>
-        public static T FromJson(string json) 
+        public static T FromJson( string json )
         {
-            return JsonConvert.DeserializeObject(json, typeof(T)) as T;
+            return JsonConvert.DeserializeObject( json, typeof( T ) ) as T;
         }
 
         #endregion
@@ -371,4 +371,4 @@ namespace Rock.Data
 
     #endregion
 
-} 
+}

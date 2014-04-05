@@ -27,7 +27,7 @@ namespace Rock.Migrations
         {
             AutomaticMigrationsEnabled = false;
             MigrationsNamespace = "Rock.Migrations";
-            CodeGenerator = new RockCSharpMigrationCodeGenerator<Rock.Data.RockContext>( false );
+            CodeGenerator = new RockCSharpMigrationCodeGenerator<Rock.Data.RockContext>();
             CommandTimeout = 300;
         }
 

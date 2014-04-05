@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
