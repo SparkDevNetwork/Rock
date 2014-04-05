@@ -320,28 +320,39 @@ namespace Rock.Data
         /// <param name="items">The items.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        public virtual void Reorder( List<T> items, int oldIndex, int newIndex )
+        /// <returns>List of Ids who's order changed</returns>
+        public virtual List<int> Reorder( List<T> items, int oldIndex, int newIndex )
         {
-            T movedItem = items[oldIndex];
-            items.RemoveAt( oldIndex );
-            if ( newIndex >= items.Count )
-                items.Add( movedItem );
-            else
-                items.Insert( newIndex, movedItem );
+            var Ids = new List<int>();
 
-            int order = 0;
-            foreach ( T item in items )
+            T movedItem = items[oldIndex];
+            if ( movedItem != null )
             {
-                IOrdered orderedItem = item as IOrdered;
-                if ( orderedItem != null )
+                Ids.Add( movedItem.Id );
+
+                items.RemoveAt( oldIndex );
+                if ( newIndex >= items.Count )
+                    items.Add( movedItem );
+                else
+                    items.Insert( newIndex, movedItem );
+
+                int order = 0;
+                foreach ( T item in items )
                 {
-                    if ( orderedItem.Order != order )
+                    IOrdered orderedItem = item as IOrdered;
+                    if ( orderedItem != null )
                     {
-                        orderedItem.Order = order;
+                        if ( orderedItem.Order != order )
+                        {
+                            Ids.Add( item.Id );
+                            orderedItem.Order = order;
+                        }
                     }
+                    order++;
                 }
-                order++;
             }
+
+            return Ids;
         }
 
         #endregion
