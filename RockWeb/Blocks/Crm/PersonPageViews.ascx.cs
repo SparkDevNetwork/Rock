@@ -43,7 +43,9 @@ namespace RockWeb.Blocks.Crm
     {
         #region Fields
 
-        // used for private variables
+        private DateTime startDate = DateTime.MinValue;
+        private DateTime endDate = DateTime.MaxValue;
+        private int pageNumber = 0;
 
         #endregion
 
@@ -80,8 +82,32 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "StartDate" ) ) )
+                {
+                    DateTime.TryParse( PageParameter( "StartDate" ), out startDate );
+                    if ( startDate != DateTime.MinValue )
+                    {
+                        drpDateFilter.LowerValue = startDate;
+                    }
+                }
+
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "EndDate" ) ) )
+                {
+                    DateTime.TryParse( PageParameter( "EndDate" ), out endDate );
+                    if ( endDate != DateTime.MaxValue )
+                    {
+                        drpDateFilter.UpperValue = endDate;
+                    }
+                }
+
+                if ( !String.IsNullOrEmpty( PageParameter( "page" ) ) )
+                {
+                    pageNumber = Int32.Parse( PageParameter( "page" ) );
+                }
+
                 ShowList();
             }
+            
         }
 
         #endregion
@@ -163,6 +189,18 @@ namespace RockWeb.Blocks.Crm
 
         protected void btnFilter_Click( object sender, EventArgs e )
         {
+            if ( drpDateFilter.LowerValue.HasValue )
+            {
+                startDate = drpDateFilter.LowerValue.Value;
+            }
+
+            if ( drpDateFilter.UpperValue.HasValue )
+            {
+                endDate = drpDateFilter.UpperValue.Value;
+            }
+
+            pageNumber = 0;
+
             ShowList();
         }
 
@@ -176,14 +214,9 @@ namespace RockWeb.Blocks.Crm
 
             int sessionCount = Int32.Parse( GetAttributeValue( "SessionCount" ) );
 
-            int pageNumber = 0;
-            if (!String.IsNullOrEmpty(PageParameter("page")) )
-            {
-                pageNumber = Int32.Parse( PageParameter("page") );
-            }
             int skipCount = pageNumber * sessionCount;
 
-            string itemId = PageParameter( "personId" );
+            string itemId = PageParameter( "PersonId" );
             if ( !string.IsNullOrWhiteSpace( itemId ) )
             {
                 int personId = int.Parse( itemId );
@@ -208,34 +241,35 @@ namespace RockWeb.Blocks.Crm
                 var sessionInfo = pageviewService.Queryable()
                     .Where( s => s.PersonAlias.PersonId == personId )
                     .GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent })
-                    .Select( s => new WebSession
-                    {
-                                    SessionId = s.Key.SessionId,
-                                    StartDateTime = s.Min(x => x.DateTimeViewed),
-                                    EndDateTime = s.Max(x => x.DateTimeViewed),
-                                    SiteId = s.Key.SiteId,
-                                    Site = s.Key.SiteName,
-                                    ClientType = s.Key.ClientType,
-                                    IpAddress = s.Key.IpAddress,
-                                    UserAgent = s.Key.UserAgent,
-                                    PageViews = pageViews.Where(p=> p.SessionId == s.Key.SessionId).ToList()
-                    })
-                    .OrderByDescending(p => p.StartDateTime)
-                    .Skip( skipCount )
-                    .Take( sessionCount + 1);
+                                .Select( s => new WebSession
+                                {
+                                                SessionId = s.Key.SessionId,
+                                                StartDateTime = s.Min(x => x.DateTimeViewed),
+                                                EndDateTime = s.Max(x => x.DateTimeViewed),
+                                                SiteId = s.Key.SiteId,
+                                                Site = s.Key.SiteName,
+                                                ClientType = s.Key.ClientType,
+                                                IpAddress = s.Key.IpAddress,
+                                                UserAgent = s.Key.UserAgent,
+                                                PageViews = pageViews.Where(p=> p.SessionId == s.Key.SessionId).ToList()
+                                });
+
+                if ( startDate != DateTime.MinValue )
+                {
+                    sessionInfo = sessionInfo.Where( s => s.StartDateTime > drpDateFilter.LowerValue );
+                }
+
+                if ( endDate != DateTime.MaxValue )
+                {
+                    sessionInfo = sessionInfo.Where( s => s.StartDateTime < drpDateFilter.UpperValue );
+                }
+
+                sessionInfo = sessionInfo.OrderByDescending(p => p.StartDateTime)
+                                .Skip( skipCount )
+                                .Take( sessionCount + 1);
 
                 rptSessions.DataSource = sessionInfo.ToList().Take(sessionCount);
                 rptSessions.DataBind();
-
-                /*if ( drpDateFilter.LowerValue.HasValue )
-                {
-                    sessionInfo.Where( s => s.DateTimeViewed > drpDateFilter.LowerValue );
-                }
-
-                if ( drpDateFilter.UpperValue.HasValue )
-                {
-                    sessionInfo.Where( s => s.DateTimeViewed < drpDateFilter.UpperValue );
-                }*/
 
                 // set next button
                 if ( sessionInfo.Count() > sessionCount )
@@ -243,7 +277,15 @@ namespace RockWeb.Blocks.Crm
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
                     queryStringNext.Add( "page", (pageNumber + 1).ToString() );
-                    queryStringNext.Add( "personId", personId.ToString() );
+                    queryStringNext.Add( "PersonId", personId.ToString() );
+                    if ( startDate != DateTime.MinValue )
+                    {
+                        queryStringNext.Add( "StartDate", startDate.ToShortDateString() );
+                    }
+                    if ( endDate != DateTime.MaxValue )
+                    {
+                        queryStringNext.Add( "EndDate", endDate.ToShortDateString() );
+                    }
                     var pageReferenceNext = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringNext );
                     hlNext.NavigateUrl = pageReferenceNext.BuildUrl();
                 }
@@ -262,7 +304,15 @@ namespace RockWeb.Blocks.Crm
                     hlPrev.Visible = hlPrev.Enabled = true;
                     Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
                     queryStringPrev.Add( "page", (pageNumber - 1).ToString() );
-                    queryStringPrev.Add( "personId", personId.ToString() );
+                    queryStringPrev.Add( "PersonId", personId.ToString() );
+                    if ( startDate != DateTime.MinValue )
+                    {
+                        queryStringPrev.Add( "StartDate", startDate.ToShortDateString() );
+                    }
+                    if ( endDate != DateTime.MaxValue )
+                    {
+                        queryStringPrev.Add( "EndDate", endDate.ToShortDateString() );
+                    }
                     var pageReferencePrev = new Rock.Web.PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId, queryStringPrev );
                     hlPrev.NavigateUrl = pageReferencePrev.BuildUrl();
                 }
