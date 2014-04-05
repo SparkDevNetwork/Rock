@@ -443,14 +443,13 @@ namespace RockWeb.Blocks.Crm
                 }
             } );
 
-            Service service = new Service( rockContext );
             foreach ( var p in MergeData.People.Where( p => p.Id != primaryPersonId.Value ) )
             {
                 // Run merge proc to merge all associated data
                 var parms = new Dictionary<string, object>();
                 parms.Add( "OldId", p.Id );
                 parms.Add( "NewId", primaryPersonId.Value );
-                service.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
+                DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
             }
 
             NavigateToLinkedPage( "PersonDetailPage", "PersonId", primaryPersonId.Value );

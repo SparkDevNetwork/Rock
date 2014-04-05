@@ -260,9 +260,7 @@ namespace Rock.Model
         public static void MakePermanent( string commaDelimitedIds )
         {
             string query = string.Format( "UPDATE BinaryFile SET IsTemporary = 0 WHERE Id IN ({0})", commaDelimitedIds );
-            var rockContext = new Rock.Data.RockContext();
-            var service = new Service( rockContext );
-            service.ExecuteCommand( query );
+            Rock.Data.DbService.ExecuteCommand( query );
         }
 
         /// <summary>
@@ -272,9 +270,7 @@ namespace Rock.Model
         public static void MakePermanent( int id)
         {
             string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);
-            var rockContext = new Rock.Data.RockContext();
-            var service = new Service( rockContext );
-            service.ExecuteCommand( query );
+            Rock.Data.DbService.ExecuteCommand( query );
         }
 
         #endregion

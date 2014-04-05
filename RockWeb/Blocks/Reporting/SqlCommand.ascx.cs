@@ -91,7 +91,6 @@ namespace RockWeb.Blocks.Reporting
             gReport.Visible = false;
 
             string query = tbQuery.Text;
-            var rockContext = new RockContext();
             if ( !string.IsNullOrWhiteSpace( query ) )
             {
                 try
@@ -100,7 +99,7 @@ namespace RockWeb.Blocks.Reporting
                     {
                         gReport.Visible = true;
 
-                        DataTable dataTable = new Service( rockContext ).GetDataTable( query, CommandType.Text, null );
+                        DataTable dataTable = DbService.GetDataTable( query, CommandType.Text, null );
 
                         AddGridColumns( dataTable );
 
@@ -109,7 +108,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else
                     {
-                        int rows = new Service( rockContext ).ExecuteCommand( query );
+                        int rows = DbService.ExecuteCommand( query );
                         if ( rows < 0 )
                         {
                             rows = 0;

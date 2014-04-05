@@ -576,8 +576,7 @@ namespace RockWeb.Blocks.Administraton
         /// </summary>
         private void ClearExceptionLog()
         {
-            Service service = new Service( new RockContext() );
-            service.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
+            DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
         }
 
         /// <summary>
