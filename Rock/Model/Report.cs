@@ -255,14 +255,10 @@ namespace Rock.Model
                     Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
                     Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                    // TODO Update Service.Get to take a fetchTop parameter then update the code below
-
-                    //MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ) } );
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
-                        //var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty, this.FetchTop } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty, this.FetchTop } );
                         var qry = getResult as IQueryable<IEntity>;
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );

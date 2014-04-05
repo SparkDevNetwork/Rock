@@ -159,7 +159,7 @@ namespace Rock.Data
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression )
         {
-            return Get( parameterExpression, whereExpression, null );
+            return Get( parameterExpression, whereExpression, null, null );
         }
 
         /// <summary>
@@ -171,11 +171,35 @@ namespace Rock.Data
         /// <returns></returns>
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
+            return Get( parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Gets the specified parameter expression.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
             if ( parameterExpression != null && whereExpression != null )
             {
                 var lambda = Expression.Lambda<Func<T, bool>>( whereExpression, parameterExpression );
                 var queryable = Queryable().Where( lambda );
-                return sortProperty != null ? queryable.Sort( sortProperty ) : queryable;
+
+                if (sortProperty != null)
+                {
+                    queryable = queryable.Sort( sortProperty );
+                }
+
+                if (fetchTop.HasValue)
+                {
+                    queryable = queryable.Take( fetchTop.Value );
+                }
+
+                return queryable;
             }
 
             return this.Queryable();
