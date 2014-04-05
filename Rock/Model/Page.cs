@@ -446,10 +446,9 @@ namespace Rock.Model
         {
             if (state == System.Data.Entity.EntityState.Deleted)
             {
-                Service service = new Service( dbContext );
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
-                service.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+                Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
             }
         }
 

@@ -133,8 +133,7 @@ namespace Rock.Rest.Controllers
             parameters.Add("PersonId", personId);
             parameters.Add("WeekDuration", weekCount);
 
-            var result = new Service( (Rock.Data.RockContext)Service.Context )
-                .ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
+            var result = DbService.ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
             if (result != null)
             {
                 return (int)result;
@@ -158,8 +157,7 @@ namespace Rock.Rest.Controllers
             parameters.Add("PersonId", personId);
             parameters.Add("MonthCount", monthCount);
 
-            var table = new Service( (Rock.Data.RockContext)Service.Context )
-                .GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
+            var table = DbService.GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
 
             if (table != null)
             {

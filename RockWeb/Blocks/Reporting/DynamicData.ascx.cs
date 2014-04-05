@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Reporting
                     query = query.ResolveMergeFields( PageParameters() );
 
                     var parameters = GetParameters();
-                    DataTable dataTable = new Service( new RockContext() ).GetDataTable( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
+                    DataTable dataTable = DbService.GetDataTable( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
 
                     if ( string.IsNullOrWhiteSpace( ceFormattedOutput.Text ) )
                     {

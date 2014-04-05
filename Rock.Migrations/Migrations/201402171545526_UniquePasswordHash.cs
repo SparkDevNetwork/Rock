@@ -31,7 +31,6 @@ namespace Rock.Migrations
         public override void Up()
         {
 
-            var service = new Rock.Data.Service( new Rock.Data.RockContext() );
             string qry = @"
     SELECT 
          L.[Id]
@@ -41,7 +40,7 @@ namespace Rock.Migrations
         [UserLogin] L
         INNER JOIN [EntityType] ET ON ET.[Id] = L.[entityTypeId] AND ET.[Guid] = '4E9B798F-BB68-4C0E-9707-0928D15AB020'
 ";
-            var rdr = service.GetDataReader( qry, System.Data.CommandType.Text, null );
+            var rdr = Rock.Data.DbService.GetDataReader( qry, System.Data.CommandType.Text, null );
             while ( rdr.Read() )
             {
                 var hash = new System.Security.Cryptography.HMACSHA1();
@@ -59,7 +58,7 @@ namespace Rock.Migrations
         [Id] = {1}
 ", newPassword, rdr["Id"].ToString() );
 
-                service.ExecuteCommand( updateQry, System.Data.CommandType.Text );
+                Rock.Data.DbService.ExecuteCommand( updateQry, System.Data.CommandType.Text );
             }
 
             rdr.Close();

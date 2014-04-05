@@ -50,6 +50,28 @@ namespace Rock.Data
         /// </returns>
         public override int SaveChanges()
         {
+            return SaveChanges( false );
+        }
+
+        /// <summary>
+        /// Saves all changes made in this context to the underlying database.  The
+        /// default pre and post processing can also optionally be disabled.  This 
+        /// would disable audit records being created, workflows being triggered, and
+        /// any PreSaveChanges() methods being called for changed entities.  
+        /// </summary>
+        /// <param name="disablePrePostProcessing">if set to <c>true</c> disables 
+        /// the Pre and Post processing from being run. This should only be disabled
+        /// when updating a large number of records at a time (e.g. importing records).</param>
+        /// <returns></returns>
+        public int SaveChanges(bool disablePrePostProcessing)
+        {
+            // Pre and Post processing has been disabled, just call the base 
+            // SaveChanges() method and return
+            if ( disablePrePostProcessing )
+            {
+                return base.SaveChanges();
+            }
+
             int result = 0;
 
             SaveErrorMessages = new List<string>();

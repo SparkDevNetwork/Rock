@@ -132,7 +132,7 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByZipCode", options.OrderByZipCode );
-            var result = new Service( Service.Context).GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
+            var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
             {

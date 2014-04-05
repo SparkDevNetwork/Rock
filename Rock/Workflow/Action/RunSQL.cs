@@ -48,8 +48,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var query = GetAttributeValue( action, "SQLQuery" );
-            var rockContext = new Rock.Data.RockContext();
-            int rows = new Service( rockContext ).ExecuteCommand( query );
+            int rows = DbService.ExecuteCommand( query );
 
             action.AddLogEntry( "SQL query has been run" );
 
