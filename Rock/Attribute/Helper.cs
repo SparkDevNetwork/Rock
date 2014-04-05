@@ -436,11 +436,17 @@ namespace Rock.Attribute
         /// <param name="entity">The entity.</param>
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
         {
-            var attributes = entity.Attributes.Select( a => a.Value ).OrderBy( t => t.Order).ThenBy(t => t.Name).ToList();
-            return GetAttributeCategories( attributes, onlyIncludeGridColumns, allowMultiple );
+            var attributes = entity.Attributes.Select( a => a.Value );
+            if ( !supressOrdering )
+            {
+                attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+            }
+
+            return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
         }
 
         /// <summary>
@@ -522,6 +528,24 @@ namespace Rock.Attribute
             var newAttribute = new Rock.Model.Attribute();
             edtAttribute.GetAttributeProperties( newAttribute );
 
+            rockContext = rockContext ?? new RockContext();
+            var internalAttributeService = new AttributeService( rockContext );
+            Rock.Model.Attribute attribute = null;
+
+            if ( newAttribute.Id > 0 )
+            {
+                attribute = internalAttributeService.Get( newAttribute.Id );
+            }
+
+            if ( attribute == null )
+            {
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+            else
+            {
+                newAttribute.Order = attribute.Order;
+            } 
+            
             return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
 
@@ -573,14 +597,12 @@ namespace Rock.Attribute
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
                 internalAttributeService.Add( attribute );
-                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
             }
             else
             {
                 // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
                 newAttribute.Id = attribute.Id;
                 newAttribute.Guid = attribute.Guid;
-                newAttribute.Order = attribute.Order;
             }
 
             // Copy all the properties from the new attribute to the attribute model
@@ -819,9 +841,10 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "" )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
         {
-            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>() );
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
         }
 
         /// <summary>
@@ -832,11 +855,12 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attribute names not to render</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
             if ( item.Attributes != null )
             {
-                foreach ( var attributeCategory in GetAttributeCategories( item ) )
+                foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
@@ -888,14 +912,15 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false )
         {
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
 
             if ( item.Attributes != null )
             {
-                AddDisplayControls(item, GetAttributeCategories(item), parentControl, exclude);
+                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude);
             }
         }
 
