@@ -16,6 +16,21 @@
             <Rock:Grid ID="gBusinessList" runat="server" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBusinessList_RowSelected">
                 <Columns>
                     <asp:BoundField DataField="FirstName" HeaderText="Business Name" SortExpression="FirstName" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Contact</HeaderTemplate>
+                        <ItemTemplate>
+                            <%# Eval("PhoneNumbers[0].NumberFormatted") %><br />
+                            <%# Eval("Email") %>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:TemplateField>
+                        <HeaderTemplate>Address</HeaderTemplate>
+                        <ItemTemplate>
+                            <%# Eval("GivingGroup.GroupLocations[0].Location.Street1") %><br />
+                            <asp:PlaceHolder ID="phStreet2" runat="server" />
+                            <%# Eval("GivingGroup.GroupLocations[0].Location.City") %>, <%# Eval("GivingGroup.GroupLocations[0].Location.State") %> <%# Eval("GivingGroup.GroupLocations[0].Location.Zip") %>
+                        </ItemTemplate>
+                    </asp:TemplateField>
 <%--                    <asp:BoundField DataField="Contacts" HeaderText="Contacts" SortExpression="Contacts" />
                     <asp:BoundField DataField="Address" HeaderText="Address" SortExpression="Address" />--%>
                     <Rock:EditField OnClick="gBusinessList_Edit" />

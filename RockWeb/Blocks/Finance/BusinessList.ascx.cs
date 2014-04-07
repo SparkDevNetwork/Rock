@@ -101,7 +101,19 @@ namespace RockWeb.Blocks.Finance
 
         protected void gBusinessList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var business = e.Row.DataItem as Person;
+                var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
+                if (!string.IsNullOrWhiteSpace(location.Street2))
+                {
+                    PlaceHolder phStreet2 = e.Row.FindControl( "phStreet2" ) as PlaceHolder;
+                    if ( phStreet2 != null )
+                    {
+                        phStreet2.Controls.Add( new LiteralControl( string.Format( "{0}</br>", location.Street2 ) ) );
+                    }
+                }
+            }
         }
 
         protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
