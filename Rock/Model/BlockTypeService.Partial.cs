@@ -99,7 +99,6 @@ namespace Rock.Model
                             // Create new BlockType record and save it
                             blockType = new BlockType();
                             blockType.Path = path;
-                            blockType.Guid = new Guid();
                             blockTypeService.Add( blockType );
                         }
 
@@ -130,7 +129,9 @@ namespace Rock.Model
                     }
                 }
             }
+
             rockContext.SaveChanges();
+        
         }
 
         /// <summary>
