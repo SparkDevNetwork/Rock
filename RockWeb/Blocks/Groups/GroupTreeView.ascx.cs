@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -42,7 +42,6 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Detail Page" )]
     public partial class GroupTreeView : RockBlock
     {
-
         #region Fields
 
         private string _groupId = string.Empty;
@@ -66,7 +65,7 @@ namespace RockWeb.Blocks.Groups
             hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
-            
+
             // hide all the actions if user doesn't have EDIT to the block
             divTreeviewActions.Visible = canEditBlock;
         }
@@ -121,7 +120,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group == null )
                 {
                     int id = _groupId.AsInteger() ?? 0;
-                    group = new GroupService().Queryable( "GroupType" )
+                    group = new GroupService( new RockContext() ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, group );
@@ -244,7 +243,7 @@ namespace RockWeb.Blocks.Groups
                 groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
             }
 
-            var groupService = new GroupService();
+            var groupService = new GroupService( new RockContext() );
             var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
             foreach ( var group in qry )

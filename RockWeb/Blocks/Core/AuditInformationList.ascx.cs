@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -48,7 +49,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            etpEntityTypeFilter.EntityTypes = new EntityTypeService().GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+            etpEntityTypeFilter.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
 
             gfSettings.ApplyFilterClick += gfSettings_ApplyFilterClick;
             gfSettings.DisplayFilterValue += gfSettings_DisplayFilterValue;
@@ -117,7 +118,7 @@ namespace RockWeb.Blocks.Core
                         int personId = int.MinValue;
                         if (int.TryParse(e.Value, out personId))
                         {
-                            var person = new PersonService().Get(personId);
+                            var person = new PersonService( new RockContext() ).Get( personId );
                             if (person != null)
                             {
                                 e.Value = person.FullName;
@@ -172,7 +173,7 @@ namespace RockWeb.Blocks.Core
             int personId = int.MinValue;
             if ( int.TryParse(  gfSettings.GetUserPreference( "Who" ), out personId ) )
             {
-                var person = new PersonService().Get( personId );
+                var person = new PersonService( new RockContext() ).Get( personId );
                 if ( person != null )
                 {
                     ppWhoFilter.SetValue( person );
@@ -189,7 +190,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var qry = new AuditService().Queryable("PersonAlias.Person");
+            var qry = new AuditService( new RockContext() ).Queryable( "PersonAlias.Person" );
 
             int entityTypeId = int.MinValue;
             if (int.TryParse( gfSettings.GetUserPreference( "Entity Type" ), out entityTypeId))
@@ -247,7 +248,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="auditId">The audit identifier.</param>
         private void BindProperties (int auditId)
         {
-            gProperties.DataSource = new AuditDetailService().Queryable()
+            gProperties.DataSource = new AuditDetailService( new RockContext() ).Queryable()
                 .Where( d => d.AuditId == auditId )
                 .OrderBy( d => d.Property ).ToList();
             gProperties.DataBind();

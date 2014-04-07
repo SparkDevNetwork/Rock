@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class RestControllersController : Rock.Rest.ApiController<Rock.Model.RestController>
     {
-        public RestControllersController() : base( new Rock.Model.RestControllerService() ) { } 
+        public RestControllersController() : base( new Rock.Model.RestControllerService( new Rock.Data.RockContext() ) ) { } 
     }
 }

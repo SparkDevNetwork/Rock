@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -98,12 +99,12 @@ namespace Rock.Web.UI.Controls
                     else
                     {
                         // otherwise read the new location and save the state
-                        Rock.Web.SystemSettings.SetValue( LOC_GUID, locGuid.ToString(), null );
-                        var location = new Rock.Model.LocationService().Get( locGuid );
+                        Rock.Web.SystemSettings.SetValue( LOC_GUID, locGuid.ToString() );
+                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
                         if ( location != null )
                         {
                             orgState = location.State;
-                            Rock.Web.SystemSettings.SetValue( LOC_STATE, orgState, null );
+                            Rock.Web.SystemSettings.SetValue( LOC_STATE, orgState );
                         }
                     }
                 }

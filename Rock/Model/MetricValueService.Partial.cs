@@ -34,9 +34,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="metricId">A <see cref="System.Int32"/> representing the MetricId to retreive <see cref="Rock.Model.MetricValue">MetricvValues</see> for.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.MetricValue">MetricValues</see> that belong to the specified <see cref="Rock.Model.Metric"/></returns>
-        public IEnumerable<Rock.Model.MetricValue> GetByMetricId( int? metricId )
+        public IOrderedQueryable<Rock.Model.MetricValue> GetByMetricId( int? metricId )
         {
-            return Repository.Find( t => ( t.MetricId == metricId || ( metricId == null && t.MetricId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.MetricId == metricId || ( metricId == null && t.MetricId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.MetricValue"/> that contains the provided Guid. If no match is found, this value will be null.</returns>
         public MetricValue GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
     }
 }

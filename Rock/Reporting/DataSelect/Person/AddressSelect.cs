@@ -134,7 +134,7 @@ namespace Rock.Reporting.DataSelect.Person
             int? groupLocationTypeValueId = selection.AsInteger( false );
 
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
+            int familyGroupTypeId = new GroupTypeService( context ).Get( familyGuid ).Id;
 
             var groupMemberQuery = new GroupMemberService( context ).Queryable();
 

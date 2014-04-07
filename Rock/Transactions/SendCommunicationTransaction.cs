@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using Rock.Data;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,14 +45,14 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var communication = new CommunicationService().Get( CommunicationId );
+            var communication = new CommunicationService( new RockContext() ).Get( CommunicationId );
 
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
                 var channel = communication.Channel;
                 if ( channel != null )
                 {
-                    channel.Send( communication, PersonAlias );
+                    channel.Send( communication );
                 }
             }
         }

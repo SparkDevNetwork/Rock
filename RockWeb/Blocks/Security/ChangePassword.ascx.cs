@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Security
@@ -82,7 +82,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChange_Click( object sender, EventArgs e )
         {
-            var userLoginService = new UserLoginService();
+            RockContext rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbUserName.Text );
 
             if ( userLogin != null )
@@ -97,7 +98,7 @@ namespace RockWeb.Blocks.Security
                         string warningMessage;
                         if ( component.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text, out warningMessage ) )
                         {
-                            userLoginService.Save( userLogin, CurrentPersonAlias );
+                            rockContext.SaveChanges();
 
                             lSuccess.Text = GetAttributeValue( "SuccessCaption" );
                             pnlEntry.Visible = false;

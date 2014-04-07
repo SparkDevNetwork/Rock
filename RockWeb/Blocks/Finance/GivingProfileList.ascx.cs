@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -32,16 +33,15 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Finance
 {
-
     /// <summary>
     /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
     /// </summary>
-    [DisplayName("Giving Profile List")]
-    [Category("Finance")]
-    [Description("Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).")]
+    [DisplayName( "Giving Profile List" )]
+    [Category( "Finance" )]
+    [Description( "Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person)." )]
 
-    [LinkedPage("Edit Page")]
-    [LinkedPage("Add Page")]
+    [LinkedPage( "Edit Page" )]
+    [LinkedPage( "Add Page" )]
     [ContextAware( typeof( Person ) )]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : "");
+            gfSettings.SaveUserPreference( "Include Inactive", cbIncludeInactive.Checked ? "Yes" : string.Empty );
             BindGrid();
         }
 
@@ -116,9 +116,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void gfSettings_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            if (e.Key != "Include Inactive")
+            if ( e.Key != "Include Inactive" )
             {
                 e.Value = string.Empty;
             }
@@ -132,14 +132,14 @@ namespace RockWeb.Blocks.Finance
         protected void rGridGivingProfile_Edit( object sender, RowEventArgs e )
         {
             string urlEncodedKey = string.Empty;
-            if (TargetPerson != null)
+            if ( TargetPerson != null )
             {
                 urlEncodedKey = TargetPerson.UrlEncodedKey;
             }
             else
             {
-                var txn = new FinancialScheduledTransactionService().Get( (int)e.RowKeyValue );
-                if (txn != null && txn.AuthorizedPerson != null)
+                var txn = new FinancialScheduledTransactionService( new RockContext() ).Get( (int)e.RowKeyValue );
+                if ( txn != null && txn.AuthorizedPerson != null )
                 {
                     urlEncodedKey = txn.AuthorizedPerson.UrlEncodedKey;
                 }
@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Finance
 
             var parms = new Dictionary<string, string>();
             parms.Add( "Txn", rGridGivingProfile.DataKeys[e.RowIndex]["id"].ToString() );
-            if (!string.IsNullOrWhiteSpace(urlEncodedKey))
+            if ( !string.IsNullOrWhiteSpace( urlEncodedKey ) )
             {
                 parms.Add( "Person", urlEncodedKey );
             }
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Finance
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "AddPage", parms );
         }
-        
+
         /// <summary>
         /// Handles the Delete event of the grdFinancialGivingProfile control.
         /// </summary>
@@ -197,7 +197,6 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
-                
         #endregion
 
         #region Methods
@@ -211,14 +210,14 @@ namespace RockWeb.Blocks.Finance
 
             int? personId = null;
             int? givingGroupId = null;
-            if (TargetPerson != null)
+            if ( TargetPerson != null )
             {
                 personId = TargetPerson.Id;
                 givingGroupId = TargetPerson.GivingGroupId;
             }
 
-            rGridGivingProfile.DataSource = new FinancialScheduledTransactionService()
-                .Get(personId, givingGroupId, includeInactive).ToList();
+            rGridGivingProfile.DataSource = new FinancialScheduledTransactionService( new RockContext() )
+                .Get( personId, givingGroupId, includeInactive ).ToList();
 
             rGridGivingProfile.DataBind();
         }
@@ -236,6 +235,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-        
-    }        
+    }
 }

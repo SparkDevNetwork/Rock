@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationService"/> class
         /// </summary>
-        public CommunicationService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public CommunicationService(IRepository<Communication> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public CommunicationService(RockContext context) : base(context)
         {
@@ -119,6 +103,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

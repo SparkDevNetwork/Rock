@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -84,7 +84,7 @@ namespace Rock.Web.Cache
                 {
                     restActionIds = new List<int>();
 
-                    var restActionService = new Model.RestActionService();
+                    var restActionService = new Model.RestActionService( new RockContext() );
                     foreach ( var restAction in restActionService.Queryable()
                         .Where( a => a.ControllerId == this.Id ) )
                     {
@@ -160,7 +160,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService();
+                var RestControllerService = new RestControllerService( new RockContext() );
                 var RestControllerModel = RestControllerService.Get( id );
                 if ( RestControllerModel != null )
                 {
@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService();
+                var RestControllerService = new RestControllerService( new RockContext() );
                 var RestControllerModel = RestControllerService
                     .Queryable( "RestActions" )
                     .Where( t => t.Guid == guid )
@@ -234,7 +234,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService();
+                var RestControllerService = new RestControllerService( new RockContext() );
                 var RestControllerModel = RestControllerService.Queryable()
                     .Where( a => a.ClassName == className )
                     .FirstOrDefault();

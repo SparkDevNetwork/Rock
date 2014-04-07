@@ -25,7 +25,7 @@
     <script src="<%# ResolveUrl("~/Scripts/jquery.jRespond.min.js") %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
@@ -55,13 +55,15 @@
                     <!-- Brand Bar -->
 			        <div class="navbar-header">
 
-                        <button class="navbar-toggle" type="button" data-toggle="collapsex" data-target=".pagenav">
+                        <button class="navbar-toggle navbar-toggle-header" type="button" data-target=".pagenav">
                             <i class="fa fa-bars fa-2x"></i>
                         </button>
 
-                        <asp:HyperLink ID="hlHome" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock">
-                            <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
-                        </asp:HyperLink>
+                        <div class="navbar-brand">
+                            <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
+                                <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                            </asp:HyperLink>
+                        </div>
                     
                         
 			        </div>	
@@ -144,7 +146,7 @@
        
         var jPM = $.jPanelMenu({
             menu: '.pagenav',
-            trigger: '.navbar-toggle'
+            trigger: '.navbar-toggle-header'
         });
 
         //jPM.on();

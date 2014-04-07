@@ -26,6 +26,7 @@
     23. TypeAhead - styles for type ahead support
     24. Image Cropper - styles for image crop component
     25. Active Users - styles for the active users block
+    26. Navigation for Paging - styles for creating a pager
 */
 
 // 1. Pickers
@@ -336,6 +337,7 @@ ul.rocktree ul {
 // -------------------------
 
 .rollover-container {
+    position: relative;
 
     & > .rollover-item {
         opacity: 0;
@@ -406,9 +408,8 @@ ul.rocktree ul {
 // 7. Pagelist Nav
 // -------------------------
 
-.nav-pills.nav-pagelist {
-    margin: @spacing-lg-px 0 @spacing-md-px;
-    padding: @spacing-sm-px @spacing-md-px;
+.nav.nav-pagelist {
+    margin: 10px 0;
     background-color: @accent-light-color;
     border: 1px solid darken(@accent-light-color, 10%);
     border-radius: @border-radius-base;
@@ -422,6 +423,36 @@ ul.rocktree ul {
         a {
             color: @accent-bold-color;
         }
+    }
+
+    .navbar-toggle {
+        width: 100%;
+        margin: 0;
+
+        &:focus {outline:0;}
+
+        i {
+            float: right;
+            color: @accent-bold-color;
+            margin-top: 8px;
+        }
+
+        .collapse-current-item {
+            background-color: @accent-bold-color;
+            color: @accent-bold-text-color;
+            padding: 10px 15px;
+            border-radius: @border-radius-base;
+            float: left;
+        }
+    }
+
+    .navbar-collapse {
+        padding: 0;
+    }
+
+    .nav.nav-pills {
+        margin: 10px 0;
+        padding: 0 15px;
     }
 }
 
@@ -808,7 +839,8 @@ div.tagsinput
 	    color: @smartsearch-input-text-color;
 	    border-radius: 0;
 	    width: 150px;
-        margin: 2px 0 0 6px;
+        margin: 0 0 0 6px;
+        font-size: 14px;
 
         &:focus {
             box-shadow: 0 0 0 0;
@@ -1363,7 +1395,7 @@ ul.groupmembers {
         float: left;
         margin-right: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        min-width: 150px;
+        min-width: 130px;
 
         .person-image {
             border: 3px solid @accent-bold-color;
@@ -1585,5 +1617,18 @@ ul.rocklist {
 .not-recent {
     i {
         color: @brand-warning;
+    }
+}
+
+// 26. Navigation for Paging
+// -------------------------
+
+.nav-paging {
+    .btn-prev {
+        float: left;
+    }
+
+    .btn-next {
+        float: right;
     }
 }

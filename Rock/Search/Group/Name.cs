@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Search.Group
@@ -54,7 +54,7 @@ namespace Rock.Search.Group
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new GroupService().Queryable().Where( g => ( g.Name ).Contains( searchterm ) ).Select( g => g.Name );
+            return new GroupService( new RockContext() ).Queryable().Where( g => ( g.Name ).Contains( searchterm ) ).Select( g => g.Name );
         }
     }
 }

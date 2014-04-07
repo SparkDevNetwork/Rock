@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -116,10 +117,10 @@ namespace RockWeb.Blocks.Core
                     hfSelectedCategoryId.Value = itemId;
                     List<string> parentIdList = new List<string>();
 
-                    Category category = null;
+                    CategoryCache category = null;
                     if ( selectedEntityType.Equals( "category" ) )
                     {
-                        category = new CategoryService().Get( int.Parse( itemId ) );
+                        category = CategoryCache.Read( int.Parse( itemId ) );
                         lbAddItem.Enabled = true;
                         lbAddCategoryChild.Enabled = true;
                     }
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Core
                                     Type serviceType = typeof( Rock.Data.Service<> );
                                     Type[] modelType = { entityType };
                                     Type service = serviceType.MakeGenericType( modelType );
-                                    var serviceInstance = Activator.CreateInstance( service );
+                                    var serviceInstance = Activator.CreateInstance( service, new object[] { new RockContext() } );
                                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                                     ICategorized entity = getMethod.Invoke( serviceInstance, new object[] { id } ) as ICategorized;
 
@@ -144,10 +145,13 @@ namespace RockWeb.Blocks.Core
                                     {
                                         lbAddCategoryRoot.Enabled = false;
                                         lbAddCategoryChild.Enabled = false;
-                                        category = entity.Category;
-                                        if ( category != null )
+                                        if ( entity.CategoryId.HasValue )
                                         {
-                                            parentIdList.Insert( 0, category.Id.ToString() );
+                                            category = CategoryCache.Read( entity.CategoryId.Value );
+                                            if ( category != null )
+                                            {
+                                                parentIdList.Insert( 0, category.Id.ToString() );
+                                            }
                                         }
                                     }
                                 }

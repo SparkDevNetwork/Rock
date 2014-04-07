@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowLogsController : Rock.Rest.ApiController<Rock.Model.WorkflowLog>
     {
-        public WorkflowLogsController() : base( new Rock.Model.WorkflowLogService() ) { } 
+        public WorkflowLogsController() : base( new Rock.Model.WorkflowLogService( new Rock.Data.RockContext() ) ) { } 
     }
 }

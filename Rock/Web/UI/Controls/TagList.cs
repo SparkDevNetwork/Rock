@@ -22,7 +22,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -192,7 +192,7 @@ Rock.controls.tagList.initialize({{
         {
             var sb = new StringBuilder();
 
-            var service = new TaggedItemService();
+            var service = new TaggedItemService( new RockContext() );
             foreach ( dynamic item in service.Get(
                 EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid )
                 .Select( i => new
@@ -225,8 +225,9 @@ Rock.controls.tagList.initialize({{
 
             if ( EntityGuid != Guid.Empty )
             {
-                var tagService = new TagService();
-                var taggedItemService = new TaggedItemService();
+                var rockContext = new RockContext();
+                var tagService = new TagService( rockContext );
+                var taggedItemService = new TaggedItemService( rockContext );
 
                 // Get the existing tags for this entity type
                 var existingTags = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId ).ToList();
@@ -254,8 +255,6 @@ Rock.controls.tagList.initialize({{
                         tag.EntityTypeQualifierValue = EntityQualifierValue;
                         tag.OwnerId = currentPersonId.Value;
                         tag.Name = tagName;
-                        tagService.Add( tag, personAlias );
-                        tagService.Save( tag, personAlias );
                     }
 
                     if ( tag != null )
@@ -264,16 +263,19 @@ Rock.controls.tagList.initialize({{
                     }
                 }
 
+                rockContext.SaveChanges();
+
                 // Delete any tagged items that user removed
                 var names = currentTags.Select( t => t.Name ).ToList();
                 foreach ( var taggedItem in existingTaggedItems)
                 {
                     if ( !names.Contains( taggedItem.Tag.Name, StringComparer.OrdinalIgnoreCase ) )
                     {
-                        taggedItemService.Delete( taggedItem, personAlias );
-                        taggedItemService.Save( taggedItem, personAlias );
+                        taggedItemService.Delete( taggedItem );
                     }
                 }
+
+                rockContext.SaveChanges();
 
                 // Add any tagged items that user added
                 names = existingTaggedItems.Select( t => t.Tag.Name ).ToList();
@@ -284,10 +286,11 @@ Rock.controls.tagList.initialize({{
                         var taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;
                         taggedItem.EntityGuid = EntityGuid;
-                        taggedItemService.Add( taggedItem, personAlias );
-                        taggedItemService.Save( taggedItem, personAlias );
+                        taggedItemService.Add( taggedItem );
                     }
                 }
+
+                rockContext.SaveChanges();
             }
         }
 

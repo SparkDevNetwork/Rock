@@ -57,8 +57,8 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var context = (RockContext)new Service().Repository.Context;
-            var metaPhones = context.Metaphones;
+            var rockContext = new RockContext();
+            var metaPhones = rockContext.Metaphones;
 
             foreach( string name in names.Where( n => !metaPhones.Any( m => m.Name == n ) ) )
             {
@@ -74,7 +74,7 @@ namespace Rock.Transactions
                 metaPhones.Add( metaphone );
             }
 
-            context.SaveChanges();
+            rockContext.SaveChanges();
         }
     }
 }

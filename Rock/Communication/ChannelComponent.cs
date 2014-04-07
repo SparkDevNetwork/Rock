@@ -77,13 +77,12 @@ namespace Rock.Communication
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void Send( Rock.Model.Communication communication, PersonAlias personAlias )
+        public virtual void Send( Rock.Model.Communication communication )
         {
             var transport = Transport;
             if ( transport != null )
             {
-                transport.Send( communication, personAlias );
+                transport.Send( communication );
             }
         }
     }

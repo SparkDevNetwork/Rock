@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Communication
                         int personId = 0;
                         if ( int.TryParse( e.Value, out personId ) && personId != 0 )
                         {
-                            var personService = new PersonService();
+                            var personService = new PersonService( new RockContext() );
                             var person = personService.Get( personId );
                             if ( person != null )
                             {
@@ -169,29 +169,28 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            var service = new CommunicationTemplateService( rockContext );
+            var template = service.Get( e.RowKeyId );
+            if ( template != null )
             {
-                var service = new CommunicationTemplateService();
-                var template = service.Get( e.RowKeyId );
-                if ( template != null )
+                if ( !template.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
                 {
-                    if ( !template.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
-                    {
-                        maGridWarning.Show( "You are not authorized to delete this template", ModalAlertType.Information );
-                        return;
-                    }
-
-                    string errorMessage;
-                    if ( !service.CanDelete( template, out errorMessage ) )
-                    {
-                        maGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    service.Delete( template, CurrentPersonAlias );
-                    service.Save( template, CurrentPersonAlias );
+                    maGridWarning.Show( "You are not authorized to delete this template", ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                string errorMessage;
+                if ( !service.CanDelete( template, out errorMessage ) )
+                {
+                    maGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( template );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -229,7 +228,7 @@ namespace RockWeb.Blocks.Communication
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
                 {
-                    var personService = new PersonService();
+                    var personService = new PersonService( new RockContext() );
                     var person = personService.Get( personId );
                     if ( person != null )
                     {
@@ -241,62 +240,59 @@ namespace RockWeb.Blocks.Communication
 
         private void BindGrid()
         {
-            using ( new UnitOfWorkScope() )
-            {
-                var communications = new CommunicationTemplateService()
-                    .Queryable("OwnerPersonAlias.Person");
+            var communications = new CommunicationTemplateService( new RockContext() )
+                .Queryable( "ChannelEntityType,CreatedByPersonAlias.Person" );
 
-                Guid entityTypeGuid = Guid.Empty;
-                if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
+            Guid entityTypeGuid = Guid.Empty;
+            if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
+            {
+                communications = communications
+                    .Where( c =>
+                        c.ChannelEntityType != null &&
+                        c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
+            }
+
+            if ( _canEdit )
+            {
+                int personId = 0;
+                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
                 {
                     communications = communications
-                        .Where( c => 
-                            c.ChannelEntityType != null && 
-                            c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
+                        .Where( c =>
+                            c.CreatedByPersonAlias != null &&
+                            c.CreatedByPersonAlias.PersonId == personId );
                 }
-
-                if ( _canEdit )
-                {
-                    int personId = 0;
-                    if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
-                    {
-                        communications = communications
-                            .Where( c =>
-                                c.CreatedByPersonAlias != null &&
-                                c.CreatedByPersonAlias.PersonId == personId );
-                    }
-                }
-
-                var sortProperty = gCommunication.SortProperty;
-
-                if ( sortProperty != null )
-                {
-                    communications = communications.Sort( sortProperty );
-                }
-                else
-                {
-                    communications = communications.OrderBy( c => c.Name );
-                }
-
-                var viewableCommunications = new List<CommunicationTemplate>();
-                if ( _canEdit )
-                {
-                    viewableCommunications = communications.ToList();
-                }
-                else
-                {
-                    foreach ( var comm in communications )
-                    {
-                        if ( comm.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                        {
-                            viewableCommunications.Add( comm );
-                        }
-                    }
-                }
-                
-                gCommunication.DataSource = viewableCommunications;
-                gCommunication.DataBind();
             }
+
+            var sortProperty = gCommunication.SortProperty;
+
+            if ( sortProperty != null )
+            {
+                communications = communications.Sort( sortProperty );
+            }
+            else
+            {
+                communications = communications.OrderBy( c => c.Name );
+            }
+
+            var viewableCommunications = new List<CommunicationTemplate>();
+            if ( _canEdit )
+            {
+                viewableCommunications = communications.ToList();
+            }
+            else
+            {
+                foreach ( var comm in communications )
+                {
+                    if ( comm.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        viewableCommunications.Add( comm );
+                    }
+                }
+            }
+
+            gCommunication.DataSource = viewableCommunications;
+            gCommunication.DataBind();
 
         }
 

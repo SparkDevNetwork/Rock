@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -440,7 +441,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var siteService = new SiteService();
+                var siteService = new SiteService( new RockContext() );
                 var siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
@@ -476,7 +477,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var siteService = new SiteService();
+                var siteService = new SiteService( new RockContext() );
                 var siteModel = siteService.Get( guid );
                 if ( siteModel != null )
                 {
@@ -562,7 +563,7 @@ namespace Rock.Web.Cache
             else
             {
                 // get from database
-                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService();
+                Rock.Model.SiteDomainService siteDomainService = new Rock.Model.SiteDomainService( new RockContext() );
                 Rock.Model.SiteDomain siteDomain = siteDomainService.GetByDomain( host );
 
                 if ( siteDomain == null )

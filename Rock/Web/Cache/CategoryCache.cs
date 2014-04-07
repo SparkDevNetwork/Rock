@@ -20,7 +20,7 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using System.Web.UI;
-
+using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Security;
@@ -165,7 +165,7 @@ namespace Rock.Web.Cache
                 {
                     categoryIds = new List<int>();
 
-                    CategoryService categoryService = new CategoryService();
+                    CategoryService categoryService = new CategoryService( new RockContext() );
                     foreach ( Category category in categoryService.Get( this.Id, this.EntityTypeId ) )
                     {
                         categoryIds.Add( category.Id );
@@ -244,7 +244,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var categoryService = new Rock.Model.CategoryService();
+                var categoryService = new Rock.Model.CategoryService( new RockContext() );
                 var categoryModel = categoryService.Get( id );
                 if ( categoryModel != null )
                 {
@@ -279,7 +279,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var categoryService = new CategoryService();
+                var categoryService = new CategoryService( new RockContext() );
                 var categoryModel = categoryService.Get(guid);
 
                 if ( categoryModel != null )

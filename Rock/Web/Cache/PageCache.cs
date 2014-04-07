@@ -23,6 +23,7 @@ using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -311,7 +312,7 @@ namespace Rock.Web.Cache
                 {
                     pageIds = new List<int>();
 
-                    PageService pageService = new PageService();
+                    PageService pageService = new PageService( new RockContext() );
                     foreach ( Page page in pageService.GetByParentPageId( this.Id ) )
                     {
                         page.LoadAttributes();
@@ -350,7 +351,7 @@ namespace Rock.Web.Cache
                     blockIds = new List<int>();
 
                     // Load Layout Blocks
-                    BlockService blockService = new BlockService();
+                    BlockService blockService = new BlockService( new RockContext() );
                     foreach ( Block block in blockService.GetByLayout( this.LayoutId ) )
                     {
                         blockIds.Add( block.Id );
@@ -793,7 +794,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var pageService = new PageService();
+                var pageService = new PageService( new RockContext() );
                 var pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
@@ -829,7 +830,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var pageService = new PageService();
+                var pageService = new PageService( new RockContext() );
                 var pageModel = pageService.Get( guid );
                 if ( pageModel != null )
                 {

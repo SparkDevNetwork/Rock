@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected values.
         /// </value>
-        public List<Guid> SelectedValues
+        public new List<Guid> SelectedValues
         {
             get
             {

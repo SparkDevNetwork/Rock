@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedService"/> class
         /// </summary>
-        public PersonViewedService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonViewedService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PersonViewedService(IRepository<PersonViewed> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonViewedService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PersonViewedService(RockContext context) : base(context)
         {
@@ -110,6 +94,7 @@ namespace Rock.Model
             target.Source = source.Source;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

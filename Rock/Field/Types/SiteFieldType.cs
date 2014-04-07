@@ -17,8 +17,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -39,9 +39,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id };
 
-            SiteService siteService = new SiteService();
+            SiteService siteService = new SiteService( new RockContext() );
             var siteList = siteService.Queryable().OrderBy( a => a.Name ).ToList();
 
             if ( siteList.Any() )

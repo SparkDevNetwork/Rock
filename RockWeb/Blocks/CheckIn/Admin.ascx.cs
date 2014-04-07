@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock;
+using Rock.Data;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -78,7 +79,7 @@ namespace RockWeb.Blocks.CheckIn
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 ddlKiosk.Items.Clear();
-                ddlKiosk.DataSource = new DeviceService().Queryable().ToList();
+                ddlKiosk.DataSource = new DeviceService( new RockContext() ).Queryable().ToList();
                 ddlKiosk.DataBind();
                 ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
 
@@ -105,7 +106,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             // try to find matching kiosk by REMOTE_ADDR (ip/name).
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
-            var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
+            var device = new DeviceService( new RockContext() ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
             if ( device != null )
             {
                 ClearMobileCookie();
@@ -334,7 +335,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( ddlKiosk.SelectedValue != None.IdValue )
             {
-                var kiosk = new DeviceService().Get( Int32.Parse( ddlKiosk.SelectedValue ) );
+                var kiosk = new DeviceService( new RockContext() ).Get( Int32.Parse( ddlKiosk.SelectedValue ) );
                 if ( kiosk != null )
                 {
                     cblGroupTypes.DataSource = kiosk.GetLocationGroupTypes();
@@ -382,7 +383,7 @@ namespace RockWeb.Blocks.CheckIn
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
             // We need to use the DeviceService until we can get the GeoFence to JSON Serialize/Deserialize.
-            Device kiosk = new DeviceService().GetByGeocode( latitude, longitude, checkInDeviceTypeId );
+            Device kiosk = new DeviceService( new RockContext() ).GetByGeocode( latitude, longitude, checkInDeviceTypeId );
 
             return kiosk;
         }

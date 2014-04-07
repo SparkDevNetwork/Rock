@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DefinedTypesController : Rock.Rest.ApiController<Rock.Model.DefinedType>
     {
-        public DefinedTypesController() : base( new Rock.Model.DefinedTypeService() ) { } 
+        public DefinedTypesController() : base( new Rock.Model.DefinedTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -232,7 +233,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return new LocationService().Get( _hfLocationId.ValueAsInt() );
+                return new LocationService( new RockContext() ).Get( _hfLocationId.ValueAsInt() );
             }
 
             private set
@@ -463,7 +464,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
-            LocationService locationService = new LocationService();
+            LocationService locationService = new LocationService( new RockContext() );
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );

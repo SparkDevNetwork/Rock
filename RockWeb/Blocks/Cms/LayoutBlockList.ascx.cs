@@ -84,25 +84,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteBlock_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            BlockService blockService = new BlockService( rockContext );
+            Block block = blockService.Get( e.RowKeyId );
+            if ( block != null )
             {
-                BlockService blockService = new BlockService();
-                Block block = blockService.Get( e.RowKeyId );
-                if ( block != null )
+                string errorMessage;
+                if ( !blockService.CanDelete( block, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( ! blockService.CanDelete( block, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    blockService.Delete( block, CurrentPersonAlias );
-                    blockService.Save( block, CurrentPersonAlias );
-
-                    BlockCache.Flush( e.RowKeyId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                blockService.Delete( block );
+                rockContext.SaveChanges();
+
+                BlockCache.Flush( e.RowKeyId );
+            }
 
             BindLayoutBlocksGrid();
         }
@@ -135,7 +133,7 @@ namespace RockWeb.Blocks.Cms
 
             pnlBlocks.Visible = true;
 
-            BlockService blockService = new BlockService();
+            BlockService blockService = new BlockService( new RockContext() );
 
             gLayoutBlocks.DataSource = blockService.GetByLayout( layoutId ).ToList();
             gLayoutBlocks.DataBind();

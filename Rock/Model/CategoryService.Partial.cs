@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Category">Categories</see> that meet the specified criteria. </returns>
         public IQueryable<Category> Get( int? ParentId, int? entityTypeId )
         {
-            var query = Repository.AsQueryable()
+            var query = Queryable()
                 .Where( c => (c.ParentCategoryId ?? 0) == (ParentId ?? 0) );
 
             if ( entityTypeId.HasValue )
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Category">Categories</see> that meet the search criteria.</returns>
         public IQueryable<Category> Get( string name, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( c =>
                     string.Compare( c.Name, name, true ) == 0 &&
                     c.EntityTypeId == entityTypeId &&
@@ -74,7 +74,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.Category">Categories</see> are used for the specified <see cref="Rock.Model.Category"/>.</returns>
         public IQueryable<Category> GetByEntityTypeId( int? entityTypeId )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue ) ))
                 .OrderBy( t => t.Order)
                 .ThenBy( t => t.Name);

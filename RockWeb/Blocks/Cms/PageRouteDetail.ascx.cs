@@ -25,6 +25,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using System.ComponentModel;
 using Rock.Security;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -90,7 +91,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                pageRoute = new PageRouteService().Get( itemKeyValue );
+                pageRoute = new PageRouteService( new RockContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -148,14 +149,15 @@ namespace RockWeb.Blocks.Cms
         protected void btnSave_Click( object sender, EventArgs e )
         {
             PageRoute pageRoute;
-            PageRouteService pageRouteService = new PageRouteService();
+            var rockContext = new RockContext();
+            PageRouteService pageRouteService = new PageRouteService( rockContext );
 
             int pageRouteId = int.Parse( hfPageRouteId.Value );
 
             if ( pageRouteId == 0 )
             {
                 pageRoute = new PageRoute();
-                pageRouteService.Add( pageRoute, CurrentPersonAlias );
+                pageRouteService.Add( pageRoute );
             }
             else
             {
@@ -172,7 +174,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            pageRouteService.Save( pageRoute, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             // new or updated route
             var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteId() == pageRoute.Id );

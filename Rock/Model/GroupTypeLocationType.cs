@@ -70,20 +70,4 @@ namespace Rock.Model
         [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }
     }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class GroupTypeLocationTypeConfiguration : EntityTypeConfiguration<GroupTypeLocationType>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeLocationTypeConfiguration" /> class.
-        /// </summary>
-        public GroupTypeLocationTypeConfiguration()
-        {
-            this.HasRequired( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId );
-            this.HasRequired( t => t.LocationTypeValue ).WithMany().HasForeignKey( t => t.LocationTypeValueId );
-        }
-    }
-
 }

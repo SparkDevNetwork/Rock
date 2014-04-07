@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
@@ -130,7 +130,7 @@ namespace Rock.Model
         {
             get
             {
-                var fileService = new BinaryFileService();
+                var fileService = new BinaryFileService( new RockContext() );
                 var qry = fileService.Queryable()
                     .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
                 return qry;

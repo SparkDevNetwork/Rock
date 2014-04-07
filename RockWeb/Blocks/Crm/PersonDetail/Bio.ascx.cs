@@ -21,9 +21,9 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     lName.Text = Person.FullName.FormatAsHtmlTitle();
                 }
                 else {
-                    lName.Text = String.Format( "{0} ({1}) {2}", Person.NickName, Person.FirstName, Person.LastName ).FormatAsHtmlTitle();
+                    lName.Text = String.Format( "{0} <span class='full-name'>({1})</span> {2}", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
                 }
 
                 // Setup Image
@@ -144,12 +144,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // Every person should have an alias record with same id.  If it's missing, create it
                 if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                 {
-                    var personService = new PersonService();
+                    var rockContext = new RockContext();
+                    var personService = new PersonService( rockContext );
                     var person = personService.Get( Person.Id );
                     if ( person != null )
                     {
                         person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
-                        personService.Save( person, CurrentPersonAlias );
+                        rockContext.SaveChanges();
                         Person = person;
                     }
                 }

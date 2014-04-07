@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class DevicesController : Rock.Rest.ApiController<Rock.Model.Device>
     {
-        public DevicesController() : base( new Rock.Model.DeviceService() ) { } 
+        public DevicesController() : base( new Rock.Model.DeviceService( new Rock.Data.RockContext() ) ) { } 
     }
 }

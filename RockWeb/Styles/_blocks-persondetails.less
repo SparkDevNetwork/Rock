@@ -12,6 +12,7 @@
     9. Fluidbox
     10. Responsive Overrides
     11. Person Merge
+    12. Person Page Views
 */
 
 // 1. Page Styles
@@ -31,10 +32,14 @@
 .personprofilebar-bio {
     background-color: @accent-light-color;
     border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-    padding: @spacing-md-px;
+    padding: @spacing-md-px @spacing-md-px 0 @spacing-md-px;
 
     .name {
         text-align: center;
+
+        .full-name {
+            display: none;
+        }
     }
 
     .labels {
@@ -44,9 +49,10 @@
 
     .actions { // edit individual button
         position: absolute;
-        right: 12px;
-        margin-top: 38px;
+        right: 50%;
+        bottom: 6px;
         z-index: 10;
+        margin-right: -52px;
     }
 
     .photo {
@@ -85,6 +91,7 @@
     .personcontact {
         text-align: center;
         margin-top: @spacing-md-px;
+        padding-bottom: 30px;
     }
 }
 
@@ -131,13 +138,10 @@
     }
 }
 
-
-
 .badge-attendance {
     ul.badge-attendance-chart { //http://codepen.io/Victa/pen/xDqbf
         display: table;
         table-layout: fixed;
-        width: 100%;
         height: 40px;
         margin: 0 auto;
 
@@ -146,14 +150,15 @@
             display: table-cell;
             vertical-align: bottom;
             height: 40px;
-            width: 15px;
+            width: 10px;
         
             span {
                 display: block;
                 background: @accent-bold-color;
                 position: absolute;
                 bottom: 0;
-                width: 13px;
+                width: 8px;
+                min-height: 1px;
             }
         }
     }
@@ -256,6 +261,46 @@
     }
 }
 
+.badge-lastvisitonsite {
+
+    .badge-content {
+        position: relative;
+
+        color: #4f89bd;
+
+        &.recent {
+            opacity: .8;
+        }
+
+        &.moderate {
+            opacity: .6;
+        }
+
+        &.not-recent {
+            opacity: .4;
+        }
+
+        &.old {
+            opacity: .2;
+        }
+
+        i {
+            font-size: 40px;
+        }
+
+        span.duration {
+            position: absolute;
+            top: 6px;
+            font-size: 16px;
+            font-weight: @font-weight-bold;
+            text-align: center;
+            right: 50%;
+            width: 36px;
+            margin-right: -17px;
+        }
+    }
+}
+
 @-webkit-keyframes bar-grow {
   0% {
     height: 0;
@@ -347,10 +392,6 @@
 .pagetabs
 {
     margin-top: 12px;
-
-    .nav {
-        margin: 10px 0;
-    }
 }
 
 
@@ -422,9 +463,19 @@ span.field-value {
     
     // bio bar
     .personprofilebar-bio {
-        
+        padding: @spacing-md-px;
+
+        .actions {
+            right: 12px;
+            margin-right: 0;
+        }
+
         .name {
             text-align: left;
+        
+            .full-name {
+                display: inline;
+            }
         }
         
         .labels {
@@ -445,6 +496,7 @@ span.field-value {
 
         .personcontact {
             text-align: left;
+            padding-bottom: 0;
         }
     }
 
@@ -506,4 +558,21 @@ span.field-value {
 
 .merge-photo {
     border: 3px solid @accent-bold-color;
+}
+
+// 12. Person Page Views
+// -------------------------
+.panel-widget.pageviewsession {
+
+    .panel-heading {
+        small {
+            color: @accent-bold-color;
+        }
+    }
+
+    .pageviewsession-client {
+        color: @accent-bold-color;
+        text-align: right;
+        line-height: 1;
+    }
 }

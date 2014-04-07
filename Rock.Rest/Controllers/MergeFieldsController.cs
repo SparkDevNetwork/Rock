@@ -245,7 +245,7 @@ namespace Rock.Rest.Controllers
 
                             if ( entityType.IsEntity )
                             {
-                                foreach ( Rock.Model.Attribute attribute in new AttributeService().GetByEntityTypeId( entityType.Id ) )
+                                foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id ) )
                                 {
                                     // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
                                     if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&

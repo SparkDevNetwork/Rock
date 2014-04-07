@@ -33,9 +33,9 @@ namespace Rock.Model
         /// <param name="defaultPageId">An <see cref="System.Int32"/> containing the Id of the default <see cref="Rock.Model.Page"/> to search by. This
         /// value is nullable.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Site"/> entities that use reference the provided PageId.</returns>
-        public IEnumerable<Site> GetByDefaultPageId( int? defaultPageId )
+        public IQueryable<Site> GetByDefaultPageId( int? defaultPageId )
         {
-            return Repository.Find( t => ( t.DefaultPageId == defaultPageId || ( defaultPageId == null && t.DefaultPageId == null ) ) );
+            return Queryable().Where( t => ( t.DefaultPageId == defaultPageId || ( defaultPageId == null && t.DefaultPageId == null ) ) );
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Rock.Model
 
             bool canDelete = CanDelete( item, out errorMessage );
 
-            if ( canDelete && includeSecondLvl && new Service<Layout>().Queryable().Where( l => l.SiteId == item.Id ).Any( a => a.Pages.Count() > 0 ) )
+            if ( canDelete && includeSecondLvl && new Service<Layout>( (RockContext)Context ).Queryable().Where( l => l.SiteId == item.Id ).Any( a => a.Pages.Count() > 0 ) )
             {
                 errorMessage = string.Format( "This {0} has a {1} which is used by a {2}.", Site.FriendlyTypeName, Layout.FriendlyTypeName, Page.FriendlyTypeName );
                 canDelete = false;

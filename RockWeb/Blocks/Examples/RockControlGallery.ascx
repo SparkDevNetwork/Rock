@@ -259,12 +259,12 @@
 
             <a id="GeoPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" />
+                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA"/>
             </div>
 
             <a id="GeoPickerPolygon"></a>
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" />
+                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." />
             </div>
 
             <a id="MergeFieldPicker"></a>

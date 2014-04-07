@@ -32,7 +32,6 @@ namespace Rock.Model
     /// and how they will interact with other components of Rock.
     /// </summary>
     [Table( "GroupType" )]
-    [FriendlyTypeName( "Group Type" )]
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered
     {
@@ -252,6 +251,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [DataMember]
         public virtual ICollection<Group> Groups
         {
             get { return _groups ?? ( _groups = new Collection<Group>() ); }
@@ -265,6 +265,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of the GroupTypes that inherit from this groupType.
         /// </value>
+        [DataMember]
         public virtual ICollection<GroupType> ChildGroupTypes
         {
             get { return _childGroupTypes ?? ( _childGroupTypes = new Collection<GroupType>() ); }
@@ -358,7 +359,7 @@ namespace Rock.Model
         {
             get
             {
-                var groupService = new GroupService();
+                var groupService = new GroupService( new RockContext() );
                 var qry = groupService.Queryable().Where( a => a.GroupTypeId.Equals( this.Id ) );
                 return qry;
             }
@@ -374,6 +375,19 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                ChildGroupTypes.Clear();
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the GroupType that represents this instance.

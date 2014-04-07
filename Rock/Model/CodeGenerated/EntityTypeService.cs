@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityTypeService"/> class
         /// </summary>
-        public EntityTypeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityTypeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public EntityTypeService(IRepository<EntityType> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EntityTypeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public EntityTypeService(RockContext context) : base(context)
         {
@@ -68,49 +52,49 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attribute>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Attribute>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Attribute.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Audit>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Audit>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Audit.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Auth>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Auth>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Auth.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<BinaryFile>().Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
+            if ( new Service<BinaryFile>( Context ).Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFile.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<BinaryFileType>().Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
+            if ( new Service<BinaryFileType>( Context ).Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFileType.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Category>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Category>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Communication>().Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
+            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Communication.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<CommunicationTemplate>().Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
+            if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
@@ -120,37 +104,37 @@ namespace Rock.Model
             
             // ignoring DataView,TransformEntityTypeId 
  
-            if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialPersonSavedAccount>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialScheduledTransactionDetail>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<FinancialScheduledTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<FinancialTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
                 return false;
@@ -160,43 +144,37 @@ namespace Rock.Model
             
             // ignoring History,RelatedEntityTypeId 
  
-            if ( new Service<NoteType>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<NoteType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, NoteType.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<PersonBadge>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<PersonBadge>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersonBadge.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Report>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Report>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<ReportField>().Queryable().Any( a => a.DataSelectComponentEntityTypeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, ReportField.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Tag>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<Tag>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<UserLogin>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<UserLogin>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, UserLogin.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<WorkflowTrigger>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<WorkflowTrigger>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, WorkflowTrigger.FriendlyTypeName );
                 return false;
@@ -245,6 +223,7 @@ namespace Rock.Model
             target.IsCommon = source.IsCommon;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

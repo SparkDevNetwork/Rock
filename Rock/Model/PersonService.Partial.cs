@@ -82,44 +82,16 @@ namespace Rock.Model
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    return base.Repository.AsQueryable( includes )
+                    return Queryable( includes )
                         .Where( p =>
                             p.RecordTypeValueId != definedValue.Id &&
                             ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
                 }
             }
 
-            return base.Repository.AsQueryable( includes )
+            return base.Queryable( includes )
                 .Where( p =>
                     ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );
-        }
-
-        /// <summary>
-        /// Saves the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        public override bool Save( Person item, PersonAlias personAlias )
-        {
-            // Set the nickname if a value was not entered
-            if ( string.IsNullOrWhiteSpace( item.NickName ) )
-            {
-                item.NickName = item.FirstName;
-            }
-
-            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-            if ( item.PhotoId.HasValue )
-            {
-                BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
-                var binaryFile = binaryFileService.Get( item.PhotoId.Value );
-                if ( binaryFile != null && binaryFile.IsTemporary )
-                {
-                    binaryFile.IsTemporary = false;
-                }
-            }
-
-            return base.Save( item, personAlias );
         }
 
         #region Get People
@@ -378,7 +350,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IOrderedQueryable<Person> GetByFullNameOrdered(string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed)
         {
-            var qry = new PersonService().GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
+            var qry = GetByFullName( fullName, includeDeceased, includeBusinesses, allowFirstNameOnly, out reversed );
             if ( reversed )
             {
                 return qry.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
@@ -427,7 +399,7 @@ namespace Rock.Model
 
             if ( !string.IsNullOrWhiteSpace( firstName ) && !string.IsNullOrWhiteSpace( lastName ) )
             {
-                var metaphones = this.RockContext.Metaphones;
+                var metaphones = ((RockContext)this.Context).Metaphones;
 
                 string ln1 = string.Empty;
                 string ln2 = string.Empty;
@@ -505,7 +477,7 @@ namespace Rock.Model
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService().Queryable()
+            return new GroupMemberService((RockContext)this.Context).Queryable()
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
                 .Distinct();
@@ -523,7 +495,7 @@ namespace Rock.Model
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-            return new GroupMemberService().Queryable( "Person" )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != personId )
@@ -541,7 +513,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService().Queryable( "Person" )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
                 .Where( m => m.GroupId == family.Id )
                 .Where( m => includeSelf || m.PersonId != personId )
                 .OrderBy( m => m.GroupRole.Order)
@@ -604,7 +576,7 @@ namespace Rock.Model
         /// <returns></returns>
         public PhoneNumber GetPhoneNumber(Person person, Rock.Web.Cache.DefinedValueCache phoneType)
         {
-            return new PhoneNumberService().Queryable()
+            return new PhoneNumberService( (RockContext)this.Context ).Queryable()
                 .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id)
                 .FirstOrDefault();
         }
@@ -630,7 +602,7 @@ namespace Rock.Model
 
             if (followMerges )
             {
-                var personAlias = new PersonAliasService().GetByAliasId( id );
+                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasId( id );
                 if (personAlias != null)
                 {
                     return personAlias.Person;
@@ -657,7 +629,7 @@ namespace Rock.Model
 
             if (followMerges )
             {
-                var personAlias = new PersonAliasService().GetByAliasGuid( guid );
+                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasGuid( guid );
                 if (personAlias != null)
                 {
                     return personAlias.Person;
@@ -665,6 +637,16 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the by encrypted key.
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <returns></returns>
+        public override Person GetByEncryptedKey( string encryptedKey )
+        {
+            return GetByEncryptedKey( encryptedKey, true );
         }
 
         /// <summary>
@@ -677,7 +659,7 @@ namespace Rock.Model
         /// </returns>
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
-            var person = GetByEncryptedKey( encryptedKey );
+            var person = base.GetByEncryptedKey( encryptedKey );
             if (person != null)
             {
                 return person;
@@ -685,7 +667,7 @@ namespace Rock.Model
 
             if ( followMerges )
             {
-                var personAlias = new PersonAliasService().GetByAliasEncryptedKey(encryptedKey);
+                var personAlias = new PersonAliasService( (RockContext)this.Context ).GetByAliasEncryptedKey( encryptedKey );
                 if (personAlias != null)
                 {
                     return personAlias.Person;
@@ -733,18 +715,18 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting. </param>
         /// <param name="values">A list of <see cref="System.String"/> values representing the value of the preference setting.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public void SaveUserPreference( Person person, string key, List<string> values, PersonAlias personAlias )
+        public static void SaveUserPreference( Person person, string key, List<string> values )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var attributeService = new Model.AttributeService();
+            var rockContext = new RockContext();
+            var attributeService = new Model.AttributeService( rockContext );
             var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if ( attribute == null )
             {
-                var fieldTypeService = new Model.FieldTypeService();
-                var fieldType = fieldTypeService.GetByGuid( new Guid( Rock.SystemGuid.FieldType.TEXT ) );
+                var fieldTypeService = new Model.FieldTypeService( rockContext );
+                var fieldType = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT.AsGuid() );
 
                 attribute = new Model.Attribute();
                 attribute.IsSystem = false;
@@ -760,30 +742,30 @@ namespace Rock.Model
                 attribute.FieldTypeId = fieldType.Id;
                 attribute.Order = 0;
 
-                attributeService.Add( attribute, personAlias );
-                attributeService.Save( attribute, personAlias );
+                attributeService.Add( attribute );
+                rockContext.SaveChanges();
             }
 
-            var attributeValueService = new Model.AttributeValueService();
+            var attributeValueService = new Model.AttributeValueService( rockContext );
 
             // Delete existing values
             var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id ).ToList();
             foreach ( var attributeValue in attributeValues )
             {
-                attributeValueService.Delete( attributeValue, personAlias );
-                attributeValueService.Save( attributeValue, personAlias );
+                attributeValueService.Delete( attributeValue );
             }
 
             // Save new values
             foreach ( var value in values.Where( v => !string.IsNullOrWhiteSpace( v ) ) )
-            {
+            {  
                 var attributeValue = new Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = person.Id;
                 attributeValue.Value = value;
-                attributeValueService.Add( attributeValue, personAlias );
-                attributeValueService.Save( attributeValue, personAlias );
+                attributeValueService.Add( attributeValue );
             }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -792,16 +774,17 @@ namespace Rock.Model
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the preference value for.</param>
         /// <param name="key">A <see cref="System.String"/> representing the key name of the preference setting.</param>
         /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
-        public List<string> GetUserPreference( Person person, string key )
+        public static List<string> GetUserPreference( Person person, string key )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
-            var attributeService = new Model.AttributeService();
+            var rockContext = new Rock.Data.RockContext();
+            var attributeService = new Model.AttributeService( rockContext );
             var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
             if (attribute != null)
             {
-                var attributeValueService = new Model.AttributeValueService();
+                var attributeValueService = new Model.AttributeValueService( rockContext );
                 var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
                 if (attributeValues != null && attributeValues.Count() > 0)
                     return attributeValues.Select( v => v.Value).ToList();
@@ -815,13 +798,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the user preference settings for.</param>
         /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
-        public Dictionary<string, List<string>> GetUserPreferences( Person person )
+        public static Dictionary<string, List<string>> GetUserPreferences( Person person )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
             var values = new Dictionary<string, List<string>>();
 
-            foreach ( var attributeValue in new Model.AttributeValueService().Queryable()
+            var rockContext = new Rock.Data.RockContext();
+            foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
                 .Where( v =>
                     v.Attribute.EntityTypeId == PersonEntityTypeId &&
                     v.Attribute.EntityTypeQualifierColumn == string.Empty &&

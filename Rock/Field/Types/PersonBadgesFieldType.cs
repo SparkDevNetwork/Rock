@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Field.Types
@@ -36,7 +37,7 @@ namespace Rock.Field.Types
         {
             get
             {
-                var service = new PersonBadgeService();
+                var service = new PersonBadgeService( new RockContext() );
                 var qry = service.Queryable();
                 return qry.OrderBy( a => a.Order ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }
