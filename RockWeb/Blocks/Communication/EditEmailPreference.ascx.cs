@@ -68,12 +68,8 @@ namespace RockWeb.Blocks.Communication
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
-                var service = new PersonAliasService( new RockContext() );
-                var personAlias = service.GetByUrlEncodedKey( PageParameter( "Person" ) );
-                if ( personAlias != null )
-                {
-                    _person = personAlias.Person;
-                }
+                var service = new PersonService( new RockContext() );
+                _person = service.GetByUrlEncodedKey( PageParameter( "Person" ) );
             }
 
 

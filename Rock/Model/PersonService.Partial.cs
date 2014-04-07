@@ -640,6 +640,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the by encrypted key.
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <returns></returns>
+        public override Person GetByEncryptedKey( string encryptedKey )
+        {
+            return GetByEncryptedKey( encryptedKey, true );
+        }
+
+        /// <summary>
         /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
         /// </summary>
         /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
@@ -649,7 +659,7 @@ namespace Rock.Model
         /// </returns>
         public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
         {
-            var person = GetByEncryptedKey( encryptedKey );
+            var person = base.GetByEncryptedKey( encryptedKey );
             if (person != null)
             {
                 return person;
