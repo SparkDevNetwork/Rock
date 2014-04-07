@@ -725,7 +725,7 @@ namespace RockWeb.Blocks.Communication
                     !selectedGuids.Any() || selectedGuids.Contains(item.Value.EntityType.Guid))
                 {
                     var entityType = item.Value.EntityType;
-                    channels.Add( entityType.Id, entityType.FriendlyName );
+                    channels.Add( entityType.Id, item.Metadata.ComponentName );
                     if ( !ChannelEntityTypeId.HasValue )
                     {
                         ChannelEntityTypeId = entityType.Id;
