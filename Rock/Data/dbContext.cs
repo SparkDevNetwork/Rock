@@ -146,7 +146,7 @@ namespace Rock.Data
 
                         model.PreSaveChanges( this, entry.State );
 
-                        // Update Created/Modified person and times
+                        // Update Guid/Created/Modified person and times
                         if ( entry.State == EntityState.Added )
                         {
                             if ( !model.CreatedDateTime.HasValue )
@@ -156,6 +156,11 @@ namespace Rock.Data
                             if ( !model.CreatedByPersonAliasId.HasValue )
                             {
                                 model.CreatedByPersonAliasId = personAliasId;
+                            }
+
+                            if (model.Guid == Guid.Empty)
+                            {
+                                model.Guid = Guid.NewGuid();
                             }
 
                             model.ModifiedDateTime = RockDateTime.Now;
