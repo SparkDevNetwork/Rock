@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -138,7 +139,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new PersonService().Queryable();
+            var rockContext = new RockContext();
+            var queryable = new PersonService( rockContext ).Queryable();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
             queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId );
             gBusinessList.DataSource = queryable.ToList();
