@@ -237,18 +237,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The map style.
         /// </value>
-        public string MapStyle
+        public Guid MapStyleValueGuid
         {
             get
             {
                 EnsureChildControls();
-                return _pointPicker.MapStyle;
+                return _pointPicker.MapStyleValueGuid;
             }
             set
             {
                 EnsureChildControls();
-                _pointPicker.MapStyle = value;
-                _polygonPicker.MapStyle = value;
+                _pointPicker.MapStyleValueGuid = value;
+                _polygonPicker.MapStyleValueGuid = value;
             }
         }
 

@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Edit", "", true, "", 1 )]
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, "", "", 4 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 4 )]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -168,6 +168,10 @@ namespace RockWeb.Blocks.Groups
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Group ) ).Id;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlGroupList );
         }
 
         /// <summary>
@@ -629,6 +633,16 @@ namespace RockWeb.Blocks.Groups
             }
 
             ShowSelectedPane();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
         }
 
         #endregion
@@ -1347,13 +1361,7 @@ namespace RockWeb.Blocks.Groups
                             {
                                 locpGroupLocation.CurrentPickerMode = locpGroupLocation.GetBestPickerModeForLocation( groupLocation.Location );
 
-                                string mapStyle = GetAttributeValue( "MapStyle" );
-                                if ( string.IsNullOrWhiteSpace( mapStyle ) )
-                                {
-                                    mapStyle = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK;
-                                }
-
-                                locpGroupLocation.MapStyle = mapStyle;
+                                locpGroupLocation.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
                                 if ( groupLocation.Location != null )
                                 {

@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.Core
         </div>
     {% endif %}
 ")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
+
     public partial class LocationDetail : RockBlock, IDetailBlock
     {
         private int? LocationTypeValueId
@@ -110,7 +112,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Edit Events
+        #region Events
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -407,6 +409,10 @@ namespace RockWeb.Blocks.Core
             locapAddress.SetValue( location );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
+
+            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopPoint.MapStyleValueGuid = mapStyleValueGuid;
+            geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );

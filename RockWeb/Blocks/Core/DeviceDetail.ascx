@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DeviceDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.DeviceDetail" %>
 
-<asp:UpdatePanel ID="upDevice" runat="server">
+<asp:UpdatePanel ID="upnlDevice" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-default" Visible="false">
             
@@ -38,8 +38,8 @@
                             <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true"
                                 Help="What type of device is this?" />
 
-                            <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
-                            <Rock:GeoPicker ID="gpGeoFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
+                            <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
+                            <Rock:GeoPicker ID="geopFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
                             
                         </div>
                         <div class="col-md-6">

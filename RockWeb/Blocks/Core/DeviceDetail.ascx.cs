@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,9 +33,24 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Device Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given device." )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
     public partial class DeviceDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlDevice );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -131,17 +147,21 @@ namespace RockWeb.Blocks.Core
                     var location = new LocationService( rockContext ).Get( locGuid );
                     if ( location != null )
                     {
-                        gpGeoPoint.CenterPoint = location.GeoPoint;
-                        gpGeoFence.CenterPoint = location.GeoPoint;
+                        geopPoint.CenterPoint = location.GeoPoint;
+                        geopFence.CenterPoint = location.GeoPoint;
                     }
                 }
             }
 
             if ( Device.Location != null )
             {
-                gpGeoPoint.SetValue( Device.Location.GeoPoint );
-                gpGeoFence.SetValue( Device.Location.GeoFence );
+                geopPoint.SetValue( Device.Location.GeoPoint );
+                geopFence.SetValue( Device.Location.GeoFence );
             }
+
+            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopPoint.MapStyleValueGuid = mapStyleValueGuid;
+            geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -220,8 +240,8 @@ namespace RockWeb.Blocks.Core
             {
                 Device.Location = new Location();
             }
-            Device.Location.GeoPoint = gpGeoPoint.SelectedValue;
-            Device.Location.GeoFence = gpGeoFence.SelectedValue;
+            Device.Location.GeoPoint = geopPoint.SelectedValue;
+            Device.Location.GeoFence = geopFence.SelectedValue;
 
             if ( !Device.IsValid )
             {
@@ -236,7 +256,19 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Activities and Actions
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopPoint.MapStyleValueGuid = mapStyleValueGuid;
+            geopFence.MapStyleValueGuid = mapStyleValueGuid;
+        }
 
         #endregion
 

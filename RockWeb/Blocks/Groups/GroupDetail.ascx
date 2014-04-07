@@ -6,7 +6,7 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upGroupList" runat="server">
+<asp:UpdatePanel ID="upnlGroupList" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">
