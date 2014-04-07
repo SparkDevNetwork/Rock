@@ -95,6 +95,16 @@ namespace RockWeb.Blocks.Groups
         protected void gfSettings_ApplyFilterClick( object sender, EventArgs e )
         {
             gfSettings.SaveUserPreference( "Group Type", gtpGroupType.SelectedValue );
+
+            if ( ddlActiveFilter.SelectedValue == "all" )
+            {
+                gfSettings.SaveUserPreference( "Active Status", string.Empty );
+            }
+            else
+            {
+                gfSettings.SaveUserPreference( "Active Status", ddlActiveFilter.SelectedValue );
+            }
+
             BindGrid();
         }
 
@@ -211,10 +221,28 @@ namespace RockWeb.Blocks.Groups
         private void BindFilter()
         {
             var groupTypeIds = GetAvailableGroupTypes();
-            gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
-                .Where( g => groupTypeIds.Contains( g.Id ) ).ToList();
 
-            gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
+            if ( groupTypeIds.Count() == 1 )
+            {
+                // if this block only permits one GroupType, there is no reason to show the GroupType filter.  So hide it
+                gtpGroupType.Visible = false;
+                gtpGroupType.SelectedValue = null;
+            }
+            else
+            {
+                gtpGroupType.Visible = true;
+                gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
+                    .Where( g => groupTypeIds.Contains( g.Id ) ).ToList();
+
+                gtpGroupType.SelectedValue = gfSettings.GetUserPreference( "Group Type" );
+            }
+
+            // Set the Active Status
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( gfSettings.GetUserPreference( "Active Status" ) );
+            if ( itemActiveStatus != null )
+            {
+                itemActiveStatus.Selected = true;
+            }
         }
 
         /// <summary>
@@ -227,7 +255,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean() )
             {
-                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsInteger(false);
+                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsInteger( false );
                 if ( groupTypeFilter.HasValue )
                 {
                     groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter.Value ).ToList();
@@ -272,11 +300,26 @@ namespace RockWeb.Blocks.Groups
                 gGroups.IsDeleteEnabled = false;
                 gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
 
-                gGroups.DataSource = new GroupMemberService( rockContext ).Queryable()
+                var qry = new GroupMemberService( rockContext ).Queryable()
                     .Where( m =>
                         m.PersonId == personContext.Id &&
                         groupTypeIds.Contains( m.Group.GroupTypeId ) &&
-                        ( !onlySecurityGroups || m.Group.IsSecurityRole ) )
+                        ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
+
+                // Filter by active/inactive
+                if ( ddlActiveFilter.SelectedIndex > -1 )
+                {
+                    if ( ddlActiveFilter.SelectedValue == "inactive" )
+                    {
+                        qry = qry.Where( a => a.Group.IsActive == false );
+                    }
+                    else if ( ddlActiveFilter.SelectedValue == "active" )
+                    {
+                        qry = qry.Where( a => a.Group.IsActive == true );
+                    }
+                }
+
+                gGroups.DataSource = qry
                     .Select( m => new
                         {
                             Id = m.Group.Id,
@@ -304,11 +347,25 @@ namespace RockWeb.Blocks.Groups
                 boundFields["DateAdded"].Visible = false;
                 boundFields["MemberCount"].Visible = true;
 
-                gGroups.DataSource = new GroupService( rockContext ).Queryable()
+                var qry = new GroupService( rockContext ).Queryable()
                     .Where( g =>
                         groupTypeIds.Contains( g.GroupTypeId ) &&
-                        ( !onlySecurityGroups || g.IsSecurityRole ) )
-                    .Select( g => new
+                        ( !onlySecurityGroups || g.IsSecurityRole ) );
+
+                // Filter by active/inactive
+                if ( ddlActiveFilter.SelectedIndex > -1 )
+                {
+                    if ( ddlActiveFilter.SelectedValue == "inactive" )
+                    {
+                        qry = qry.Where( a => a.IsActive == false );
+                    }
+                    else if ( ddlActiveFilter.SelectedValue == "active" )
+                    {
+                        qry = qry.Where( a => a.IsActive == true );
+                    }
+                }
+
+                gGroups.DataSource = qry.Select( g => new
                         {
                             Id = g.Id,
                             Name = g.Name,
@@ -324,9 +381,9 @@ namespace RockWeb.Blocks.Groups
                         } )
                     .Sort( sortProperty )
                     .ToList();
-
-                gGroups.DataBind();
             }
+
+            gGroups.DataBind();
         }
 
         /// <summary>
