@@ -200,13 +200,15 @@ namespace RockWeb.Blocks.Cms
 
             if ( itemKeyValue.Equals( 0 ) )
             {
-                tbAdDateRangeStartDate.SelectedDate = null;
-                tbAdDateRangeEndDate.SelectedDate = null;
+                drpAdDateRange.LowerValue = null;
+                drpAdDateRange.UpperValue = null;
+                dpAdSingleDate.SelectedDate = null;
             }
             else
             {
-                tbAdDateRangeStartDate.SelectedDate = marketingCampaignAd.StartDate;
-                tbAdDateRangeEndDate.SelectedDate = marketingCampaignAd.EndDate;
+                drpAdDateRange.LowerValue = marketingCampaignAd.StartDate;
+                drpAdDateRange.UpperValue = marketingCampaignAd.EndDate;
+                dpAdSingleDate.SelectedDate = marketingCampaignAd.StartDate;
             }
 
             tbUrl.Text = marketingCampaignAd.Url;
@@ -249,7 +251,8 @@ namespace RockWeb.Blocks.Cms
             int marketingAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
 
             MarketingCampaignAdType marketingCampaignAdType = new MarketingCampaignAdTypeService( new RockContext() ).Get( marketingAdTypeId );
-            tbAdDateRangeEndDate.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+            drpAdDateRange.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+            dpAdSingleDate.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.SingleDate );
 
             List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
@@ -328,32 +331,16 @@ namespace RockWeb.Blocks.Cms
                 marketingCampaignAd.MarketingCampaignStatusPersonId = null;
             }
 
-            if ( tbAdDateRangeStartDate.SelectedDate == null )
+            if (drpAdDateRange.Visible)
             {
-                tbAdDateRangeStartDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "StartDate" ) );
-                return;
+                marketingCampaignAd.StartDate = drpAdDateRange.LowerValue ?? DateTime.MinValue;
+                marketingCampaignAd.EndDate = drpAdDateRange.UpperValue ?? DateTime.MaxValue;
             }
 
-            marketingCampaignAd.StartDate = tbAdDateRangeStartDate.SelectedDate ?? DateTime.MinValue;
-
-            if ( tbAdDateRangeEndDate.Visible )
+            if (dpAdSingleDate.Visible)
             {
-                if ( tbAdDateRangeEndDate.SelectedDate == null )
-                {
-                    tbAdDateRangeEndDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "EndDate" ) );
-                    return;
-                }
-
-                marketingCampaignAd.EndDate = tbAdDateRangeEndDate.SelectedDate ?? DateTime.MaxValue;
-            }
-            else
-            {
+                marketingCampaignAd.StartDate = dpAdSingleDate.SelectedDate ?? DateTime.MinValue;
                 marketingCampaignAd.EndDate = marketingCampaignAd.StartDate;
-            }
-
-            if ( marketingCampaignAd.EndDate < marketingCampaignAd.StartDate )
-            {
-                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
             }
 
             marketingCampaignAd.Url = tbUrl.Text;
