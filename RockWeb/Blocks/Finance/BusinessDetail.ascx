@@ -28,25 +28,25 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="7" />
+                                <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="2" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="8" />
+                                <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="3" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="row">
                                     <div class="col-lg-7">
-                                        <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="9" />
+                                        <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="4" />
                                     </div>
                                     <div class="col-lg-2">
-                                        <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="10" />
+                                        <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="5" />
                                     </div>
                                     <div class="col-lg-3">
-                                        <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="11" />
+                                        <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="6" />
                                     </div>
                                 </div>
                             </div>
@@ -60,15 +60,15 @@
                             <div class="col-md-12">
                                 <div class="row">
                                     <div class="col-sm-7">
-                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="2" />
+                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="7" />
                                     </div>
                                     <div class="col-sm-2">
                                         <div class="row">
                                             <div class="col-xs-6">
-                                                <asp:CheckBox ID="cbSms"  runat="server" Text="Sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="3" />
+                                                <asp:CheckBox ID="cbSms"  runat="server" Text="Sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="8" />
                                             </div>
                                             <div class="col-xs-6">
-                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="4" />
+                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="9" />
                                             </div>
                                         </div>
                                     </div>
@@ -78,12 +78,12 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="5" />
+                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="10" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="6">
+                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="11">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
                                     <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
@@ -92,18 +92,18 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
+                                <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" TabIndex="12" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <legend>Contribution Info</legend>
-                                <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="12" /> 
+                                <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="13" /> 
                             </div>
                         </div>
                         <div class="actions">
-                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSave_Click" />
-                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="lbCancel_Click" />
+                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSave_Click" TabIndex="14" />
+                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="lbCancel_Click" TabIndex="15" />
                         </div>
                     </div>
                 </div>
