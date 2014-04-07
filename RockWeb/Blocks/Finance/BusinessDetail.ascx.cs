@@ -444,6 +444,8 @@ namespace RockWeb.Blocks.Finance
                 ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
                 tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
                 pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
+                cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
+                cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
                 tbEmail.Text = business.Email;
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
