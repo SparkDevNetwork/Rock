@@ -53,65 +53,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public virtual string Get( string id )
         {
-            var idParts = id.SplitDelimitedValues().ToList();
-            if ( idParts.Count > 0 )
-            {
-                // Get the root type
-                var entityType = EntityTypeCache.Read( idParts[0], false );
-                if ( entityType != null )
-                {
-                    idParts[0] = entityType.FriendlyName.Replace( " ", string.Empty );
-
-                    Type type = entityType.GetEntityType();
-
-                    var workingParts = idParts.Take( 1 ).ToList();
-                    var formatString = "{0}";
-
-                    // Traverse the Property path
-                    bool itemIsCollection = false;
-
-                    int pathPointer = 1;
-                    while ( idParts.Count > pathPointer )
-                    {
-                        string propertyName =  idParts[pathPointer];
-                        workingParts.Add(propertyName);
-
-                        var childProperty = type.GetProperty( propertyName );
-                        if ( childProperty != null )
-                        {
-                            type = childProperty.PropertyType;
-
-                            if ( type.IsGenericType &&
-                                type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                                type.GetGenericArguments().Length == 1 )
-                            {
-                                string propertyNameSingularized = propertyName.Singularize();
-                                string forString = string.Format( "<% for {0} in {1} %> {{0}} <% endfor %>", propertyNameSingularized, workingParts.AsDelimited( "." ) );
-                                workingParts.Clear();
-                                workingParts.Add( propertyNameSingularized );
-                                formatString = string.Format( formatString, forString );
-
-                                type = type.GetGenericArguments()[0];
-
-                                itemIsCollection = true;
-                            }
-                            else
-                            {
-                                itemIsCollection = false;
-                            }
-
-                        }
-                        pathPointer++;
-                    }
-
-                    string itemString = itemIsCollection ? "" : string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
-                    return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
-                }
-
-                return string.Format( "{{{{ {0} }}}}", idParts.AsDelimited(".") );
-            }
-
-            return string.Empty;
+            return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
         }
 
         [Authenticate, Secured]

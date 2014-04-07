@@ -35,22 +35,9 @@ namespace Rock.Web.UI.Controls.Communication
         #region UI Controls
 
         private RockDropDownList ddlFrom;
-        private RockTextBox tbTextMessage;
-
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Email" /> class.
-        /// </summary>
-        public Sms()
-        {
-            ddlFrom = new RockDropDownList();
-            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ) );
-
-            tbTextMessage = new RockTextBox();
-        }
+        private RockControlWrapper rcwMessage;
+        private MergeFieldPicker mfpMessage;
+        private RockTextBox tbMessage;
 
         #endregion
 
@@ -66,16 +53,18 @@ namespace Rock.Web.UI.Controls.Communication
         {
             get
             {
+                EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromValue", ddlFrom.SelectedValue );
-                data.Add( "Subject", tbTextMessage.Text );
+                data.Add( "Subject", tbMessage.Text );
                 return data;
             }
 
             set
             {
+                EnsureChildControls();
                 ddlFrom.SelectedValue = GetDataValue( value, "FromValue" );
-                tbTextMessage.Text = GetDataValue( value, "Subject" );
+                tbMessage.Text = GetDataValue( value, "Subject" );
             }
         }
 
@@ -91,19 +80,55 @@ namespace Rock.Web.UI.Controls.Communication
             base.CreateChildControls();
             Controls.Clear();
 
+            ddlFrom = new RockDropDownList();
             ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
             ddlFrom.Label = "From";
             ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
-
+            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ) );
             Controls.Add( ddlFrom );
 
-            tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.Label = "Message";
-            tbTextMessage.TextMode = TextBoxMode.MultiLine;
-            tbTextMessage.Rows = 3;
-            Controls.Add( tbTextMessage );
+            rcwMessage = new RockControlWrapper();
+            rcwMessage.ID = string.Format( "rcwMessage_{0}", this.ID );
+            rcwMessage.Label = "Message";
+            Controls.Add( rcwMessage );
+
+            mfpMessage = new MergeFieldPicker();
+            mfpMessage.ID = string.Format( "mfpMergeFields_{0}", this.ID );
+            mfpMessage.MergeFields.Clear();
+            mfpMessage.MergeFields.Add( "GlobalAttribute" );
+            mfpMessage.MergeFields.Add( "Rock.Model.Person" );
+            mfpMessage.SelectItem += mfpMergeFields_SelectItem;
+            rcwMessage.Controls.Add( mfpMessage );
+
+            tbMessage = new RockTextBox();
+            tbMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
+            tbMessage.TextMode = TextBoxMode.MultiLine;
+            tbMessage.Rows = 3;
+            rcwMessage.Controls.Add( tbMessage );
         }
 
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public override string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return tbMessage.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                ddlFrom.ValidationGroup = value;
+                mfpMessage.ValidationGroup = value;
+                tbMessage.ValidationGroup = value;
+            }
+        }
+        
         /// <summary>
         /// On new communicaiton, initializes controls from sender values
         /// </summary>
@@ -120,11 +145,21 @@ namespace Rock.Web.UI.Controls.Communication
         public override void RenderControl( HtmlTextWriter writer )
         {
             ddlFrom.RenderControl( writer );
-            tbTextMessage.RenderControl( writer );
+            rcwMessage.RenderControl( writer );
         }
 
         #endregion
 
+        #region Events
+
+        void mfpMergeFields_SelectItem( object sender, EventArgs e )
+        {
+            EnsureChildControls();
+            tbMessage.Text += mfpMessage.SelectedMergeField;
+            mfpMessage.SetValue( string.Empty );
+        }
+
+        #endregion
     }
 
 }
