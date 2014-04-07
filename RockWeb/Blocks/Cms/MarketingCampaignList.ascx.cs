@@ -102,24 +102,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaigns_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            MarketingCampaignService marketingCampaignService = new MarketingCampaignService( rockContext );
+
+            MarketingCampaign marketingCampaign = marketingCampaignService.Get( (int)e.RowKeyValue );
+
+            if ( marketingCampaign != null )
             {
-                MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
-                MarketingCampaign marketingCampaign = marketingCampaignService.Get( (int)e.RowKeyValue );
-
-                if ( marketingCampaign != null )
+                string errorMessage;
+                if ( !marketingCampaignService.CanDelete( marketingCampaign, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !marketingCampaignService.CanDelete( marketingCampaign, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    marketingCampaignService.Delete( marketingCampaign, CurrentPersonAlias );
-                    marketingCampaignService.Save( marketingCampaign, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                marketingCampaignService.Delete( marketingCampaign );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -143,7 +142,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
+            MarketingCampaignService marketingCampaignService = new MarketingCampaignService( new RockContext() );
             SortProperty sortProperty = gMarketingCampaigns.SortProperty;
             var qry = marketingCampaignService.Queryable().Select( a =>
                 new

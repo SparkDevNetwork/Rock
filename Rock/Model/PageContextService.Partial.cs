@@ -32,9 +32,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="pageId">An <see cref="System.Int32"/> that contains the Id of the <see cref="Rock.Model.Page"/> to search by.</param>
         /// <returns>An enumerable list of <see cref="Rock.Model.PageContext">PageContexts</see> that are referenced on the page.</returns>
-        public IEnumerable<PageContext> GetByPageId( int pageId )
+        public IQueryable<PageContext> GetByPageId( int pageId )
         {
-            return Repository.Find( t => t.PageId == pageId );
+            return Queryable().Where( t => t.PageId == pageId );
         }
     }
 }

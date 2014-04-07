@@ -34,9 +34,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="name">A <see cref="System.String"/> represents the Name of the <see cref="Rock.Model.FieldType">FieldType(s)</see> to retrieve.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.FieldType">FieldTypes</see> with a name that matches the specified value.</returns>
-        public IEnumerable<FieldType> GetByName( string name )
+        public IQueryable<FieldType> GetByName( string name )
         {
-            return Repository.Find( t => t.Name == name );
+            return Queryable().Where( t => t.Name == name );
         }
         
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.FieldType"/> with a Guid identifier that matches the specified value.</returns>
         public Rock.Model.FieldType GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
@@ -54,11 +54,14 @@ namespace Rock.Model
         /// <see cref="Rock.Model.FieldType">FieldTypes</see> that have not been previously registered.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String"/> representing the physical path of the web application.</param>
-        public void RegisterFieldTypes( string physWebAppPath )
+        public static void RegisterFieldTypes( string physWebAppPath )
         {
             var fieldTypes = new Dictionary<string, EntityType>();
 
-            var existingFieldTypes = this.Queryable().ToList();
+            var rockContext = new RockContext();
+            var fieldTypeService = new FieldTypeService( rockContext );
+
+            var existingFieldTypes = fieldTypeService.Queryable().ToList();
 
             foreach ( var type in Rock.Reflection.FindTypes( typeof( Rock.Field.IFieldType ) ) )
             {
@@ -79,10 +82,11 @@ namespace Rock.Model
                     fieldType.Assembly = assemblyName;
                     fieldType.Class = className;
                     fieldType.IsSystem = false;
-                    this.Add( fieldType );
-                    this.Save( fieldType );
+                    fieldTypeService.Add( fieldType );
                 }
             }
+
+            rockContext.SaveChanges();
         }
     }
 }

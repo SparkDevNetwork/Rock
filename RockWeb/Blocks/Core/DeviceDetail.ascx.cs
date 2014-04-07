@@ -20,7 +20,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -31,9 +33,24 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Device Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given device." )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
     public partial class DeviceDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlDevice );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -73,7 +90,7 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
 
             ddlPrinter.Items.Clear();
-            ddlPrinter.DataSource = new DeviceService()
+            ddlPrinter.DataSource = new DeviceService( new RockContext() )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
                 .ToList();
             ddlPrinter.DataBind();
@@ -93,14 +110,14 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            using (new Rock.Data.UnitOfWorkScope())
-            {
             pnlDetails.Visible = true;
             Device Device = null;
 
+            var rockContext = new RockContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                Device = new DeviceService().Get( itemKeyValue );
+                Device = new DeviceService( rockContext ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -127,20 +144,24 @@ namespace RockWeb.Blocks.Core
                 Guid locGuid = Guid.Empty;
                 if ( Guid.TryParse( orgLocGuid, out locGuid ) )
                 {
-                    var location = new LocationService().Get( locGuid );
+                    var location = new LocationService( rockContext ).Get( locGuid );
                     if ( location != null )
                     {
-                        gpGeoPoint.CenterPoint = location.GeoPoint;
-                        gpGeoFence.CenterPoint = location.GeoPoint;
+                        geopPoint.CenterPoint = location.GeoPoint;
+                        geopFence.CenterPoint = location.GeoPoint;
                     }
                 }
             }
 
             if ( Device.Location != null )
             {
-                gpGeoPoint.SetValue( Device.Location.GeoPoint );
-                gpGeoFence.SetValue( Device.Location.GeoFence );
+                geopPoint.SetValue( Device.Location.GeoPoint );
+                geopFence.SetValue( Device.Location.GeoFence );
             }
+
+            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopPoint.MapStyleValueGuid = mapStyleValueGuid;
+            geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -167,7 +188,6 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-            }
         }
 
         #endregion
@@ -192,15 +212,16 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Device Device;
-            DeviceService DeviceService = new DeviceService();
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            DeviceService DeviceService = new DeviceService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
 
             int DeviceId = int.Parse( hfDeviceId.Value );
 
             if ( DeviceId == 0 )
             {
                 Device = new Device();
-                DeviceService.Add( Device, CurrentPersonAlias );
+                DeviceService.Add( Device );
             }
             else
             {
@@ -219,8 +240,8 @@ namespace RockWeb.Blocks.Core
             {
                 Device.Location = new Location();
             }
-            Device.Location.GeoPoint = gpGeoPoint.SelectedValue;
-            Device.Location.GeoFence = gpGeoFence.SelectedValue;
+            Device.Location.GeoPoint = geopPoint.SelectedValue;
+            Device.Location.GeoFence = geopFence.SelectedValue;
 
             if ( !Device.IsValid )
             {
@@ -228,14 +249,26 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            DeviceService.Save( Device, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }
 
         #endregion
 
-        #region Activities and Actions
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopPoint.MapStyleValueGuid = mapStyleValueGuid;
+            geopFence.MapStyleValueGuid = mapStyleValueGuid;
+        }
 
         #endregion
 

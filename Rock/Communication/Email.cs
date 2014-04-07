@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -51,7 +51,7 @@ namespace Rock.Communication
                             var transport = channel.Transport;
                             if ( transport != null && transport.IsActive )
                             {
-                                var template = new SystemEmailService().Get( emailTemplateGuid );
+                                var template = new SystemEmailService( new RockContext() ).Get( emailTemplateGuid );
                                 if ( template != null )
                                 {
                                     try

@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignService"/> class
         /// </summary>
-        public MarketingCampaignService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MarketingCampaignService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public MarketingCampaignService(IRepository<MarketingCampaign> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MarketingCampaignService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public MarketingCampaignService(RockContext context) : base(context)
         {
@@ -115,6 +99,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

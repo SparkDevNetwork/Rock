@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Core
 
                 if ( !_configuredType )
                 {
-                    var entityTypeList = new EntityTypeService().GetEntities().ToList();
+                    var entityTypeList = new EntityTypeService( new RockContext() ).GetEntities().ToList();
                     ddlEntityType.EntityTypes = entityTypeList;
                     ddlAttrEntityType.EntityTypes = entityTypeList;
                 }
@@ -314,15 +314,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            var attributeService = new Rock.Model.AttributeService();
+            var rockContext = new RockContext();
+            var attributeService = new Rock.Model.AttributeService( rockContext );
 
             Rock.Model.Attribute attribute = attributeService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( attribute != null )
             {
                 Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
 
-                attributeService.Delete( attribute, CurrentPersonAlias );
-                attributeService.Save( attribute, CurrentPersonAlias );
+                attributeService.Delete( attribute );
+
+                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -394,7 +396,7 @@ namespace RockWeb.Blocks.Core
                     Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
                     if ( lValue != null )
                     {
-                        AttributeValueService attributeValueService = new AttributeValueService();
+                        AttributeValueService attributeValueService = new AttributeValueService( new RockContext() );
                         var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                         if ( attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) )
                         {
@@ -428,13 +430,11 @@ namespace RockWeb.Blocks.Core
 
             if ( _configuredType )
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
-                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonAlias );
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
             }
             else
             {
-                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
-                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonAlias );
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text );
             }
 
             // Attribute will be null if it was not valid
@@ -467,20 +467,21 @@ namespace RockWeb.Blocks.Core
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
-                    AttributeValueService attributeValueService = new AttributeValueService();
+                    var rockContext = new RockContext();
+                    AttributeValueService attributeValueService = new AttributeValueService( rockContext );
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                     if ( attributeValue == null )
                     {
                         attributeValue = new Rock.Model.AttributeValue();
                         attributeValue.AttributeId = attributeId;
                         attributeValue.EntityId = _entityId;
-                        attributeValueService.Add( attributeValue, CurrentPersonAlias );
+                        attributeValueService.Add( attributeValue );
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
                     attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
-                    attributeValueService.Save( attributeValue, CurrentPersonAlias );
+                    rockContext.SaveChanges();
 
                     Rock.Web.Cache.AttributeCache.Flush( attributeId );
                     if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
@@ -546,7 +547,7 @@ namespace RockWeb.Blocks.Core
         {
             IQueryable<Rock.Model.Attribute> query = null;
 
-            AttributeService attributeService = new AttributeService();
+            AttributeService attributeService = new AttributeService( new RockContext() );
             if ( _configuredType )
             {
                 query = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue);
@@ -599,7 +600,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="attributeId">The attribute id.</param>
         protected void ShowEdit( int attributeId )
         {
-            var attributeModel = new AttributeService().Get( attributeId );
+            var rockContext = new RockContext();
+
+            var attributeModel = new AttributeService( rockContext ).Get( attributeId );
 
             if ( attributeModel == null )
             {
@@ -618,7 +621,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().ToList();
-                new CategoryService().Queryable().Where( c => selectedCategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
+                new CategoryService( rockContext ).Queryable().Where( c => selectedCategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
                     attributeModel.Categories.Add( c ) );
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
@@ -671,7 +674,7 @@ namespace RockWeb.Blocks.Core
                 {
                     mdAttributeValue.Title = attribute.Name + " Value";
 
-                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                    var attributeValue = new AttributeValueService( new RockContext() ).GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
                     string value = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
                     attribute.AddControl( fsEditControl.Controls, value, string.Empty, setValues, true );
 

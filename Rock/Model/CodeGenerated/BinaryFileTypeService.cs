@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileTypeService"/> class
         /// </summary>
-        public BinaryFileTypeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileTypeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public BinaryFileTypeService(IRepository<BinaryFileType> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileTypeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public BinaryFileTypeService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<BinaryFile>().Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
+            if ( new Service<BinaryFile>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, BinaryFile.FriendlyTypeName );
                 return false;
@@ -115,12 +99,14 @@ namespace Rock.Model
             target.IconCssClass = source.IconCssClass;
             target.StorageEntityTypeId = source.StorageEntityTypeId;
             target.AllowCaching = source.AllowCaching;
+            target.RequiresSecurity = source.RequiresSecurity;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

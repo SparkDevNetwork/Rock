@@ -200,7 +200,7 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        IService serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
+                        IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
 
                         if ( serviceInstance != null )
                         {

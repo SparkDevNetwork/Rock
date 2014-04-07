@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             // Load Entity Type Filter
-            var entityTypes = new EntityTypeService().GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+            var entityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
             entityTypeFilter.EntityTypes = entityTypes;
             entityTypePicker.EntityTypes = entityTypes;
 
@@ -171,7 +171,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
-            var service = new CategoryService();
+            var rockContext = new RockContext();
+            var service = new CategoryService( rockContext );
 
             var category = service.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( category != null )
@@ -180,8 +181,9 @@ namespace RockWeb.Blocks.Core
                 if ( service.CanDelete( category, out errorMessage ) )
                 {
 
-                    service.Delete( category, CurrentPersonAlias );
-                    service.Save( category, CurrentPersonAlias );
+                    service.Delete( category );
+
+                    rockContext.SaveChanges();
                 }
                 else
                 {
@@ -246,21 +248,24 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-
-        void rGrid_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the rGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void rGrid_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var categories = GetCategories();
+            if ( categories != null )
             {
-                var categories = GetCategories();
-                if ( categories != null )
-                {
-                    new CategoryService().Reorder( categories.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
-                }
-
-                BindGrid();
+                var rockContext = new RockContext();
+                new CategoryService( rockContext ).Reorder( categories.ToList(), e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
             }
+
+            BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
         /// </summary>
@@ -274,7 +279,8 @@ namespace RockWeb.Blocks.Core
                 categoryId = 0;
             }
 
-            var service = new CategoryService();
+            var rockContext = new RockContext();
+            var service = new CategoryService( rockContext );
             Category category = null;
 
             if ( categoryId != 0 )
@@ -292,7 +298,7 @@ namespace RockWeb.Blocks.Core
                     .OrderByDescending( c => c.Order ).FirstOrDefault();
                 category.Order = lastCategory != null ? lastCategory.Order + 1 : 0;
 
-                service.Add( category, CurrentPersonAlias );
+                service.Add( category );
             }
 
             category.Name = tbName.Text;
@@ -308,26 +314,21 @@ namespace RockWeb.Blocks.Core
             category.IconCssClass = tbIconCssClass.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
-           
+
             if ( category.IsValid )
             {
-                RockTransactionScope.WrapTransaction( () =>
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                foreach ( int binaryFileId in orphanedBinaryFileIdList )
                 {
-                    service.Save( category, CurrentPersonAlias );
-
-                    BinaryFileService binaryFileService = new BinaryFileService();
-                    foreach ( int binaryFileId in orphanedBinaryFileIdList )
+                    var binaryFile = binaryFileService.Get( binaryFileId );
+                    if ( binaryFile != null )
                     {
-                        var binaryFile = binaryFileService.Get( binaryFileId );
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                        }
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
                     }
+                }
 
-                } );
+                rockContext.SaveChanges();
 
                 hfIdValue.Value = string.Empty;
                 modalDetails.Hide();
@@ -368,9 +369,9 @@ namespace RockWeb.Blocks.Core
         {
             string selectedValue = rFilter.GetUserPreference( "EntityType" );
 
-            var attributeEntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.Attribute)).Id;
-            var queryable = new CategoryService().Queryable()
-                .Where( c => c.EntityTypeId == attributeEntityTypeId);
+            var attributeEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+            var queryable = new CategoryService( new RockContext() ).Queryable()
+                .Where( c => c.EntityTypeId == attributeEntityTypeId );
 
             if ( !string.IsNullOrWhiteSpace( selectedValue ) )
             {
@@ -400,7 +401,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="attributeId">The attribute id.</param>
         protected void ShowEdit( int categoryId )
         {
-            var category = new CategoryService().Get(categoryId);
+            var category = new CategoryService( new RockContext() ).Get( categoryId );
 
             if ( category != null )
             {
@@ -441,5 +442,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-}
+    }
 }

@@ -388,14 +388,18 @@ namespace Rock.Web.UI.Controls
         /// </value>
         [
         Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC" ),
+        Category( "Behavior" ),
+        DefaultValue( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK ),
         Description( "The style to use for the Google map." )
         ]
-        public string MapStyle
+        public Guid MapStyleValueGuid
         {
-            get { return ViewState["MapStyle"] as string ?? "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC"; }
-            set { ViewState["MapStyle"] = value; }
+            get
+            {
+                string guid = ViewState["MapStyleValueGuid"] as string;
+                return (guid == null) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() :  guid.AsGuid();
+            }
+            set { ViewState["MapStyleValueGuid"] = value.ToString(); }
         }
 
         /// <summary>
@@ -633,7 +637,7 @@ namespace Rock.Web.UI.Controls
 
             try
             {
-                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( this.MapStyle );
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( this.MapStyleValueGuid );
                 if ( dvcMapStyle != null )
                 {
                     mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );

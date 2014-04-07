@@ -20,6 +20,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -339,7 +340,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <returns></returns>
         public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( GroupType value )
         {
-            int labelFileTypeId = new BinaryFileTypeService()
+            int labelFileTypeId = new BinaryFileTypeService( new RockContext() )
                     .Queryable()
                     .Where( f => f.Guid == new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
                     .Select( f => f.Id )
@@ -384,7 +385,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _ddlGroupTypeInheritFrom.SelectedIndexChanged += ddlGroupTypeInheritFrom_SelectedIndexChanged;
 
             _ddlGroupTypeInheritFrom.Items.Add( Rock.Constants.None.ListItem );
-            var qryGroupTypeCheckinFilter = new GroupTypeService().Queryable().Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) );
+            var qryGroupTypeCheckinFilter = new GroupTypeService( new RockContext() ).Queryable().Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) );
             foreach ( var groupType in qryGroupTypeCheckinFilter.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 _ddlGroupTypeInheritFrom.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );

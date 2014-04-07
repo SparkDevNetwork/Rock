@@ -126,10 +126,9 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -137,10 +136,9 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }        
         
         /// <summary>

@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -125,6 +126,35 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            var attributeCache = AttributeCache.Read( this.AttributeId );
+            if (attributeCache != null)
+            {
+                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+                if ( attributeCache.FieldTypeId == fieldTypeImage.Id || attributeCache.FieldTypeId == fieldTypeBinaryFile.Id )
+                {
+                    int? binaryFileId = Value.AsInteger();
+                    if ( binaryFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -20,10 +20,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -68,12 +68,8 @@ namespace RockWeb.Blocks.Communication
             var key = PageParameter( "Person" );
             if ( !string.IsNullOrWhiteSpace( key ) )
             {
-                var service = new PersonAliasService();
-                var personAlias = service.GetByUrlEncodedKey( PageParameter( "Person" ) );
-                if ( personAlias != null )
-                {
-                    _person = personAlias.Person;
-                }
+                var service = new PersonService( new RockContext() );
+                _person = service.GetByUrlEncodedKey( PageParameter( "Person" ) );
             }
 
 
@@ -169,8 +165,9 @@ namespace RockWeb.Blocks.Communication
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
             if (_person != null)
-            { 
-                var service = new PersonService();
+            {
+                var rockContext = new RockContext();
+                var service = new PersonService( rockContext );
                 var person = service.Get(_person.Id);
                 if ( person != null )
                 {
@@ -207,7 +204,8 @@ namespace RockWeb.Blocks.Communication
                         person.InactiveReasonNote = string.Empty;
                     }
 
-                    service.Save( person, CurrentPersonAlias );
+                    rockContext.SaveChanges();
+
                     nbMessage.Visible = true;
                     return;
                 }

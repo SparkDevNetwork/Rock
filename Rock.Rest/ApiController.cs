@@ -49,7 +49,7 @@ namespace Rock.Rest
         public ApiController( Service<T> service )
         {
             _service = service;
-            _service.Repository.SetConfigurationValue( "ProxyCreationEnabled", "false" );
+            _service.Context.Configuration.ProxyCreationEnabled = false;
         }
 
         // GET api/<controller>
@@ -77,16 +77,14 @@ namespace Rock.Rest
         {
             CheckCanEdit( value );
 
-            var personAlias = GetPersonAlias();
-
-            _service.Add( value, personAlias );
+            _service.Add( value );
 
             if ( !value.IsValid )
                 return ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest,
                     String.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
 
-            _service.Save( value, personAlias );
+            _service.Context.SaveChanges();
 
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
             // TODO set response.Headers.Location as per REST POST convention
@@ -110,7 +108,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                _service.Save( targetModel, GetPersonAlias() );
+                _service.Context.SaveChanges();
             }
             else
             {
@@ -130,9 +128,8 @@ namespace Rock.Rest
 
             CheckCanEdit( model );
 
-            var personAlias = GetPersonAlias();
-            _service.Delete( model, personAlias );
-            _service.Save( model, personAlias );
+            _service.Delete( model );
+            _service.Context.SaveChanges();
         }
 
 
@@ -145,7 +142,7 @@ namespace Rock.Rest
         [ActionName( "DataView" )]
         public IQueryable<T> GetDataView( int id )
         {
-            var dataView = new DataViewService().Get( id );
+            var dataView = new DataViewService( new RockContext() ).Get( id );
 
             CheckCanEdit( dataView );
 
@@ -179,7 +176,7 @@ namespace Rock.Rest
             var principal = ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
-                var userLoginService = new Rock.Model.UserLoginService();
+                var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
                 var userLogin = userLoginService.GetByUserName( principal.Identity.Name );
 
                 if ( userLogin != null )
@@ -223,7 +220,7 @@ namespace Rock.Rest
             {
                 // Need to reload using service with a proxy enabled so that if model has custom
                 // parent authorities, those properties can be lazy-loaded and checked for authorization
-                ISecured reloadedModel = (ISecured)new Service<T>().Get( securedModel.Id );
+                ISecured reloadedModel = (ISecured)new Service<T>( new RockContext() ).Get( securedModel.Id );
                 if ( reloadedModel != null && !reloadedModel.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
                 {
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -146,18 +146,16 @@ namespace Rock.CheckIn
             }
             else
             {
-                var deviceModel = new DeviceService().Get(id);
+                var rockContext = new RockContext();
+
+                var deviceModel = new DeviceService( rockContext ).Get( id );
 
                 if ( deviceModel != null )
                 {
                     device = new KioskDevice( deviceModel );
-
-                    using ( new Rock.Data.UnitOfWorkScope() )
+                    foreach ( Location location in deviceModel.Locations )
                     {
-                        foreach ( Location location in deviceModel.Locations )
-                        {
-                            LoadKioskLocations( device, location );
-                        }
+                        LoadKioskLocations( device, location );
                     }
 
                     var cachePolicy = new CacheItemPolicy();
@@ -188,7 +186,7 @@ namespace Rock.CheckIn
         /// <param name="location">The location.</param>
         private static void LoadKioskLocations( KioskDevice kioskDevice, Location location )
         {
-            var groupLocationService = new GroupLocationService();
+            var groupLocationService = new GroupLocationService( new RockContext() );
             foreach ( var groupLocation in groupLocationService.GetActiveByLocation( location.Id ) )
             {
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;

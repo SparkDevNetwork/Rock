@@ -15,23 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
-using Rock.Constants;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
-
-using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -42,17 +35,12 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Prompts for name and email, creates a person record if none exists, and adds the person to a group." )]
 
-    #region Block Attributes
-
     [GroupField( "Group", "The group to add people to", true )]
     [TextField( "Save Button Text", "The text to use for the Save button", false, "Save" )]
     [TextField( "Success Message", "The message to display when user is succesfully added to the group", false, "Please check your email to verify your registration" )]
     [EmailTemplateField( "Confirmation Email", "The email to send the person to confirm their registration.  If not specified, the user will not need to confirm their registration", false )]
     [LinkedPage( "Confirmation Page", "The page that user should be directed to to confirm their registration" )]
-
-    #endregion
-
-    public partial class GroupSimpleRegister : Rock.Web.UI.RockBlock
+    public partial class GroupSimpleRegister : RockBlock
     {
         #region overridden control methods
 
@@ -78,6 +66,11 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) ||
@@ -88,86 +81,84 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                var person = GetPerson();
+                var rockContext = new RockContext();
+                var person = GetPerson( rockContext );
                 if ( person != null )
                 {
-                    int groupId = int.MinValue;
-                    if ( int.TryParse( GetAttributeValue( "Group" ), out groupId ) )
+                    int groupId = GetAttributeValue( "Group" ).AsInteger() ?? 0;
+
+                    if ( groupId > 0 )
                     {
-                        using ( new UnitOfWorkScope() )
+                        var groupService = new GroupService( rockContext );
+                        var groupMemberService = new GroupMemberService( rockContext );
+
+                        var group = groupService.Get( groupId );
+                        if ( group != null && group.GroupType.DefaultGroupRoleId.HasValue )
                         {
-                            var groupService = new GroupService();
-                            var groupMemberService = new GroupMemberService();
-
-                            var group = groupService.Get( groupId );
-                            if ( group != null && group.GroupType.DefaultGroupRoleId.HasValue )
+                            string linkedPage = GetAttributeValue( "ConfirmationPage" );
+                            if ( !string.IsNullOrWhiteSpace( linkedPage ) )
                             {
-                                string linkedPage = GetAttributeValue( "ConfirmationPage" );
-                                if ( !string.IsNullOrWhiteSpace( linkedPage ) )
+                                var member = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+
+                                // If person has not registered or confirmed their registration
+                                if ( member == null || member.GroupMemberStatus != GroupMemberStatus.Active )
                                 {
-                                    var member = group.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
-
-                                    // If person has not registered or confirmed their registration
-                                    if ( member == null || member.GroupMemberStatus != GroupMemberStatus.Active )
+                                    Guid confirmationEmailTemplateGuid = Guid.Empty;
+                                    if ( !Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out confirmationEmailTemplateGuid ) )
                                     {
-                                        Guid confirmationEmailTemplateGuid = Guid.Empty;
-                                        if ( !Guid.TryParse( GetAttributeValue( "ConfirmationEmail" ), out confirmationEmailTemplateGuid ) )
-                                        {
-                                            confirmationEmailTemplateGuid = Guid.Empty;
-                                        }
-
-                                        if ( member == null )
-                                        {
-                                            member = new GroupMember();
-                                            member.GroupId = group.Id;
-                                            member.PersonId = person.Id;
-                                            member.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
-
-                                            // If a confirmation email is configured, set status to Pending otherwise set it to active
-                                            member.GroupMemberStatus = confirmationEmailTemplateGuid != Guid.Empty ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
-
-                                            groupMemberService.Add( member, CurrentPersonAlias );
-                                            groupMemberService.Save( member, CurrentPersonAlias );
-                                            member = groupMemberService.Get( member.Id );
-                                        }
-
-                                        // Send the confirmation
-                                        if ( confirmationEmailTemplateGuid != Guid.Empty )
-                                        {
-                                            var mergeObjects = new Dictionary<string, object>();
-                                            mergeObjects.Add( "Member", member );
-
-                                            var pageParams = new Dictionary<string, string>();
-                                            pageParams.Add( "gm", member.UrlEncodedKey );
-                                            var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
-                                            mergeObjects.Add( "ConfirmationPage", pageReference.BuildUrl() );
-
-                                            var recipients = new Dictionary<string, Dictionary<string, object>>();
-                                            recipients.Add( person.Email, mergeObjects );
-                                            Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
-                                        }
-
-                                        ShowSuccess( GetAttributeValue( "SuccessMessage" ) );
-
+                                        confirmationEmailTemplateGuid = Guid.Empty;
                                     }
-                                    else
+
+                                    if ( member == null )
                                     {
+                                        member = new GroupMember();
+                                        member.GroupId = group.Id;
+                                        member.PersonId = person.Id;
+                                        member.GroupRoleId = group.GroupType.DefaultGroupRoleId.Value;
+
+                                        // If a confirmation email is configured, set status to Pending otherwise set it to active
+                                        member.GroupMemberStatus = confirmationEmailTemplateGuid != Guid.Empty ? GroupMemberStatus.Pending : GroupMemberStatus.Active;
+
+                                        groupMemberService.Add( member );
+                                        rockContext.SaveChanges();
+
+                                        member = groupMemberService.Get( member.Id );
+                                    }
+
+                                    // Send the confirmation
+                                    if ( confirmationEmailTemplateGuid != Guid.Empty )
+                                    {
+                                        var mergeObjects = new Dictionary<string, object>();
+                                        mergeObjects.Add( "Member", member );
+
                                         var pageParams = new Dictionary<string, string>();
                                         pageParams.Add( "gm", member.UrlEncodedKey );
                                         var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
-                                        Response.Redirect( pageReference.BuildUrl(), false );
+                                        mergeObjects.Add( "ConfirmationPage", pageReference.BuildUrl() );
+
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
+                                        recipients.Add( person.Email, mergeObjects );
+                                        Email.Send( confirmationEmailTemplateGuid, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
                                     }
+
+                                    ShowSuccess( GetAttributeValue( "SuccessMessage" ) );
                                 }
                                 else
                                 {
-                                    ShowError( "Configuration Error", "Invalid Confirmation Page setting" );
+                                    var pageParams = new Dictionary<string, string>();
+                                    pageParams.Add( "gm", member.UrlEncodedKey );
+                                    var pageReference = new Rock.Web.PageReference( linkedPage, pageParams );
+                                    Response.Redirect( pageReference.BuildUrl(), false );
                                 }
                             }
                             else
                             {
-                                ShowError( "Configuration Error",
-                                    "The configured group does not exist, or it's group type does not have a default role configured." );
+                                ShowError( "Configuration Error", "Invalid Confirmation Page setting" );
                             }
+                        }
+                        else
+                        {
+                            ShowError( "Configuration Error", "The configured group does not exist, or it's group type does not have a default role configured." );
                         }
                     }
                     else
@@ -178,37 +169,44 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private Person GetPerson()
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private Person GetPerson( RockContext rockContext )
         {
-            using ( new UnitOfWorkScope() )
+            var personService = new PersonService( rockContext );
+
+            var personMatches = personService.GetByEmail( txtEmail.Text )
+                .Where( p =>
+                    p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
+                    ( ( p.FirstName != null && p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
+                        ( p.NickName != null && p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ) )
+                .ToList();
+            if ( personMatches.Count() == 1 )
             {
-                var personService = new PersonService();
+                return personMatches.FirstOrDefault();
+            }
+            else
+            {
+                Person person = new Person();
+                person.FirstName = txtFirstName.Text;
+                person.LastName = txtLastName.Text;
+                person.Email = txtEmail.Text;
+                person.EmailPreference = EmailPreference.EmailAllowed;
 
-                var personMatches = personService.GetByEmail( txtEmail.Text )
-                    .Where( p =>
-                        p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
-                        ( ( p.FirstName != null && p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ||
-                            ( p.NickName != null && p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) ) )
-                    .ToList();
-                if ( personMatches.Count() == 1 )
-                {
-                    return personMatches.FirstOrDefault();
-                }
-                else
-                {
-                    Person person = new Person();
-                    person.FirstName = txtFirstName.Text;
-                    person.LastName = txtLastName.Text;
-                    person.Email = txtEmail.Text;
-                    person.EmailPreference = EmailPreference.EmailAllowed;
+                GroupService.SaveNewFamily( rockContext, person, null, false );
 
-                    new GroupService().SaveNewFamily( person, null, false, CurrentPersonAlias );
-
-                    return personService.Get( person.Id );
-                }
+                return personService.Get( person.Id );
             }
         }
 
+        /// <summary>
+        /// Shows the error.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="text">The text.</param>
         private void ShowError( string title, string text )
         {
             nbError.Title = title;
@@ -216,6 +214,10 @@ namespace RockWeb.Blocks.Groups
             nbError.Visible = true;
         }
 
+        /// <summary>
+        /// Shows the success.
+        /// </summary>
+        /// <param name="text">The text.</param>
         private void ShowSuccess( string text )
         {
             pnlInputInfo.Visible = false;
@@ -223,5 +225,4 @@ namespace RockWeb.Blocks.Groups
             nbSuccess.Text = text;
         }
     }
-
 }

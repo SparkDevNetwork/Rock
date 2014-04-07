@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -113,7 +114,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var item = new FinancialAccountService().Get( int.Parse( ItemId ) );
+            var item = new FinancialAccountService( new RockContext() ).Get( int.Parse( ItemId ) );
             this.SetValue( item );
         }
 
@@ -124,7 +125,7 @@ namespace Rock.Web.UI.Controls
         protected override void SetValuesOnSelect()
         {
             var itemIds = ItemIds.Select( int.Parse );
-            var items = new FinancialAccountService().Queryable().Where( i => itemIds.Contains( i.Id ) );
+            var items = new FinancialAccountService( new RockContext() ).Queryable().Where( i => itemIds.Contains( i.Id ) );
             this.SetValues( items );
         }
 

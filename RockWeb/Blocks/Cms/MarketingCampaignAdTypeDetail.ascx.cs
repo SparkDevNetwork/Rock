@@ -242,68 +242,68 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            MarketingCampaignAdType marketingCampaignAdType;
+
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( rockContext );
+
+            int marketingCampaignAdTypeId = int.Parse( hfMarketingCampaignAdTypeId.Value );
+
+            if ( marketingCampaignAdTypeId == 0 )
             {
-                MarketingCampaignAdType marketingCampaignAdType;
-                MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-
-                int marketingCampaignAdTypeId = int.Parse( hfMarketingCampaignAdTypeId.Value );
-
-                if ( marketingCampaignAdTypeId == 0 )
-                {
-                    marketingCampaignAdType = new MarketingCampaignAdType();
-                    marketingCampaignAdTypeService.Add( marketingCampaignAdType, CurrentPersonAlias );
-                }
-                else
-                {
-                    marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
-                }
-
-                marketingCampaignAdType.Name = tbName.Text;
-                marketingCampaignAdType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
-
-                if ( !marketingCampaignAdType.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    AttributeService attributeService = new AttributeService();
-                    AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-                    CategoryService categoryService = new CategoryService();
-
-                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonAlias );
-
-                    // get it back to make sure we have a good Id for it for the Attributes
-                    marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
-
-                    var entityTypeId = EntityTypeCache.Read(typeof(MarketingCampaignAd)).Id;
-                    string qualifierColumn = "MarketingCampaignAdTypeId";
-                    string qualifierValue = marketingCampaignAdType.Id.ToString();
-
-                    // Get the existing attributes for this entity type and qualifier value
-                    var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
-
-                    // Delete any of those attributes that were removed in the UI
-                    var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
-                    foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
-                    {
-                        Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-
-                        attributeService.Delete( attr, CurrentPersonAlias );
-                        attributeService.Save( attr, CurrentPersonAlias );
-                    }
-
-                    // Update the Attributes that were assigned in the UI
-                    foreach ( var attributeState in AttributesState )
-                    {
-                        Rock.Attribute.Helper.SaveAttributeEdits( attributeState, attributeService, attributeQualifierService, categoryService,
-                            entityTypeId, qualifierColumn, qualifierValue, CurrentPersonAlias );
-                    }
-                } );
+                marketingCampaignAdType = new MarketingCampaignAdType();
+                marketingCampaignAdTypeService.Add( marketingCampaignAdType );
             }
+            else
+            {
+                marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdTypeId );
+            }
+
+            marketingCampaignAdType.Name = tbName.Text;
+            marketingCampaignAdType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
+
+            if ( !marketingCampaignAdType.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                AttributeService attributeService = new AttributeService( rockContext );
+                AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
+                CategoryService categoryService = new CategoryService( rockContext );
+
+                rockContext.SaveChanges();
+
+                // get it back to make sure we have a good Id for it for the Attributes
+                marketingCampaignAdType = marketingCampaignAdTypeService.Get( marketingCampaignAdType.Guid );
+
+                var entityTypeId = EntityTypeCache.Read( typeof( MarketingCampaignAd ) ).Id;
+                string qualifierColumn = "MarketingCampaignAdTypeId";
+                string qualifierValue = marketingCampaignAdType.Id.ToString();
+
+                // Get the existing attributes for this entity type and qualifier value
+                var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+                // Delete any of those attributes that were removed in the UI
+                var selectedAttributeGuids = AttributesState.Select( a => a.Guid );
+                foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+                {
+                    Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+
+                    attributeService.Delete( attr );
+                }
+
+                rockContext.SaveChanges();
+
+                // Update the Attributes that were assigned in the UI
+                foreach ( var attributeState in AttributesState )
+                {
+                    Rock.Attribute.Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                }
+
+            } );
 
             NavigateToParentPage();
         }
@@ -335,9 +335,11 @@ namespace RockWeb.Blocks.Cms
             pnlDetails.Visible = true;
             MarketingCampaignAdType marketingCampaignAdType = null;
 
+            var rockContext = new RockContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( itemKeyValue );
+                marketingCampaignAdType = new MarketingCampaignAdTypeService( rockContext ).Get( itemKeyValue );
                 lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
             else
@@ -355,7 +357,7 @@ namespace RockWeb.Blocks.Cms
             tbName.Text = marketingCampaignAdType.Name;
             ddlDateRangeType.SetValue( (int)marketingCampaignAdType.DateRangeType );
 
-            AttributeService attributeService = new AttributeService();
+            AttributeService attributeService = new AttributeService( rockContext );
 
             string qualifierValue = marketingCampaignAdType.Id.ToString();
             var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()

@@ -15,23 +15,26 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
 using System.Web;
-
 using Rock.Model;
 using Rock.Utility;
+using Rock.Workflow;
 
 namespace Rock.Data
 {
     /// <summary>
     /// Entity Framework Context
     /// </summary>
-    public partial class RockContext : DbContext
+    public class RockContext : Rock.Data.DbContext
     {
+
         //public RockContext()
         //{
         //    this.Database.Log = s => System.Diagnostics.Debug.WriteLine( s );
@@ -739,39 +742,6 @@ namespace Rock.Data
             ContextHelper.AddConfigurations( modelBuilder );
         }
 
-        /// <summary>
-        /// Saves all changes made in this context to the underlying database.
-        /// </summary>
-        /// <returns>
-        /// The number of objects written to the underlying database.
-        /// </returns>
-        public override int SaveChanges()
-        {
-            ContextHelper.AddAuditData( this.ChangeTracker, HttpContext.Current );
-            return base.SaveChanges();
-        }
-
-        /// <summary>
-        /// Gets the name of the entity from table.
-        /// </summary>
-        /// <param name="tableName">Name of the table.</param>
-        /// <returns></returns>
-        public static Type GetEntityFromTableName( string tableName )
-        {
-            var thisType = typeof( RockContext );
-            var props = thisType.GetProperties();
-            foreach ( PropertyInfo pi in props )
-            {
-                Type modelType = pi.PropertyType.GetGenericArguments()[0];
-                TableAttribute tableAttribute = modelType.GetCustomAttribute<TableAttribute>();
-                if ( tableAttribute.Name.Equals( tableName, StringComparison.OrdinalIgnoreCase ) )
-                {
-                    return modelType;
-                }
-            }
-
-            return null;
-        }
     }
 
     /// <summary>
@@ -786,151 +756,7 @@ namespace Rock.Data
         public static void AddConfigurations(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
-            modelBuilder.Configurations.Add( new AttendanceConfiguration() );
-            modelBuilder.Configurations.Add( new AttendanceCodeConfiguration() );
-            modelBuilder.Configurations.Add( new AttributeConfiguration() );
-            modelBuilder.Configurations.Add( new AttributeQualifierConfiguration() );
-            modelBuilder.Configurations.Add( new AttributeValueConfiguration() );
-            modelBuilder.Configurations.Add( new AuditConfiguration() );
-            modelBuilder.Configurations.Add( new AuthConfiguration() );
-            modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
-            modelBuilder.Configurations.Add( new BinaryFileDataConfiguration() );
-            modelBuilder.Configurations.Add( new BinaryFileTypeConfiguration() );
-            modelBuilder.Configurations.Add( new BlockConfiguration() );
-            modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
-            modelBuilder.Configurations.Add( new CampusConfiguration() );
-            modelBuilder.Configurations.Add( new CategoryConfiguration() );
-            modelBuilder.Configurations.Add( new CommunicationConfiguration() );
-            modelBuilder.Configurations.Add( new CommunicationRecipientConfiguration() );
-            modelBuilder.Configurations.Add( new CommunicationTemplateConfiguration() );
-            modelBuilder.Configurations.Add( new DataViewConfiguration() );
-            modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
-            modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );
-            modelBuilder.Configurations.Add( new DefinedValueConfiguration() );
-            modelBuilder.Configurations.Add( new DeviceConfiguration() );
-            modelBuilder.Configurations.Add( new SystemEmailConfiguration() );
-            modelBuilder.Configurations.Add( new EntityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new ExceptionLogConfiguration() );
-            modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialAccountConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialPledgeConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialPersonBankAccountConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialPersonSavedAccountConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialScheduledTransactionConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialScheduledTransactionDetailConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialTransactionConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialTransactionImageConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialTransactionRefundConfiguration() );
-            modelBuilder.Configurations.Add( new FollowingConfiguration() );
-            modelBuilder.Configurations.Add( new GroupConfiguration() );
-            modelBuilder.Configurations.Add( new GroupLocationConfiguration() );
-            modelBuilder.Configurations.Add( new GroupMemberConfiguration() );
-            modelBuilder.Configurations.Add( new GroupRoleConfiguration() );
-            modelBuilder.Configurations.Add( new GroupTypeConfiguration() );
-            modelBuilder.Configurations.Add( new HistoryConfiguration() );
-            modelBuilder.Configurations.Add( new HtmlContentConfiguration() );
-            modelBuilder.Configurations.Add( new LocationConfiguration() );
-            modelBuilder.Configurations.Add( new MarketingCampaignConfiguration() );
-            modelBuilder.Configurations.Add( new MarketingCampaignAdConfiguration() );
-            modelBuilder.Configurations.Add( new MarketingCampaignAdTypeConfiguration() );
-            modelBuilder.Configurations.Add( new MarketingCampaignAudienceConfiguration() );
-            modelBuilder.Configurations.Add( new MarketingCampaignCampusConfiguration() );
-            modelBuilder.Configurations.Add( new MetaphoneConfiguration() );
-            modelBuilder.Configurations.Add( new MetricConfiguration() );
-            modelBuilder.Configurations.Add( new MetricValueConfiguration() );
-            modelBuilder.Configurations.Add( new NoteConfiguration() );
-            modelBuilder.Configurations.Add( new NoteTypeConfiguration() );
-            modelBuilder.Configurations.Add( new PageConfiguration() );
-            modelBuilder.Configurations.Add( new PageContextConfiguration() );
-            modelBuilder.Configurations.Add( new PageRouteConfiguration() );
-            modelBuilder.Configurations.Add( new PageViewConfiguration() );
-            modelBuilder.Configurations.Add( new PersonConfiguration() );
-            modelBuilder.Configurations.Add( new PersonAliasConfiguration() );
-            modelBuilder.Configurations.Add( new PersonBadgeConfiguration() );
-            modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
-            modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );
-            modelBuilder.Configurations.Add( new PrayerRequestConfiguration() );
-            modelBuilder.Configurations.Add( new ReportConfiguration() );
-            modelBuilder.Configurations.Add( new RestActionConfiguration() );
-            modelBuilder.Configurations.Add( new RestControllerConfiguration() );
-            modelBuilder.Configurations.Add( new ScheduleConfiguration() );
-            modelBuilder.Configurations.Add( new ServiceJobConfiguration() );
-            modelBuilder.Configurations.Add( new ServiceLogConfiguration() );
-            modelBuilder.Configurations.Add( new SiteConfiguration() );
-            modelBuilder.Configurations.Add( new SiteDomainConfiguration() );
-            modelBuilder.Configurations.Add( new TagConfiguration() );
-            modelBuilder.Configurations.Add( new TaggedItemConfiguration() );
-            modelBuilder.Configurations.Add( new UserLoginConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActionConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActionTypeConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowActivityTypeConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowLogConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowTriggerConfiguration() );
-            modelBuilder.Configurations.Add( new WorkflowTypeConfiguration() );
-        }
-
-        /// <summary>
-        /// Updates the Created/Modified data for any model being created or modified
-        /// </summary>
-        /// <param name="changeTracker">The current DbChangeTracker object.</param>
-        /// <param name="context">The current HttpContext.</param>
-        public static void AddAuditData(System.Data.Entity.Infrastructure.DbChangeTracker changeTracker, HttpContext context)
-        {
-            // Try to get the current person alias
-            int? personAliasId = null;
-            if ( context != null && context.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = context.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-                {
-                    personAliasId = currentPerson.PrimaryAlias.Id;
-                }
-            }
-
-            var changeSet = changeTracker.Entries().Where( e => e.Entity is IModel );
-            if ( changeSet != null )
-            {
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Added )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    if ( !entry.CreatedDateTime.HasValue )
-                    {
-                        entry.CreatedDateTime = RockDateTime.Now;
-                    }
-                    if ( !entry.CreatedByPersonAliasId.HasValue )
-                    {
-                        entry.CreatedByPersonAliasId = personAliasId;
-                    }
-
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var entry in changeSet
-                    .Where( c => c.State == EntityState.Modified )
-                    .Select( a => a.Entity as IModel ) )
-                {
-                    entry.ModifiedDateTime = RockDateTime.Now;
-                    entry.ModifiedByPersonAliasId = personAliasId;
-                }
-
-                foreach ( var person in changeSet
-                    .Where( c =>
-                        ( c.State == EntityState.Added || c.State == EntityState.Modified ) &&
-                        ( c.Entity is Person ) )
-                    .Select( c => c.Entity as Person ) )
-                {
-                    var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                }
-            }
-
+            modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
         }
     }
 }

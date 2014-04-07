@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -69,7 +70,7 @@ namespace Rock.Field.Types
                 GroupPicker groupPicker = control as GroupPicker;
                 int groupId = 0;
                 int.TryParse( value, out groupId );
-                Group group = new GroupService().Get( groupId );
+                Group group = new GroupService( new RockContext() ).Get( groupId );
                 groupPicker.SetValue( group );
             }
         }

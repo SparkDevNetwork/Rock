@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DataViewService"/> class
         /// </summary>
-        public DataViewService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public DataViewService(IRepository<DataView> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DataViewService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public DataViewService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Report>().Queryable().Any( a => a.DataViewId == item.Id ) )
+            if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
@@ -122,6 +106,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

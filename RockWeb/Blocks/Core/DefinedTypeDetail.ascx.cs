@@ -86,8 +86,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveType_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
+
             DefinedType definedType = null;
-            DefinedTypeService typeService = new DefinedTypeService();
+            DefinedTypeService typeService = new DefinedTypeService( rockContext );
 
             int definedTypeId = hfDefinedTypeId.ValueAsInt();
 
@@ -96,7 +98,7 @@ namespace RockWeb.Blocks.Core
                 definedType = new DefinedType();
                 definedType.IsSystem = false;
                 definedType.Order = 0;
-                typeService.Add( definedType, CurrentPersonAlias );
+                typeService.Add( definedType );
             }
             else
             {
@@ -115,13 +117,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                typeService.Save( definedType, CurrentPersonAlias );
-
-                // get it back to make sure we have a good Id
-                definedType = typeService.Get( definedType.Guid );
-            } );
+            rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
             qryParams["definedTypeId"] = definedType.Id.ToString();
@@ -143,7 +139,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DefinedTypeService definedTypeService = new DefinedTypeService();
+                DefinedTypeService definedTypeService = new DefinedTypeService(new RockContext());
                 DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
                 ShowReadonlyDetails( definedType );
             }
@@ -160,7 +156,8 @@ namespace RockWeb.Blocks.Core
             hfDefinedTypeId.SetValue( definedType.Id );
             tbTypeName.Text = definedType.Name;
 
-            definedType.FieldType = definedType.FieldType ?? new FieldTypeService().Get( definedType.FieldTypeId ?? 0 );
+            /// TODO Should use FieldTypeCache instead of reading from db -DT
+            definedType.FieldType = definedType.FieldType ?? new FieldTypeService( new RockContext() ).Get( definedType.FieldTypeId ?? 0 );
 
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
             lDescription.Text = definedType.Description;
@@ -203,7 +200,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            DefinedTypeService definedTypeService = new DefinedTypeService();
+            DefinedTypeService definedTypeService = new DefinedTypeService( new RockContext() );
             DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
             ShowEditDetails( definedType );
         }
@@ -238,7 +235,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                definedType = new DefinedTypeService().Get( itemKeyValue );
+                definedType = new DefinedTypeService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {
@@ -329,7 +326,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                AttributeService attributeService = new AttributeService();
+                AttributeService attributeService = new AttributeService( new RockContext() );
                 attribute = attributeService.Get( attributeGuid );
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
@@ -348,7 +345,8 @@ namespace RockWeb.Blocks.Core
         {
             string qualifierValue = hfDefinedTypeId.Value;
 
-            var attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
 
             int order = 0;
             var attributes = attributeService
@@ -383,7 +381,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 movedItem.Order = e.NewIndex;
-                attributeService.RockContext.SaveChanges();
+                rockContext.SaveChanges();
             }
 
 
@@ -398,7 +396,8 @@ namespace RockWeb.Blocks.Core
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            AttributeService attributeService = new AttributeService( rockContext );
             Attribute attribute = attributeService.Get( attributeGuid );
 
             if ( attribute != null )
@@ -411,8 +410,8 @@ namespace RockWeb.Blocks.Core
                 }
 
                 AttributeCache.Flush( attribute.Id );
-                attributeService.Delete( attribute, CurrentPersonAlias );
-                attributeService.Save( attribute, CurrentPersonAlias );
+                attributeService.Delete( attribute );
+                rockContext.SaveChanges();
             }
 
             BindDefinedTypeAttributesGrid();            
@@ -435,8 +434,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id,
-                "DefinedTypeId", hfDefinedTypeId.Value, CurrentPersonAlias );
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( 
+                edtDefinedTypeAttributes, EntityTypeCache.Read( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
             // Attribute will be null if it was not valid
             if (attribute == null)
@@ -471,7 +470,7 @@ namespace RockWeb.Blocks.Core
         private void BindDefinedTypeAttributesGrid()
         {
             string qualifierValue = hfDefinedTypeId.Value;
-            var attributes = new AttributeService()
+            var attributes = new AttributeService( new RockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&

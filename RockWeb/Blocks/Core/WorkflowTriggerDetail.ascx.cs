@@ -74,12 +74,13 @@ namespace RockWeb.Blocks.Core
         private void LoadDropDowns()
         {
             ddlEntityType.Items.Clear();
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+            var rockContext = new RockContext();
+            new EntityTypeService( rockContext ).GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
 
             ddlWorkflowType.Items.Clear();
             ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty));
 
-            foreach ( var workflowType in new WorkflowTypeService().Queryable().OrderBy( w => w.Name ) )
+            foreach ( var workflowType in new WorkflowTypeService( rockContext ).Queryable().OrderBy( w => w.Name ) )
             {
                 if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
@@ -113,7 +114,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                WorkflowTrigger = new WorkflowTriggerService().Get( itemKeyValue );
+                WorkflowTrigger = new WorkflowTriggerService( new RockContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
@@ -220,15 +221,16 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             WorkflowTrigger WorkflowTrigger;
-            WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService();
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
 
             int WorkflowTriggerId = int.Parse( hfWorkflowTriggerId.Value );
 
             if ( WorkflowTriggerId == 0 )
             {
                 WorkflowTrigger = new WorkflowTrigger();
-                WorkflowTriggerService.Add( WorkflowTrigger, CurrentPersonAlias );
+                WorkflowTriggerService.Add( WorkflowTrigger );
             }
             else
             {
@@ -256,7 +258,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             Rock.Workflow.TriggerCache.Refresh();
 

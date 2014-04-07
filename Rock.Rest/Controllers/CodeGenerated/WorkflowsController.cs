@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class WorkflowsController : Rock.Rest.ApiController<Rock.Model.Workflow>
     {
-        public WorkflowsController() : base( new Rock.Model.WorkflowService() ) { } 
+        public WorkflowsController() : base( new Rock.Model.WorkflowService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -16,16 +16,18 @@
 
         <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-        <ul id="ulChannels" runat="server" class="nav nav-pills nav-pagelist">
-            <asp:Repeater ID="rptChannels" runat="server">
-                <ItemTemplate>
-                    <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
-                        <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click" CausesValidation="false">
-                        </asp:LinkButton>
-                    </li>
-                </ItemTemplate>
-            </asp:Repeater>
-        </ul>
+        <div class="nav navbar nav-pagelist">
+            <ul id="ulChannels" runat="server" class="nav nav-pills">
+                <asp:Repeater ID="rptChannels" runat="server">
+                    <ItemTemplate>
+                        <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
+                            <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click" CausesValidation="false">
+                            </asp:LinkButton>
+                        </li>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </div>
         
         <div class="panel panel-widget recipients">
             <div class="panel-heading clearfix">

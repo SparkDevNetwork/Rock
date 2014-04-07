@@ -33,13 +33,53 @@ namespace Rock.Security
         private static byte[] _salt = Encoding.ASCII.GetBytes( "rsduYVC2leenXKTLYLkO9qsWU95HGCvWlbXcBTjtrj5dBJ7RPeGYiw7U3lZE+LWkT+jGrLP9deRMc8sUHJtc/wu2l4vANBx5f+p1zpRwQ2bB/E6Ta8k7haPiTRc4wYhrmWMrg8VfQ4MhAsSlijIfT9u+DszEkB2ba2k0FIPMSWk=" );
 
         /// <summary>
+        /// Tries to encrypt the string. Use this in situations where you might just want to skip encryption if it doesn't work.  
+        /// You should use EncryptString in most cases.
+        /// </summary>
+        /// <param name="plainText">The plain text.</param>
+        /// <param name="cypherText">The cypher text.</param>
+        /// <returns></returns>
+        public static bool TryEncryptString(string plainText, out string cypherText)
+        {
+            cypherText = null;
+            
+            // non-web apps might not have the DataEncryptionKey, so check that first since it could happen quite a bit
+            if ( string.IsNullOrWhiteSpace( Encryption.GetDataEncryptionKey() ) )
+            {
+                return false;
+            }
+            else
+            {
+                try
+                {
+                    cypherText = EncryptString( plainText );
+                    return true;
+                }
+                catch
+                { 
+                    // intentionally ignore exception since we are a try method
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the data encryption key.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetDataEncryptionKey()
+        {
+            return ConfigurationManager.AppSettings["DataEncryptionKey"];
+        }
+
+        /// <summary>
         /// Encrypt the given string using AES.  The string can be decrypted using 
         /// DecryptStringAES().  The sharedSecret parameters must match.
         /// </summary>
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
-            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
+            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
 
             if ( string.IsNullOrEmpty( dataEncryptionKey ) )
             {

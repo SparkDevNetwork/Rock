@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -45,7 +45,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if (Guid.TryParse(value, out guid))
             {
-                var definedType = new Model.DefinedTypeService().Get(guid);
+                var definedType = new Model.DefinedTypeService( new RockContext() ).Get( guid );
                 if (definedType != null)
                 { 
                     formattedValue = definedType.Name;
@@ -65,9 +65,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new RockDropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id };
 
-            var definedTypes = new Model.DefinedTypeService().Queryable().OrderBy( d => d.Order );
+            var definedTypes = new Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order );
             if ( definedTypes.Any() )
             {
                 foreach ( var definedType in definedTypes )

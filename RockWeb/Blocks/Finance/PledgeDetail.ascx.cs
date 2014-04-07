@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -41,14 +42,11 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
-                int itemId;
+                int? itemId = PageParameter( "pledgeId" ).AsInteger( false );
 
-                // Using TryParse guarantees a valid int if it passes, while a 
-                // `string.IsNullOrWhitespace` check doesn't. The param could be any
-                // non-null value
-                if ( int.TryParse( PageParameter( "pledgeId" ), out itemId ) )
+                if ( itemId.HasValue )
                 {
-                    ShowDetail( "pledgeId", itemId );
+                    ShowDetail( "pledgeId", itemId.Value );
                 }
                 else
                 {
@@ -66,13 +64,14 @@ namespace RockWeb.Blocks.Finance
         protected void btnSave_Click( object sender, EventArgs e )
         {
             FinancialPledge pledge;
-            var pledgeService = new FinancialPledgeService();
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
             var pledgeId = int.Parse( hfPledgeId.Value );
 
             if ( pledgeId == 0 )
             {
                 pledge = new FinancialPledge();
-                pledgeService.Add( pledge, CurrentPersonAlias );
+                pledgeService.Add( pledge );
             }
             else
             {
@@ -93,7 +92,8 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () => pledgeService.Save( pledge, CurrentPersonAlias ) );
+            rockContext.SaveChanges();
+
             NavigateToParentPage();
         }
 
@@ -121,13 +121,13 @@ namespace RockWeb.Blocks.Finance
 
             if ( itemKeyValue > 0 )
             {
-                pledge = new FinancialPledgeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
+                pledge = new FinancialPledgeService( new RockContext() ).Get( itemKeyValue );
+                lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 pledge = new FinancialPledge();
-                lActionTitle.Text = ActionTitle.Add(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             var isReadOnly = !IsUserAuthorized( Authorization.EDIT );

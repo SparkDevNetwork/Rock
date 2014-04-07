@@ -21,15 +21,15 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Security
 {
@@ -54,7 +54,6 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
     [RemoteAuthsField("Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 7)]
     public partial class Login : Rock.Web.UI.RockBlock
     {
-
         #region Base Control Methods
 
         /// <summary>
@@ -66,7 +65,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             base.OnInit( e );
 
             var globalAttributesCache = GlobalAttributesCache.Read();
-            lLoginProviderMessage.Text = String.Format( "Login with {0} account", globalAttributesCache.GetValue( "OrganizationName" ) );
+            lLoginProviderMessage.Text = string.Format( "Login with {0} account", globalAttributesCache.GetValue( "OrganizationName" ) );
 
             btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
 
@@ -111,7 +110,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;
 
-                    if ( !String.IsNullOrWhiteSpace( component.ImageUrl() ) )
+                    if ( !string.IsNullOrWhiteSpace( component.ImageUrl() ) )
                     {
                         HtmlImage img = new HtmlImage();
                         lbLogin.Controls.Add( img );
@@ -143,7 +142,6 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             base.OnLoad( e );
 
             pnlMessage.Visible = false;
-
         }
 
         #endregion
@@ -159,7 +157,8 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         {
             if ( Page.IsValid )
             {
-                var userLoginService = new UserLoginService();
+                var rockContext = new RockContext();
+                var userLoginService = new UserLoginService(rockContext);
                 var userLogin = userLoginService.GetByUserName( tbUserName.Text );
                 if ( userLogin != null && userLogin.EntityType != null)
                 {
@@ -192,11 +191,10 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
 
                                     pnlLogin.Visible = false;
                                     pnlConfirmation.Visible = true;
-
                                 }
                             }
-                            return;
 
+                            return;
                         }
                     }
                 }
@@ -213,7 +211,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 helpUrl = ResolveRockUrl("~/ForgotUserName");
             }
                 
-            DisplayError( String.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
+            DisplayError( string.Format("Sorry, we couldn't find an account matching that username/password. Can we help you <a href='{0}'>recover your account information</a>?", helpUrl) );
         }
 
         /// <summary>
@@ -222,7 +220,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void lbLogin_Click( object sender, EventArgs e )
+        protected void lbLogin_Click( object sender, EventArgs e )
         {
             if ( sender is LinkButton )
             {
@@ -274,6 +272,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
                 {
                     url += "?returnurl=" + returnUrl;
                 } 
+
                 Response.Redirect( url, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
@@ -320,7 +319,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         private void LoginUser( string userName, string returnUrl, bool rememberMe )
         {
-            new UserLoginService().UpdateLastLogin( userName );
+            UserLoginService.UpdateLastLogin( userName );
 
             Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
@@ -336,6 +335,10 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             }
         }
 
+        /// <summary>
+        /// Sends the confirmation.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
         private void SendConfirmation(UserLogin userLogin)
         {
             string url = LinkedPageUrl( "ConfirmationPage" );
@@ -343,6 +346,7 @@ Sorry, your account has been locked.  Please contact our office at {{ GlobalAttr
             {
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
+
             var mergeObjects = new Dictionary<string, object>();
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 

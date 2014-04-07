@@ -133,6 +133,19 @@ namespace Rock.Data
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="state"></param>
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+        }
+
+        #endregion
+
         #region ISecured implementation
 
         /// <summary>
@@ -219,10 +232,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias personAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, personAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -230,10 +242,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias personAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, personAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }
 
         /// <summary>
@@ -241,10 +252,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void AllowPerson( string action, Person person, PersonAlias personAlias )
+        public virtual void AllowPerson( string action, Person person )
         {
-            Security.Authorization.AllowPerson( this, action, person, personAlias );
+            Security.Authorization.AllowPerson( this, action, person );
         }
 
         /// <summary>

@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -86,7 +87,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( !CurrentKioskId.HasValue || UserBackedUp || CurrentGroupTypeIds == null )
                 {
                     // #DEBUG, may be the local machine
-                    var kiosk = new DeviceService().Queryable().Where( d => d.Name == Environment.MachineName ).FirstOrDefault();
+                    var kiosk = new DeviceService( new RockContext() ).Queryable().Where( d => d.Name == Environment.MachineName ).FirstOrDefault();
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
@@ -120,7 +121,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // match kiosk by REMOTE_ADDR (ip/name).
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
-            var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
+            var device = new DeviceService( new RockContext() ).GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
             if ( device != null )
             {
                 ClearMobileCookie();
@@ -267,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
             // We need to use the DeviceService until we can get the GeoFence to JSON Serialize/Deserialize.
-            Device kiosk = new DeviceService().GetByGeocode( latitude, longitude, checkInDeviceTypeId );
+            Device kiosk = new DeviceService( new RockContext() ).GetByGeocode( latitude, longitude, checkInDeviceTypeId );
 
             return kiosk;
         }
@@ -329,7 +330,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {           
             if ( CurrentKioskId > 0 )
             {
-                var kiosk = new DeviceService().Get( (int)CurrentKioskId );
+                var kiosk = new DeviceService( new RockContext() ).Get( (int)CurrentKioskId );
                 if ( kiosk != null )
                 {
                     var groupTypes = kiosk.Locations.SelectMany( l => l.GroupLocations

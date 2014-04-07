@@ -22,7 +22,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Constants;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -40,11 +40,14 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="type">The type (should be a <see cref="IHasAttributes" /> object.</param>
         /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static bool UpdateAttributes( Type type, int? entityTypeId, PersonAlias currentPersonAlias )
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static bool UpdateAttributes( Type type, int? entityTypeId, RockContext rockContext = null )
         {
-            return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, currentPersonAlias );
+            return UpdateAttributes( type, entityTypeId, String.Empty, String.Empty, rockContext );
         }
 
         /// <summary>
@@ -55,9 +58,12 @@ namespace Rock.Attribute
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, PersonAlias currentPersonAlias )
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static bool UpdateAttributes( Type type, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool attributesUpdated = false;
 
@@ -86,31 +92,26 @@ namespace Rock.Attribute
             }
 
             // Create any attributes that need to be created
-            var attributeService = new Model.AttributeService();
-
             if ( blockProperties.Count > 0 )
             {
-                var attributeQualifierService = new Model.AttributeQualifierService();
-                var fieldTypeService = new Model.FieldTypeService();
-                var categoryService = new Model.CategoryService();
-
                 foreach ( var blockProperty in blockProperties )
                 {
-                    attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService, categoryService,
-                        blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonAlias ) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue ) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
             }
 
             // Remove any old attributes
+            rockContext = rockContext ?? new RockContext();
+            var attributeService = new Model.AttributeService( rockContext );
             foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
             {
                 if ( !existingKeys.Contains( a.Key ) )
                 {
-                    attributeService.Delete( a, currentPersonAlias );
-                    attributeService.Save( a, currentPersonAlias );
+                    attributeService.Delete( a );
                 }
             }
+            rockContext.SaveChanges();
 
             return attributesUpdated;
         }
@@ -118,31 +119,34 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
-        /// <param name="fieldTypeService">The field type service.</param>
-        /// <param name="categoryService">The category service.</param>
         /// <param name="property">The property.</param>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( Model.AttributeService attributeService, Model.AttributeQualifierService attributeQualifierService, Model.FieldTypeService fieldTypeService, Model.CategoryService categoryService,
-            FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, PersonAlias currentPersonAlias )
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
         {
             bool updated = false;
+
+            rockContext = rockContext ?? new RockContext();
+            var attributeService = new AttributeService( rockContext );
+            var attributeQualifierService = new AttributeQualifierService( rockContext );
+            var fieldTypeService = new FieldTypeService(rockContext);
+            var categoryService = new CategoryService( rockContext );
 
             var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
 
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
-            Model.Attribute attribute = attributeService.Get(
-                entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
-
+            Model.Attribute attribute = attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
             if ( attribute == null )
             {
                 // If an existing attribute record doesn't exist, create a new one
                 updated = true;
+
                 attribute = new Model.Attribute();
                 attribute.EntityTypeId = entityTypeId;
                 attribute.EntityTypeQualifierColumn = entityQualifierColumn;
@@ -223,7 +227,7 @@ namespace Rock.Attribute
 
                 foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
                 {
-                    attributeQualifierService.Delete( qualifier, currentPersonAlias );
+                    attributeQualifierService.Delete( qualifier );
                 }
                 attribute.AttributeQualifiers.Clear();
 
@@ -246,11 +250,11 @@ namespace Rock.Attribute
 
                 // If this is a new attribute, add it, otherwise remove the exiting one from the cache
                 if ( attribute.Id == 0 )
-                    attributeService.Add( attribute, currentPersonAlias );
+                    attributeService.Add( attribute );
                 else
                     AttributeCache.Flush( attribute.Id );
 
-                attributeService.Save( attribute, currentPersonAlias );
+                rockContext.SaveChanges();
 
                 return true;
             }
@@ -261,10 +265,14 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Loads the <see cref="P:IHasAttributes.Attributes"/> and <see cref="P:IHasAttributes.AttributeValues"/> of any <see cref="IHasAttributes"/> object
+        /// Loads the <see cref="P:IHasAttributes.Attributes" /> and <see cref="P:IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object
         /// </summary>
         /// <param name="entity">The item.</param>
-        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity )
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void LoadAttributes( Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
             Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
 
@@ -272,17 +280,19 @@ namespace Rock.Attribute
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
+            rockContext = rockContext ?? new RockContext();
+
             // Check for group type attributes
             var groupTypeIds = new List<int>();
             if ( entity is GroupMember || entity is Group || entity is GroupType )
             {
                 // Can't use GroupTypeCache here since it loads attributes and would result in a recursive stack overflow situation
-                var groupTypeService = new GroupTypeService();
+                var groupTypeService = new GroupTypeService( rockContext );
                 GroupType groupType = null;
 
                 if ( entity is GroupMember )
                 {
-                    var group = ( (GroupMember)entity ).Group ?? new GroupService().Get( ( (GroupMember)entity ).GroupId );
+                    var group = ( (GroupMember)entity ).Group ?? new GroupService( rockContext ).Get( ( (GroupMember)entity ).GroupId );
                     groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
                 }
                 else if ( entity is Group )
@@ -307,8 +317,8 @@ namespace Rock.Attribute
             foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
-            Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService();
-            Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService();
+            Rock.Model.AttributeService attributeService = new Rock.Model.AttributeService( rockContext );
+            Rock.Model.AttributeValueService attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
             var inheritedAttributes = new Dictionary<int, List<Rock.Web.Cache.AttributeCache>>();
             if ( groupTypeIds.Any() )
@@ -426,11 +436,17 @@ namespace Rock.Attribute
         /// <param name="entity">The entity.</param>
         /// <param name="onlyIncludeGridColumns">if set to <c>true</c> will only include those attributes with the option to display in grid set to true</param>
         /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <returns></returns>
-        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false )
+        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool onlyIncludeGridColumns = false, bool allowMultiple = false, bool supressOrdering = false)
         {
-            var attributes = entity.Attributes.Select( a => a.Value ).OrderBy( t => t.Order).ThenBy(t => t.Name).ToList();
-            return GetAttributeCategories( attributes, onlyIncludeGridColumns, allowMultiple );
+            var attributes = entity.Attributes.Select( a => a.Value );
+            if ( !supressOrdering )
+            {
+                attributes = attributes.OrderBy( t => t.Order ).ThenBy( t => t.Name );
+            }
+
+            return GetAttributeCategories( attributes.ToList(), onlyIncludeGridColumns, allowMultiple );
         }
 
         /// <summary>
@@ -501,66 +517,58 @@ namespace Rock.Attribute
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, PersonAlias currentPersonAlias )
-        {
-            Rock.Model.Attribute attribute = null;
-
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var attributeService = new AttributeService();
-                var attributeQualifierService = new AttributeQualifierService();
-                var categoryService = new CategoryService();
-
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                {
-                    attribute = SaveAttributeEdits( edtAttribute, attributeService, attributeQualifierService, categoryService,
-                        entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonAlias );
-                } );
-            }
-
-            return attribute;
-        }
-
-        /// <summary>
-        /// Saves any attribute edits made using an Attribute Editor control
-        /// </summary>
-        /// <param name="edtAttribute">The edt attribute.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
-        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        /// <returns></returns>
-        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
-            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, PersonAlias currentPersonAlias )
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
             // Create and update a new attribute object with new values
             var newAttribute = new Rock.Model.Attribute();
             edtAttribute.GetAttributeProperties( newAttribute );
 
-            return SaveAttributeEdits( newAttribute, attributeService, attributeQualifierService, categoryService,
-                entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, currentPersonAlias );
+            rockContext = rockContext ?? new RockContext();
+            var internalAttributeService = new AttributeService( rockContext );
+            Rock.Model.Attribute attribute = null;
+
+            if ( newAttribute.Id > 0 )
+            {
+                attribute = internalAttributeService.Get( newAttribute.Id );
+            }
+
+            if ( attribute == null )
+            {
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
+            else
+            {
+                newAttribute.Order = attribute.Order;
+            } 
+            
+            return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
         }
 
         /// <summary>
         /// Saves any attribute edits made to an attribute
         /// </summary>
         /// <param name="newAttribute">The new attribute.</param>
-        /// <param name="attributeService">The attribute service.</param>
-        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
-        /// <param name="categoryService">The category service.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Rock.Model.Attribute SaveAttributeEdits( Rock.Model.Attribute newAttribute, AttributeService attributeService, AttributeQualifierService attributeQualifierService, CategoryService categoryService,
-            int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, PersonAlias currentPersonAlias )
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static Rock.Model.Attribute SaveAttributeEdits( Rock.Model.Attribute newAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
         {
+            rockContext = rockContext ?? new RockContext();
+
+            var internalAttributeService = new AttributeService( rockContext );
+            var attributeQualifierService = new AttributeQualifierService( rockContext );
+            var categoryService = new CategoryService( rockContext );
+
             // If attribute is not valid, return null
             if (!newAttribute.IsValid)
             {
@@ -576,27 +584,25 @@ namespace Rock.Attribute
                 // If editing an existing attribute, remove all the old qualifiers in case they were changed
                 foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
                 {
-                    attributeQualifierService.Delete( oldQualifier, currentPersonAlias );
-                    attributeQualifierService.Save( oldQualifier, currentPersonAlias );
+                    attributeQualifierService.Delete( oldQualifier );
                 }
+                rockContext.SaveChanges();
 
                 // Then re-load the existing attribute 
-                attribute = attributeService.Get( newAttribute.Id );
+                attribute = internalAttributeService.Get( newAttribute.Id );
             }
 
             if ( attribute == null )
             {
                 // If the attribute didn't exist, create it
                 attribute = new Rock.Model.Attribute();
-                attributeService.Add( attribute, currentPersonAlias );
-                newAttribute.Order = attributeService.Queryable().Max( a => a.Order) + 1;
+                internalAttributeService.Add( attribute );
             }
             else
             {
                 // If it did exist, set the new attribute ID and GUID since we're copying all properties in the next step
                 newAttribute.Id = attribute.Id;
                 newAttribute.Guid = attribute.Guid;
-                newAttribute.Order = attribute.Order;
             }
 
             // Copy all the properties from the new attribute to the attribute model
@@ -619,7 +625,7 @@ namespace Rock.Attribute
             attribute.EntityTypeQualifierColumn = entityTypeQualifierColumn;
             attribute.EntityTypeQualifierValue = entityTypeQualifierValue;
 
-            attributeService.Save( attribute, currentPersonAlias );
+            rockContext.SaveChanges();
 
             if ( attribute != null )
             {
@@ -639,11 +645,16 @@ namespace Rock.Attribute
         /// Saves the attribute values.
         /// </summary>
         /// <param name="model">The model.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( IHasAttributes model, PersonAlias currentPersonAlias )
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void SaveAttributeValues( IHasAttributes model, RockContext rockContext = null )
         {
             foreach ( var attribute in model.Attributes )
-                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key], currentPersonAlias );
+            {
+                SaveAttributeValues( model, attribute.Value, model.AttributeValues[attribute.Key], rockContext );
+            }
         }
 
         /// <summary>
@@ -652,10 +663,15 @@ namespace Rock.Attribute
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValue">The new value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, PersonAlias currentPersonAlias )
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void SaveAttributeValue( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            Model.AttributeValueService attributeValueService = new Model.AttributeValueService();
+            rockContext = rockContext ?? new RockContext();
+
+            var attributeValueService = new Model.AttributeValueService( rockContext );
 
             var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
             if ( attributeValue == null )
@@ -669,12 +685,12 @@ namespace Rock.Attribute
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = model.Id;
                 attributeValue.Order = 0;
-                attributeValueService.Add( attributeValue, currentPersonAlias );
+                attributeValueService.Add( attributeValue );
             }
 
             attributeValue.Value = newValue;
 
-            attributeValueService.Save( attributeValue, currentPersonAlias );
+            rockContext.SaveChanges();
 
             model.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { attributeValue.Clone( false ) as Rock.Model.AttributeValue };
 
@@ -686,10 +702,15 @@ namespace Rock.Attribute
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValue">The new value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValue(int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, PersonAlias currentPersonAlias)
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void SaveAttributeValue( int entityId, Rock.Web.Cache.AttributeCache attribute, string newValue, RockContext rockContext = null )
         {
-            Model.AttributeValueService attributeValueService = new Model.AttributeValueService();
+            rockContext = rockContext ?? new RockContext();
+
+            var attributeValueService = new Model.AttributeValueService( rockContext );
 
             var attributeValue = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, entityId).FirstOrDefault();
             if (attributeValue == null)
@@ -703,12 +724,12 @@ namespace Rock.Attribute
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = entityId;
                 attributeValue.Order = 0;
-                attributeValueService.Add(attributeValue, currentPersonAlias);
+                attributeValueService.Add(attributeValue);
             }
 
             attributeValue.Value = newValue;
 
-            attributeValueService.Save(attributeValue, currentPersonAlias);
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -717,10 +738,14 @@ namespace Rock.Attribute
         /// <param name="model">The model.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="newValues">The new values.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, PersonAlias currentPersonAlias )
+        /// <param name="rockContext">The rock context.</param>
+        /// <remarks>
+        /// If a rockContext value is included, this method will save any previous changes made to the context
+        /// </remarks>
+        public static void SaveAttributeValues( IHasAttributes model, Rock.Web.Cache.AttributeCache attribute, List<Rock.Model.AttributeValue> newValues, RockContext rockContext = null )
         {
-            Model.AttributeValueService attributeValueService = new Model.AttributeValueService();
+            rockContext = rockContext ?? new RockContext();
+            var attributeValueService = new Model.AttributeValueService( rockContext );
 
             var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).ToList();
             int i = 0;
@@ -739,11 +764,11 @@ namespace Rock.Attribute
                     attributeValue.AttributeId = attribute.Id;
                     attributeValue.EntityId = model.Id;
                     attributeValue.Order = i;
-                    attributeValueService.Add( attributeValue, currentPersonAlias );
+                    attributeValueService.Add( attributeValue );
                 }
 
                 if ( i >= newValues.Count )
-                    attributeValueService.Delete( attributeValue, currentPersonAlias );
+                    attributeValueService.Delete( attributeValue );
                 else
                 {
                     if ( attributeValue.Value != newValues[i].Value )
@@ -751,10 +776,10 @@ namespace Rock.Attribute
                     newValues[i] = attributeValue.Clone( false ) as Rock.Model.AttributeValue;
                 }
 
-                attributeValueService.Save( attributeValue, currentPersonAlias );
-
                 i++;
             }
+
+            rockContext.SaveChanges();
 
             model.AttributeValues[attribute.Key] = newValues;
         }
@@ -816,9 +841,10 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "" )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
         {
-            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>() );
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
         }
 
         /// <summary>
@@ -829,11 +855,12 @@ namespace Rock.Attribute
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attribute names not to render</param>
-        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddEditControls( IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
         {
             if ( item.Attributes != null )
             {
-                foreach ( var attributeCategory in GetAttributeCategories( item ) )
+                foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
                 {
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
@@ -885,14 +912,15 @@ namespace Rock.Attribute
         /// <param name="item">The item.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null )
+        /// <param name="supressOrdering">if set to <c>true</c> supresses reording (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
+        public static void AddDisplayControls( IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false )
         {
             exclude = exclude ?? new List<string>();
             string result = string.Empty;
 
             if ( item.Attributes != null )
             {
-                AddDisplayControls(item, GetAttributeCategories(item), parentControl, exclude);
+                AddDisplayControls(item, GetAttributeCategories(item, false, supressOrdering), parentControl, exclude);
             }
         }
 
@@ -955,6 +983,7 @@ namespace Rock.Attribute
         public static void GetEditValues( Control parentControl, IHasAttributes item )
         {
             if ( item.Attributes != null )
+            {
                 foreach ( var attribute in item.Attributes )
                 {
                     Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
@@ -969,6 +998,7 @@ namespace Rock.Attribute
                         item.AttributeValues[attribute.Key] = new List<AttributeValue>() { value };
                     }
                 }
+            }
         }
 
 

@@ -33,9 +33,9 @@ namespace Rock.Model
         /// <param name="approvedByPersonId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who approved the <see cref="Rock.Model.HtmlContent"/>. This 
         /// value can be null </param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> entity objects that were approved by the specified <see cref="Rock.Model.Person"/>.</returns>
-        public IEnumerable<HtmlContent> GetByApprovedByPersonId( int? approvedByPersonId )
+        public IQueryable<HtmlContent> GetByApprovedByPersonId( int? approvedByPersonId )
         {
-            return Repository.Find( t => ( t.ApprovedByPersonId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonId == null ) ) );
+            return Queryable().Where( t => ( t.ApprovedByPersonId == approvedByPersonId || ( approvedByPersonId == null && t.ApprovedByPersonId == null ) ) );
         }
         
         /// <summary>
@@ -43,9 +43,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Block"/>.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent">HTMLContents</see> for the specified <see cref="Rock.Model.Block"/>.</returns>
-        public IEnumerable<HtmlContent> GetByBlockId( int blockId )
+        public IQueryable<HtmlContent> GetByBlockId( int blockId )
         {
-            return Repository.Find( t => t.BlockId == blockId );
+            return Queryable().Where( t => t.BlockId == blockId );
         }
         
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.HtmlContent"/> that matches the provided criteria. If no match is found, this value will be null. </returns>
         public HtmlContent GetByBlockIdAndEntityValueAndVersion( int blockId, string entityValue, int version )
         {
-            return Repository.AsQueryable().OrderByDescending( o => o.ModifiedDateTime).FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
+            return Queryable().OrderByDescending( o => o.ModifiedDateTime).FirstOrDefault( t => t.BlockId == blockId && ( t.EntityValue == entityValue || ( entityValue == null && t.EntityValue == null ) ) && t.Version == version );
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Rock.Model
         /// <param name="blockId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Block"/>.</param>
         /// <param name="entityValue">A <see cref="System.String"/> representing the EntityValue. This value is nullable.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.HtmlContent"/> for all versions of the specified <see cref="Rock.Model.Block"/> and/or EntityContext. </returns>
-        public IEnumerable<HtmlContent> GetContent( int blockId, string entityValue )
+        public IOrderedQueryable<HtmlContent> GetContent( int blockId, string entityValue )
         {
             var content = Queryable("ModifiedByPersonAlias.Person");
 

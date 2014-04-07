@@ -107,31 +107,27 @@ namespace RockWeb.Blocks.Cms
         {
             bool canDelete = false;
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( (int)e.RowKeyValue );
+            if ( site != null )
             {
-                SiteService siteService = new SiteService();
-                Site site = siteService.Get( (int)e.RowKeyValue );
-                if ( site != null )
+                string errorMessage;
+                canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
+                if ( !canDelete )
                 {
-                    string errorMessage;
-                    canDelete = siteService.CanDelete( site, out errorMessage, includeSecondLvl: true );
-                    if ( ! canDelete )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return; // returns out of RockTransactionScope
-                    }
-
-                    siteService.Delete( site, CurrentPersonAlias );
-                    siteService.Save( site, CurrentPersonAlias );
-
-                    SiteCache.Flush( site.Id );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
                 }
-            } );
 
-            if ( canDelete )
-            {
-                BindGrid();
+                siteService.Delete( site );
+
+                rockContext.SaveChanges();
+
+                SiteCache.Flush( site.Id );
             }
+
+            BindGrid();
         }
 
         /// <summary>
@@ -153,7 +149,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            SiteService siteService = new SiteService();
+            SiteService siteService = new SiteService( new RockContext() );
             SortProperty sortProperty = gSites.SortProperty;
             var qry = siteService.Queryable();
 
@@ -172,7 +168,7 @@ namespace RockWeb.Blocks.Cms
 
         protected string GetDomains( int siteID )
         {
-            return new SiteDomainService().Queryable()
+            return new SiteDomainService( new RockContext() ).Queryable()
                 .Where( d => d.SiteId == siteID )
                 .OrderBy( d => d.Domain )
                 .Select( d => d.Domain )

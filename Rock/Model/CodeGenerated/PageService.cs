@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PageService"/> class
         /// </summary>
-        public PageService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PageService(IRepository<Page> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PageService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Page>().Queryable().Any( a => a.ParentPageId == item.Id ) )
+            if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
@@ -150,6 +134,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

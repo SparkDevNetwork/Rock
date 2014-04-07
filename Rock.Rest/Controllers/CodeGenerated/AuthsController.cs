@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AuthsController : Rock.Rest.ApiController<Rock.Model.Auth>
     {
-        public AuthsController() : base( new Rock.Model.AuthService() ) { } 
+        public AuthsController() : base( new Rock.Model.AuthService( new Rock.Data.RockContext() ) ) { } 
     }
 }

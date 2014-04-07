@@ -53,14 +53,16 @@ namespace RockWeb.Blocks.Prayer
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
     [TextField( "Save Success Text", "Some text (or HTML) to display to the requester upon successful save. (Only applies if not navigating to parent page on save.)", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
-    
     public partial class AddPrayerRequest : RockBlock
     {
-        #region Fields
-        protected int? _prayerRequestEntityTypeId = null;
-        protected bool _enableUrgentFlag = false;
-        protected bool _enableCommentsFlag = false;
-        protected bool _enablePublicDisplayFlag = false;
+        #region Properties
+        public int? PrayerRequestEntityTypeId { get; private set; }
+        
+        // note: the ascx uses these for rendering logic
+        public bool EnableUrgentFlag { get; private set; }
+        public bool EnableCommentsFlag { get; private set; }
+        public bool EnablePublicDisplayFlag { get; private set; }
+
         #endregion
 
         #region Base Control Methods
@@ -72,9 +74,9 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            _enableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
-            _enableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
-            _enablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
+            this.EnableUrgentFlag = GetAttributeValue( "EnableUrgentFlag" ).AsBoolean();
+            this.EnableCommentsFlag = GetAttributeValue( "EnableCommentsFlag" ).AsBoolean();
+            this.EnablePublicDisplayFlag = GetAttributeValue( "EnablePublicDisplayFlag" ).AsBoolean();
             nbMessage.Text = GetAttributeValue( "SaveSuccessText" );
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/bootstrap-limit.js" ) );
@@ -89,13 +91,13 @@ namespace RockWeb.Blocks.Prayer
             }
 
             Type type = new PrayerRequest().GetType();
-            _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
+            this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
 
-            int charLimit;
-            if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0 )
+            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger() ?? 0;
+            if ( charLimit > 0 )
             {
                 dtbRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
-                string script = string.Format( @"
+                string scriptFormat = @"
     function SetCharacterLimit() {{
         $('#{0}').limit({{maxChars: {1}, counter:'#{2}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});
 
@@ -108,7 +110,8 @@ namespace RockWeb.Blocks.Prayer
     }};
     $(document).ready(function () {{ SetCharacterLimit(); }});
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetCharacterLimit);
-", dtbRequest.ClientID, charLimit, lblCount.ClientID, lbSave.ClientID );
+";
+                string script = string.Format(scriptFormat , dtbRequest.ClientID, charLimit, lblCount.ClientID, lbSave.ClientID );
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), string.Format( "limit-{0}", this.ClientID ), script, true );
             }
         }
@@ -157,8 +160,9 @@ namespace RockWeb.Blocks.Prayer
 
             PrayerRequest prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = isAutoApproved, AllowComments = defaultAllowComments };
 
-            PrayerRequestService prayerRequestService = new PrayerRequestService();
-            prayerRequestService.Add( prayerRequest, CurrentPersonAlias );
+            var rockContext = new RockContext();
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            prayerRequestService.Add( prayerRequest );
             prayerRequest.EnteredDateTime = RockDateTime.Now;
 
             if ( isAutoApproved )
@@ -171,12 +175,13 @@ namespace RockWeb.Blocks.Prayer
 
             // Now record all the bits...
             int? categoryId = bddlCategory.SelectedValueAsInt();
-            var defaultCategoryGuid = GetAttributeValue( "DefaultCategory" );
-            if ( categoryId == null && ! string.IsNullOrEmpty( defaultCategoryGuid ) )
+            Guid defaultCategoryGuid = GetAttributeValue( "DefaultCategory" ).AsGuid();
+            if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
             {
-                var category = new CategoryService().Get( new Guid( defaultCategoryGuid ) );
+                var category = new CategoryService( rockContext ).Get( defaultCategoryGuid );
                 categoryId = category.Id;
             }
+
             prayerRequest.CategoryId = categoryId;
             prayerRequest.RequestedByPersonId = CurrentPersonId;
             prayerRequest.FirstName = Sanitizer.GetSafeHtmlFragment( dtbFirstName.Text.Trim() );
@@ -184,7 +189,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.Email = dtbEmail.Text.Trim();
             prayerRequest.Text = dtbRequest.Text.Trim();
             
-            if ( _enableUrgentFlag )
+            if ( this.EnableUrgentFlag )
             {
                 prayerRequest.IsUrgent = cbIsUrgent.Checked;
             }
@@ -193,12 +198,12 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.IsUrgent = false;
             }
 
-            if ( _enableCommentsFlag )
+            if ( this.EnableCommentsFlag )
             {
                 prayerRequest.AllowComments = cbAllowComments.Checked;
             }
 
-            if ( _enablePublicDisplayFlag )
+            if ( this.EnablePublicDisplayFlag )
             {
                 prayerRequest.IsPublic = cbAllowPublicDisplay.Checked;
             }
@@ -218,7 +223,7 @@ namespace RockWeb.Blocks.Prayer
                 return;
             }
 
-            prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             bool isNavigateToParent = GetAttributeValue( "NavigateToParentOnSave" ).AsBoolean();
 
@@ -242,7 +247,7 @@ namespace RockWeb.Blocks.Prayer
         {
             pnlForm.Visible = true;
             pnlReceipt.Visible = false;
-            dtbRequest.Text = "";
+            dtbRequest.Text = string.Empty;
             dtbRequest.Focus();
         }
 
@@ -257,7 +262,7 @@ namespace RockWeb.Blocks.Prayer
         {
             Guid guid = new Guid( categoryGuid );
 
-            bddlCategory.DataSource = new CategoryService().GetByEntityTypeId( _prayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
+            bddlCategory.DataSource = new CategoryService( new RockContext() ).GetByEntityTypeId( this.PrayerRequestEntityTypeId ).Where( c => c.Guid == guid ||
                 ( c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
             bddlCategory.DataTextField = "Name";
             bddlCategory.DataValueField = "Id";
@@ -273,9 +278,8 @@ namespace RockWeb.Blocks.Prayer
             IEnumerable<string> errors = Enumerable.Empty<string>();
 
             // Check length in case the client side js didn't
-            int charLimit;
-            if ( Int32.TryParse( GetAttributeValue( "CharacterLimit" ), out charLimit ) && charLimit > 0
-                && dtbRequest.Text.Length > charLimit )
+            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger() ?? 0;
+            if ( charLimit > 0  && dtbRequest.Text.Length > charLimit )
             {
                 errors = errors.Concat( new[] { string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit ) } );
             }

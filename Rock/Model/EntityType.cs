@@ -40,7 +40,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the full name of the EntityType.
         /// </value>
         [MaxLength( 100 )]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember]
         public string Name { get; set; }
 

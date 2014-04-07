@@ -76,8 +76,7 @@ namespace Rock.Rest.Controllers
         {
             if ( location != null )
             {
-                var locationService = new LocationService();
-                locationService.Verify( location, GetPersonAlias(), false );
+                ((LocationService)Service).Verify( location, false );
                 return location;
             }
 

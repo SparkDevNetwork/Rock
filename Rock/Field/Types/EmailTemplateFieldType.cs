@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -42,7 +42,7 @@ namespace Rock.Field.Types
         {
             var editControl = new RockDropDownList { ID = id };
 
-            var systemEmails = new SystemEmailService().Queryable().OrderBy( e => e.Title );
+            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( e => e.Title );
             if ( systemEmails.Any() )
             {
                 foreach ( var systemEmail in systemEmails )

@@ -63,7 +63,7 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember]
         public Guid Guid
         {
@@ -71,6 +71,16 @@ namespace Rock.Data
             set { _guid = value; }
         }
         private Guid _guid = Guid.NewGuid();
+
+        /// <summary>
+        /// Gets or sets an optional foreign identifier.  This can be used for importing or syncing data to a foreign system
+        /// </summary>
+        /// <value>
+        /// The foreign identifier.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string ForeignId { get; set; }
 
         #endregion
 
@@ -99,7 +109,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
-        public virtual string TypeName 
+        public virtual string TypeName
         {
             get
             {
@@ -155,6 +165,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets a publicly viewable unique key for the entity.
+        /// NOTE: Will result in an empty string in a non-web app.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents a viewable version of the entity's unique key.
@@ -165,7 +176,19 @@ namespace Rock.Data
             get
             {
                 string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
+                string result = string.Empty;
+
+                //// Non-web apps might not have the dataencryptionkey
+                //// so just return empty string if we can't encrypt
+
+                if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
+                {
+                    return result;
+                }
+                else
+                {
+                    return string.Empty; ;
+                }
             }
         }
 
@@ -233,7 +256,7 @@ namespace Rock.Data
         {
             var dictionary = new Dictionary<string, object>();
 
-            foreach(var propInfo in this.GetType().GetProperties())
+            foreach ( var propInfo in this.GetType().GetProperties() )
             {
                 if ( !propInfo.GetGetMethod().IsVirtual || propInfo.Name == "Id" || propInfo.Name == "Guid" || propInfo.Name == "Order" )
                 {
@@ -279,7 +302,7 @@ namespace Rock.Data
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public virtual object ToLiquid(bool debug = false)
+        public virtual object ToLiquid( bool debug = false )
         {
             var dictionary = new Dictionary<string, object>();
 
@@ -315,235 +338,14 @@ namespace Rock.Data
         /// </summary>
         /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
         /// <returns>An instance of the entity object based on the provided JSON string.</returns>
-        public static T FromJson(string json) 
+        public static T FromJson( string json )
         {
-            return JsonConvert.DeserializeObject(json, typeof(T)) as T;
-        }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Occurs when model is being added.
-        /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Adding;
-
-        /// <summary>
-        /// Raises the <see cref="E:Adding"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnAdding( ModelUpdatingEventArgs e )
-        {
-            if ( Adding != null )
-                Adding( this, e );
-        }
-
-        /// <summary>
-        /// Raises the adding event.
-        /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseAddingEvent( out bool cancel, PersonAlias personAlias )
-        {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
-            OnAdding( e );
-            cancel = e.Cancel;
-        }
-
-        /// <summary>
-        /// Occurs when model was added.
-        /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Added;
-
-        /// <summary>
-        /// Raises the <see cref="E:Added"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnAdded( ModelUpdatedEventArgs e )
-        {
-            if ( Added != null )
-                Added( this, e );
-        }
-
-        /// <summary>
-        /// Raises the added event.
-        /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseAddedEvent( PersonAlias personAlias )
-        {
-            OnAdded( new ModelUpdatedEventArgs( this, personAlias ) );
-        }
-
-        /// <summary>
-        /// Occurs when model is being deleted.
-        /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Deleting;
-
-        /// <summary>
-        /// Raises the <see cref="E:Deleting"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnDeleting( ModelUpdatingEventArgs e )
-        {
-            if ( Deleting != null )
-                Deleting( this, e );
-        }
-
-        /// <summary>
-        /// Raises the deleting event.
-        /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseDeletingEvent( out bool cancel, PersonAlias personAlias )
-        {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
-            OnDeleting( e );
-            cancel = e.Cancel;
-        }
-
-        /// <summary>
-        /// Occurs when model was deleted.
-        /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Deleted;
-
-        /// <summary>
-        /// Raises the <see cref="E:Deleted"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnDeleted( ModelUpdatedEventArgs e )
-        {
-            if ( Deleted != null )
-                Deleted( this, e );
-        }
-
-        /// <summary>
-        /// Raises the deleted event.
-        /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseDeletedEvent( PersonAlias personAlias )
-        {
-            OnDeleted( new ModelUpdatedEventArgs( this, personAlias ) );
-        }
-
-        /// <summary>
-        /// Occurs when model is being updated.
-        /// </summary>
-        public static event EventHandler<ModelUpdatingEventArgs> Updating;
-
-        /// <summary>
-        /// Raises the <see cref="E:Updating"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatingEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnUpdating( ModelUpdatingEventArgs e )
-        {
-            if ( Updating != null )
-                Updating( this, e );
-        }
-
-        /// <summary>
-        /// Raises the updating event.
-        /// </summary>
-        /// <param name="cancel">if set to <c>true</c> [cancel].</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseUpdatingEvent( out bool cancel, PersonAlias personAlias )
-        {
-            ModelUpdatingEventArgs e = new ModelUpdatingEventArgs( this, personAlias );
-            OnUpdating( e );
-            cancel = e.Cancel;
-        }
-
-        /// <summary>
-        /// Occurs when model was updated
-        /// </summary>
-        public static event EventHandler<ModelUpdatedEventArgs> Updated;
-
-        /// <summary>
-        /// Raises the <see cref="E:Updated"/> event.
-        /// </summary>
-        /// <param name="e">The <see cref="ModelUpdatedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnUpdated( ModelUpdatedEventArgs e )
-        {
-            if ( Updated != null )
-                Updated( this, e );
-        }
-
-        /// <summary>
-        /// Raises the updated event.
-        /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void RaiseUpdatedEvent( PersonAlias personAlias )
-        {
-            OnUpdated( new ModelUpdatedEventArgs( this, personAlias ) );
+            return JsonConvert.DeserializeObject( json, typeof( T ) ) as T;
         }
 
         #endregion
 
     }
-
-    #region Event Arguments
-
-    /// <summary>
-    /// Event argument used when model was added, updated, or deleted
-    /// </summary>
-    public class ModelUpdatedEventArgs : EventArgs
-    {
-        /// <summary>
-        /// The affected model
-        /// </summary>
-        public readonly IEntity Model;
-
-        /// <summary>
-        /// The person alias for the person making the update
-        /// </summary>
-        public readonly Rock.Model.PersonAlias PersonAlias;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatedEventArgs" /> class.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public ModelUpdatedEventArgs( IEntity model, PersonAlias personAlias )
-        {
-            Model = model;
-            PersonAlias = personAlias;
-        }
-    }
-
-    /// <summary>
-    /// Event argument used when model is being added, updated, or deleted
-    /// </summary>
-    public class ModelUpdatingEventArgs : ModelUpdatedEventArgs
-    {
-        private bool cancel = false;
-        /// <summary>
-        /// Gets or sets a value indicating whether event should be canceled.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.
-        /// </value>
-        public bool Cancel
-        {
-            get { return cancel; }
-            set
-            {
-                if ( value == true )
-                    cancel = true;
-            }
-
-        }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ModelUpdatingEventArgs" /> class.
-        /// </summary>
-        /// <param name="model">The model.</param>
-        /// <param name="personAlias"></param>
-        public ModelUpdatingEventArgs( IEntity model, Rock.Model.PersonAlias personAlias )
-            : base( model, personAlias )
-        {
-        }
-    }
-
-    #endregion
 
     #region KeyEntity
 
@@ -569,5 +371,4 @@ namespace Rock.Data
 
     #endregion
 
-
-} 
+}

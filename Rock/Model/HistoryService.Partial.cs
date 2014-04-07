@@ -32,19 +32,20 @@ namespace Rock.Model
         /// <summary>
         /// Saves a list of history messages.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="modelType">Type of the model.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="changes">The changes.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, PersonAlias currentPersonAlias )
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes )
         {
-            SaveChanges( modelType, categoryGuid, entityId, changes, null, null, null, currentPersonAlias );
+            SaveChanges( rockContext, modelType, categoryGuid, entityId, changes, null, null, null );
         }
 
         /// <summary>
         /// Saves the changes.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="modelType">Type of the model.</param>
         /// <param name="categoryGuid">The category unique identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
@@ -52,10 +53,8 @@ namespace Rock.Model
         /// <param name="caption">The caption.</param>
         /// <param name="relatedModelType">Type of the related model.</param>
         /// <param name="relatedEntityId">The related entity identifier.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveChanges( Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId, PersonAlias currentPersonAlias )
+        public static void SaveChanges( RockContext rockContext, Type modelType, Guid categoryGuid, int entityId, List<string> changes, string caption, Type relatedModelType, int? relatedEntityId )
         {
-
             var entityType = EntityTypeCache.Read(modelType);
             var category = CategoryCache.Read(categoryGuid);
             var creationDate = RockDateTime.Now;
@@ -72,6 +71,8 @@ namespace Rock.Model
 
             if (entityType != null && category != null)
             {
+                var historyService = new HistoryService(rockContext);
+
                 foreach ( string message in changes.Where( m => m != null && m != "" ) )
                 {
                     var history = new History();
@@ -86,9 +87,10 @@ namespace Rock.Model
                     // Manually set creation date on these history items so that they will be grouped together
                     history.CreatedDateTime = creationDate;
 
-                    Add( history, currentPersonAlias );
-                    Save( history, currentPersonAlias );
+                    historyService.Add( history );
                 }
+
+                rockContext.SaveChanges();
             }
         }
     }

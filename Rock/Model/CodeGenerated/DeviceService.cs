@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceService"/> class
         /// </summary>
-        public DeviceService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public DeviceService(IRepository<Device> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public DeviceService(RockContext context) : base(context)
         {
@@ -68,19 +52,19 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attendance>().Queryable().Any( a => a.DeviceId == item.Id ) )
+            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.DeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Device>().Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            if ( new Service<Device>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Location>().Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            if ( new Service<Location>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
@@ -135,6 +119,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

@@ -24,6 +24,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Data;
 
 namespace Rock.Jobs
 {
@@ -52,7 +53,7 @@ namespace Rock.Jobs
             var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ));
             var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ));
 
-            foreach (var comm in new CommunicationService().Queryable()
+            foreach ( var comm in new CommunicationService( new RockContext() ).Queryable()
                 .Where( c => 
                     c.Status == CommunicationStatus.Approved &&
                     c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending).Any() &&
@@ -64,7 +65,7 @@ namespace Rock.Jobs
                 var channel = comm.Channel;
                 if ( channel != null )
                 {
-                    channel.Send( comm, null );
+                    channel.Send( comm );
                 }
             }
         }

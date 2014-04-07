@@ -22,6 +22,7 @@ using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
 using System.ComponentModel;
+using Rock.Data;
 
 
 namespace RockWeb.Blocks.Cms
@@ -39,7 +40,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            PageService pageService = new PageService();
+            PageService pageService = new PageService( new RockContext() );
 
             var sb = new StringBuilder();
 

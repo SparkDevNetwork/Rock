@@ -228,7 +228,7 @@ namespace Rock.Reporting.DataFilter.Person
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? gradeValue = values[1].AsInteger( false );
-            var personGradeQuery = new PersonService( serviceInstance.RockContext ).Queryable();
+            var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
             if ( gradeTransitionDate.HasValue )
             {

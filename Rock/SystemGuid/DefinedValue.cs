@@ -313,12 +313,12 @@ namespace Rock.SystemGuid
         #region map Styles
 
         /// <summary>
-        /// Person Record Type
+        /// Google map style
         /// </summary>
         public const string MAP_STYLE_GOOGLE = "BFC46259-FB66-4427-BF05-2B030A582BEA";
 
         /// <summary>
-        /// Business Record Type
+        /// The standard Rock map style
         /// </summary>
         public const string MAP_STYLE_ROCK = "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC";
 

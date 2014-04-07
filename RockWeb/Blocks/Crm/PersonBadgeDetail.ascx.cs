@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Crm
                 PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger() ?? 0;
                 if ( PersonBadgeId != 0 )
                 {
-                    var personBadge = new PersonBadgeService().Get( PersonBadgeId );
+                    var personBadge = new PersonBadgeService( new RockContext() ).Get( PersonBadgeId );
                     if ( personBadge != null )
                     {
                         lActionTitle.Text = ActionTitle.Edit( personBadge.Name ).FormatAsHtmlTitle();
@@ -125,7 +125,8 @@ namespace RockWeb.Blocks.Crm
         protected void btnSave_Click( object sender, EventArgs e )
         {
             PersonBadge PersonBadge = null;
-            PersonBadgeService PersonBadgeService = new PersonBadgeService();
+            var rockContext = new RockContext();
+            PersonBadgeService PersonBadgeService = new PersonBadgeService( rockContext );
 
             if ( PersonBadgeId != 0 )
             {
@@ -135,7 +136,7 @@ namespace RockWeb.Blocks.Crm
             if (PersonBadge == null)
             {
                 PersonBadge = new PersonBadge();
-                PersonBadgeService.Add( PersonBadge, CurrentPersonAlias );
+                PersonBadgeService.Add( PersonBadge );
             }
 
             PersonBadge.Name = tbName.Text;
@@ -150,7 +151,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            PersonBadge.LoadAttributes();
+            PersonBadge.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, PersonBadge );
 
             if ( !Page.IsValid )
@@ -165,8 +166,8 @@ namespace RockWeb.Blocks.Crm
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                PersonBadgeService.Save( PersonBadge, CurrentPersonAlias );
-                PersonBadge.SaveAttributeValues( CurrentPersonAlias );
+                rockContext.SaveChanges();
+                PersonBadge.SaveAttributeValues( rockContext );
             } );
 
             PersonBadgeCache.Flush( PersonBadge.Id );

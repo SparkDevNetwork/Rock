@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.DataTextField = "Name";
             this.DataValueField = "Id";
-            this.DataSource = new WorkflowTypeService().Queryable().OrderBy( w => w.Name).ToList();
+            this.DataSource = new WorkflowTypeService( new RockContext() ).Queryable().OrderBy( w => w.Name).ToList();
             this.DataBind();
         }
 

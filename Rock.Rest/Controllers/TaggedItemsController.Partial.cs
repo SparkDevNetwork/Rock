@@ -64,34 +64,30 @@ namespace Rock.Rest.Controllers
         {
             var personAlias = GetPersonAlias();
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var tagService = new TagService( (Rock.Data.RockContext)Service.Context );
+
+            var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+            if ( tag == null )
             {
-                var tagService = new TagService();
-                var taggedItemService = new TaggedItemService();
-
-                var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-                if ( tag == null )
-                {
-                    tag = new Tag();
-                    tag.EntityTypeId = entityTypeId;
-                    tag.EntityTypeQualifierColumn = entityQualifier;
-                    tag.EntityTypeQualifierValue = entityQualifierValue;
-                    tag.OwnerId = ownerId;
-                    tag.Name = name;
-                    tagService.Add( tag, personAlias );
-                    tagService.Save( tag, personAlias );
-                }
-
-                var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-                if ( taggedItem == null )
-                {
-                    taggedItem = new TaggedItem();
-                    taggedItem.TagId = tag.Id;
-                    taggedItem.EntityGuid = entityGuid;
-                    taggedItemService.Add( taggedItem, personAlias );
-                    taggedItemService.Save( taggedItem, personAlias );
-                }
+                tag = new Tag();
+                tag.EntityTypeId = entityTypeId;
+                tag.EntityTypeQualifierColumn = entityQualifier;
+                tag.EntityTypeQualifierValue = entityQualifierValue;
+                tag.OwnerId = ownerId;
+                tag.Name = name;
+                tagService.Add( tag );
             }
+
+            var taggedItem = tag.TaggedItems.FirstOrDefault( i => i.EntityGuid.Equals( entityGuid ) );
+            if ( taggedItem == null )
+            {
+                taggedItem = new TaggedItem();
+                taggedItem.Tag = tag;
+                taggedItem.EntityGuid = entityGuid;
+                tag.TaggedItems.Add( taggedItem );
+            }
+
+            Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
         }
@@ -113,27 +109,26 @@ namespace Rock.Rest.Controllers
         {
             var personAlias = GetPersonAlias();
 
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var tagService = new TagService();
-                var taggedItemService = new TaggedItemService();
+            if ( name.Contains( '^' ) )
+                name = name.Split( '^' )[0];
 
-                if ( name.Contains( '^' ) )
-                    name = name.Split( '^' )[0];
+            var taggedItem = Service.Queryable()
+                .FirstOrDefault( i =>
+                    ( i.Tag.EntityTypeId == entityTypeId ) &&
+                    ( i.Tag.EntityTypeQualifierColumn == null || i.Tag.EntityTypeQualifierColumn == "" || i.Tag.EntityTypeQualifierColumn == entityQualifier ) &&
+                    ( i.Tag.EntityTypeQualifierValue == null || i.Tag.EntityTypeQualifierValue == "" || i.Tag.EntityTypeQualifierValue == entityQualifierValue ) &&
+                    ( i.Tag.OwnerId == ownerId ) &&
+                    ( i.Tag.Name == name ) &&
+                    ( i.EntityGuid.Equals( entityGuid ) ) );
 
-                var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-                if ( tag == null )
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
+            if ( taggedItem == null )
+                throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-                if ( taggedItem == null )
-                    throw new HttpResponseException( HttpStatusCode.NotFound );
+            CheckCanEdit( taggedItem );
 
-                CheckCanEdit( taggedItem );
+            Service.Delete( taggedItem );
 
-                taggedItemService.Delete( taggedItem, personAlias );
-                taggedItemService.Save( taggedItem, personAlias );
-            }
+            Service.Context.SaveChanges();
         }
 
     }

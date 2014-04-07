@@ -114,85 +114,82 @@ namespace RockWeb.Blocks.Cms
                 {
                     pageViewCount = 1;
                 }
-                
+
                 StringBuilder sbUsers = new StringBuilder();
-                
+
                 var site = SiteCache.Read( (int)GetAttributeValue( "Site" ).AsInteger() );
                 lSiteName.Text = "<h4>" + site.Name + "</h4>";
                 lSiteName.Visible = GetAttributeValue( "ShowSiteNameAsTitle" ).AsBoolean();
-                
+
                 lMessages.Text = string.Empty;
 
-                using ( new UnitOfWorkScope() )
+                var rockContext = new RockContext();
+
+                IQueryable<PageView> pageViewQry = new PageViewService( rockContext ).Queryable( "Page" );
+
+                // Query to get who is logged in and last visit was to selected site
+                var activeLogins = new UserLoginService( rockContext ).Queryable( "Person" )
+                    .Where( l =>
+                        l.PersonId.HasValue &&
+                        l.IsOnLine == true )
+                    .OrderByDescending( l => l.LastActivityDateTime )
+                    .Select( l => new
+                    {
+                        login = l,
+                        pageViews = pageViewQry
+                            .Where( v => v.PersonAlias.PersonId == l.PersonId )
+                            .OrderByDescending( v => v.DateTimeViewed )
+                            .Take( pageViewCount.Value )
+                    } )
+                    .Where( a =>
+                        a.pageViews.Any() &&
+                        a.pageViews.FirstOrDefault().SiteId == site.Id
+                    );
+
+                if ( CurrentUser != null )
                 {
-                    IQueryable<PageView> pageViewQry = new PageViewService().Queryable( "Page" );
+                    activeLogins = activeLogins.Where( m => m.login.UserName != CurrentUser.UserName );
+                }
 
-                    // Query to get who is logged in and last visit was to selected site
-                    var activeLogins = new UserLoginService().Queryable( "Person" )
-                        .Where( l =>
-                            l.PersonId.HasValue &&
-                            l.IsOnLine == true )
-                        .OrderByDescending( l => l.LastActivityDateTime )
-                        .Select( l => new
-                        {
-                            login = l,
-                            pageViews = pageViewQry
-                                .Where( v => v.PersonAlias.PersonId == l.PersonId )
-                                .OrderByDescending( v => v.DateTimeViewed )
-                                .Take( pageViewCount.Value )
-                        } )
-                        .Where( a =>
-                            a.pageViews.Any() &&
-                            a.pageViews.FirstOrDefault().SiteId == site.Id
-                        );
+                foreach ( var activeLogin in activeLogins )
+                {
+                    var login = activeLogin.login;
+                    var pageViews = activeLogin.pageViews.ToList();
+                    Guid? latestSession = pageViews.FirstOrDefault().SessionId;
 
-                    if (CurrentUser != null) {
-                        activeLogins = activeLogins.Where(m => m.login.UserName != CurrentUser.UserName);
+                    string pageViewsHtml = activeLogin.pageViews.ToList()
+                                            .Where( v => v.SessionId == latestSession )
+                                            .Select( v => HttpUtility.HtmlEncode( v.Page.PageTitle ) ).ToList().AsDelimited( "<br> " );
+
+                    TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
+                    string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
+
+                    // create link to the person
+                    string personLink = login.Person.FullName;
+
+                    if ( GetAttributeValue( "PersonProfilePage" ) != null )
+                    {
+                        string personProfilePage = GetAttributeValue( "PersonProfilePage" );
+                        var pageParams = new Dictionary<string, string>();
+                        pageParams.Add( "PersonId", login.Person.Id.ToString() );
+                        var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
+                        personLink = String.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
                     }
 
-                    foreach ( var activeLogin in activeLogins )
-                    {                        
-                        var login = activeLogin.login;
-                        var pageViews = activeLogin.pageViews.ToList();
-                        Guid? latestSession = pageViews.FirstOrDefault().SessionId;
-
-                        string pageViewsHtml = activeLogin.pageViews.ToList()
-                                                .Where( v => v.SessionId == latestSession )
-                                                .Select( v => HttpUtility.HtmlEncode(v.Page.PageTitle) ).ToList().AsDelimited( "<br> " );
-
-                        TimeSpan tsLastActivity = RockDateTime.Now.Subtract( (DateTime)login.LastActivityDateTime );
-                        string className = tsLastActivity.Minutes <= 5 ? "recent" : "not-recent";
-
-                        // create link to the person
-                        string personLink = login.Person.FullName;
-
-                        if ( GetAttributeValue( "PersonProfilePage" ) != null )
-                        {
-                            string personProfilePage = GetAttributeValue( "PersonProfilePage" );
-                            var pageParams = new Dictionary<string, string>();
-                            pageParams.Add( "PersonId", login.Person.Id.ToString() );
-                            var pageReference = new Rock.Web.PageReference( personProfilePage, pageParams );
-                            personLink = String.Format( @"<a href='{0}'>{1}</a>", pageReference.BuildUrl(), login.Person.FullName );
-                        }
-
-                        // determine whether to show last page views
-                        if ( (int)GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
-                        {
-                            sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
+                    // determine whether to show last page views
+                    if ( (int)GetAttributeValue( "PageViewCount" ).AsInteger() > 0 )
+                    {
+                        sbUsers.Append( String.Format( @"<li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
                                                                 <i class='fa-li fa fa-circle'></i> {1}
                                                         </li>",
-                                            className, personLink, pageViewsHtml ) );
-                        }
-                        else
-                        {
-                            sbUsers.Append( String.Format( @"<li class='active-user {0}'>
+                                        className, personLink, pageViewsHtml ) );
+                    }
+                    else
+                    {
+                        sbUsers.Append( String.Format( @"<li class='active-user {0}'>
                                                                 <i class='fa-li fa fa-circle'></i> {1}
                                                         </li>",
-                                            className, personLink ) );
-                        }
-
-
-                        
+                                        className, personLink ) );
                     }
                 }
 

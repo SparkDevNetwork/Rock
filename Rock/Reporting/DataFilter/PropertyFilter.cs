@@ -882,7 +882,7 @@ namespace Rock.Reporting.DataFilter
 
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
-            var service = new AttributeValueService( serviceInstance.RockContext );
+            var service = new AttributeValueService( (RockContext)serviceInstance.Context );
             var attributeValues = service.Queryable().Where( v =>
                 v.AttributeId == property.AttributeId &&
                 v.EntityId.HasValue &&

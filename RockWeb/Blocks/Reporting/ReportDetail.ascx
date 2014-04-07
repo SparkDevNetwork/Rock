@@ -38,8 +38,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" SourceTypeName="Rock.Model.Report, Rock" PropertyName="FetchTop" Label="Record Count" MinimumValue="0" MaxLength="9"
-                            Help="Set this to limit the number of rows returned in the report. Leave blank to show all rows." />
+                        <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" SourceTypeName="Rock.Model.Report, Rock" PropertyName="FetchTop" Label="Result Row Limit" MinimumValue="0" MaxLength="9"
+                            Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
                     </div>
                     <div class="col-md-6">
                     </div>

@@ -33,9 +33,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupTypeId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that they belong to.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> belong to a specific <see cref="Rock.Model.GroupType"/>.</returns>
-        public IEnumerable<Group> GetByGroupTypeId( int groupTypeId )
+        public IQueryable<Group> GetByGroupTypeId( int groupTypeId )
         {
-            return Repository.Find( t => t.GroupTypeId == groupTypeId );
+            return Queryable().Where( t => t.GroupTypeId == groupTypeId );
         }
 
 
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Group" /> who's Guid property matches the provided value.  If no match is found, returns null.</returns>
         public Group GetByGuid( Guid guid )
         {
-            return Repository.FirstOrDefault( t => t.Guid == guid );
+            return Queryable().FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="isSecurityRole">A <see cref="System.Boolean"/> representing the IsSecurityRole flag value to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that contains a IsSecurityRole flag that matches the provided value.</returns>
-        public IEnumerable<Group> GetByIsSecurityRole( bool isSecurityRole )
+        public IQueryable<Group> GetByIsSecurityRole( bool isSecurityRole )
         {
-            return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
+            return Queryable().Where( t => t.IsSecurityRole == isSecurityRole );
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace Rock.Model
         /// <param name="parentGroupId">A <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by. This value
         /// is nullable and a null value will search for <see cref="Rock.Model.Group">Groups</see> that do not inherit from other groups.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> who's ParentGroupId matches the provided value.</returns>
-        public IEnumerable<Group> GetByParentGroupId( int? parentGroupId )
+        public IQueryable<Group> GetByParentGroupId( int? parentGroupId )
         {
-            return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) );
+            return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) );
         }
 
 
@@ -77,9 +77,9 @@ namespace Rock.Model
         /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by.</param>
         /// <param name="name">A <see cref="System.String"/> containing the Name of the <see cref="Rock.Model.Group"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> who's ParentGroupId and Name matches the provided values.</returns>
-        public IEnumerable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
+        public IQueryable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
-            return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
+            return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetNavigationChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
-            var qry = Repository.AsQueryable();
+            var qry = Queryable();
 
             if ( id == 0 )
             {
@@ -137,7 +137,7 @@ namespace Rock.Model
         /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
-            return Repository.ExecuteQuery( 
+            return this.ExecuteQuery( 
                 @"
                 with CTE as (
                 select * from [Group] where [ParentGroupId]={0}
@@ -152,17 +152,17 @@ namespace Rock.Model
         /// <summary>
         /// Adds the person to a new family record
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( Person person, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public static Group SaveNewFamily( RockContext rockContext, Person person, int? campusId, bool savePersonAttributes )
         {
             var groupMember = new GroupMember();
             groupMember.Person = person;
 
-            var adultRole = new GroupTypeRoleService(this.RockContext).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
+            var adultRole = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
             if (adultRole != null)
             {
                 groupMember.GroupRoleId = adultRole.Id;
@@ -171,18 +171,18 @@ namespace Rock.Model
             var groupMembers = new List<GroupMember>();
             groupMembers.Add( groupMember );
 
-            return SaveNewFamily( groupMembers, campusId, savePersonAttributes, personAlias );
+            return SaveNewFamily( rockContext, groupMembers, campusId, savePersonAttributes );
         }
 
         /// <summary>
         /// Saves the new family.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="familyMembers">The family members.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group SaveNewFamily( List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public static Group SaveNewFamily( RockContext rockContext, List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -192,6 +192,8 @@ namespace Rock.Model
 
             if ( familyGroupType != null )
             {
+                var groupService = new GroupService( rockContext );
+
                 var familyGroup = new Group();
 
                 familyGroup.GroupTypeId = familyGroupType.Id;
@@ -206,7 +208,7 @@ namespace Rock.Model
                 familyGroup.CampusId = campusId;
 
                 int? childRoleId = null;
-                var childRole = new GroupTypeRoleService( this.RockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
+                var childRole = new GroupTypeRoleService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
                 if ( childRole != null )
                 {
                     childRoleId = childRole.Id;
@@ -259,11 +261,10 @@ namespace Rock.Model
                     }
                 }
 
-                Add( familyGroup, personAlias );
-                Save( familyGroup, personAlias );
+                groupService.Add( familyGroup );
+                rockContext.SaveChanges();
 
-                var personService = new PersonService( this.RockContext );
-                var historyService = new HistoryService( this.RockContext );
+                var personService = new PersonService( rockContext );
 
                 foreach ( var groupMember in familyMembers )
                 {
@@ -290,7 +291,7 @@ namespace Rock.Model
                                 History.EvaluateChange( familyDemographicChanges[person.Guid], attributeCache.Name,
                                     attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, false ),
                                     attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, false ) );
-                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, personAlias );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
                             }
                         }
                     }
@@ -314,17 +315,17 @@ namespace Rock.Model
 
                         if ( updateRequired )
                         {
-                            personService.Save( person, personAlias );
+                            rockContext.SaveChanges();
                         }
 
-                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                            person.Id, changes, personAlias );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), 
+                            person.Id, changes );
 
-                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id, personAlias );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                            person.Id, familyMemberChanges[person.Guid], familyGroup.Name, typeof( Group ), familyGroup.Id );
 
-                        historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                            person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id, personAlias );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(), 
+                            person.Id, familyChanges, familyGroup.Name, typeof( Group ), familyGroup.Id );
                     }
                 }
 
@@ -337,6 +338,7 @@ namespace Rock.Model
         /// <summary>
         /// Adds the new family address.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="family">The family.</param>
         /// <param name="locationTypeGuid">The location type unique identifier.</param>
         /// <param name="street1">The street1.</param>
@@ -344,8 +346,7 @@ namespace Rock.Model
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="zip">The zip.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
@@ -357,7 +358,7 @@ namespace Rock.Model
                 var groupLocation = new GroupLocation();
 
                 // Get new or existing location and associate it with group
-                var location = new LocationService( this.RockContext ).Get( street1, street2, city, state, zip );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip );
                 groupLocation.Location = location;
                 groupLocation.IsMailingLocation = true;
                 groupLocation.IsMappedLocation = true;
@@ -380,13 +381,12 @@ namespace Rock.Model
                 History.EvaluateChange( familyChanges, addressChangeField + " Is Mailing", string.Empty, groupLocation.IsMailingLocation.ToString() );
                 History.EvaluateChange( familyChanges, addressChangeField + " Is Map Location", string.Empty, groupLocation.IsMappedLocation.ToString() );
 
-                Save( family, personAlias );
+                rockContext.SaveChanges();
 
-                var historyService = new HistoryService(this.RockContext);
                 foreach(var fm in family.Members)
                 {
-                    historyService.SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
-                        fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id, personAlias );
+                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_FAMILY_CHANGES.AsGuid(),
+                        fm.PersonId, familyChanges, family.Name, typeof( Group ), family.Id );
                 }
             }
         }
@@ -394,10 +394,11 @@ namespace Rock.Model
         /// <summary>
         /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
-        /// <param name="item">The <see cref="Rock.Model.Group"/> to delete.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns>A <see cref="System.Boolean"/> that indicates if the <see cref="Rock.Model.Group"/> was deleted successfully.</returns>
-        public override bool Delete( Group item, PersonAlias personAlias )
+        /// <param name="item">The <see cref="Rock.Model.Group" /> to delete.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> that indicates if the <see cref="Rock.Model.Group" /> was deleted successfully.
+        /// </returns>
+        public override bool Delete( Group item )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -405,7 +406,7 @@ namespace Rock.Model
                 return false;
             }
 
-            return base.Delete( item, personAlias );
+            return base.Delete( item );
         }
     }
 }

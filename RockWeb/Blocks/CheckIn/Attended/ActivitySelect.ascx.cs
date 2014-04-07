@@ -20,10 +20,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var pId = Request.QueryString["personId"].AsType<int?>();
             if ( pId > 0 )
             {
-                var allergyAttributeId = new AttributeService().GetByEntityTypeId( new Person().TypeId )
+                var allergyAttributeId = new AttributeService( new RockContext() ).GetByEntityTypeId( new Person().TypeId )
                     .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
                 LoadAttributeControl( allergyAttributeId, (int)pId );
             }
@@ -424,7 +424,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var personId = Request.QueryString["personId"].AsType<int?>();
             if ( personId > 0 )
             {
-                var allergyAttributeId = new AttributeService().GetByEntityTypeId( new Person().TypeId )
+                var allergyAttributeId = new AttributeService( new RockContext() ).GetByEntityTypeId( new Person().TypeId )
                     .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
                 LoadAttributeControl( allergyAttributeId, (int)personId );
                 mpeAddNote.Show();
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             person.Person.LoadAttributes();
 
-            var allergyAttributeId = new AttributeService().GetByEntityTypeId( new Person().TypeId )
+            var allergyAttributeId = new AttributeService( new RockContext() ).GetByEntityTypeId( new Person().TypeId )
                 .Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
             var allergyAttribute = Rock.Web.Cache.AttributeCache.Read( allergyAttributeId );
 
@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     .GetEditValue( allergyAttributeControl, allergyAttribute.QualifierValues ) );
             }
 
-            person.Person.SaveAttributeValues( CurrentPersonAlias );
+            person.Person.SaveAttributeValues();
             hfAllergyAttributeId.Value = string.Empty;
             mpeAddNote.Hide();
         }

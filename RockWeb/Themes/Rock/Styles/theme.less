@@ -219,7 +219,7 @@ a:hover i.fs
         border-color: @header-text-color;
         position: absolute;
         left: 0;
-        margin: 11px 0 0 12px;
+        margin: 8px 0 0 12px;
         
         &:focus {outline:0;}
     }
@@ -291,9 +291,14 @@ a:hover i.fs
                 margin-left: 8px;
 
                 > li {
+                    
+                    &.dropdown-header {
+                        padding-left: 0;
+                    }
 
                     a {
                         color: @header-text-color;
+                        padding-left: 0;
 
                         &:hover {
                             background-color: inherit;
@@ -365,6 +370,8 @@ a:hover i.fs
     }
 
     #content {
+        margin-bottom: 60px;
+
         #content-box {
             background-color: @body-bg;
             overflow: hidden;
@@ -376,12 +383,6 @@ a:hover i.fs
         }
     }
 } 
-
-/* JME 3/29/2014 needed?
-    
-    .no-person-outline {
-    fill: #000000;
-}*/ 
 
 // 6. Responsive Overrides 
 // -------------------------
@@ -435,8 +436,14 @@ a:hover i.fs
                     margin-left: 0;
 
                     > li {
+                        
+                        &.dropdown-header {
+                            padding-left: 20px;
+                        }
+                        
                         > a {
                             color: @text-color;
+                            padding-left: 20px;
 
                             &:hover {
                                 background-color: @accent-light-color;
