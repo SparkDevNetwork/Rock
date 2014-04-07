@@ -31,8 +31,6 @@
                             <%# Eval("GivingGroup.GroupLocations[0].Location.City") %>, <%# Eval("GivingGroup.GroupLocations[0].Location.State") %> <%# Eval("GivingGroup.GroupLocations[0].Location.Zip") %>
                         </ItemTemplate>
                     </asp:TemplateField>
-<%--                    <asp:BoundField DataField="Contacts" HeaderText="Contacts" SortExpression="Contacts" />
-                    <asp:BoundField DataField="Address" HeaderText="Address" SortExpression="Address" />--%>
                     <Rock:EditField OnClick="gBusinessList_Edit" />
                     <Rock:DeleteField OnClick="gBusinessList_Delete" />
                 </Columns>

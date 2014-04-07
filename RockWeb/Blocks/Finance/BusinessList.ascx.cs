@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -27,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -73,26 +73,35 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Events
 
-        void gfBusinessFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        private void gfBusinessFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
-            
+            switch ( e.Key )
+            {
+                case "Business Name":
+                    break;
+
+                case "Owner":
+                    break;
+            }
         }
 
-        void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
+        private void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            
+            gfBusinessFilter.SaveUserPreference( "Business Name", tbBusinessName.Text );
+            gfBusinessFilter.SaveUserPreference( "Owner", ppBusinessOwner.PersonId.ToString() );
+            BindGrid();
         }
 
-        void gBusinessList_GridRebind( object sender, EventArgs e )
+        private void gBusinessList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        void gBusinessList_AddClick( object sender, EventArgs e )
+        private void gBusinessList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "businessId", "0" );
@@ -105,7 +114,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var business = e.Row.DataItem as Person;
                 var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
-                if (!string.IsNullOrWhiteSpace(location.Street2))
+                if ( !string.IsNullOrWhiteSpace( location.Street2 ) )
                 {
                     PlaceHolder phStreet2 = e.Row.FindControl( "phStreet2" ) as PlaceHolder;
                     if ( phStreet2 != null )
@@ -126,15 +135,13 @@ namespace RockWeb.Blocks.Finance
 
         protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-
         }
 
         protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-
         }
 
-        #endregion
+        #endregion Events
 
         #region Internal Methods
 
@@ -143,7 +150,22 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            // Need filters for Business Name & Owner
+            var rockContext = new RockContext();
+
+            // Business Name Filter
+            tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
+
+            // Owner Filter
+            int businessId = 0;
+            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out businessId ) )
+            {
+                var businessService = new PersonService( rockContext );
+                var business = businessService.Get( businessId );
+                if ( business != null )
+                {
+                    ppBusinessOwner.SetValue( business );
+                }
+            }
         }
 
         /// <summary>
@@ -155,7 +177,31 @@ namespace RockWeb.Blocks.Finance
             var queryable = new PersonService( rockContext ).Queryable();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
             queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId );
-            gBusinessList.DataSource = queryable.ToList();
+
+            // Business Name Filter
+            var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
+            if ( !string.IsNullOrWhiteSpace( businessName ) )
+            {
+                queryable = queryable.Where( a => a.FirstName.Contains( businessName ) );
+            }
+
+            // Owner Filter
+            int businessId = 0;
+            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out businessId ) && businessId != 0 )
+            {
+                queryable = queryable.Where( a => a.Id == businessId );
+            }
+
+            SortProperty sortProperty = gBusinessList.SortProperty;
+            if ( sortProperty != null )
+            {
+                gBusinessList.DataSource = queryable.Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                gBusinessList.DataSource = queryable.OrderBy( q => q.FirstName ).ToList();
+            }
+
             gBusinessList.DataBind();
         }
 
@@ -168,6 +214,6 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", "businessId", id );
         }
 
-        #endregion
-}
+        #endregion Internal Methods
+    }
 }
