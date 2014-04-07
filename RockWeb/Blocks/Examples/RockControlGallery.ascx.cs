@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -35,6 +36,8 @@ namespace RockWeb.Blocks.Examples
     [DisplayName( "Rock Control Gallery" )]
     [Category( "Examples" )]
     [Description( "Allows you to see and try various Rock UI controls." )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
     public partial class RockControlGallery : RockBlock
     {
         private Regex specialCharsRegex = new Regex( "[^a-zA-Z0-9-]" );
@@ -53,6 +56,7 @@ namespace RockWeb.Blocks.Examples
 
             geoPicker.SelectGeography += geoPicker_SelectGeography;
             geoPicker1.SelectGeography += geoPicker1_SelectGeography;
+            geoPicker1.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
             htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
