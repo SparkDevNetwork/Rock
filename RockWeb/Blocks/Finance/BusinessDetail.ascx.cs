@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Finance
 
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+            
         }
 
         /// <summary>
@@ -73,6 +74,16 @@ namespace RockWeb.Blocks.Finance
                     ddlGivingGroup.Items.Add( new ListItem( business.FirstName, business.Id.ToString() ) );
                 }
 
+                // Load the Campus drop down
+                ddlCampus.Items.Clear();
+                ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                var campusService = new CampusService( new RockContext() );
+                foreach ( Campus campus in campusService.Queryable() )
+                {
+                    ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
+                    ddlCampus.Items.Add( li );
+                }
+
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     ShowDetail( "businessId", int.Parse( itemId ) );
@@ -91,8 +102,6 @@ namespace RockWeb.Blocks.Finance
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
                 Rock.Data.RockTransactionScope.WrapTransaction( () =>
                 {
                     var personService = new PersonService( rockContext );
@@ -174,7 +183,7 @@ namespace RockWeb.Blocks.Finance
                             string.Empty );
 
                         business.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
+                        phoneNumberService.Delete( phoneNumber );
                     }
 
                     // Record Type - this is always "business". it will never change.
@@ -206,16 +215,16 @@ namespace RockWeb.Blocks.Finance
 
                     if ( business.IsValid )
                     {
-                        if ( personService.Save( business, CurrentPersonAlias ) )
+                        if ( rockContext.SaveChanges() > 0 )
                         {
                             if ( changes.Any() )
                             {
-                                new HistoryService().SaveChanges( 
+                                HistoryService.SaveChanges( 
+                                    rockContext, 
                                     typeof( Person ), 
                                     Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
                                     business.Id, 
-                                    changes, 
-                                    CurrentPersonAlias );
+                                    changes );
                             }
 
                             // if ( orphanedPhotoId.HasValue )
@@ -245,13 +254,13 @@ namespace RockWeb.Blocks.Finance
 
                     businessGroup.GroupTypeId = familyGroupType.Id;
                     businessGroup.Name = tbBusinessName.Text + " Business";
-                    businessGroup.CampusId = 1;     // **** This needs to be set to the value of a dropdown.
+                    businessGroup.CampusId = ddlCampus.SelectedValueAsInt();
                     if ( business.GivingGroupId == null )
                     {
                         groupService.Add( businessGroup );
                     }
 
-                    groupService.Save( businessGroup );
+                    rockContext.SaveChanges();
 
                     // Giving Group
                     int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
@@ -299,18 +308,18 @@ namespace RockWeb.Blocks.Finance
                     location.State = ddlState.SelectedValue;
                     location.Zip = tbZipCode.Text.Trim();
 
-                    groupService.Save( businessGroup );
+                    rockContext.SaveChanges();
                 } );
-            }
 
             NavigateToParentPage();
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
         {
+            var rockContext = new RockContext();
             if ( hfBusinessId.ValueAsInt() != 0 )
             {
-                var savedBusiness = new PersonService().Get( hfBusinessId.ValueAsInt() );
+                var savedBusiness = new PersonService( rockContext ).Get( hfBusinessId.ValueAsInt() );
                 ShowSummary( savedBusiness );
             }
             else
@@ -321,7 +330,8 @@ namespace RockWeb.Blocks.Finance
 
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var business = new PersonService().Get( int.Parse( hfBusinessId.Value ) );
+            var rockContext = new RockContext();
+            var business = new PersonService( rockContext ).Get( int.Parse( hfBusinessId.Value ) );
             ShowEditDetails( business );
         }
 
@@ -341,6 +351,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            var rockContext = new RockContext();
             pnlDetails.Visible = false;
 
             if ( !itemKey.Equals( "businessId" ) )
@@ -354,7 +365,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                business = new PersonService().Get( itemKeyValue );
+                business = new PersonService( rockContext ).Get( itemKeyValue );
                 editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else
@@ -412,7 +423,7 @@ namespace RockWeb.Blocks.Finance
                 .Html;
 
             lDetailsRight.Text = new DescriptionList()
-                .Add( "Phone Number", business.PhoneNumbers.FirstOrDefault().NumberFormattedWithCountryCode )
+                .Add( "Phone Number", business.PhoneNumbers.FirstOrDefault().ToString() )
                 .Add( "Email Address", business.Email )
                 .Add( "Giving Group", business.GivingGroup.Name )
                 .Add( "Record Status", business.RecordStatusValue )
@@ -427,13 +438,14 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
                 tbBusinessName.Text = business.FirstName;
-                pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().NumberFormattedWithCountryCode;
-                tbEmail.Text = business.Email;
                 tbStreet1.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
                 tbStreet2.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
                 tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
                 ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
                 tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+                pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
+                tbEmail.Text = business.Email;
+                ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
                 ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;

@@ -3,13 +3,13 @@
 <asp:UpdatePanel ID="upnlBusinesses" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
-            <asp:HiddenField ID="hfBusinessId" runat="server" />
-            <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
             <div class="banner"><h1><asp:Literal ID="lTitle" runat="server" /></h1></div>
 
             <div id="pnlEditDetails" runat="server">
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:HiddenField ID="hfBusinessId" runat="server" />
+                <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                 <div class="row">
                     <div class="col-md-3">
@@ -24,6 +24,31 @@
                             <div class="col-md-12">
                                 <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" TabIndex="1" 
                                     SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="7" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="8" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-lg-7">
+                                        <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="9" />
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="10" />
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="11" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="row">
@@ -67,27 +92,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="7" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="8" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <div class="col-lg-7">
-                                        <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="9" />
-                                    </div>
-                                    <div class="col-lg-2">
-                                        <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="10" />
-                                    </div>
-                                    <div class="col-lg-3">
-                                        <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="11" />
-                                    </div>
-                                </div>
+                                <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
                             </div>
                         </div>
                         <div class="row">
