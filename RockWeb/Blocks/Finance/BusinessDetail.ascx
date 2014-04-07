@@ -12,47 +12,95 @@
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div class="row">
-                    <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Title" TabIndex="1" 
-                            SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
+                    <div class="col-md-3">
+                        <!-- Add photo here -->
+                        <fieldset>
+                            <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
+                            <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
+                        </fieldset>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPhone" Label="Phone Number" PrependText="<i class='fa fa-phone-square'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' TabIndex="7" />
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="2" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbEmailAddress" runat="server" Label="Email Address" TabIndex="8" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="3" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-9">
                         <div class="row">
-                            <div class="col-lg-7">
-                                <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="4" />
-                            </div>
-                            <div class="col-lg-2">
-                                <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="5" />
-                            </div>
-                            <div class="col-lg-3">
-                                <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="6" />
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" TabIndex="1" 
+                                    SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="control-label">Phone Number</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="2" />
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <asp:CheckBox ID="cbSms"  runat="server" Text="Sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="3" />
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="4" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="5" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="6">
+                                    <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
+                                    <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                                    <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                                </Rock:RockRadioButtonList>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="7" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="8" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-lg-7">
+                                        <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="9" />
+                                    </div>
+                                    <div class="col-lg-2">
+                                        <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="10" />
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="11" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <legend>Contribution Info</legend>
+                                <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="12" /> 
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSave_Click" />
+                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="lbCancel_Click" />
+                        </div>
                     </div>
-                </div>
-
-                <div class="actions">
-                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSave_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="lbCancel_Click" />
                 </div>
             </div>
 
