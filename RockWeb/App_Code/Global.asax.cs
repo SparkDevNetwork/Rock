@@ -780,7 +780,7 @@ namespace RockWeb
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
-                if ( user.Person != null )
+                if ( user != null && user.Person != null )
                 {
                     personAlias = user.Person.PrimaryAlias;
                 }
