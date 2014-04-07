@@ -97,6 +97,7 @@ namespace Rock.Web.UI.Controls.Communication
             mfpMessage.MergeFields.Clear();
             mfpMessage.MergeFields.Add( "GlobalAttribute" );
             mfpMessage.MergeFields.Add( "Rock.Model.Person" );
+            mfpMessage.CssClass += " pull-right margin-b-sm"; 
             mfpMessage.SelectItem += mfpMergeFields_SelectItem;
             rcwMessage.Controls.Add( mfpMessage );
 

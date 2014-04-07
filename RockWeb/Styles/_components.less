@@ -114,6 +114,7 @@
         border-radius: 0 0 @border-radius-base @border-radius-base;
         margin: 10px -10px -10px -10px;
     }
+
     // details used for pickers like person picker to show the details of the selected item
     .picker-select-item-details {
         margin-left: 20px;
@@ -153,6 +154,12 @@
 
         .picker-select-item-details img {
             width: 65px;
+        }
+    }
+
+    &.picker-novalue { // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
+        .picker-label {
+            width: 100%;
         }
     }
 }
