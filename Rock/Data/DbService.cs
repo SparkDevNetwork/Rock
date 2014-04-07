@@ -37,28 +37,24 @@ namespace Rock.Data
             string connectionString = GetConnectionString();
             if ( !string.IsNullOrWhiteSpace( connectionString ) )
             {
-                using ( SqlConnection con = new SqlConnection( connectionString ) )
+                SqlConnection con = new SqlConnection( connectionString );
+                con.Open();
+
+                SqlCommand sqlCommand = new SqlCommand( query, con );
+                sqlCommand.CommandType = commandType;
+
+                if ( parameters != null )
                 {
-                    con.Open();
-
-                    using ( SqlCommand sqlCommand = new SqlCommand( query, con ) )
+                    foreach ( var parameter in parameters )
                     {
-                        sqlCommand.CommandType = commandType;
-
-                        if ( parameters != null )
-                        {
-                            foreach ( var parameter in parameters )
-                            {
-                                SqlParameter sqlParam = new SqlParameter();
-                                sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
-                                sqlParam.Value = parameter.Value;
-                                sqlCommand.Parameters.Add( sqlParam );
-                            }
-                        }
-
-                        return sqlCommand.ExecuteReader( CommandBehavior.CloseConnection );
+                        SqlParameter sqlParam = new SqlParameter();
+                        sqlParam.ParameterName = parameter.Key.StartsWith( "@" ) ? parameter.Key : "@" + parameter.Key;
+                        sqlParam.Value = parameter.Value;
+                        sqlCommand.Parameters.Add( sqlParam );
                     }
                 }
+
+                return sqlCommand.ExecuteReader( CommandBehavior.CloseConnection );
             }
 
             return null;

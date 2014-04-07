@@ -30,7 +30,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
-    EXEC sp_rename '[dbo].[SystemEmail].[PK_dbo.EmailTemplate]', 'PK_dbo.SystemEmail';
+    --EXEC sp_rename '[dbo].[SystemEmail].[PK_dbo.EmailTemplate]', 'PK_dbo.SystemEmail';
     EXEC sp_rename '[FK_dbo.EmailTemplate_dbo.Person_PersonId]', 'FK_dbo.SystemEmail_dbo.Person_PersonId';
     EXEC sp_rename '[FK_dbo.EmailTemplate_dbo.PersonAlias_CreatedByPersonAliasId]', 'FK_dbo.SystemEmail_dbo.PersonAlias_CreatedByPersonAliasId';
     EXEC sp_rename '[FK_dbo.EmailTemplate_dbo.PersonAlias_ModifiedByPersonAliasId]', 'FK_dbo.SystemEmail_dbo.PersonAlias_ModifiedByPersonAliasId';
