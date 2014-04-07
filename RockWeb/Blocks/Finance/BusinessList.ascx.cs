@@ -135,10 +135,34 @@ namespace RockWeb.Blocks.Finance
 
         protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            var parms = new Dictionary<string, string>();
+            var businessId = (int)e.RowKeyValue;
+            parms.Add( "businessId", businessId.ToString() );
+            NavigateToLinkedPage( "DetailPage", parms );
         }
 
         protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            PersonService service = new PersonService( rockContext );
+            Person business = service.Get( e.RowKeyId );
+            if ( business != null )
+            {
+                string errorMessage;
+                if ( !service.CanDelete( business, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( business );
+                rockContext.SaveChanges();
+            }
+
+            // **** This gave me a message that the business was associated with a phone number.
+            // **** Guess I'm going to have to do this piece by piece on my own?
+
+            BindGrid();
         }
 
         #endregion Events
