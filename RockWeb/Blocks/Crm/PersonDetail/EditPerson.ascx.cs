@@ -296,7 +296,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 // Remove any blank numbers
-                var phoneNumberService = new PhoneNumberService( new RockContext() );
+                var phoneNumberService = new PhoneNumberService( rockContext );
                 foreach ( var phoneNumber in person.PhoneNumbers
                     .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                     .ToList() )
@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 person.RecordStatusValueId = newRecordStatusId;
 
                 int? newRecordStatusReasonId = null;
-                if ( person.RecordStatusValueId.HasValue && Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+                if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
                 {
                     newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
                 }

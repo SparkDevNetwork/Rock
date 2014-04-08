@@ -35,7 +35,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/> and <see cref="Rock.Model.CommunicationRecipientStatus"/></returns>
         public IQueryable<Rock.Model.CommunicationRecipient> Get( int communicationId, CommunicationRecipientStatus status )
         {
-            return Queryable()
+            return Queryable( "Communication" )
                 .Where( r => 
                     r.CommunicationId == communicationId  &&
                     r.Status == status);
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the specified <see cref="Rock.Model.Communication"/>.</returns>
         public IQueryable<Rock.Model.CommunicationRecipient> GetByCommunicationId( int communicationId )
         {
-            return Queryable()
+            return Queryable( "Communication" )
                 .Where( r => r.CommunicationId == communicationId );
         }
 

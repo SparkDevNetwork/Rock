@@ -56,7 +56,8 @@ namespace Rock.Web.UI.Controls.Communication
                 EnsureChildControls();
                 var data = new Dictionary<string, string>();
                 data.Add( "FromValue", ddlFrom.SelectedValue );
-                data.Add( "Subject", tbMessage.Text );
+                data.Add( "Subject", "From: " + ddlFrom.SelectedItem.Text );
+                data.Add( "Message", tbMessage.Text );
                 return data;
             }
 
@@ -64,7 +65,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 EnsureChildControls();
                 ddlFrom.SelectedValue = GetDataValue( value, "FromValue" );
-                tbMessage.Text = GetDataValue( value, "Subject" );
+                tbMessage.Text = GetDataValue( value, "Message" );
             }
         }
 
@@ -84,7 +85,7 @@ namespace Rock.Web.UI.Controls.Communication
             ddlFrom.ID = string.Format( "ddlFrom_{0}", this.ID );
             ddlFrom.Label = "From";
             ddlFrom.Help = "The number to originate message from (configured under Admin Tools > General Settings > Defined Types > SMS From Values).";
-            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ) );
+            ddlFrom.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) ), false, true );
             Controls.Add( ddlFrom );
 
             rcwMessage = new RockControlWrapper();

@@ -146,56 +146,35 @@ namespace Rock.Communication.Transport
                             // Create merge field dictionary
                             var mergeObjects = MergeValues( globalConfigValues, recipient );
 
+                            // Subject
                             message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
-                            string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
-                            string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
-                            string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
-
-                            // If there is unsubscribe html (would have been added by channel PreSend), inject it
-                            if ( !string.IsNullOrWhiteSpace( htmlBody ) && !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
+                            // Add Html view
+                            string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
+                            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
-                                string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
-                                if ( htmlBody != newHtml )
-                                {
-                                    // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
-                                    htmlBody = newHtml;
-                                }
-                                else
-                                {
-                                    // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
-                                    htmlBody += unsubscribeHtml;
-                                }
+                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                message.AlternateViews.Add( htmlView );
                             }
 
                             // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
+                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
-                                plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
                                 AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
                                 message.AlternateViews.Add( plainTextView );
                             }
 
-                                if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-                                {
-                                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-                                    htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     
-                                    htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-                                    htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
-                                    AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
-                                    message.AlternateViews.Add( htmlView );
-                                }
-
-                                try
-                                {
-                                    smtpClient.Send( message );
-                                    recipient.Status = CommunicationRecipientStatus.Delivered;
-                                }
-                                catch ( Exception ex )
-                                {
-                                    recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "SMTP Exception: " + ex.Message;
-                                }
+                            try
+                            {
+                                smtpClient.Send( message );
+                                recipient.Status = CommunicationRecipientStatus.Delivered;
+                            }
+                            catch ( Exception ex )
+                            {
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "SMTP Exception: " + ex.Message;
+                            }
                         }
 
                         rockContext.SaveChanges();

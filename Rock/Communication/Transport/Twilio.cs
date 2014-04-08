@@ -97,7 +97,8 @@ namespace Rock.Communication.Transport
                                 {
                                     // Create merge field dictionary
                                     var mergeObjects = MergeValues( globalConfigValues, recipient );
-                                    string subject = communication.Subject.ResolveMergeFields( mergeObjects );
+                                    string message = communication.GetChannelDataValue( "Message" );
+                                    message = message.ResolveMergeFields( mergeObjects );
 
                                     foreach ( var phoneNumber in phoneNumbers )
                                     {
@@ -107,7 +108,7 @@ namespace Rock.Communication.Transport
                                             twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                         }
 
-                                        twilio.SendMessage( fromPhone, twillioNumber, subject );
+                                        twilio.SendMessage( fromPhone, twillioNumber, message );
                                     }
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
