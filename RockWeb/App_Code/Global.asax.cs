@@ -225,11 +225,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-                Server.ClearError();
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                Error66( ex );
             }
         }
 
@@ -249,11 +245,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-                Server.ClearError();
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                Error66( ex );
             }
         }
 
@@ -280,11 +272,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-                Server.ClearError();
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                Error66( ex );
             }
         }
 
@@ -309,11 +297,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-                Server.ClearError();
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                Error66( ex );
             }
         }
 
@@ -462,11 +446,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
-                catch ( HttpException ) { }
-                Server.ClearError();
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                Error66( ex );
             }
         }
 
@@ -708,6 +688,26 @@ namespace RockWeb
             }
         }
 
+        private void Error66(Exception ex)
+        {
+            if ( Session != null )
+            {
+                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                catch ( HttpException ) { }
+            }
+
+            if ( Server != null )
+            {
+                Server.ClearError();
+            }
+
+            if ( Response != null )
+            {
+                Response.Clear();
+                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+            }
+        }
+
         #region Static Methods
 
         /// <summary>
@@ -780,7 +780,7 @@ namespace RockWeb
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
                 var user = UserLoginService.GetCurrentUser();
-                if ( user.Person != null )
+                if ( user != null && user.Person != null )
                 {
                     personAlias = user.Person.PrimaryAlias;
                 }
@@ -823,9 +823,12 @@ namespace RockWeb
                 }
                 else
                 {
-                    throw new Exception( 
-                        string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}", 
-                            r.ConvertToString() ) );
+                    if ( r != CacheItemRemovedReason.Removed )
+                    {
+                        throw new Exception(
+                            string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}",
+                                r.ConvertToString() ) );
+                    }
                 }
             }
             catch( Exception ex)

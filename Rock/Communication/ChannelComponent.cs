@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Web.UI;
+
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
@@ -27,7 +27,7 @@ namespace Rock.Communication
     /// <summary>
     /// Base class for components communication channels (i.e. email, sms, twitter, etc) 
     /// </summary>
-    [ComponentField( "Rock.Communication.TransportContainer, Rock" )]
+    [ComponentField( "Rock.Communication.TransportContainer, Rock", "", "", false, "", "", 1 )]
     public abstract class ChannelComponent : Component
     {
         /// <summary>
@@ -72,6 +72,14 @@ namespace Rock.Communication
         {
             this.LoadAttributes();
         }
+
+        /// <summary>
+        /// Gets the HTML preview.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public abstract string GetHtmlPreview( Model.Communication communication, Person person );
 
         /// <summary>
         /// Sends the specified communication.

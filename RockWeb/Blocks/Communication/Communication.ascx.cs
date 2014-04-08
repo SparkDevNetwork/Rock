@@ -657,7 +657,7 @@ namespace RockWeb.Blocks.Communication
                 communication = new CommunicationService( new RockContext() ).Get( itemKeyValue );
                 this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
 
-                lTitle.Text = ("Subject: " + communication.Subject).FormatAsHtmlTitle();
+                lTitle.Text = communication.Subject.FormatAsHtmlTitle();
             }
             else
             {

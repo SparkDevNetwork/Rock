@@ -507,7 +507,6 @@
     <Compile Include="Model\UserLoginService.Partial.cs" />
     <Compile Include="Communication\BouncedEmail.cs" />
     <Compile Include="Communication\IEmailProvider.cs" />
-    <Compile Include="Communication\SendGridEmailProvider.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
     <Compile Include="Model\CodeGenerated\AttributeQualifierService.cs" />
     <Compile Include="Model\AttributeQualifierService.Partial.cs" />

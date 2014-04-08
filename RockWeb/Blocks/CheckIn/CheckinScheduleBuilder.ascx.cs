@@ -280,6 +280,15 @@ namespace RockWeb.Blocks.CheckIn
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || a.Group.GroupType.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
             }
 
+            if ( gGroupLocationSchedule.SortProperty != null )
+            {
+                groupLocationQry = groupLocationQry.Sort( gGroupLocationSchedule.SortProperty );
+            }
+            else
+            {
+                groupLocationQry = groupLocationQry.OrderBy( a => a.Group.Name ).ThenBy( a => a.Location.Name );
+            }
+
             var qryList = groupLocationQry.Select( a =>
                 new
                 {

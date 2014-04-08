@@ -1261,18 +1261,19 @@ namespace Rock
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
-        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new
                 {
                     v.Name,
+                    v.Description,
                     v.Id
                 } );
 
             listControl.SelectedIndex = -1;
             listControl.DataSource = ds;
-            listControl.DataTextField = "Name";
+            listControl.DataTextField = useDescriptionAsText ? "Description" : "Name";
             listControl.DataValueField = "Id";
             listControl.DataBind();
 

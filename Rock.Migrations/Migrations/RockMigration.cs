@@ -1234,6 +1234,54 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
+        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.Block";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @blockId int
+SET @blockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@blockId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, blockGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
         /// Adds the binaryfiletype security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
