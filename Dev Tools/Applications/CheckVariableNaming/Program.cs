@@ -121,7 +121,7 @@ namespace CheckVariableNaming
                         string controlType = m.Groups[1].Value;
                         string variable = m.Groups[2].Value;
                         string prefix = ( SplitCase( variable ).Split( ' ' ) )[0];
-                        ControlInstance ci = new ControlInstance() { Type = controlType, FileName = partialFileName, VariableName = variable, Prefix = prefix };
+                        ControlInstance ci = new ControlInstance() { Type = controlType, FileName = partialFileName, FullFilename = fileName, VariableName = variable, Prefix = prefix };
 
                         // Check if this controlType's prefix is valid
                         if ( !( options.reportEnabled || options.violationsByFile ) && validPrefixes.ContainsKey( controlType ) )
@@ -168,6 +168,9 @@ namespace CheckVariableNaming
         {
             Console.WriteLine( "Enter File Filter (example: HtmlContentDetail.ascx, or * for all)" );
             string filter = Console.ReadLine();
+            Console.WriteLine( "Do you want this tool to automatically rename the controls in the ascx file(s)? (type YES to do it.  Be careful!)" );
+            string updateSourceResponse = Console.ReadLine();
+            bool updateSource = updateSourceResponse == "YES";
             int filteredCount = 0;
 
             int violations = 0;
@@ -202,7 +205,14 @@ namespace CheckVariableNaming
                         {
                             violations++;
                             filteredCount++;
-                            results.Add( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, ProperVariable( validPrefixes, ci ) ) );
+                            string properVariableName = ProperVariable( validPrefixes, ci, null );
+                            results.Add( string.Format( "Violation: {0}\t({1})\t{2} != {3}", fileName, ci.Type, ci.VariableName, properVariableName ) );
+                            if ( updateSource )
+                            {
+                                string fileContents = File.ReadAllText( ci.FullFilename );
+                                string updatedFileContents = fileContents.Replace( "ID=\"" + ci.VariableName + "\"", "ID=\"" + properVariableName + "\"" );
+                                File.WriteAllText( ci.FullFilename, updatedFileContents );
+                            }
                         }
                     }
                 }
@@ -227,9 +237,9 @@ namespace CheckVariableNaming
         /// <param name="validPrefixes"></param>
         /// <param name="ci"></param>
         /// <returns></returns>
-        private static string ProperVariable( Dictionary<string, string> validPrefixes, ControlInstance ci )
+        private static string ProperVariable( Dictionary<string, string> validPrefixes, ControlInstance ci, string varRoot = null )
         {
-            string varRoot = ci.VariableName.Substring( ci.Prefix.Length );
+            varRoot = varRoot != null ? varRoot : ci.VariableName.Substring( ci.Prefix.Length );
             return validPrefixes[ci.Type] + varRoot;
         }
 
@@ -407,6 +417,7 @@ namespace CheckVariableNaming
             public string VariableName { get; set; }
             public string Prefix { get; set; }
             public string FileName { get; set; }
+            public string FullFilename { get; set; }
         }
     }
 }
