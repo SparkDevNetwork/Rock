@@ -17,18 +17,24 @@
                 <Columns>
                     <asp:BoundField DataField="FirstName" HeaderText="Business Name" SortExpression="FirstName" />
                     <asp:TemplateField>
+                        <HeaderTemplate>Owner</HeaderTemplate>
+                        <ItemTemplate>
+                            <asp:Label ID="lblOwner" runat="server" />
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:TemplateField>
                         <HeaderTemplate>Contact</HeaderTemplate>
                         <ItemTemplate>
-                            <%# Eval("PhoneNumbers[0].NumberFormatted") %><br />
-                            <%# Eval("Email") %>
+                            <asp:Label ID="lblPhoneNumber" runat="server" />
+                            <asp:Label ID="lblEmail" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField>
                         <HeaderTemplate>Address</HeaderTemplate>
                         <ItemTemplate>
-                            <%# Eval("GivingGroup.GroupLocations[0].Location.Street1") %><br />
-                            <asp:PlaceHolder ID="phStreet2" runat="server" />
-                            <%# Eval("GivingGroup.GroupLocations[0].Location.City") %>, <%# Eval("GivingGroup.GroupLocations[0].Location.State") %> <%# Eval("GivingGroup.GroupLocations[0].Location.Zip") %>
+                            <asp:Label ID="lblStreet1" runat="server" />
+                            <asp:Label ID="lblStreet2" runat="server" />
+                            <asp:Label ID="lblCityStateZip" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gBusinessList_Edit" />
