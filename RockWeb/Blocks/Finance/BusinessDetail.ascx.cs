@@ -274,7 +274,12 @@ namespace RockWeb.Blocks.Finance
 
                 // GroupMember
                 var groupMemberService = new GroupMemberService( rockContext );
-                var groupMember = businessGroup.Members.FirstOrDefault();
+                int? adultRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var groupMember = businessGroup.Members.Where( role => role.GroupRoleId == adultRoleId ).FirstOrDefault();
                 if ( groupMember == null )
                 {
                     groupMember = new GroupMember();
@@ -308,6 +313,24 @@ namespace RockWeb.Blocks.Finance
                 location.State = ddlState.SelectedValue;
                 location.Zip = tbZipCode.Text.Trim();
 
+                rockContext.SaveChanges();
+
+                // Set an Known Relationship of Owner between the Owner and the Business.
+                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    businessGroup.Members.Add( groupMember );
+                }
+
+                groupMember.Person = personService.Get( (int)ppOwner.PersonId );
+                groupMember.GroupRoleId = (int)ownerRoleId;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                 rockContext.SaveChanges();
             } );
 
@@ -449,6 +472,17 @@ namespace RockWeb.Blocks.Finance
                 tbEmail.Text = business.Email;
                 rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
+
+                var rockContext = new RockContext();
+                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+                ppOwner.PersonId = owner.PersonId;
+                ppOwner.PersonName = owner.Person.FullName;
+
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
                 ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;

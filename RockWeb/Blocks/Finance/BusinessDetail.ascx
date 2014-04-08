@@ -97,6 +97,11 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
+                                <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <legend>Contribution Info</legend>
                                 <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="13" /> 
                             </div>
