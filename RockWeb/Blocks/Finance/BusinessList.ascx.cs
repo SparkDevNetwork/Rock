@@ -95,6 +95,7 @@ namespace RockWeb.Blocks.Finance
                             e.Value = person.FullName;
                         }
                     }
+
                     break;
             }
         }
@@ -135,7 +136,7 @@ namespace RockWeb.Blocks.Finance
                 lblOwner.Text = owner.FullName;
 
                 var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
-                if ( !string.IsNullOrWhiteSpace( phoneNumber) )
+                if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
                 {
                     Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
                     if ( lblPhoneNumber != null )
@@ -180,7 +181,6 @@ namespace RockWeb.Blocks.Finance
                         lblCityStateZip.Text = string.Format( "{0}, {1} {2}", location.City, location.State, location.Zip );
                     }
                 }
-
             }
         }
 
@@ -218,8 +218,8 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
             }
 
-            // **** This gave me a message that the business was associated with a phone number.
-            // **** Guess I'm going to have to do this piece by piece on my own?
+            //// **** This gave me a message that the business was associated with a phone number.
+            //// **** Guess I'm going to have to do this piece by piece on my own?
 
             BindGrid();
         }

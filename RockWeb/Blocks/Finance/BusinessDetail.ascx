@@ -134,6 +134,13 @@
             </fieldset>
 
             <!-- this will be a grid labeled "Contacts". Which is really just a list of known relationships tied to the business. Just has to list the contact name. -->
+            <br />
+            <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowDataBound="gContactList_RowDataBound" ShowConfirmDeleteDialog="false" OnRowSelected="gContactList_RowSelected">
+                <Columns>
+                    <asp:BoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
+                    <Rock:DeleteField OnClick="gContactList_Delete" />
+                </Columns>
+            </Rock:Grid>
 
         </asp:Panel>
     </ContentTemplate>

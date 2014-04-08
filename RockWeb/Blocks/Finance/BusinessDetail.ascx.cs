@@ -48,6 +48,14 @@ namespace RockWeb.Blocks.Finance
 
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
+            bool canEdit = IsUserAuthorized( Authorization.EDIT );
+
+            gContactList.DataKeyNames = new string[] { "id" };
+            gContactList.Actions.ShowAdd = canEdit;
+            gContactList.Actions.AddClick += gContactList_AddClick;
+            gContactList.GridRebind += gContactList_GridRebind;
+            gContactList.IsDeleteEnabled = canEdit;
         }
 
         /// <summary>
@@ -363,6 +371,29 @@ namespace RockWeb.Blocks.Finance
             ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
+        protected void gContactList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+        }
+
+        private void gContactList_GridRebind( object sender, EventArgs e )
+        {
+            BindContactListGrid();
+        }
+
+        private void gContactList_AddClick( object sender, EventArgs e )
+        {
+        }
+
+        protected void gContactList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+
+        }
+
+        protected void gContactList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+
+        }
+
         #endregion Events
 
         #region Internal Methods
@@ -428,6 +459,8 @@ namespace RockWeb.Blocks.Finance
                     ShowEditDetails( business );
                 }
             }
+
+            BindContactListGrid();
         }
 
         private void ShowSummary( Person business )
@@ -504,6 +537,13 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
+        private void BindContactListGrid()
+        {
+            // Load up that contact list.
+            gContactList.DataSource = null;
+            gContactList.DataBind();
+        }
+
         #endregion Internal Methods
-    }
+}
 }
