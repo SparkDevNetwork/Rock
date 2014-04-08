@@ -49,6 +49,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
             ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
+            this.CssClass += " picker-mergefield picker-novalue";
         }
         
         /// <summary>

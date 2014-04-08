@@ -22,9 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -37,12 +34,12 @@ namespace Rock.Communication.Transport
     /// Sends a communication through SMTP protocol
     /// </summary>
     [Description( "Sends a communication through Mandrill's SMTP API" )]
-    [Export(typeof(TransportComponent))]
-    [ExportMetadata("ComponentName", "Mandrill SMTP")]
+    [Export( typeof( TransportComponent ) )]
+    [ExportMetadata( "ComponentName", "Mandrill SMTP" )]
     [TextField( "Username", "The SMTP username provided by Mandrill", true, "", "", 1 )]
-    [TextField("Password", "Any valid Mandrill API key (not the password you use to login to Mandrill)", true, "", "", 2)]
-    [BooleanField("Use SSL", "", false, "", 3)]
-    [BooleanField("Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 4)]
+    [TextField( "Password", "Any valid Mandrill API key (not the password you use to login to Mandrill)", true, "", "", 2 )]
+    [BooleanField( "Use SSL", "", false, "", 3 )]
+    [BooleanField( "Inline CSS", "Enable Mandrill's CSS Inliner feature.", true, "", 4 )]
     public class MandrillSmtp : TransportComponent
     {
         string serverName = "smtp.mandrillapp.com";
@@ -65,14 +62,14 @@ namespace Rock.Communication.Transport
 
             inlineCss = bool.TryParse( GetAttributeValue( "InlineCSS" ), out inlineCss ) && inlineCss;
 
-            
+
             // Requery the Communication object
             communication = new CommunicationService( rockContext ).Get( communication.Id );
 
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo(RockDateTime.Now) <= 0))
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 // From
                 MailMessage message = new MailMessage();
@@ -118,12 +115,12 @@ namespace Rock.Communication.Transport
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
 
-                    foreach(string idVal in attachmentIds.SplitDelimitedValues())
+                    foreach ( string idVal in attachmentIds.SplitDelimitedValues() )
                     {
                         int binaryFileId = int.MinValue;
-                        if (int.TryParse(idVal, out binaryFileId))
+                        if ( int.TryParse( idVal, out binaryFileId ) )
                         {
-                            var binaryFile = binaryFileService.Get(binaryFileId);
+                            var binaryFile = binaryFileService.Get( binaryFileId );
                             if ( binaryFile != null )
                             {
                                 Stream stream = new MemoryStream( binaryFile.Data.Content );
@@ -137,7 +134,7 @@ namespace Rock.Communication.Transport
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
-                
+
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
@@ -159,45 +156,22 @@ namespace Rock.Communication.Transport
 
                             message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
-                                // add mandrill headers
-                                message.Headers.Add( "X-MC-Track", "opens, clicks" );
-                                message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
-                                message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
-
-                                string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
-                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
-                                string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
-
-                            // If there is unsubscribe html (would have been added by channel PreSend), inject it
-                            if ( !string.IsNullOrWhiteSpace( htmlBody ) && !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
-                            {
-                                string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
-                                if ( htmlBody != newHtml )
-                                {
-                                    // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
-                                    htmlBody = newHtml;
-                                }
-                                else
-                                {
-                                    // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
-                                    htmlBody += unsubscribeHtml;
-                                }
-                            }
+                            // add mandrill headers
+                            message.Headers.Add( "X-MC-Track", "opens, clicks" );
+                            message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
+                            message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
 
                             // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
+                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
-                                plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
                                 AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
                                 message.AlternateViews.Add( plainTextView );
                             }
 
+                            string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
-                                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-                                htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     
-                                htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-                                htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
                                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
                                 message.AlternateViews.Add( htmlView );
                             }
@@ -237,7 +211,7 @@ namespace Rock.Communication.Transport
             var globalAttributes = GlobalAttributesCache.Read();
 
             string from = template.From;
-            if (string.IsNullOrWhiteSpace(from))
+            if ( string.IsNullOrWhiteSpace( from ) )
             {
                 from = globalAttributes.GetValue( "OrganizationEmail" );
             }
@@ -251,7 +225,7 @@ namespace Rock.Communication.Transport
             if ( !string.IsNullOrWhiteSpace( from ) )
             {
                 MailMessage message = new MailMessage();
-                if (string.IsNullOrWhiteSpace(fromName))
+                if ( string.IsNullOrWhiteSpace( fromName ) )
                 {
                     message.From = new MailAddress( from );
                 }
@@ -294,13 +268,13 @@ namespace Rock.Communication.Transport
                     {
                         string subject = template.Subject;
                         string body = template.Body;
-                        if (!string.IsNullOrWhiteSpace(themeRoot))
+                        if ( !string.IsNullOrWhiteSpace( themeRoot ) )
                         {
                             subject = subject.Replace( "~~/", themeRoot );
                             body = body.Replace( "~~/", themeRoot );
                         }
 
-                        if (!string.IsNullOrWhiteSpace(appRoot))
+                        if ( !string.IsNullOrWhiteSpace( appRoot ) )
                         {
                             subject = subject.Replace( "~/", appRoot );
                             body = body.Replace( "~/", appRoot );

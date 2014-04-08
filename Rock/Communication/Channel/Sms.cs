@@ -14,16 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI;
 
-using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
+
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication.Channel
@@ -32,8 +29,8 @@ namespace Rock.Communication.Channel
     /// An SMS communication
     /// </summary>
     [Description( "An SMS communication" )]
-    [Export(typeof(ChannelComponent))]
-    [ExportMetadata("ComponentName", "SMS")]
+    [Export( typeof( ChannelComponent ) )]
+    [ExportMetadata( "ComponentName", "SMS" )]
     public class Sms : ChannelComponent
     {
         /// <summary>
@@ -46,5 +43,44 @@ namespace Rock.Communication.Channel
         {
             get { return new Rock.Web.UI.Controls.Communication.Sms(); }
         }
+
+        /// <summary>
+        /// Gets the HTML preview.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public override string GetHtmlPreview( Model.Communication communication, Person person )
+        {
+            var rockContext = new RockContext();
+
+            // Requery the Communication object
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
+
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            var mergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+
+            if ( person != null )
+            {
+                mergeValues.Add( "Person", person );
+
+                var recipient = communication.Recipients.Where( r => r.PersonId == person.Id ).FirstOrDefault();
+                if ( recipient != null )
+                {
+                    // Add any additional merge fields created through a report
+                    foreach ( var mergeField in recipient.AdditionalMergeValues )
+                    {
+                        if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                        {
+                            mergeValues.Add( mergeField.Key, mergeField.Value );
+                        }
+                    }
+                }
+            }
+
+            string message = communication.GetChannelDataValue( "Message" );
+            return message.ResolveMergeFields( mergeValues );
+        }
+
     }
 }
