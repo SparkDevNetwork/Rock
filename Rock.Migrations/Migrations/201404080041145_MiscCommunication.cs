@@ -86,6 +86,19 @@ You can view an online version of this email here:
             // Give Approve authorization to Communication Admins for Ad Detail block
             AddSecurityAuthForBlock( "EEA597FB-BE71-4A8E-A671-9C80856FB761", 0, "Approve", true, "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B", Model.SpecialRole.None, "E4A488B7-0AB6-4C39-B66E-5C7E92646C8F" );
 
+            // Add attribute to components to disable ordering
+            UpdateBlockTypeAttribute("21F5F466-59BC-40B2-8D73-7314D936C3CB", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Component Container", "ComponentContainer", "", "The Rock Extension Managed Component Container to manage", 1, "", "259AF14D-0214-4BE4-A7BF-40423EA07C99");
+            UpdateBlockTypeAttribute( "21F5F466-59BC-40B2-8D73-7314D936C3CB", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Support Ordering", "SupportOrdering", "", "Should user be allowed to re-order list of components?", 2, "True", "A4889D7B-87AA-419D-846C-3E618E79D875" );
+            AddBlockAttributeValue( "803CE253-3ADA-4C2A-B62F-EC4D5B7B7257", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "73CE9F13-43F1-4DD4-AA5B-70A48C5A6D85", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "10D2886B-40F6-47EE-B137-23595FAC224D", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "B6F6DBF7-96CA-4A6A-AFB3-ED2278EEB70E", "A4889D7B-87AA-419D-846C-3E618E79D875", "False" );
+            AddBlockAttributeValue( "190A276D-81B5-4EF6-B1EB-1ABC68B4D770", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "FA8EA948-150A-4668-BDEF-E3669FAC695E", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "8966CAFE-D8FC-4703-8960-17CB5807A3B8", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "F87CE2AA-8B89-4D2D-9EF4-3C2CC8D48440", "A4889D7B-87AA-419D-846C-3E618E79D875", "False" );
+            AddBlockAttributeValue( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
+            AddBlockAttributeValue( "66024082-B8B4-43A8-A94E-F313A0998596", "A4889D7B-87AA-419D-846C-3E618E79D875", "True" );
         }
         
         /// <summary>

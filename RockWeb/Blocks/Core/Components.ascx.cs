@@ -39,11 +39,13 @@ namespace RockWeb.Blocks.Core
     [System.ComponentModel.Category( "Core" )]
     [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
 
-    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
+    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage", true, "", "", 1)]
+    [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2)]
     public partial class Components : RockBlock
     {
         #region Private Variables
 
+        private bool _supportOrdering = true;
         private bool _isAuthorizedToConfigure = false;
         private IContainer _container;
 
@@ -56,7 +58,9 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             _isAuthorizedToConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
-
+            
+            _supportOrdering = GetAttributeValue( "SupportOrdering" ).AsBoolean( true );
+            
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
@@ -73,9 +77,8 @@ namespace RockWeb.Blocks.Core
                             _container.Refresh();
 
                         rGrid.DataKeyNames = new string[] { "id" };
-                        if ( _isAuthorizedToConfigure )
-                            rGrid.GridReorder += rGrid_GridReorder;
-                        rGrid.Columns[0].Visible = _isAuthorizedToConfigure;    // Reorder
+                        rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
+                        rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
                         rGrid.RowDataBound += rGrid_RowDataBound;
 
@@ -259,7 +262,23 @@ namespace RockWeb.Blocks.Core
         private void BindGrid()
         {
             var dataSource = new List<ComponentDescription>();
-            foreach ( var component in _container.Dictionary )
+
+            // Get components ordered by 'Order' attribute (if ordering is supported) or by Name
+            var components = new Dictionary<int,KeyValuePair<string,Component>>();
+            if (_supportOrdering)
+            {
+                components = _container.Dictionary;
+            }
+            else
+            {
+                components = new Dictionary<int,KeyValuePair<string,Component>>();
+                _container.Dictionary.OrderBy( c => c.Value.Key ).ToList().ForEach( c =>
+                {
+                    components.Add( c.Key, c.Value );
+                } );
+            }
+
+            foreach ( var component in components)
             {
                 Type type = component.Value.Value.GetType();
                 if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
