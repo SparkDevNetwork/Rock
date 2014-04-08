@@ -447,6 +447,7 @@ namespace RockWeb.Blocks.Finance
                 cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
                 cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
                 tbEmail.Text = business.Email;
+                rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
