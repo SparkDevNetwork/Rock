@@ -85,8 +85,14 @@ namespace Rock.PersonProfile.Badge
                                         var siteName = '{4}';
 
                                         if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
-
-                                            if (daysSinceVisit < 7) {{
+        
+                                            labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';                                    
+        
+                                            if (daysSinceVisit == 0) {{
+                                                daysSinceVisit = 'Today';
+                                                cssClass = 'today';
+                                                labelContent = 'Visited the ' + siteName + ' site today.';
+                                            }} else if (daysSinceVisit < 7) {{
                                                 cssClass = 'very-recent';
                                             }} else if (daysSinceVisit < 21 ) {{
                                                 cssClass = 'recent';
@@ -104,7 +110,7 @@ namespace Rock.PersonProfile.Badge
                                                 badgeContent = '<div class=\'badge-content ' + cssClass + '\'><i class=\'fa fa-desktop badge-icon\'></i><span class=\'duration\'>' + daysSinceVisit + '</span></div>';
                                             }}
                                             
-                                            labelContent = 'It has been ' + daysSinceVisit + ' day(s) since the last visit to the ' + siteName + ' site.';
+                                            
 
                                             $('.badge-lastvisitonsite.badge-id-{2}').html(badgeContent);
                                             $('.badge-lastvisitonsite.badge-id-{2}').attr('data-original-title', labelContent);
