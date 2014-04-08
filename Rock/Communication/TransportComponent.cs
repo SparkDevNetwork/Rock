@@ -58,6 +58,11 @@ namespace Rock.Communication
 
             if ( recipient != null )
             {
+                if (recipient.Communication != null)
+                {
+                    mergeValues.Add( "Communication", recipient.Communication );
+                }
+
                 if ( recipient.Person != null )
                 {
                     mergeValues.Add( "Person", recipient.Person );

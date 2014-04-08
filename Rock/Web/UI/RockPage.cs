@@ -798,7 +798,14 @@ namespace Rock.Web.UI
                                         block.BlockType.SecurityActions = new Dictionary<string, string>();
                                         foreach ( var action in blockControl.GetSecurityActionAttributes() )
                                         {
-                                            block.BlockType.SecurityActions.Add( action.Key, action.Value );
+                                            if ( block.BlockType.SecurityActions.ContainsKey( action.Key ) )
+                                            {
+                                                block.BlockType.SecurityActions[action.Key] = action.Value;
+                                            }
+                                            else
+                                            {
+                                                block.BlockType.SecurityActions.Add( action.Key, action.Value );
+                                            }
                                         }
                                         block.BlockType.CheckedSecurityActions = true;
                                     }
