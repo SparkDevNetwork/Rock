@@ -125,15 +125,14 @@ namespace RockWeb
                         }
 
                         // Migrate any plugins that have pending migrations
-                        List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
+                        List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Rock.Plugin.Migration ) ).Select( a => a.Value ).ToList();
 
-                        foreach ( var configType in configurationTypeList )
+                        foreach ( var migrationType in migrationList.OrderBy( m => m.Name ) )
                         {
-                            if ( configType != typeof( Rock.Migrations.Configuration ) )
+                            if ( migrationType != typeof( Rock.Plugin.Migration ) )
                             {
-                                var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
-                                System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
-                                pluginMigrator.Update();
+                                var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
+                                migration.Update();
                             }
                         }
 
