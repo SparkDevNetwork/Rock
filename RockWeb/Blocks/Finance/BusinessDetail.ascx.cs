@@ -324,22 +324,25 @@ namespace RockWeb.Blocks.Finance
                 rockContext.SaveChanges();
 
                 // Set an Known Relationship of Owner between the Owner and the Business.
-                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                if ( groupMember == null )
+                if ( ppOwner.PersonId != null )
                 {
-                    groupMember = new GroupMember();
-                    businessGroup.Members.Add( groupMember );
-                }
+                    int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                        .Where( r =>
+                            r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                        .Select( r => r.Id )
+                        .FirstOrDefault();
+                    groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+                    if ( groupMember == null )
+                    {
+                        groupMember = new GroupMember();
+                        businessGroup.Members.Add( groupMember );
+                    }
 
-                groupMember.Person = personService.Get( (int)ppOwner.PersonId );
-                groupMember.GroupRoleId = (int)ownerRoleId;
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                rockContext.SaveChanges();
+                    groupMember.Person = personService.Get( (int)ppOwner.PersonId );
+                    groupMember.GroupRoleId = (int)ownerRoleId;
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    rockContext.SaveChanges();
+                }
             } );
 
             NavigateToParentPage();
