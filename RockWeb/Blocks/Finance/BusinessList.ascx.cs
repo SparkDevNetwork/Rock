@@ -131,9 +131,12 @@ namespace RockWeb.Blocks.Finance
                     .Select( r => r.Id )
                     .FirstOrDefault();
 
-                var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault().Person;
-                Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
-                lblOwner.Text = owner.FullName;
+                if ( business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault() != null )
+                {
+                    var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault().Person;
+                    Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
+                    lblOwner.Text = owner.FullName;
+                }
 
                 var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
                 if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
@@ -207,14 +210,8 @@ namespace RockWeb.Blocks.Finance
             Person business = service.Get( e.RowKeyId );
             if ( business != null )
             {
-                string errorMessage;
-                if ( !service.CanDelete( business, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-                service.Delete( business );
+                business.RecordStatusValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                // if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
                 rockContext.SaveChanges();
             }
 
@@ -259,7 +256,8 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var queryable = new PersonService( rockContext ).Queryable();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-            queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId );
+            var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
 
             // Business Name Filter
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
