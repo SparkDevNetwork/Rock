@@ -618,25 +618,21 @@ namespace RockWeb.Blocks.Communication
                     var communication = service.Get( CommunicationId.Value );
                     if ( communication != null )
                     {
-                        var prevStatus = communication.Status;
-
-                        communication.Recipients
-                            .Where( r => r.Status == CommunicationRecipientStatus.Pending )
-                            .ToList()
-                            .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
-
-                        // Save and re-read communication to reload recipient statuses
-                        rockContext.SaveChanges();
-
-                        communication = service.Get( communication.Id );
-
                         if ( !communication.Recipients
                             .Where( r => r.Status == CommunicationRecipientStatus.Delivered )
                             .Any() )
                         {
                             communication.Status = CommunicationStatus.Draft;
-                            rockContext.SaveChanges();
                         }
+                        else
+                        {
+                            communication.Recipients
+                                .Where( r => r.Status == CommunicationRecipientStatus.Pending )
+                                .ToList()
+                                .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
+                        }
+
+                        rockContext.SaveChanges();
 
                         ShowResult( "The communication has been cancelled", communication );
                     }
@@ -753,10 +749,7 @@ namespace RockWeb.Blocks.Communication
         {
             CommunicationId = communication.Id;
 
-            lStatus.Visible = communication.Status != CommunicationStatus.Transient;
-            lRecipientStatus.Visible = communication.Status != CommunicationStatus.Transient; 
-
-            lStatus.Text = string.Format("<span class='label label-communicationstatus-{0}'>{1}</span>", communication.Status.ConvertToString().ToLower().Replace(" ", ""), communication.Status.ConvertToString());
+            ShowStatus( communication );
 
             ChannelEntityTypeId = communication.ChannelEntityTypeId;
             BindChannels();
@@ -776,6 +769,13 @@ namespace RockWeb.Blocks.Communication
             dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
             ShowActions( communication );
+        }
+
+        private void ShowStatus( Rock.Model.Communication communication )
+        {
+            lRecipientStatus.Visible = communication.Status != CommunicationStatus.Transient;
+            lStatus.Visible = communication.Status != CommunicationStatus.Transient;
+            lStatus.Text = string.Format( "<span class='label label-communicationstatus-{0}'>{1}</span>", communication.Status.ConvertToString().ToLower().Replace( " ", "" ), communication.Status.ConvertToString() );
         }
 
         /// <summary>
@@ -1140,6 +1140,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="communication">The communication.</param>
         private void ShowResult( string message, Rock.Model.Communication communication )
         {
+            ShowStatus( communication );
+
             pnlEdit.Visible = false;
 
             nbResult.Text = message;
