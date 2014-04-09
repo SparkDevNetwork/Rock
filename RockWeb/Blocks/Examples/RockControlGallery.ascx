@@ -15,7 +15,7 @@
         outline: none;
     }
 </style>
-<asp:UpdatePanel ID="upDetail" runat="server">
+<asp:UpdatePanel ID="upnlExample" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlActions" runat="server">
             <div class="pull-right">
@@ -29,7 +29,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlDetails" runat="server">
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="valExample" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <h1 runat="server">General Information</h1>
 
@@ -97,7 +97,7 @@
 
             <a id="StateDropDownList"></a>
             <div runat="server" class="r-example">
-                <Rock:StateDropDownList ID="ddlState" runat="server" Label="Rock:StateDropDownList" />
+                <Rock:StateDropDownList ID="statepExample" runat="server" Label="Rock:StateDropDownList" />
             </div>
 
             <a id="ButtonDropDownList"></a>
@@ -111,42 +111,42 @@
             
             <a id="DataTextBox"></a>
             <div runat="server" class="r-example">
-                <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
+                <Rock:DataTextBox ID="dtbExample" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
             </div>
 
             <a id="NumberBox"></a>
             <div runat="server" class="r-example">
-                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" />
+                <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
             </div>
 
             <a id="RockCheckBox"></a>
             <div runat="server" class="r-example">
-                <Rock:RockCheckBox ID="RockCheckBox1" runat="server" Label="Rock:RockCheckBox" />
+                <Rock:RockCheckBox ID="cbExample" runat="server" Label="Rock:RockCheckBox" />
             </div>
 
             <a id="RockCheckBoxList"></a>
             <div runat="server" class="r-example">
-                <Rock:RockCheckBoxList ID="RockCheckBoxList1" runat="server" Label="Rock:RockCheckBoxList" />
+                <Rock:RockCheckBoxList ID="cblExample" runat="server" Label="Rock:RockCheckBoxList" />
             </div>
 
             <a id="RockCheckBoxListHorizontal"></a>
             <div runat="server" class="r-example">
-                <Rock:RockCheckBoxList ID="RockCheckBoxList2" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
+                <Rock:RockCheckBoxList ID="cblExampleHorizontal" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal" />
             </div>
 
             <a id="RockRadioButtonList"></a>
             <div runat="server" class="r-example">
-                <Rock:RockRadioButtonList ID="RockRadioButtonList1" runat="server" Label="Rock:RockRadioButtonList" />
+                <Rock:RockRadioButtonList ID="rblExample" runat="server" Label="Rock:RockRadioButtonList" />
             </div>
 
             <a id="RockRadioButtonListHorizontal"></a>
             <div runat="server" class="r-example">
-                <Rock:RockRadioButtonList ID="RockRadioButtonList2" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal" />
+                <Rock:RockRadioButtonList ID="rblExampleHorizontal" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal" />
             </div>
 
             <a id="NumberRangeEditor"></a>
             <div runat="server" class="r-example">
-                <Rock:NumberRangeEditor ID="NumberRangeEditor1" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
+                <Rock:NumberRangeEditor ID="nreExample" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
             </div>
 
 
@@ -155,12 +155,12 @@
 
             <a id="DatePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:DatePicker ID="datePicker" runat="server" Label="Rock:DatePicker" />
+                <Rock:DatePicker ID="dpExample" runat="server" Label="Rock:DatePicker" />
             </div>
 
             <a id="DateTimePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:DateTimePicker ID="dateTimePicker" runat="server" Label="Rock:DateTimePicker" />
+                <Rock:DateTimePicker ID="dtpExample" runat="server" Label="Rock:DateTimePicker" />
             </div>
 
             <a id="DaysOfWeekPicker"></a>
@@ -176,77 +176,77 @@
 
             <a id="TimePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:TimePicker ID="timePicker" runat="server" Label="Rock:TimePicker" />
+                <Rock:TimePicker ID="timepExample" runat="server" Label="Rock:TimePicker" />
             </div>
 
             <a id="MonthYearPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:MonthYearPicker ID="monthYearPicker" runat="server" Label="Rock:MonthYearPicker" OnSelectedMonthYearChanged="monthYearPicker_SelectedMonthYearChanged" />
+                <Rock:MonthYearPicker ID="mypExample" runat="server" Label="Rock:MonthYearPicker" OnSelectedMonthYearChanged="monthYearPicker_SelectedMonthYearChanged" />
             </div>
 
             <a id="MonthDayPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:MonthDayPicker ID="monthDayPicker" runat="server" Label="Rock:MonthDayPicker" OnSelectedMonthDayChanged="monthDayPicker_SelectedMonthDayChanged" />
+                <Rock:MonthDayPicker ID="mdpExample" runat="server" Label="Rock:MonthDayPicker" OnSelectedMonthDayChanged="monthDayPicker_SelectedMonthDayChanged" />
             </div>
 
             <a id="DateRangePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:DateRangePicker ID="dateRangerPicker" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
+                <Rock:DateRangePicker ID="drpExample" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
             </div>
 
             <a id="BirthdayPicker"></a>
             <div id="Div4" runat="server" class="r-example">
-                <Rock:BirthdayPicker ID="birthdayPicker" runat="server" Label="Rock:BirthdayPicker" OnSelectedBirthdayChanged="birthdayPicker_SelectedBirthdayChanged" />
+                <Rock:BirthdayPicker ID="bdaypExample" runat="server" Label="Rock:BirthdayPicker" OnSelectedBirthdayChanged="birthdayPicker_SelectedBirthdayChanged" />
             </div>
 
             <a id="GroupPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:GroupPicker ID="groupPicker" runat="server" Label="Rock:GroupPicker" />
+                <Rock:GroupPicker ID="gpExample" runat="server" Label="Rock:GroupPicker" />
             </div>
 
             <a id="CampusPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:CampusPicker ID="campusPicker" runat="server" Label="Rock:CampusPicker" />
+                <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" />
             </div>
 
             <a id="PagePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:PagePicker ID="pagePicker" runat="server" Label="Rock:PagePicker" />
+                <Rock:PagePicker ID="pagepExample" runat="server" Label="Rock:PagePicker" />
             </div>
 
             <a id="PersonPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
+                <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
             </div>
 
             <a id="AccountPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
+                <Rock:AccountPicker ID="acctpExample" runat="server" Label="Rock:AccountPicker" />
             </div>
 
             <a id="CategoryPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:CategoryPicker ID="categoryPicker" runat="server" Label="Rock:CategoryPicker" />
+                <Rock:CategoryPicker ID="catpExample" runat="server" Label="Rock:CategoryPicker" />
             </div>
 
             <a id="ComponentPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
+                <Rock:ComponentPicker ID="compExample" runat="server" Label="Rock:ComponentPicker" />
             </div>
 
             <a id="LocationPicker"></a>
             <div id="Div2" runat="server" class="r-example">
-                <Rock:LocationPicker ID="locationPicker1" runat="server" Label="Rock:LocationPicker" />
+                <Rock:LocationPicker ID="locpExample" runat="server" Label="Rock:LocationPicker" />
             </div>
 
             <a id="LocationPicker2"></a>
             <div runat="server" class="r-example">
-                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
+                <Rock:LocationPicker ID="locpExampleAddressMode" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
             </div>
 
             <a id="GroupRolePicker"></a>
             <div id="Div1" runat="server" class="r-example">
-                <Rock:GroupRolePicker ID="groupRolePicker" runat="server" Label="Rock:GroupRolePicker" />
+                <Rock:GroupRolePicker ID="grpExample" runat="server" Label="Rock:GroupRolePicker" />
             </div>
 
             <a id="Other"></a>
@@ -254,34 +254,34 @@
 
             <a id="ScheduleBuilder"></a>
             <div runat="server" class="r-example">
-                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
+                <Rock:ScheduleBuilder ID="schedbExample" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
 
             <a id="GeoPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA"/>
+                <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA"/>
             </div>
 
             <a id="GeoPickerPolygon"></a>
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." />
+                <Rock:GeoPicker ID="geopExamplePolygon" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" Help="You can set the style of this through the 'Map Style' block attribute." />
             </div>
 
             <a id="MergeFieldPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:MergeFieldPicker ID="mergeFieldPicker" runat="server" Label="Rock:MergeFieldPicker" />
+                <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
             </div>
 
             <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <a id="BinaryFileTypePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" Label="Rock:BinaryFileTypePicker" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
+                <Rock:BinaryFileTypePicker ID="bftpExample" runat="server" Label="Rock:BinaryFileTypePicker" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
             </div>
 
             <a id="BinaryFilePicker"></a>
             <div runat="server" class="r-example">
-                <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" Label="Rock:BinaryFilePicker" />
+                <Rock:BinaryFilePicker ID="bfpExample" runat="server" Label="Rock:BinaryFilePicker" />
             </div>
 
             <a id="Misc"></a>
@@ -294,18 +294,18 @@
 
             <a id="FileUploader"></a>
             <div runat="server" class="r-example">
-                <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
+                <Rock:FileUploader ID="fuprExampleBinaryFile" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
             </div>
 
             <a id="FileUploaderContentFileMode"></a>
             <div runat="server" class="r-example">
-                <Rock:FileUploader ID="fupContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles"  OnFileUploaded="fupContentFile_FileUploaded" />
+                <Rock:FileUploader ID="fuprExampleContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles"  OnFileUploaded="fupContentFile_FileUploaded" />
                 <asp:Label ID="lblPhysicalFileName" runat="server" Text="Uploaded File: -" />
             </div>
 
             <a id="ImageUploader"></a>
             <div runat="server" class="r-example">
-                <Rock:ImageUploader ID="imageUploader" runat="server" Label="Rock:ImageUploader" />
+                <Rock:ImageUploader ID="imgupExample" runat="server" Label="Rock:ImageUploader" />
             </div>
 
             <a id="ImageEditor"></a>
@@ -320,12 +320,12 @@
             </p>
 
             <div runat="server" class="r-example">
-                <Rock:NotificationBox ID="notificationBox1" runat="server" Title="Success" Text="This is a success message." NotificationBoxType="Success"/>
-                <Rock:NotificationBox ID="notificationBox2" runat="server" Title="Info" Text="This is an informational message." NotificationBoxType="Info"/>
-                <Rock:NotificationBox ID="notificationBox3" runat="server" Title="Warning" Text="This is a warning." NotificationBoxType="Warning"/>
-                <Rock:NotificationBox ID="notificationBox4" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger"/>
-                <Rock:NotificationBox ID="notificationBox5" runat="server" Title="Hey" Text="You can close this when you are done reading it if you want." NotificationBoxType="Warning" Dismissable="true" />
-                <Rock:NotificationBox ID="notificationBox6" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details"/>
+                <Rock:NotificationBox ID="nbExampleSuccess" runat="server" Title="Success" Text="This is a success message." NotificationBoxType="Success"/>
+                <Rock:NotificationBox ID="nbExampleInfo" runat="server" Title="Info" Text="This is an informational message." NotificationBoxType="Info"/>
+                <Rock:NotificationBox ID="nbExampleWarning" runat="server" Title="Warning" Text="This is a warning." NotificationBoxType="Warning"/>
+                <Rock:NotificationBox ID="nbExampleDanger" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger"/>
+                <Rock:NotificationBox ID="nbExampleDismissable" runat="server" Title="Hey" Text="You can close this when you are done reading it if you want." NotificationBoxType="Warning" Dismissable="true" />
+                <Rock:NotificationBox ID="nbExampleDetails" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details"/>
             </div>
 
             <a id="Badge"></a>
@@ -351,15 +351,15 @@
                 but we've added a few additional custom <code>LabelType</code> options to control the color.
             </p>
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="hlDefault" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />
-                <Rock:HighlightLabel ID="hlPrimary" runat="server" LabelType="Primary" Text="Primary" />
-                <Rock:HighlightLabel ID="hlSuccess" runat="server" LabelType="Success" Text="Success" />
-                <Rock:HighlightLabel ID="hlInfo" runat="server" LabelType="Info" Text="Info" />
-                <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning" />
-                <Rock:HighlightLabel ID="hlDanger" runat="server" LabelType="Danger" Text="Danger" />
-                <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
-                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
-                <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
+                <Rock:HighlightLabel ID="hlblExample1" runat="server" LabelType="Default" Text="Default" ToolTip="More information is here." />
+                <Rock:HighlightLabel ID="hlblExample2" runat="server" LabelType="Primary" Text="Primary" />
+                <Rock:HighlightLabel ID="hlblExample3" runat="server" LabelType="Success" Text="Success" />
+                <Rock:HighlightLabel ID="hlblExample4" runat="server" LabelType="Info" Text="Info" />
+                <Rock:HighlightLabel ID="hlblExample5" runat="server" LabelType="Warning" Text="Warning" />
+                <Rock:HighlightLabel ID="hlblExample6" runat="server" LabelType="Danger" Text="Danger" />
+                <Rock:HighlightLabel ID="hlblExample7" runat="server" LabelType="Campus" Text="Campus" />
+                <Rock:HighlightLabel ID="hlblExample8" runat="server" LabelType="Type" Text="Type" />
+                <Rock:HighlightLabel ID="hlblExample9" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
 
             <p>
@@ -369,7 +369,7 @@
 
             <a id="HighlightLabelErrors"></a>
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
+                <Rock:HighlightLabel ID="hlblExample" runat="server" LabelType="Danger" IconCssClass="fa fa-flag" Text="errors" />
             </div>
 
             <a id="Toggle"></a>
@@ -385,9 +385,9 @@
             <a id="ToggleSizes"></a>
             <p>Need larger or smaller switches? Add class modifiers <code>.switch-large</code>, <code>.switch-small</code> or <code>.switch-mini</code></p>
             <div runat="server" class="r-example">
-                <Rock:Toggle ID="toggle1" runat="server" CssClass="switch-large" />
-                <Rock:Toggle ID="toggle2" runat="server" CssClass="switch-small" />
-                <Rock:Toggle ID="toggle3" runat="server" CssClass="switch-mini" />
+                <Rock:Toggle ID="tglExample1" runat="server" CssClass="switch-large" />
+                <Rock:Toggle ID="tglExample2" runat="server" CssClass="switch-small" />
+                <Rock:Toggle ID="tglExample3" runat="server" CssClass="switch-mini" />
             </div>
 
             <a id="BootstrapButton"></a>
@@ -408,9 +408,9 @@
             <a id="AttributeEditor"></a>
             <h2 runat="server">Rock:AttributeEditor</h2>
             <div runat="server" class="r-example">
-                <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
-                <asp:Panel ID="aeExampleDiv" runat="server" Visible="false" CssClass="well">
-                    <Rock:AttributeEditor ID="aeExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
+                <asp:LinkButton ID="lbExample" runat="server" CssClass="btn btn-link" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
+                <asp:Panel ID="pnlAttributeEditor" runat="server" Visible="false" CssClass="well">
+                    <Rock:AttributeEditor ID="edtExample" runat="server" OnCancelClick="aeExample_CancelClick" OnSaveClick="aeExample_SaveClick" ValidationGroup="Attribute" />
                 </asp:Panel>
             </div>
 

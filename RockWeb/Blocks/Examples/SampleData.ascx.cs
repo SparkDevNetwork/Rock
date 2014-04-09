@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.Examples
                 _stopwatch.Start();
                 DeleteExistingGroups( elemGroups, rockContext );
                 DeleteExistingFamilyData( elemFamilies, rockContext );
-                rockContext.SaveChanges();
+                rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Examples
                 ts = _stopwatch.Elapsed;
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
-                rockContext.SaveChanges();
+                rockContext.SaveChanges( disablePrePostProcessing: true );
             } );
 
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
@@ -497,15 +497,15 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // find the person's KnownRelationship "owner" group
-                var group = memberService.Queryable()
+                var knownRelationshipGroup = memberService.Queryable()
                     .Where( m =>
-                    m.PersonId == ownerPersonId &&
-                    m.GroupRole.Guid == ownerRoleGuid )
+                        m.PersonId == ownerPersonId &&
+                        m.GroupRole.Guid == ownerRoleGuid )
                     .Select( m => m.Group )
                     .FirstOrDefault();
 
                 // create it if it does not yet exist
-                if ( group == null )
+                if ( knownRelationshipGroup == null )
                 {
                     var ownerRole = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                     if ( ownerRole != null && ownerRole.GroupTypeId.HasValue )
@@ -514,22 +514,23 @@ namespace RockWeb.Blocks.Examples
                         ownerGroupMember.PersonId = ownerPersonId;
                         ownerGroupMember.GroupRoleId = ownerRole.Id;
 
-                        group = new Group();
-                        group.Name = ownerRole.GroupType.Name;
-                        group.GroupTypeId = ownerRole.GroupTypeId.Value;
-                        group.Members.Add( ownerGroupMember );
+                        knownRelationshipGroup = new Group();
+                        knownRelationshipGroup.Name = ownerRole.GroupType.Name;
+                        knownRelationshipGroup.GroupTypeId = ownerRole.GroupTypeId.Value;
+                        knownRelationshipGroup.Members.Add( ownerGroupMember );
 
                         var groupService = new GroupService( rockContext );
-                        groupService.Add( group );
+                        groupService.Add( knownRelationshipGroup );
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
 
-                        group = groupService.Get( group.Id );
+                        knownRelationshipGroup = groupService.Get( knownRelationshipGroup.Id );
                     }
                 }
 
                 // Now find (and add if not found) the forPerson as a member with the "has" role-type
                 var groupMember = memberService.Queryable()
                     .Where( m =>
-                        m.GroupId == group.Id &&
+                        m.GroupId == knownRelationshipGroup.Id &&
                         m.PersonId == forPersonId &&
                         m.GroupRoleId == roleId )
                     .FirstOrDefault();
@@ -538,7 +539,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     groupMember = new GroupMember()
                     {
-                        GroupId = group.Id,
+                        GroupId = knownRelationshipGroup.Id,
                         PersonId = forPersonId,
                         GroupRoleId = roleId,
                     };
@@ -548,7 +549,8 @@ namespace RockWeb.Blocks.Examples
 
                 // Now create thee inverse relationship.
                 //
-                // (NOTE: There is no need to do anything with the
+                // (NOTE: Don't panic if your VS tooling complains that there is
+                // an unused variable here.  There is no need to do anything with the
                 // inverseGroupMember relationship because it was already added to the
                 // context.  All we have to do below is save the changes to the context
                 // when we're ready.)
@@ -572,7 +574,7 @@ namespace RockWeb.Blocks.Examples
             GroupService groupService = new GroupService( rockContext );
             var allFamilies = rockContext.Groups;
 
-            List<Guid> allGroups = new List<Guid>();
+            List<Group> allGroups = new List<Group>();
 
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
@@ -596,38 +598,35 @@ namespace RockWeb.Blocks.Examples
                     AddFamilyAttendance( family, elemFamily, rockContext );
                 }
 
-                allGroups.Add( guid );
+                allGroups.Add( family );
 
                 _stopwatch.Stop();
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
                 _stopwatch.Start();
             }
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
             // Now save each person's attributevalues (who had them defined in the XML)
             // and add each person's ID to a dictionary for use later.
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
-            foreach ( var guid in allGroups )
+            foreach ( var gm in allGroups.SelectMany( g => g.Members ) )
             {
-                var group = groupService.GetByGuid( guid );
-                foreach ( var gm in group.Members )
+                // Put the person's id into the people dictionary for later use.
+                if ( !_peopleDictionary.ContainsKey( gm.Person.Guid ) )
                 {
-                    // Put the person's id into the people dictionary for later use.
-                    if ( !_peopleDictionary.ContainsKey( gm.Person.Guid ) )
-                    {
-                        _peopleDictionary.Add( gm.Person.Guid, gm.Person.Id );
-                    }
+                    _peopleDictionary.Add( gm.Person.Guid, gm.Person.Id );
+                }
 
-                    // Only save if the person had attributes, otherwise it will error.
-                    if ( _personWithAttributes.ContainsKey( gm.Person.Guid ) )
+                // Only save if the person had attributes, otherwise it will error.
+                if ( _personWithAttributes.ContainsKey( gm.Person.Guid ) )
+                {
+                    foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
                     {
-                        foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
+                        var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
+                        if ( newValue != null )
                         {
-                            var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
-                            if ( newValue != null )
-                            {
-                                newValue.EntityId = gm.Person.Id;
-                                rockContext.AttributeValues.Add( newValue );
-                            }
+                            newValue.EntityId = gm.Person.Id;
+                            rockContext.AttributeValues.Add( newValue );
                         }
                     }
                 }
@@ -844,6 +843,7 @@ namespace RockWeb.Blocks.Examples
 
                     foreach ( var person in members.Select( m => m.Person ) )
                     {
+                        person.GivingGroup = null;
                         person.GivingGroupId = null;
                         person.PhotoId = null;
 
@@ -853,6 +853,7 @@ namespace RockWeb.Blocks.Examples
                             if ( phone != null )
                             {
                                 phoneNumberService.Delete( phone );
+                                rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
                         }
 
@@ -860,11 +861,13 @@ namespace RockWeb.Blocks.Examples
                         foreach ( var view in personViewedService.GetByTargetPersonId( person.Id ) )
                         {
                             personViewedService.Delete( view );
+                            rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
 
                         if ( personService.CanDelete( person, out errorMessage ) )
                         {
                             personService.Delete( person );
+                            rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
                     }
 
@@ -902,7 +905,7 @@ namespace RockWeb.Blocks.Examples
 
             // delete members
             var groupMemberService = new GroupMemberService( rockContext );
-            var members = groupMemberService.GetByGroupId( group.Id );
+            var members = group.Members;
             foreach ( var member in members.ToList() )
             {
                 group.Members.Remove( member );
