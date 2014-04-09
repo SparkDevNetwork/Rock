@@ -161,7 +161,7 @@ namespace Rock.Communication.Transport
                             message.Headers.Add( "X-MC-InlineCSS", inlineCss.ToString() );
                             message.Headers.Add( "X-MC-Metadata", String.Format( @"{{ ""communication_recipient_guid"":""{0}"" }}", recipient.Guid.ToString() ) );
 
-                            // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
+                            // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
                             string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
@@ -181,6 +181,7 @@ namespace Rock.Communication.Transport
                                 smtpClient.Send( message );
                                 recipient.Status = CommunicationRecipientStatus.Delivered;
                                 recipient.StatusNote = String.Format( "Email was recieved for delivery by Mandrill ({0})", RockDateTime.Now );
+                                recipient.TransportEntityTypeName = this.GetType().FullName;
                             }
                             catch ( Exception ex )
                             {

@@ -112,6 +112,7 @@ namespace Rock.Communication.Transport
                                     }
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    recipient.TransportEntityTypeName = this.GetType().FullName;
 
                                 }
                                 else

@@ -97,6 +97,26 @@ namespace Rock.Model
         public string OpenedClient { get; set; }
 
         /// <summary>
+        /// Gets or sets the transport entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The transport identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string TransportEntityTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique message identifier.
+        /// </summary>
+        /// <value>
+        /// The unique message identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string UniqueMessageId { get; set; }
+
+        /// <summary>
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
