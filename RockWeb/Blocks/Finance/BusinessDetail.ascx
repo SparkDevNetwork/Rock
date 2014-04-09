@@ -142,6 +142,15 @@
                 </Columns>
             </Rock:Grid>
 
+            <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
+                <Content>
+                    <asp:HiddenField ID="hfContactId" runat="server" />
+                    <div class="row col-md-12">
+                        <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
+                    </div>
+                </Content>
+            </Rock:ModalDialog>
+
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
