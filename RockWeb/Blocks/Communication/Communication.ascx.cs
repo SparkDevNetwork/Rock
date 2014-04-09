@@ -651,10 +651,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var service = new CommunicationService( rockContext );
-
-            var communication = UpdateCommunication( service );
+            var communication = UpdateCommunication( new CommunicationService( new RockContext() ) );
             if ( communication != null )
             {
                 var newCommunication = communication.Clone( false );
@@ -674,8 +671,10 @@ namespace RockWeb.Blocks.Communication
                         StatusNote = string.Empty
                     } ) );
 
+                // Load a new context so that original communication is not upated
+                var rockContext = new RockContext();
+                var service = new CommunicationService( rockContext );
                 service.Add( newCommunication );
-
                 rockContext.SaveChanges();
 
                 // Redirect to new communication
