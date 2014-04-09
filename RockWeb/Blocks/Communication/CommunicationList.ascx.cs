@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -283,7 +284,7 @@ namespace RockWeb.Blocks.Communication
             var rockContext = new RockContext();
 
             var communications = new CommunicationService( rockContext )
-                    .Queryable()
+                    .Queryable( "ChannelEntityType,Sender,Reviewer" )
                     .Where( c => c.Status != CommunicationStatus.Transient );
 
             string subject = rFilter.GetUserPreference( "Subject" );
@@ -326,34 +327,34 @@ namespace RockWeb.Blocks.Communication
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
-                var queryable = communications
-                    .Select( c => new CommunicationItem
-                    {
-                        Id = c.Id,
-                        Communication = c,
-                        Recipients = recipients
-                            .Where( r => r.CommunicationId == c.Id)
-                            .Count(),
-                        PendingRecipients = recipients
-                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending)
-                            .Count(),
-                        CancelledRecipients = recipients
-                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled)
-                            .Count(),
-                        FailedRecipients = recipients
-                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
-                            .Count(),
-                        DeliveredRecipients = recipients
-                            .Where( r => r.CommunicationId == c.Id && 
-                                (r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened))
-                            .Count(),
-                        OpenedRecipients = recipients
-                            .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
-                            .Count()
-                    } );
+            var queryable = communications
+                .Select( c => new CommunicationItem
+                {
+                    Id = c.Id,
+                    Communication = c,
+                    Recipients = recipients
+                        .Where( r => r.CommunicationId == c.Id)
+                        .Count(),
+                    PendingRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending)
+                        .Count(),
+                    CancelledRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled)
+                        .Count(),
+                    FailedRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
+                        .Count(),
+                    DeliveredRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && 
+                            (r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened))
+                        .Count(),
+                    OpenedRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
+                        .Count()
+                } );
 
-                var sortProperty = gCommunication.SortProperty;
-                if ( sortProperty != null )
+            var sortProperty = gCommunication.SortProperty;
+            if ( sortProperty != null )
             {
                 queryable = queryable.Sort( sortProperty );
             }
@@ -362,7 +363,23 @@ namespace RockWeb.Blocks.Communication
                 queryable = queryable.OrderByDescending( c => c.Communication.Id );
             }
 
-            gCommunication.DataSource = queryable.ToList();
+            // Get the channel names
+            var channels = new Dictionary<int, string>();
+            foreach ( var item in Rock.Communication.ChannelContainer.Instance.Components.Values )
+            {
+                var entityType = item.Value.EntityType;
+                channels.Add( entityType.Id, item.Metadata.ComponentName );
+            }
+
+            var communicationItems = queryable.ToList();
+            foreach( var c in communicationItems)
+            {
+                c.ChannelName = channels.ContainsKey( c.Communication.ChannelEntityTypeId ?? 0 ) ?
+                    channels[c.Communication.ChannelEntityTypeId ?? 0] :
+                    c.Communication.ChannelEntityType.FriendlyName;
+            }
+
+            gCommunication.DataSource = communicationItems;
             gCommunication.DataBind();
 
         }
@@ -373,6 +390,7 @@ namespace RockWeb.Blocks.Communication
         {
             public int Id { get; set; }
             public Rock.Model.Communication Communication { get; set; }
+            public string ChannelName { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }
             public int CancelledRecipients { get; set; }
