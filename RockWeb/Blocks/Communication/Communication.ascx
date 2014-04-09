@@ -16,8 +16,8 @@
 
         <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-        <div class="nav navbar nav-pagelist">
-            <ul id="ulChannels" runat="server" class="nav nav-pills">
+        <div id="divChannels" runat="server" class="nav navbar nav-pagelist">
+            <ul class="nav nav-pills">
                 <asp:Repeater ID="rptChannels" runat="server">
                     <ItemTemplate>
                         <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
@@ -82,9 +82,19 @@
         </asp:Panel>
 
         <script type="text/javascript">
-            // change approval status to pending if any values are changed
             Sys.Application.add_load(function () {
+
+                // Set all recipients tooltip
                 $('.recipient span').tooltip();
+
+                // Set the display of any recipients that have preference of NoBulkEmail based on if this is a bulk communication
+                $('.js-bulk-option').click(function () {
+                    if ($(this).is(':checked')) {
+                        $('.js-no-bulk-email').addClass('text-danger');
+                    } else {
+                        $('.js-no-bulk-email').removeClass('text-danger');
+                    }
+                });
             })
         </script>
 
