@@ -56,6 +56,9 @@ namespace RockWeb.Blocks.Finance
             gContactList.Actions.AddClick += gContactList_AddClick;
             gContactList.GridRebind += gContactList_GridRebind;
             gContactList.IsDeleteEnabled = canEdit;
+
+            mdAddContact.SaveClick += mdAddContact_SaveClick;
+            mdAddContact.OnCancelScript = string.Format( "$('#{0}').val('');", hfContactId.ClientID );
         }
 
         /// <summary>
@@ -385,16 +388,49 @@ namespace RockWeb.Blocks.Finance
 
         private void gContactList_AddClick( object sender, EventArgs e )
         {
+            var contactId = 0;
+            hfContactId.Value = contactId.ToString();
+            ppContact.PersonId = 0;
+            mdAddContact.Show();
         }
 
         protected void gContactList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-
         }
 
         protected void gContactList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+        }
 
+        void mdAddContact_SaveClick( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var contactId = (int)ppContact.PersonId;
+            if ( contactId > 0 )
+            {
+                var personService = new PersonService( rockContext );
+                int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var business = personService.Get( int.Parse( hfBusinessId.Value ) );
+                var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId ).FirstOrDefault();
+                if ( groupMember == null )
+                {
+                    groupMember = new GroupMember();
+                    business.GivingGroup.Members.Add( groupMember );
+                }
+
+                groupMember.Person = personService.Get( (int)ppContact.PersonId );
+                groupMember.GroupRoleId = (int)businessContactRoleId;
+                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+                rockContext.SaveChanges();
+            }
+
+            mdAddContact.Hide();
+            BindContactListGrid();
         }
 
         #endregion Events
@@ -543,7 +579,17 @@ namespace RockWeb.Blocks.Finance
         private void BindContactListGrid()
         {
             // Load up that contact list.
-            gContactList.DataSource = null;
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
+            int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            // I want a list of people that are connected to this business/person by the business contact relationship
+            var contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
+            gContactList.DataSource = contactList;
             gContactList.DataBind();
         }
 

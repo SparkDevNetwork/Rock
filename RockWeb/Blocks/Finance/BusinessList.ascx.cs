@@ -211,12 +211,8 @@ namespace RockWeb.Blocks.Finance
             if ( business != null )
             {
                 business.RecordStatusValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                // if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
                 rockContext.SaveChanges();
             }
-
-            //// **** This gave me a message that the business was associated with a phone number.
-            //// **** Guess I'm going to have to do this piece by piece on my own?
 
             BindGrid();
         }
