@@ -149,6 +149,14 @@ namespace Rock.Communication.Transport
                             // Subject
                             message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
+                            // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
+                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
+                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                            {
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                message.AlternateViews.Add( plainTextView );
+                            }
+
                             // Add Html view
                             string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
@@ -157,18 +165,11 @@ namespace Rock.Communication.Transport
                                 message.AlternateViews.Add( htmlView );
                             }
 
-                            // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
-                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
-                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                            {
-                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
-                                message.AlternateViews.Add( plainTextView );
-                            }
-
                             try
                             {
                                 smtpClient.Send( message );
                                 recipient.Status = CommunicationRecipientStatus.Delivered;
+                                recipient.TransportEntityTypeName = this.GetType().FullName;
                             }
                             catch ( Exception ex )
                             {
