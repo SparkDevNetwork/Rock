@@ -164,6 +164,7 @@ namespace Rock.Web.UI.Controls.Communication
             cbBulkEmail.Help = "Select this option if you are sending this email to a group of people.  This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed.";
             cbBulkEmail.Label = "Bulk Email";
             cbBulkEmail.Text = "Yes";
+            cbBulkEmail.CssClass = "js-bulk-option";
             Controls.Add( cbBulkEmail );
 
             htmlMessage = new HtmlEditor();

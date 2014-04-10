@@ -39,6 +39,16 @@ namespace Rock.SystemGuid
         public const string DATE = "6B6AA175-4758-453F-8D83-FCD8044B5F36";
 
         /// <summary>
+        /// Day of Week field type
+        /// </summary>
+        public const string DAY_OF_WEEK = "67ED79C1-4297-4C2D-93BF-62246B26FDB5";
+
+        /// <summary>
+        /// Decimal field type
+        /// </summary>
+        public const string DECIMAL = "C757A554-3009-4214-B05D-CEA2B2EA6B8F";
+
+        /// <summary>
         /// Defined value field type
         /// </summary>
         public const string DEFINED_VALUE = "59D5A94C-94A0-4630-B80A-BB25697D74C7";
@@ -67,5 +77,10 @@ namespace Rock.SystemGuid
         /// Text field type
         /// </summary>
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";
+
+        /// <summary>
+        /// Time field type
+        /// </summary>
+        public const string TIME = "2F8F5EC4-57FA-4F6C-AB15-9D6616994580";
     }
 }

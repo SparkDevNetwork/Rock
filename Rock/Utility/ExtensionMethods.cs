@@ -507,6 +507,24 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to TimeSpan.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static TimeSpan? AsTimeSpan( this string str)
+        {
+            TimeSpan value;
+            if ( TimeSpan.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Use DotLiquid to resolve any merge codes within the content using the values 
         /// in the mergeObjects.
         /// </summary>

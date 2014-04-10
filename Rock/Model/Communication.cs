@@ -376,7 +376,7 @@ namespace Rock.Model
         /// <summary>
         /// Communication has been submitted but not yet approved or denied
         /// </summary>
-        Submitted = 2,
+        PendingApproval = 2,
 
         /// <summary>
         /// Communication has been approved for sending

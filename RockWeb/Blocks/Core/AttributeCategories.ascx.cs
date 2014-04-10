@@ -285,6 +285,7 @@ namespace RockWeb.Blocks.Core
 
             if ( categoryId != 0 )
             {
+                CategoryCache.Flush( categoryId );
                 category = service.Get( categoryId );
             }
 

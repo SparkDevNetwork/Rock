@@ -76,6 +76,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlAttributeValues );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -85,36 +98,44 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !Page.IsPostBack )
             {
-                string categoryGuid = GetAttributeValue( "Category" );
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( categoryGuid, out guid ) )
-                {
-                    var category = CategoryCache.Read( guid );
-                    if ( category != null )
-                    {
-                        if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
-                        {
-                            lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
-                        }
-                        else
-                        {
-                            lCategoryName.Text = category.Name;
-                        }
+                BindData();
+            }
+        }
 
-                        var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id )
-                            .OrderBy( a => a.Order ).ThenBy( a => a.Name );
-                        foreach ( var attribute in orderedAttributeList )
+        /// <summary>
+        /// Bind the data based on the configured category setting.
+        /// </summary>
+        private void BindData()
+        {
+            string categoryGuid = GetAttributeValue( "Category" );
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( categoryGuid, out guid ) )
+            {
+                var category = CategoryCache.Read( guid );
+                if ( category != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
+                    {
+                        lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
+                    }
+                    else
+                    {
+                        lCategoryName.Text = category.Name;
+                    }
+
+                    var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id )
+                        .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                    foreach ( var attribute in orderedAttributeList )
+                    {
+                        if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
-                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                AttributeList.Add( attribute.Id );
-                            }
+                            AttributeList.Add( attribute.Id );
                         }
                     }
                 }
-
-                CreateControls( true );
             }
+
+            CreateControls( true );
         }
 
         protected override void LoadViewState( object savedState )
@@ -151,6 +172,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             pnlActions.Visible = EditMode;
+        }
+
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            AttributeList = null;
+            BindData();
         }
 
         protected void lbEdit_Click( object sender, EventArgs e )
@@ -221,5 +255,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             EditMode = false;
             CreateControls( false );
         }
+
+        #endregion
     }
 }
