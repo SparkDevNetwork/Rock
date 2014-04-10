@@ -160,16 +160,22 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            DropDownList ddlCompare = controls[0] as DropDownList;
+            NumberBox nbValue = controls[1] as NumberBox;
+            
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[0].RenderControl( writer );
+            ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
+
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : "";
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[1].RenderControl( writer );
+            nbValue.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
