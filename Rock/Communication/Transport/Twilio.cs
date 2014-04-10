@@ -58,7 +58,7 @@ namespace Rock.Communication.Transport
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) > 0 ) )
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 string fromPhone = string.Empty;
                 string fromValue = communication.GetChannelDataValue( "FromValue" );
@@ -112,6 +112,7 @@ namespace Rock.Communication.Transport
                                     }
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    recipient.TransportEntityTypeName = this.GetType().FullName;
 
                                 }
                                 else

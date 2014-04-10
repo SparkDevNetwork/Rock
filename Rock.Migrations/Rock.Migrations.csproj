@@ -815,6 +815,10 @@
     <Compile Include="Migrations\201404080041145_MiscCommunication.Designer.cs">
       <DependentUpon>201404080041145_MiscCommunication.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404092208485_NewPersonAndRecipientFields.cs" />
+    <Compile Include="Migrations\201404092208485_NewPersonAndRecipientFields.Designer.cs">
+      <DependentUpon>201404092208485_NewPersonAndRecipientFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1407,6 +1411,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404080041145_MiscCommunication.resx">
       <DependentUpon>201404080041145_MiscCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404092208485_NewPersonAndRecipientFields.resx">
+      <DependentUpon>201404092208485_NewPersonAndRecipientFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

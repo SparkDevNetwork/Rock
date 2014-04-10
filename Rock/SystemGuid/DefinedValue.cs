@@ -310,6 +310,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Review Reason
+
+        /// <summary>
+        /// Member Person Connection Status
+        /// </summary>
+        public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
+
+        #endregion
+
         #region map Styles
 
         /// <summary>

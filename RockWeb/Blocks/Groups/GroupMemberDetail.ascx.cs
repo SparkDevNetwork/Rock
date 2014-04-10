@@ -390,6 +390,7 @@ namespace RockWeb.Blocks.Groups
 
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
+            rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();

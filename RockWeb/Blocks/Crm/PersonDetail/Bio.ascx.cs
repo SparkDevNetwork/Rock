@@ -113,9 +113,37 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     rptPhones.DataBind();
                 }
 
-                lEmail.Text = Person.Email +
-                    (( Person.EmailPreference == EmailPreference.DoNotEmail || Person.EmailPreference == EmailPreference.NoMassEmails ) ?
-                    string.Format( " <small>{0}</small>", Person.EmailPreference.ConvertToString() ) : string.Empty);
+                if ( !string.IsNullOrWhiteSpace( Person.Email ) )
+                {
+                    if ( !Person.IsEmailActive.HasValue || Person.IsEmailActive.Value )
+                    {
+                        switch ( Person.EmailPreference )
+                        {
+                            case EmailPreference.EmailAllowed:
+                                {
+                                    lEmail.Text = string.Format( "<a href='{0}?person={1}'>{2}</a>",
+                                        ResolveRockUrl( "/Communication" ), Person.Id, Person.Email );
+                                    break;
+                                }
+                            case EmailPreference.NoMassEmails:
+                                {
+                                    lEmail.Text = string.Format( "<span class='js-email-status' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a href='{0}?person={1}'>{2}</a> <i class='fa fa-exchange'></i></span>",
+                                        ResolveRockUrl( "/Communication" ), Person.Id, Person.Email );
+                                    break;
+                                }
+                            case EmailPreference.DoNotEmail:
+                                {
+                                    lEmail.Text = string.Format( "<span class='js-email-status' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{0} <i class='fa fa-ban'></i>", Person.Email );
+                                    break;
+                                }
+                        }
+                    }
+                    else
+                    {
+                        lEmail.Text = string.Format( "<span class='js-email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i>",
+                            Person.EmailNote, Person.Email);
+                    }
+                }
 
                 taglPersonTags.EntityTypeId = Person.TypeId;
                 taglPersonTags.EntityGuid = Person.Guid;

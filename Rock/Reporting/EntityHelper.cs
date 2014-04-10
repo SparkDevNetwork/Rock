@@ -135,53 +135,7 @@ namespace Rock.Reporting
             var rockContext = new RockContext();
             foreach ( var attribute in new AttributeService( rockContext ).Get( entityTypeId, string.Empty, string.Empty ) )
             {
-                // Ensure prop name is unique
-                string propName = attribute.Name;
-                int i = 1;
-                while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
-                {
-                    propName = attribute.Name + ( i++ ).ToString();
-                }
-
-                EntityField entityProperty = null;
-
-                switch ( FieldTypeCache.Read(attribute.FieldTypeId).Guid.ToString().ToUpper() )
-                {
-                    case SystemGuid.FieldType.BOOLEAN:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
-                        break;
-
-                    case SystemGuid.FieldType.DATE:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
-                        break;
-
-                    case SystemGuid.FieldType.INTEGER:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
-                        break;
-
-                    case SystemGuid.FieldType.MULTI_SELECT:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                        break;
-
-                    case SystemGuid.FieldType.SINGLE_SELECT:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                        break;
-
-                    case SystemGuid.FieldType.TEXT:
-                        entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
-                        entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
-                        break;
-                }
-
-                if ( entityProperty != null )
-                {
-                    entityFields.Add( entityProperty );
-                }
+                AddEntityFieldForAttribute( entityFields, AttributeCache.Read(attribute.Id) );
             }
 
             int index = 1;
@@ -194,6 +148,80 @@ namespace Rock.Reporting
             }
 
             return _entityFields[entityType];
+        }
+
+        /// <summary>
+        /// Adds the entity field for attribute.
+        /// </summary>
+        /// <param name="entityFields">The entity fields.</param>
+        /// <param name="attribute">The attribute.</param>
+        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute )
+        {
+            // Ensure prop name is unique
+            string propName = attribute.Name;
+            int i = 1;
+            while ( entityFields.Any( p => p.Name.Equals( propName, StringComparison.CurrentCultureIgnoreCase ) ) )
+            {
+                propName = attribute.Name + ( i++ ).ToString();
+            }
+
+            EntityField entityProperty = null;
+
+            var fieldType =FieldTypeCache.Read( attribute.FieldTypeId );
+            string fieldTypeUpperGuid =fieldType.Guid.ToString().ToUpper();
+
+            switch ( fieldTypeUpperGuid )
+            {
+                case SystemGuid.FieldType.BOOLEAN:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
+                    break;
+
+                case SystemGuid.FieldType.DATE:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
+                    break;
+
+                case SystemGuid.FieldType.TIME:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
+                    break;
+
+                case SystemGuid.FieldType.INTEGER:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
+                    break;
+
+                case SystemGuid.FieldType.DECIMAL:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
+                    break;
+
+                case SystemGuid.FieldType.DAY_OF_WEEK:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
+                    break;
+
+                case SystemGuid.FieldType.MULTI_SELECT:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                    break;
+
+                case SystemGuid.FieldType.SINGLE_SELECT:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
+                    break;
+
+                case SystemGuid.FieldType.TEXT:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
+                    break;
+            }
+
+            if ( entityProperty != null )
+            {
+                entityFields.Add( entityProperty );
+            }
         }
     }
 
@@ -321,6 +349,29 @@ namespace Rock.Reporting
             PropertyType = propertyType;
             ControlCount = controlCount;
             AttributeId = attributeId;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if (this.FieldKind == Reporting.FieldKind.Attribute)
+            {
+                return string.Format( "Attribute:{0} (Id:{1})", this.Name, this.AttributeId );
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(this.Name))
+                {
+                    return string.Format( "Property:{0}", this.Name );
+                }
+            }
+
+            return base.ToString();
         }
     }
 

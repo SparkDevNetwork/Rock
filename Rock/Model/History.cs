@@ -251,6 +251,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="historyMessages">The history messages.</param>
         /// <param name="propertyName">Name of the property.</param>
+        /// <param name="oldValue">if set to <c>true</c> [old value].</param>
+        /// <param name="newValue">if set to <c>true</c> [new value].</param>
+        public static void EvaluateChange( List<string> historyMessages, string propertyName, bool oldValue, bool newValue )
+        {
+            EvaluateChange( historyMessages, propertyName, oldValue.ToString(), newValue.ToString() );
+        }
+
+        /// <summary>
+        /// Evaluates the change.
+        /// </summary>
+        /// <param name="historyMessages">The history messages.</param>
+        /// <param name="propertyName">Name of the property.</param>
         /// <param name="oldValue">The old value.</param>
         /// <param name="newValue">The new value.</param>
         public static void EvaluateChange( List<string> historyMessages, string propertyName, Enum oldValue, Enum newValue )

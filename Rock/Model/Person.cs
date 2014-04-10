@@ -101,6 +101,16 @@ namespace Rock.Model
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the reason a record needs to be reviewed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the reason a record needs to be reviewed.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_REVIEW_REASON )]
+        public int? ReviewReasonValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if the Person is deceased.
         /// </summary>
         /// <value>
@@ -276,7 +286,6 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
 
-
         /// <summary>
         /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
@@ -327,6 +336,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public EmailPreference EmailPreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets notes about why a person profile needs to be reviewed
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing an Review Reason Note.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string ReviewReasonNote { get; set; }
 
         /// <summary>
         /// Gets or sets the Inactive Reason Note
@@ -610,6 +629,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
+
+        [DataMember]
+        public virtual DefinedValue ReviewReasonValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the record status.
@@ -1194,6 +1216,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ReviewReasonValue ).WithMany().HasForeignKey( p => p.ReviewReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
