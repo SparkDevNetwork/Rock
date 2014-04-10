@@ -39,7 +39,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Grade" )]
     public class GradeFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -75,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Grade";
@@ -171,7 +170,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
-            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : "";
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -270,7 +269,6 @@ namespace Rock.Reporting.DataFilter.Person
             }
             else
             {
-                
                 if ( comparisonType == ComparisonType.IsBlank )
                 {
                     // if no gradeTransitionDate, return true (everybody has a blank grade)
