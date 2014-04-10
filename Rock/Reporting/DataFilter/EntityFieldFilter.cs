@@ -672,8 +672,7 @@ namespace Rock.Reporting.DataFilter
                     }
 
                     break;
-
-                case SystemGuid.FieldType.DAY_OF_WEEK:
+                
                 case SystemGuid.FieldType.DECIMAL:
                 case SystemGuid.FieldType.INTEGER:
 
@@ -743,6 +742,7 @@ namespace Rock.Reporting.DataFilter
 
                     break;
 
+                case SystemGuid.FieldType.DAY_OF_WEEK:
                 case SystemGuid.FieldType.SINGLE_SELECT:
 
                     if ( values.Count == 1 )
