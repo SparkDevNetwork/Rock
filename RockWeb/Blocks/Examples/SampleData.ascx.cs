@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Examples
 {
     /// <summary>
     /// Block that can load sample data into your Rock database.
+    /// Dev note: You can set the XML Document Url setting to your local
+    /// file when you're testing new data.  Something like C:\Misc\Rock\Documentation\sampledata.xml
     /// </summary>
     [DisplayName( "Rock Solid Church Sample Data" )]
     [Category( "Examples" )]
@@ -84,6 +86,11 @@ namespace RockWeb.Blocks.Examples
         /// The storage type to use for the people photos.
         /// </summary>
         private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
+
+        /// <summary>
+        /// The Autnentication Database entity type.
+        /// </summary>
+        private static int _authenticationDatabaseEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
 
         /// <summary>
         /// Percent of additional time someone tends to NOT attend during the summer months (7-9)
@@ -136,6 +143,11 @@ namespace RockWeb.Blocks.Examples
         private Dictionary<Guid, int> _familyLocationDictionary = new Dictionary<Guid, int>();
 
         /// <summary>
+        /// A dictionary of a Person's login usernames.
+        /// </summary>
+        private Dictionary<Person, List<string>> _peopleLoginsDictionary = new Dictionary<Person, List<string>>();
+
+        /// <summary>
         /// Holds the dictionary of person guids and a dictionary of their attribute names
         /// and values from the family section of the XML.
         /// </summary>
@@ -180,6 +192,10 @@ namespace RockWeb.Blocks.Examples
             base.OnLoad( e );
             Server.ScriptTimeout = 300;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
+            if ( ! IsPostBack )
+            {
+                VerifyXMLDocumentExists();
+            }
         }
 
         #endregion
@@ -209,7 +225,7 @@ namespace RockWeb.Blocks.Examples
 <p>Here are some of the things you'll find in the sample data:</p>{1}",
                         ResolveRockUrl( "~/Person/Search/name/Decker" ),
                         GetStories( saveFile ) );
-                    bbtnLoadData.Visible = false;
+                    pnlInputForm.Visible = false;
                     RecordSuccess();
                 }
             }
@@ -271,11 +287,55 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            VerifyXMLDocumentExists();
+            nbMessage.Text = string.Empty;
+            nbMessage.Visible = false;
+            pnlInputForm.Visible = true;
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Verify that the configured XML document exists.
+        /// </summary>
+        private void VerifyXMLDocumentExists()
+        {
+            bool fileExists = false;
+
+            try
+            {
+                Uri fileUri = new Uri( GetAttributeValue( "XMLDocumentURL" ) );
+                if ( fileUri.IsFile )
+                {
+                    fileExists = File.Exists( fileUri.LocalPath );
+                }
+                else
+                {
+                    var request = (HttpWebRequest)WebRequest.Create( GetAttributeValue( "XMLDocumentURL" ) );
+                    request.Method = "HEAD";
+                    var response = (HttpWebResponse)request.GetResponse();
+                    fileExists = response.StatusCode == HttpStatusCode.OK;
+                }
+
+            }
+            catch ( Exception ex )
+            {
+                nbError.Text += string.Format( "<br/>{0} Error trying to check the sample data file. {1}", RockDateTime.Now.ToShortTimeString(), ex.Message );
+            }
+
+            if ( ! fileExists )
+            {
+                nbError.Visible = true;
+                bbtnLoadData.Enabled = false;
+            }
+            else
+            {
+                nbError.Visible = false;
+                bbtnLoadData.Enabled = true;
+            }
+        }
 
         /// <summary>
         /// Download the given fileUrl and store it at the fileOutput.
@@ -288,14 +348,22 @@ namespace RockWeb.Blocks.Examples
             bool isSuccess = false;
             try
             {
-                using ( WebClient client = new WebClient() )
+                Uri fileUri = new Uri( fileUrl );
+                if ( fileUri.IsFile )
                 {
-                    client.DownloadFile( fileUrl, fileOutput );
+                    File.Copy( fileUrl, fileOutput );
+                }
+                else
+                {
+                    using ( WebClient client = new WebClient() )
+                    {
+                        client.DownloadFile( fileUri, fileOutput );
+                    }
                 }
 
                 isSuccess = true;
             }
-            catch ( WebException ex )
+            catch ( Exception ex )
             {
                 nbMessage.Text = string.Format( "While trying to fetch {0}, {1} ", fileUrl, ex.Message );
                 nbMessage.Visible = true;
@@ -356,6 +424,17 @@ namespace RockWeb.Blocks.Examples
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
                 rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // add logins, but only if we were supplied a password
+                if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                {
+                    AddPersonLogins( rockContext );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                }
+
             } );
 
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
@@ -583,7 +662,7 @@ namespace RockWeb.Blocks.Examples
                 var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ), rockContext );
 
                 // Call replica of groupService's SaveNewFamily method in an attempt to speed things up
-                Group family = CreateNewFamily( familyMembers, 1 );
+                Group family = CreateNewFamily( familyMembers, campusId: 1 );
                 family.Guid = guid;
 
                 // add the family to the context's list of groups
@@ -824,6 +903,7 @@ namespace RockWeb.Blocks.Examples
             PersonService personService = new PersonService( rockContext );
             PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
             PersonViewedService personViewedService = new PersonViewedService( rockContext );
+            PageViewService pageViewService = new PageViewService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
             foreach ( var elemFamily in families.Elements( "family" ) )
@@ -853,7 +933,6 @@ namespace RockWeb.Blocks.Examples
                             if ( phone != null )
                             {
                                 phoneNumberService.Delete( phone );
-                                rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
                         }
 
@@ -861,8 +940,16 @@ namespace RockWeb.Blocks.Examples
                         foreach ( var view in personViewedService.GetByTargetPersonId( person.Id ) )
                         {
                             personViewedService.Delete( view );
-                            rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
+
+                        // delete page viewed records
+                        foreach ( var view in pageViewService.GetByPersonId( person.Id ) )
+                        {
+                            pageViewService.Delete( view );
+                        }
+
+                        // Save these changes so the CanDelete passes the check...
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
 
                         if ( personService.CanDelete( person, out errorMessage ) )
                         {
@@ -870,6 +957,7 @@ namespace RockWeb.Blocks.Examples
                             rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
                     }
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
 
                     // delete all member photos
                     foreach ( var photo in binaryFileService.GetByIds( photoIds ) )
@@ -1128,8 +1216,9 @@ namespace RockWeb.Blocks.Examples
         /// 'person' tag.
         /// </summary>
         /// <param name="elemMembers"></param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>a list of family members.</returns>
-        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers, RockContext context )
+        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers, RockContext rockContext )
         {
             var familyMembers = new List<GroupMember>();
 
@@ -1193,7 +1282,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
-                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), context );
+                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), rockContext );
                     }
 
                     if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
@@ -1308,10 +1397,56 @@ namespace RockWeb.Blocks.Examples
                     AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
                 }
 
+                // person logins
+                if ( personElem.Elements( "logins" ).Any() )
+                {
+                    // in here we are just going to store them in a dictionary for later
+                    // saving because Rock requires that each person have a ID before
+                    // we can call the UserLoginService.Create()
+                    var logins = new List<string>();
+                    foreach ( var login in personElem.Elements( "logins" ).Elements( "login" ) )
+                    {
+                        logins.Add( login.Attribute( "userName" ).Value );
+                    }
+
+                    _peopleLoginsDictionary.Add( groupMember.Person, logins );
+                }
+
                 familyMembers.Add( groupMember );
             }
 
             return familyMembers;
+        }
+
+        /// <summary>
+        /// Adds any logins stored in the _peopleLoginsDictionary.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPersonLogins( RockContext rockContext )
+        {
+            var password = tbPassword.Text.Trim();
+            var userLoginService = new UserLoginService( rockContext );
+
+            foreach ( var set in _peopleLoginsDictionary )
+            {
+                foreach ( var userName in set.Value )
+                {
+                    var userLogin = userLoginService.GetByUserName( userName );
+
+                    // only create the login if the username is not already taken
+                    if ( userLogin == null )
+                    {
+                        UserLoginService.Create(
+                                            rockContext,
+                                            set.Key,
+                                            Rock.Model.AuthenticationServiceType.Internal,
+                                            _authenticationDatabaseEntityTypeId,
+                                            userName,
+                                            password,
+                                            isConfirmed: true );
+                    }
+                }
+            }
         }
 
         /// <summary>

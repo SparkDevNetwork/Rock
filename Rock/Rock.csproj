@@ -252,6 +252,7 @@
     <Compile Include="Model\CodeGenerated\RestActionService.cs" />
     <Compile Include="Model\CodeGenerated\RestControllerService.cs" />
     <Compile Include="Model\DbGeographyConverter.cs" />
+    <Compile Include="Model\PageViewService.Partial.cs" />
     <Compile Include="Model\RestAction.cs" />
     <Compile Include="Model\RestController.cs" />
     <Compile Include="Model\FinancialScheduledTransactionService.Partial.cs" />
