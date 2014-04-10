@@ -168,8 +168,9 @@ namespace Rock.Reporting
             EntityField entityProperty = null;
 
             var fieldType =FieldTypeCache.Read( attribute.FieldTypeId );
+            string fieldTypeUpperGuid =fieldType.Guid.ToString().ToUpper();
 
-            switch ( fieldType.Guid.ToString().ToUpper() )
+            switch ( fieldTypeUpperGuid )
             {
                 case SystemGuid.FieldType.BOOLEAN:
                     entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
@@ -181,9 +182,24 @@ namespace Rock.Reporting
                     entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
                     break;
 
+                case SystemGuid.FieldType.TIME:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
+                    break;
+
                 case SystemGuid.FieldType.INTEGER:
                     entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
+                    break;
+
+                case SystemGuid.FieldType.DECIMAL:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
+                    break;
+
+                case SystemGuid.FieldType.DAY_OF_WEEK:
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
                     break;
 
                 case SystemGuid.FieldType.MULTI_SELECT:
@@ -333,6 +349,29 @@ namespace Rock.Reporting
             PropertyType = propertyType;
             ControlCount = controlCount;
             AttributeId = attributeId;
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if (this.FieldKind == Reporting.FieldKind.Attribute)
+            {
+                return string.Format( "Attribute:{0} (Id:{1})", this.Name, this.AttributeId );
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(this.Name))
+                {
+                    return string.Format( "Property:{0}", this.Name );
+                }
+            }
+
+            return base.ToString();
         }
     }
 
