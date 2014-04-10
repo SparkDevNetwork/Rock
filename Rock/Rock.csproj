@@ -273,6 +273,7 @@
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="Reporting\DataFilter\Group\DistanceFromFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SimpleMemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\MemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupTypeFilter.cs" />
