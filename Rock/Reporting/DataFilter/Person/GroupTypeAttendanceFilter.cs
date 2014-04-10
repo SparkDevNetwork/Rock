@@ -70,7 +70,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Recent Attendance";
@@ -111,10 +111,12 @@ namespace Rock.Reporting.DataFilter.Person
 
                 ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
 
-                s = string.Format( "Attended '{0}' {1} {2} times in the last {3} week(s)",
+                s = string.Format(
+                    "Attended '{0}' {1} {2} times in the last {3} week(s)",
                     groupType != null ? groupType.Name : "?",
                     comparisonType.ConvertToString(),
-                    options[2], options[3] );
+                    options[2],
+                    options[3] );
             }
 
             return s;
@@ -149,9 +151,10 @@ namespace Rock.Reporting.DataFilter.Person
 
             var controls = new Control[4] { ddlGroupType, ddl, tb, tb2 };
 
-            SetSelection( entityType, controls, string.Format( "{0}|{1}|4|16",
-                ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0",
-                ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
+            SetSelection(
+                entityType,
+                controls,
+                string.Format( "{0}|{1}|4|16", ddlGroupType.Items.Count > 0 ? ddlGroupType.Items[0].Value : "0", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ) );
 
             return controls;
         }
@@ -209,7 +212,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.AddAttribute( "class", "col-md-3" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span class='data-view-filter-label'>Week(s)</span>" );
-            writer.RenderEndTag(); 
+            writer.RenderEndTag();
 
             writer.RenderEndTag();
         }
@@ -226,8 +229,7 @@ namespace Rock.Reporting.DataFilter.Person
             string comparisonType = ( (DropDownList)controls[1] ).SelectedValue;
             string attended = ( (TextBox)controls[2] ).Text;
             string weeks = ( (TextBox)controls[3] ).Text;
-            return string.Format( "{0}|{1}|{2}|{3}",
-                groupTypeId, comparisonType, attended, weeks );
+            return string.Format( "{0}|{1}|{2}|{3}", groupTypeId, comparisonType, attended, weeks );
         }
 
         /// <summary>
@@ -269,30 +271,36 @@ namespace Rock.Reporting.DataFilter.Person
 
             int groupTypeId = 0;
             if ( !int.TryParse( options[0], out groupTypeId ) )
+            {
                 groupTypeId = 0;
+            }
 
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            
+
             if ( !int.TryParse( options[2], out attended ) )
+            {
                 attended = 0;
+            }
 
             if ( !int.TryParse( options[3], out weeks ) )
+            {
                 weeks = 0;
+            }
 
-            DateTime startDate = RockDateTime.Now.AddDays( 0 - (7 * weeks));
+            DateTime startDate = RockDateTime.Now.AddDays( 0 - ( 7 * weeks ) );
 
-            // Build expressions for this type of linq statement:
-            //var result = new PersonService().Queryable()
-            //    .Where( p =>
-            //        ( p.Attendances.Count( a =>
-            //            (
-            //                (
-            //                    ( a.Group.GroupTypeId == groupTypeId ) &&
-            //                    ( a.StartDateTime >= startDate )
-            //                ) &&
-            //                ( a.DidAttend == true )
-            //            )
-            //        ) >= attended ) );
+            //// Build expressions for this type of linq statement:
+            //// var result = new PersonService().Queryable()
+            ////    .Where( p =>
+            ////        ( p.Attendances.Count( a =>
+            ////            (
+            ////                (
+            ////                    ( a.Group.GroupTypeId == groupTypeId ) &&
+            ////                    ( a.StartDateTime >= startDate )
+            ////                ) &&
+            ////                ( a.DidAttend == true )
+            ////            )
+            ////        ) >= attended ) );
 
             ParameterExpression attendanceParameter = Expression.Parameter( typeof( Rock.Model.Attendance ), "a" );
 
@@ -312,20 +320,22 @@ namespace Rock.Reporting.DataFilter.Person
             Expression groupTypeIdAndStart = Expression.AndAlso( groupTypeIdComparison, startComparison );
             Expression groupTypeIdAndStartAndDidAttend = Expression.AndAlso( groupTypeIdAndStart, didAttendComparison );
 
-            LambdaExpression attendanceLambda = 
-                Expression.Lambda<Func<Rock.Model.Attendance, bool>>(groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter });
+            LambdaExpression attendanceLambda =
+                Expression.Lambda<Func<Rock.Model.Attendance, bool>>( groupTypeIdAndStartAndDidAttend, new ParameterExpression[] { attendanceParameter } );
 
-            Expression attendanceCount = Expression.Call(typeof(Enumerable), "Count", 
-                new Type[] { typeof(Rock.Model.Attendance) }, Expression.PropertyOrField(parameterExpression, "Attendances"), attendanceLambda);
+            Expression attendanceCount = Expression.Call(
+                typeof( Enumerable ),
+                "Count",
+                new Type[] { typeof( Rock.Model.Attendance ) },
+                Expression.PropertyOrField( parameterExpression, "Attendances" ),
+                attendanceLambda );
 
             Expression timesAttendedConstant = Expression.Constant( attended );
-            Expression timesAttendedComparison = Expression.GreaterThanOrEqual(attendanceCount, timesAttendedConstant);
+            Expression timesAttendedComparison = Expression.GreaterThanOrEqual( attendanceCount, timesAttendedConstant );
 
-            return timesAttendedComparison; 
+            return timesAttendedComparison;
         }
 
         #endregion
-
     }
-
 }

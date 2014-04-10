@@ -118,7 +118,6 @@ function() {
                 DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-
                 result = string.Format( "Giving amount total {0} {1} between {2} and {3}", comparisonType.ConvertToString().ToLower(), amount.ToString("C"), startDate.ToShortDateString(), endDate.ToShortDateString() );
             }
 

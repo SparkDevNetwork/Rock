@@ -38,7 +38,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Age" )]
     public class AgeFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Age";
@@ -170,7 +169,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
-            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : "";
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -228,7 +227,6 @@ namespace Rock.Reporting.DataFilter.Person
         {
             DateTime currentDate = RockDateTime.Today;
             int currentDayOfYear = currentDate.DayOfYear;
-
 
             var values = selection.Split( '|' );
 
@@ -288,7 +286,6 @@ namespace Rock.Reporting.DataFilter.Person
                             != ageValue );
                     break;
             }
-
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, parameterExpression, "p" );
         }
