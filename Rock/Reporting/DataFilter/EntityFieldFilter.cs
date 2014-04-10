@@ -64,13 +64,30 @@ namespace Rock.Reporting.DataFilter
 
                     break;
 
-                case SystemGuid.FieldType.INTEGER:
+                case SystemGuid.FieldType.TIME:
 
-                    var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
-                    ddlIntegerCompare.ID = string.Format( "{0}_ddlIntegerCompare", controlIdPrefix );
-                    ddlIntegerCompare.AddCssClass( "js-filter-compare" );
-                    parentControl.Controls.Add( ddlIntegerCompare );
-                    controls.Add( ddlIntegerCompare );
+                    var ddlTimeCompare = ComparisonControl( DateFilterComparisonTypes );
+                    ddlTimeCompare.ID = string.Format( "{0}_ddlTimeCompare", controlIdPrefix );
+                    ddlTimeCompare.AddCssClass( "js-filter-compare" );
+                    parentControl.Controls.Add( ddlTimeCompare );
+                    controls.Add( ddlTimeCompare );
+
+                    var timePicker = new TimePicker();
+                    timePicker.ID = string.Format( "{0}_timePicker", controlIdPrefix );
+                    timePicker.AddCssClass( "js-filter-control" );
+                    parentControl.Controls.Add( timePicker );
+                    controls.Add( timePicker );
+
+                    break;
+
+                case SystemGuid.FieldType.INTEGER:
+                case SystemGuid.FieldType.DECIMAL:
+
+                    var ddlNumberCompare = ComparisonControl( NumericFilterComparisonTypes );
+                    ddlNumberCompare.ID = string.Format( "{0}_ddlNumberCompare", controlIdPrefix );
+                    ddlNumberCompare.AddCssClass( "js-filter-compare" );
+                    parentControl.Controls.Add( ddlNumberCompare );
+                    controls.Add( ddlNumberCompare );
 
                     var numberBox = new NumberBox();
                     numberBox.ID = string.Format( "{0}_numberBox", controlIdPrefix );
@@ -164,6 +181,16 @@ namespace Rock.Reporting.DataFilter
 
                     break;
 
+                case SystemGuid.FieldType.DAY_OF_WEEK:
+                    var dayOfWeekPicker = new DayOfWeekPicker();
+                    dayOfWeekPicker.Label = string.Empty;
+                    dayOfWeekPicker.ID = string.Format( "{0}_dayOfWeekPicker", controlIdPrefix );
+                    dayOfWeekPicker.AddCssClass( "js-filter-control" );
+                    parentControl.Controls.Add( dayOfWeekPicker );
+                    controls.Add( dayOfWeekPicker );
+
+                    break;
+
                 case SystemGuid.FieldType.TEXT:
 
                     var ddlText = ComparisonControl( StringFilterComparisonTypes );
@@ -179,6 +206,7 @@ namespace Rock.Reporting.DataFilter
                     controls.Add( tbText );
 
                     break;
+
             }
         }
 
@@ -222,6 +250,12 @@ namespace Rock.Reporting.DataFilter
                         }
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
+                    }
+                    else if ( entityField.FilterFieldType == SystemGuid.FieldType.DAY_OF_WEEK )
+                    {
+                        DayOfWeek dayOfWeek = (DayOfWeek)( values[1].AsInteger() ?? 0 );
+
+                        entityFieldResult = string.Format( "{0} is {1}", entityField.Title, dayOfWeek.ConvertToString() );
                     }
                     else
                     {
@@ -315,10 +349,13 @@ namespace Rock.Reporting.DataFilter
                 string clientFormatSelection = string.Empty;
                 switch ( entityField.FilterFieldType )
                 {
+                    case SystemGuid.FieldType.TIME:
                     case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
                         break;
 
+
+                    case SystemGuid.FieldType.DECIMAL:
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
@@ -328,6 +365,7 @@ namespace Rock.Reporting.DataFilter
                         clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityField.Title );
                         break;
 
+                    case SystemGuid.FieldType.DAY_OF_WEEK:
                     case SystemGuid.FieldType.SINGLE_SELECT:
                         clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityField.Title );
                         break;
@@ -605,6 +643,45 @@ namespace Rock.Reporting.DataFilter
 
                     break;
 
+                case SystemGuid.FieldType.TIME:
+
+                    if ( values.Count == 2 )
+                    {
+                        comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+
+                        if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+                        {
+                            TimeSpan timeValue = values[1].AsTimeSpan() ?? TimeSpan.MinValue;
+                            switch ( comparisonType )
+                            {
+                                case ComparisonType.EqualTo:
+                                case ComparisonType.NotEqualTo:
+                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) == 0 ).Select( v => v.EntityId.Value );
+                                    break;
+                                case ComparisonType.GreaterThan:
+                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) <= 0 ).Select( v => v.EntityId.Value );
+                                    break;
+                                case ComparisonType.GreaterThanOrEqualTo:
+                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) < 0 ).Select( v => v.EntityId.Value );
+                                    break;
+                                case ComparisonType.LessThan:
+                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) >= 0 ).Select( v => v.EntityId.Value );
+                                    break;
+                                case ComparisonType.LessThanOrEqualTo:
+                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) > 0 ).Select( v => v.EntityId.Value );
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            ids = attributeValues.Select( v => v.EntityId.Value );
+                        }
+                    }
+
+                    break;
+
+                case SystemGuid.FieldType.DAY_OF_WEEK:
+                case SystemGuid.FieldType.DECIMAL:
                 case SystemGuid.FieldType.INTEGER:
 
                     if ( values.Count == 2 )
@@ -613,24 +690,24 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            int intValue = values[1].AsInteger( false ) ?? int.MinValue;
+                            double numericValue = values[1].AsDouble( false ) ?? int.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
                                 case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) == 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) == 0 ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) <= 0 ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) < 0 ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) >= 0 ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => intValue.CompareTo( Convert.ToInt32( v.Value ) ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) > 0 ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
