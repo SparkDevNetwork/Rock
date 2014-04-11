@@ -234,60 +234,16 @@ namespace Rock.Reporting.DataFilter.Person
             int? ageValue = values[1].AsInteger( false );
 
             var personAgeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
-
-            switch ( comparisonType )
-            {
-                case ComparisonType.EqualTo:
-                    personAgeQuery = personAgeQuery.Where(
+            var personAgeEqualQuery = personAgeQuery.Where(
                         p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
                                 ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
                                 : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
                             == ageValue );
-                    break;
-                case ComparisonType.GreaterThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            > ageValue );
-                    break;
-                case ComparisonType.GreaterThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            >= ageValue );
-                    break;
-                case ComparisonType.IsBlank:
-                    personAgeQuery = personAgeQuery.Where( p => !p.BirthDate.HasValue );
-                    break;
-                case ComparisonType.IsNotBlank:
-                    personAgeQuery = personAgeQuery.Where( p => p.BirthDate.HasValue );
-                    break;
-                case ComparisonType.LessThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            < ageValue );
-                    break;
-                case ComparisonType.LessThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            <= ageValue );
-                    break;
-                case ComparisonType.NotEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            != ageValue );
-                    break;
-            }
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, parameterExpression, "p" );
+            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
+            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
+
+            return result;
         }
 
         #endregion
