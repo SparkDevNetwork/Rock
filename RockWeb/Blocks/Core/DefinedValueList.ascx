@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DefinedValueList.ascx.cs" Inherits="RockWeb.Blocks.Core.DefinedValueList" %>
 
-<asp:UpdatePanel ID="upSettings" runat="server">
+<asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlContent" runat="server">
