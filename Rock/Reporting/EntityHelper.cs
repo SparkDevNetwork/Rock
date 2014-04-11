@@ -133,7 +133,20 @@ namespace Rock.Reporting
             // Get Attributes
             int entityTypeId = EntityTypeCache.Read( entityType ).Id;
             var rockContext = new RockContext();
-            foreach ( var attribute in new AttributeService( rockContext ).Get( entityTypeId, string.Empty, string.Empty ) )
+            var qryAttributes = new AttributeService( rockContext ).Queryable().Where(a=> a.EntityTypeId == entityTypeId);
+            if (entityType == typeof(Group))
+            {
+                // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
+                qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty || a.EntityTypeQualifierColumn == "GroupTypeId" );
+            }
+            else
+            {
+                qryAttributes = qryAttributes.Where( a=> a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty);
+            }
+            
+            var attributeList = qryAttributes.ToList();
+
+            foreach ( var attribute in attributeList )
             {
                 AddEntityFieldForAttribute( entityFields, AttributeCache.Read(attribute.Id) );
             }
@@ -220,6 +233,15 @@ namespace Rock.Reporting
 
             if ( entityProperty != null )
             {
+                if (attribute.EntityTypeId == EntityTypeCache.GetId(typeof(Group)) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
+                {
+                    var groupType = new GroupTypeService(new RockContext()).Get(attribute.EntityTypeQualifierValue.AsInteger() ?? 0);
+                    if ( groupType != null )
+                    {
+                        entityProperty.Title = string.Format( "{0} ({1})", attribute.Name.SplitCase(), groupType.Name );
+                    }
+                }
+                
                 entityFields.Add( entityProperty );
             }
         }
