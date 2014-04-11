@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DefinedTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.DefinedTypeDetail" %>
 
-<asp:UpdatePanel ID="upSettings" runat="server">
+<asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 

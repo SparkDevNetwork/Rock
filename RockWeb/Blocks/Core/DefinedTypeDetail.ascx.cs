@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -37,9 +38,25 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Defined Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given defined type." )]
+
+    [DefinedTypeField( "Defined Type", "If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", required: false, defaultValue: "" )]
     public partial class DefinedTypeDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+
+        #region Fields
+
+        // used for private variables
+        bool _isReadOnly = false;
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -48,6 +65,10 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlSettings );
 
             // assign attributes grid actions
             gDefinedTypeAttributes.DataKeyNames = new string[] { "Guid" };
@@ -67,15 +88,72 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "definedTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                int itemId = InitItemId();
+
+                if ( itemId != 0 )
                 {
-                    ShowDetail( "definedTypeId", int.Parse( itemId ) );
+                    ShowDetail( "definedTypeId", itemId );
                 }
                 else
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Determines which item to display based on either the configuration or the definedTypeId that was passed in.
+        /// </summary>
+        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/>.</returns>
+        private int InitItemId()
+        {
+            Guid definedTypeGuid;
+            int itemId = 0;
+
+            // A configured defined type takes precedence over any definedTypeId param value that is passed in.
+            if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
+            {
+                _isReadOnly = true;
+                // hide reorder, edit and delete
+                gDefinedTypeAttributes.Columns[0].Visible = false;
+                gDefinedTypeAttributes.Columns[2].Visible = false;
+                gDefinedTypeAttributes.Columns[3].Visible = false;
+                gDefinedTypeAttributes.Actions.ShowAdd = false;
+
+                itemId = DefinedTypeCache.Read( definedTypeGuid ).Id;
+            }
+            else
+            {
+                gDefinedTypeAttributes.Columns[0].Visible = true;
+                gDefinedTypeAttributes.Columns[2].Visible = true;
+                gDefinedTypeAttributes.Columns[3].Visible = true;
+                gDefinedTypeAttributes.Actions.ShowAdd = true;
+
+                itemId = PageParameter( "definedTypeId" ).AsInteger() ?? 0;
+            }
+            return itemId;
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            int itemId = InitItemId();
+
+            if ( itemId != 0 )
+            {
+                ShowDetail( "definedTypeId", itemId );
+            }
+            else
+            {
+                pnlDetails.Visible = false;
             }
         }
 
@@ -249,7 +327,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( _isReadOnly || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
