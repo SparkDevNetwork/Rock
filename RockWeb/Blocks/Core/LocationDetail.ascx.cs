@@ -399,7 +399,14 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
+                if ( string.IsNullOrWhiteSpace( location.Name ) )
+                {
+                    lReadOnlyTitle.Text = ("Unnamed Location").FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
+                }
             }
 
             SetEditMode( true );
@@ -451,7 +458,15 @@ namespace RockWeb.Blocks.Core
             SetEditMode( false );
 
             hfLocationId.SetValue( location.Id );
-            lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
+
+            if ( string.IsNullOrWhiteSpace( location.Name ) )
+            {
+                lReadOnlyTitle.Text = ("Unnamed Location").FormatAsHtmlTitle();
+            }
+            else
+            {
+                lReadOnlyTitle.Text = location.Name.FormatAsHtmlTitle();
+            }
 
             hlInactive.Visible = !location.IsActive;
             if ( location.LocationTypeValue != null )
