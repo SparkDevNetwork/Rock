@@ -677,6 +677,7 @@
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
+    <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
