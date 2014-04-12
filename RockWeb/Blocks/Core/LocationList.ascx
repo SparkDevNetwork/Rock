@@ -7,8 +7,10 @@
 
         <Rock:GridFilter ID="rFilter" runat="server" >
             <Rock:RockTextBox ID="txtStreetAddress1" runat="server" Label="Street Address Starts With" />
+            <Rock:RockTextBox ID="txtCity" runat="server" Label="City Starts With" />
+            <Rock:RockCheckBox ID="cbNotGeocoded" runat="server" Label="Not Geocoded" />
         </Rock:GridFilter>
-        <Rock:Grid ID="rGrid" runat="server" RowItemText="Tag" OnRowSelected="rGrid_Edit" TooltipField="Description">
+        <Rock:Grid ID="rGrid" runat="server" RowItemText="Location" OnRowSelected="rGrid_Edit" TooltipField="Description">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" Visible="false" />
                 <asp:BoundField DataField="Street1" HeaderText="Street Address" />

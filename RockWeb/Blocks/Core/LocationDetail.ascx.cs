@@ -211,6 +211,8 @@ namespace RockWeb.Blocks.Core
             }
             location.GeoFence = geopFence.SelectedValue;
 
+            location.IsGeoPointLocked = cbGeoPointLocked.Checked;
+
             location.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
 
@@ -282,6 +284,28 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnStandardize control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnStandardize_Click( object sender, EventArgs e )
+        {
+            int locationId = int.Parse( hfLocationId.Value );
+            
+            var rockContext = new RockContext();
+            var service = new LocationService( rockContext );
+            var location = service.Get(locationId );
+
+            service.Verify( location, true );
+
+            rockContext.SaveChanges();
+
+            locapAddress.SetValue( location );
+            geopPoint.SetValue( location.GeoPoint );
+
+            lStandardizationUpdate.Text = String.Format("<div class='alert alert-info'>Address standardization result was '{0}' and geocoding result was '{1}'.</div>", location.StandardizeAttemptedResult, location.GeocodeAttemptedResult);
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlLocationType control.
@@ -401,7 +425,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( string.IsNullOrWhiteSpace( location.Name ) )
                 {
-                    lReadOnlyTitle.Text = ("Unnamed Location").FormatAsHtmlTitle();
+                    lReadOnlyTitle.Text = location.ToString().FormatAsHtmlTitle();
                 }
                 else
                 {
@@ -416,6 +440,8 @@ namespace RockWeb.Blocks.Core
             locapAddress.SetValue( location );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
+
+            cbGeoPointLocked.Checked = location.IsGeoPointLocked ?? false;
 
             Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
@@ -461,7 +487,7 @@ namespace RockWeb.Blocks.Core
 
             if ( string.IsNullOrWhiteSpace( location.Name ) )
             {
-                lReadOnlyTitle.Text = ("Unnamed Location").FormatAsHtmlTitle();
+                lReadOnlyTitle.Text = location.ToString().FormatAsHtmlTitle();
             }
             else
             {
@@ -537,6 +563,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-
 }
 }
