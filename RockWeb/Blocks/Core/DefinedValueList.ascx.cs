@@ -58,13 +58,37 @@ namespace RockWeb.Blocks.Core
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlSettings );
 
-            InitForDefinedType();
+            int definedTypeId = InitForDefinedType();
+
+            _definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
+
+            if ( _definedType != null )
+            {
+                gDefinedValues.DataKeyNames = new string[] { "id" };
+                gDefinedValues.Actions.ShowAdd = true;
+                gDefinedValues.Actions.AddClick += gDefinedValues_Add;
+                gDefinedValues.GridRebind += gDefinedValues_GridRebind;
+                gDefinedValues.GridReorder += gDefinedValues_GridReorder;
+
+                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+                gDefinedValues.Actions.ShowAdd = canAddEditDelete;
+                gDefinedValues.IsDeleteEnabled = canAddEditDelete;
+
+                AddAttributeColumns();
+
+                var deleteField = new DeleteField();
+                gDefinedValues.Columns.Add( deleteField );
+                deleteField.Click += gDefinedValues_Delete;
+
+                modalValue.SaveClick += btnSaveValue_Click;
+                modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
+            }
         }
 
         /// <summary>
         /// Initialize items for the grid based on the configured or given defined type.
         /// </summary>
-        private void InitForDefinedType()
+        private int InitForDefinedType()
         {
             Guid definedTypeGuid;
             int definedTypeId = 0;
@@ -79,32 +103,7 @@ namespace RockWeb.Blocks.Core
                 definedTypeId = PageParameter( "definedTypeId" ).AsInteger() ?? 0;
             }
 
-            if ( definedTypeId != 0 )
-            {
-                _definedType = new DefinedTypeService( new RockContext() ).Get( definedTypeId );
-
-                if ( _definedType != null )
-                {
-                    gDefinedValues.DataKeyNames = new string[] { "id" };
-                    gDefinedValues.Actions.ShowAdd = true;
-                    gDefinedValues.Actions.AddClick += gDefinedValues_Add;
-                    gDefinedValues.GridRebind += gDefinedValues_GridRebind;
-                    gDefinedValues.GridReorder += gDefinedValues_GridReorder;
-
-                    bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-                    gDefinedValues.Actions.ShowAdd = canAddEditDelete;
-                    gDefinedValues.IsDeleteEnabled = canAddEditDelete;
-
-                    AddAttributeColumns();
-
-                    var deleteField = new DeleteField();
-                    gDefinedValues.Columns.Add( deleteField );
-                    deleteField.Click += gDefinedValues_Delete;
-
-                    modalValue.SaveClick += btnSaveValue_Click;
-                    modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
-                }
-            }
+            return definedTypeId;
         }
 
         /// <summary>
