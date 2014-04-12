@@ -77,6 +77,27 @@ INSERT INTO [dbo].[Attribute]
   INSERT INTO [PageRoute] ([IsSystem], [PageId], [Route], [Guid])
   VALUES
 	(1, @PageId, 'Communication', '61BAF008-56D1-4F61-8C42-9BB672580420')" );
+
+            // add location editor pages
+            AddPage( "7F1F4130-CB98-473B-9DE1-7A886D2283ED", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Location Editor", "", "47BFA50A-68D8-4841-849B-75AB3E5BCD6D", "fa fa-building-o" ); // Site:Rock RMS
+            AddPage( "47BFA50A-68D8-4841-849B-75AB3E5BCD6D", "195BCD57-1C10-4969-886F-7324B6287B75", "Location Detail", "", "1602C1CA-2EC7-4163-B0E1-1FE7306AC2B4", "" ); // Site:Rock RMS
+            UpdateBlockType( "Location List", "Block for viewing a list of locations.", "~/Blocks/Core/LocationList.ascx", "Core", "5144ED5B-89A9-4D77-B0E5-695070BE0C8E" );
+
+            // Add Block to Page: Location Editor, Site: Rock RMS
+            AddBlock( "47BFA50A-68D8-4841-849B-75AB3E5BCD6D", "", "5144ED5B-89A9-4D77-B0E5-695070BE0C8E", "Location List", "Main", "", "", 0, "843137AA-7CA3-41F0-8AC7-5CEDCA391BD5" );
+
+            // Add Block to Page: Location Detail, Site: Rock RMS
+            AddBlock( "1602C1CA-2EC7-4163-B0E1-1FE7306AC2B4", "", "08189564-1245-48F8-86CC-560F4DD48733", "Location Detail", "Main", "", "", 0, "15C9F680-4C46-4962-94B1-BD1FF1B8F831" );
+
+            // Attrib for BlockType: Location Detail:Map Style
+            AddBlockTypeAttribute( "08189564-1245-48F8-86CC-560F4DD48733", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Map Style", "MapStyle", "", "The map theme that should be used for styling the GeoPicker map.", 0, @"FDC5D6BA-A818-4A06-96B1-9EF31B4087AC", "3475B7C5-3B57-4617-A1CA-CBACF20E7463" );
+
+            // Attrib for BlockType: Location List:Detail Page
+            AddBlockTypeAttribute( "5144ED5B-89A9-4D77-B0E5-695070BE0C8E", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPage", "", "", 0, @"", "8AF2347F-BC7B-4C9E-BB5E-25A34D1238C6" );
+
+            // Attrib Value for Block:Location List, Attribute:Detail Page Page: Location Editor, Site: Rock RMS
+            AddBlockAttributeValue( "843137AA-7CA3-41F0-8AC7-5CEDCA391BD5", "8AF2347F-BC7B-4C9E-BB5E-25A34D1238C6", @"1602c1ca-2ec7-4163-b0e1-1fe7306ac2b4" );
+
         }
         
         /// <summary>
@@ -86,6 +107,21 @@ INSERT INTO [dbo].[Attribute]
         {
             Sql( @"DELETE FROM [Attribute] WHERE [Guid] = 'E9E82709-5506-4339-8F6A-C2259329A71F'" );
             Sql( @"DELETE FROM [PageRoute] WHERE [Guid] = '61BAF008-56D1-4F61-8C42-9BB672580420'" );
+
+            // Attrib for BlockType: Location List:Detail Page
+            DeleteAttribute( "8AF2347F-BC7B-4C9E-BB5E-25A34D1238C6" );
+            // Attrib for BlockType: Location Detail:Map Style
+            DeleteAttribute( "3475B7C5-3B57-4617-A1CA-CBACF20E7463" );
+
+            // Remove Block: Location Detail, from Page: Location Detail, Site: Rock RMS
+            DeleteBlock( "15C9F680-4C46-4962-94B1-BD1FF1B8F831" );
+            // Remove Block: Location List, from Page: Location Editor, Site: Rock RMS
+            DeleteBlock( "843137AA-7CA3-41F0-8AC7-5CEDCA391BD5" );
+
+            DeleteBlockType( "5144ED5B-89A9-4D77-B0E5-695070BE0C8E" ); // Location List
+
+            DeletePage( "1602C1CA-2EC7-4163-B0E1-1FE7306AC2B4" ); // Page: Location DetailLayout: Full Width Panel, Site: Rock RMS
+            DeletePage( "47BFA50A-68D8-4841-849B-75AB3E5BCD6D" ); // Page: Location EditorLayout: Full Width, Site: Rock RMS
         }
     }
 }
