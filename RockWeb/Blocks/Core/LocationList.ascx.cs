@@ -113,6 +113,18 @@ namespace RockWeb.Blocks.Core
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             
+            if ( e.Key != "Street Address" && e.Key != "City" && e.Key != "Not Geocoded" )
+            {
+                e.Value = string.Empty;
+            }
+
+            if ( e.Key == "Not Geocoded" )
+            {
+                if ( e.Value == "False" )
+                {
+                    e.Value = String.Empty;
+                }
+            }
         }
 
         /// <summary>
@@ -123,7 +135,8 @@ namespace RockWeb.Blocks.Core
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Street Address", txtStreetAddress1.Text );
-
+            rFilter.SaveUserPreference( "City", txtCity.Text );
+            rFilter.SaveUserPreference( "Not Geocoded", cbNotGeocoded.Checked.ToString() );
             BindGrid();
         }
 
@@ -136,9 +149,19 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindFilter()
         {
-            if ( string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Street Address" ) ) )
+            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Street Address" ) ) )
             {
                 txtStreetAddress1.Text = rFilter.GetUserPreference( "Street Address" );
+            }
+
+            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "City" ) ) )
+            {
+                txtCity.Text = rFilter.GetUserPreference( "City" );
+            }
+
+            if ( ! string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Not Geocoded" ) ) )
+            {
+                cbNotGeocoded.Checked = Convert.ToBoolean(rFilter.GetUserPreference( "Not Geocoded" ));
             }
         }
 
@@ -147,7 +170,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            //rGrid.Columns[0].Visible = true;
+            //rGrid.Columns[0].Visible = true
 
             var locations = GetLocations();
             if (locations != null)
@@ -164,6 +187,11 @@ namespace RockWeb.Blocks.Core
 
                 rGrid.DataBind();
             }
+            else
+            {
+                rGrid.DataSource = null;
+                rGrid.DataBind();
+            }
         }
 
         /// <summary>
@@ -172,18 +200,42 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private IQueryable<Location> GetLocations()
         {
-
+            int filterCount = 0;
+            var queryable = new Rock.Model.LocationService( new RockContext() ).Queryable()
+                                .Where( l => l.Street1 != null && l.Street1 != string.Empty );
 
             if ( !string.IsNullOrWhiteSpace(rFilter.GetUserPreference( "Street Address" )) )
             {
                 string streetAddress1 = rFilter.GetUserPreference( "Street Address" );
-                var queryable = new Rock.Model.LocationService( new RockContext() ).Queryable().
-                    Where( l => l.Street1.StartsWith( streetAddress1 ) );
-                return queryable;
-
+                queryable = queryable.Where( l => l.Street1.StartsWith( streetAddress1 ) );
+                filterCount++;
             }
 
-            return null;
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "City" ) ) )
+            {
+                string city = rFilter.GetUserPreference( "City" );
+                queryable = queryable.Where( l => l.City.StartsWith( city ) );
+                filterCount++;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( "Not Geocoded" ) ) )
+            {
+                bool notGeocoded = Convert.ToBoolean(rFilter.GetUserPreference( "Not Geocoded" ));
+                if ( notGeocoded )
+                {
+                    queryable = queryable.Where( l => l.GeoPoint == null );
+                    filterCount++;
+                }
+            }
+
+            if ( filterCount == 0 )
+            {
+                return null;
+            }
+            else
+            {
+                return queryable;
+            }
         }
 
         #endregion

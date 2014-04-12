@@ -35,10 +35,13 @@
                         <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
                         <Rock:LocationPicker ID="gpParentLocation" runat="server" Required="false" Label="Parent Location" AllowedPickerModes="Named" />
                         <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Standardize Address" CssClass="btn btn-action margin-b-md" />
+                        <asp:Literal ID="lStandardizationUpdate" runat="server" />
                     </div>
                     <div class="col-md-6">
                         <Rock:LocationAddressPicker ID="locapAddress" runat="server" Label="Address" />
                         <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
+                        <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Point Locked" Help="Locks the geocoding to keep the location from being re-geocoding in the future." />
                         <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
                     </div>
                 </div>
