@@ -48,9 +48,10 @@ namespace RockWeb.Blocks.Communication
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [ComponentsField( "Rock.Communication.ChannelContainer, Rock", "Channels", "The Channels that should be available to user to send through (If none are selected, all active channels will be available).", false, "", "", 0  )]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 1 )]
-    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 2  )]
-    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 3 )]
+    [CommunicationTemplateField("Default Template", "The default template to use for a new communication.  (Note: This will only be used if the template is for the same channel as the communication.)", false, "", "", 1)]
+    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 2 )]
+    [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 3  )]
+    [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 4 )]
     public partial class Communication : RockBlock
     {
         #region Properties
@@ -199,7 +200,6 @@ namespace RockWeb.Blocks.Communication
 
         protected override void OnPreRender( EventArgs e )
         {
-            GetChannelData();
             BindRecipients();
         }
 
@@ -240,16 +240,10 @@ namespace RockWeb.Blocks.Communication
 
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int? templateID = ddlTemplate.SelectedValue.AsInteger( false );
-            if (templateID.HasValue)
+            int? templateId = ddlTemplate.SelectedValue.AsInteger( false );
+            if ( templateId.HasValue )
             {
-                var template = new CommunicationTemplateService( new RockContext() ).Get( templateID.Value );
-                if (template != null)
-                {
-                    ChannelData = template.ChannelData;
-                    ChannelData.Add( "Subject", template.Subject );
-                    LoadChannelControl( true );
-                }
+                GetTemplateData( templateId.Value );
             }
         }
         
@@ -354,7 +348,7 @@ namespace RockWeb.Blocks.Communication
                                             {
                                                 textClass = "js-no-bulk-email";
                                                 var channelData = ChannelData;
-                                                if ( channelData.ContainsKey( "BulkEmail" ) && channelData["BulkEmail"].AsBoolean( true ) )
+                                                if ( cbBulk.Checked )
                                                 {
                                                     // This is a bulk email and user does not want bulk emails
                                                     textClass += " text-danger";
@@ -721,13 +715,14 @@ namespace RockWeb.Blocks.Communication
                 int? personId = PageParameter( "Person" ).AsInteger( false );
                 if (personId.HasValue)
                 {
+                    communication.IsBulkCommunication = false;
+
                     if ( !Recipients.Any( r => r.PersonId == personId.Value ) )
                     {
                         var person = new PersonService( new RockContext() ).Get( personId.Value );
                         if ( person != null )
                         {
                             communication.Recipients.Add( new CommunicationRecipient { Person = person } );
-                            communication.SetChannelDataValue( "BulkEmail", "false" );
                         }
                     }
                 }
@@ -759,6 +754,28 @@ namespace RockWeb.Blocks.Communication
 
             Recipients.Clear();
             communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person, r.Status, r.StatusNote, r.OpenedClient, r.OpenedDateTime ) ) );
+
+            if (communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace(GetAttributeValue("DefaultTemplate")))
+            {
+                var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "DefaultTemplate" ).AsGuid() );
+                if (template != null && template.ChannelEntityTypeId == ChannelEntityTypeId)
+                {
+                    foreach(ListItem item in ddlTemplate.Items)
+                    {
+                        if (item.Value == template.Id.ToString())
+                        {
+                            item.Selected = true;
+                            GetTemplateData( template.Id, false );
+                        }
+                        else
+                        {
+                            item.Selected = false;
+                        }
+                    }
+                }
+            }
+
+            cbBulk.Checked = communication.IsBulkCommunication;
 
             ChannelControl control = LoadChannelControl( true );
             if ( control != null && CurrentPerson != null )
@@ -930,6 +947,7 @@ namespace RockWeb.Blocks.Communication
             {
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
+                channelControl.IsTemplate = false;
                 channelControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
                 channelControl.ValidationGroup = btnSubmit.ValidationGroup;
                 phContent.Controls.Add( channelControl );
@@ -966,6 +984,39 @@ namespace RockWeb.Blocks.Communication
                     {
                         ChannelData.Add( dataItem.Key, dataItem.Value );
                     }
+                }
+            }
+        }
+
+        private void GetTemplateData(int templateId, bool loadControl = true)
+        {
+            var template = new CommunicationTemplateService( new RockContext() ).Get( templateId );
+            if ( template != null )
+            {
+                var channelData = template.ChannelData;
+                if ( !channelData.ContainsKey( "Subject" ) )
+                {
+                    channelData.Add( "Subject", template.Subject );
+                }
+
+                foreach ( var dataItem in channelData )
+                {
+                    if ( !string.IsNullOrWhiteSpace( dataItem.Value ) )
+                    {
+                        if ( ChannelData.ContainsKey( dataItem.Key ) )
+                        {
+                            ChannelData[dataItem.Key] = dataItem.Value;
+                        }
+                        else
+                        {
+                            ChannelData.Add( dataItem.Key, dataItem.Value );
+                        }
+                    }
+                }
+
+                if ( loadControl )
+                {
+                    LoadChannelControl( true );
                 }
             }
         }
@@ -1112,8 +1163,18 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            communication.IsBulkCommunication = cbBulk.Checked;
+
+            communication.ChannelData.Clear();
             GetChannelData();
-            communication.ChannelData = ChannelData;
+            foreach ( var keyVal in ChannelData )
+            {
+                if ( !string.IsNullOrEmpty( keyVal.Value ) )
+                {
+                    communication.ChannelData.Add( keyVal.Key, keyVal.Value );
+                }
+            }
+
             if ( communication.ChannelData.ContainsKey( "Subject" ) )
             {
                 communication.Subject = communication.ChannelData["Subject"];

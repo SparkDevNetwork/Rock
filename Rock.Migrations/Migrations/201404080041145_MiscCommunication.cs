@@ -48,7 +48,7 @@ namespace Rock.Migrations
 " );
 
             AddEntityAttribute( "Rock.Communication.Channel.Email", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "", "", "Unsubscribe HTML", "",
-    "The HTML to inject into email contents when the communication is a Bulk Email.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.",
+    "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.",
     2, @"
 <p style=''float: right;''>
     <small><a href=''{{ GlobalAttribute.PublicApplicationRoot }}Unsubscribe/{{ Person.PrimaryAlias.UrlEncodedKey }}''>Unsubscribe</a></small>

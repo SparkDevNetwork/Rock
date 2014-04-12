@@ -823,6 +823,10 @@
     <Compile Include="Migrations\201404120459167_AddResponseRecipient.Designer.cs">
       <DependentUpon>201404120459167_AddResponseRecipient.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404121456216_BulkCommunication.cs" />
+    <Compile Include="Migrations\201404121456216_BulkCommunication.Designer.cs">
+      <DependentUpon>201404121456216_BulkCommunication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1421,6 +1425,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404120459167_AddResponseRecipient.resx">
       <DependentUpon>201404120459167_AddResponseRecipient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404121456216_BulkCommunication.resx">
+      <DependentUpon>201404121456216_BulkCommunication.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

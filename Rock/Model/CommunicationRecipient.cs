@@ -198,6 +198,39 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
+        /// Helper method to get recipient merge values for sending communication.
+        /// </summary>
+        /// <param name="configValues">The config values.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> CommunicationMergeValues( Dictionary<string, object> globalConfigValues )
+        {
+            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+
+            globalConfigValues.ToList().ForEach( v => mergeValues.Add( v.Key, v.Value ) );
+
+            if ( this.Communication != null )
+            {
+                mergeValues.Add( "Communication", this.Communication );
+            }
+
+            if ( this.Person != null )
+            {
+                mergeValues.Add( "Person", this.Person );
+            }
+
+            // Add any additional merge fields created through a report
+            foreach ( var mergeField in this.AdditionalMergeValues )
+            {
+                if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                {
+                    mergeValues.Add( mergeField.Key, mergeField.Value );
+                }
+            }
+
+            return mergeValues;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
