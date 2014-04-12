@@ -93,7 +93,7 @@ namespace Rock.Communication.Transport
                                 if ( phoneNumber != null )
                                 {
                                     // Create merge field dictionary
-                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
+                                    var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
                                     string message = communication.GetChannelDataValue( "Message" );
                                     message = message.ResolveMergeFields( mergeObjects );
  

@@ -35,7 +35,12 @@
                     To: <asp:Literal ID="lNumRecipients" runat="server" />
                 </div> 
                     
-                <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="pull-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                <div class="pull-right">
+                    <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
+                    <Rock:RockCheckBox ID="cbBulk" runat="server" Text="Bulk Communication" CssClass="js-bulk-option"
+                        Help="Select this option if you are sending this email to a group of people.  This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." />
+                </div>
+
                 <asp:CustomValidator ID="valRecipients" runat="server" OnServerValidate="valRecipients_ServerValidate" Display="None" ErrorMessage="At least one recipient is required." />
                 
              </div>   

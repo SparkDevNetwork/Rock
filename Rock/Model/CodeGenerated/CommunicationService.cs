@@ -104,6 +104,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
+            target.IsBulkCommunication = source.IsBulkCommunication;
 
         }
     }

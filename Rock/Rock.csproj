@@ -159,6 +159,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
     <Compile Include="Attribute\DayOfWeekFieldAttribute.cs" />
+    <Compile Include="Attribute\CommunicationTemplateFieldAttribute .cs" />
     <Compile Include="Attribute\RemoteAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\DbContext.cs" />
+    <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\DaysOfWeekFieldType.cs" />
     <Compile Include="Field\Types\DayOfWeekFieldType.cs" />
     <Compile Include="Field\Types\RemoteAuthsFieldType.cs" />

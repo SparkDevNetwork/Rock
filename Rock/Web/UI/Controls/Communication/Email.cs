@@ -36,7 +36,6 @@ namespace Rock.Web.UI.Controls.Communication
         private RockTextBox tbFromAddress;
         private RockTextBox tbReplyToAddress;
         private RockTextBox tbSubject;
-        private RockCheckBox cbBulkEmail;
         private HtmlEditor htmlMessage;
         private RockTextBox tbTextMessage;
         private HiddenField hfAttachments;
@@ -62,7 +61,6 @@ namespace Rock.Web.UI.Controls.Communication
                 data.Add( "FromAddress", tbFromAddress.Text );
                 data.Add( "ReplyTo", tbReplyToAddress.Text );
                 data.Add( "Subject", tbSubject.Text );
-                data.Add( "BulkEmail", cbBulkEmail.Checked.ToString() );
                 data.Add( "HtmlMessage", htmlMessage.Text );
                 data.Add( "TextMessage", tbTextMessage.Text );
                 data.Add( "Attachments", hfAttachments.Value );
@@ -76,17 +74,6 @@ namespace Rock.Web.UI.Controls.Communication
                 tbFromAddress.Text = GetDataValue( value, "FromAddress" );
                 tbReplyToAddress.Text = GetDataValue( value, "ReplyTo" );
                 tbSubject.Text = GetDataValue( value, "Subject" ); ;
-
-                bool bulkMail = true;
-                if (bool.TryParse(GetDataValue(value, "BulkEmail"), out bulkMail))
-                {
-                    cbBulkEmail.Checked = bulkMail;
-                }
-                else
-                {
-                    cbBulkEmail.Checked = true;
-                }
-
                 htmlMessage.Text = GetDataValue( value, "HtmlMessage" );
                 tbTextMessage.Text = GetDataValue( value, "TextMessage" );
                 hfAttachments.Value = GetDataValue( value, "Attachments" );
@@ -139,13 +126,11 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName = new RockTextBox();
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
             tbFromName.Label = "From Name";
-            tbFromName.Required = true;
             Controls.Add( tbFromName );
 
             tbFromAddress = new RockTextBox();
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
             tbFromAddress.Label = "From Address";
-            tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
             tbReplyToAddress = new RockTextBox();
@@ -156,19 +141,11 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject = new RockTextBox();
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
             tbSubject.Label = "Subject";
-            tbSubject.Required = true;
             Controls.Add( tbSubject );
-
-            cbBulkEmail = new RockCheckBox();
-            cbBulkEmail.ID = string.Format( "cbBulkEmail_{0}", this.ID );
-            cbBulkEmail.Help = "Select this option if you are sending this email to a group of people.  This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed.";
-            cbBulkEmail.Label = "Bulk Email";
-            cbBulkEmail.Text = "Yes";
-            cbBulkEmail.CssClass = "js-bulk-option";
-            Controls.Add( cbBulkEmail );
 
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
+            htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.MergeFields.Clear();
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
@@ -244,6 +221,10 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            tbFromName.Required = !IsTemplate;
+            tbFromAddress.Required = !IsTemplate;
+            tbSubject.Required = !IsTemplate;
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -252,6 +233,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromName.RenderControl( writer );
             tbFromAddress.RenderControl( writer );
             tbReplyToAddress.RenderControl( writer );
+            tbSubject.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
@@ -292,22 +274,6 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderEndTag();  // ul
             writer.RenderEndTag();  // attachment div
 
-            writer.RenderEndTag();  // span6 div
-
-            writer.RenderEndTag();  // row div
-
-            // Subject and Bulk Mail option
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbSubject.RenderControl( writer );
-            writer.RenderEndTag();  // span6 div
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            cbBulkEmail.RenderControl( writer );
             writer.RenderEndTag();  // span6 div
 
             writer.RenderEndTag();  // row div
