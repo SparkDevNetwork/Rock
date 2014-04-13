@@ -309,6 +309,7 @@ namespace RockWeb.Blocks.Finance
                     groupLocation = new GroupLocation();
                     businessGroup.GroupLocations.Add( groupLocation );
                 }
+                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
 
                 var locationService = new LocationService( rockContext );
                 var location = groupLocation.Location;
@@ -383,7 +384,9 @@ namespace RockWeb.Blocks.Finance
 
         private void gContactList_GridRebind( object sender, EventArgs e )
         {
-            BindContactListGrid();
+            var rockContext = new RockContext();
+            var business = new PersonService( rockContext ).Get( int.Parse( hfBusinessId.Value ) );
+            BindContactListGrid( business );
         }
 
         private void gContactList_AddClick( object sender, EventArgs e )
@@ -405,16 +408,16 @@ namespace RockWeb.Blocks.Finance
         void mdAddContact_SaveClick( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
             var contactId = (int)ppContact.PersonId;
             if ( contactId > 0 )
             {
-                var personService = new PersonService( rockContext );
                 int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                     .Where( r =>
                         r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
-                var business = personService.Get( int.Parse( hfBusinessId.Value ) );
                 var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId ).FirstOrDefault();
                 if ( groupMember == null )
                 {
@@ -430,7 +433,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             mdAddContact.Hide();
-            BindContactListGrid();
+            BindContactListGrid( business );
         }
 
         #endregion Events
@@ -499,7 +502,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            BindContactListGrid();
+            BindContactListGrid( business );
         }
 
         private void ShowSummary( Person business )
@@ -552,8 +555,11 @@ namespace RockWeb.Blocks.Finance
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                ppOwner.PersonId = owner.PersonId;
-                ppOwner.PersonName = owner.Person.FullName;
+                if ( owner != null )
+                {
+                    ppOwner.PersonId = owner.PersonId;
+                    ppOwner.PersonName = owner.Person.FullName;
+                }
 
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
@@ -576,23 +582,30 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
-        private void BindContactListGrid()
+        private void BindContactListGrid( Person business )
         {
             // Load up that contact list.
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
-            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
             int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                 .Where( r =>
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
             // I want a list of people that are connected to this business/person by the business contact relationship
-            var contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
-            gContactList.DataSource = contactList;
-            gContactList.DataBind();
+            List<GroupMember> contactList = new List<GroupMember>();
+            if ( business.GivingGroup != null )
+            {
+                contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
+                gContactList.DataSource = contactList;
+                gContactList.DataBind();
+            }
+            else
+            {
+                gContactList.Visible = false;
+            }
         }
 
         #endregion Internal Methods
-}
+    }
 }
