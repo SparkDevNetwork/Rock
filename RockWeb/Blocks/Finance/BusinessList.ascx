@@ -39,6 +39,8 @@
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gBusinessList_Edit" />
                     <Rock:DeleteField OnClick="gBusinessList_Delete" />
+<%--<asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClientClick="Rock.dialogs.confirmDelete(event, 'schedule');" OnClick="btnDelete_Click" />--%>
+
                 </Columns>
             </Rock:Grid>
 
