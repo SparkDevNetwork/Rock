@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -413,7 +412,7 @@ namespace RockWeb.Blocks.Prayer
             lTitle.Text = prayerRequest.FullName.FormatAsHtmlTitle();
 
             //lPrayerText.Text = prayerRequest.Text.EncodeHtmlThenConvertCrLfToHtmlBr();
-            lPrayerText.Text = ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text );
+            lPrayerText.Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr();
             hlblCategory.Text = prayerRequest.Category.Name;
 
             // Show their answer if there is one on the request.
@@ -443,30 +442,5 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
-        #region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
-
-        /// <summary>
-        /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
-        /// </summary>
-        /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
-        /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
-        public static string ScrubHtmlAndConvertCrLfToBr( string str )
-        {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            // Note: \u00A7 is the section symbol
-
-            // First we convert newlines and carriage returns to a character that can
-            // pass through the Sanitizer.
-            str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
-
-            // Now we pass it to sanitizer and then convert those section-symbols to <br/>
-            return Sanitizer.GetSafeHtmlFragment( str ).ConvertCrLfToHtmlBr().Replace( "\u00A7", "<br/>" );
-        }
-
-        #endregion
     }
 }

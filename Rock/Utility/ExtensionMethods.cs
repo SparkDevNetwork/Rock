@@ -631,6 +631,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
+        /// </summary>
+        /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
+        /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
+        public static string ScrubHtmlAndConvertCrLfToBr( this string str )
+        {
+            if ( str == null )
+            {
+                return string.Empty;
+            }
+
+            // Note: \u00A7 is the section symbol
+
+            // First we convert newlines and carriage returns to a character that can
+            // pass through the Sanitizer.
+            str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
+
+            // Now we pass it to sanitizer and then convert those section-symbols to <br/>
+            return str.SanitizeHtml().Replace( "\u00A7", "<br/>" );
+        }
+
+        /// <summary>
         /// Returns true if the given string is a valid email address.
         /// </summary>
         /// <param name="email">The string to validate</param>
