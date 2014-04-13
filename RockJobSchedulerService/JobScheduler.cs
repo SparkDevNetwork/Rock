@@ -30,6 +30,7 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Data;
 
 namespace RockJobSchedulerService
 {
@@ -48,7 +49,7 @@ namespace RockJobSchedulerService
         {
             this.ServiceName = "Rock Job Scheduler Service";
             this.EventLog.Log = "Application";
-            
+
             InitializeComponent();
         }
 
@@ -71,15 +72,17 @@ namespace RockJobSchedulerService
                 // Write an eventlog about web.connectionstring.config not found
                 this.EventLog.WriteEntry( "Unable to find web.connectionstrings.config", EventLogEntryType.Error );
             }
-            
+
             ISchedulerFactory sf;
 
             // create scheduler
             sf = new StdSchedulerFactory();
             sched = sf.GetScheduler();
 
+            var rockContext = new RockContext();
+
             // get list of active jobs
-            ServiceJobService jobService = new ServiceJobService();
+            ServiceJobService jobService = new ServiceJobService( rockContext );
             foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
             {
                 try
@@ -102,7 +105,7 @@ namespace RockJobSchedulerService
                     job.LastStatusMessage = message;
                     job.LastStatus = "Error Loading Job";
 
-                    jobService.Save( job, null );
+                    rockContext.SaveChanges();
                 }
             }
 

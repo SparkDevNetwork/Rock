@@ -22,7 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
-
+using System.Text.RegularExpressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -152,7 +152,7 @@ namespace Rock.Communication.Transport
                             message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
 
                             // Create merge field dictionary
-                            var mergeObjects = MergeValues( globalConfigValues, recipient );
+                            var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
 
                             message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
 
@@ -286,7 +286,7 @@ namespace Rock.Communication.Transport
                         message.To.Clear();
                         message.To.Add( to );
                         message.Subject = subject.ResolveMergeFields( mergeObjects );
-                        message.Body = body.ResolveMergeFields( mergeObjects );
+                        message.Body = Regex.Replace( body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
                         smtpClient.Send( message );
                     }
                 }

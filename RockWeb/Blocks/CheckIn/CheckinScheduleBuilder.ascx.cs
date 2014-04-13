@@ -276,8 +276,10 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( groupTypeId != Rock.Constants.All.Id )
             {
-                // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent
-                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || a.Group.GroupType.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+                var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId ).Select( a => a.Id );
+
+                // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
+                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
             }
 
             if ( gGroupLocationSchedule.SortProperty != null )

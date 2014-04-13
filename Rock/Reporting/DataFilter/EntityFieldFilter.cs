@@ -56,11 +56,11 @@ namespace Rock.Reporting.DataFilter
                     parentControl.Controls.Add( ddlDateCompare );
                     controls.Add( ddlDateCompare );
 
-                    var dtPicker = new DatePicker();
-                    dtPicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
-                    dtPicker.AddCssClass( "js-filter-control" );
-                    parentControl.Controls.Add( dtPicker );
-                    controls.Add( dtPicker );
+                    var datePicker = new DatePicker();
+                    datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
+                    datePicker.AddCssClass( "js-filter-control" );
+                    parentControl.Controls.Add( datePicker );
+                    controls.Add( datePicker );
 
                     break;
 
@@ -206,7 +206,6 @@ namespace Rock.Reporting.DataFilter
                     controls.Add( tbText );
 
                     break;
-
             }
         }
 
@@ -272,7 +271,8 @@ namespace Rock.Reporting.DataFilter
                     }
                     else
                     {
-                        entityFieldResult = string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), values[2] );
+                        Field.IFieldType fieldType = FieldTypeCache.Read( entityField.FilterFieldType.AsGuid() ).Field;
+                        entityFieldResult = string.Format( "{0} {1} '{2}'", entityField.Title, comparisonType.ConvertToString(), fieldType.FormatValue(null, values[2], null, false) );
                     }
                 }
             }
@@ -353,7 +353,6 @@ namespace Rock.Reporting.DataFilter
                     case SystemGuid.FieldType.DATE:
                         clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
                         break;
-
 
                     case SystemGuid.FieldType.DECIMAL:
                     case SystemGuid.FieldType.INTEGER:
@@ -457,7 +456,7 @@ namespace Rock.Reporting.DataFilter
                         var dtp = control as TimePicker;
                         if ( dtp != null && dtp.SelectedTime.HasValue )
                         {
-                            values.Add( dtp.SelectedTime.Value.ToTimeString() );
+                            values.Add( dtp.SelectedTime.Value.ToString() );
                         }
                         else
                         {
@@ -514,50 +513,44 @@ namespace Rock.Reporting.DataFilter
                     {
                         if ( values.Count >= i + 1 )
                         {
+                            string selectedValue = values[i + 1];
                             Control control = groupedControls[selectedProperty][i];
-                            if ( control is WebControl )
+                            WebControl webControl = control as WebControl;
+                            if ( webControl != null )
                             {
-                                if ( ( control as WebControl ).CssClass.Contains( "js-filter-control" ) )
+                                if ( webControl.CssClass.Contains( "js-filter-control" ) )
                                 {
                                     if ( hideFilterControl )
                                     {
-                                        ( control as WebControl ).Style[HtmlTextWriterStyle.Display] = "none";
+                                        webControl.Style[HtmlTextWriterStyle.Display] = "none";
                                     }
                                 }
                             }
 
                             if ( control is DatePicker )
                             {
-                                var dt = DateTime.MinValue;
-                                if ( DateTime.TryParse( values[i + 1], out dt ) )
+                                var dateTime = selectedValue.AsDateTime();
+                                if ( dateTime.HasValue )
                                 {
-                                    ( (DatePicker)control ).SelectedDate = dt.Date;
+                                    ( control as DatePicker ).SelectedDate = dateTime.Value.Date;
                                 }
                             }
                             else if ( control is DateTimePicker )
                             {
-                                var dt = DateTime.MinValue;
-                                if ( DateTime.TryParse( values[i + 1], out dt ) )
-                                {
-                                    ( (DateTimePicker)control ).SelectedDateTime = dt;
-                                }
+                                ( control as DateTimePicker ).SelectedDateTime = selectedValue.AsDateTime();
                             }
                             else if ( control is TimePicker )
                             {
-                                var dt = DateTime.MinValue;
-                                if ( DateTime.TryParse( values[i + 1], out dt ) )
-                                {
-                                    ( (TimePicker)control ).SelectedTime = dt.TimeOfDay;
-                                }
+                                ( control as TimePicker ).SelectedTime = selectedValue.AsTimeSpan();
                             }
                             else if ( control is TextBox )
                             {
-                                ( (TextBox)control ).Text = values[i + 1];
+                                ( control as TextBox ).Text = selectedValue;
                             }
                             else if ( control is DropDownList )
                             {
                                 DropDownList ddlControl = control as DropDownList;
-                                ddlControl.SelectedValue = values[i + 1];
+                                ddlControl.SelectedValue = selectedValue;
 
                                 if ( ddlControl.CssClass.Contains( "js-filter-compare" ) )
                                 {
@@ -568,10 +561,10 @@ namespace Rock.Reporting.DataFilter
                             else if ( control is CheckBoxList )
                             {
                                 CheckBoxList cbl = (CheckBoxList)control;
-                                List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[i + 1] );
-                                foreach ( string selectedValue in selectedValues )
+                                List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( selectedValue );
+                                foreach ( string val in selectedValues )
                                 {
-                                    ListItem li = cbl.Items.FindByValue( selectedValue );
+                                    ListItem li = cbl.Items.FindByValue( val );
                                     if ( li != null )
                                     {
                                         li.Selected = true;
@@ -679,8 +672,7 @@ namespace Rock.Reporting.DataFilter
                     }
 
                     break;
-
-                case SystemGuid.FieldType.DAY_OF_WEEK:
+                
                 case SystemGuid.FieldType.DECIMAL:
                 case SystemGuid.FieldType.INTEGER:
 
@@ -750,6 +742,7 @@ namespace Rock.Reporting.DataFilter
 
                     break;
 
+                case SystemGuid.FieldType.DAY_OF_WEEK:
                 case SystemGuid.FieldType.SINGLE_SELECT:
 
                     if ( values.Count == 1 )

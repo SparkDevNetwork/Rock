@@ -357,6 +357,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets any additional configuration settings for the CKEditor.  Should be in SettingName: SettingValue, ... format.  
+        /// For example: autoParagrapth: false, enterMode: 3,
+        /// </summary>
+        /// <value>
+        /// The additional configurations.
+        /// </value>
+        public string AdditionalConfigurations
+        {
+            get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
+            set { ViewState["AdditionalConfigurations"] = value; }
+        }
+
         #endregion
 
         /// <summary>
@@ -451,6 +464,7 @@ if (CKEDITOR.instances.{0}) {{
 }}
   
 CKEDITOR.replace('{0}', {{ 
+    {11}
     allowedContent: true,
     toolbar: toolbar_RockCustomConfig{1},
     removeButtons: '',
@@ -534,13 +548,25 @@ CKEDITOR.replace('{0}', {{
                 }
             }
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
-                this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
-                Rock.Security.Encryption.EncryptString( documentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
-                Rock.Security.Encryption.EncryptString( imageFolderRoot ),
-                imageFileTypeWhiteList,
-                fileTypeBlackList,
-                this.MergeFields.AsDelimited( "," ) );
+            // Make sure that if additional configurations are defined, that the string ends in a comma.
+            if (!string.IsNullOrWhiteSpace(this.AdditionalConfigurations) && !this.AdditionalConfigurations.Trim().EndsWith(","))
+            {
+                this.AdditionalConfigurations = this.AdditionalConfigurations.Trim() + ",";
+            }
+
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, 
+                this.ClientID,                                                  // {0}
+                this.Toolbar.ConvertToString(),                                 // {1}
+                this.Height,                                                    // {2}
+                this.ResizeMaxWidth ?? 0,                                       // {3}
+                customOnChangeScript,                                           // {4}
+                enabledPlugins.AsDelimited( "," ),                              // {5}
+                Rock.Security.Encryption.EncryptString( documentFolderRoot ),   // {6} encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( imageFolderRoot ),      // {7}
+                imageFileTypeWhiteList,                                         // {8}
+                fileTypeBlackList,                                              // {9}
+                this.MergeFields.AsDelimited( "," ),                            // {10}
+                this.AdditionalConfigurations );                                // {11}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

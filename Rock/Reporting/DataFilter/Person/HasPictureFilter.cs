@@ -35,7 +35,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -71,7 +70,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Has Picture";
@@ -99,9 +98,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
+            bool hasPicture = selection.AsBoolean();
 
             if ( hasPicture )
             {
