@@ -437,7 +437,7 @@ namespace Rock.Web.UI
 
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
-            _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );

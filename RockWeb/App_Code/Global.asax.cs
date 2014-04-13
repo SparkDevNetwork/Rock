@@ -690,21 +690,21 @@ namespace RockWeb
 
         private void Error66(Exception ex)
         {
-            if ( Session != null )
+            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
                 catch ( HttpException ) { }
-            }
 
-            if ( Server != null )
-            {
-                Server.ClearError();
-            }
+                if ( HttpContext.Current.Server != null )
+                {
+                    HttpContext.Current.Server.ClearError();
+                }
 
-            if ( Response != null )
-            {
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                if ( HttpContext.Current.Response != null )
+                {
+                    HttpContext.Current.Response.Clear();
+                    HttpContext.Current.Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                }
             }
         }
 

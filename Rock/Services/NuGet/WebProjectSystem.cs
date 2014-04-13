@@ -279,5 +279,21 @@ namespace Rock.Services.NuGet
             return isSuccess;
         }
 
+
+
+        public void AddImport( string targetFullPath, ProjectImportLocation location )
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool FileExistsInProject( string path )
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveImport( string targetFullPath )
+        {
+            throw new NotImplementedException();
+        }
     }
 }
