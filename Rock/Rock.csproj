@@ -159,6 +159,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
     <Compile Include="Attribute\DayOfWeekFieldAttribute.cs" />
+    <Compile Include="Attribute\CommunicationTemplateFieldAttribute .cs" />
     <Compile Include="Attribute\RemoteAuthsFieldAttribute.cs" />
     <Compile Include="Attribute\SiteFieldAttribute.cs" />
     <Compile Include="Attribute\PersonBadgesAttribute.cs" />
@@ -207,6 +208,7 @@
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\DbContext.cs" />
+    <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\DaysOfWeekFieldType.cs" />
     <Compile Include="Field\Types\DayOfWeekFieldType.cs" />
     <Compile Include="Field\Types\RemoteAuthsFieldType.cs" />
@@ -273,6 +275,7 @@
     <Compile Include="PersonProfile\Badge\FamilyWeeksAttendedInDuration.cs" />
     <Compile Include="PersonProfile\Badge\Liquid.cs" />
     <Compile Include="Reporting\DataFilter\Group\DistanceFromFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Group\SimpleMemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\MemberCountFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\CampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\GroupTypeFilter.cs" />
@@ -569,7 +572,6 @@
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\CodeEditor.cs" />
-    <Compile Include="Web\UI\Controls\AutoCompleteDropDown.cs" />
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
@@ -677,6 +679,7 @@
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
+    <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />

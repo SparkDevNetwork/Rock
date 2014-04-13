@@ -57,6 +57,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
+        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
+        /// </summary>
+        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> to retrieve descendants for.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.</returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId )
+        {
+            return this.ExecuteQuery(
+                @"
+                WITH CTE AS (
+		            SELECT [GroupTypeId],[ChildGroupTypeId] FROM [GroupTypeAssociation] WHERE [GroupTypeId] = {0}
+		            UNION ALL
+		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
+		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                 )
+                SELECT *
+                FROM [GroupType]
+                WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
+                ", parentGroupTypeId );
+        }
+
+        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>

@@ -350,6 +350,11 @@ namespace Rock
         }
 
         /// <summary>
+        /// The true strings for AsBoolean and AsBooleanOrNull
+        /// </summary>
+        private static string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
+
+        /// <summary>
         /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive)
         /// </summary>
         /// <param name="str">The string.</param>
@@ -357,11 +362,26 @@ namespace Rock
         /// <returns></returns>
         public static bool AsBoolean( this string str, bool resultIfNullOrEmpty = false )
         {
+            if ( string.IsNullOrWhiteSpace( str ) )
+            {
+                return resultIfNullOrEmpty;
+            }
+
+            return trueStrings.Contains( str.ToLower() );
+        }
+
+        /// <summary>
+        /// Returns True for 'True', 'Yes', 'T', 'Y', '1' (case-insensitive), null for emptystring/null
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static bool? AsBooleanOrNull( this string str )
+        {
             string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
 
             if ( string.IsNullOrWhiteSpace( str ) )
             {
-                return resultIfNullOrEmpty;
+                return null;
             }
 
             return trueStrings.Contains( str.ToLower() );

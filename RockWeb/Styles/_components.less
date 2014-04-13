@@ -455,13 +455,32 @@ ul.rocktree ul {
 
     .navbar-collapse {
         padding: 0;
+
+        &.in {
+            overflow-y: inherit;
+        }
     }
 
     .nav.nav-pills {
         margin: 10px 0;
         padding: 0 15px;
+
+        li {
+            float: none;
+        }
     }
 }
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .nav.nav-pagelist {
+        .nav.nav-pills {
+            li {
+                float: left;
+            }
+        }
+    }
+}
+
 
 // 8. Tags
 // ------------------------
