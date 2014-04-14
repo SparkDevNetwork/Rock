@@ -721,9 +721,19 @@ namespace Rock.Web.UI
         /// <returns>
         /// A <see cref="System.String" /> that represents the resolved Url.
         /// </returns>
-        public string ResolveRockUrl( string url, bool includeRoot = false )
+        public string ResolveRockUrl( string url)
         {
-            return RockPage.ResolveRockUrl( url, includeRoot );
+            return RockPage.ResolveRockUrl( url );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL and includes root.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrlIncludeRoot( string url )
+        {
+            return RockPage.ResolveRockUrlIncludeRoot ( url );
         }
 
         /// <summary>
