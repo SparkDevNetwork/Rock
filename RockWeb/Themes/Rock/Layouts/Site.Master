@@ -80,10 +80,9 @@
 
                 </div>
 
-                <div class="pull-right header-zone">
-                    <Rock:Zone Name="Header" runat="server" />
-                    <Rock:Zone Name="Login" runat="server" />
-                </div>
+                <Rock:Zone Name="Login" runat="server" />
+
+                <Rock:Zone Name="Header" runat="server" />
 
             </div>
 
