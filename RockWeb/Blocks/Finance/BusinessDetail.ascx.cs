@@ -103,6 +103,11 @@ namespace RockWeb.Blocks.Finance
                     pnlDetails.Visible = false;
                 }
             }
+
+            if ( !string.IsNullOrWhiteSpace( hfModalOpen.Value ) )
+            {
+                mdAddContact.Show();
+            }
         }
 
         #endregion Control Methods
@@ -330,26 +335,51 @@ namespace RockWeb.Blocks.Finance
                 // Set an Known Relationship of Owner between the Owner and the Business.
                 if ( ppOwner.PersonId != null )
                 {
-                    int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                        .Where( r =>
-                            r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                    if ( groupMember == null )
-                    {
-                        groupMember = new GroupMember();
-                        businessGroup.Members.Add( groupMember );
-                    }
+                    //int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    //    .Where( r =>
+                    //        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    //    .Select( r => r.Id )
+                    //    .FirstOrDefault();
+                    //groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+                    //if ( groupMember == null )
+                    //{
+                    //    groupMember = new GroupMember();
+                    //    businessGroup.Members.Add( groupMember );
+                    //}
 
-                    groupMember.Person = personService.Get( (int)ppOwner.PersonId );
-                    groupMember.GroupRoleId = (int)ownerRoleId;
-                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    rockContext.SaveChanges();
+                    //groupMember.Person = personService.Get( (int)ppOwner.PersonId );
+                    //groupMember.GroupRoleId = (int)ownerRoleId;
+                    //groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                    //rockContext.SaveChanges();
+                    SetOwner();
                 }
             } );
 
             NavigateToParentPage();
+        }
+
+        private void SetOwner()
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
+            var businessGroup = business.GivingGroup;
+            var groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+            if ( groupMember == null )
+            {
+                groupMember = new GroupMember();
+                businessGroup.Members.Add( groupMember );
+            }
+
+            groupMember.Person = personService.Get( (int)ppOwner.PersonId );
+            groupMember.GroupRoleId = (int)ownerRoleId;
+            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            rockContext.SaveChanges();
         }
 
         protected void lbCancel_Click( object sender, EventArgs e )
@@ -380,6 +410,22 @@ namespace RockWeb.Blocks.Finance
 
         protected void gContactList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
+            int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId && role.PersonId == e.RowKeyId ).FirstOrDefault();
+            if ( groupMember != null )
+            {
+                groupMemberService.Delete(groupMember);
+                rockContext.SaveChanges();
+            }
+            BindContactListGrid( business );
         }
 
         private void gContactList_GridRebind( object sender, EventArgs e )
@@ -394,15 +440,8 @@ namespace RockWeb.Blocks.Finance
             var contactId = 0;
             hfContactId.Value = contactId.ToString();
             ppContact.PersonId = 0;
+            hfModalOpen.Value = "Yes";
             mdAddContact.Show();
-        }
-
-        protected void gContactList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-        }
-
-        protected void gContactList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
         }
 
         void mdAddContact_SaveClick( object sender, EventArgs e )
@@ -433,6 +472,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             mdAddContact.Hide();
+            hfModalOpen.Value = "";
             BindContactListGrid( business );
         }
 
@@ -597,7 +637,12 @@ namespace RockWeb.Blocks.Finance
             if ( business.GivingGroup != null )
             {
                 contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
-                gContactList.DataSource = contactList;
+                List<Person> personList = new List<Person>();
+                foreach( var contact in contactList )
+                {
+                    personList.Add( contact.Person );
+                }
+                gContactList.DataSource = personList;
                 gContactList.DataBind();
             }
             else
