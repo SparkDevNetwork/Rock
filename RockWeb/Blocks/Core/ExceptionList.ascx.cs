@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Administraton
             }
 
 
-            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi" );
+            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi", false );
             RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
 

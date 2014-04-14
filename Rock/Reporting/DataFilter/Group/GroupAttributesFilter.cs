@@ -316,7 +316,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <summary>
         /// Gets the properties and attributes for the entity
         /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
         private List<EntityField> GetGroupAttributes( int? groupTypeId )
         {

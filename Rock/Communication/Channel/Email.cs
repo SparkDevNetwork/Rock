@@ -188,6 +188,13 @@ You can view an online version of this email here:
             base.Send( communication );
         }
 
+        /// <summary>
+        /// Processes the HTML body.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="globalAttributes">The global attributes.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
         public static string ProcessHtmlBody( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
             Dictionary<string, object> mergeObjects )
@@ -231,6 +238,13 @@ You can view an online version of this email here:
 
         }
 
+        /// <summary>
+        /// Processes the text body.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="globalAttributes">The global attributes.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
         public static string ProcessTextBody ( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
             Dictionary<string, object> mergeObjects )

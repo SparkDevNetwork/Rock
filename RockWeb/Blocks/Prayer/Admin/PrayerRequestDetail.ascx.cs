@@ -17,7 +17,6 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-using Microsoft.Security.Application;
 
 using Rock;
 using Rock.Attribute;
@@ -187,10 +186,10 @@ namespace RockWeb.Blocks.Prayer
             lActionTitle.Text = string.Format( "{0} Prayer Request", prayerRequest.FullName ).FormatAsHtmlTitle();
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "Name", Sanitizer.GetSafeHtmlFragment( prayerRequest.FullName ) );
+            descriptionList.Add( "Name", prayerRequest.FullName.SanitizeHtml() );
             descriptionList.Add( "Category", prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty );
-            descriptionList.Add( "Request", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text ) );
-            descriptionList.Add( "Answer", ScrubHtmlAndConvertCrLfToBr( prayerRequest.Answer ) );
+            descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
+            descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
             lMainDetails.Text = descriptionList.Html;
 
             ShowStatus( prayerRequest, this.CurrentPerson, hlblFlaggedMessageRO );
@@ -395,7 +394,7 @@ namespace RockWeb.Blocks.Prayer
 
         #endregion
 
-        #region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
+        #region Possible Extension Method 
 
         /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
@@ -416,7 +415,7 @@ namespace RockWeb.Blocks.Prayer
             str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
 
             // Now we pass it to sanitizer and then convert those section-symbols to <br/>
-            return Sanitizer.GetSafeHtmlFragment( str ).ConvertCrLfToHtmlBr().Replace( "\u00A7", "<br/>" );
+            return str.SanitizeHtml().Replace( "\u00A7", "<br/>" );
         }
 
         #endregion

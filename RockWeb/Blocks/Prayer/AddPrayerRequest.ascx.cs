@@ -22,7 +22,6 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -184,8 +183,8 @@ namespace RockWeb.Blocks.Prayer
 
             prayerRequest.CategoryId = categoryId;
             prayerRequest.RequestedByPersonId = CurrentPersonId;
-            prayerRequest.FirstName = Sanitizer.GetSafeHtmlFragment( dtbFirstName.Text.Trim() );
-            prayerRequest.LastName = Sanitizer.GetSafeHtmlFragment( dtbLastName.Text.Trim() );
+            prayerRequest.FirstName = dtbFirstName.Text.Trim().SanitizeHtml();
+            prayerRequest.LastName = dtbLastName.Text.Trim().SanitizeHtml();
             prayerRequest.Email = dtbEmail.Text.Trim();
             prayerRequest.Text = dtbRequest.Text.Trim();
             

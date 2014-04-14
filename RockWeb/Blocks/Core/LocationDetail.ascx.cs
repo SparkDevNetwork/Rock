@@ -192,7 +192,14 @@ namespace RockWeb.Blocks.Core
             location.Name = tbName.Text;
             location.IsActive = cbIsActive.Checked;
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
-            location.ParentLocation = gpParentLocation.Location; ;
+            if ( gpParentLocation != null )
+            {
+                location.ParentLocationId = gpParentLocation.Location.Id;
+            }
+            else
+            {
+                location.ParentLocationId = null;
+            }
 
             var addrLocation = locapAddress.Location;
             if ( addrLocation != null )
@@ -213,7 +220,7 @@ namespace RockWeb.Blocks.Core
 
             location.IsGeoPointLocked = cbGeoPointLocked.Checked;
 
-            location.LoadAttributes();
+            location.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributeEdits, location );
 
             if ( !Page.IsValid )
