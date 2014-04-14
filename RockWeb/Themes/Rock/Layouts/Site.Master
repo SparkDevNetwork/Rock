@@ -2,6 +2,18 @@
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
+<!--
+   _______       _____           _   ____         _______ _             _____ _                   
+ |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |                  
+    | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _  
+    | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | | 
+    | | (_) | | |__| | (_) | (_| | | |_) |  __/    | |  | | | |  __/ | |__| | | (_) | |  | |_| | 
+    |_|\___/   \_____|\___/ \__,_| |____/ \___|    |_|  |_| |_|\___|  \_____|_|\___/|_|   \__, | 
+                                                                                           __/ | 
+                                                                                          |___/ 
+-->
+
+
 <script runat="server">
 
     protected override void OnLoad( EventArgs e )
@@ -19,10 +31,10 @@
     <meta charset="utf-8">
     <title></title>
     
-    <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery.jpanelmenu.min.js") %>"></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery.jRespond.min.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jpanelmenu.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jRespond.min.js", true) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -30,18 +42,18 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css") %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
     <!-- Icons -->
-    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico") %>">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png") %>">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png") %>">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png") %>">
-    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png") %>">
+    <link rel="shortcut icon" href="<%# ResolveRockUrl("~/Assets/Icons/favicon.ico", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
     
 </head>
 <body>
@@ -61,7 +73,7 @@
 
                         <div class="navbar-brand">
                             <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
-                                <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                                <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="<%$ Fingerprint:~/Assets/Images/rock-logo.svg %>" CssClass="brandbar-logo" />
                             </asp:HyperLink>
                         </div>
                     

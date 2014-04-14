@@ -28,20 +28,24 @@ namespace Rock.Model
     public partial class PageViewService 
     {
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.PageView"/> entities by the Id of the <see cref="Rock.Model.Page"/>
+        /// Returns an enumerable collection of <see cref="Rock.Model.PageView" /> entities by the Id of the <see cref="Rock.Model.Page" />
         /// </summary>
-        /// <param name="PageId">An <see cref="System.Int32"/> representing the Id <see cref="Rock.Model.Page"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PageView"/> entities where the Id of the <see cref="Rock.Model.Page"/> matches the provided value.</returns>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.PageView" /> entities where the Id of the <see cref="Rock.Model.Page" /> matches the provided value.
+        /// </returns>
         public IEnumerable<PageView> GetByPageId( int? pageId )
         {
             return Queryable().Where( t => ( t.PageId != null && t.PageId == pageId ) || ( pageId == null && t.PageId == null ) );
         }
-        
+
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.PageView"/> entities by the Id of the Viewer <see cref="Rock.Model.Person"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.PageView" /> entities by the Id of the Viewer <see cref="Rock.Model.Person" />.
         /// </summary>
-        /// <param name="viewerPersonId">A <see cref="System.Int32"/> representing the Id of the Viewer <see cref="Rock.Model.Person"/></param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.PageView"/> entities where the Id of the viewer <see cref="Rock.Model.Person"/> matches the provided value.</returns>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.PageView" /> entities where the Id of the viewer <see cref="Rock.Model.Person" /> matches the provided value.
+        /// </returns>
         public IEnumerable<PageView> GetByPersonId( int? personId )
         {
             return Queryable().Where( t => ( t.PersonAlias != null && t.PersonAlias.PersonId == personId ) || ( personId == null && t.PersonAlias == null ) );

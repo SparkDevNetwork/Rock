@@ -235,6 +235,13 @@ namespace RockWeb
             // respond with File
             context.Response.ContentType = binaryFileMetaData.MimeType;
             context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+            if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+            {
+                // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
+                context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
+                context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
+            }
+
             context.Response.BinaryWrite( fileContent );
             context.Response.Flush();
         }

@@ -144,6 +144,8 @@ namespace Rock.Model
             
             // ignoring Person,RecordTypeValueId 
             
+            // ignoring Person,ReviewReasonValueId 
+            
             // ignoring Person,SuffixValueId 
             
             // ignoring Person,TitleValueId 
