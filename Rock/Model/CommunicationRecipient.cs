@@ -117,6 +117,15 @@ namespace Rock.Model
         public string UniqueMessageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the response code.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the response code.
+        /// </value>
+        [DataMember]
+        public string ResponseCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
