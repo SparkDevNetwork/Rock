@@ -69,8 +69,6 @@ namespace Rock.Workflow.Action.CheckIn
                                 mergeObjects.Add( "person", person );
                                 mergeObjects.Add( "groupType", groupType );
 
-                                string json = mergeObjects.LiquidHelpText();
-
                                 groupType.Labels = new List<CheckInLabel>();
 
                                 GetGroupTypeLabels( groupType.GroupType, groupType.Labels, labelFileTypeId, mergeObjects );
