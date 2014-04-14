@@ -222,17 +222,12 @@ namespace RockWeb.Blocks.Crm
 
             int skipCount = pageNumber * sessionCount;
 
-            string itemId = PageParameter( "PersonId" );
-            if ( !string.IsNullOrWhiteSpace( itemId ) )
+            var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
+            if (person != null)
             {
-                int personId = int.Parse( itemId );
-
                 if ( GetAttributeValue( "ShowHeader" ).AsBoolean() )
                 {
                     pnlHeader.Visible = true;
-                    PersonService personService = new PersonService( rockContext );
-                    var person = personService.Get( personId );
-
                     lPersonName.Text = person.FullName.FormatAsHtmlTitle() + " Page Views";
                 }
                 else
@@ -245,7 +240,7 @@ namespace RockWeb.Blocks.Crm
                 var pageViews = pageviewService.Queryable();
                 
                 var sessionInfo = pageviewService.Queryable()
-                    .Where( s => s.PersonAlias.PersonId == personId )
+                    .Where( s => s.PersonAlias.PersonId == person.Id )
                     .GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent })
                                 .Select( s => new WebSession
                                 {
@@ -288,7 +283,7 @@ namespace RockWeb.Blocks.Crm
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
                     queryStringNext.Add( "Page", (pageNumber + 1).ToString() );
-                    queryStringNext.Add( "PersonId", personId.ToString() );
+                    queryStringNext.Add( "Person", person.UrlEncodedKey );
                     if ( siteId != -1 )
                     {
                         queryStringNext.Add( "SiteId", siteId.ToString() );
@@ -319,7 +314,7 @@ namespace RockWeb.Blocks.Crm
                     hlPrev.Visible = hlPrev.Enabled = true;
                     Dictionary<string, string> queryStringPrev = new Dictionary<string, string>();
                     queryStringPrev.Add( "Page", (pageNumber - 1).ToString() );
-                    queryStringPrev.Add( "PersonId", personId.ToString() );
+                    queryStringPrev.Add( "Person", person.UrlEncodedKey );
                     if ( siteId != -1 )
                     {
                         queryStringPrev.Add( "SiteId", siteId.ToString() );
