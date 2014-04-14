@@ -717,7 +717,6 @@ namespace Rock.Web.UI
         /// a Url with '~~' to indicate a virtual path to Rock's current theme root folder
         /// </summary>
         /// <param name="url">A <see cref="System.String" /> representing the Url to resolve.</param>
-        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
         /// <returns>
         /// A <see cref="System.String" /> that represents the resolved Url.
         /// </returns>

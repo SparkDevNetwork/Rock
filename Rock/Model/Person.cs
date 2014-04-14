@@ -630,6 +630,12 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the review reason value.
+        /// </summary>
+        /// <value>
+        /// The review reason value.
+        /// </value>
         [DataMember]
         public virtual DefinedValue ReviewReasonValue { get; set; }
 

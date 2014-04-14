@@ -209,7 +209,7 @@ namespace Rock.Model
         /// <summary>
         /// Helper method to get recipient merge values for sending communication.
         /// </summary>
-        /// <param name="configValues">The config values.</param>
+        /// <param name="globalConfigValues">The global configuration values.</param>
         /// <returns></returns>
         public Dictionary<string, object> CommunicationMergeValues( Dictionary<string, object> globalConfigValues )
         {
