@@ -442,7 +442,7 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            // add Google Maps API
+            // add Google Maps API (doesn't like to be added during an async postback )
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
 
