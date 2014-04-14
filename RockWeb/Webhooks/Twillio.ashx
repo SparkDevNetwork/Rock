@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock;
 using Rock.Model;
+using Rock.Web.Cache;
 
 public class Twillio : IHttpHandler
-{
+{    
     private HttpRequest request;
     private HttpResponse response;
     private int transactionCount = 0;
@@ -27,33 +29,51 @@ public class Twillio : IHttpHandler
             return;
         }
 
-        switch ( request.Form["SmsStatus"] )
-        {
-            case "received":
-                MessageRecieved();
-                break;
-        }
-        
-        
-        response.Write( String.Format( "Success: Processed {0} transactions.", transactionCount.ToString() ) );
 
-        // must do this or Mandrill will not accept your webhook!
-        response.StatusCode = 200;
+        if ( request.Form["SmsStatus"] != null )
+        {
+            switch ( request.Form["SmsStatus"] )
+            {
+                case "received":
+                    MessageRecieved();
+                    break;
+            }
+
+            response.StatusCode = 200;
+        }
+        else
+        {
+            response.StatusCode = 500;
+        }
 
     }
 
     private void MessageRecieved()
     {
-        var rockContext = new Rock.Data.RockContext();
-        CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
-
-        string messageId = request.Form["MessageSid"];
+        string fromPhone = string.Empty;
+        string toPhone = string.Empty;
+        string body = string.Empty;
         
-        //var communicationRecipient = communicationRecipientService.Get( communicationRecipientGuid );
-         
+        if ( !string.IsNullOrEmpty( request.Form["To"] ) ) {
+            toPhone = request.Form["To"];
+        }
+        
+        if ( !string.IsNullOrEmpty( request.Form["From"] ) )
+        {
+            fromPhone = request.Form["From"];
+        }
+        
+        if ( !string.IsNullOrEmpty( request.Form["Body"] ) )
+        {
+            body = request.Form["Body"];
+        }
+        
+        if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
+        {
+            new Rock.Communication.Channel.Sms().ProcessResponse( toPhone, fromPhone, body );
+        }
     }
-    
-    
+
     public bool IsReusable
     {
         get
