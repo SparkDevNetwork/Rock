@@ -1490,7 +1490,7 @@ INSERT INTO [dbo].[Auth]
                 DELETE [Attribute] 
                 WHERE [EntityTypeId] = @EntityTypeId
                 AND [EntityTypeQualifierColumn] = 'EntityTypeId'
-                AND [EntityTypeQualifierValue] = CAST(@EntityTypeId as varchar)
+                AND [EntityTypeQualifierValue] = CAST(@PersonBadgeEntityTypeId as varchar)
                 AND [Key] = '{2}'
 
                 INSERT INTO [Attribute] (
