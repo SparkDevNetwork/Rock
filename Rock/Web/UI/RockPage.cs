@@ -864,7 +864,7 @@ namespace Rock.Web.UI
                     if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canAdministrateBlock ) )
                     {
                         // Add the page admin script
-                        AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
+                        AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
 
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
@@ -1103,20 +1103,22 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime.</param>
-        public void AddCSSLink( string href )
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddCSSLink( string href, bool fingerprint = true )
         {
-            RockPage.AddCSSLink( this, href );
+            RockPage.AddCSSLink( this, href, fingerprint );
         }
 
         /// <summary>
         /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
-        public void AddCSSLink( string href, string mediaType )
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String" /> representing the type of the media to use for the css link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddCSSLink( string href, string mediaType, bool fingerprint = true )
         {
-            RockPage.AddCSSLink( this, href, mediaType );
+            RockPage.AddCSSLink( this, href, mediaType, fingerprint );
         }
 
         /// <summary>
@@ -1140,10 +1142,11 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered.
         /// </summary>
-        /// <param name="path">A <see cref="System.String"/> representing the path to the script link.</param>
-        public void AddScriptLink(string path)
+        /// <param name="path">A <see cref="System.String" /> representing the path to the script link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddScriptLink(string path, bool fingerprint = true)
         {
-            RockPage.AddScriptLink( this, path );
+            RockPage.AddScriptLink( this, path, fingerprint );
         }
 
         /// <summary>
@@ -1696,20 +1699,22 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public static void AddCSSLink( Page page, string href )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddCSSLink( Page page, string href, bool fingerprint = true )
         {
-            AddCSSLink( page, href, string.Empty );
+            AddCSSLink( page, href, string.Empty, fingerprint );
         }
 
         /// <summary>
         /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
-        public static void AddCSSLink( Page page, string href, string mediaType )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String" /> representing the type of the media to use for the css link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddCSSLink( Page page, string href, string mediaType, bool fingerprint = true )
         {
             HtmlLink htmlLink = new HtmlLink();
 
@@ -1891,11 +1896,17 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="path">A <see cref="System.String"/> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
-        public static void AddScriptLink( Page page, string path )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="path">A <see cref="System.String" /> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
+
+            if (fingerprint)
+            {
+                path = Fingerprint.Tag( page.ResolveUrl(path) );
+            }
 
             if ( scriptManager != null && !scriptManager.Scripts.Any( s => s.Path == path ) )
             {
