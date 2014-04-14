@@ -136,7 +136,7 @@ namespace Rock.Communication.Channel
                         string responseCode = match.ToString();
 
                         var recipient = new CommunicationRecipientService( rockContext ).Queryable("Communication")
-                                            .Where( r => r.UniqueMessageId == responseCode )
+                                            .Where( r => r.ResponseCode == responseCode )
                                             .OrderByDescending(r => r.CreatedDateTime).FirstOrDefault();
 
                         if ( recipient != null )
@@ -152,12 +152,10 @@ namespace Rock.Communication.Channel
                 }
                 else // response from someone other than the channel recipient
                 {
-                    string messageId = GenerateMessageToken( rockContext );
+                    string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
                     CreateCommunication( fromPerson.Id, fromPerson.FullName, toPersonId, message, transportPhone, messageId, rockContext );
-                }
-                
-                
+                } 
             }
         }
 
@@ -189,7 +187,7 @@ namespace Rock.Communication.Channel
             var recipient = new Rock.Model.CommunicationRecipient();
             recipient.Status = CommunicationRecipientStatus.Pending;
             recipient.PersonId = toPersonId;
-            recipient.UniqueMessageId = responseCode;
+            recipient.ResponseCode = responseCode;
             communication.Recipients.Add( recipient );
 
             var communicationService = new Rock.Model.CommunicationService( rockContext );
@@ -208,7 +206,7 @@ namespace Rock.Communication.Channel
         /// </summary>
         /// <param name="rockContext">A context to use for database calls.</param>
         /// <returns>String token</returns>
-        private string GenerateMessageToken( Rock.Data.RockContext rockContext )
+        private string GenerateResponseCode( Rock.Data.RockContext rockContext )
         {
             bool isUnique = false;
             int randomNumber = -1;
@@ -225,7 +223,7 @@ namespace Rock.Communication.Channel
 
                     // check if token has been used recently
                     var communication = new CommunicationRecipientService( rockContext ).Queryable()
-                                            .Where( c => c.UniqueMessageId == "@" + randomNumber.ToString() && c.CreatedDateTime > tokenStartDate )
+                                            .Where( c => c.ResponseCode == "@" + randomNumber.ToString() && c.CreatedDateTime > tokenStartDate )
                                             .FirstOrDefault();
                     if ( communication == null )
                     {
