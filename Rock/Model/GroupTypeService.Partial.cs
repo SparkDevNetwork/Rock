@@ -21,7 +21,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data access/service class for <see cref="Rock.Model.GroupType"/> entity objects. This class extends <see cref="Rock.Data.Service"/>.
+    /// Data access/service class for <see cref="Rock.Model.GroupType"/> objects.
     /// </summary>
     public partial class GroupTypeService 
     {
@@ -60,8 +60,10 @@ namespace Rock.Model
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
         /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
         /// </summary>
-        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> to retrieve descendants for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.</returns>
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
         public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId )
         {
             return this.ExecuteQuery(

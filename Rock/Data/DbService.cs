@@ -20,6 +20,9 @@ using System.Data.SqlClient;
 
 namespace Rock.Data
 {
+    /// <summary>
+    ///  Helper class to provide native SQL methods 
+    /// </summary>
     public class DbService
     {
 

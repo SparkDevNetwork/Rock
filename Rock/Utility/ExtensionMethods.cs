@@ -1321,6 +1321,7 @@ namespace Rock
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
         /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
+        /// <param name="useDescriptionAsText">if set to <c>true</c> [use description as text].</param>
         public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false, bool useDescriptionAsText = false )
         {
             var ds = definedType.DefinedValues

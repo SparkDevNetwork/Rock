@@ -28,6 +28,14 @@ namespace Rock.Reporting.DataFilter.Group
     [ExportMetadata( "ComponentName", "Member Count" )]
     public class SimpleMemberCountFilter : MemberCountFilter
     {
+        /// <summary>
+        /// Gets the title.
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The title.
+        ///   </value>
         public override string GetTitle( Type entityType )
         {
             return "Member Count";

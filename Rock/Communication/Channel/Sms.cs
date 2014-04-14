@@ -163,18 +163,18 @@ namespace Rock.Communication.Channel
         /// Creates a new communication.
         /// </summary>
         /// <param name="fromPersonId">Person ID of the sender.</param>
-        /// <param name="fromName">The name of the sener.</param>
+        /// <param name="fromPersonName">Name of from person.</param>
         /// <param name="toPersonId">The Person ID of the recipient.</param>
         /// <param name="message">The message to send.</param>
+        /// <param name="transportPhone">The transport phone.</param>
         /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
         /// <param name="rockContext">A context to use for database calls.</param>
-        /// <returns></returns>
         private void CreateCommunication( int fromPersonId, string fromPersonName, int toPersonId, string message, string transportPhone, string responseCode, Rock.Data.RockContext rockContext )
         {
 
             // add communication for reply
             var communication = new Rock.Model.Communication();
-            communication.SetChannelDataValue( "BulkEmail", "false" );
+            communication.IsBulkCommunication = false;
             communication.Status = CommunicationStatus.Approved;
             communication.SenderPersonId = fromPersonId;
             communication.Subject = string.Format( "From: {0}", fromPersonName );

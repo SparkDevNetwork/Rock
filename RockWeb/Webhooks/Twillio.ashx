@@ -14,7 +14,6 @@ public class Twillio : IHttpHandler
 {    
     private HttpRequest request;
     private HttpResponse response;
-    private int transactionCount = 0;
 
     public void ProcessRequest( HttpContext context )
     {

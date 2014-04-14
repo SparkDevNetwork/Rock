@@ -7,6 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+#pragma warning disable
 
 namespace Rock.MelissaData.AddressCheck {
     
@@ -1334,3 +1335,5 @@ namespace Rock.MelissaData.AddressCheck {
         }
     }
 }
+
+#pragma warning restore
