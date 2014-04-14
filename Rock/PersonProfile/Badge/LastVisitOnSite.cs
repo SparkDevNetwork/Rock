@@ -60,7 +60,7 @@ namespace Rock.PersonProfile.Badge
             if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "PageViewDetails" ) ) )
             {
                 int pageId = Rock.Web.Cache.PageCache.Read( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
-                detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute(String.Format( "~/page/{0}?PersonId={1}&SiteId={2}", pageId, Person.Id, siteId ));
+                detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute(String.Format( "~/page/{0}?Person={1}&SiteId={2}", pageId, Person.UrlEncodedKey, siteId ));
             }
 
             writer.Write(String.Format("<div class='badge badge-lastvisitonsite badge-id-{0}' data-original-title=''>", badge.Id));
