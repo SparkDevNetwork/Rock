@@ -79,6 +79,16 @@ namespace Rock.Model
         public string Number { get; set; }
 
         /// <summary>
+        /// Gets or sets the formatted number. Note: value is recalculated on every add/modify of entity during context's default SaveChanges() method.
+        /// </summary>
+        /// <value>
+        /// The number formatted.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string NumberFormatted { get; set; }
+
+        /// <summary>
         /// Gets or sets the extension (if any) that would need to be dialed to contact the owner. 
         /// </summary>
         /// <value>
@@ -147,20 +157,6 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Returns a formatted version of the Number.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the formatted number.
-        /// </value>
-        [DataMember]
-        [NotMapped]
-        public virtual string NumberFormatted
-        {
-            get { return PhoneNumber.FormattedNumber( CountryCode, Number ); }
-            private set { }
-        }
-
-        /// <summary>
         /// Gets the number formatted with country code.
         /// </summary>
         /// <value>
@@ -177,6 +173,39 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Updates the formatted number prior to update.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state == System.Data.Entity.EntityState.Added || state == System.Data.Entity.EntityState.Modified )
+            {
+                NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> containing the Number and represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> containing the Number and represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( !IsUnlisted )
+            {
+                return FormattedNumber( CountryCode, Number );
+            }
+            else
+            {
+                return "Unlisted";
+            }
+        }
 
         /// <summary>
         /// Gets the defaults country code.
@@ -260,24 +289,6 @@ namespace Rock.Model
             return digitsOnly.Replace(number, "");
         }
         private static Regex digitsOnly = new Regex( @"[^\d]" );
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> containing the Number and represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> containing the Number and represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if ( !IsUnlisted )
-            {
-                return FormattedNumber( CountryCode, Number );
-            }
-            else
-            {
-                return "Unlisted";
-            }
-        }
 
         #endregion
 

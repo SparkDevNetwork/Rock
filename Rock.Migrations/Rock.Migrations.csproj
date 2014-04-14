@@ -839,6 +839,10 @@
     <Compile Include="Migrations\201404141715372_LastVisitToSiteBadge.Designer.cs">
       <DependentUpon>201404141715372_LastVisitToSiteBadge.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404142016079_FormattedPhone.cs" />
+    <Compile Include="Migrations\201404142016079_FormattedPhone.Designer.cs">
+      <DependentUpon>201404142016079_FormattedPhone.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1449,6 +1453,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404141715372_LastVisitToSiteBadge.resx">
       <DependentUpon>201404141715372_LastVisitToSiteBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404142016079_FormattedPhone.resx">
+      <DependentUpon>201404142016079_FormattedPhone.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

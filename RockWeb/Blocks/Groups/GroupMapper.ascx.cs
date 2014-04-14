@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             var dictPhoneNumber = new Dictionary<string, object>();
                             dictPhoneNumber.Add( "Name", p.NumberTypeValue.Name );
-                            dictPhoneNumber.Add( "Number", p.NumberFormatted );
+                            dictPhoneNumber.Add( "Number", p.ToString() );
                             phoneTypes.Add( dictPhoneNumber );
                         }
 

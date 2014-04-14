@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     History.EvaluateChange( changes,
                         string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                        phoneNumber.NumberFormatted, string.Empty );
+                        phoneNumber.ToString(), string.Empty );
 
                     person.PhoneNumbers.Remove( phoneNumber );
                     phoneNumberService.Delete( phoneNumber );
@@ -443,6 +443,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                    }
+                    else
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
                     }
 
                     phoneNumbers.Add( phoneNumber );
