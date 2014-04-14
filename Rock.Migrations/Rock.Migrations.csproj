@@ -831,6 +831,10 @@
     <Compile Include="Migrations\201404140531224_AddRecipientCode.Designer.cs">
       <DependentUpon>201404140531224_AddRecipientCode.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404141655095_LengthenActivityDetail.cs" />
+    <Compile Include="Migrations\201404141655095_LengthenActivityDetail.Designer.cs">
+      <DependentUpon>201404141655095_LengthenActivityDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1435,6 +1439,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404140531224_AddRecipientCode.resx">
       <DependentUpon>201404140531224_AddRecipientCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404141655095_LengthenActivityDetail.resx">
+      <DependentUpon>201404141655095_LengthenActivityDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
