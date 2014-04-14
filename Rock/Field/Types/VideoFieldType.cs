@@ -78,8 +78,8 @@ namespace Rock.Field.Types
         /// <param name="page">The page.</param>
         public static void AddLinks( Page page )
         {
-            Rock.Web.UI.RockPage.AddCSSLink( page, "http://vjs.zencdn.net/c/video-js.css" );
-            Rock.Web.UI.RockPage.AddScriptLink( page, "http://vjs.zencdn.net/c/video.js" );
+            Rock.Web.UI.RockPage.AddCSSLink( page, "http://vjs.zencdn.net/c/video-js.css", false );
+            Rock.Web.UI.RockPage.AddScriptLink( page, "http://vjs.zencdn.net/c/video.js", false );
         }
     }
 

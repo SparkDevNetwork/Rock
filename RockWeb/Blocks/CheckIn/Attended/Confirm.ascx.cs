@@ -75,8 +75,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js" );
-            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js" );
+            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js", false );
         }
 
         /// <summary>
