@@ -135,7 +135,7 @@
 
             <!-- this will be a grid labeled "Contacts". Which is really just a list of known relationships tied to the business. Just has to list the contact name. -->
             <br />
-            <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" OnRowDataBound="gContactList_RowDataBound" ShowConfirmDeleteDialog="false" OnRowSelected="gContactList_RowSelected">
+            <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" ShowConfirmDeleteDialog="false" >
                 <Columns>
                     <asp:BoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
                     <Rock:DeleteField OnClick="gContactList_Delete" />
@@ -145,6 +145,8 @@
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
                     <asp:HiddenField ID="hfContactId" runat="server" />
+                    <asp:HiddenField ID="hfModalOpen" runat="server" />
+                    <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact"/>
                     <div class="row col-md-12">
                         <Rock:PersonPicker ID="ppContact" runat="server" Label="Contact" Required="true" ValidationGroup="AddContact" />
                     </div>
