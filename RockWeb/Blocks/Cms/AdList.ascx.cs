@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Cms
                 debugInfo.Append("<pre>");
 
                 debugInfo.Append("<p /><strong>Ad Data</strong> (referenced as 'Ads.' in Liquid)<br>");
-                debugInfo.Append(data.ToJson() + "</pre>");
+                debugInfo.Append(data.LiquidHelpText() + "</pre>");
 
                 debugInfo.Append("</div>");
                 phContent.Controls.Add(new LiteralControl(debugInfo.ToString()));

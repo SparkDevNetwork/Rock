@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -112,10 +113,8 @@ namespace Rock.CheckIn
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Location", Location );
             dictionary.Add( "CurrentCount", CurrentCount );
-            dictionary.Add( "PreSelected", PreSelected );
-            dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "Schedules", Schedules );
+            dictionary.Add( "Schedules", Schedules.Where( s => s.Selected ).ToList() );
             return dictionary;
         }
     }

@@ -57,7 +57,7 @@ namespace Rock.PersonProfile.Badge
                             <pre id='badge-debug' class='collapse well badge-debug'>
                                 {0}
                             </pre>
-                        ", Person.ToLiquid( true ).ToJson() );
+                        ", mergeValues.LiquidHelpText() );
 
                     displayText += debugInfo;
                 }
