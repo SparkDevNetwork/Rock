@@ -528,6 +528,56 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the day of the week the person's birthday falls on for the current year.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the day of the week the person's birthday falls on for the current year.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string BirthdayDayOfWeek
+        {
+            get
+            {
+                string birthdayDayOfWeek = string.Empty;
+
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
+                }
+
+                return birthdayDayOfWeek;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the day of the week the person's birthday falls on for the current year as a shortened string (e.g. Wed.)
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the shortened day of the week the person's birthday falls on for the current year.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string BirthdayDayOfWeekShort
+        {
+            get
+            {
+                string birthdayDayOfWeek = string.Empty;
+
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
+                }
+
+                return birthdayDayOfWeek;
+            }
+            private set { }
+        }
+
+        /// <summary>
         /// Gets the URL of the person's photo.
         /// </summary>
         /// <value>
