@@ -30,11 +30,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
-                            
                         </div>
-
                         <div class="col-md-6">
-                            <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
                         </div>
                     </div>
 

@@ -184,10 +184,10 @@ namespace RockWeb.Blocks.Core
                 definedType = typeService.Get( definedTypeId );
             }
 
+            definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             definedType.Name = tbTypeName.Text;
             definedType.Category = tbTypeCategory.Text;
             definedType.Description = tbTypeDescription.Text;
-            definedType.FieldTypeId = int.Parse( ddlTypeFieldType.SelectedValue );
 
             if ( !definedType.IsValid )
             {
@@ -234,15 +234,11 @@ namespace RockWeb.Blocks.Core
             hfDefinedTypeId.SetValue( definedType.Id );
             tbTypeName.Text = definedType.Name;
 
-            /// TODO Should use FieldTypeCache instead of reading from db -DT
-            definedType.FieldType = definedType.FieldType ?? new FieldTypeService( new RockContext() ).Get( definedType.FieldTypeId ?? 0 );
-
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
             lDescription.Text = definedType.Description;
 
             lblMainDetails.Text = new DescriptionList()
                 .Add("Category", definedType.Category)
-                .Add("FieldType", definedType.FieldType.Name)
                 .Html;
 
             definedType.LoadAttributes();
@@ -268,7 +264,6 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
             tbTypeCategory.Text = definedType.Category;
             tbTypeDescription.Text = definedType.Description;
-            ddlTypeFieldType.SetValue( definedType.FieldTypeId );
         }
 
         /// <summary>
@@ -318,7 +313,6 @@ namespace RockWeb.Blocks.Core
             else
             {
                 definedType = new DefinedType { Id = 0 };
-                definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
 
             hfDefinedTypeId.SetValue( definedType.Id );
