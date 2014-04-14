@@ -1221,15 +1221,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns a resolved Rock URL.  Similar to <see cref="System.Web.UI.Control">System.Web.UI.Control's</see> <c>ResolveUrl</c> method except that you can prefix
+        /// Returns a resolved Rock URL.  Similar to 
+        /// <see cref="System.Web.UI.Control">System.Web.UI.Control's</see>
+        /// <c>ResolveUrl</c> method except that you can prefix
         /// a url with '~~' to indicate a virtual path to Rock's current theme root folder.
         /// </summary>
         /// <param name="url">A <see cref="System.String" /> representing the URL to resolve.</param>
-        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
         /// <returns>
         /// A <see cref="System.String" /> with the resolved URL.
         /// </returns>
-        public string ResolveRockUrl( string url, bool includeRoot = false )
+        public string ResolveRockUrl( string url )
         {
             string themeUrl = url;
             if ( url.StartsWith( "~~" ) )
@@ -1237,16 +1238,36 @@ namespace Rock.Web.UI
                 themeUrl = "~/Themes/" + _pageCache.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }
 
-            string virtualPath = ResolveUrl( themeUrl );
+            return ResolveUrl( themeUrl );
+        }
 
-            if (includeRoot)
+        /// <summary>
+        /// Resolves the rock URL and includes root.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrlIncludeRoot( string url )
+        {
+            string virtualPath = this.ResolveRockUrl( url );
+            return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url, bool fingerprint )
+        {
+            var resolvedUrl = this.ResolveRockUrl( url );
+
+            if ( fingerprint )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                resolvedUrl = Fingerprint.Tag( resolvedUrl );
             }
-            else
-            {
-                return virtualPath;
-            }
+
+            return resolvedUrl;
         }
 
         /// <summary>
