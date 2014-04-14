@@ -94,8 +94,6 @@ namespace Rock.CheckIn
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Schedule", Schedule );
             dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "PreSelected", PreSelected );
-            dictionary.Add( "Selected", Selected );
             return dictionary;
         }
 

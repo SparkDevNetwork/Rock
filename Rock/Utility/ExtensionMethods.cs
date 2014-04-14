@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 using Rock.Model;
 using System.Text;
 using Rock.Data;
+using System.Collections;
 
 namespace Rock
 {
@@ -98,6 +99,52 @@ namespace Rock
             }
             return String.Empty;
         }
+
+        /// <summary>
+        /// Liquidizes the children.
+        /// </summary>
+        /// <param name="liquidObject">The liquid object.</param>
+        /// <returns></returns>
+        public static object LiquidizeChildren( this object liquidObject )
+        {
+            if ( liquidObject is string)
+            {
+                return liquidObject;
+            }
+
+            if ( liquidObject is ILiquidizable )
+            {
+                return ( (ILiquidizable)liquidObject ).ToLiquid().LiquidizeChildren();
+            }
+
+            if ( liquidObject is IDictionary<string, object> )
+            {
+                var result = new Dictionary<string, object>();
+
+                foreach ( var keyValue in ( (IDictionary<string, object>)liquidObject ) )
+                {
+                    result.Add( keyValue.Key, keyValue.Value.LiquidizeChildren() );
+                }
+
+                return result;
+            }
+
+            if (liquidObject is IEnumerable)
+            {
+                var result = new List<object>();
+
+                foreach ( var value in ( (IEnumerable)liquidObject ) )
+                {
+                    result.Add( value.LiquidizeChildren() );
+                }
+
+                return result;
+
+            }
+
+            return liquidObject;
+        }
+
         #endregion
 
         #region Type Extensions
@@ -1819,6 +1866,20 @@ namespace Rock
         public static bool IsZero( this HiddenField hiddenField )
         {
             return hiddenField.Value.Equals( "0" );
+        }
+
+        #endregion
+
+        #region Dictionary<string, object> (liquid) extension methods
+
+        /// <summary>
+        /// Returns a Json representation of the merge fields available to Liquid.
+        /// </summary>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns></returns>
+        public static string LiquidHelpText(this Dictionary<string, object> mergeFields)
+        {
+            return mergeFields.LiquidizeChildren().ToJson();
         }
 
         #endregion
