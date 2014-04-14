@@ -531,18 +531,7 @@ namespace RockWeb.Blocks.Cms
                 tbContactEmail.Text = contactPerson.Email;
                 tbContactFullName.Text = contactPerson.FullName;
                 PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                if (phoneNumber != null)
-                {
-                    if (string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
-                    {
-                        tbContactPhoneNumber.Text = phoneNumber.NumberFormatted;
-                    }
-                    else
-                    {
-                        tbContactPhoneNumber.Text = phoneNumber.CountryCode + " " + phoneNumber.NumberFormatted;
-                    }
-                }
-                tbContactPhoneNumber.Text = string.Empty;
+                tbContactPhoneNumber.Text = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
             }
         }
 
