@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// A family option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInFamily : DotLiquid.ILiquidizable
+    public class CheckInFamily
     {
         /// <summary>
         /// Gets or sets the group.
@@ -96,20 +96,5 @@ namespace Rock.CheckIn
             }
         }
 
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public object ToLiquid()
-        {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Group", Group );
-            dictionary.Add( "Selected", Selected );
-            dictionary.Add( "People", People );
-            dictionary.Add( "Caption", Caption );
-            dictionary.Add( "SubCaption", SubCaption );
-            return dictionary;
-        }
     }
 }

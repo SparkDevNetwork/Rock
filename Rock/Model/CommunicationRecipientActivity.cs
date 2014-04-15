@@ -81,7 +81,7 @@ namespace Rock.Model
         /// The activity detail.
         /// </value>
         [DataMember]
-        [MaxLength(200)]
+        [MaxLength(2200)]
         public string ActivityDetail { get; set; }
 
         #endregion

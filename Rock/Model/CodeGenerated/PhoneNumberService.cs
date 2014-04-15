@@ -91,6 +91,7 @@ namespace Rock.Model
             target.PersonId = source.PersonId;
             target.CountryCode = source.CountryCode;
             target.Number = source.Number;
+            target.NumberFormatted = source.NumberFormatted;
             target.Extension = source.Extension;
             target.NumberTypeValueId = source.NumberTypeValueId;
             target.IsMessagingEnabled = source.IsMessagingEnabled;

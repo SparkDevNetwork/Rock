@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
 
                 // Write Name
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-lg js-key-value-input" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-md js-key-value-input" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
                 writer.AddAttribute( "placeholder", "Key" );
@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
 
         $('a.key-value-add').click(function (e) {{
             e.preventDefault();
-            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-lg js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
+            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
             if ( values != null )
             {
                 script.Append( @"<select class=""key-value-value form-control input-width-lg js-key-value-input""><option value=""""></option>" );

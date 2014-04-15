@@ -57,8 +57,8 @@ namespace Rock.Workflow.Action.CheckIn
                     .Select( f => f.Id)
                     .FirstOrDefault();
 
-                if ( labelFileTypeId != 0 )
-                {
+                //if ( labelFileTypeId != 0 )
+                //{
                     foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
@@ -131,7 +131,7 @@ namespace Rock.Workflow.Action.CheckIn
                             }
 
                         }
-                    }
+                    //}
                 }
 
                 return true;

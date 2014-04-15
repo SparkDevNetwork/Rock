@@ -28,19 +28,6 @@ namespace Rock.Model
     public partial class MetricService
     {
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Metric">Metrics</see> by the type flag.
-        /// </summary>
-        /// <param name="type">A <see cref="System.Boolean"/> that represents the type flag value to search by. <remarks>Type refers to 
-        ///  if multiple values are a part of the Metric. When <c>true</c> multiple values will be returned, otherwise <c>false</c></remarks>.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Metric">Metrics</see> with a specified Type value.
-        /// </returns>
-        public IOrderedQueryable<Metric> GetByType( bool? type )
-        {
-            return Queryable().Where( t => ( t.Type == type || ( type == null && t.Type == null ) ) ).OrderBy( t => t.Order );
-        }
-
-        /// <summary>
         /// Returns a <see cref="Rock.Model.Metric"/> by it's Id value.
         /// </summary>
         /// <param name="metricId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Metric"/> to search for/return.</param>
