@@ -122,7 +122,7 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<Metric>( Context ).Queryable().Any( a => a.CollectionFrequencyValueId == item.Id ) )
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.SourceValueTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;

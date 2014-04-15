@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
