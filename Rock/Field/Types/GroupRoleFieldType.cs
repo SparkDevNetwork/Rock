@@ -191,18 +191,21 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( value, out guid ) )
+            GroupRolePicker groupRolePicker = control as GroupRolePicker;
+            if ( groupRolePicker != null )
             {
-                GroupRolePicker groupRolePicker = control as GroupRolePicker;
-                if ( groupRolePicker != null )
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( value, out guid ) )
                 {
                     var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;
+                        return;
                     }
                 }
+
+                groupRolePicker.GroupRoleId = null;
             }
         }
     }

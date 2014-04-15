@@ -307,6 +307,7 @@ namespace Rock.Data
         /// The attributes.
         /// </value>
         [NotMapped]
+        [DataMember]
         public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
@@ -317,6 +318,7 @@ namespace Rock.Data
         /// The attribute values.
         /// </value>
         [NotMapped]
+        [DataMember]
         public virtual Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
