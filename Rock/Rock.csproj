@@ -233,16 +233,25 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationRecipientActivityService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\MetricService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
     <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\FinancialPersonBankAccountService.Partial.cs" />
     <Compile Include="Model\FinancialTransactionImage.cs" />
+    <Compile Include="Model\MetricCategory.cs" />
     <Compile Include="Model\Metaphone.cs" />
     <Compile Include="Model\CodeGenerated\FollowingService.cs" />
     <Compile Include="Model\Following.cs" />
     <Compile Include="Model\AuditDetail.cs" />
     <Compile Include="Model\CodeGenerated\PageViewService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
+    <Compile Include="Model\Metric.cs" />
+    <Compile Include="Model\MetricService.Partial.cs" />
+    <Compile Include="Model\MetricValue.cs" />
+    <Compile Include="Model\MetricValueService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />
@@ -532,9 +541,6 @@
     <Compile Include="Model\Device.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowTriggerService.cs" />
-    <Compile Include="Model\CodeGenerated\MetricService.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\Category.cs" />
     <Compile Include="Services\NuGet\PackageService.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
@@ -695,15 +701,10 @@
     <Compile Include="Model\CodeGenerated\ExceptionLogService.cs" />
     <Compile Include="Model\CodeGenerated\FieldTypeService.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
-    <Compile Include="Model\MetricService.Partial.cs" />
-    <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
-    <Compile Include="Model\Metric.cs" />
     <Compile Include="Model\DefinedTypeService.Partial.cs" />
     <Compile Include="Model\DefinedValueService.Partial.cs" />
     <Compile Include="Model\ExceptionLog.cs" />
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
-    <Compile Include="Model\MetricValueService.Partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
     <Compile Include="Model\CodeGenerated\ServiceLogService.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
