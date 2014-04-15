@@ -276,6 +276,13 @@ namespace Rock.Web.Cache
             {
                 return this.AttributeValues[key][0].Value;
             }
+
+            if (this.Attributes != null &&
+                this.Attributes.ContainsKey(key))
+            {
+                return this.Attributes[key].DefaultValue;
+            }
+
             return null;
         }
 
@@ -286,11 +293,10 @@ namespace Rock.Web.Cache
         /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+            string value = GetAttributeValue( key );
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+                return value.SplitDelimitedValues().ToList();
             }
 
             return new List<string>();
