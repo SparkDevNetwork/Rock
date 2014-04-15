@@ -88,11 +88,11 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                int itemId = InitItemId();
+                int? itemId = InitItemId();
 
-                if ( itemId != 0 )
+                if ( itemId != null )
                 {
-                    ShowDetail( "definedTypeId", itemId );
+                    ShowDetail( "definedTypeId", (int)itemId );
                 }
                 else
                 {
@@ -104,11 +104,11 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Determines which item to display based on either the configuration or the definedTypeId that was passed in.
         /// </summary>
-        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/>.</returns>
-        private int InitItemId()
+        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/> or null if it was not found.</returns>
+        private int? InitItemId()
         {
             Guid definedTypeGuid;
-            int itemId = 0;
+            int? itemId = null;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
@@ -121,6 +121,11 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Actions.ShowAdd = false;
 
                 itemId = DefinedTypeCache.Read( definedTypeGuid ).Id;
+                var definedType = DefinedTypeCache.Read( definedTypeGuid );
+                if ( definedType != null )
+                {
+                    itemId = definedType.Id;
+                }
             }
             else
             {
@@ -129,7 +134,7 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = true;
                 gDefinedTypeAttributes.Actions.ShowAdd = true;
 
-                itemId = PageParameter( "definedTypeId" ).AsInteger() ?? 0;
+                itemId = PageParameter( "definedTypeId" ).AsInteger() ?? null;
             }
             return itemId;
         }
@@ -145,11 +150,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            int itemId = InitItemId();
+            int? itemId = InitItemId();
 
-            if ( itemId != 0 )
+            if ( itemId != null )
             {
-                ShowDetail( "definedTypeId", itemId );
+                ShowDetail( "definedTypeId", (int)itemId );
             }
             else
             {
@@ -309,6 +314,12 @@ namespace RockWeb.Blocks.Core
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 definedType = new DefinedTypeService( new RockContext() ).Get( itemKeyValue );
+                // If bad data was passed in, return and show nothing.
+                if ( definedType == null )
+                {
+                    pnlDetails.Visible = false;
+                    return;
+                }
             }
             else
             {
