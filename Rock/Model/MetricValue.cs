@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -30,18 +31,45 @@ namespace Rock.Model
     [DataContract]
     public partial class MetricValue : Model<MetricValue>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets the type of the metric value.
         /// </summary>
         /// <value>
-        /// System.
+        /// The type of the metric value.
+        /// </value>
+        [DataMember]
+        public MetricValueType MetricValueType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the X axis value.
+        /// </summary>
+        /// <value>
+        /// The x value.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool IsSystem { get; set; }
+        public string XValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Y axis value.
+        /// </summary>
+        /// <value>
+        /// The y value.
+        /// </value>
+        [DataMember]
+        public decimal? YValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Order.
+        /// </summary>
+        /// <value>
+        /// Order.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the MetricId.
@@ -54,67 +82,43 @@ namespace Rock.Model
         public int MetricId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// Value.
-        /// </value>
-        [Required]
-        [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
-        public string Value { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the Description.
-        /// </summary>
-        /// <value>
-        /// Description.
+        /// The note.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the xValue.
-        /// </summary>
-        /// <value>
-        /// xValue.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public string xValue { get; set; }
-                
-        /// <summary>
-        /// Gets or sets the isDateBased flag.
-        /// </summary>
-        /// <value>
-        /// isDateBased.
-        /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public bool isDateBased { get; set; }
+        public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the Label.
+        /// Gets or sets the metric value date time.
         /// </summary>
         /// <value>
-        /// Label.
+        /// The metric value date time.
         /// </value>
         [DataMember]
-        public string Label { get; set; }
+        public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the campus identifier.
         /// </summary>
         /// <value>
-        /// Order.
+        /// The campus identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
+        [DataMember]
+        public int? CampusId { get; set; }
 
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the campus.
+        /// </summary>
+        /// <value>
+        /// The campus.
+        /// </value>
+        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the metric.
@@ -144,11 +148,10 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Value;
+            return this.XValue;
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -164,9 +167,29 @@ namespace Rock.Model
         public MetricValueConfiguration()
         {
             this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
         }
     }
-    
+
     #endregion
 
+    #region Enumerations
+
+    /// <summary>
+    /// The type of Metric Value that a Metric Value represents
+    /// </summary>
+    public enum MetricValueType
+    {
+        /// <summary>
+        /// Metric Value represents something that was measured (for example: Fundraising Total)
+        /// </summary>
+        Measure = 0,
+
+        /// <summary>
+        /// Metric Value represents a goal (for example: Fundraising Goal)
+        /// </summary>
+        Goal = 1
+    }
+
+    #endregion
 }

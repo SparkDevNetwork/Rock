@@ -121,11 +121,8 @@ namespace Rock.CheckIn
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Person", Person );
             dictionary.Add( "FamilyMember", FamilyMember );
-            dictionary.Add( "PreSelected", PreSelected );
-            dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
             dictionary.Add( "SecurityCode", SecurityCode );
-            dictionary.Add( "GroupTypes", GroupTypes );
             return dictionary;
         }
     }

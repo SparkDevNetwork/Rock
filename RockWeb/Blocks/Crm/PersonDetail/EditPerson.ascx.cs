@@ -114,6 +114,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 ", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
             ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
 
+            string smsScript = @"
+    $('.js-sms-number').click(function () {
+        if ($(this).is(':checked')) {
+            $('.js-sms-number').not($(this)).prop('checked', false);
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
+
         }
 
         /// <summary>
@@ -252,6 +261,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 var phoneNumberTypeIds = new List<int>();
 
+                bool smsSelected = false;
+
                 foreach ( RepeaterItem item in rContactInfo.Items )
                 {
                     HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
@@ -283,7 +294,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                 phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
                                 phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
-                                phoneNumber.IsMessagingEnabled = cbSms.Checked;
+
+                                // Only allow one number to have SMS selected
+                                if ( smsSelected )
+                                {
+                                    phoneNumber.IsMessagingEnabled = false;
+                                }
+                                else
+                                {
+                                    phoneNumber.IsMessagingEnabled = cbSms.Checked;
+                                    smsSelected = cbSms.Checked;
+                                }
+
                                 phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                 phoneNumberTypeIds.Add( phoneNumberTypeId );
 
@@ -303,7 +325,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     History.EvaluateChange( changes,
                         string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                        phoneNumber.NumberFormatted, string.Empty );
+                        phoneNumber.ToString(), string.Empty );
 
                     person.PhoneNumbers.Remove( phoneNumber );
                     phoneNumberService.Delete( phoneNumber );
@@ -443,6 +465,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                    }
+                    else
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
                     }
 
                     phoneNumbers.Add( phoneNumber );

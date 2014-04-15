@@ -755,7 +755,7 @@ namespace RockWeb.Blocks.Crm
                     var phoneNumber = person.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                     if ( phoneNumber != null )
                     {
-                        AddProperty( key, phoneType.Name, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted );
+                        AddProperty( key, phoneType.Name, person.Id, phoneNumber.Number, phoneNumber.ToString() );
                     }
                     else
                     {

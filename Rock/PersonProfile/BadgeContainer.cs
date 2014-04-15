@@ -48,6 +48,14 @@ namespace Rock.PersonProfile
         private BadgeContainer()
         {
             Refresh();
+        }
+
+        /// <summary>
+        /// Refreshes this instance.
+        /// </summary>
+        public override void Refresh()
+        {
+            base.Refresh();
 
             // Create any attributes that need to be created
             int personBadgeEntityTypeId = EntityTypeCache.Read( typeof( PersonBadge ) ).Id;
