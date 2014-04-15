@@ -148,6 +148,8 @@ namespace RockWeb.Blocks.Core
                 lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
             }
 
+            binaryFile.LoadAttributes( rockContext );
+
             // initialize the fileUploader BinaryFileId to whatever file we are editing/viewing
             fsFile.BinaryFileId = binaryFile.Id;
             
@@ -184,7 +186,6 @@ namespace RockWeb.Blocks.Core
             }
 
             phAttributes.Controls.Clear();
-            binaryFile.LoadAttributes();
 
             if ( readOnly )
             {
@@ -322,31 +323,45 @@ namespace RockWeb.Blocks.Core
                     binaryFile.BinaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
                 }
 
+                // load attributes, then get the attribute values from the UI
                 binaryFile.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
-                // Process uploaded file using an optional workflow
+                // Process uploaded file using an optional workflow (which will probably populate attribute values)
                 Guid workflowTypeGuid = Guid.NewGuid();
                 if ( Guid.TryParse( GetAttributeValue( "Workflow" ), out workflowTypeGuid ) )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    var workflowType = workflowTypeService.Get( workflowTypeGuid );
-                    if ( workflowType != null )
+                    try
                     {
-                        var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
+                        // temporarily set the binaryFile.Id to the uploaded binaryFile.Id so that workflow can do stuff with it
+                        binaryFile.Id = fsFile.BinaryFileId ?? 0;
 
-                        List<string> workflowErrors;
-                        if ( workflow.Process( binaryFile, out workflowErrors ) )
+                        // create a rockContext for the workflow so that it can save it's changes, without 
+                        var workflowRockContext = new RockContext();
+                        var workflowTypeService = new WorkflowTypeService( workflowRockContext );
+                        var workflowType = workflowTypeService.Get( workflowTypeGuid );
+                        if ( workflowType != null )
                         {
-                            binaryFile = binaryFileService.Get( binaryFile.Id );
+                            var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
 
-                            if ( workflowType.IsPersisted )
+                            List<string> workflowErrors;
+                            if ( workflow.Process( binaryFile, out workflowErrors ) )
                             {
-                                var workflowService = new Rock.Model.WorkflowService( rockContext );
-                                workflowService.Add( workflow );
-                                rockContext.SaveChanges();
+                                binaryFile = binaryFileService.Get( binaryFile.Id );
+
+                                if ( workflowType.IsPersisted )
+                                {
+                                    var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
+                                    workflowService.Add( workflow );
+                                    workflowRockContext.SaveChanges();
+                                }
                             }
                         }
+                    }
+                    finally
+                    {
+                        // set binaryFile.Id to original id again since the UploadedFile is a temporary binaryFile with a different id
+                        binaryFile.Id = hfBinaryFileId.ValueAsInt();
                     }
                 }
 
