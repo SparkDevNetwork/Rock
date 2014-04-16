@@ -382,6 +382,8 @@ namespace RockWeb.Blocks.Examples
             var xdoc = XDocument.Load( sampleXmlFile );
 
             RockContext rockContext = new RockContext();
+            rockContext.Configuration.AutoDetectChangesEnabled = false;
+
             var elemFamilies = xdoc.Element( "data" ).Element( "families" );
             var elemGroups = xdoc.Element( "data" ).Element( "groups" );
             var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
@@ -397,7 +399,8 @@ namespace RockWeb.Blocks.Examples
                 _stopwatch.Start();
                 DeleteExistingGroups( elemGroups, rockContext );
                 DeleteExistingFamilyData( elemFamilies, rockContext );
-                rockContext.SaveChanges( disablePrePostProcessing: true );
+                //rockContext.ChangeTracker.DetectChanges();
+                //rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
@@ -423,6 +426,7 @@ namespace RockWeb.Blocks.Examples
                 ts = _stopwatch.Elapsed;
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
 
+                rockContext.ChangeTracker.DetectChanges();
                 rockContext.SaveChanges( disablePrePostProcessing: true );
                 ts = _stopwatch.Elapsed;
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
@@ -600,6 +604,7 @@ namespace RockWeb.Blocks.Examples
 
                         var groupService = new GroupService( rockContext );
                         groupService.Add( knownRelationshipGroup );
+                        //rockContext.ChangeTracker.DetectChanges();
                         rockContext.SaveChanges( disablePrePostProcessing: true );
 
                         knownRelationshipGroup = groupService.Get( knownRelationshipGroup.Id );
@@ -683,6 +688,7 @@ namespace RockWeb.Blocks.Examples
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
                 _stopwatch.Start();
             }
+            rockContext.ChangeTracker.DetectChanges();
             rockContext.SaveChanges( disablePrePostProcessing: true );
 
             // Now save each person's attributevalues (who had them defined in the XML)
@@ -949,14 +955,17 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         // Save these changes so the CanDelete passes the check...
+                        //rockContext.ChangeTracker.DetectChanges();
                         rockContext.SaveChanges( disablePrePostProcessing: true );
 
                         if ( personService.CanDelete( person, out errorMessage ) )
                         {
                             personService.Delete( person );
-                            rockContext.SaveChanges( disablePrePostProcessing: true );
+                            //rockContext.ChangeTracker.DetectChanges();
+                            //rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
                     }
+                    //rockContext.ChangeTracker.DetectChanges();
                     rockContext.SaveChanges( disablePrePostProcessing: true );
 
                     // delete all member photos
