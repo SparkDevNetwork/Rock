@@ -312,7 +312,9 @@ namespace Rock.Data
 
             foreach ( var propInfo in entityType.GetProperties() )
             {
-                if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
+                if ( propInfo.Name != "Attributes" &&
+                    propInfo.Name != "AttributeValues" &&
+                    propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
                     if ( debug && propValue is DotLiquid.ILiquidizable )
