@@ -25,7 +25,7 @@ namespace Rock.Model
 {
     [Table( "MetricCategory" )]
     [DataContract]
-    public class MetricCategory: IOrdered
+    public class MetricCategory : Entity<MetricCategory>, IOrdered, ICategorized
     {
         /// <summary>
         /// Gets or sets the metric identifier.
@@ -33,8 +33,8 @@ namespace Rock.Model
         /// <value>
         /// The metric identifier.
         /// </value>
-        [Column(Order=0)]
         [DataMember]
+        [Index( "IX_MetricCategory", 0 )]
         public int MetricId { get; set; }
 
         /// <summary>
@@ -43,8 +43,8 @@ namespace Rock.Model
         /// <value>
         /// The category identifier.
         /// </value>
-        [Column( Order = 1 )]
         [DataMember]
+        [Index( "IX_MetricCategory", 1 )]
         public int CategoryId { get; set; }
 
         /// <summary>
@@ -73,15 +73,144 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass 
+        { 
+            get
+            {
+                return this.Metric.IconCssClass;
+            }
+        }
+
+        #region ICategorized
+        
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get 
+            { 
+                return Metric.Title; 
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the category id.
+        /// </summary>
+        /// <value>
+        /// The category id.
+        /// </value>
+        int? ICategorized.CategoryId
+        {
+            get 
+            { 
+                return this.CategoryId; 
+            }
+        }
+
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
+        public Security.ISecured ParentAuthority
+        {
+            get 
+            { 
+                return this.Metric.ParentAuthority; 
+            }
+        }
+
+        /// <summary>
+        /// A dictionary of actions that this class supports and the description of each.
+        /// </summary>
+        public System.Collections.Generic.Dictionary<string, string> SupportedActions
+        {
+            get 
+            { 
+                return this.Metric.SupportedActions; 
+            }
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsAuthorized( string action, Person person )
+        {
+            return this.Metric.IsAuthorized( action, person );
+        }
+
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public bool IsAllowedByDefault( string action )
+        {
+            return this.Metric.IsAllowedByDefault( action );
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is private (Only the current user has access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsPrivate( string action, Person person )
+        {
+            return this.Metric.IsPrivate( action, person );
+        }
+
+        /// <summary>
+        /// Makes the action on the current entity private (Only the current user will have access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        public void MakePrivate( string action, Person person )
+        {
+            this.Metric.MakePrivate( action, person );
+        }
+
+        /// <summary>
+        /// If action on the current entity is private, removes security that made it private.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        public void MakeUnPrivate( string action, Person person )
+        {
+            this.Metric.MakeUnPrivate( action, person );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
 
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class MetricCategoryConfiguration : EntityTypeConfiguration<MetricCategory>
     {
         public MetricCategoryConfiguration()
         {
-            this.HasKey( a => new { a.MetricId, a.CategoryId } );
             this.HasRequired( a => a.Metric ).WithMany( a => a.MetricCategories );
             this.HasRequired( a => a.Category ).WithMany();
         }
