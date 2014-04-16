@@ -568,10 +568,10 @@ namespace RockWeb.Blocks.Cms
             DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
 
             // populate dropdown with all MarketingCampaignAudiences that aren't already MarketingCampaignAudiences
-            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ) ).AsQueryable()
-                      where !( from mcaudience in MarketingCampaignAudiencesState
-                               select mcaudience.AudienceTypeValueId ).Contains( audienceTypeValue.Id )
-                      select audienceTypeValue;
+            var guid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid();
+            var existingAudiences = MarketingCampaignAudiencesState.Select( s => s.AudienceTypeValueId ).ToList();
+            var qry = definedValueService.GetByDefinedTypeGuid( guid )
+                .Where( v => !existingAudiences.Contains( v.Id ) );
 
             List<DefinedValue> list = qry.ToList();
             if ( list.Count == 0 )
