@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
+    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 0 )]
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
