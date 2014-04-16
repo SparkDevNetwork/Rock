@@ -533,7 +533,7 @@ namespace RockWeb.Blocks.Groups
                 rockContext.SaveChanges();
 
                 // Reload the roles and apply their attribute values
-                foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ) )
+                foreach ( var role in groupTypeRoleService.GetByGroupTypeId( groupType.Id ).ToList() )
                 {
                     role.LoadAttributes( rockContext );
                     var roleState = GroupTypeRolesState.Where( r => r.Guid.Equals( role.Guid ) ).FirstOrDefault();
@@ -872,15 +872,20 @@ namespace RockWeb.Blocks.Groups
             {
                 case "GROUPTYPEROLES":
 
-                    var role = GroupTypeRolesState.FirstOrDefault( r => r.Id == hfRoleId.ValueAsInt() );
-                    if ( role != null )
+                    var role = GroupTypeRolesState.FirstOrDefault( r => r.Guid.Equals( hfRoleGuid.Value.AsGuid() ) );
+                    if ( role == null )
                     {
-                        Helper.AddEditControls( role, phGroupTypeRoleAttributes, setValues );
-                        SetValidationGroup( phGroupTypeRoleAttributes.Controls, dlgGroupTypeRoles.ValidationGroup );
+                        role = new GroupTypeRole();
+                        role.GroupTypeId = hfGroupTypeId.ValueAsInt();
+                        role.LoadAttributes();
                     }
+
+                    Helper.AddEditControls( role, phGroupTypeRoleAttributes, setValues );
+                    SetValidationGroup( phGroupTypeRoleAttributes.Controls, dlgGroupTypeRoles.ValidationGroup );
 
                     dlgGroupTypeRoles.Show();
                     break;
+
                 case "CHILDGROUPTYPES":
                     dlgChildGroupType.Show();
                     break;
@@ -1153,21 +1158,17 @@ namespace RockWeb.Blocks.Groups
         /// <param name="attributeGuid">The attribute GUID.</param>
         protected void gGroupTypeRoles_ShowEdit( Guid groupTypeRoleGuid )
         {
-            GroupTypeRole groupTypeRole;
-            if ( groupTypeRoleGuid.Equals( Guid.Empty ) )
+            GroupTypeRole groupTypeRole = GroupTypeRolesState.FirstOrDefault( a => a.Guid.Equals( groupTypeRoleGuid ) );
+            if (groupTypeRole == null)
             {
                 groupTypeRole = new GroupTypeRole();
-                groupTypeRole.GroupTypeId = hfGroupTypeId.ValueAsInt();
-                groupTypeRole.LoadAttributes();
                 dlgGroupTypeRoles.Title = "Add Role";
             }
             else
             {
-                groupTypeRole = GroupTypeRolesState.First( a => a.Guid.Equals( groupTypeRoleGuid ) );
                 dlgGroupTypeRoles.Title = "Edit Role";
             }
 
-            hfRoleId.Value = groupTypeRole.Id.ToString();
             hfRoleGuid.Value = groupTypeRole.Guid.ToString();
             tbRoleName.Text = groupTypeRole.Name;
             tbRoleDescription.Text = groupTypeRole.Description;
