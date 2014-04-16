@@ -9,7 +9,7 @@ inner join CTE pcte on pcte.Id = [a].[ParentPageId]
 )
 
 select 
-  REPLICATE('| ', [Level]-1) + [Name] 
+  REPLICATE('| ', [Level]-1) + [InternalName] 
   -- + ' - ' + [Sequence]
   -- + ' - ' + cast([Order] as varchar(max))
   -- + ' - ' + cast([Guid] as varchar(max))
