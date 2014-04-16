@@ -270,9 +270,23 @@ namespace RockWeb.Blocks.Finance
                 businessGroup.GroupTypeId = familyGroupType.Id;
                 businessGroup.Name = tbBusinessName.Text + " Business";
                 businessGroup.CampusId = ddlCampus.SelectedValueAsInt();
+                var knownRelationshipGroup = new Group();
+                var impliedRelationshipGroup = new Group();
                 if ( business.GivingGroupId == null )
                 {
                     groupService.Add( businessGroup );
+
+                    // If there isn't a Giving Group then there aren't any other groups.
+                    // We also need to add the Known Relationship and Implied Relationship groups for this business.
+                    var knownRelationshipGroupTypeId = new GroupTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ).Id;
+                    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupTypeId;
+                    knownRelationshipGroup.Name = "Known Relationship";
+                    groupService.Add( knownRelationshipGroup );
+
+                    var impliedRelationshipGroupTypeId = new GroupTypeService( rockContext ).Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_IMPLIED_RELATIONSHIPS ) ).Id;
+                    impliedRelationshipGroup.GroupTypeId = impliedRelationshipGroupTypeId;
+                    impliedRelationshipGroup.Name = "Implied Relationship";
+                    groupService.Add( impliedRelationshipGroup );
                 }
 
                 rockContext.SaveChanges();
@@ -300,6 +314,20 @@ namespace RockWeb.Blocks.Finance
                 {
                     groupMember = new GroupMember();
                     businessGroup.Members.Add( groupMember );
+
+                    // If we're in here, then this is a new business.
+                    // Add the known relationship and implied relationship GroupMember entries.
+                    var knownRelationshipGroupMember = new GroupMember();
+                    knownRelationshipGroupMember.Person = business;
+                    knownRelationshipGroupMember.GroupRoleId = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).Id;
+                    knownRelationshipGroupMember.GroupId = knownRelationshipGroup.Id;
+                    knownRelationshipGroup.Members.Add( knownRelationshipGroupMember );
+
+                    var impliedRelationshipGroupMember = new GroupMember();
+                    impliedRelationshipGroupMember.Person = business;
+                    impliedRelationshipGroupMember.GroupRoleId = new GroupTypeRoleService( rockContext ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_IMPLIED_RELATIONSHIPS_OWNER.AsGuid() ).Id;
+                    impliedRelationshipGroupMember.GroupId = impliedRelationshipGroup.Id;
+                    impliedRelationshipGroup.Members.Add( impliedRelationshipGroupMember );
                 }
 
                 groupMember.Person = business;
@@ -367,18 +395,20 @@ namespace RockWeb.Blocks.Finance
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
-            var business = personService.Get( int.Parse( hfBusinessId.Value ) );
-            var businessGroup = business.GivingGroup;
-            var groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-            if ( groupMember == null )
-            {
-                groupMember = new GroupMember();
-                businessGroup.Members.Add( groupMember );
-            }
 
-            groupMember.Person = personService.Get( (int)ppOwner.PersonId );
+            // get the known relationship group from the owner
+            // add the business as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_OWNER
+            var owner = personService.Get( (int)ppOwner.PersonId );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var knownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == owner.Id )
+                .Select( g => g.Group ).FirstOrDefault();
+            var groupMember = new GroupMember();
+            groupMember.PersonId = int.Parse( hfBusinessId.Value );
             groupMember.GroupRoleId = (int)ownerRoleId;
-            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+            knownRelationshipGroup.Members.Add( groupMember );
             rockContext.SaveChanges();
         }
 
