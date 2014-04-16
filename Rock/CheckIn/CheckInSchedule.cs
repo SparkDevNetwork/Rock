@@ -91,10 +91,14 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Schedule", Schedule );
-            dictionary.Add( "LastCheckIn", LastCheckIn );
-            return dictionary;
+            var dictionary = Schedule.ToLiquid() as Dictionary<string, object>;
+            if (dictionary != null)
+            {
+                dictionary.Add( "LastCheckIn", LastCheckIn );
+                return dictionary;
+            }
+
+            return new Dictionary<string, object>();
         }
 
     }

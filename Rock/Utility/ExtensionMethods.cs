@@ -1873,6 +1873,27 @@ namespace Rock
         #region Dictionary<string, object> (liquid) extension methods
 
         /// <summary>
+        /// Adds a new key/value to dictionary or if key already exists will update existing value.
+        /// </summary>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void Update(this Dictionary<string, object> dictionary, string key, object value)
+        {
+            if (dictionary != null)
+            {
+                if ( dictionary.ContainsKey( key ) )
+                {
+                    dictionary[key] = value;
+                }
+                else
+                {
+                    dictionary.Add( key, value );
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns a Json representation of the merge fields available to Liquid.
         /// </summary>
         /// <param name="mergeFields">The merge fields.</param>
