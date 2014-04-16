@@ -624,12 +624,21 @@ namespace RockWeb.Blocks.Finance
                         r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
-                var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                if ( owner != null )
+                //var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
+                // To get the owner we have to look in the Group Member table and pull the record that has:
+                // the group id of the owners known relationship group
+                // the person id of the business
+                // the role of known relationship owner
+                var theOwner = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .Where( gm => gm.PersonId == business.Id && gm.GroupRoleId == ownerRoleId && gm.GroupId != business.GivingGroupId )
+                    .FirstOrDefault();
+                if ( theOwner != null )
                 {
-                    ppOwner.PersonId = owner.PersonId;
-                    ppOwner.PersonName = owner.Person.FullName;
+                    ppOwner.PersonId = theOwner.PersonId;
+                    ppOwner.PersonName = theOwner.Person.FullName;
                 }
+
 
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
