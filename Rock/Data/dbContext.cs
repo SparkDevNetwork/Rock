@@ -35,6 +35,17 @@ namespace Rock.Data
     public abstract class DbContext : System.Data.Entity.DbContext
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="DbContext"/> class.
+        /// </summary>
+        public DbContext() : base() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DbContext"/> class.
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
+        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+
+        /// <summary>
         /// Gets any error messages that occurred during a SaveChanges
         /// </summary>
         /// <value>
