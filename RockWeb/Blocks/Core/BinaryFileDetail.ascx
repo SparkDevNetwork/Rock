@@ -27,7 +27,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:FileUploader ID="fsFile" runat="server" Label="Upload New File" />
+                        <Rock:FileUploader ID="fsFile" runat="server" Label="Upload New File" ShowDeleteButton="false" />
                         <Rock:DataTextBox ID="tbMimeType" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="MimeType" />
                         <Rock:BinaryFileTypePicker ID="ddlBinaryFileType" runat="server" Visible="false" />
                         </div>

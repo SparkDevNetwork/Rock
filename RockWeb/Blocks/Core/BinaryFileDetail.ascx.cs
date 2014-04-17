@@ -37,6 +37,29 @@ namespace RockWeb.Blocks.Core
     [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, "", "Advanced" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the orphaned binary file identifier list.
+        /// </summary>
+        /// <value>
+        /// The orphaned binary file identifier list.
+        /// </value>
+        public List<int> OrphanedBinaryFileIdList
+        {
+            get
+            {
+                return ViewState["OrphanedBinaryFileIdList"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["OrphanedBinaryFileIdList"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -217,6 +240,23 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
+            if ( OrphanedBinaryFileIdList.Count > 0 )
+            {
+                var rockContext = new RockContext();
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+
+                foreach ( var id in OrphanedBinaryFileIdList )
+                {
+                    var tempBinaryFile = binaryFileService.Get( id );
+                    if ( tempBinaryFile != null && tempBinaryFile.IsTemporary )
+                    {
+                        binaryFileService.Delete( tempBinaryFile );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+            
             NavigateToParentPage();
         }
 
@@ -281,6 +321,15 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
+                foreach ( var id in OrphanedBinaryFileIdList )
+                {
+                    var tempBinaryFile = binaryFileService.Get( id );
+                    if ( tempBinaryFile != null && tempBinaryFile.IsTemporary )
+                    {
+                        binaryFileService.Delete( tempBinaryFile );
+                    }
+                }
+
                 rockContext.SaveChanges();
                 binaryFile.SaveAttributeValues( rockContext );
             } );
@@ -322,6 +371,10 @@ namespace RockWeb.Blocks.Core
                 {
                     binaryFile.BinaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
                 }
+
+                var tempList = OrphanedBinaryFileIdList;
+                tempList.Add( fsFile.BinaryFileId.Value );
+                OrphanedBinaryFileIdList = tempList;
 
                 // load attributes, then get the attribute values from the UI
                 binaryFile.LoadAttributes();
