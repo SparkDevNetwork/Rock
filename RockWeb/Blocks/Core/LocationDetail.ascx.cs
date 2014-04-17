@@ -80,18 +80,18 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "locationId" );
-                string parentLocationId = PageParameter( "parentLocationId" );
+                string itemId = PageParameter( "LocationId" );
+                string parentLocationId = PageParameter( "ParentLocationId" );
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentLocationId ) )
                     {
-                        ShowDetail( "locationId", int.Parse( itemId ) );
+                        ShowDetail( "LocationId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "locationId", int.Parse( itemId ), int.Parse( parentLocationId ) );
+                        ShowDetail( "LocationId", int.Parse( itemId ), int.Parse( parentLocationId ) );
                     }
                 }
                 else
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
             var qryParams = new Dictionary<string, string>();
             if ( parentLocationId != null )
             {
-                qryParams["locationId"] = parentLocationId.ToString();
+                qryParams["LocationId"] = parentLocationId.ToString();
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
@@ -249,7 +249,7 @@ namespace RockWeb.Blocks.Core
 
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["locationId"] = location.Id.ToString();
+            qryParams["LocationId"] = location.Id.ToString();
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -268,10 +268,10 @@ namespace RockWeb.Blocks.Core
                     // Cancelling on Add.  Return to tree view with parent category selected
                     var qryParams = new Dictionary<string, string>();
 
-                    string parentLocationId = PageParameter( "parentLocationId" );
+                    string parentLocationId = PageParameter( "ParentLocationId" );
                     if ( !string.IsNullOrWhiteSpace( parentLocationId ) )
                     {
-                        qryParams["locationId"] = parentLocationId;
+                        qryParams["LocationId"] = parentLocationId;
                     }
 
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -355,7 +355,7 @@ namespace RockWeb.Blocks.Core
         {
             pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "locationId" ) )
+            if ( !itemKey.Equals( "LocationId" ) )
             {
                 return;
             }
