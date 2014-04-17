@@ -110,11 +110,15 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "GroupType", GroupType );
-            dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "Groups", Groups.Where( g => g.Selected).ToList() );
-            return dictionary;
+            var dictionary = GroupType.ToLiquid() as Dictionary<string, object>;
+            if ( dictionary != null )
+            {
+                dictionary.Add( "LastCheckIn", LastCheckIn );
+                dictionary.Update( "Groups", Groups.Where( g => g.Selected ).ToList() );
+                return dictionary;
+            }
+
+            return new Dictionary<string, object>();
         }
     }
 }

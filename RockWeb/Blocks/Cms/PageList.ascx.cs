@@ -202,38 +202,44 @@ namespace RockWeb.Blocks.Cms
             // 2) the site's 'special' pages used directly by the site.
             var rockContext = new RockContext();
             var siteService = new SiteService( rockContext );
-            var site = siteService.Get( siteId );
             var pageService = new PageService( rockContext );
 
-            var qry = pageService.GetBySiteId( siteId ).AsQueryable()
-                    .Concat( pageService.GetByIds(
-                        new List<int>
-                        {
-                            site.DefaultPageId ?? -1,
-                            site.LoginPageId ?? -1,
-                            site.RegistrationPageId ?? -1, site.PageNotFoundPageId ?? -1
-                        }
-                    )
-                );
-
-            string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
-            if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
+            var site = siteService.Get( siteId );
+            if ( site != null )
             {
-                qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
-            }
+                var sitePages = new List<int> {
+                    site.DefaultPageId ?? -1,
+                    site.LoginPageId ?? -1,
+                    site.RegistrationPageId ?? -1, 
+                    site.PageNotFoundPageId ?? -1
+                };
 
-            SortProperty sortProperty = gPages.SortProperty;
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderBy( q => q.Id );
-            }
+                var qry = pageService.Queryable()
+                    .Where( t => 
+                        t.Layout.SiteId == siteId ||
+                        sitePages.Contains( t.Id ) );
 
-            gPages.DataSource = qry.ToList();
-            gPages.DataBind();
+                string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
+                if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
+                {
+                    qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
+                }
+
+                SortProperty sortProperty = gPages.SortProperty;
+                if ( sortProperty != null )
+                {
+                    qry = qry.Sort( sortProperty );
+                }
+                else
+                {
+                    qry = qry
+                        .OrderBy( t => t.Layout.Name )
+                        .ThenBy( t => t.InternalName );
+                }
+
+                gPages.DataSource = qry.ToList();
+                gPages.DataBind();
+            }
         }
 
         /// <summary>

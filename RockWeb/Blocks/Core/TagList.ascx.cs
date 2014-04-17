@@ -345,7 +345,7 @@ namespace RockWeb.Blocks.Core
                 {
                     // Only allow sorting of public tags if authorized to Administer
                     rGrid.Columns[0].Visible = _canConfigure;
-                    queryable = queryable.Where( t => t.OwnerId == null );
+                    queryable = queryable.Where( t => !t.OwnerId.HasValue );
                 }
                 else
                 {
