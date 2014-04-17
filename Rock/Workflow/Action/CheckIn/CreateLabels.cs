@@ -57,17 +57,24 @@ namespace Rock.Workflow.Action.CheckIn
                     .Select( f => f.Id)
                     .FirstOrDefault();
 
-                //if ( labelFileTypeId != 0 )
-                //{
+                if ( labelFileTypeId != 0 )
+                {
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    var globalMergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+
                     foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                var mergeObjects = new Dictionary<string, object>();
-                                mergeObjects.Add( "person", person );
-                                mergeObjects.Add( "groupType", groupType );
+                                var mergeObjects =  new Dictionary<string, object>();
+                                foreach ( var keyValue in globalMergeValues )
+                                {
+                                    mergeObjects.Add( keyValue.Key, keyValue.Value );
+                                }
+                                mergeObjects.Add( "Person", person );
+                                mergeObjects.Add( "GroupType", groupType );
 
                                 groupType.Labels = new List<CheckInLabel>();
 
@@ -131,7 +138,7 @@ namespace Rock.Workflow.Action.CheckIn
                             }
 
                         }
-                    //}
+                    }
                 }
 
                 return true;

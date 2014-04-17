@@ -233,6 +233,7 @@
     <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationRecipientActivityService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationTemplateService.cs" />
+    <Compile Include="Model\CodeGenerated\MetricCategoryService.cs" />
     <Compile Include="Model\CodeGenerated\MetricService.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -249,9 +250,7 @@
     <Compile Include="Model\CodeGenerated\PageViewService.cs" />
     <Compile Include="Model\CodeGenerated\PersonBadgeService.cs" />
     <Compile Include="Model\Metric.cs" />
-    <Compile Include="Model\MetricService.Partial.cs" />
     <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\MetricValueService.Partial.cs" />
     <Compile Include="Model\PersonBadge.cs" />
     <Compile Include="Model\CodeGenerated\AuditDetailService.cs" />
     <Compile Include="Model\CodeGenerated\HistoryService.cs" />

@@ -118,12 +118,16 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Person", Person );
-            dictionary.Add( "FamilyMember", FamilyMember );
-            dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "SecurityCode", SecurityCode );
-            return dictionary;
+            var dictionary = Person.ToLiquid() as Dictionary<string, object>;
+            if ( dictionary != null )
+            {
+                dictionary.Add( "FamilyMember", FamilyMember );
+                dictionary.Add( "LastCheckIn", LastCheckIn );
+                dictionary.Add( "SecurityCode", SecurityCode );
+                return dictionary;
+            }
+
+            return new Dictionary<string, object>();
         }
     }
 }

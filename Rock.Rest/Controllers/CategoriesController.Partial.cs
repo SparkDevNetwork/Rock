@@ -139,7 +139,7 @@ namespace Rock.Rest.Controllers
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = "fa fa-list-ol";
+                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue("IconCssClass") as string ?? "fa fa-list-ol";
                             categoryItem.IconSmallUrl = string.Empty;
                             categoryItemList.Add( categoryItem );
                         }
@@ -201,12 +201,21 @@ namespace Rock.Rest.Controllers
                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
                 if ( getMethod != null )
                 {
-                    var paramExpression = serviceInstance.ParameterExpression;
-                    var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
-                    var zeroExpression = Expression.Constant( 0 );
-                    var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );
-                    var constantExpression = Expression.Constant( categoryId );
-                    var compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+                    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                    MemberExpression propertyExpression = Expression.Property( paramExpression, "CategoryId" );
+                    BinaryExpression compareExpression = null;
+                    ConstantExpression constantExpression = Expression.Constant( categoryId );
+
+                    if ( propertyExpression.Type == typeof( int? ) )
+                    {
+                        var zeroExpression = Expression.Constant( 0 );
+                        var coalesceExpression = Expression.Coalesce( propertyExpression, zeroExpression );
+                        compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+                    }
+                    else
+                    {
+                        compareExpression = Expression.Equal( propertyExpression, constantExpression );
+                    }
 
                     return getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
                 }
