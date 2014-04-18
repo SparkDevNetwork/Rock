@@ -207,6 +207,7 @@ namespace RockWeb.Blocks.Core
                     errors = NuGetService.UpdatePackage( update );
                 }
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
+                lSuccessVersion.Text = update.Title;
 
                 // register any new REST controllers
                 try
@@ -246,7 +247,6 @@ namespace RockWeb.Blocks.Core
         {
             lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
             lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
-            lSuccessVersion.Text = VersionInfo.GetRockProductVersionFullName();
         }
         
         /// <summary>
