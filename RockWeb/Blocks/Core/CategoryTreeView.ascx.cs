@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page" )]
     [EntityTypeField( "Entity Type", "Display categories associated with this type of entity" )]
+    [TextField( "Entity Type Friendly Name", "The text to show for the entity type name. Leave blank to get it from the specified Entity Type" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity type Qualifier Value", "", false )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
@@ -67,7 +68,7 @@ namespace RockWeb.Blocks.Core
             RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
 
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
-             
+
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
@@ -93,10 +94,16 @@ namespace RockWeb.Blocks.Core
                 var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
                 if ( cachedEntityType != null )
                 {
-                    lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
-                    lAddItem.Text = cachedEntityType.FriendlyName;
-                }
+                    string entityTypeFriendlyName = GetAttributeValue( "EntityTypeFriendlyName" );
+                    if ( string.IsNullOrWhiteSpace( entityTypeFriendlyName ) )
+                    {
+                        entityTypeFriendlyName = cachedEntityType.FriendlyName;
+                    }
 
+                    lbAddItem.ToolTip = "Add " + entityTypeFriendlyName;
+                    lAddItem.Text = entityTypeFriendlyName;
+                }
+ 
                 PageParameterName = GetAttributeValue( "PageParameterKey" );
                 string itemId = PageParameter( PageParameterName );
                 string selectedEntityType = cachedEntityType.Name;
@@ -207,16 +214,16 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddCategoryChild_Click(object sender, EventArgs e)
+        protected void lbAddCategoryChild_Click( object sender, EventArgs e )
         {
             int parentCategoryId = 0;
-            if (Int32.TryParse(hfSelectedCategoryId.Value, out parentCategoryId))
+            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
-                NavigateToLinkedPage("DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId);
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId );
             }
             else
             {
-                NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
             }
         }
 
@@ -225,9 +232,9 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddCategoryRoot_Click(object sender, EventArgs e)
+        protected void lbAddCategoryRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+            NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
         }
-}
+    }
 }
