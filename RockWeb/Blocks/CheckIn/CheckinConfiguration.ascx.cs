@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.CheckIn
             var binaryFileService = new BinaryFileService( new RockContext() );
 
             ddlCheckinLabel.Items.Clear();
-            var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) ).OrderBy( a => a.FileName ).ToList();
+            var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) && a.IsTemporary == false ).OrderBy( a => a.FileName ).ToList();
 
             foreach ( var item in list )
             {
