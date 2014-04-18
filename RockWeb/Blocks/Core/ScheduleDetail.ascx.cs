@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "scheduleId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Core
                 // Cancelling on Add.  Return to tree view with parent category selected
                 var qryParams = new Dictionary<string, string>();
 
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
                 {
                     qryParams["CategoryId"] = parentCategoryId;

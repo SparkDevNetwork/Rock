@@ -81,7 +81,7 @@ $(document).ready(function() {
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "DataViewId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
@@ -145,10 +145,13 @@ $(document).ready(function() {
         /// <param name="dataViewFilter">The data view filter.</param>
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
         {
-            dataViewFilter.Guid = Guid.NewGuid();
-            foreach ( var childFilter in dataViewFilter.ChildFilters )
+            if (dataViewFilter != null)
             {
-                SetNewDataFilterGuids( childFilter );
+                dataViewFilter.Guid = Guid.NewGuid();
+                foreach ( var childFilter in dataViewFilter.ChildFilters )
+                {
+                    SetNewDataFilterGuids( childFilter );
+                }
             }
         }
 
@@ -233,7 +236,7 @@ $(document).ready(function() {
                 // Cancelling on Add.  Return to tree view with parent category selected
                 var qryParams = new Dictionary<string, string>();
 
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
                 {
                     qryParams["CategoryId"] = parentCategoryId;
