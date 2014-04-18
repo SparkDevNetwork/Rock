@@ -80,6 +80,13 @@ namespace Rock.Communication
         /// <param name="person">The person.</param>
         /// <returns></returns>
         public abstract string GetHtmlPreview( Model.Communication communication, Person person );
+            
+        /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public abstract string GetMessageDetails( Model.Communication communication );
 
         /// <summary>
         /// Sends the specified communication.

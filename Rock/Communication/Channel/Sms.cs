@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
@@ -85,6 +86,20 @@ namespace Rock.Communication.Channel
             return message.ResolveMergeFields( mergeValues );
         }
 
+        /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat( "{0}", communication.GetChannelDataValue( "Message" ) );
+
+            return sb.ToString();
+        }
+        
         /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>

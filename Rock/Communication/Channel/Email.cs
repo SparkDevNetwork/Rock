@@ -129,6 +129,16 @@ You can view an online version of this email here:
             return sbContent.ToString();
         }
 
+
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat( "<pre>{0}</pre>", communication.GetChannelDataValue( "HtmlMessage" ).EncodeHtml() );
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
