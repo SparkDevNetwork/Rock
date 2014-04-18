@@ -78,17 +78,17 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "categoryId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string itemId = PageParameter( "CategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
                     {
-                        ShowDetail( "categoryId", int.Parse( itemId ) );
+                        ShowDetail( "CategoryId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "categoryId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                        ShowDetail( "CategoryId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
                     }
                 }
                 else
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Core
                 // Cancelling on Add.  Return to tree view with parent category selected
                 var qryParams = new Dictionary<string, string>();
 
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
                 {
                     qryParams["CategoryId"] = parentCategoryId;
@@ -282,7 +282,7 @@ namespace RockWeb.Blocks.Core
         public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "categoryId" ) )
+            if ( !itemKey.Equals( "CategoryId" ) )
             {
                 return;
             }

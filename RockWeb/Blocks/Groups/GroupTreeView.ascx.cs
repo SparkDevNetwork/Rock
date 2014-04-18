@@ -159,7 +159,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // also get any additional expanded nodes that were sent in the Post
-                string postedExpandedIds = this.Request.Params["expandedIds"];
+                string postedExpandedIds = this.Request.Params["ExpandedIds"];
                 if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
                 {
                     var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList();
