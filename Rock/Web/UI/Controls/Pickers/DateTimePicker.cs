@@ -263,10 +263,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the lower value.
+        /// Gets a value indicating whether [selected date time is blank].
         /// </summary>
         /// <value>
-        /// The lower value.
+        /// <c>true</c> if [selected date time is blank]; otherwise, <c>false</c>.
+        /// </value>
+        public bool SelectedDateTimeIsBlank
+        {
+            get
+            {
+                return ( !_datePicker.SelectedDate.HasValue );
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the selected date time.  Defaults to Today if blank
+        /// </summary>
+        /// <value>
+        /// The selected date time.
         /// </value>
         public DateTime? SelectedDateTime
         {

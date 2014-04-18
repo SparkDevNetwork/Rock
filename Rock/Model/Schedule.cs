@@ -449,6 +449,11 @@ namespace Rock.Model
                     result = "Once at " + calendarEvent.DTStart.Value.ToString();
                 }
             }
+            else
+            {
+                // no start time.  Nothing scheduled
+                return "No Schedule";
+            }
 
             return result;
         }

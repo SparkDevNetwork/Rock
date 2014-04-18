@@ -248,7 +248,7 @@ namespace Rock.Web.UI.Controls
 
                 if (ShowScheduleFriendlyTextAsToolTip)
                 {
-                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = value }.ToFriendlyScheduleText();
+                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText();
                 }
             }
         }
@@ -589,7 +589,7 @@ END:VCALENDAR
         {
             EnsureChildControls();
 
-            if ( _dpStartDateTime.SelectedDateTime == null )
+            if ( _dpStartDateTime.SelectedDateTimeIsBlank )
             {
                 return iCalendarContentEmptyEvent;
             }
