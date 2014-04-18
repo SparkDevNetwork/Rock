@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -26,9 +27,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : RockDropDownList
     {
-        const string LOC_GUID = "com.rockrms.orgLocatoinGuid";
-        const string LOC_STATE = "com.rockrms.orgLocationState";
-        
         private bool _rebindRequired = false;
 
         /// <summary>
@@ -92,19 +90,19 @@ namespace Rock.Web.UI.Controls
                 if ( !locGuid.Equals( Guid.Empty ) )
                 {
                     // If the organization location is still same as last check, use saved value
-                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( LOC_GUID ).AsGuid() ) )
+                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
                     {
-                        orgState = Rock.Web.SystemSettings.GetValue( LOC_STATE );
+                        orgState = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
                     }
                     else
                     {
                         // otherwise read the new location and save the state
-                        Rock.Web.SystemSettings.SetValue( LOC_GUID, locGuid.ToString() );
+                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
                         var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
                         if ( location != null )
                         {
                             orgState = location.State;
-                            Rock.Web.SystemSettings.SetValue( LOC_STATE, orgState );
+                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, orgState );
                         }
                     }
                 }
