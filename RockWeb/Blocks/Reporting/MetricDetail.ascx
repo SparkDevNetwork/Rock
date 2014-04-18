@@ -29,19 +29,19 @@
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbXAxisLabel" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="XAxisLabel" />
                         <Rock:DataTextBox ID="tbYAxisLabel" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="YAxisLabel" />
-                        <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics."/>
+                        <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics." />
                         <Rock:PersonPicker ID="ppStewardPerson" runat="server" Label="Steward" Help="Person responsible for overseeing the metric and meeting the goals established." />
-                        <Rock:PersonPicker ID="ppAdminPerson" runat="server" Label="Administrator" Help="Person responsible for entering the metric values."/>
+                        <Rock:PersonPicker ID="ppAdminPerson" runat="server" Label="Administrator" Help="Person responsible for entering the metric values." />
                     </div>
                 </div>
 
                 <div class="row">
-                    <asp:Panel ID="pnlSourceTypeSql" runat="server">
+                    <div class="col-md-12">
                         <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
+                        <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
                         <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
                         <Rock:RockLiteral ID="ltLastRunDateTime" runat="server" Label="Last Run" />
-                    </asp:Panel>
-                    <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
+                    </div>
                 </div>
 
                 <div class="actions">

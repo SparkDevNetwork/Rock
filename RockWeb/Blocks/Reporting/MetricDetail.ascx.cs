@@ -61,8 +61,8 @@ namespace RockWeb.Blocks.Reporting
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
-            
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Metric.FriendlyTypeName );
+
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id; ;
 
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
@@ -191,6 +191,12 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
+            if ( !cpMetricCategories.SelectedValuesAsInt().Any() )
+            {
+                cpMetricCategories.ShowErrorMessage( "Must select at least one category" );
+                return;
+            }
+
             // do a WrapTransaction since we are doing multiple SaveChanges()
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -205,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( schedule.Id == 0 )
                 {
                     scheduleService.Add( schedule );
-                    
+
                     // save to make sure we have a scheduleId
                     rockContext.SaveChanges();
                 }
@@ -262,17 +268,12 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( hfMetricId.Value.Equals( "0" ) )
             {
-                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add.  Return to tree view with parent category selected
-                    int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
-
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    if ( parentCategoryId != null )
-                    {
-                        qryParams["ParentCategoryId"] = parentCategoryId.ToString();
-                    }
-
+                    qryParams["ParentCategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -310,7 +311,7 @@ namespace RockWeb.Blocks.Reporting
         protected void btnDelete_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            MetricService metricService = new MetricService( new RockContext() );
+            MetricService metricService = new MetricService( rockContext );
             Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
 
             if ( metric != null )
@@ -346,7 +347,15 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlSourceType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            //
+            int? sourceValueTypeId = ddlSourceType.SelectedValueAsId();
+            var sourceValueType = DefinedValueCache.Read( sourceValueTypeId ?? 0 );
+            ceSourceSql.Visible = false;
+            ddlDataView.Visible = false;
+            if ( sourceValueType != null )
+            {
+                ceSourceSql.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
+                ddlDataView.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
+            }
         }
 
         #endregion
@@ -392,6 +401,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( parentCategoryId.HasValue )
                 {
                     var metricCategory = new MetricCategory { CategoryId = parentCategoryId.Value };
+                    metricCategory.Category = metricCategory.Category ?? new CategoryService( rockContext ).Get( metricCategory.CategoryId );
                     metric.MetricCategories.Add( metricCategory );
                 }
             }
@@ -472,7 +482,15 @@ namespace RockWeb.Blocks.Reporting
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
             sbSchedule.iCalendarContent = metric.Schedule != null ? metric.Schedule.iCalendarContent : null;
-            ltLastRunDateTime.Text = metric.LastRunDateTime.ToRelativeDateString();
+            if ( metric.LastRunDateTime != null )
+            {
+                ltLastRunDateTime.Text = metric.LastRunDateTime.ToRelativeDateString();
+            }
+            else
+            {
+                ltLastRunDateTime.Text = "-";
+            }
+
             ddlDataView.SetValue( metric.DataViewId );
 
             // make sure the control visibility is set based on SourceType
