@@ -508,6 +508,20 @@ div.tagsinput
         border-bottom-right-radius: @tag-border-radius;
         border-top-right-radius: @tag-border-radius;
 
+        span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            display: block;
+            float: left;
+        }
+
+        a {
+            float: left;
+            display: block;
+        }
+
         small {
             font-size: 11px;
         }
