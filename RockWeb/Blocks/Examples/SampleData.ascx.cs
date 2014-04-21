@@ -29,6 +29,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -51,11 +52,6 @@ namespace RockWeb.Blocks.Examples
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
-
-        /// <summary>
-        /// Holds the System Setting key for the sample data load date/time.
-        /// </summary>
-        public static readonly string SYSTEM_SETTING_SD_DATE = "com.rockrms.sampledata.datetime";
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -257,7 +253,7 @@ namespace RockWeb.Blocks.Examples
             string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
             if ( xmlFileUrl.StartsWith( "http://storage.rockrms.com/sampledata/" ) )
             {
-                Rock.Web.SystemSettings.SetValue( SYSTEM_SETTING_SD_DATE, RockDateTime.Now.ToString() );
+                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
             }
         }
 

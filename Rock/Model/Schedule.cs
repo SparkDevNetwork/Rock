@@ -445,8 +445,14 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Just return the Name of the schedule
+                    // not any type of recurring, runs once
+                    result = "Once at " + calendarEvent.DTStart.Value.ToString();
                 }
+            }
+            else
+            {
+                // no start time.  Nothing scheduled
+                return "No Schedule";
             }
 
             return result;

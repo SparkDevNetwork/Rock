@@ -508,17 +508,12 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                int? parentGroupId = PageParameter( "parentGroupId" ).AsInteger( false );
+                if ( parentGroupId.HasValue )
                 {
-                    // Cancelling on Add.  Return to tree view with parent category selected
+                    // Cancelling on Add, and we know the parentGroupID, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-
-                    string parentGroupId = PageParameter( "parentGroupId" );
-                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
-                    {
-                        qryParams["groupId"] = parentGroupId;
-                    }
-
+                    qryParams["groupId"] = parentGroupId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
