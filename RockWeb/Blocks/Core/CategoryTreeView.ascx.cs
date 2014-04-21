@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Core
     [TextField( "Entity Type Friendly Name", "The text to show for the entity type name. Leave blank to get it from the specified Entity Type" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity type Qualifier Value", "", false )]
+    [BooleanField( "Show Unnamed Entity Items", "Set to false to hide any EntityType items that have a blank name.", true )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
     public partial class CategoryTreeView : RockBlock
     {
@@ -76,20 +77,22 @@ namespace RockWeb.Blocks.Core
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
                 string entityTypeQualiferColumn = GetAttributeValue( "EntityTypeQualifierProperty" );
                 string entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
+                bool showUnnamedEntityItems = GetAttributeValue("ShowUnnamedEntityItems").AsBooleanOrNull() ?? true;
 
-                var parms = new StringBuilder();
-                parms.AppendFormat( "/True/{0}", entityTypeId );
+                string parms = string.Format("?getCategorizedItems=true&showUnnamedEntityItems={0}", showUnnamedEntityItems.ToTrueFalse().ToLower());
+                parms += string.Format( "&entityTypeId={0}", entityTypeId );
+
                 if ( !string.IsNullOrEmpty( entityTypeQualiferColumn ) )
                 {
-                    parms.AppendFormat( "/{0}", entityTypeQualiferColumn );
+                    parms += string.Format( "&entityQualifier={0}", entityTypeQualiferColumn );
 
                     if ( !string.IsNullOrEmpty( entityTypeQualifierValue ) )
                     {
-                        parms.AppendFormat( "/{0}", entityTypeQualifierValue );
+                        parms += string.Format( "&entityQualifierValue={0}", entityTypeQualifierValue );
                     }
                 }
 
-                RestParms = parms.ToString();
+                RestParms = parms;
 
                 var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
                 if ( cachedEntityType != null )
