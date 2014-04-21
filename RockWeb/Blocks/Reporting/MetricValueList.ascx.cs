@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gMetricValues_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "MetricValueId", 0 );
+            NavigateToLinkedPage( "DetailPage", "MetricValueId", 0, "MetricCategoryId", hfMetricCategoryId.ValueAsInt() );
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMetricValues_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "MetricValueId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "MetricValueId", e.RowKeyId, "MetricCategoryId", hfMetricCategoryId.ValueAsInt() );
         }
 
         /// <summary>
@@ -161,10 +161,13 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    // adding a new metric
-                    metricId = 0;
+                    // adding a new metric. Block will (hopefully) not be shown
+                    metricId = 0; 
                 }
             }
+
+            hfMetricId.Value = metricId.ToString();
+            hfMetricCategoryId.Value = metricCategoryId.ToString();
 
             this.Visible = metricId.HasValue;
 

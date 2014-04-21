@@ -93,13 +93,17 @@ namespace RockWeb.Blocks.Reporting
                         metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
                         if ( metricCategory != null )
                         {
+                            hfMetricCategoryId.Value = metricCategory.Id.ToString();
                             metricId = metricCategory.MetricId;
                         }
                     }
                     else
                     {
-                        // adding a new metric
-                        metricId = 0;
+                        if ( !metricId.HasValue )
+                        {
+                            // adding a new metric
+                            metricId = 0;
+                        }
                     }
                 }
 
@@ -253,8 +257,14 @@ namespace RockWeb.Blocks.Reporting
 
             var qryParams = new Dictionary<string, string>();
             qryParams["MetricId"] = metric.Id.ToString();
-            qryParams["MetricCategoryId"] = PageParameter( "MetricCategoryId" );
-            qryParams["ParentCategoryId"] = PageParameter( "ParentCategoryId" );
+            if ( hfMetricCategoryId.ValueAsInt() == 0 )
+            {
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger();
+                int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
+                hfMetricCategoryId.Value = metricCategoryId.ToString();
+            }
+
+            qryParams["MetricCategoryId"] = hfMetricCategoryId.Value;
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -273,7 +283,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["ParentCategoryId"] = parentCategoryId.ToString();
+                    qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -314,6 +324,14 @@ namespace RockWeb.Blocks.Reporting
             MetricService metricService = new MetricService( rockContext );
             Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
 
+            // intentionally get metricCategory with new RockContext() so we don't confuse SaveChanges()
+            int? parentCategoryId = null;
+            var metricCategory = new MetricCategoryService( new RockContext() ).Get( hfMetricCategoryId.ValueAsInt() );
+            if (metricCategory != null)
+            {
+                parentCategoryId = metricCategory.CategoryId;
+            }
+
             if ( metric != null )
             {
                 string errorMessage;
@@ -328,13 +346,10 @@ namespace RockWeb.Blocks.Reporting
             }
 
 
-            // reload page, selecting the parent category for when we navigate to the treeview
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
-
             var qryParams = new Dictionary<string, string>();
             if ( parentCategoryId != null )
             {
-                qryParams["ParentCategoryId"] = parentCategoryId.ToString();
+                qryParams["CategoryId"] = parentCategoryId.ToString();
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
