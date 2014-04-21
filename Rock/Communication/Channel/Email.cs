@@ -138,10 +138,19 @@ You can view an online version of this email here:
         {
             StringBuilder sb = new StringBuilder();
 
+            sb.AppendLine("<div class='row'>");
+            sb.AppendLine( "<div class='col-md-6'>" );
+
             AppendChannelData( communication, sb, "FromName" );
             AppendChannelData( communication, sb, "FromAddress" );
             AppendChannelData( communication, sb, "ReplyTo" );
             AppendChannelData( communication, sb, "Subject" );
+
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "<div class='col-md-6'>" );
+            AppendAttachmentData( sb, communication.GetChannelDataValue( "Attachments" ) );
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "</div>" );
 
             string value = communication.GetChannelDataValue( "HtmlMessage" );
             if (!string.IsNullOrWhiteSpace(value))
@@ -150,8 +159,6 @@ You can view an online version of this email here:
             }
 
             AppendChannelData( communication, sb, "TextMessage" );
-
-            value = communication.GetChannelDataValue( "Attachments" );
 
             return sb.ToString();
         }
@@ -163,12 +170,6 @@ You can view an online version of this email here:
             {
                 AppendChannelData( sb, key, value );
             }
-        }
-
-        private void AppendChannelData(StringBuilder sb, string key, string value)
-        {
-            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
-                key.SplitCase(), value );
         }
 
         private void AppendAttachmentData(StringBuilder sb, string value)
@@ -191,13 +192,22 @@ You can view an online version of this email here:
             if (attachments.Any())
             {
                 StringBuilder sbAttachments = new StringBuilder();
+                sbAttachments.Append( "<ul>" );
                 foreach(var keyValue in attachments)
                 {
-                    sbAttachments.AppendFormat("<li><a target='_blank' href='{")
+                    sbAttachments.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                        System.Web.VirtualPathUtility.ToAbsolute( "~" ), keyValue.Key, keyValue.Value );
                 }
-            }
+                sbAttachments.Append( "</ul>" );
 
-            return attachments;
+                AppendChannelData( sb, "Attachments", sbAttachments.ToString() );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
         }
 
         /// <summary>

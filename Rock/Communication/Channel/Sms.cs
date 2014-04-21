@@ -95,11 +95,27 @@ namespace Rock.Communication.Channel
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendFormat( "{0}", communication.GetChannelDataValue( "Message" ) );
+            AppendChannelData( communication, sb, "FromValue" );
+            AppendChannelData( communication, sb, "Message" );
 
             return sb.ToString();
         }
-        
+
+        private void AppendChannelData( Model.Communication communication, StringBuilder sb, string key )
+        {
+            string value = communication.GetChannelDataValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                AppendChannelData( sb, key, value );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
+        }
+
         /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>
