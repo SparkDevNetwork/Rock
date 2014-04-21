@@ -208,7 +208,11 @@ namespace RockWeb.Blocks.Reporting
                 var schedule = scheduleService.Get( metric.ScheduleId ?? 0 );
                 if ( schedule == null )
                 {
-                    schedule = new Schedule { Name = "Metric Schedule for " + metric.Title };
+                    schedule = new Schedule();
+                    
+                    // make it an "Unnamed" metrics schedule
+                    schedule.Name = string.Empty;
+                    schedule.CategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
                 }
 
                 schedule.iCalendarContent = sbSchedule.iCalendarContent;
