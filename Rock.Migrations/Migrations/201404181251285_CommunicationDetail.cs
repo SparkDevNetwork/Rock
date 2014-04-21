@@ -29,12 +29,21 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            // Rename 'Communication' block to 'NewCommunication'
             Sql( @"
     UPDATE [BlockType] SET 
         [Path] = '~/Blocks/Communication/NewCommunication.ascx',
         [Name] = 'New Communication'
     WHERE [Guid] = 'D9834641-7F39-4CFA-8CB2-E64068127565'
 " );
+            // Add 'CommunicationDetail' block
+            UpdateBlockType( "Communication Detail", "Used for displaying details of an existing communication that has already been created.", "~/Blocks/Communication/CommunicationDetail.ascx", "Communication", "CEDC742C-0AB3-487D-ABC2-77A0A443AEBF" );
+
+            // Add Block to Page: Communication Detail, Site: Rock RMS
+            AddBlock( "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857", "", "CEDC742C-0AB3-487D-ABC2-77A0A443AEBF", "Communication Detail", "Main", "", "", 1, "A02F7695-4C6E-44E9-84CB-42E6F51F285F" );
+
+            // Add approve security for communication detail block
+            AddSecurityAuthForBlock( "A02F7695-4C6E-44E9-84CB-42E6F51F285F", 0, "Approve", true, "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B", Model.SpecialRole.None, "61C581F1-1F43-49A7-A49A-B743990D2465" );
         }
         
         /// <summary>
@@ -42,6 +51,11 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // Remove Block: Communication Detail, from Page: New Communication, Site: Rock RMS
+            DeleteSecurityAuth( "61C581F1-1F43-49A7-A49A-B743990D2465" );
+            DeleteBlock( "A02F7695-4C6E-44E9-84CB-42E6F51F285F" );
+            DeleteBlockType( "CEDC742C-0AB3-487D-ABC2-77A0A443AEBF" ); // Communication Detail
+
             Sql( @"
     UPDATE [BlockType] SET 
         [Path] = '~/Blocks/Communication/Communication.ascx',
