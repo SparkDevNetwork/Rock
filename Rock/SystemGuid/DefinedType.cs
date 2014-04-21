@@ -120,9 +120,9 @@ namespace Rock.SystemGuid
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
 
         /// <summary>
-        /// Metric Collection Frequency
+        /// Metric Source Type
         /// </summary>
-        public const string METRIC_COLLECTION_FREQUENCY =  "526CB333-2C64-4486-8469-7F7EA9366254";
+        public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
         
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)

@@ -252,7 +252,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if ( IsBinaryFile || string.IsNullOrWhiteSpace(_hfBinaryFileId.Value) )
+                if ( IsBinaryFile || string.IsNullOrWhiteSpace( _hfBinaryFileId.Value ) )
                 {
                     return null;
                 }
@@ -342,6 +342,26 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["UploadUrl"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show delete button].
+        /// Defaults to true
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show delete button]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDeleteButton
+        {
+            get
+            {
+                return ViewState["ShowDeleteButton"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowDeleteButton"] = value;
             }
         }
 
@@ -489,7 +509,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "id", this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( BinaryFileId != null || !string.IsNullOrWhiteSpace(this.UploadedContentFilePath)  )
+            if ( BinaryFileId != null || !string.IsNullOrWhiteSpace( this.UploadedContentFilePath ) )
             {
                 if ( IsBinaryFile )
                 {
@@ -523,6 +543,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.AddAttribute( "class", "fileupload-remove" );
+                if ( !ShowDeleteButton )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Visibility, "hidden" );
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _aRemove.RenderControl( writer );
                 writer.RenderEndTag();
