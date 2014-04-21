@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "workflowTypeId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
@@ -208,17 +208,19 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfWorkflowTypeId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to tree view with parent category selected
-                NavigateToParentPage();
-
-                var qryParams = new Dictionary<string, string>();
-
-                string parentCategoryId = PageParameter( "parentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                if ( parentCategoryId.HasValue )
                 {
-                    qryParams["CategoryId"] = parentCategoryId;
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
-                NavigateToPage( RockPage.Guid, qryParams );
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
             }
             else
             {

@@ -31,6 +31,7 @@ using NuGet;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
@@ -51,11 +52,6 @@ namespace RockWeb.Blocks.Core
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
-
-        /// <summary>
-        /// Holds the System Setting key for the sample data load date/time.
-        /// </summary>
-        private static readonly string SYSTEM_SETTING_SD_DATE = "com.rockrms.sampledata.datetime";
 
         #endregion
 
@@ -207,6 +203,10 @@ namespace RockWeb.Blocks.Core
                     errors = NuGetService.UpdatePackage( update );
                 }
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
+                lSuccessVersion.Text = update.Title;
+
+                // Record the current version to the database
+                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
 
                 // register any new REST controllers
                 try
@@ -246,7 +246,6 @@ namespace RockWeb.Blocks.Core
         {
             lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
             lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
-            lSuccessVersion.Text = VersionInfo.GetRockProductVersionFullName();
         }
         
         /// <summary>
@@ -446,7 +445,7 @@ namespace RockWeb.Blocks.Core
         {
             try
             {
-                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SYSTEM_SETTING_SD_DATE ).AsDateTime();
+                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
                 string organizationName = string.Empty;
                 string organizationAddress = string.Empty;
                 int numberOfActiveRecords = 0;
@@ -454,6 +453,7 @@ namespace RockWeb.Blocks.Core
                 if ( sampleDataLoadDate == null )
                 {
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
                     if ( cbIncludeStats.Checked )

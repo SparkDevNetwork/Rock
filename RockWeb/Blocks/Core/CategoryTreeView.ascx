@@ -124,11 +124,11 @@
 
                             if (pageRouteTemplate.match(regex)) {
                                 locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(regex, id);
-                                locationUrl += "?expandedIds=" + encodeURIComponent(expandedDataIds);
+                                locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
                                 locationUrl = window.location.href.split('?')[0] + itemSearch;
-                                locationUrl += "&expandedIds=" + encodeURIComponent(expandedDataIds);
+                                locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
                             window.location = locationUrl;
