@@ -122,23 +122,24 @@ namespace RockWeb.Blocks.Administration
             var service = new RestControllerService( new RockContext() );
             var sortProperty = gControllers.SortProperty;
 
-            IQueryable<RestController> qry = null;
-            if (sortProperty != null)
-            {
-                qry = service.Queryable().Sort(sortProperty);
-            }
-            else
-            {
-                qry = service.Queryable().OrderBy( c => c.Name);
-            }
-
-            gControllers.DataSource = qry.Select( c => new
+            var qry = service.Queryable().Select( c => new
             {
                 c.Id,
                 c.Name,
                 c.ClassName,
                 Actions = c.Actions.Count()
-            } ).ToList();
+            } );
+
+            if (sortProperty != null)
+            {
+                qry = qry.Sort(sortProperty);
+            }
+            else
+            {
+                qry = qry.OrderBy( c => c.Name);
+            }
+
+            gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }
 
