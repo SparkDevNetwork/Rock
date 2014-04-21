@@ -45,7 +45,7 @@ namespace Rock.Migrations
             // Add approve security for communication detail block
             AddSecurityAuthForBlock( "A02F7695-4C6E-44E9-84CB-42E6F51F285F", 0, "Approve", true, "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B", Model.SpecialRole.None, "61C581F1-1F43-49A7-A49A-B743990D2465" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
