@@ -342,6 +342,7 @@ namespace RockWeb.Blocks.Finance
                     groupLocation = new GroupLocation();
                     businessGroup.GroupLocations.Add( groupLocation );
                 }
+
                 groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
 
                 var locationService = new LocationService( rockContext );
@@ -363,30 +364,14 @@ namespace RockWeb.Blocks.Finance
                 // Set an Known Relationship of Owner between the Owner and the Business.
                 if ( ppOwner.PersonId != null )
                 {
-                    //int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    //    .Where( r =>
-                    //        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    //    .Select( r => r.Id )
-                    //    .FirstOrDefault();
-                    //groupMember = businessGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                    //if ( groupMember == null )
-                    //{
-                    //    groupMember = new GroupMember();
-                    //    businessGroup.Members.Add( groupMember );
-                    //}
-
-                    //groupMember.Person = personService.Get( (int)ppOwner.PersonId );
-                    //groupMember.GroupRoleId = (int)ownerRoleId;
-                    //groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    //rockContext.SaveChanges();
-                    SetOwner();
+                    SetOwner( business );
                 }
             } );
 
             NavigateToParentPage();
         }
 
-        private void SetOwner()
+        private void SetOwner( Person business )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
@@ -395,9 +380,19 @@ namespace RockWeb.Blocks.Finance
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
+            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+            int? principleRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_PRINCIPLE ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
 
             // get the known relationship group from the owner
-            // add the business as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_OWNER
+            // add the business as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
             var owner = personService.Get( (int)ppOwner.PersonId );
             var groupMemberService = new GroupMemberService( rockContext );
             var knownRelationshipGroup = groupMemberService.Queryable()
@@ -407,8 +402,21 @@ namespace RockWeb.Blocks.Finance
                 .Select( g => g.Group ).FirstOrDefault();
             var groupMember = new GroupMember();
             groupMember.PersonId = int.Parse( hfBusinessId.Value );
-            groupMember.GroupRoleId = (int)ownerRoleId;
+            groupMember.GroupRoleId = (int)businessRoleId;
             knownRelationshipGroup.Members.Add( groupMember );
+            rockContext.SaveChanges();
+
+            // get the known relationship group from the business
+            // add the owner as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_PRINCIPLE
+            var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == business.Id )
+                .Select( g => g.Group ).FirstOrDefault();
+            var businessGroupMember = new GroupMember();
+            businessGroupMember.PersonId = owner.Id;
+            businessGroupMember.GroupRoleId = (int)principleRoleId;
+            businessKnownRelationshipGroup.Members.Add( businessGroupMember );
             rockContext.SaveChanges();
         }
 
@@ -452,9 +460,10 @@ namespace RockWeb.Blocks.Finance
             var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId && role.PersonId == e.RowKeyId ).FirstOrDefault();
             if ( groupMember != null )
             {
-                groupMemberService.Delete(groupMember);
+                groupMemberService.Delete( groupMember );
                 rockContext.SaveChanges();
             }
+
             BindContactListGrid( business );
         }
 
@@ -474,7 +483,7 @@ namespace RockWeb.Blocks.Finance
             mdAddContact.Show();
         }
 
-        void mdAddContact_SaveClick( object sender, EventArgs e )
+        private void mdAddContact_SaveClick( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
@@ -502,7 +511,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             mdAddContact.Hide();
-            hfModalOpen.Value = "";
+            hfModalOpen.Value = string.Empty;
             BindContactListGrid( business );
         }
 
@@ -619,26 +628,20 @@ namespace RockWeb.Blocks.Finance
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
 
                 var rockContext = new RockContext();
-                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( r => r.Id )
+                var groupMemberService = new GroupMemberService( rockContext );
+                var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
+                    .Where( g =>
+                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
+                        g.PersonId == business.Id )
                     .FirstOrDefault();
-                //var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault();
-                // To get the owner we have to look in the Group Member table and pull the record that has:
-                // the group id of the owners known relationship group
-                // the person id of the business
-                // the role of known relationship owner
-                var theOwner = new GroupMemberService( rockContext )
-                    .Queryable()
-                    .Where( gm => gm.PersonId == business.Id && gm.GroupRoleId == ownerRoleId && gm.GroupId != business.GivingGroupId )
-                    .FirstOrDefault();
-                if ( theOwner != null )
-                {
-                    ppOwner.PersonId = theOwner.PersonId;
-                    ppOwner.PersonName = theOwner.Person.FullName;
-                }
 
+                var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
+
+                if ( inverseGroupMember != null )
+                {
+                    ppOwner.PersonId = inverseGroupMember.Person.Id;
+                    ppOwner.PersonName = inverseGroupMember.Person.FullName;
+                }
 
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
@@ -671,16 +674,18 @@ namespace RockWeb.Blocks.Finance
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
+
             // I want a list of people that are connected to this business/person by the business contact relationship
             List<GroupMember> contactList = new List<GroupMember>();
             if ( business.GivingGroup != null )
             {
                 contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
                 List<Person> personList = new List<Person>();
-                foreach( var contact in contactList )
+                foreach ( var contact in contactList )
                 {
                     personList.Add( contact.Person );
                 }
+
                 gContactList.DataSource = personList;
                 gContactList.DataBind();
             }

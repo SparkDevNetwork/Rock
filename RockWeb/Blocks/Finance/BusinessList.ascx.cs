@@ -266,12 +266,25 @@ namespace RockWeb.Blocks.Finance
             int ownerId = 0;
             if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
             {
-                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
+
+                // NEED TO FIX THIS STILL
+
+                //var groupMemberService = new GroupMemberService( rockContext );
+                //var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
+                //    .Where( g =>
+                //        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
+                //        g.PersonId == business.Id )
+                //    .FirstOrDefault();
+
+                //var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
+
+                
+                //int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                //    .Where( r =>
+                //        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                //    .Select( r => r.Id )
+                //    .FirstOrDefault();
+                //queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;
