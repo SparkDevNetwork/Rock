@@ -82,11 +82,11 @@
                             var locationUrl = "";
                             if (pageRouteTemplate.match(/{groupId}/i)) {
                                 locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(/{groupId}/i, id);
-                                locationUrl += "?expandedIds=" + encodeURIComponent(expandedDataIds);
+                                locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
                             else {
                                 locationUrl = window.location.href.split('?')[0] + groupSearch;
-                                locationUrl += "&expandedIds=" + encodeURIComponent(expandedDataIds);
+                                locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
                             }
 
                             window.location = locationUrl;
