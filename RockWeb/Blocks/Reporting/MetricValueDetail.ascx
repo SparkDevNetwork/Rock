@@ -5,6 +5,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfMetricId" runat="server" />
+            <asp:HiddenField ID="hfMetricCategoryId" runat="server" />
             <asp:HiddenField ID="hfMetricValueId" runat="server" />
 
             <div class="banner">
