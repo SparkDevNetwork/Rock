@@ -859,6 +859,10 @@
     <Compile Include="Migrations\201404212258193_CategoryTreeView.Designer.cs">
       <DependentUpon>201404212258193_CategoryTreeView.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404212311146_CommunicationDetail.cs" />
+    <Compile Include="Migrations\201404212311146_CommunicationDetail.Designer.cs">
+      <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1484,6 +1488,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404212258193_CategoryTreeView.resx">
       <DependentUpon>201404212258193_CategoryTreeView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404212311146_CommunicationDetail.resx">
+      <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
