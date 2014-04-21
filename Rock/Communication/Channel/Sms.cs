@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
@@ -83,6 +84,36 @@ namespace Rock.Communication.Channel
 
             string message = communication.GetChannelDataValue( "Message" );
             return message.ResolveMergeFields( mergeValues );
+        }
+
+        /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            AppendChannelData( communication, sb, "FromValue" );
+            AppendChannelData( communication, sb, "Message" );
+
+            return sb.ToString();
+        }
+
+        private void AppendChannelData( Model.Communication communication, StringBuilder sb, string key )
+        {
+            string value = communication.GetChannelDataValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                AppendChannelData( sb, key, value );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
         }
 
         /// <summary>

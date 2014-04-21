@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using Newtonsoft.Json;
 using Rock.Data;
 
@@ -201,6 +202,30 @@ namespace Rock.Model
         }
         private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Gets a list of activities.
+        /// </summary>
+        /// <value>
+        /// The activity list.
+        /// </value>
+        [NotMapped]
+        public virtual string ActivityList
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach ( var activity in Activities )
+                {
+                    sb.AppendFormat( "{0} ({1} {2}): {3}<br/>",
+                        activity.ActivityType,
+                        activity.ActivityDateTime.ToShortDateString(),
+                        activity.ActivityDateTime.ToShortTimeString(),
+                        activity.ActivityDetail );
+                }
+
+                return sb.ToString();
+            }
+        }
 
         #endregion
 
