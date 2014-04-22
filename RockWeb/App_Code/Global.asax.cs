@@ -222,6 +222,9 @@ namespace RockWeb
 
                 // mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
+
+                SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
+
             }
             catch ( Exception ex )
             {
