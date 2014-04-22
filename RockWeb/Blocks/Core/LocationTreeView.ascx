@@ -6,9 +6,10 @@
         <asp:HiddenField ID="hfInitialLocationId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialLocationParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedLocationId" runat="server" ClientIDMode="Static" />
+        <asp:HiddenField ID="hfPageRouteTemplate" runat="server" ClientIDMode="Static" />
 
         <div class="treeview">
-            <div class="treeview-actions">
+            <div class="treeview-actions" id="divTreeviewActions" runat="server">
                 
                 <div class="btn-group">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
@@ -55,19 +56,28 @@
 
                 $('#treeview-content')
                     .on('rockTree:selected', function (e, id) {
-                        var LocationSearch = '?LocationId=' + id;
-                        if (window.location.search.indexOf(LocationSearch) === -1) {
-                            var postUrl = window.location.href.split('?')[0] + LocationSearch;
+                        var locationSearch = '?LocationId=' + id;
+                        var currentItemId = $selectedId.val();
 
-                            // get the data-id values of rock-tree items that are showing children (in other words, Expanded Nodes)
-                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').closest('.rocktree-item').map(function () { return $(this).attr('data-id') }).get().join(',');
+                        if (currentItemId !== id) {
 
-                            // to a form post to the newUrl
-                            var form = $('<form action="' + postUrl + '" method="post">' +
-                                            '<input type="hidden" name="expandedIds" value="' + expandedDataIds + '" />' +
-                                         '</form>');
-                            $('body').append(form);
-                            $(form).submit();
+                            // get the data-id values of rock-tree items that are showing visible children (in other words, Expanded Nodes)
+                            var expandedDataIds = $(e.currentTarget).find('.rocktree-children').filter(":visible").closest('.rocktree-item').map(function () {
+                                return $(this).attr('data-id')
+                            }).get().join(',');
+
+                            var pageRouteTemplate = $('#hfPageRouteTemplate').val();
+                            var locationUrl = "";
+                            if (pageRouteTemplate.match(/{locationId}/i)) {
+                                locationUrl = Rock.settings.get('baseUrl') + pageRouteTemplate.replace(/{locationId}/i, id);
+                                locationUrl += "?ExpandedIds=" + encodeURIComponent(expandedDataIds);
+                            }
+                            else {
+                                locationUrl = window.location.href.split('?')[0] + locationSearch;
+                                locationUrl += "&ExpandedIds=" + encodeURIComponent(expandedDataIds);
+                            }
+
+                            window.location = locationUrl;
                         }
                     })
                     .on('rockTree:rendered', function () {

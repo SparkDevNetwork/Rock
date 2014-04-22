@@ -93,13 +93,17 @@ namespace RockWeb.Blocks.Reporting
                         metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
                         if ( metricCategory != null )
                         {
+                            hfMetricCategoryId.Value = metricCategory.Id.ToString();
                             metricId = metricCategory.MetricId;
                         }
                     }
                     else
                     {
-                        // adding a new metric
-                        metricId = 0;
+                        if ( !metricId.HasValue )
+                        {
+                            // adding a new metric
+                            metricId = 0;
+                        }
                     }
                 }
 
@@ -180,6 +184,15 @@ namespace RockWeb.Blocks.Reporting
             metric.SourceSql = ceSourceSql.Text;
             metric.DataViewId = ddlDataView.SelectedValueAsId();
 
+            if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule  )
+            {
+                metric.ScheduleId = ddlSchedule.SelectedValueAsId();
+            }
+            else
+            {
+                metric.ScheduleId = hfUniqueScheduleId.ValueAsInt();
+            }
+
             if ( !Page.IsValid )
             {
                 return;
@@ -202,9 +215,14 @@ namespace RockWeb.Blocks.Reporting
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var schedule = scheduleService.Get( metric.ScheduleId ?? 0 );
+                int metricScheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
                 if ( schedule == null )
                 {
-                    schedule = new Schedule { Name = "Metric Schedule for " + metric.Title };
+                    schedule = new Schedule();
+
+                    // make it an "Unnamed" metrics schedule
+                    schedule.Name = string.Empty;
+                    schedule.CategoryId = metricScheduleCategoryId;
                 }
 
                 schedule.iCalendarContent = sbSchedule.iCalendarContent;
@@ -217,6 +235,8 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 metric.ScheduleId = schedule.Id;
+
+                
 
                 if ( metric.Id == 0 )
                 {
@@ -249,12 +269,33 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 rockContext.SaveChanges();
+
+                // delete any orphaned Unnamed metric schedules
+                var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
+                var orphanedSchedules = scheduleService.Queryable()
+                    .Where( a => a.CategoryId == metricScheduleCategoryId && a.Name == "" && a.Id != schedule.Id )
+                    .Where( s => !metricIdSchedulesQry.Any( m => m == s.Id ) );
+                foreach ( var item in orphanedSchedules )
+                {
+                    scheduleService.Delete( item );
+                }
+
+                if (orphanedSchedules.Any())
+                {
+                    rockContext.SaveChanges();
+                }
             } );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["MetricId"] = metric.Id.ToString();
-            qryParams["MetricCategoryId"] = PageParameter( "MetricCategoryId" );
-            qryParams["ParentCategoryId"] = PageParameter( "ParentCategoryId" );
+            if ( hfMetricCategoryId.ValueAsInt() == 0 )
+            {
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger();
+                int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
+                hfMetricCategoryId.Value = metricCategoryId.ToString();
+            }
+
+            qryParams["MetricCategoryId"] = hfMetricCategoryId.Value;
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -273,7 +314,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["ParentCategoryId"] = parentCategoryId.ToString();
+                    qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -314,6 +355,14 @@ namespace RockWeb.Blocks.Reporting
             MetricService metricService = new MetricService( rockContext );
             Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
 
+            // intentionally get metricCategory with new RockContext() so we don't confuse SaveChanges()
+            int? parentCategoryId = null;
+            var metricCategory = new MetricCategoryService( new RockContext() ).Get( hfMetricCategoryId.ValueAsInt() );
+            if ( metricCategory != null )
+            {
+                parentCategoryId = metricCategory.CategoryId;
+            }
+
             if ( metric != null )
             {
                 string errorMessage;
@@ -328,13 +377,10 @@ namespace RockWeb.Blocks.Reporting
             }
 
 
-            // reload page, selecting the parent category for when we navigate to the treeview
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
-
             var qryParams = new Dictionary<string, string>();
             if ( parentCategoryId != null )
             {
-                qryParams["ParentCategoryId"] = parentCategoryId.ToString();
+                qryParams["CategoryId"] = parentCategoryId.ToString();
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
@@ -356,6 +402,17 @@ namespace RockWeb.Blocks.Reporting
                 ceSourceSql.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
                 ddlDataView.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
             }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblScheduleSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblScheduleSelect_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlSchedule.Visible = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule;
+            sbSchedule.Visible = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.Unique;
         }
 
         #endregion
@@ -481,7 +538,32 @@ namespace RockWeb.Blocks.Reporting
             ppStewardPerson.SetValue( metric.StewardPersonAlias != null ? metric.StewardPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
-            sbSchedule.iCalendarContent = metric.Schedule != null ? metric.Schedule.iCalendarContent : null;
+            if ( metric.Schedule != null )
+            {
+                sbSchedule.iCalendarContent = metric.Schedule.iCalendarContent;
+                if ( metric.Schedule.Name != string.Empty )
+                {
+                    // Named Schedule
+                    rblScheduleSelect.SelectedValue = ScheduleSelectionType.NamedSchedule.ConvertToInt().ToString();
+                    sbSchedule.iCalendarContent = null;
+                    ddlSchedule.SelectedValue = metric.ScheduleId.ToString();
+                }
+                else
+                {
+                    // Unique Schedule (specific to this Metric)
+                    rblScheduleSelect.SelectedValue = ScheduleSelectionType.Unique.ConvertToInt().ToString();
+                    sbSchedule.iCalendarContent = metric.Schedule.iCalendarContent;
+
+                    // set the hidden field for the scheduleId of the Unique schedule so we don't overwrite a named schedule
+                    hfUniqueScheduleId.Value = metric.ScheduleId.ToString();
+                }
+            }
+            else
+            {
+                sbSchedule.iCalendarContent = null;
+                rblScheduleSelect.SelectedValue = rblScheduleSelect.SelectedValue = ScheduleSelectionType.Unique.ConvertToInt().ToString(); ;
+            }
+
             if ( metric.LastRunDateTime != null )
             {
                 ltLastRunDateTime.Text = metric.LastRunDateTime.ToRelativeDateString();
@@ -495,6 +577,9 @@ namespace RockWeb.Blocks.Reporting
 
             // make sure the control visibility is set based on SourceType
             ddlSourceType_SelectedIndexChanged( null, new EventArgs() );
+
+            // make sure the control visibility is set based on Schedule Selection Type
+            rblScheduleSelect_SelectedIndexChanged( null, new EventArgs() );
         }
 
         /// <summary>
@@ -556,8 +641,38 @@ namespace RockWeb.Blocks.Reporting
             {
                 ddlSourceType.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
+
+            rblScheduleSelect.Items.Clear();
+            rblScheduleSelect.Items.Add( new ListItem( ScheduleSelectionType.Unique.ConvertToString(), ScheduleSelectionType.Unique.ConvertToInt().ToString() ) );
+            rblScheduleSelect.Items.Add( new ListItem( ScheduleSelectionType.NamedSchedule.ConvertToString(), ScheduleSelectionType.NamedSchedule.ConvertToInt().ToString() ) );
+
+            var scheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
+            var scheduleCategories = new ScheduleService( rockContext ).Queryable()
+                .Where( a => a.CategoryId == scheduleCategoryId && a.Name != "" )
+                .OrderBy( a => a.Name ).ToList();
+
+            ddlSchedule.Items.Clear();
+            foreach ( var item in scheduleCategories )
+            {
+                ddlSchedule.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
+
         }
 
         #endregion
+
+        #region block specific enums
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum ScheduleSelectionType
+        {
+            Unique = 0,
+            NamedSchedule = 1
+        }
+
+        #endregion
+
     }
 }

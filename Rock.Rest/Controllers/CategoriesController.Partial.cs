@@ -29,6 +29,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class CategoriesController : IHasCustomRoutes
     {
         /// <summary>
@@ -39,7 +42,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "CategoriesGetChildren",
-                routeTemplate: "api/Categories/GetChildren/{id}/{getCategorizedItems}/{entityTypeId}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/Categories/GetChildren/{id}",
                 defaults: new
                 {
                     controller = "Categories",
@@ -48,28 +51,19 @@ namespace Rock.Rest.Controllers
                     entityqualifiervalue = RouteParameter.Optional
                 } );
         }
-
+        
         /// <summary>
         /// Gets the children.
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="id">The identifier.</param>
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityQualifier">The entity qualifier.</param>
+        /// <param name="entityQualifierValue">The entity qualifier value.</param>
+        /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId )
-        {
-            return GetChildren( id, getCategorizedItems, entityTypeId, null, null );
-        }
-
-        [Authenticate, Secured]
-        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier )
-        {
-            return GetChildren( id, getCategorizedItems, entityTypeId, entityQualifier, null );
-        }
-
-        [Authenticate, Secured]
-        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier, string entityQualifierValue )
+        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true )
         {
             Person currentPerson = GetPerson();
 
@@ -91,7 +85,7 @@ namespace Rock.Rest.Controllers
                     }
                     else
                     {
-                        qry = qry.Where( a => a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == "" );
+                        qry = qry.Where( a => a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == string.Empty );
                     }
                 }
 
@@ -127,12 +121,11 @@ namespace Rock.Rest.Controllers
 
             if ( getCategorizedItems )
             {
-                IQueryable items = GetCategorizedItems( serviceInstance, id ) as IQueryable;
+                var items = GetCategorizedItems( serviceInstance, id, showUnnamedEntityItems );
                 if ( items != null )
                 {
-                    foreach ( var item in items )
+                    foreach ( var categorizedItem in items )
                     {
-                        ICategorized categorizedItem = item as ICategorized;
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             var categoryItem = new CategoryItem();
@@ -167,12 +160,11 @@ namespace Rock.Rest.Controllers
                     {
                         if ( getCategorizedItems )
                         {
-                            IQueryable childItems = GetCategorizedItems( serviceInstance, parentId ) as IQueryable;
+                            var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems );
                             if ( childItems != null )
                             {
-                                foreach ( var item in childItems )
+                                foreach ( var categorizedItem in childItems )
                                 {
-                                    ICategorized categorizedItem = item as ICategorized;
                                     if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                                     {
                                         g.HasChildren = true;
@@ -193,8 +185,9 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="categoryId">The category id.</param>
+        /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
         /// <returns></returns>
-        private object GetCategorizedItems( IService serviceInstance, int categoryId )
+        private IQueryable<ICategorized> GetCategorizedItems( IService serviceInstance, int categoryId, bool showUnnamedEntityItems )
         {
             if ( serviceInstance != null )
             {
@@ -217,7 +210,14 @@ namespace Rock.Rest.Controllers
                         compareExpression = Expression.Equal( propertyExpression, constantExpression );
                     }
 
-                    return getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
+                    var result = getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } ) as IQueryable<ICategorized>;
+
+                    if ( !showUnnamedEntityItems )
+                    {
+                        result = result.Where( a => a.Name != "" );
+                    }
+
+                    return result;
                 }
             }
 

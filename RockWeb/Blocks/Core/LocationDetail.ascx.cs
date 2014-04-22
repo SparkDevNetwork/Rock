@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Core
             location.Name = tbName.Text;
             location.IsActive = cbIsActive.Checked;
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
-            if ( gpParentLocation != null )
+            if ( gpParentLocation != null && gpParentLocation.Location != null )
             {
                 location.ParentLocationId = gpParentLocation.Location.Id;
             }

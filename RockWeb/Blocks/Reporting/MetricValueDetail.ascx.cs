@@ -16,7 +16,10 @@
 //
 using System;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Constants;
@@ -45,7 +48,33 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 int? itemId = PageParameter( "MetricValueId" ).AsInteger( false );
+                
+                // in case called with MetricId as the parent id parameter
                 int? metricId = PageParameter( "MetricId" ).AsInteger( false );
+
+                // in case called with MetricCategoryId as the parent id parameter
+                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsInteger( false );
+                MetricCategory metricCategory = null;
+                if ( metricCategoryId.HasValue )
+                {
+                    if ( metricCategoryId.Value > 0 )
+                    {
+                        // editing a metric, but get the metricId from the metricCategory
+                        metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                        if ( metricCategory != null )
+                        {
+                            metricId = metricCategory.MetricId;
+                        }
+                    }
+                    else
+                    {
+                        // adding a new metric. Block will (hopefully) not be shown
+                        metricId = 0;
+                    }
+                }
+                
+                hfMetricCategoryId.Value = metricCategoryId.ToString();
+
                 if ( itemId.HasValue )
                 {
                     ShowDetail( "MetricValueId", itemId.Value, metricId );
@@ -68,7 +97,10 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "MetricId", hfMetricId.Value );
+            qryParams.Add( "MetricCategoryId", hfMetricCategoryId.Value );
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -88,6 +120,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 metricValue = new MetricValue();
                 metricValueService.Add( metricValue );
+                metricValue.MetricId = hfMetricId.ValueAsInt();
             }
             else
             {
@@ -97,7 +130,6 @@ namespace RockWeb.Blocks.Reporting
             metricValue.MetricValueType = ddlMetricValueType.SelectedValueAsEnum<MetricValueType>();
             metricValue.XValue = tbXValue.Text;
             metricValue.YValue = tbYValue.Text.AsDecimal( false );
-            metricValue.MetricId = hfMetricId.ValueAsInt();
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
             metricValue.CampusId = cpCampus.SelectedCampusId;
@@ -110,7 +142,10 @@ namespace RockWeb.Blocks.Reporting
 
             rockContext.SaveChanges();
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "MetricId", hfMetricId.Value );
+            qryParams.Add( "MetricCategoryId", hfMetricCategoryId.Value );
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>
@@ -148,20 +183,21 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                metricValue = new MetricValue { Id = 0 };
+                metricValue = new MetricValue { Id = 0, MetricId = metricId ?? 0};
                 lActionTitle.Text = ActionTitle.Add( MetricValue.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             hfMetricValueId.Value = metricValue.Id.ToString();
 
+            LoadDropDowns();
+
             ddlMetricValueType.SelectedValue = metricValue.MetricValueType.ConvertToInt().ToString();
-            tbXValue.Text = metricValue.XValue.ToString();
+            tbXValue.Text = metricValue.XValue;
             tbYValue.Text = metricValue.YValue.ToString();
-            hfMetricId.Value = metricId.ToString();
+            hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
             dtpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
             cpCampus.SelectedCampusId = metricValue.CampusId;
-
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -187,6 +223,20 @@ namespace RockWeb.Blocks.Reporting
             cpCampus.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
+        }
+
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
+        {
+            ddlMetricValueType.Items.Clear();
+            foreach ( var item in Enum.GetValues( typeof( MetricValueType ) ).OfType<MetricValueType>().OrderBy( a => a.ConvertToString() ) )
+            {
+                ddlMetricValueType.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
+            }
+
+            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().ToList();
         }
 
         #endregion
