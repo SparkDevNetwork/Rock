@@ -329,6 +329,68 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Posts or Puts the data depending on httpMethod
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        public void PostNonIEntityData<T>( string postPath, T data )
+        {
+            Uri requestUri = new Uri( rockBaseUri, postPath );
+
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            HttpError httpError = null;
+            HttpResponseMessage httpMessage = null;
+
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( postTask =>
+            {
+                if ( postTask.Result.IsSuccessStatusCode )
+                {
+                    postTask.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                    {
+                        httpError = c.Result;
+                    } ).Wait();
+
+                    postTask.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                    {
+                        var contentResult = c.Result;
+                    } ).Wait();
+
+                    httpMessage = postTask.Result;
+                }
+                else
+                {
+                    postTask.Result.Content.ReadAsStringAsync().ContinueWith( s =>
+                    {
+#if DEBUG
+                        string debugResult = postTask.Result.ReasonPhrase + "\n\n" + s.Result + "\n\n" + postPath;
+                        httpError = new HttpError( debugResult );
+#else
+                        // just get the simple error message, don't expose exception details to user
+                        httpError = new HttpError( postTask.Result.ReasonPhrase );
+#endif
+                    } ).Wait();
+                }
+
+
+            } );
+
+            // POST is for INSERTs
+            httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
+
+            if ( httpMessage != null )
+            {
+                httpMessage.EnsureSuccessStatusCode();
+            }
+        }
+
+        /// <summary>
         /// Posts the data with result.
         /// </summary>
         /// <typeparam name="T"></typeparam>
