@@ -19,6 +19,9 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Reflection;
@@ -38,6 +41,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
 using Rock.Data;
+using Rock.Net;
 
 namespace RockWeb.Blocks.Core
 {
@@ -449,6 +453,7 @@ namespace RockWeb.Blocks.Core
                 string organizationName = string.Empty;
                 string organizationAddress = string.Empty;
                 int numberOfActiveRecords = 0;
+                string publicUrl = string.Empty;
 
                 if ( sampleDataLoadDate == null )
                 {
@@ -460,6 +465,7 @@ namespace RockWeb.Blocks.Core
                     {
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
+                        publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 
                         var rockContext = new RockContext();
 
@@ -477,8 +483,8 @@ namespace RockWeb.Blocks.Core
                         numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
                     }
 
-                    // TODO now send them to SDN
-                    //SendToSpark( rockInstanceId, version, ipAddress, organizationName, organizationAddress, numberOfActiveRecords );
+                    // TODO now send them to SDN/Rock server
+                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationAddress, numberOfActiveRecords );
                 }
             }
             catch ( Exception ex )
@@ -489,6 +495,46 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Sends the public data and impact statistics to the Rock server.
+        /// </summary>
+        /// <param name="rockInstanceId"></param>
+        /// <param name="version"></param>
+        /// <param name="ipAddress"></param>
+        /// <param name="publicUrl"></param>
+        /// <param name="organizationName"></param>
+        /// <param name="organizationAddress"></param>
+        /// <param name="numberOfActiveRecords"></param>
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, string organizationAddress, int numberOfActiveRecords )
+        {
+            using ( RockRestClient client = new RockRestClient( "http://rockrms.com/" ) )
+            {
+
+                ImpactStatistic impactStatistic = new ImpactStatistic()
+                {
+                    Version = version,
+                    IpAddress = ipAddress,
+                    PublicUrl = publicUrl,
+                    OrganizationName = organizationName,
+                    OrganizationAddress = organizationAddress,
+                    NumberOfActiveRecords = numberOfActiveRecords
+                };
+
+                client.PostNonIEntityData<ImpactStatistic>( "api/ImpactStatistics/", impactStatistic );
+            }
+        }
         #endregion
+    }
+
+    [Serializable]
+    public class ImpactStatistic
+    {
+        public string RockInstanceId { get; set; }
+        public string Version { get; set; }
+        public string IpAddress { get; set; }
+        public string PublicUrl { get; set; }
+        public string OrganizationName { get; set; }
+        public string OrganizationAddress { get; set; }
+        public int NumberOfActiveRecords { get; set; }
     }
 }
