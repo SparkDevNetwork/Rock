@@ -5,6 +5,7 @@
 
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfMetricId" runat="server" />
+            <asp:HiddenField ID="hfMetricCategoryId" runat="server" />
 
             <div class="banner">
                 <h1>
@@ -39,7 +40,15 @@
                     <div class="col-md-12">
                         <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
                         <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
-                        <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
+                        <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
+                            <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
+                            
+                            <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
+                            
+                            <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
+                            <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
+                        </Rock:RockControlWrapper>
+
                         <Rock:RockLiteral ID="ltLastRunDateTime" runat="server" Label="Last Run" />
                     </div>
                 </div>

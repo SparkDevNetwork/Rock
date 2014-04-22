@@ -42,9 +42,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the Name of the Schedule.
         /// </value>
-        [Required]
         [MaxLength( 50 )]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>

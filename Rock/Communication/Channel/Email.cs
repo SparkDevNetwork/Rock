@@ -130,6 +130,87 @@ You can view an online version of this email here:
         }
 
         /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("<div class='row'>");
+            sb.AppendLine( "<div class='col-md-6'>" );
+
+            AppendChannelData( communication, sb, "FromName" );
+            AppendChannelData( communication, sb, "FromAddress" );
+            AppendChannelData( communication, sb, "ReplyTo" );
+            AppendChannelData( communication, sb, "Subject" );
+
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "<div class='col-md-6'>" );
+            AppendAttachmentData( sb, communication.GetChannelDataValue( "Attachments" ) );
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "</div>" );
+
+            string value = communication.GetChannelDataValue( "HtmlMessage" );
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                AppendChannelData( sb, "HtmlMessage", string.Format( "<pre>{0}</pre>", value.EncodeHtml() ) );
+            }
+
+            AppendChannelData( communication, sb, "TextMessage" );
+
+            return sb.ToString();
+        }
+
+        private void AppendChannelData(Model.Communication communication, StringBuilder sb, string key)
+        {
+            string value = communication.GetChannelDataValue( key );
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                AppendChannelData( sb, key, value );
+            }
+        }
+
+        private void AppendAttachmentData(StringBuilder sb, string value)
+        {
+            var attachments = new Dictionary<int, string>();
+
+            var fileIds = new List<int>();
+            value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add( v.AsInteger() ?? 0 ) );
+
+            new BinaryFileService( new RockContext() ).Queryable()
+                .Where( f => fileIds.Contains( f.Id ) )
+                .Select( f => new
+                {
+                    f.Id,
+                    f.FileName
+                } )
+                .ToList()
+                .ForEach( f => attachments.Add( f.Id, f.FileName ) );
+
+            if (attachments.Any())
+            {
+                StringBuilder sbAttachments = new StringBuilder();
+                sbAttachments.Append( "<ul>" );
+                foreach(var keyValue in attachments)
+                {
+                    sbAttachments.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                        System.Web.VirtualPathUtility.ToAbsolute( "~" ), keyValue.Key, keyValue.Value );
+                }
+                sbAttachments.Append( "</ul>" );
+
+                AppendChannelData( sb, "Attachments", sbAttachments.ToString() );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
+        }
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>

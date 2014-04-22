@@ -68,7 +68,7 @@
 
                 $('#treeview-content')
                     .on('rockTree:selected', function (e, id) {
-                        var groupSearch = '?groupId=' + id;
+                        var groupSearch = '?GroupId=' + id;
                         var currentItemId = $selectedId.val();
 
                         if (currentItemId !== id) {
