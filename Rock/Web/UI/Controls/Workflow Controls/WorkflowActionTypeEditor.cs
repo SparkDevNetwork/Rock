@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionTypeEditor : CompositeControl
+    public class WorkflowActionTypeEditor : CompositeControl, IWorkflowActionTypeEditor
     {
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
@@ -214,10 +214,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             _tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             _tbActionTypeName.PropertyName = "Name";
 
-            _cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "Action is Completed on Success" };
+            _cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "&nbsp;", Text = "Action is Completed on Success" };
             _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "Activity is Completed on Success" };
+            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "&nbsp;", Text = "Activity is Completed on Success" };
             _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
             _phActionAttributes = new PlaceHolder();
@@ -301,10 +301,22 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // action edit fields
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbActionTypeName.RenderControl( writer );
             _ddlEntityType.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsActionCompletedOnSuccess.RenderControl( writer );
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
 
             // action attributes
             _phActionAttributes.RenderControl( writer );
