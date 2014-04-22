@@ -707,6 +707,14 @@ namespace Rock.Data
         public DbSet<WorkflowActivityType> WorkflowActivityTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the workflow actions.
+        /// </summary>
+        /// <value>
+        /// The workflow actions.
+        /// </value>
+        public DbSet<WorkflowForm> WorkflowForms { get; set; }
+
+        /// <summary>
         /// Gets or sets the workflow logs.
         /// </summary>
         /// <value>

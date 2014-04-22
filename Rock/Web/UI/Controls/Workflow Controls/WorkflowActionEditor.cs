@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionEditor : CompositeControl, IWorkflowActionEditor
+    public class WorkflowActionEditor : CompositeControl
     {
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
@@ -42,6 +42,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlEntityType;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
+        private WorkflowFormEditor _formEditor;
         private PlaceHolder _phActionAttributes;
 
         /// <summary>
@@ -119,6 +120,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
+                result.WorkflowForm = _formEditor.Form;
                 result.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
                 return result;
@@ -132,6 +134,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 _ddlEntityType.SetValue( value.EntityTypeId );
                 _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+                _formEditor.Form = value.WorkflowForm;
 
                 var action = EntityTypeCache.Read( value.EntityTypeId );
                 if ( action != null )
@@ -214,11 +217,14 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             _tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             _tbActionTypeName.PropertyName = "Name";
 
-            _cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "&nbsp;", Text = "Action is Completed on Success" };
+            _cbIsActionCompletedOnSuccess = new RockCheckBox { Text = "Action is Completed on Success" };
             _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "&nbsp;", Text = "Activity is Completed on Success" };
+            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Text = "Activity is Completed on Success" };
             _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
+
+            _formEditor = new WorkflowFormEditor();
+            _formEditor.ID = this.ID + "_formEditor";
 
             _phActionAttributes = new PlaceHolder();
             _phActionAttributes.ID = this.ID + "_phActionAttributes";
@@ -229,6 +235,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             Controls.Add( _ddlEntityType );
             Controls.Add( _cbIsActionCompletedOnSuccess );
             Controls.Add( _cbIsActivityCompletedOnSuccess );
+            Controls.Add( _formEditor );
             Controls.Add( _phActionAttributes );
             Controls.Add( _lbDeleteActionType );
         }
@@ -318,7 +325,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             writer.RenderEndTag();
 
-            // action attributes
+            _formEditor.RenderControl( writer );
+
             _phActionAttributes.RenderControl( writer );
 
             // widget-content div

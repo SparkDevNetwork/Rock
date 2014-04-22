@@ -16,19 +16,28 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI;
 
+using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Web.UI.Controls
+namespace Rock.Workflow.Action
 {
-    public interface IWorkflowActionEditor
+    /// <summary>
+    /// Prompts user for attribute values
+    /// </summary>
+    [Description( "Prompts user for attribute values" )]
+    [Export( typeof( ActionComponent ) )]
+    [ExportMetadata( "ComponentName", "User Form" )]
+    public class UserForm : ActionComponent
     {
-        WorkflowActionType WorkflowActionType { get; set;}
-        bool ForceContentVisible { get; set; }
-        void RenderControl( HtmlTextWriter writer );
+        public override bool Execute( WorkflowAction action, object entity, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+            return false;
+        }
     }
 }

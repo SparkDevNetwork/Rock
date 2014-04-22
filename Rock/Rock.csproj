@@ -239,6 +239,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowFormService.cs" />
     <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\FinancialPersonBankAccountService.Partial.cs" />
@@ -274,6 +275,7 @@
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\PageView.cs" />
+    <Compile Include="Model\WorkflowForm.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />
@@ -636,8 +638,10 @@
     <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\Workflow Controls\IWorkflowActionEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionEditor.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormEditor.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ISupressRowSelected.cs" />
@@ -660,6 +664,7 @@
     <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
+    <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
