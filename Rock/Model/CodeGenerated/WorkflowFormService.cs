@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// WorkflowActionType Service class
+    /// WorkflowForm Service class
     /// </summary>
-    public partial class WorkflowActionTypeService : Service<WorkflowActionType>
+    public partial class WorkflowFormService : Service<WorkflowForm>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowActionTypeService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowFormService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public WorkflowActionTypeService(RockContext context) : base(context)
+        public WorkflowFormService(RockContext context) : base(context)
         {
         }
 
@@ -48,13 +48,13 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( WorkflowActionType item, out string errorMessage )
+        public bool CanDelete( WorkflowForm item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<WorkflowAction>( Context ).Queryable().Any( a => a.ActionTypeId == item.Id ) )
+            if ( new Service<WorkflowActionType>( Context ).Queryable().Any( a => a.WorkflowFormId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionType.FriendlyTypeName, WorkflowAction.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowForm.FriendlyTypeName, WorkflowActionType.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -64,42 +64,37 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class WorkflowActionTypeExtensionMethods
+    public static partial class WorkflowFormExtensionMethods
     {
         /// <summary>
-        /// Clones this WorkflowActionType object to a new WorkflowActionType object
+        /// Clones this WorkflowForm object to a new WorkflowForm object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static WorkflowActionType Clone( this WorkflowActionType source, bool deepCopy )
+        public static WorkflowForm Clone( this WorkflowForm source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as WorkflowActionType;
+                return source.Clone() as WorkflowForm;
             }
             else
             {
-                var target = new WorkflowActionType();
+                var target = new WorkflowForm();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another WorkflowActionType object to this WorkflowActionType object
+        /// Copies the properties from another WorkflowForm object to this WorkflowForm object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this WorkflowActionType target, WorkflowActionType source )
+        public static void CopyPropertiesFrom( this WorkflowForm target, WorkflowForm source )
         {
-            target.ActivityTypeId = source.ActivityTypeId;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.EntityTypeId = source.EntityTypeId;
-            target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
-            target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
-            target.WorkflowFormId = source.WorkflowFormId;
+            target.Header = source.Header;
+            target.Footer = source.Footer;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

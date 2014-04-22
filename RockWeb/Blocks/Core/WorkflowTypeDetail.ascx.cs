@@ -344,6 +344,8 @@ namespace RockWeb.Blocks.Core
                 } );
                 rockContext.SaveChanges();
 
+                WorkflowFormService workflowFormService = new WorkflowFormService( rockContext );
+
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
                 int workflowActivityTypeOrder = 0;
                 foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
@@ -371,6 +373,10 @@ namespace RockWeb.Blocks.Core
                     {
                         WorkflowActionType editorWorkflowActionType = workflowActionTypeEditor.WorkflowActionType;
                         WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActionType.Guid ) );
+
+                        WorkflowForm editorForm = editorWorkflowActionType.WorkflowForm;
+                        WorkflowForm workflowForm = workflowActionType.WorkflowForm;
+
                         if ( workflowActionType == null )
                         {
                             workflowActionType = editorWorkflowActionType;
@@ -385,7 +391,18 @@ namespace RockWeb.Blocks.Core
                             workflowActionType.Attributes = editorWorkflowActionType.Attributes;
                             workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
                         }
-                        
+
+                        if (editorForm == null || !editorForm.Guid.Equals(workflowForm.Guid))
+                        {
+                            workflowFormService.Delete(workflowForm);
+                            workflowActionType.WorkflowForm = null;
+                        }
+
+                        if (editorForm != null)
+                        {
+                            workflowForm = editorForm;
+                            workflowActionType.WorkflowForm = workflowForm;
+                        }
 
                         workflowActionType.Order = workflowActionTypeOrder++;
                     }

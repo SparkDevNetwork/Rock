@@ -119,7 +119,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             result.IsActivatedWithWorkflow = _cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
             int order = 0;
-            foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>() )
+            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
             {
                 WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
                 workflowActionType.Order = order++;
@@ -173,7 +173,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
-            _cbActivityTypeIsActive = new RockCheckBox { Label = "&nbsp;", Text = "Active" };
+            _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
@@ -209,7 +209,7 @@ javascript:
             _tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
             _tbActivityTypeDescription.PropertyName = "Description";
 
-            _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Label = "&nbsp;", Text = "Activated with Workflow" };
+            _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
             _lbAddActionType = new LinkButton();
@@ -298,7 +298,7 @@ javascript:
 
             if ( !forceContentVisible )
             {
-                foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
                 {
                     if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
                     {
@@ -354,7 +354,7 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
             {
                 workflowActionTypeEditor.RenderControl( writer );
             }
