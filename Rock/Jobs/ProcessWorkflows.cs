@@ -30,6 +30,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process the persisted active workflows
     /// </summary>
+    [DisallowConcurrentExecution]
     public class ProcessWorkflows : IJob
     {
         /// <summary> 
