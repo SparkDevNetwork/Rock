@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit(e);
 
-            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js", false);
-            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js", false);
+            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
         }
 
         /// <summary>
@@ -211,8 +211,6 @@ namespace RockWeb.Blocks.CheckIn
         var labelData = {0};
 
 		function onDeviceReady() {{
-	
-			//navigator.notification.alert('Oh boy! It's going to be a good day!, alertDismissed, 'Success', 'Continue');
 			printLabels();
 		}}
 		
@@ -224,7 +222,7 @@ namespace RockWeb.Blocks.CheckIn
 		    ZebraPrintPlugin.printTags(
             	JSON.stringify(labelData), 
             	function(result) {{ 
-			        console.log('I printed that tag like a champ!!!');
+			        console.log('Tag printed');
 			    }},
 			    function(error) {{   
 				    // error is an array where:
