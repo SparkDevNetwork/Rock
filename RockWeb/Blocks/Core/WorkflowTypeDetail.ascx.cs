@@ -305,15 +305,15 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                List<WorkflowActivityTypeEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityTypeEditor>().ToList();
+                List<WorkflowActivityEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityEditor>().ToList();
 
                 // delete WorkflowActionTypes that aren't assigned in the UI anymore
                 WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
                 List<WorkflowActionType> actionTypesInDB = workflowActionTypeService.Queryable().Where( a => a.ActivityType.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActionType> actionTypesInUI = new List<WorkflowActionType>();
-                foreach ( WorkflowActivityTypeEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
+                foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
                 {
-                    foreach ( WorkflowActionTypeEditor editor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionTypeEditor>() )
+                    foreach ( WorkflowActionEditor editor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionEditor>() )
                     {
                         actionTypesInUI.Add( editor.WorkflowActionType );
                     }
@@ -346,7 +346,7 @@ namespace RockWeb.Blocks.Core
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
                 int workflowActivityTypeOrder = 0;
-                foreach ( WorkflowActivityTypeEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
+                foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
                 {
                     WorkflowActivityType editorWorkflowActivityType = workflowActivityTypeEditor.GetWorkflowActivityType();
                     WorkflowActivityType workflowActivityType = workflowType.ActivityTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActivityType.Guid ) );
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Core
                     workflowActivityType.Order = workflowActivityTypeOrder++;
 
                     int workflowActionTypeOrder = 0;
-                    foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionTypeEditor>() )
+                    foreach ( WorkflowActionEditor workflowActionTypeEditor in workflowActivityTypeEditor.Controls.OfType<WorkflowActionEditor>() )
                     {
                         WorkflowActionType editorWorkflowActionType = workflowActionTypeEditor.WorkflowActionType;
                         WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActionType.Guid ) );
@@ -803,7 +803,7 @@ namespace RockWeb.Blocks.Core
         {
             WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
             int order = 0;
-            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityTypeEditor>() )
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
             {
                 WorkflowActivityType workflowActivityType = activityEditor.GetWorkflowActivityType();
                 workflowActivityType.Order = order++;
@@ -832,7 +832,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
         private void CreateWorkflowActivityTypeEditorControls( WorkflowActivityType workflowActivityType, bool forceContentVisible = false )
         {
-            WorkflowActivityTypeEditor workflowActivityTypeEditor = new WorkflowActivityTypeEditor();
+            WorkflowActivityEditor workflowActivityTypeEditor = new WorkflowActivityEditor();
             workflowActivityTypeEditor.ID = "WorkflowActivityTypeEditor_" + workflowActivityType.Guid.ToString( "N" );
             workflowActivityTypeEditor.SetWorkflowActivityType( workflowActivityType );
             workflowActivityTypeEditor.DeleteActivityTypeClick += workflowActivityTypeEditor_DeleteActivityClick;
@@ -854,9 +854,9 @@ namespace RockWeb.Blocks.Core
         /// <exception cref="System.NotImplementedException"></exception>
         protected void workflowActivityTypeEditor_AddActionTypeClick( object sender, EventArgs e )
         {
-            if ( sender is WorkflowActivityTypeEditor )
+            if ( sender is WorkflowActivityEditor )
             {
-                WorkflowActivityTypeEditor workflowActivityTypeEditor = sender as WorkflowActivityTypeEditor;
+                WorkflowActivityEditor workflowActivityTypeEditor = sender as WorkflowActivityEditor;
                 CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, new WorkflowActionType { Guid = Guid.NewGuid() } );
             }
         }
@@ -866,9 +866,9 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="workflowActivityTypeEditor">The workflow activity type editor.</param>
         /// <param name="workflowActionType">Type of the workflow action.</param>
-        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityTypeEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType )
+        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType )
         {
-            WorkflowActionTypeEditor workflowActionTypeEditor = new WorkflowActionTypeEditor();
+            WorkflowActionEditor workflowActionTypeEditor = new WorkflowActionEditor();
             workflowActionTypeEditor.ID = "WorkflowActionTypeEditor_" + workflowActionType.Guid.ToString( "N" );
             workflowActionTypeEditor.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             workflowActionTypeEditor.WorkflowActionType = workflowActionType;
@@ -883,10 +883,10 @@ namespace RockWeb.Blocks.Core
         /// <exception cref="System.NotImplementedException"></exception>
         protected void workflowActionTypeEditor_DeleteActionTypeClick( object sender, EventArgs e )
         {
-            if ( sender is WorkflowActionTypeEditor )
+            if ( sender is WorkflowActionEditor )
             {
-                WorkflowActionTypeEditor workflowActionTypeEditor = sender as WorkflowActionTypeEditor;
-                WorkflowActivityTypeEditor workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityTypeEditor;
+                WorkflowActionEditor workflowActionTypeEditor = sender as WorkflowActionEditor;
+                WorkflowActivityEditor workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityEditor;
                 workflowActivityTypeEditor.Controls.Remove( workflowActionTypeEditor );
             }
         }
@@ -898,9 +898,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void workflowActivityTypeEditor_DeleteActivityClick( object sender, EventArgs e )
         {
-            if ( sender is WorkflowActivityTypeEditor )
+            if ( sender is WorkflowActivityEditor )
             {
-                WorkflowActivityTypeEditor editor = sender as WorkflowActivityTypeEditor;
+                WorkflowActivityEditor editor = sender as WorkflowActivityEditor;
                 if ( editor != null )
                 {
                     phActivities.Controls.Remove( editor );

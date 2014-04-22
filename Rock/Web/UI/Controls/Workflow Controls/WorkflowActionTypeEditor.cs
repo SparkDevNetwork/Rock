@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionTypeEditor : CompositeControl, IWorkflowActionTypeEditor
+    public class WorkflowActionEditor : CompositeControl, IWorkflowActionEditor
     {
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;

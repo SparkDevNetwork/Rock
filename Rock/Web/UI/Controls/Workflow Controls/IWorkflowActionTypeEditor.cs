@@ -25,7 +25,7 @@ using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
-    public interface IWorkflowActionTypeEditor
+    public interface IWorkflowActionEditor
     {
         WorkflowActionType WorkflowActionType { get; set;}
         bool ForceContentVisible { get; set; }

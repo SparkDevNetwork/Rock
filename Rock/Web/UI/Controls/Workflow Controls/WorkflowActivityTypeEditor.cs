@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
-    public class WorkflowActivityTypeEditor : CompositeControl
+    public class WorkflowActivityEditor : CompositeControl
     {
         private HiddenField _hfActivityTypeGuid;
         private Label _lblActivityTypeName;
@@ -119,7 +119,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             result.IsActivatedWithWorkflow = _cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
             int order = 0;
-            foreach ( IWorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionTypeEditor>() )
+            foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>() )
             {
                 WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
                 workflowActionType.Order = order++;
@@ -298,7 +298,7 @@ javascript:
 
             if ( !forceContentVisible )
             {
-                foreach ( IWorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+                foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
                 {
                     if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
                     {
@@ -354,7 +354,7 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            foreach ( IWorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+            foreach ( IWorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<IWorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
             {
                 workflowActionTypeEditor.RenderControl( writer );
             }
