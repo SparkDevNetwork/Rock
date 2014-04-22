@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroups_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0 );
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroups_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "GroupId", e.RowKeyId );
         }
 
         /// <summary>

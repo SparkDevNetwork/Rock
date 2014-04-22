@@ -22,6 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -56,22 +57,12 @@ namespace RockWeb.Blocks.Core
 
             _LocationId = PageParameter( "LocationId" );
 
-            if ( string.IsNullOrWhiteSpace( _LocationId ) )
-            {
-                // If no Location was selected, try to find the first Location and redirect
-                // back to current page with that Location selected
-                var Location = FindFirstLocation();
-                {
-                    if ( Location != null )
-                    {
-                        _LocationId = Location.Id.ToString();
+            hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
 
-                        // redirect so that the Location treeview has the first node selected right away and Location detail shows the Location
-                        this.Response.Redirect( this.Request.Url + "?LocationId=" + _LocationId.ToString(), false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
-                }
-            }
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            // hide all the actions if user doesn't have EDIT to the block
+            divTreeviewActions.Visible = canEditBlock;
         }
 
         /// <summary>
@@ -82,12 +73,46 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            if ( !Page.IsPostBack )
+            {
+                if ( string.IsNullOrWhiteSpace( _LocationId ) )
+                {
+                    // If no location was selected, try to find the first location and redirect
+                    // back to current page with that location selected
+                    var location = FindFirstLocation();
+                    {
+                        if ( location != null )
+                        {
+                            _LocationId = location.Id.ToString();
+                            string redirectUrl = string.Empty;
+
+                            // redirect so that the location treeview has the first node selected right away and location detail shows the location
+                            if ( hfPageRouteTemplate.Value.IndexOf( "{locationId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                            {
+                                redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{locationId}", _LocationId.ToString() );
+                            }
+                            else
+                            {
+                                redirectUrl = this.Request.Url + "?LocationId=" + _LocationId.ToString();
+                            }
+
+                            this.Response.Redirect( redirectUrl, false );
+                            Context.ApplicationInstance.CompleteRequest();
+                        }
+                    }
+                }
+            }
+
+
             if ( !string.IsNullOrWhiteSpace( _LocationId ) )
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
                 Location Location = ( new LocationService( new RockContext() ) ).Get( int.Parse( _LocationId ) );
-                lbAddLocationChild.Enabled = Location != null;
+
+                lbAddLocationChild.Enabled = Location != null && canEditBlock;
 
                 // get the parents of the selected item so we can tell the treeview to expand those
                 List<string> parentIdList = new List<string>();

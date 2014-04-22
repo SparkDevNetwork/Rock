@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnInit( e );
 
-            _groupId = PageParameter( "groupId" );
+            _groupId = PageParameter( "GroupId" );
 
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                redirectUrl = this.Request.Url + "?groupId=" + _groupId.ToString();
+                                redirectUrl = this.Request.Url + "?GroupId=" + _groupId.ToString();
                             }
 
                             this.Response.Redirect( redirectUrl, false );
@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", 0 );
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Groups
         protected void lbAddGroupChild_Click( object sender, EventArgs e )
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
-            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", groupId );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", groupId );
         }
 
         #endregion
