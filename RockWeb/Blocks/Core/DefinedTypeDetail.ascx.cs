@@ -76,6 +76,8 @@ namespace RockWeb.Blocks.Core
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
             gDefinedTypeAttributes.GridReorder += gDefinedTypeAttributes_GridReorder;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DefinedType.FriendlyTypeName );
         }
 
         /// <summary>
@@ -206,6 +208,41 @@ namespace RockWeb.Blocks.Core
             var qryParams = new Dictionary<string, string>();
             qryParams["definedTypeId"] = definedType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            DefinedType definedType = definedTypeService.Get( int.Parse( hfDefinedTypeId.Value ) );
+
+            if ( definedType != null )
+            {
+                if ( !definedType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "Sorry, You are not authorized to delete this Defined Type.", ModalAlertType.Information );
+                    return;
+                }
+
+                string errorMessage;
+                if ( !definedTypeService.CanDelete( definedType, out errorMessage ) )
+                {
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                definedTypeService.Delete( definedType );
+
+                rockContext.SaveChanges();
+
+            }
+
+            NavigateToParentPage();
         }
 
         /// <summary>
