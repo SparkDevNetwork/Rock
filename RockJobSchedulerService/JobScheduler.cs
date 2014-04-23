@@ -83,7 +83,21 @@ namespace RockJobSchedulerService
 
             // get list of active jobs
             ServiceJobService jobService = new ServiceJobService( rockContext );
-            foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+            List<ServiceJob> activeJobs = null;
+            try
+            {
+                // make sure that we can connect to the database and get the jobs list.  Write a good EventLog message and exit the app if we can't
+                this.EventLog.WriteEntry( string.Format( "Connecting to database {0}:{1}", rockContext.Database.Connection.DataSource, rockContext.Database.Connection.Database ), EventLogEntryType.Information );
+                rockContext.Database.Connection.Open();
+                activeJobs = jobService.GetActiveJobs().ToList();
+            }
+            catch ( Exception ex )
+            {
+                this.EventLog.WriteEntry( "Unable load active jobs list. " + ex.Message, EventLogEntryType.Error );
+                throw ex;
+            }
+
+            foreach ( ServiceJob job in activeJobs )
             {
                 try
                 {

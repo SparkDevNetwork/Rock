@@ -79,6 +79,11 @@ namespace RockWeb.Blocks.Examples
         private static int _adultRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
         /// <summary>
+        /// The Entity Type Id for the Person entities.
+        /// </summary>
+        private static int _personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+        /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
         private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
@@ -314,7 +319,6 @@ namespace RockWeb.Blocks.Examples
                     var response = (HttpWebResponse)request.GetResponse();
                     fileExists = response.StatusCode == HttpStatusCode.OK;
                 }
-
             }
             catch ( Exception ex )
             {
@@ -401,7 +405,7 @@ namespace RockWeb.Blocks.Examples
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
 
-            //// Import the sample data
+            // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -435,12 +439,41 @@ namespace RockWeb.Blocks.Examples
                     _sb.AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
 
+                // Add Person Notes
+                AddPersonNotes( elemFamilies, rockContext );
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
             } );
 
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 lTime.Text = _sb.ToString();
             }
+        }
+
+        /// <summary>
+        /// Adds any notes for any people given in the XML file.
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        /// <param name="rockContext"></param>
+        private void AddPersonNotes( XElement elemFamilies, RockContext rockContext )
+        {
+            var peopleWithNotes = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "notes" ).Elements( "note" )
+                                  select new
+                                  {
+                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                      Type = n.Attribute( "type" ).Value,
+                                      Text = n.Attribute( "text" ).Value,
+                                      Date = n.Attribute( "date" ) != null ?  n.Attribute( "date" ).Value : null
+                                  };
+
+	        foreach ( var r in peopleWithNotes )
+	        {
+                int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
+                AddNote( personId, r.Type, r.Text, r.Date, rockContext );
+	        }
         }
 
         /// <summary>
@@ -641,7 +674,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Handles adding families from the given XML element snippet
         /// </summary>
-        /// <param name="elemFamilies">The elem families.</param>
+        /// <param name="elemFamilies">The xml element containing all the families.</param>
         /// <param name="rockContext">The rock context.</param>
         private void AddFamilies( XElement elemFamilies, RockContext rockContext )
         {
@@ -1260,6 +1293,15 @@ namespace RockWeb.Blocks.Examples
                         person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
                     }
 
+                    if ( personElem.Attribute( "grade" ) != null )
+                    {
+                        person.Grade = int.Parse( personElem.Attribute( "grade" ).Value.Trim() );
+                    }
+                    else if ( personElem.Attribute( "graduationDate" ) != null )
+                    {
+                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim() );
+                    }
+
                     // Now, if their age was given we'll change the given birth year to make them
                     // be this age as of Today.
                     if ( personElem.Attribute( "age" ) != null )
@@ -1433,6 +1475,44 @@ namespace RockWeb.Blocks.Examples
             }
 
             return familyMembers;
+        }
+
+        /// <summary>
+        /// Add a note on the given person's record.
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="noteTypeName"></param>
+        /// <param name="noteText"></param>
+        /// <param name="noteDate">The date the note was created</param>
+        /// <param name="rockContext"></param>
+        private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, RockContext rockContext )
+        {
+            var service = new NoteTypeService( rockContext );
+            var noteType = service.Get( _personEntityTypeId, noteTypeName );
+            // if the note type does not exist, create it
+            if ( noteType == null )
+            {
+                noteType = new NoteType();
+                noteType.IsSystem = false;
+                noteType.EntityTypeId = _personEntityTypeId;
+                noteType.EntityTypeQualifierColumn = string.Empty;
+                noteType.EntityTypeQualifierValue = string.Empty;
+                noteType.Name = noteTypeName;
+                service.Add( noteType );
+                rockContext.SaveChanges();
+            }
+            
+            var noteService = new NoteService( rockContext );
+            var note = new Note()
+            {
+                IsSystem = false,
+                NoteTypeId = noteType.Id,
+                EntityId = personId,
+                Caption = string.Empty,
+                Text = noteText,
+                CreatedDateTime = DateTime.Parse( noteDate ?? RockDateTime.Now.ToString() )
+            };
+            noteService.Add( note );
         }
 
         /// <summary>
