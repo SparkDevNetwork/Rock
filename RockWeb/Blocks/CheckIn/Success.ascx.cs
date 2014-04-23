@@ -65,86 +65,89 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
+                if ( !Page.IsPostBack )
                 {
-                    lbAnother.Visible = family.People.Count > 1;
-
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
-                        {
-                            foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
-                            {
-                                foreach ( var location in group.Locations.Where( l => l.Selected ) )
-                                {
-                                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
-                                    {
-                                        var li = new HtmlGenericControl( "li" );
-                                        li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
-                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                        lbAnother.Visible = family.People.Count > 1;
 
-                                        phResults.Controls.Add( li );
+                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        {
+                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            {
+                                foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+                                {
+                                    foreach ( var location in group.Locations.Where( l => l.Selected ) )
+                                    {
+                                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                                        {
+                                            var li = new HtmlGenericControl( "li" );
+                                            li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
+                                                person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+
+                                            phResults.Controls.Add( li );
+                                        }
                                     }
                                 }
-                            }
 
-                            var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
-                            if ( printFromClient.Any() )
-                            {
-                                AddLabelScript( printFromClient.ToJson() );
-                            }
-
-                            var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
-                            if ( printFromServer.Any() )
-                            {
-                                Socket socket = null;
-                                string currentIp = string.Empty;
-
-                                foreach ( var label in printFromServer )
+                                var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
+                                if ( printFromClient.Any() )
                                 {
-                                    var labelCache = KioskLabel.Read( label.FileId );
-                                    if ( labelCache != null )
+                                    AddLabelScript( printFromClient.ToJson() );
+                                }
+
+                                var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
+                                if ( printFromServer.Any() )
+                                {
+                                    Socket socket = null;
+                                    string currentIp = string.Empty;
+
+                                    foreach ( var label in printFromServer )
                                     {
-                                        if ( label.PrinterAddress != currentIp )
+                                        var labelCache = KioskLabel.Read( label.FileId );
+                                        if ( labelCache != null )
                                         {
-                                            if ( socket != null && socket.Connected )
+                                            if ( label.PrinterAddress != currentIp )
                                             {
-                                                socket.Shutdown( SocketShutdown.Both );
-                                                socket.Close();
+                                                if ( socket != null && socket.Connected )
+                                                {
+                                                    socket.Shutdown( SocketShutdown.Both );
+                                                    socket.Close();
+                                                }
+
+                                                currentIp = label.PrinterAddress;
+                                                var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+
+                                                socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                                                IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                                bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
                                             }
 
-                                            currentIp = label.PrinterAddress;
-                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                                            string printContent = labelCache.FileContent;
+                                            foreach ( var mergeField in label.MergeFields )
+                                            {
+                                                var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
+                                                printContent = rgx.Replace( printContent, mergeField.Value );
+                                            }
 
-                                            socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
-                                            bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-                                        }
-
-                                        string printContent = labelCache.FileContent;
-                                        foreach ( var mergeField in label.MergeFields )
-                                        {
-                                            var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
-                                            printContent = rgx.Replace( printContent, mergeField.Value );
-                                        }
-
-                                        if ( socket.Connected )
-                                        {
-                                            var ns = new NetworkStream( socket );
-                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                            ns.Write( toSend, 0, toSend.Length );
-                                        }
-                                        else
-                                        {
-                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                            if ( socket.Connected )
+                                            {
+                                                var ns = new NetworkStream( socket );
+                                                byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                                ns.Write( toSend, 0, toSend.Length );
+                                            }
+                                            else
+                                            {
+                                                phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                            }
                                         }
                                     }
-                                }
 
-                                if ( socket != null && socket.Connected )
-                                {
-                                    socket.Shutdown( SocketShutdown.Both );
-                                    socket.Close();
+                                    if ( socket != null && socket.Connected )
+                                    {
+                                        socket.Shutdown( SocketShutdown.Both );
+                                        socket.Close();
+                                    }
                                 }
                             }
                         }
