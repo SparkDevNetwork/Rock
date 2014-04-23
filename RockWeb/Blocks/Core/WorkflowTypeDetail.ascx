@@ -18,49 +18,46 @@
 
             <div id="pnlEditDetails" runat="server">
 
-                <fieldset>
-
+                <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                            
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
-
-                     <div class="row">
+                    <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
                             <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                         </div>
-                         <div class="col-md-6">
+                            <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)" />
-                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
-                            <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" Label="Order" Required="true" />
                         </div>
                     </div>
-                </fieldset>
+                </Rock:PanelWidget>
 
-                <fieldset>
-                    <legend>
-                        <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
-                        <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
-                        </span>
-                    </legend>
+                <Rock:PanelWidget ID="pwAttributes" runat="server" Title="Attributes" Expanded="false">
+                </Rock:PanelWidget>
+
+                <Rock:PanelWidget ID="pwActivities" runat="server" Title="Activities" Expanded="false">
+                    <div class="pull-right">
+                        <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
+                    </div>
                     <div class="workflow-activity-list">
                         <asp:PlaceHolder ID="phActivities" runat="server" />
                     </div>
-                </fieldset>
+                </Rock:PanelWidget>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
