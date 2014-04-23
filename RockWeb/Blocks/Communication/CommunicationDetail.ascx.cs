@@ -418,11 +418,13 @@ namespace RockWeb.Blocks.Communication
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
 
-            SetPersonAliasValue( rcCreatedBy, lCreatedBy, communication.CreatedByPersonAlias );
-            SetDateValue( rcCreatedOn, lCreatedOn, communication.CreatedDateTime );
-            SetDateValue( rcFutureSend, lFutureSend, communication.FutureSendDateTime );
-            SetPersonValue(rcApprovedBy, lApprovedBy, communication.Reviewer);
-            SetDateValue( rcApprovedOn, lApprovedOn, communication.ReviewedDateTime );
+            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime );
+            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime );
+
+            if ( communication.FutureSendDateTime.HasValue && communication.FutureSendDateTime.Value > RockDateTime.Now )
+            {
+                lFutureSend.Text = String.Format( "<div class='alert alert-success'><strong>Future Send</strong> This communication is scheduled to be sent {0} <small>({1})</small>.</div>", communication.FutureSendDateTime.Value.ToRelativeDateString(), communication.FutureSendDateTime.Value.ToString() );
+            }
 
             BindRecipients();
 
@@ -445,43 +447,27 @@ namespace RockWeb.Blocks.Communication
             ShowActions( communication );
         }
 
-        private void SetPersonAliasValue( RockControlWrapper wrapper, Literal literal, PersonAlias personAlias )
-        {
+        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime ) {
+
             if ( personAlias != null )
             {
-                SetPersonValue( wrapper, literal, personAlias.Person );
-            }
-            else
-            {
-                SetPersonValue( wrapper, literal, null );
+                SetPersonDateValue( literal, personAlias.Person, datetime );
             }
         }
 
-        private void SetPersonValue( RockControlWrapper wrapper, Literal literal, Person person )
+        private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime )
         {
             if ( person != null )
             {
-                wrapper.Visible = true;
-                literal.Text = person.FullName;
-            }
-            else
-            {
-                wrapper.Visible = false;
+                literal.Text = "<strong>" + person.FullName + "</strong>";
+
+                if ( datetime.HasValue )
+                {
+                    literal.Text += String.Format( " <small class='js-date-rollover' data-toggle='tooltip' data-placement='top' title='{0}'>({1})</small>", datetime.Value.ToString(), datetime.Value.ToRelativeDateString() );
+                }
             }
         }
 
-        private void SetDateValue(RockControlWrapper wrapper, Literal literal, DateTime? dateTime)
-        {
-            if ( dateTime.HasValue )
-            {
-                wrapper.Visible = true;
-                literal.Text = string.Format( "{0} ({1})", dateTime.Value.ToString(), dateTime.ToRelativeDateString() );
-            }
-            else
-            {
-                wrapper.Visible = false;
-            }
-        }
         private void BindRecipients()
         {
             if ( CommunicationId.HasValue )

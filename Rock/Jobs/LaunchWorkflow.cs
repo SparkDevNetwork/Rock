@@ -29,6 +29,7 @@ namespace Rock.Jobs
     /// Job to launch a workflow
     /// </summary>
     [WorkflowTypeField( "Workflow", "The workflow this job should activate." )]
+    [DisallowConcurrentExecution]
     public class LaunchWorkflow : RockBlock, IJob
     {
         /// <summary> 

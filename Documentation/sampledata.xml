@@ -25,7 +25,7 @@
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444">
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
           <attributes>
             <attribute BaptismDate="9/13/2001"/>
             <attribute FirstVisit="12/15/2012"/>
@@ -35,6 +35,13 @@
           <logins>
             <login userName="tdecker"/>
           </logins>
+          <notes>
+            <note type="TimeLine" text="Ted celebrates his 4th year with the church." />
+            <note type="TimeLine" text="Left a message for Ted to follow up with Debbie Green
+               who is looking for financial assistance." date="4/1/2014"/>
+            <note type="TimeLine" text="Ted spoke with Debbie and transferred her into Pete's care." date="4/2/2014"/>
+
+          </notes>
         </person>
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
@@ -56,14 +63,18 @@
           email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_noah.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="5" />
 
         <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F"
           firstName="Alexis" nickName="Alex" lastName="Decker" birthDate="2/10/2007" age="7" gender="female"
           email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_alexis.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute Allergy="Allergic to peanuts"/>
+          </attributes>
+        </person>
       </members>
     </family>
 
@@ -90,7 +101,10 @@
           email="brian.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="1">
+          <attributes>
+          </attributes>
+        </person>
 
       </members>
     </family>
@@ -149,8 +163,11 @@
           email="madison.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_madison.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
-
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute LegalNotes="Frank Lowe (uncle) is not allowed to have contact."/>
+          </attributes>
+        </person>
       </members>
     </family>
 
