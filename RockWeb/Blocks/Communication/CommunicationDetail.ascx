@@ -26,37 +26,36 @@
             </div>
 
             <div class="recipient-status row">
-                <div class="col-md-2-10 margin-b-md">
+                <asp:Panel id="pnlPending" runat="server">
                     <a id="aPending" runat="server" class="btn btn-lg btn-block btn-default">
                         <asp:Literal ID="lPending" runat="server"></asp:Literal><br />
                         <small>Pending</small></a>
-                </div>
-                <div class="col-md-2-10 margin-b-md">
+                </asp:Panel>
+                <asp:Panel id="pnlDelivered" runat="server">
                     <a id="aDelivered" runat="server" class="btn btn-lg btn-block btn-info">
                         <asp:Literal ID="lDelivered" runat="server"></asp:Literal><br />
                         <small>Delivered</small></a>
-                </div>
-                <div class="col-md-2-10 margin-b-md">
+                </asp:Panel>
+                <asp:Panel id="pnlOpened" runat="server">
                     <a id="aOpened" runat="server" class="btn btn-lg btn-block btn-success" disabled="disabled">
                         <asp:Literal ID="lOpened" runat="server"></asp:Literal><br />
                         <small>Opened</small></a>
-                </div>
-                <div class="col-md-2-10 margin-b-md">
+                </asp:Panel>
+                <asp:Panel id="pnlFailed" runat="server">
                     <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger">
                         <asp:Literal ID="lFailed" runat="server"></asp:Literal><br />
                         <small>Failed</small></a>
-                </div>
-                <div class="col-md-2-10 margin-b-md">
+                </asp:Panel>
+                <asp:Panel id="pnlCancelled" runat="server">
                     <a id="aCancelled" runat="server" class="btn btn-lg btn-block btn-warning">
                         <asp:Literal ID="lCancelled" runat="server"></asp:Literal><br />
                         <small>Cancelled</small></a>
-                </div>
-                
+                </asp:Panel>
             </div>
 
             <asp:HiddenField ID="hfActiveRecipient" runat="server" />
 
-            <section id="divPending" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sPending" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Pending Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gPending" runat="server" AllowSorting="true">
@@ -68,7 +67,7 @@
                 </div>
             </section>
 
-            <section id="divDelivered" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sDelivered" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Delivered Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gDelivered" runat="server" AllowSorting="true" ShowActionRow="false">
@@ -85,7 +84,7 @@
                 </div>
             </section>
 
-            <section id="divFailed" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sFailed" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Failed Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gFailed" runat="server" AllowSorting="true">
@@ -97,7 +96,7 @@
                 </div>
             </section>
 
-            <section id="divCancelled" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sCancelled" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Cancelled Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gCancelled" runat="server" AllowSorting="true">
@@ -109,7 +108,7 @@
                 </div>
             </section>
 
-            <section id="divOpened" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sOpened" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Opened Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gOpened" runat="server" AllowSorting="true">

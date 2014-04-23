@@ -47,6 +47,20 @@ namespace Rock.Communication.Transport
         bool inlineCss = true;
 
         /// <summary>
+        /// Gets a value indicating whether transport has ability to track recipients opening the communication.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+        /// </value>
+        public override bool CanTrackOpens
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
