@@ -23,25 +23,20 @@
 
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:LocationPicker ID="gpParentLocation" runat="server" Required="false" Label="Parent Location" AllowedPickerModes="Named" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Name" />
+                        <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
+                        <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" 
+                            Help="The printer that this location should use for printing" />
+                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
-                        <Rock:LocationPicker ID="gpParentLocation" runat="server" Required="false" Label="Parent Location" AllowedPickerModes="Named" />
-                        <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                        <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Standardize Address" CssClass="btn btn-action margin-b-md" />
-                        <asp:Literal ID="lStandardizationUpdate" runat="server" />
-                    </div>
-                    <div class="col-md-6">
                         <Rock:LocationAddressPicker ID="locapAddress" runat="server" Label="Address" />
+                        <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Verify Address" CssClass="btn btn-action margin-b-md" />
+                        <asp:Literal ID="lStandardizationUpdate" runat="server" />
+                        <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Point Locked" Text="Yes" Help="Locks the geocoding to keep the location from being re-geocoding in the future." />
                         <Rock:GeoPicker ID="geopPoint" runat="server" DrawingMode="Point" Label="Point" />
-                        <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Point Locked" Help="Locks the geocoding to keep the location from being re-geocoding in the future." />
                         <Rock:GeoPicker ID="geopFence" runat="server" DrawingMode="Polygon" Label="Geo-fence" />
                     </div>
                 </div>

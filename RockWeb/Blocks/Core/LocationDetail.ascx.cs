@@ -68,6 +68,13 @@ namespace RockWeb.Blocks.Core
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Location ) ).Id;
+
+            ddlPrinter.Items.Clear();
+            ddlPrinter.DataSource = new DeviceService( new RockContext() )
+                .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
+                .ToList();
+            ddlPrinter.DataBind();
+            ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
         }
 
         /// <summary>
@@ -201,6 +208,8 @@ namespace RockWeb.Blocks.Core
                 location.ParentLocationId = null;
             }
 
+            location.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
+
             var addrLocation = locapAddress.Location;
             if ( addrLocation != null )
             {
@@ -306,7 +315,9 @@ namespace RockWeb.Blocks.Core
             locapAddress.SetValue( location );
             geopPoint.SetValue( location.GeoPoint );
 
-            lStandardizationUpdate.Text = String.Format( "<div class='alert alert-info'>Address standardization result was '{0}' and geocoding result was '{1}'.</div>", location.StandardizeAttemptedResult, location.GeocodeAttemptedResult );
+            lStandardizationUpdate.Text = String.Format( "<div class='alert alert-info'>Standardization Result: {0}<br/>Geocoding Result: {1}</div>",
+                location.StandardizeAttemptedResult.IfEmpty( "No Result" ),
+                location.GeocodeAttemptedResult.IfEmpty( "No Result" ) );
         }
 
         /// <summary>
@@ -440,6 +451,7 @@ namespace RockWeb.Blocks.Core
             tbName.Text = location.Name;
             cbIsActive.Checked = location.IsActive;
             locapAddress.SetValue( location );
+            ddlPrinter.SetValue( location.PrinterDeviceId );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
 
@@ -520,6 +532,11 @@ namespace RockWeb.Blocks.Core
                 descriptionList.Add( "Parent Location", location.ParentLocation.Name );
             }
 
+            if ( location.PrinterDevice != null)
+            {
+                descriptionList.Add( "Printer", location.PrinterDevice.Name );
+            }
+
             lblMainDetails.Text = descriptionList.Html;
 
             location.LoadAttributes();
@@ -527,6 +544,7 @@ namespace RockWeb.Blocks.Core
 
             // Get all the location locations and location all those that have a geo-location into either points or polygons
             var dict = new Dictionary<string, object>();
+
             if ( location.GeoPoint != null )
             {
                 var pointsDict = new Dictionary<string, object>();
