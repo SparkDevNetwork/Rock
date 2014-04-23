@@ -863,9 +863,9 @@
     <Compile Include="Migrations\201404212311146_CommunicationDetail.Designer.cs">
       <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201404221942340_WorkflowForms.cs" />
-    <Compile Include="Migrations\201404221942340_WorkflowForms.Designer.cs">
-      <DependentUpon>201404221942340_WorkflowForms.cs</DependentUpon>
+    <Compile Include="Migrations\201404230053069_WorkflowForm.cs" />
+    <Compile Include="Migrations\201404230053069_WorkflowForm.Designer.cs">
+      <DependentUpon>201404230053069_WorkflowForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1496,8 +1496,8 @@
     <EmbeddedResource Include="Migrations\201404212311146_CommunicationDetail.resx">
       <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201404221942340_WorkflowForms.resx">
-      <DependentUpon>201404221942340_WorkflowForms.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201404230053069_WorkflowForm.resx">
+      <DependentUpon>201404230053069_WorkflowForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

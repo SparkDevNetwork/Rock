@@ -28,7 +28,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// WorkflowForms REST API
     /// </summary>
-    public partial class WorkflowFormsController : Rock.Rest.ApiController<Rock.Model.WorkflowForm>
+    public partial class WorkflowFormsController : Rock.Rest.ApiController<Rock.Model.WorkflowActionForm>
     {
         public WorkflowFormsController() : base( new Rock.Model.WorkflowFormService( new Rock.Data.RockContext() ) ) { } 
     }

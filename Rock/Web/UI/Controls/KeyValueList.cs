@@ -30,6 +30,29 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class KeyValueList : HiddenField
     {
+        /// <summary>
+        /// Gets or sets the key prompt.
+        /// </summary>
+        /// <value>
+        /// The key prompt.
+        /// </value>
+        public string KeyPrompt
+        {
+            get { return ViewState["KeyPrompt"] as string ?? "Key"; }
+            set { ViewState["KeyPrompt"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the value prompt.
+        /// </summary>
+        /// <value>
+        /// The value prompt.
+        /// </value>
+        public string ValuePrompt
+        {
+            get { return ViewState["ValuePrompt"] as string ?? "Value"; }
+            set { ViewState["ValuePrompt"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the defined type id.  If a defined type id is used, the value portion of this control
@@ -82,7 +105,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-md js-key-value-input" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
-                writer.AddAttribute( "placeholder", "Key" );
+                writer.AddAttribute( "placeholder", KeyPrompt );
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
                 writer.Write( " " );
@@ -93,7 +116,7 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-value form-control input-width-lg js-key-value-input" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                    writer.AddAttribute( "placeholder", "Value" );
+                    writer.AddAttribute( "placeholder", ValuePrompt );
                     writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 2 ? nameAndValue[1] : string.Empty );
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );
                     writer.RenderEndTag();
@@ -173,9 +196,12 @@ namespace Rock.Web.UI.Controls
             $span.children('input:first').val(newValue);            
         }
 
-        $('a.key-value-add').click(function (e) {{
+        $('a.key-value-add').click(function (e) {
             e.preventDefault();
-            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
+");
+            script.AppendFormat( @"
+            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""{0}""></input> "
+                , KeyPrompt );
             if ( values != null )
             {
                 script.Append( @"<select class=""key-value-value form-control input-width-lg js-key-value-input""><option value=""""></option>" );
@@ -189,35 +215,35 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                script.Append( @"<input class=""key-value-value input-width-lg form-control js-key-value-input"" type=""text"" placeholder=""Value""></input>" );
+                script.AppendFormat( @"<input class=""key-value-value input-width-lg form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
 
             script.Append( @" <a href=""#"" class=""btn btn-sm btn-danger key-value-remove""><i class=""fa fa-minus-circle""></i></a></div>';
             $(this).closest('.key-value-list').find('.key-value-rows').append(newKeyValue);
-        }});
+        });
 
-        $(document).on('click', 'a.key-value-remove', function (e) {{
+        $(document).on('click', 'a.key-value-remove', function (e) {
             e.preventDefault();
             var $rows = $(this).closest('span.key-value-rows');
             $(this).closest('div.controls-row').remove();
             updateKeyValues($rows);            
-        }});
+        });
 " );
 
             if ( values != null )
             {
                 script.Append( @"
-        $(document).on('focusout', '.js-key-value-input', function (e) {{
+        $(document).on('focusout', '.js-key-value-input', function (e) {
             updateKeyValues($(this));            
-        }});
+        });
 " );
             }
             else
             {
                 script.Append( @"
-        $(document).on('focusout', '.js-key-value-input', function (e) {{
+        $(document).on('focusout', '.js-key-value-input', function (e) {
             updateKeyValues($(this));            
-        }});
+        });
 " );
             }
 

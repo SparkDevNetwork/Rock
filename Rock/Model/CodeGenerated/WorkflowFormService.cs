@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowForm Service class
     /// </summary>
-    public partial class WorkflowFormService : Service<WorkflowForm>
+    public partial class WorkflowFormService : Service<WorkflowActionForm>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowFormService"/> class
@@ -48,13 +48,13 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( WorkflowForm item, out string errorMessage )
+        public bool CanDelete( WorkflowActionForm item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
             if ( new Service<WorkflowActionType>( Context ).Queryable().Any( a => a.WorkflowFormId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowForm.FriendlyTypeName, WorkflowActionType.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionForm.FriendlyTypeName, WorkflowActionType.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -72,15 +72,15 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static WorkflowForm Clone( this WorkflowForm source, bool deepCopy )
+        public static WorkflowActionForm Clone( this WorkflowActionForm source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as WorkflowForm;
+                return source.Clone() as WorkflowActionForm;
             }
             else
             {
-                var target = new WorkflowForm();
+                var target = new WorkflowActionForm();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
@@ -91,7 +91,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this WorkflowForm target, WorkflowForm source )
+        public static void CopyPropertiesFrom( this WorkflowActionForm target, WorkflowActionForm source )
         {
             target.Header = source.Header;
             target.Footer = source.Footer;
