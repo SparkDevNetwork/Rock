@@ -361,7 +361,9 @@ namespace RockWeb.Blocks.Finance
 
                 rockContext.SaveChanges();
 
-                // Set an Known Relationship of Owner between the Owner and the Business.
+                hfBusinessId.Value = business.Id.ToString();
+
+                // Set the Known Relationships between the Owner and the Business.
                 if ( ppOwner.PersonId != null )
                 {
                     SetOwner( business );
@@ -374,12 +376,43 @@ namespace RockWeb.Blocks.Finance
         private void SetOwner( Person business )
         {
             var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                .Where( r =>
-                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                .Select( r => r.Id )
+            var groupMemberService = new GroupMemberService( rockContext );
+
+            // Find the original owner/business relationships and remove them if they've changed
+            var ownersKnownRelationshipGroupMember = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
+                    g.PersonId == business.Id )
                 .FirstOrDefault();
+
+            if ( ownersKnownRelationshipGroupMember != null )
+            {
+                var businessesKnownRelationshipGroupMember = groupMemberService.GetInverseRelationship( ownersKnownRelationshipGroupMember, false, CurrentPersonAlias );
+                if ( ppOwner.PersonId != businessesKnownRelationshipGroupMember.PersonId )
+                {
+                    // the id of the person in the owner person picker doesn't match the id of the person in the businesses known relationship group with the principle role.
+                    var ownersKnownRelationshipGroup = ownersKnownRelationshipGroupMember.Group;
+                    ownersKnownRelationshipGroup.Members.Remove( ownersKnownRelationshipGroupMember );
+                    groupMemberService.Delete( ownersKnownRelationshipGroupMember );
+                    var businessesKnownRelationshipGroup = businessesKnownRelationshipGroupMember.Group;
+                    businessesKnownRelationshipGroup.Members.Remove( businessesKnownRelationshipGroupMember );
+                    groupMemberService.Delete( businessesKnownRelationshipGroupMember );
+                    rockContext.SaveChanges();
+
+                    SetRelationships( business );
+                }
+            }
+            else
+            {
+                SetRelationships( business );
+            }
+        }
+
+        private void SetRelationships( Person business )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                 .Where( r =>
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
@@ -394,7 +427,6 @@ namespace RockWeb.Blocks.Finance
             // get the known relationship group from the owner
             // add the business as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
             var owner = personService.Get( (int)ppOwner.PersonId );
-            var groupMemberService = new GroupMemberService( rockContext );
             var knownRelationshipGroup = groupMemberService.Queryable()
                 .Where( g =>
                     g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
@@ -635,12 +667,15 @@ namespace RockWeb.Blocks.Finance
                         g.PersonId == business.Id )
                     .FirstOrDefault();
 
-                var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
-
-                if ( inverseGroupMember != null )
+                if ( knownRelationshipBusinessGroupMember != null )
                 {
-                    ppOwner.PersonId = inverseGroupMember.Person.Id;
-                    ppOwner.PersonName = inverseGroupMember.Person.FullName;
+                    var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
+
+                    if ( inverseGroupMember != null )
+                    {
+                        ppOwner.PersonId = inverseGroupMember.Person.Id;
+                        ppOwner.PersonName = inverseGroupMember.Person.FullName;
+                    }
                 }
 
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
