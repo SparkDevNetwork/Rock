@@ -43,12 +43,19 @@
                             
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlPrintTo" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="PrintToOverride" Required="false" 
-                                Help="When this device needs to print, should printing be done to this device's printer (Kiosk), the printer defined by the location using this device (Location), or should this decision be deferred to the Group Type using the device (Default)?" />
-                            <Rock:DataDropDownList ID="ddlPrinter" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="PrinterDeviceId" Required="false" 
-                                Help="The printer that this device should use for printing" DataTextField="Name" DataValueField="Id" />
-                            <Rock:DataDropDownList ID="ddlPrintFrom" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="PrintFrom" Required="false" 
-                                Help="If printing is being sent to this device's printer, where should the printing be initiated from?" />
+                            <div class="well">
+                                <h4>Print Settings</h4>
+                                <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" AutoPostBack="true" OnSelectedIndexChanged="ddlPrintTo_SelectedIndexChanged"
+                                    Help="When this device needs to print, should it use the printer configured in next setting (Device Printer), the printer configured for the location (Location Printer), or should the Group Type's 'Print Using' setting determine the printer to use (Group Type)?">
+                                    <asp:ListItem Text="Device Printer" Value="1" />
+                                    <asp:ListItem Text="Location Printer" Value="2" />
+                                    <asp:ListItem Text="Group Type" Value="0" />
+                                </Rock:RockDropDownList>
+                                <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" 
+                                    Help="The printer that this device should use for printing" />
+                                <Rock:RockDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" Required="false" 
+                                    Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
+                            </div>
                         </div>
                     </div>
 

@@ -86,7 +86,6 @@ namespace RockWeb.Blocks.Core
             ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintTo.BindToEnum( typeof( PrintTo ) );
             ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
 
             ddlPrinter.Items.Clear();
@@ -137,6 +136,8 @@ namespace RockWeb.Blocks.Core
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
+
+            SetPrinterVisibility();
 
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
             if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
@@ -272,5 +273,15 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-}
+        protected void ddlPrintTo_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPrinterVisibility();
+        }
+
+        private void SetPrinterVisibility()
+        {
+            var printTo = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+            ddlPrinter.Visible = printTo != PrintTo.Location;
+        }
+    }
 }
