@@ -309,6 +309,7 @@ namespace RockWeb.Blocks.Core
 
                 // delete WorkflowActionTypes that aren't assigned in the UI anymore
                 WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
+                WorkflowFormService workflowFormService = new WorkflowFormService( rockContext );
                 List<WorkflowActionType> actionTypesInDB = workflowActionTypeService.Queryable().Where( a => a.ActivityType.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActionType> actionTypesInUI = new List<WorkflowActionType>();
                 foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
@@ -325,6 +326,10 @@ namespace RockWeb.Blocks.Core
 
                 deletedActionTypes.ToList().ForEach( actionType =>
                 {
+                    if (actionType.WorkflowForm != null)
+                    {
+                        workflowFormService.Delete( actionType.WorkflowForm );
+                    }
                     workflowActionTypeService.Delete( actionType );
                 } );
                 rockContext.SaveChanges();
@@ -344,7 +349,6 @@ namespace RockWeb.Blocks.Core
                 } );
                 rockContext.SaveChanges();
 
-                WorkflowFormService workflowFormService = new WorkflowFormService( rockContext );
 
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
                 int workflowActivityTypeOrder = 0;
@@ -374,34 +378,48 @@ namespace RockWeb.Blocks.Core
                         WorkflowActionType editorWorkflowActionType = workflowActionTypeEditor.WorkflowActionType;
                         WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActionType.Guid ) );
 
-                        WorkflowForm editorForm = editorWorkflowActionType.WorkflowForm;
-                        WorkflowForm workflowForm = workflowActionType.WorkflowForm;
-
                         if ( workflowActionType == null )
                         {
+                            // New action
                             workflowActionType = editorWorkflowActionType;
                             workflowActivityType.ActionTypes.Add( workflowActionType );
                         }
                         else
                         {
+                            // Updated action
                             workflowActionType.Name = editorWorkflowActionType.Name;
                             workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
                             workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
                             workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
                             workflowActionType.Attributes = editorWorkflowActionType.Attributes;
                             workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
-                        }
 
-                        if (editorForm == null || !editorForm.Guid.Equals(workflowForm.Guid))
-                        {
-                            workflowFormService.Delete(workflowForm);
-                            workflowActionType.WorkflowForm = null;
-                        }
+                            if (workflowActionType.WorkflowForm == null)
+                            {
+                                // Form added
+                                workflowActionType.WorkflowForm = editorWorkflowActionType.WorkflowForm;
+                            }
+                            else
+                            {
+                                if (editorWorkflowActionType.WorkflowForm != null)
+                                {
+                                    // Form updated
+                                    workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
+                                    workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
+                                    workflowActionType.WorkflowForm.InactiveMessage = editorWorkflowActionType.WorkflowForm.InactiveMessage;
+                                    workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
+                                }
+                                else
+                                {
+                                    // Form removed
+                                    workflowFormService.Delete( workflowActionType.WorkflowForm );
+                                    workflowActionType.WorkflowForm = null;
+                                }
+                            }
 
-                        if (editorForm != null)
-                        {
-                            workflowForm = editorForm;
-                            workflowActionType.WorkflowForm = workflowForm;
+                            WorkflowActionForm editorForm = editorWorkflowActionType.WorkflowForm;
+                            WorkflowActionForm workflowForm = workflowActionType.WorkflowForm;
+
                         }
 
                         workflowActionType.Order = workflowActionTypeOrder++;

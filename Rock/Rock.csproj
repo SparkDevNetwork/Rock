@@ -275,7 +275,8 @@
     <Compile Include="Model\ReportField.cs" />
     <Compile Include="Model\RestControllerService.Partial.cs" />
     <Compile Include="Model\PageView.cs" />
-    <Compile Include="Model\WorkflowForm.cs" />
+    <Compile Include="Model\WorkflowActionFormAttribute.cs" />
+    <Compile Include="Model\WorkflowActionForm.cs" />
     <Compile Include="Net\RestParameters\ContributionStatementOptions.cs" />
     <Compile Include="PersonProfile\Badge\Campus.cs" />
     <Compile Include="PersonProfile\Badge\AttendingDuration.cs" />

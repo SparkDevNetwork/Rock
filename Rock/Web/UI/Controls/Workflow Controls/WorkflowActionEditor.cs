@@ -120,7 +120,17 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
-                result.WorkflowForm = _formEditor.Form;
+
+                var entityType = EntityTypeCache.Read( result.EntityTypeId );
+                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+                {
+                    result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                }
+                else
+                {
+                    result.WorkflowForm = null;
+                }
+
                 result.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
                 return result;
@@ -134,7 +144,16 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 _ddlEntityType.SetValue( value.EntityTypeId );
                 _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
-                _formEditor.Form = value.WorkflowForm;
+
+                var entityType = EntityTypeCache.Read( value.EntityTypeId );
+                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+                {
+                    _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                }
+                else
+                {
+                    _formEditor.Form = null;
+                }
 
                 var action = EntityTypeCache.Read( value.EntityTypeId );
                 if ( action != null )

@@ -37,18 +37,23 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfFormGuid;
         private RockTextBox _tbHeaderText;
         private RockTextBox _tbFooterText;
+        private RockTextBox _tbInactiveMessage;
+        private RockControlWrapper _rcwActions;
+        private KeyValueList _kvlActions;
 
-        public WorkflowForm Form 
+        public WorkflowActionForm Form 
         {
             get
             {
                 EnsureChildControls();
-                WorkflowForm form = new WorkflowForm();
+                WorkflowActionForm form = new WorkflowActionForm();
                 form.Guid = _hfFormGuid.Value.AsGuid();
                 if ( form.Guid != Guid.Empty )
                 {
                     form.Header = _tbHeaderText.Text;
                     form.Footer = _tbFooterText.Text;
+                    form.Actions = _kvlActions.Value;
+                    form.InactiveMessage = _tbInactiveMessage.Text;
                     return form;
                 }
                 return null;
@@ -57,17 +62,21 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                if ( Form != null )
+                if ( value != null )
                 {
                     _hfFormGuid.Value = value.Guid.ToString();
                     _tbHeaderText.Text = value.Header;
                     _tbFooterText.Text = value.Footer;
+                    _kvlActions.Value = value.Actions;
+                    _tbInactiveMessage.Text = value.InactiveMessage;
                 }
                 else
                 {
                     _hfFormGuid.Value = string.Empty;
                     _tbHeaderText.Text = string.Empty;
                     _tbFooterText.Text = string.Empty;
+                    _kvlActions.Value = "Submit^Submit";
+                    _tbInactiveMessage.Text = string.Empty;
                 }
             }
         }
@@ -79,17 +88,47 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            base.CreateChildControls();
+            Controls.Clear();
+
+            _hfFormGuid = new HiddenField();
+            _hfFormGuid.ID = this.ID + "_hfFormGuid";
+            Controls.Add( _hfFormGuid );
 
             _tbHeaderText = new RockTextBox();
-            _tbHeaderText.Label = "Header Text";
+            _tbHeaderText.Label = "Form Header";
+            _tbHeaderText.Help = "Text to display to user above the form fields.";
             _tbHeaderText.ID = this.ID + "_tbHeaderText";
+            _tbHeaderText.TextMode = TextBoxMode.MultiLine;
+            _tbHeaderText.Rows = 3;
             Controls.Add( _tbHeaderText );
             
             _tbFooterText = new RockTextBox();
-            _tbFooterText.Label = "Label Text";
+            _tbFooterText.Label = "Form Footer";
+            _tbFooterText.Help = "Text to display to user below the form fields.";
             _tbFooterText.ID = this.ID + "_tbFooterText";
+            _tbFooterText.TextMode = TextBoxMode.MultiLine;
+            _tbFooterText.Rows = 3;
             Controls.Add( _tbFooterText );
+
+            _rcwActions = new RockControlWrapper();
+            _rcwActions.Label = "Action Buttons";
+            _rcwActions.Help = "The Action button text and the action value to save when user clicks the action.";
+            _rcwActions.ID = this.ID + "_rcwActions";
+            Controls.Add( _rcwActions );
+
+            _kvlActions = new KeyValueList();
+            _kvlActions.ID = this.ID + "_kvlActions";
+            _kvlActions.KeyPrompt = "Button Text";
+            _kvlActions.ValuePrompt = "Action Value";
+            _rcwActions.Controls.Add( _kvlActions );
+
+            _tbInactiveMessage = new RockTextBox();
+            _tbInactiveMessage.Label = "Inactive Message";
+            _tbInactiveMessage.Help = "Text to display to user when attempting to view entry form when action or activity is not active.";
+            _tbInactiveMessage.ID = this.ID + "_tbInactiveMessage";
+            _tbInactiveMessage.TextMode = TextBoxMode.MultiLine;
+            _tbInactiveMessage.Rows = 2;
+            Controls.Add( _tbInactiveMessage );
         }
 
         /// <summary>
@@ -102,6 +141,8 @@ namespace Rock.Web.UI.Controls
             {
                 _tbHeaderText.RenderControl( writer );
                 _tbFooterText.RenderControl( writer );
+                _rcwActions.RenderControl( writer );
+                _tbInactiveMessage.RenderControl( writer );
             }
         }
 

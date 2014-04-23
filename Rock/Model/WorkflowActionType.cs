@@ -148,7 +148,7 @@ namespace Rock.Model
         /// The workflow form.
         /// </value>
         [DataMember]
-        public virtual WorkflowForm WorkflowForm { get; set; }
+        public virtual WorkflowActionForm WorkflowForm { get; set; }
 
         /// <summary>
         /// Gets the parent security authority for this ActionType.

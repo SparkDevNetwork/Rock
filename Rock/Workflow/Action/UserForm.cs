@@ -31,8 +31,8 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Prompts user for attribute values" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "User Form" )]
-    public class UserForm : ActionComponent
+    [ExportMetadata( "ComponentName", "User Entry Form" )]
+    public class UserEntryForm : ActionComponent
     {
         public override bool Execute( WorkflowAction action, object entity, out List<string> errorMessages )
         {

@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System.Collections.Generic;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +15,22 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Workflow;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an <see cref="Rock.Model.WorkflowForm"/> (action or task) that is performed as part of a <see cref="Rock.Model.WorkflowForm"/>.
+    /// Represents an <see cref="Rock.Model.WorkflowActionForm"/> (action or task) that is performed as part of a <see cref="Rock.Model.WorkflowActionForm"/>.
     /// </summary>
-    [Table( "WorkflowForm" )]
+    [Table( "WorkflowActionForm" )]
     [DataContract]
-    public partial class WorkflowForm : Model<WorkflowForm>
+    public partial class WorkflowActionForm : Model<WorkflowActionForm>
     {
 
         #region Entity Properties
@@ -40,7 +41,6 @@ namespace Rock.Model
         /// <value>
         /// The header.
         /// </value>
-        [MaxLength( 500 )]
         [DataMember]
         public string Header { get; set; }
 
@@ -50,14 +50,35 @@ namespace Rock.Model
         /// <value>
         /// The footer.
         /// </value>
-        [MaxLength( 500 )]
         [DataMember]
         public string Footer { get; set; }
+
+        [DataMember]
+        public string InactiveMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delimited list of action buttons and actions.
+        /// </summary>
+        /// <value>
+        /// The actions.
+        /// </value>
+        [MaxLength( 300 )]
+        [DataMember]
+        public string Actions { get; set; }
+
 
         #endregion
 
         #region Virtual Properties
 
+        [DataMember]
+        public virtual ICollection<WorkflowActionFormAttribute> FormAttributes
+        {
+            get { return _formAttributes ?? ( _formAttributes = new Collection<WorkflowActionFormAttribute>() ); }
+            set { _formAttributes = value; }
+        }
+        private ICollection<WorkflowActionFormAttribute> _formAttributes;
+        
         #endregion
 
         #region Methods
@@ -71,12 +92,12 @@ namespace Rock.Model
     /// <summary>
     /// Workflow Form Configuration class.
     /// </summary>
-    public partial class WorkflowFormConfiguration : EntityTypeConfiguration<WorkflowForm>
+    public partial class WorkflowActionFormConfiguration : EntityTypeConfiguration<WorkflowActionForm>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowFormConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="WorkflowActionFormConfiguration"/> class.
         /// </summary>
-        public WorkflowFormConfiguration()
+        public WorkflowActionFormConfiguration()
         {
         }
     }
