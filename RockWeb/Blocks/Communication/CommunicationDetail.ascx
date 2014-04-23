@@ -79,7 +79,7 @@
                             <Rock:DateTimeField HeaderText="Opened" DataField="OpenedDateTime" SortExpression="OpenedDateTime" />
                             <asp:BoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" />
                             <asp:BoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" />
-                            <asp:BoundField HeaderText="Activity" DataField="ActivityList" HtmlEncode="false" />
+                            <asp:BoundField HeaderText="Activity" ItemStyle-CssClass="wrap-contents" DataField="ActivityList" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>
                 </div>
@@ -135,7 +135,7 @@
                         <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
                         <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.Person" SortExpression="CommunicationRecipient.Person.LastName,CommunicationRecipient.Person.NickName" />
                         <asp:BoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
-                        <Rock:EnumField HeaderText="Details" DataField="ActivityDetail" SortExpression="ActivityDetail" />
+                        <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
                     </Columns>
                 </Rock:Grid>
             </Rock:PanelWidget>
