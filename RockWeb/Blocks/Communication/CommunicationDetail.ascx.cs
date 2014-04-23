@@ -418,8 +418,8 @@ namespace RockWeb.Blocks.Communication
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
 
-            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime );
-            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime );
+            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
+            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime, "Approved By" );
 
             if ( communication.FutureSendDateTime.HasValue && communication.FutureSendDateTime.Value > RockDateTime.Now )
             {
@@ -447,19 +447,19 @@ namespace RockWeb.Blocks.Communication
             ShowActions( communication );
         }
 
-        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime ) {
+        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText ) {
 
             if ( personAlias != null )
             {
-                SetPersonDateValue( literal, personAlias.Person, datetime );
+                SetPersonDateValue( literal, personAlias.Person, datetime, labelText );
             }
         }
 
-        private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime )
+        private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime, string labelText )
         {
             if ( person != null )
             {
-                literal.Text = "<strong>" + person.FullName + "</strong>";
+                literal.Text = String.Format("<strong>{0}</strong> {1}", labelText, person.FullName);
 
                 if ( datetime.HasValue )
                 {
