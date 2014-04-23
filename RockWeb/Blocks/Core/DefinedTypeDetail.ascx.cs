@@ -193,6 +193,7 @@ namespace RockWeb.Blocks.Core
             definedType.Name = tbTypeName.Text;
             definedType.Category = tbTypeCategory.Text;
             definedType.Description = tbTypeDescription.Text;
+            definedType.HelpText = tbHelpText.Text;
 
             if ( !definedType.IsValid )
             {
@@ -242,6 +243,16 @@ namespace RockWeb.Blocks.Core
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
             lDescription.Text = definedType.Description;
 
+            if ( !string.IsNullOrWhiteSpace( definedType.HelpText ) )
+            {
+                lHelpText.Text = definedType.HelpText;
+                rcHelpText.Visible = true;
+            }
+            else
+            {
+                rcHelpText.Visible = false;
+            }
+
             lblMainDetails.Text = new DescriptionList()
                 .Add("Category", definedType.Category)
                 .Html;
@@ -269,6 +280,7 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
             tbTypeCategory.Text = definedType.Category;
             tbTypeDescription.Text = definedType.Description;
+            tbHelpText.Text = definedType.HelpText;
         }
 
         /// <summary>
