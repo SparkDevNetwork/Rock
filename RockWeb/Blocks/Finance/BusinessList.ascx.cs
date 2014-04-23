@@ -131,11 +131,21 @@ namespace RockWeb.Blocks.Finance
                     .Select( r => r.Id )
                     .FirstOrDefault();
 
-                if ( business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault() != null )
+                var groupMemberService = new GroupMemberService( rockContext );
+                var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
+                    .Where( g =>
+                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
+                        g.PersonId == business.Id )
+                    .FirstOrDefault();
+
+                if ( knownRelationshipBusinessGroupMember != null )
                 {
-                    var owner = business.GivingGroup.Members.Where( role => role.GroupRoleId == ownerRoleId ).FirstOrDefault().Person;
-                    Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
-                    lblOwner.Text = owner.FullName;
+                    var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
+                    if ( inverseGroupMember != null )
+                    {
+                        Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
+                        lblOwner.Text = inverseGroupMember.Person.FullName;
+                    }
                 }
 
                 var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
@@ -250,10 +260,10 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             var rockContext = new RockContext();
-            var queryable = new PersonService( rockContext ).Queryable();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
             var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            queryable = queryable.Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
+            var queryable = new PersonService( rockContext ).Queryable()
+                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
 
             // Business Name Filter
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
@@ -266,25 +276,12 @@ namespace RockWeb.Blocks.Finance
             int ownerId = 0;
             if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
             {
-
-                // NEED TO FIX THIS STILL
-
-                //var groupMemberService = new GroupMemberService( rockContext );
-                //var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
-                //    .Where( g =>
-                //        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
-                //        g.PersonId == business.Id )
-                //    .FirstOrDefault();
-
-                //var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
-
-                
-                //int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                //    .Where( r =>
-                //        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                //    .Select( r => r.Id )
-                //    .FirstOrDefault();
-                //queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
+                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;
