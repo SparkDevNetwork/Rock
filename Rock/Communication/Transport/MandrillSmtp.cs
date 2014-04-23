@@ -85,14 +85,31 @@ namespace Rock.Communication.Transport
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
+                string fromAddress = communication.GetChannelDataValue( "FromAddress" );
+                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
+
+                // Check to make sure sending domain is a safe sender
+                var safeDomains = globalAttributes.GetValue( "SafeSenderDomains" ).SplitDelimitedValues().ToList();
+                var emailParts = fromAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( emailParts.Length != 2 || !safeDomains.Contains( emailParts[1], StringComparer.OrdinalIgnoreCase ) )
+                {
+                    if ( string.IsNullOrWhiteSpace( replyTo ) )
+                    {
+                        replyTo = fromAddress;
+                    }
+                    fromAddress = globalAttributes.GetValue( "OrganizationEmail" );
+                }
+
+
                 // From
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(
-                    communication.GetChannelDataValue( "FromAddress" ),
+                    fromAddress,
                     communication.GetChannelDataValue( "FromName" ) );
 
                 // Reply To
-                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
                 if ( !string.IsNullOrWhiteSpace( replyTo ) )
                 {
                     message.ReplyToList.Add( new MailAddress( replyTo ) );
@@ -146,7 +163,6 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService( rockContext );
 
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
 
                 bool recipientFound = true;
