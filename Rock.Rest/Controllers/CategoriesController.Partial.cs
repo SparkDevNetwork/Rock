@@ -124,7 +124,7 @@ namespace Rock.Rest.Controllers
                 var items = GetCategorizedItems( serviceInstance, id, showUnnamedEntityItems );
                 if ( items != null )
                 {
-                    foreach ( var categorizedItem in items )
+                    foreach ( var categorizedItem in items.OrderBy( i => i.Name ) )
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
