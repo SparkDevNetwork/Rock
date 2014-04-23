@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="StarkDashboardWidget.ascx.cs" Inherits="RockWeb.Blocks.Dashboard.StarkDashboardWidget" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="StarkDashboardWidget.ascx.cs" Inherits="RockWeb.Blocks.Reporting.Dashboard.StarkDashboardWidget" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

@@ -27,9 +27,9 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using Rock.Dashboard;
+using Rock.Reporting.Dashboard;
 
-namespace RockWeb.Blocks.Dashboard
+namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
