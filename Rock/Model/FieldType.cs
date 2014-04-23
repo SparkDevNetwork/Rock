@@ -94,14 +94,6 @@ namespace Rock.Model
 
         #region Methods
 
-        // <summary>
-        // Gets or sets the Metrics.
-        // </summary>
-        // <value>
-        // Collection of Metrics.
-        // </value>
-        //public virtual ICollection<Metric> Metrics { get; set; }
-
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this FieldType.
         /// </summary>
