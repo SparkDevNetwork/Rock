@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Core
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
-            workflowType.Order = int.Parse( tbOrder.Text );
+            workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
             if ( !string.IsNullOrWhiteSpace( tbProcessingInterval.Text ) )
             {
@@ -565,7 +565,6 @@ namespace RockWeb.Blocks.Core
             cbIsActive.Checked = workflowType.IsActive ?? false;
             cpCategory.SetValue( workflowType.CategoryId );
             tbWorkTerm.Text = workflowType.WorkTerm;
-            tbOrder.Text = workflowType.Order.ToString();
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
