@@ -29,6 +29,19 @@ namespace Rock.Communication
     /// </summary>
     public abstract class TransportComponent : Component
     {
+        /// <summary>
+        /// Gets a value indicating whether transport has ability to track recipients opening the communication.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool CanTrackOpens
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Sends the specified communication.
