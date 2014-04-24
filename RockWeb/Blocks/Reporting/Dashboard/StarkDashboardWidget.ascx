@@ -6,7 +6,6 @@
         <div class="alert alert-info">
             <h4>Stark Widget Template Block</h4>
             <p>Pretend there is an awesome graph here</p>
-
         </div>
 
     </ContentTemplate>
