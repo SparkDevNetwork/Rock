@@ -240,6 +240,12 @@ namespace RockWeb.Blocks.CheckIn
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
+                    navigator.notification.alert(
+                        'An error occurred while printing the labels.' + error[0],  // message
+                        alertDismissed,         // callback
+                        'Error',            // title
+                        'Ok'                  // buttonName
+                    );
 			    }}
             );
 	    }}
