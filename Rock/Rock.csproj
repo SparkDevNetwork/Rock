@@ -200,6 +200,8 @@
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
+    <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
+    <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

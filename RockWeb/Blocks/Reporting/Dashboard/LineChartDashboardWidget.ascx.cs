@@ -17,17 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Reporting.Dashboard;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -40,21 +37,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "Line Chart dashboard widget for developers to use to start a new LineChartDashboardWidget block." )]
     public partial class LineChartDashboardWidget : DashboardWidget
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -81,19 +64,34 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             if ( !Page.IsPostBack )
             {
+                // Options for Chart
+                dynamic chartOptions = new ChartOptions();
+                chartOptions.title = "My Title";
+                chartOptions.width = null;
+                chartOptions.height = 300;
 
-                Guid attendanceMetricGuid = new Guid("D4752628-DFC9-4681-ADB3-01936B8F38CA");
-                var dataList = new MetricValueService( new RockContext() ).Queryable().Where( w => w.MetricValueDateTime.HasValue && w.Metric.Guid == attendanceMetricGuid ).ToList()
-                    .Select( a => new object[] 
-                                {
-                                    a.MetricValueDateTime.Value.Date.ToShortDateString(),
-                                    a.YValue
-                                } ).ToList();
+                hfOptions.Value = ( chartOptions as object ).ToJson();
+                List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
+                columnDefinitions.Add( new ColumnDefinition( "Date", ColumnDataType.date ) );
+                columnDefinitions.Add( new ColumnDefinition( "Attendance", ColumnDataType.number ) );
+                columnDefinitions.Add( new ChartTooltip() );
+                hfColumns.Value = columnDefinitions.ToJson();
 
-                dataList.Insert( 0, new object[] { "Date", "Attendance" } );
+                // Data for Chart
+                Guid attendanceMetricGuid = new Guid( "D4752628-DFC9-4681-ADB3-01936B8F38CA" );
+                var qry = new MetricValueService( new RockContext() ).Queryable().Where( w => w.MetricValueDateTime.HasValue && w.Metric.Guid == attendanceMetricGuid );
+                DateTime startDate = new DateTime( 2013, 1, 1 );
+                DateTime endDate = new DateTime( 2014, 1, 1 );
+                qry = qry.Where( a => a.MetricValueDateTime.Value >= startDate && a.MetricValueDateTime.Value < endDate );
 
-                hfDataTable.Value = dataList.ToJson();
-                // added for your convenience
+                var dataList = qry.ToList().Select( a => new object[]
+                    {
+                        a.MetricValueDateTime,
+                        a.YValue,
+                        HttpUtility.JavaScriptStringEncode(a.Note)
+                    } );
+
+                hfDataTable.Value = JsonConvert.SerializeObject( dataList, new JsonSerializerSettings { Converters = new JsonConverter[] { new ChartDateTimeJsonConverter() } } );
             }
         }
 
@@ -110,14 +108,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            //
         }
 
         #endregion
 
         #region Methods
-
-        // helper functional methods (like BindGrid(), etc.)
 
         #endregion
     }
