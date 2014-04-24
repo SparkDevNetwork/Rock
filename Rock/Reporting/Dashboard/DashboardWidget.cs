@@ -45,7 +45,7 @@ namespace Rock.Reporting.Dashboard
             // add additional css to the block wrapper (if mediumColumnWidth is specified)
             if ( mediumColumnWidth.HasValue )
             {
-                
+
                 // Table to use to derive col-xs and col-sm from the selected medium width
                 /*
                 XS	SM	MD
@@ -88,7 +88,7 @@ namespace Rock.Reporting.Dashboard
                 }
 
                 List<string> widgetCssList = new List<string>();
-                widgetCssList.Add( string.Format("col-md-{0}", mediumColumnWidth ));
+                widgetCssList.Add( string.Format( "col-md-{0}", mediumColumnWidth ) );
                 if ( xsmallColumnWidth.HasValue )
                 {
                     widgetCssList.Add( string.Format( "col-xs-{0}", xsmallColumnWidth ) );
@@ -112,7 +112,7 @@ namespace Rock.Reporting.Dashboard
                             {
                                 container.AddCssClass( widgetCss );
                             }
-                            
+
                             break;
                         }
                     }

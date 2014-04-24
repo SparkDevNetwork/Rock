@@ -3,7 +3,9 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <asp:HiddenField ID="hfColumns" runat="server" />
         <asp:HiddenField ID="hfDataTable" runat="server" />
+        <asp:HiddenField ID="hfOptions" runat="server" />
 
         <script type="text/javascript">
 
@@ -14,23 +16,29 @@
             google.setOnLoadCallback(drawChart);
 
             function drawChart() {
+
+                // define chart
+                var columnsText = $('#<%=hfColumns.ClientID%>').val();
+                var columnsData = $.parseJSON(columnsText);
+                
+                var dataTable = new google.visualization.DataTable(
+                    {
+                        cols: columnsData
+                    });
+                
                 // data for chart
-                debugger
                 var arrayText = $('#<%=hfDataTable.ClientID%>').val();
                 var arrayData = eval(arrayText);
-                var data = new google.visualization.arrayToDataTable(arrayData);
+                dataTable.addRows(arrayData);
 
                 // options for chart
-                var options = {
-                    'title': 'Some Data in a chart',
-                    'width': 1200,
-                    'height': 300
-                };
+                var optionsText = $('#<%=hfOptions.ClientID%>').val();
+                var options = $.parseJSON(optionsText);
 
                 // creat and draw chart
                 var chartDiv = document.getElementById('dashboard-widget-line-chart');
                 var chart = new google.visualization.LineChart(chartDiv);
-                chart.draw(data, options);
+                chart.draw(dataTable, options);
             }
 
         </script>
