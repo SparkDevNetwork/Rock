@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Groups
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
-            groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.LocationSelectionMode = locationSelectionMode;
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
@@ -732,7 +732,7 @@ namespace RockWeb.Blocks.Groups
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
-            ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
+            ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -827,7 +827,6 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns( int? groupTypeId )
         {
             ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
-            ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
 
             cblLocationSelectionModes.Items.Clear();
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );

@@ -132,7 +132,9 @@ namespace RockWeb.Blocks.Reporting
             metricValue.YValue = tbYValue.Text.AsDecimal( false );
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
-            metricValue.CampusId = cpCampus.SelectedCampusId;
+            
+            //TODO
+            //metricValue.EntityId =
 
             if ( !metricValue.IsValid )
             {
@@ -197,7 +199,9 @@ namespace RockWeb.Blocks.Reporting
             hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
             dtpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
-            cpCampus.SelectedCampusId = metricValue.CampusId;
+            
+            // TODO Set EntityItemPicker to metricValue.entityId...
+            //cpCampus.SelectedCampusId = metricValue.CampusId;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

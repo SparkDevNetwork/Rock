@@ -98,10 +98,11 @@ namespace Rock.Model
             target.DataViewId = source.DataViewId;
             target.XAxisLabel = source.XAxisLabel;
             target.YAxisLabel = source.YAxisLabel;
-            target.StewardPersonAliasId = source.StewardPersonAliasId;
+            target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             target.AdminPersonAliasId = source.AdminPersonAliasId;
             target.ScheduleId = source.ScheduleId;
             target.LastRunDateTime = source.LastRunDateTime;
+            target.EntityTypeId = source.EntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

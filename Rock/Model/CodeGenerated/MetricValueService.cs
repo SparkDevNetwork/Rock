@@ -94,7 +94,7 @@ namespace Rock.Model
             target.MetricId = source.MetricId;
             target.Note = source.Note;
             target.MetricValueDateTime = source.MetricValueDateTime;
-            target.CampusId = source.CampusId;
+            target.EntityId = source.EntityId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
