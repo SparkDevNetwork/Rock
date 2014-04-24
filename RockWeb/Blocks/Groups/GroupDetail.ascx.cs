@@ -446,6 +446,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupService.Add( group );
                 }
+                rockContext.SaveChanges();
 
                 group.SaveAttributeValues( rockContext );
 
