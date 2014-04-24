@@ -154,6 +154,8 @@ namespace RockWeb
                 // Get a db context
                 rockContext = new RockContext();
 
+                RegisterRoutes( rockContext, RouteTable.Routes );
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     new AttributeService( rockContext ).Get( 0 );
@@ -210,8 +212,6 @@ namespace RockWeb
                 AddCallBack();
 
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
-
-                RegisterRoutes( rockContext, RouteTable.Routes );
 
                 Rock.Security.Authorization.Load( rockContext );
 
