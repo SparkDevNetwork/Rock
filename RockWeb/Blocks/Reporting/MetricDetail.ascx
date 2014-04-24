@@ -31,7 +31,7 @@
                         <Rock:DataTextBox ID="tbXAxisLabel" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="XAxisLabel" />
                         <Rock:DataTextBox ID="tbYAxisLabel" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="YAxisLabel" />
                         <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics." />
-                        <Rock:PersonPicker ID="ppStewardPerson" runat="server" Label="Steward" Help="Person responsible for overseeing the metric and meeting the goals established." />
+                        <Rock:PersonPicker ID="ppMetricChampionPerson" runat="server" Label="Metric Champion" Help="Person responsible for overseeing the metric and meeting the goals established." />
                         <Rock:PersonPicker ID="ppAdminPerson" runat="server" Label="Administrator" Help="Person responsible for entering the metric values." />
                     </div>
                 </div>
