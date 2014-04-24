@@ -126,8 +126,14 @@ namespace RockWeb.Blocks.CheckIn
                                             string printContent = labelCache.FileContent;
                                             foreach ( var mergeField in label.MergeFields )
                                             {
-                                                var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
-                                                printContent = rgx.Replace( printContent, mergeField.Value );
+                                                if (!string.IsNullOrWhiteSpace(mergeField.Value))
+                                                {
+                                                    printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                                                }
+                                                else
+                                                {
+                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FT.*\^FD{0}\^FS" ), string.Empty );
+                                                }
                                             }
 
                                             if ( socket.Connected )
