@@ -77,6 +77,11 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        /// <summary>
+        /// Handles the DisplayFilterValue event of the gfBusinessFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs"/> instance containing the event data.</param>
         private void gfBusinessFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
@@ -100,6 +105,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfBusinessFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBusinessFilter.SaveUserPreference( "Business Name", tbBusinessName.Text );
@@ -107,11 +117,21 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gBusinessList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the AddClick event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gBusinessList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
@@ -119,6 +139,11 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gBusinessList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
@@ -197,6 +222,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gBusinessList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
@@ -205,6 +235,11 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gBusinessList_Edit( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
@@ -213,6 +248,11 @@ namespace RockWeb.Blocks.Finance
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gBusinessList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gBusinessList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var rockContext = new RockContext();
@@ -268,24 +308,7 @@ namespace RockWeb.Blocks.Finance
                 .Select( r => r.Id )
                 .FirstOrDefault();
             var queryable = new PersonService( rockContext ).Queryable()
-                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId )
-                .Select( q => new 
-                {
-                    Id = q.Id,
-                    FirstName = q.FirstName,
-                    PhoneNumber = q.PhoneNumbers.FirstOrDefault(),
-                    Email = q.Email,
-                    Street1 = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1,
-                    Street2 = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2,
-                    City = q.GivingGroup.GroupLocations.FirstOrDefault().Location.City,
-                    State = q.GivingGroup.GroupLocations.FirstOrDefault().Location.State,
-                    Zip = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip,
-                    Owner = q.Members
-                        .Where( r => 
-                            r.GroupRoleId == businessRoleId )
-                        //.Select( r => r.Person )
-                        .FirstOrDefault()
-                } );
+                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
 
             // Business Name Filter
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
@@ -298,14 +321,19 @@ namespace RockWeb.Blocks.Finance
             int ownerId = 0;
             if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
             {
-                //queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
-
-
-                var groupMemberService = new GroupMemberService( rockContext );
-                GroupMember groupMember = queryable.Select( q => q.Owner).FirstOrDefault();
-                var owner = groupMemberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
-                
-
+                var members = queryable.SelectMany( a => a.Members ).ToList();
+                foreach ( var member in members )
+                {
+                    if ( member.GroupRoleId == businessRoleId )
+                    {
+                        var groupMemberService = new GroupMemberService( rockContext );
+                        var owner = groupMemberService.GetInverseRelationship( member, false, CurrentPersonAlias );
+                        if ( owner.PersonId != ownerId )
+                        {
+                            queryable = queryable.Where( a => a.Id != member.PersonId );
+                        }
+                    }
+                }
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;

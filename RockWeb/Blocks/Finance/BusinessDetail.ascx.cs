@@ -114,6 +114,11 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -373,6 +378,10 @@ namespace RockWeb.Blocks.Finance
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Sets the owner.
+        /// </summary>
+        /// <param name="business">The business.</param>
         private void SetOwner( Person business )
         {
             var rockContext = new RockContext();
@@ -408,6 +417,10 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Sets the relationships between a business and it's owner.
+        /// </summary>
+        /// <param name="business">The business.</param>
         private void SetRelationships( Person business )
         {
             var rockContext = new RockContext();
@@ -452,6 +465,11 @@ namespace RockWeb.Blocks.Finance
             rockContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -466,6 +484,11 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -473,11 +496,21 @@ namespace RockWeb.Blocks.Finance
             ShowEditDetails( business );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlRecordStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
         {
             ddlReason.Visible = ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gContactList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gContactList_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             var rockContext = new RockContext();
@@ -499,6 +532,11 @@ namespace RockWeb.Blocks.Finance
             BindContactListGrid( business );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gContactList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gContactList_GridRebind( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -506,6 +544,11 @@ namespace RockWeb.Blocks.Finance
             BindContactListGrid( business );
         }
 
+        /// <summary>
+        /// Handles the AddClick event of the gContactList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gContactList_AddClick( object sender, EventArgs e )
         {
             var contactId = 0;
@@ -515,6 +558,11 @@ namespace RockWeb.Blocks.Finance
             mdAddContact.Show();
         }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdAddContact control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void mdAddContact_SaveClick( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
@@ -616,6 +664,10 @@ namespace RockWeb.Blocks.Finance
             BindContactListGrid( business );
         }
 
+        /// <summary>
+        /// Shows the summary.
+        /// </summary>
+        /// <param name="business">The business.</param>
         private void ShowSummary( Person business )
         {
             SetEditMode( false );
@@ -641,6 +693,10 @@ namespace RockWeb.Blocks.Finance
                 .Html;
         }
 
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="business">The business.</param>
         private void ShowEditDetails( Person business )
         {
             if ( business.Id > 0 )
@@ -692,6 +748,10 @@ namespace RockWeb.Blocks.Finance
             SetEditMode( true );
         }
 
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
@@ -699,6 +759,10 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
+        /// <summary>
+        /// Binds the contact list grid.
+        /// </summary>
+        /// <param name="business">The business.</param>
         private void BindContactListGrid( Person business )
         {
             // Load up that contact list.
