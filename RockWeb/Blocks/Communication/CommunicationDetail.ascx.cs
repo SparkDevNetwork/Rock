@@ -102,11 +102,11 @@ namespace RockWeb.Blocks.Communication
     $('#{9}').click( function() {{ showRecipients('{10}'); }});
 ",
     hfActiveRecipient.ClientID,
-    aPending.ClientID, divPending.ClientID,
-    aDelivered.ClientID, divDelivered.ClientID,
-    aFailed.ClientID, divFailed.ClientID,
-    aCancelled.ClientID, divCancelled.ClientID,
-    aOpened.ClientID, divOpened.ClientID );
+    aPending.ClientID, sPending.ClientID,
+    aDelivered.ClientID, sDelivered.ClientID,
+    aFailed.ClientID, sFailed.ClientID,
+    aCancelled.ClientID, sCancelled.ClientID,
+    aOpened.ClientID, sOpened.ClientID );
 
             ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "recipient-toggle-" + this.BlockId.ToString(), script, true );
         }
@@ -128,11 +128,11 @@ namespace RockWeb.Blocks.Communication
 
         protected override void OnPreRender( EventArgs e )
         {
-            divPending.Style["display"] = hfActiveRecipient.Value == divPending.ClientID ? "block" : "none";
-            divDelivered.Style["display"] = hfActiveRecipient.Value == divDelivered.ClientID ? "block" : "none";
-            divFailed.Style["display"] = hfActiveRecipient.Value == divFailed.ClientID ? "block" : "none";
-            divCancelled.Style["display"] = hfActiveRecipient.Value == divCancelled.ClientID ? "block" : "none";
-            divOpened.Style["display"] = hfActiveRecipient.Value == divOpened.ClientID ? "block" : "none";
+            sPending.Style["display"] = hfActiveRecipient.Value == sPending.ClientID ? "block" : "none";
+            sDelivered.Style["display"] = hfActiveRecipient.Value == sDelivered.ClientID ? "block" : "none";
+            sFailed.Style["display"] = hfActiveRecipient.Value == sFailed.ClientID ? "block" : "none";
+            sCancelled.Style["display"] = hfActiveRecipient.Value == sCancelled.ClientID ? "block" : "none";
+            sOpened.Style["display"] = hfActiveRecipient.Value == sOpened.ClientID ? "block" : "none";
         }
 
         /// <summary>
@@ -349,6 +349,10 @@ namespace RockWeb.Blocks.Communication
                 if ( communication != null )
                 {
                     var newCommunication = communication.Clone( false );
+                    newCommunication.CreatedByPersonAlias = null;
+                    newCommunication.CreatedByPersonAliasId = null;
+                    newCommunication.ModifiedByPersonAlias = null;
+                    newCommunication.ModifiedByPersonAliasId = null;
                     newCommunication.Id = 0;
                     newCommunication.Guid = Guid.Empty;
                     newCommunication.SenderPersonId = CurrentPersonId;
@@ -418,15 +422,15 @@ namespace RockWeb.Blocks.Communication
             ShowStatus( communication );
             lTitle.Text = ( communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
 
-            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime );
-            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime );
+            SetPersonDateValue( lCreatedBy, communication.CreatedByPersonAlias, communication.CreatedDateTime, "Created By" );
+            SetPersonDateValue( lApprovedBy, communication.Reviewer, communication.ReviewedDateTime, "Approved By" );
 
             if ( communication.FutureSendDateTime.HasValue && communication.FutureSendDateTime.Value > RockDateTime.Now )
             {
                 lFutureSend.Text = String.Format( "<div class='alert alert-success'><strong>Future Send</strong> This communication is scheduled to be sent {0} <small>({1})</small>.</div>", communication.FutureSendDateTime.Value.ToRelativeDateString(), communication.FutureSendDateTime.Value.ToString() );
             }
 
-            BindRecipients();
+            pnlOpened.Visible = false;
 
             lDetails.Text = communication.ChannelDataJson;
             if ( communication.ChannelEntityTypeId.HasValue )
@@ -437,29 +441,32 @@ namespace RockWeb.Blocks.Communication
                     var channel = ChannelContainer.GetComponent( channelEntityType.Name );
                     if (channel != null)
                     {
+                        pnlOpened.Visible = channel.Transport.CanTrackOpens;
                         lDetails.Text = channel.GetMessageDetails( communication );
                     }
                 } 
             }
+
+            BindRecipients();
 
             BindActivity();
 
             ShowActions( communication );
         }
 
-        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime ) {
+        private void SetPersonDateValue( Literal literal, PersonAlias personAlias, DateTime? datetime, string labelText ) {
 
             if ( personAlias != null )
             {
-                SetPersonDateValue( literal, personAlias.Person, datetime );
+                SetPersonDateValue( literal, personAlias.Person, datetime, labelText );
             }
         }
 
-        private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime )
+        private void SetPersonDateValue( Literal literal, Person person, DateTime? datetime, string labelText )
         {
             if ( person != null )
             {
-                literal.Text = "<strong>" + person.FullName + "</strong>";
+                literal.Text = String.Format("<strong>{0}</strong> {1}", labelText, person.FullName);
 
                 if ( datetime.HasValue )
                 {
@@ -478,22 +485,28 @@ namespace RockWeb.Blocks.Communication
                     .Where( r => r.CommunicationId == CommunicationId.Value )
                     .ToList();
 
-                SetRecipients( aPending, lPending, gPending,
+                SetRecipients( pnlPending, aPending, lPending, gPending,
                     recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending ).ToList() );
-                SetRecipients( aDelivered, lDelivered, gDelivered,
+                SetRecipients( pnlDelivered, aDelivered, lDelivered, gDelivered,
                     recipients.Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened ).ToList() );
-                SetRecipients( aFailed, lFailed, gFailed,
+                SetRecipients( pnlFailed, aFailed, lFailed, gFailed,
                     recipients.Where( r => r.Status == CommunicationRecipientStatus.Failed ).ToList() );
-                SetRecipients( aCancelled, lCancelled, gCancelled,
+                SetRecipients( pnlCancelled, aCancelled, lCancelled, gCancelled,
                     recipients.Where( r => r.Status == CommunicationRecipientStatus.Cancelled ).ToList() );
-                SetRecipients( aOpened, lOpened, gOpened,
-                    recipients.Where( r => r.Status == CommunicationRecipientStatus.Opened ).ToList() );
+
+                if ( pnlOpened.Visible )
+                {
+                    SetRecipients( pnlOpened, aOpened, lOpened, gOpened,
+                        recipients.Where( r => r.Status == CommunicationRecipientStatus.Opened ).ToList() );
+                }
             }
         }
 
-        private void SetRecipients( HtmlAnchor htmlAnchor, Literal literalControl, 
+        private void SetRecipients( Panel pnl, HtmlAnchor htmlAnchor, Literal literalControl, 
             Grid grid, List<CommunicationRecipient> recipients )
         {
+            pnl.CssClass = pnlOpened.Visible ? "col-md-2-10 margin-b-md" : "col-md-3 margin-b-md";
+
             int count = recipients.Count();
 
             if ( count <= 0 )

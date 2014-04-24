@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -27,17 +28,17 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using Rock.Dashboard;
+using Rock.Reporting.Dashboard;
 
-namespace RockWeb.Blocks.Dashboard
+namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Stark DashboardWidget" )]
+    [DisplayName( "Line Chart DashboardWidget" )]
     [Category( "Dashboard" )]
-    [Description( "Template block for developers to use to start a new DashBoardWidget block." )]
-    public partial class StarkDashboardWidget : DashboardWidget
+    [Description( "Line Chart dashboard widget for developers to use to start a new LineChartDashboardWidget block." )]
+    public partial class LineChartDashboardWidget : DashboardWidget
     {
         #region Fields
 
@@ -66,6 +67,8 @@ namespace RockWeb.Blocks.Dashboard
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            RockPage.AddScriptLink( "https://www.google.com/jsapi", false );
         }
 
         /// <summary>
@@ -78,6 +81,18 @@ namespace RockWeb.Blocks.Dashboard
 
             if ( !Page.IsPostBack )
             {
+
+                Guid attendanceMetricGuid = new Guid("D4752628-DFC9-4681-ADB3-01936B8F38CA");
+                var dataList = new MetricValueService( new RockContext() ).Queryable().Where( w => w.MetricValueDateTime.HasValue && w.Metric.Guid == attendanceMetricGuid ).ToList()
+                    .Select( a => new object[] 
+                                {
+                                    a.MetricValueDateTime.Value.Date.ToShortDateString(),
+                                    a.YValue
+                                } ).ToList();
+
+                dataList.Insert( 0, new object[] { "Date", "Attendance" } );
+
+                hfDataTable.Value = dataList.ToJson();
                 // added for your convenience
             }
         }

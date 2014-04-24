@@ -30,6 +30,28 @@ namespace Rock.Model
     public partial class PersonService 
     {
         /// <summary>
+        /// Gets the specified unique identifier.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public override Person Get( Guid guid )
+        {
+            // if a specific person Guid is specified, get the person record even if IsDeceased or IsBusiness
+            return this.Queryable( true, true ).FirstOrDefault( a => a.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override Person Get( int id )
+        {
+            // if a specific person Id is specified, get the person record even if IsDeceased or IsBusiness
+            return this.Queryable( true, true ).FirstOrDefault( a => a.Id == id );
+        }
+        
+        /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities.
         /// </summary>
         /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities.</returns>

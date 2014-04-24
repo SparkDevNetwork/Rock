@@ -37,7 +37,7 @@
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jpanelmenu.min.js", true) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery.jRespond.min.js", true) %>"></script>
 
-    <!-- Set the viewport width to device width for mobile -->
+    <!-- Set the viewport width to device width for mobile disabling zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <asp:ContentPlaceHolder ID="css" runat="server" />

@@ -116,6 +116,50 @@ namespace Rock.Migrations
                     ) );
         }
 
+        /// <summary>
+        /// Updates the EntityType SingleValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeSingleValueFieldType( string entityTypeName, string fieldTypeGuid)
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [SingleValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid)
+            );
+        }
+
+        /// <summary>
+        /// Updates the EntityType MultiValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeMultiValueFieldType( string entityTypeName, string fieldTypeGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [MultiValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid )
+            );
+        }
+
         #endregion
 
         #region Field Type Methods

@@ -65,6 +65,13 @@ public partial class error : System.Web.UI.Page
         if ( Request["error"] != null )
         {
             errorLevel = Int32.Parse( Request["error"].ToString() );
+        } 
+        else
+        {
+            if (Request.RequestContext.HttpContext.Items["error"] != null)
+            {
+                errorLevel = Int32.Parse( Request.RequestContext.HttpContext.Items["error"].ToString() );
+            }
         }
 
 
@@ -95,14 +102,20 @@ public partial class error : System.Web.UI.Page
 
                 break;
 
-            case 66: // massive errors from global.asax.cs
+            case 66: // massive errors from global.asax.cs or routehandler
 
                 if ( Session["Exception"] != null )
                 {
-                    // is an admin
                     lErrorInfo.Text = "<h3>Exception Log:</h3>";
-
                     ProcessException( (Exception)Session["Exception"], " " );
+                }
+                else
+                {
+                    if (Request.RequestContext.HttpContext.Items["Exception"] != null)
+                    {
+                        lErrorInfo.Text = "<h3>Exception Log:</h3>";
+                        ProcessException( (Exception)Request.RequestContext.HttpContext.Items["Exception"], " " );
+                    }
                 }
                 break;
         }

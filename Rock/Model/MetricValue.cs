@@ -96,29 +96,23 @@ namespace Rock.Model
         /// <value>
         /// The metric value date time.
         /// </value>
+        [Index]
         [DataMember]
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
-        /// The campus identifier.
+        /// The entity identifier.
         /// </value>
+        [Index]
         [DataMember]
-        public int? CampusId { get; set; }
+        public int? EntityId { get; set; }
 
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the campus.
-        /// </summary>
-        /// <value>
-        /// The campus.
-        /// </value>
-        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the metric.
@@ -167,7 +161,6 @@ namespace Rock.Model
         public MetricValueConfiguration()
         {
             this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
         }
     }
 

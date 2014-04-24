@@ -760,6 +760,17 @@ namespace Rock
             return value.TrimEnd( new char[] { '\\', '/' } ) + "/";
         }
 
+        /// <summary>
+        /// Evaluates string and if null or empty returns nullValue instead
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="nullValue">The null value.</param>
+        /// <returns></returns>
+        public static string IfEmpty(this string value, string nullValue)
+        {
+            return !string.IsNullOrWhiteSpace( value ) ? value : nullValue;
+        }
+
         #endregion
 
         #region Int Extensions
