@@ -88,7 +88,7 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [XValue], [YValue], [O
 
 -- example metric    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
-    set @metricGuid = NEWID();
+    set @metricGuid = 'D4752628-DFC9-4681-ADB3-01936B8F38CA';
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass], [IsCumulative],[Guid])
      VALUES 
         (0,'Adult Attendence','Number of adults in the weekend service', 'fa fa-thumbs-up', 1, @metricGuid)
