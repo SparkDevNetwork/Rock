@@ -23,6 +23,9 @@ using Rock.Data;
 
 namespace Rock.Model
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Table( "MetricCategory" )]
     [DataContract]
     public class MetricCategory : Entity<MetricCategory>, IOrdered, ICategorized
@@ -209,6 +212,9 @@ namespace Rock.Model
     /// </summary>
     public partial class MetricCategoryConfiguration : EntityTypeConfiguration<MetricCategory>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MetricCategoryConfiguration"/> class.
+        /// </summary>
         public MetricCategoryConfiguration()
         {
             this.HasRequired( a => a.Metric ).WithMany( a => a.MetricCategories );

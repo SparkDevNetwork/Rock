@@ -177,8 +177,8 @@ namespace RockWeb.Blocks.Reporting
             metric.IsCumulative = cbIsCumulative.Checked;
 
             var personService = new PersonService( rockContext );
-            var stewardPerson = personService.Get( ppStewardPerson.SelectedValue ?? 0 );
-            metric.StewardPersonAliasId = stewardPerson != null ? stewardPerson.PrimaryAliasId : null;
+            var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
+            metric.MetricChampionPersonAliasId = metricChampionPerson != null ? metricChampionPerson.PrimaryAliasId : null;
             var adminPerson = personService.Get( ppAdminPerson.SelectedValue ?? 0 );
             metric.AdminPersonAliasId = adminPerson != null ? adminPerson.PrimaryAliasId : null;
             metric.SourceSql = ceSourceSql.Text;
@@ -535,7 +535,7 @@ namespace RockWeb.Blocks.Reporting
             tbXAxisLabel.Text = metric.XAxisLabel;
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
-            ppStewardPerson.SetValue( metric.StewardPersonAlias != null ? metric.StewardPersonAlias.Person : null );
+            ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
             if ( metric.Schedule != null )
@@ -566,11 +566,11 @@ namespace RockWeb.Blocks.Reporting
 
             if ( metric.LastRunDateTime != null )
             {
-                ltLastRunDateTime.Text = metric.LastRunDateTime.ToRelativeDateString();
+                ltLastRunDateTime.Text = "<span class='label label-success'>" + metric.LastRunDateTime.ToString() +"</span>";
             }
             else
             {
-                ltLastRunDateTime.Text = "-";
+                ltLastRunDateTime.Text = "<span class='label label-warning'>Never Run</span>";
             }
 
             ddlDataView.SetValue( metric.DataViewId );

@@ -144,6 +144,12 @@ namespace Rock.Model
             
             // ignoring History,RelatedEntityTypeId 
  
+            if ( new Service<Metric>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Metric.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<NoteType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, NoteType.FriendlyTypeName );
@@ -221,6 +227,8 @@ namespace Rock.Model
             target.IsEntity = source.IsEntity;
             target.IsSecured = source.IsSecured;
             target.IsCommon = source.IsCommon;
+            target.SingleValueFieldTypeId = source.SingleValueFieldTypeId;
+            target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;
             target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
