@@ -1090,6 +1090,16 @@ namespace Rock
             return "";
         }
 
+        /// <summary>
+        /// Converts the date to an Epoch of milliseconds since 1970/1/1
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static long ToJavascriptMilliseconds( this DateTime dateTime)
+        {
+            return (long)( dateTime - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+        }
+
         #endregion
 
         #region TimeSpan Extensions
