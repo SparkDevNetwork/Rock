@@ -93,6 +93,8 @@ namespace RockWeb.Blocks.CheckIn
                                 var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
                                 if ( printFromClient.Any() )
                                 {
+                                    var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                                    printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
                                     AddLabelScript( printFromClient.ToJson() );
                                 }
 
@@ -132,7 +134,7 @@ namespace RockWeb.Blocks.CheckIn
                                                 }
                                                 else
                                                 {
-                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FT.*\^FD{0}\^FS" ), string.Empty );
+                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FT.*\^FD{0}\^FS", mergeField.Key ), string.Empty );
                                                 }
                                             }
 
