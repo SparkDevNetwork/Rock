@@ -262,8 +262,30 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var recordTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
             var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
             var queryable = new PersonService( rockContext ).Queryable()
-                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId );
+                .Where( q => q.RecordTypeValueId == recordTypeValueId && q.RecordStatusValueId == activeRecordStatusValueId )
+                .Select( q => new 
+                {
+                    Id = q.Id,
+                    FirstName = q.FirstName,
+                    PhoneNumber = q.PhoneNumbers.FirstOrDefault(),
+                    Email = q.Email,
+                    Street1 = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1,
+                    Street2 = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2,
+                    City = q.GivingGroup.GroupLocations.FirstOrDefault().Location.City,
+                    State = q.GivingGroup.GroupLocations.FirstOrDefault().Location.State,
+                    Zip = q.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip,
+                    Owner = q.Members
+                        .Where( r => 
+                            r.GroupRoleId == businessRoleId )
+                        //.Select( r => r.Person )
+                        .FirstOrDefault()
+                } );
 
             // Business Name Filter
             var businessName = gfBusinessFilter.GetUserPreference( "Business Name" );
@@ -276,12 +298,14 @@ namespace RockWeb.Blocks.Finance
             int ownerId = 0;
             if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
             {
-                int? ownerRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                    .Where( r =>
-                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
+                //queryable = queryable.Where( a => a.GivingGroup.Members.Where( g => g.GroupRoleId == ownerRoleId ).FirstOrDefault().PersonId == ownerId );
+
+
+                var groupMemberService = new GroupMemberService( rockContext );
+                GroupMember groupMember = queryable.Select( q => q.Owner).FirstOrDefault();
+                var owner = groupMemberService.GetInverseRelationship( groupMember, false, CurrentPersonAlias );
+                
+
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;
