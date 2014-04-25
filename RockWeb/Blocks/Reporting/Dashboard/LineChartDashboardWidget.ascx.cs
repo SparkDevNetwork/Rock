@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             RockPage.AddScriptLink( "https://www.google.com/jsapi", false );
+            RockPage.AddScriptLink( "~/Scripts/jquery.smartresize.js" );
         }
 
         /// <summary>

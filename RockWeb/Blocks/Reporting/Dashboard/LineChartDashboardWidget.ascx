@@ -20,12 +20,12 @@
                 // define chart
                 var columnsText = $('#<%=hfColumns.ClientID%>').val();
                 var columnsData = $.parseJSON(columnsText);
-                
+
                 var dataTable = new google.visualization.DataTable(
                     {
                         cols: columnsData
                     });
-                
+
                 // data for chart
                 var arrayText = $('#<%=hfDataTable.ClientID%>').val();
                 var arrayData = eval(arrayText);
@@ -35,16 +35,22 @@
                 var optionsText = $('#<%=hfOptions.ClientID%>').val();
                 var options = $.parseJSON(optionsText);
 
-                // creat and draw chart
-                var chartDiv = document.getElementById('dashboard-widget-line-chart');
+                // create and draw chart
+                var chartDiv = document.getElementById('<%=pnlLineChartHolder.ClientID%>');
                 var chart = new google.visualization.LineChart(chartDiv);
                 chart.draw(dataTable, options);
+
+                $(window).smartresize(function () {
+                    {
+                        chart.draw(dataTable, options);
+                    }
+                });
             }
 
         </script>
 
         <!-- chart holder -->
-        <div id="dashboard-widget-line-chart"></div>
+        <asp:Panel ID="pnlLineChartHolder" runat="server"></asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
