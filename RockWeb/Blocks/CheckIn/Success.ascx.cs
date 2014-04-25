@@ -134,6 +134,9 @@ namespace RockWeb.Blocks.CheckIn
                                                 }
                                                 else
                                                 {
+                                                    // Remove the box preceding merge field
+                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+                                                    // Remove the merge field
                                                     printContent = Regex.Replace( printContent, string.Format( @"\^FT.*\^FD{0}\^FS", mergeField.Key ), string.Empty );
                                                 }
                                             }
