@@ -29,9 +29,53 @@ namespace Rock.Reporting.Dashboard
     [TextField( "Title", "The title of the widget", false )]
     [TextField( "Subtitle", "The subtitle of the widget", false )]
     [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4" )]
-    [ContextAware( typeof( Rock.Model.Campus ) )]
+    [ContextAware()]
     public abstract class DashboardWidget : RockBlock
     {
+        /// <summary>
+        /// Gets the Title attribute value
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return GetAttributeValue( "Title" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Subtitle attribute value
+        /// </summary>
+        /// <value>
+        /// The subtitle.
+        /// </value>
+        public string Subtitle
+        {
+            get
+            {
+                return GetAttributeValue( "Subtitle" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the Column Width attribute value
+        /// This will be a value from 1-12 (or null) that represents the col-md- width of this Dashboard Widget
+        /// </summary>
+        /// <value>
+        /// The width of the column.
+        /// </value>
+        public int? ColumnWidth
+        {
+            get
+            {
+                return GetAttributeValue( "ColumnWidth" ).AsInteger(false);
+            }
+        }
+        
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
         /// </summary>
