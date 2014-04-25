@@ -165,13 +165,45 @@ namespace Rock.Services.NuGet
         }
 
         /// <summary>
-        /// Workaround until we get to NuGet 2.7 - Always add the file to the filesystem.
+        /// Workaround until we get to NuGet 2.7 and to del with the
+        /// "because it is being used by another process" dll problem.
+        /// This method will always add the file to the filesystem.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="stream"></param>
         public override void AddFile( string path, Stream stream )
         {
+            string fileToDelete = string.Empty;
+            int fileCount = 0;
+            if ( path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" ) )
+            {
+                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
+                if ( File.Exists( physicalFile ) )
+                {
+                    // generate a unique *.#.rdelete filename
+                    do
+                    {
+                        fileCount++;
+                    }
+                    while ( File.Exists( string.Format( "{0}.{1}.rdelete", physicalFile, fileCount ) ) );
+
+                    fileToDelete = string.Format( "{0}.{1}.rdelete", physicalFile, fileCount );
+                    File.Move( physicalFile, fileToDelete );
+                }
+            }
+
             base.AddFile( path, stream );
+
+            if ( fileToDelete != string.Empty )
+            {
+                try
+                {
+                    File.Delete( fileToDelete );
+                }
+                catch
+                { // delete at a later date
+                };
+            }
 
             if ( path.Equals( Path.Combine( "App_Data", "deletefile.lst" ) ) )
             {

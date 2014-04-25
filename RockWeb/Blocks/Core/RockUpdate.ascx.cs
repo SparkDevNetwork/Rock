@@ -444,7 +444,7 @@ namespace RockWeb.Blocks.Core
             {
                 DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
                 string organizationName = string.Empty;
-                Location organizationLocation = null;
+                ImpactLocation organizationLocation = null;
                 int numberOfActiveRecords = 0;
                 string publicUrl = string.Empty;
 
@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Core
                             var location = new Rock.Model.LocationService( rockContext ).Get( organizationAddressLocationGuid );
                             if ( location != null )
                             {
-                                organizationLocation = location.Clone( false );
+                                organizationLocation = new ImpactLocation( location );
                             }
                         }
 
@@ -501,7 +501,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="organizationName"></param>
         /// <param name="organizationAddress"></param>
         /// <param name="numberOfActiveRecords"></param>
-        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, Location organizationLocation, int numberOfActiveRecords )
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords )
         {
             ImpactStatistic impactStatistic = new ImpactStatistic()
             {
@@ -510,7 +510,7 @@ namespace RockWeb.Blocks.Core
                 IpAddress = ipAddress,
                 PublicUrl = publicUrl,
                 OrganizationName = organizationName,
-                //OrganizationLocation = organizationLocation,
+                OrganizationLocation = organizationLocation,
                 NumberOfActiveRecords = numberOfActiveRecords
             };
 
@@ -532,7 +532,26 @@ namespace RockWeb.Blocks.Core
         public string IpAddress { get; set; }
         public string PublicUrl { get; set; }
         public string OrganizationName { get; set; }
-        //public Location OrganizationLocation { get; set; }
+        public ImpactLocation OrganizationLocation { get; set; }
         public int NumberOfActiveRecords { get; set; }
+    }
+
+    [Serializable]
+    public class ImpactLocation
+    {
+        public string Street1 { get; set; }
+        public string Street2 { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+
+        public ImpactLocation( Rock.Model.Location location)
+        {
+            Street1 = location.Street1;
+            Street2 = location.Street2;
+            City = location.City;
+            State = location.State;
+            Zip = location.Zip;
+        }
     }
 }
