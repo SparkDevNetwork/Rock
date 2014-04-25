@@ -15,33 +15,26 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Threading.Tasks;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Reflection;
-using System.IO;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using NuGet;
+using RestSharp;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Services.NuGet;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
-using Rock.Data;
-using Rock.Net;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -451,14 +444,13 @@ namespace RockWeb.Blocks.Core
             {
                 DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
                 string organizationName = string.Empty;
-                string organizationAddress = string.Empty;
+                Location organizationLocation = null;
                 int numberOfActiveRecords = 0;
                 string publicUrl = string.Empty;
 
                 if ( sampleDataLoadDate == null )
                 {
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
                     if ( cbIncludeStats.Checked )
@@ -469,14 +461,14 @@ namespace RockWeb.Blocks.Core
 
                         var rockContext = new RockContext();
 
-                        // Fetch their organization address
+                        // Fetch the organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                         if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
                         {
                             var location = new Rock.Model.LocationService( rockContext ).Get( organizationAddressLocationGuid );
                             if ( location != null )
                             {
-                                organizationAddress = location.GetFullStreetAddress();
+                                organizationLocation = location.Clone( false );
                             }
                         }
 
@@ -484,14 +476,18 @@ namespace RockWeb.Blocks.Core
                     }
 
                     // TODO now send them to SDN/Rock server
-                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationAddress, numberOfActiveRecords );
+                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
                 }
             }
             catch ( Exception ex )
             {
                 // Just catch any exceptions, log it, and keep moving... We don't want to mess up the experience
                 // over a few statistics/metrics.
-                LogException( ex );
+                try
+                {
+                    LogException( ex );
+                }
+                catch { }
             }
         }
 
@@ -505,36 +501,38 @@ namespace RockWeb.Blocks.Core
         /// <param name="organizationName"></param>
         /// <param name="organizationAddress"></param>
         /// <param name="numberOfActiveRecords"></param>
-        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, string organizationAddress, int numberOfActiveRecords )
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, Location organizationLocation, int numberOfActiveRecords )
         {
-            using ( RockRestClient client = new RockRestClient( "http://rockrms.com/" ) )
+            ImpactStatistic impactStatistic = new ImpactStatistic()
             {
+                RockInstanceId = rockInstanceId,
+                Version = version,
+                IpAddress = ipAddress,
+                PublicUrl = publicUrl,
+                OrganizationName = organizationName,
+                //OrganizationLocation = organizationLocation,
+                NumberOfActiveRecords = numberOfActiveRecords
+            };
 
-                ImpactStatistic impactStatistic = new ImpactStatistic()
-                {
-                    Version = version,
-                    IpAddress = ipAddress,
-                    PublicUrl = publicUrl,
-                    OrganizationName = organizationName,
-                    OrganizationAddress = organizationAddress,
-                    NumberOfActiveRecords = numberOfActiveRecords
-                };
-
-                client.PostNonIEntityData<ImpactStatistic>( "api/ImpactStatistics/", impactStatistic );
-            }
+            var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
+            var request = new RestRequest( Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddBody( impactStatistic );
+            var response = client.Execute( request );
         }
+
         #endregion
     }
 
     [Serializable]
     public class ImpactStatistic
     {
-        public string RockInstanceId { get; set; }
+        public Guid RockInstanceId { get; set; }
         public string Version { get; set; }
         public string IpAddress { get; set; }
         public string PublicUrl { get; set; }
         public string OrganizationName { get; set; }
-        public string OrganizationAddress { get; set; }
+        //public Location OrganizationLocation { get; set; }
         public int NumberOfActiveRecords { get; set; }
     }
 }
