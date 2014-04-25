@@ -25,6 +25,7 @@
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="IconCssClass" />
                         <Rock:CategoryPicker ID="cpMetricCategories" runat="server" AllowMultiSelect="true" Label="Categories" />
+                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Help="Select the entity type which can be used to partition metric values. For example, select Campus if the Metric is Attendance for each campus." />
                         <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-6">

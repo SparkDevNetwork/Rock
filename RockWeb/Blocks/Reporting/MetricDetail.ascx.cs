@@ -17,22 +17,19 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
-using Rock.Web.UI;
 using Rock.Security;
-using Rock.Constants;
 using Rock.Web;
-
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -46,8 +43,6 @@ namespace RockWeb.Blocks.Reporting
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -63,10 +58,10 @@ namespace RockWeb.Blocks.Reporting
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Metric.FriendlyTypeName );
 
-            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id; ;
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Metric ) ).Id;
 
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
-            cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id; ;
+            cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id;
         }
 
         /// <summary>
@@ -140,7 +135,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            ////
         }
 
         /// <summary>
@@ -175,6 +170,7 @@ namespace RockWeb.Blocks.Reporting
             metric.XAxisLabel = tbXAxisLabel.Text;
             metric.YAxisLabel = tbYAxisLabel.Text;
             metric.IsCumulative = cbIsCumulative.Checked;
+            metric.EntityTypeId = etpEntityType.SelectedEntityTypeId;
 
             var personService = new PersonService( rockContext );
             var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
@@ -184,7 +180,7 @@ namespace RockWeb.Blocks.Reporting
             metric.SourceSql = ceSourceSql.Text;
             metric.DataViewId = ddlDataView.SelectedValueAsId();
 
-            if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule  )
+            if ( rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.NamedSchedule )
             {
                 metric.ScheduleId = ddlSchedule.SelectedValueAsId();
             }
@@ -236,8 +232,6 @@ namespace RockWeb.Blocks.Reporting
 
                 metric.ScheduleId = schedule.Id;
 
-                
-
                 if ( metric.Id == 0 )
                 {
                     metricService.Add( metric );
@@ -273,14 +267,14 @@ namespace RockWeb.Blocks.Reporting
                 // delete any orphaned Unnamed metric schedules
                 var metricIdSchedulesQry = metricService.Queryable().Select( a => a.ScheduleId );
                 var orphanedSchedules = scheduleService.Queryable()
-                    .Where( a => a.CategoryId == metricScheduleCategoryId && a.Name == "" && a.Id != schedule.Id )
+                    .Where( a => a.CategoryId == metricScheduleCategoryId && a.Name == string.Empty && a.Id != schedule.Id )
                     .Where( s => !metricIdSchedulesQry.Any( m => m == s.Id ) );
                 foreach ( var item in orphanedSchedules )
                 {
                     scheduleService.Delete( item );
                 }
 
-                if (orphanedSchedules.Any())
+                if ( orphanedSchedules.Any() )
                 {
                     rockContext.SaveChanges();
                 }
@@ -375,7 +369,6 @@ namespace RockWeb.Blocks.Reporting
                 metricService.Delete( metric );
                 rockContext.SaveChanges();
             }
-
 
             var qryParams = new Dictionary<string, string>();
             if ( parentCategoryId != null )
@@ -516,7 +509,6 @@ namespace RockWeb.Blocks.Reporting
             if ( metric.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( Metric.FriendlyTypeName ).FormatAsHtmlTitle();
-
             }
             else
             {
@@ -535,6 +527,7 @@ namespace RockWeb.Blocks.Reporting
             tbXAxisLabel.Text = metric.XAxisLabel;
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
+            etpEntityType.SelectedEntityTypeId = metric.EntityTypeId;
             ppMetricChampionPerson.SetValue( metric.MetricChampionPersonAlias != null ? metric.MetricChampionPersonAlias.Person : null );
             ppAdminPerson.SetValue( metric.AdminPersonAlias != null ? metric.AdminPersonAlias.Person : null );
             ceSourceSql.Text = metric.SourceSql;
@@ -561,12 +554,12 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 sbSchedule.iCalendarContent = null;
-                rblScheduleSelect.SelectedValue = rblScheduleSelect.SelectedValue = ScheduleSelectionType.Unique.ConvertToInt().ToString(); ;
+                rblScheduleSelect.SelectedValue = rblScheduleSelect.SelectedValue = ScheduleSelectionType.Unique.ConvertToInt().ToString();
             }
 
             if ( metric.LastRunDateTime != null )
             {
-                ltLastRunDateTime.Text = "<span class='label label-success'>" + metric.LastRunDateTime.ToString() +"</span>";
+                ltLastRunDateTime.Text = "<span class='label label-success'>" + metric.LastRunDateTime.ToString() + "</span>";
             }
             else
             {
@@ -648,7 +641,7 @@ namespace RockWeb.Blocks.Reporting
 
             var scheduleCategoryId = new CategoryService( rockContext ).Get( Rock.SystemGuid.Category.SCHEDULE_METRICS.AsGuid() ).Id;
             var scheduleCategories = new ScheduleService( rockContext ).Queryable()
-                .Where( a => a.CategoryId == scheduleCategoryId && a.Name != "" )
+                .Where( a => a.CategoryId == scheduleCategoryId && a.Name != string.Empty )
                 .OrderBy( a => a.Name ).ToList();
 
             ddlSchedule.Items.Clear();
@@ -657,6 +650,7 @@ namespace RockWeb.Blocks.Reporting
                 ddlSchedule.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
 
+            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
         }
 
         #endregion
@@ -673,6 +667,5 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion
-
     }
 }
