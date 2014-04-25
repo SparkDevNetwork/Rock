@@ -7,6 +7,7 @@
             <asp:HiddenField ID="hfMetricId" runat="server" />
             <asp:HiddenField ID="hfMetricCategoryId" runat="server" />
             <asp:HiddenField ID="hfMetricValueId" runat="server" />
+            <asp:HiddenField ID="hfSingleValueFieldTypeId" runat="server" />
 
             <div class="banner">
                 <h1>
@@ -27,7 +28,7 @@
                         <Rock:NumberBox ID="tbYValue" runat="server" Label="Y Value" NumberType="Double" />
                         <Rock:DataTextBox ID="tbNote" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Note" TextMode="MultiLine" Rows="3" />
                         <Rock:DateTimePicker ID="dtpMetricValueDateTime" runat="server" Label="Value Date/Time" />
-                        <Rock:CampusPicker ID="cpCampus" runat="server" />
+                        <asp:PlaceHolder ID="phEntityTypeEntityIdValue" runat="server" />
                     </div>
                 </div>
 
