@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// 
     /// </summary>
     [Serializable]
-    public class EntityTypeFieldType : FieldType
+    public class EntityTypeFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -162,7 +162,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Reads new values entered by the user for the field ( as Guid) 
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -183,7 +183,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value ( as Guid )
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -205,6 +205,32 @@ namespace Rock.Field.Types
                     entityTypePicker.SelectedEntityTypeId = selectedValue;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new EntityTypeService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new EntityTypeService( new RockContext() ).Get( id ?? 0 );
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }
