@@ -38,6 +38,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 		SlnRelativePath = "RockWeb\"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Client", "Rock.Client\Rock.Client.csproj", "{6EA64BB9-9740-453A-939B-DF43AD9AC164}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,16 @@ Global
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|x86.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6EA64BB9-9740-453A-939B-DF43AD9AC164}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
