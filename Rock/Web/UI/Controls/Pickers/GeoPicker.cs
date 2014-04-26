@@ -653,6 +653,21 @@ namespace Rock.Web.UI.Controls
             {
                 options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
             }
+            else
+            {
+                // If no centerpoint was defined, try to get it from organization address
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                Guid guid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
+                if ( !guid.Equals( Guid.Empty ) )
+                {
+                    var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Latitude != null )
+                    {
+                        CenterPoint = location.GeoPoint;
+                        options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                    }
+                }
+            }
 
             string script = string.Format( @"
 // if the geoPicker was rendered, initialize it

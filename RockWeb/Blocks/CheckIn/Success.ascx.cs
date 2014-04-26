@@ -47,8 +47,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit(e);
 
-            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js");
-            RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js");
+            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
         }
 
         /// <summary>
@@ -65,86 +65,100 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
-                foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
+                if ( !Page.IsPostBack )
                 {
-                    lbAnother.Visible = family.People.Count > 1;
-
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
-                        {
-                            foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
-                            {
-                                foreach ( var location in group.Locations.Where( l => l.Selected ) )
-                                {
-                                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
-                                    {
-                                        var li = new HtmlGenericControl( "li" );
-                                        li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
-                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+                        lbAnother.Visible = family.People.Count > 1;
 
-                                        phResults.Controls.Add( li );
+                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        {
+                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            {
+                                foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+                                {
+                                    foreach ( var location in group.Locations.Where( l => l.Selected ) )
+                                    {
+                                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                                        {
+                                            var li = new HtmlGenericControl( "li" );
+                                            li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
+                                                person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
+
+                                            phResults.Controls.Add( li );
+                                        }
                                     }
                                 }
-                            }
 
-                            var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
-                            if ( printFromClient.Any() )
-                            {
-                                AddLabelScript( printFromClient.ToJson() );
-                            }
-
-                            var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
-                            if ( printFromServer.Any() )
-                            {
-                                Socket socket = null;
-                                string currentIp = string.Empty;
-
-                                foreach ( var label in printFromServer )
+                                var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
+                                if ( printFromClient.Any() )
                                 {
-                                    var labelCache = KioskLabel.Read( label.FileId );
-                                    if ( labelCache != null )
+                                    var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                                    printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                                    AddLabelScript( printFromClient.ToJson() );
+                                }
+
+                                var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
+                                if ( printFromServer.Any() )
+                                {
+                                    Socket socket = null;
+                                    string currentIp = string.Empty;
+
+                                    foreach ( var label in printFromServer )
                                     {
-                                        if ( label.PrinterAddress != currentIp )
+                                        var labelCache = KioskLabel.Read( label.FileId );
+                                        if ( labelCache != null )
                                         {
-                                            if ( socket != null && socket.Connected )
+                                            if ( label.PrinterAddress != currentIp )
                                             {
-                                                socket.Shutdown( SocketShutdown.Both );
-                                                socket.Close();
+                                                if ( socket != null && socket.Connected )
+                                                {
+                                                    socket.Shutdown( SocketShutdown.Both );
+                                                    socket.Close();
+                                                }
+
+                                                currentIp = label.PrinterAddress;
+                                                var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+
+                                                socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                                                IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                                bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
                                             }
 
-                                            currentIp = label.PrinterAddress;
-                                            var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+                                            string printContent = labelCache.FileContent;
+                                            foreach ( var mergeField in label.MergeFields )
+                                            {
+                                                if (!string.IsNullOrWhiteSpace(mergeField.Value))
+                                                {
+                                                    printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                                                }
+                                                else
+                                                {
+                                                    // Remove the box preceding merge field
+                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+                                                    // Remove the merge field
+                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FT.*\^FD{0}\^FS", mergeField.Key ), string.Empty );
+                                                }
+                                            }
 
-                                            socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                            IAsyncResult result = socket.BeginConnect( printerIp, null, null );
-                                            bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-                                        }
-
-                                        string printContent = labelCache.FileContent;
-                                        foreach ( var mergeField in label.MergeFields )
-                                        {
-                                            var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
-                                            printContent = rgx.Replace( printContent, mergeField.Value );
-                                        }
-
-                                        if ( socket.Connected )
-                                        {
-                                            var ns = new NetworkStream( socket );
-                                            byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                            ns.Write( toSend, 0, toSend.Length );
-                                        }
-                                        else
-                                        {
-                                            phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                            if ( socket.Connected )
+                                            {
+                                                var ns = new NetworkStream( socket );
+                                                byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                                ns.Write( toSend, 0, toSend.Length );
+                                            }
+                                            else
+                                            {
+                                                phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                            }
                                         }
                                     }
-                                }
 
-                                if ( socket != null && socket.Connected )
-                                {
-                                    socket.Shutdown( SocketShutdown.Both );
-                                    socket.Close();
+                                    if ( socket != null && socket.Connected )
+                                    {
+                                        socket.Shutdown( SocketShutdown.Both );
+                                        socket.Close();
+                                    }
                                 }
                             }
                         }
@@ -211,8 +225,6 @@ namespace RockWeb.Blocks.CheckIn
         var labelData = {0};
 
 		function onDeviceReady() {{
-	
-			//navigator.notification.alert('Oh boy! It's going to be a good day!, alertDismissed, 'Success', 'Continue');
 			printLabels();
 		}}
 		
@@ -224,13 +236,19 @@ namespace RockWeb.Blocks.CheckIn
 		    ZebraPrintPlugin.printTags(
             	JSON.stringify(labelData), 
             	function(result) {{ 
-			        console.log('I printed that tag like a champ!!!');
+			        console.log('Tag printed');
 			    }},
 			    function(error) {{   
 				    // error is an array where:
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
+                    navigator.notification.alert(
+                        'An error occurred while printing the labels.' + error[0],  // message
+                        alertDismissed,         // callback
+                        'Error',            // title
+                        'Ok'                  // buttonName
+                    );
 			    }}
             );
 	    }}

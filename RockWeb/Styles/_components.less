@@ -386,7 +386,7 @@ ul.rocktree ul {
             border: 1px solid #bbb;
             float: left;
             margin: 0 1.25% @spacing-md-px;
-            width: 45%;
+            width: 47.5%;
             overflow: hidden;
             color: @pagelist-text-color;
             text-align: center;
@@ -455,13 +455,32 @@ ul.rocktree ul {
 
     .navbar-collapse {
         padding: 0;
+
+        &.in {
+            overflow-y: inherit;
+        }
     }
 
     .nav.nav-pills {
         margin: 10px 0;
         padding: 0 15px;
+
+        li {
+            float: none;
+        }
     }
 }
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .nav.nav-pagelist {
+        .nav.nav-pills {
+            li {
+                float: left;
+            }
+        }
+    }
+}
+
 
 // 8. Tags
 // ------------------------
@@ -488,6 +507,20 @@ div.tagsinput
         text-decoration: none;
         border-bottom-right-radius: @tag-border-radius;
         border-top-right-radius: @tag-border-radius;
+
+        span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            display: block;
+            float: left;
+        }
+
+        a {
+            float: left;
+            display: block;
+        }
 
         small {
             font-size: 11px;

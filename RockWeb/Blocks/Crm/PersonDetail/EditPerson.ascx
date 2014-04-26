@@ -70,7 +70,7 @@
                                             <div class="col-sm-5">
                                                 <div class="row">
                                                     <div class="col-xs-6">
-                                                        <asp:CheckBox ID="cbSms"  runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
+                                                        <asp:CheckBox ID="cbSms" runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
                                                     </div>
                                                     <div class="col-xs-6">
                                                         <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
@@ -85,7 +85,15 @@
                         </asp:Repeater>
                     </div>
 
-                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                        </div>
+                        <div class="col-sm-3">
+                            <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Label="Email Status" Text="Is Active" />
+                        </div>
+                    </div>
+
                     <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                         <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
                         <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />

@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Marketing Campaign - Campaign Detail")]
     [Category("CMS")]
     [Description("Displays the details for campaign.")]
-    [LinkedPage( "Event Page" )]
+    //[LinkedPage( "Event Page" )]
     public partial class MarketingCampaignDetail : RockBlock, IDetailBlock
     {
         #region Child Grid States
@@ -88,6 +88,8 @@ namespace RockWeb.Blocks.Cms
             gMarketingCampaignAudiencesSecondary.GridRebind += gMarketingCampaignAudiences_GridRebind;
             gMarketingCampaignAudiencesSecondary.EmptyDataText = Server.HtmlEncode( None.Text );
 
+            // Hide Event until we implement more stuff for Marketing Campaign Events
+            ddlEventGroup.Visible = false;
         }
 
         /// <summary>
@@ -461,7 +463,11 @@ namespace RockWeb.Blocks.Cms
             string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
             contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", string.Empty ) ) ? None.TextHtml : contactInfo;
 
+
             string eventGroupHtml = null;
+            /* 
+             * -- Hide until we implement Marketing Events
+            
             string eventPageGuid = this.GetAttributeValue( "EventPage" );
             
             if ( marketingCampaign.EventGroup != null )
@@ -478,7 +484,7 @@ namespace RockWeb.Blocks.Cms
                     eventGroupHtml = string.Format( "<a href='{0}'>{1}</a>", eventGroupUrl, marketingCampaign.EventGroup.Name );
                 }
             }
-
+            */
             
 
             string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
@@ -525,18 +531,7 @@ namespace RockWeb.Blocks.Cms
                 tbContactEmail.Text = contactPerson.Email;
                 tbContactFullName.Text = contactPerson.FullName;
                 PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                if (phoneNumber != null)
-                {
-                    if (string.IsNullOrWhiteSpace(phoneNumber.CountryCode))
-                    {
-                        tbContactPhoneNumber.Text = phoneNumber.NumberFormatted;
-                    }
-                    else
-                    {
-                        tbContactPhoneNumber.Text = phoneNumber.CountryCode + " " + phoneNumber.NumberFormatted;
-                    }
-                }
-                tbContactPhoneNumber.Text = string.Empty;
+                tbContactPhoneNumber.Text = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
             }
         }
 
@@ -573,10 +568,10 @@ namespace RockWeb.Blocks.Cms
             DefinedValueService definedValueService = new DefinedValueService( new RockContext() );
 
             // populate dropdown with all MarketingCampaignAudiences that aren't already MarketingCampaignAudiences
-            var qry = from audienceTypeValue in definedValueService.GetByDefinedTypeGuid( new Guid( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE ) ).AsQueryable()
-                      where !( from mcaudience in MarketingCampaignAudiencesState
-                               select mcaudience.AudienceTypeValueId ).Contains( audienceTypeValue.Id )
-                      select audienceTypeValue;
+            var guid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid();
+            var existingAudiences = MarketingCampaignAudiencesState.Select( s => s.AudienceTypeValueId ).ToList();
+            var qry = definedValueService.GetByDefinedTypeGuid( guid )
+                .Where( v => !existingAudiences.Contains( v.Id ) );
 
             List<DefinedValue> list = qry.ToList();
             if ( list.Count == 0 )

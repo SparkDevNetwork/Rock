@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using Newtonsoft.Json;
 using Rock.Data;
 
@@ -95,6 +96,35 @@ namespace Rock.Model
         [DataMember]
         [MaxLength(200)]
         public string OpenedClient { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transport entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The transport identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string TransportEntityTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique message identifier.
+        /// </summary>
+        /// <value>
+        /// The unique message identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string UniqueMessageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response code.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the response code.
+        /// </value>
+        [DataMember]
+        public string ResponseCode { get; set; }
 
         /// <summary>
         /// Gets or sets the AdditionalMergeValues as a Json string.
@@ -172,10 +202,67 @@ namespace Rock.Model
         }
         private Dictionary<string, string> _additionalMergeValues = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Gets a list of activities.
+        /// </summary>
+        /// <value>
+        /// The activity list.
+        /// </value>
+        [NotMapped]
+        public virtual string ActivityList
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach ( var activity in Activities )
+                {
+                    sb.AppendFormat( "{0} ({1} {2}): {3}<br/>",
+                        activity.ActivityType,
+                        activity.ActivityDateTime.ToShortDateString(),
+                        activity.ActivityDateTime.ToShortTimeString(),
+                        activity.ActivityDetail );
+                }
+
+                return sb.ToString();
+            }
+        }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Helper method to get recipient merge values for sending communication.
+        /// </summary>
+        /// <param name="globalConfigValues">The global configuration values.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> CommunicationMergeValues( Dictionary<string, object> globalConfigValues )
+        {
+            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+
+            globalConfigValues.ToList().ForEach( v => mergeValues.Add( v.Key, v.Value ) );
+
+            if ( this.Communication != null )
+            {
+                mergeValues.Add( "Communication", this.Communication );
+            }
+
+            if ( this.Person != null )
+            {
+                mergeValues.Add( "Person", this.Person );
+            }
+
+            // Add any additional merge fields created through a report
+            foreach ( var mergeField in this.AdditionalMergeValues )
+            {
+                if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                {
+                    mergeValues.Add( mergeField.Key, mergeField.Value );
+                }
+            }
+
+            return mergeValues;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

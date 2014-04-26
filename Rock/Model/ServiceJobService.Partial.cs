@@ -105,9 +105,12 @@ namespace Rock.Model
         public ITrigger BuildQuartzTrigger( ServiceJob job )
         {
             // create quartz trigger
-            ITrigger trigger = ( ICronTrigger )TriggerBuilder.Create()
+            ITrigger trigger = (ICronTrigger)TriggerBuilder.Create()
                 .WithIdentity( job.Guid.ToString(), job.Name )
-                .WithCronSchedule( job.CronExpression )
+                .WithCronSchedule( job.CronExpression, x => {
+                    x.InTimeZone( RockDateTime.OrgTimeZoneInfo );
+                    x.WithMisfireHandlingInstructionDoNothing();
+                } )
                 .StartNow()
                 .Build();
 

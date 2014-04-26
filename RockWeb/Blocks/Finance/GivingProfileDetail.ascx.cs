@@ -1104,7 +1104,7 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
                 {
                     var phoneNumber = personService.GetPhoneNumber( scheduledTransaction.AuthorizedPerson, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
-                    paymentInfo.Phone = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
+                    paymentInfo.Phone = phoneNumber != null ? phoneNumber.ToString() : string.Empty;
                 }
 
                 Guid addressTypeGuid = Guid.Empty;

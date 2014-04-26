@@ -987,6 +987,7 @@ namespace Rock.Web.UI.Controls
                 if ( rockPage != null )
                 {
                     var communication = new Rock.Model.Communication();
+                    communication.IsBulkCommunication = true;
                     communication.Status = Model.CommunicationStatus.Transient;
 
                     if ( rockPage.CurrentPerson != null )

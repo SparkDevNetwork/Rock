@@ -27,6 +27,18 @@ namespace Rock.Web.UI.Controls.Communication
     public abstract class ChannelControl : CompositeControl
     {
         /// <summary>
+        /// Gets or sets a value indicating whether the communication is a template.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [is template]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsTemplate
+        {
+            get { return ViewState["IsTemplate"] as bool? ?? false; }
+            set { ViewState["IsTemplate"] = value; }
+        }
+    
+        /// <summary>
         /// Gets or sets the channel data.
         /// </summary>
         /// <value>

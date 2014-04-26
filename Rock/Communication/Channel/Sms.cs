@@ -14,13 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using System.Text;
+using System.Text.RegularExpressions;
 using Rock.Data;
 using Rock.Model;
-
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication.Channel
@@ -33,6 +35,8 @@ namespace Rock.Communication.Channel
     [ExportMetadata( "ComponentName", "SMS" )]
     public class Sms : ChannelComponent
     {
+        const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
+        
         /// <summary>
         /// Gets the control path.
         /// </summary>
@@ -80,6 +84,186 @@ namespace Rock.Communication.Channel
 
             string message = communication.GetChannelDataValue( "Message" );
             return message.ResolveMergeFields( mergeValues );
+        }
+
+        /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            AppendChannelData( communication, sb, "FromValue" );
+            AppendChannelData( communication, sb, "Message" );
+
+            return sb.ToString();
+        }
+
+        private void AppendChannelData( Model.Communication communication, StringBuilder sb, string key )
+        {
+            string value = communication.GetChannelDataValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                AppendChannelData( sb, key, value );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
+        }
+
+        /// <summary>
+        /// Process inbound messages that are sent to a SMS number.
+        /// </summary>
+        /// <param name="toPhone">The phone number a message is sent to.</param>
+        /// <param name="fromPhone">The phone number a message is sent from.</param>
+        /// <param name="message">The message that was sent.</param>
+        /// <returns></returns>
+        public void ProcessResponse( string toPhone, string fromPhone, string message )
+        {
+            int toPersonId = -1;
+            string transportPhone = string.Empty;
+
+            Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+
+            // get from person
+            var fromPerson = new PersonService( rockContext ).Queryable()
+                                .Where( p => p.PhoneNumbers.Any( n => (n.CountryCode + n.Number) == fromPhone.Replace( "+", "" ) ) )
+                                .OrderBy( p => p.Id ).FirstOrDefault(); // order by person id to get the oldest person to help with duplicate records of the response recipient
+
+            // get recipient from defined value
+            var definedType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() );
+            if ( definedType != null )
+            {
+                if ( definedType.DefinedValues != null && definedType.DefinedValues.Any() )
+                {
+                    var matchValue = definedType.DefinedValues.Where( v => v.Name == toPhone ).OrderBy( v => v.Order ).FirstOrDefault();
+                    if ( matchValue != null )
+                    {
+                        var toPersonGuid = matchValue.GetAttributeValue( "ResponseRecipient" );
+                        transportPhone = matchValue.Id.ToString();
+
+                        if ( toPersonGuid != null )
+                        {
+                            var toPerson = new PersonAliasService( rockContext ).Get( new Guid( toPersonGuid ) );
+                            toPersonId = toPerson.PersonId;
+                        }
+                    }
+                }
+            }
+
+            if ( fromPerson != null && toPersonId != -1 )
+            {
+                if ( toPersonId == fromPerson.Id ) // message from the channel recipient
+                {
+                    // look for response code in the message
+                    Match match = Regex.Match( message, @"@\d{3}" );
+                    if ( match.Success )
+                    {
+                        string responseCode = match.ToString();
+
+                        var recipient = new CommunicationRecipientService( rockContext ).Queryable("Communication")
+                                            .Where( r => r.ResponseCode == responseCode )
+                                            .OrderByDescending(r => r.CreatedDateTime).FirstOrDefault();
+
+                        if ( recipient != null )
+                        {
+                            CreateCommunication( fromPerson.Id, fromPerson.FullName, recipient.Communication.SenderPersonId.Value, message.Replace(responseCode, ""), transportPhone, "", rockContext );
+                        }
+                        else // send a warning message back to the channel recipient
+                        {
+                            string warningMessage = string.Format( "A conversation could not be found with the response token {0}.", responseCode );
+                            CreateCommunication( fromPerson.Id, fromPerson.FullName, fromPerson.Id, warningMessage, transportPhone, "", rockContext );
+                        }
+                    }
+                }
+                else // response from someone other than the channel recipient
+                {
+                    string messageId = GenerateResponseCode( rockContext );
+                    message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
+                    CreateCommunication( fromPerson.Id, fromPerson.FullName, toPersonId, message, transportPhone, messageId, rockContext );
+                } 
+            }
+        }
+
+        /// <summary>
+        /// Creates a new communication.
+        /// </summary>
+        /// <param name="fromPersonId">Person ID of the sender.</param>
+        /// <param name="fromPersonName">Name of from person.</param>
+        /// <param name="toPersonId">The Person ID of the recipient.</param>
+        /// <param name="message">The message to send.</param>
+        /// <param name="transportPhone">The transport phone.</param>
+        /// <param name="responseCode">The reponseCode to use for tracking the conversation.</param>
+        /// <param name="rockContext">A context to use for database calls.</param>
+        private void CreateCommunication( int fromPersonId, string fromPersonName, int toPersonId, string message, string transportPhone, string responseCode, Rock.Data.RockContext rockContext )
+        {
+
+            // add communication for reply
+            var communication = new Rock.Model.Communication();
+            communication.IsBulkCommunication = false;
+            communication.Status = CommunicationStatus.Approved;
+            communication.SenderPersonId = fromPersonId;
+            communication.Subject = string.Format( "From: {0}", fromPersonName );
+
+            communication.SetChannelDataValue( "Message", message );
+            communication.SetChannelDataValue( "FromValue", transportPhone );
+
+            communication.ChannelEntityTypeId = EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id;
+
+            var recipient = new Rock.Model.CommunicationRecipient();
+            recipient.Status = CommunicationRecipientStatus.Pending;
+            recipient.PersonId = toPersonId;
+            recipient.ResponseCode = responseCode;
+            communication.Recipients.Add( recipient );
+
+            var communicationService = new Rock.Model.CommunicationService( rockContext );
+            communicationService.Add( communication );
+            rockContext.SaveChanges();
+
+            // queue the sending
+            var transaction = new Rock.Transactions.SendCommunicationTransaction();
+            transaction.CommunicationId = communication.Id;
+            transaction.PersonAlias = null;
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+        }
+
+        /// <summary>
+        /// Creates a recipient token to help track conversations.
+        /// </summary>
+        /// <param name="rockContext">A context to use for database calls.</param>
+        /// <returns>String token</returns>
+        private string GenerateResponseCode( Rock.Data.RockContext rockContext )
+        {
+            bool isUnique = false;
+            int randomNumber = -1;
+            DateTime tokenStartDate = RockDateTime.Now.Subtract( new TimeSpan( TOKEN_REUSE_DURATION, 0, 0, 0 ) );
+
+            Random rnd = new Random();
+
+            while ( isUnique == false )
+            {
+                randomNumber = rnd.Next( 100, 1000 );
+
+                if ( randomNumber != 666 ) // just because
+                {
+
+                    // check if token has been used recently
+                    var communication = new CommunicationRecipientService( rockContext ).Queryable()
+                                            .Where( c => c.ResponseCode == "@" + randomNumber.ToString() && c.CreatedDateTime > tokenStartDate )
+                                            .FirstOrDefault();
+                    if ( communication == null )
+                    {
+                        isUnique = true;
+                    }
+                }
+            }
+
+            return "@" + randomNumber.ToString();
         }
 
     }

@@ -59,45 +59,47 @@ namespace Rock.PersonProfile.Badge
                 {
                     badgeColor = GetAttributeValue(badge, "BadgeColor");
                 }
-                
-                Guid groupTypeId = new Guid(GetAttributeValue(badge, "GroupType"));
 
-                writer.Write(String.Format("<div class='badge badge-ingroupoftype badge-id-{0}' data-original-title=''>", badge.Id));
+                Guid groupTypeGuid = GetAttributeValue( badge, "GroupType" ).AsGuid();
+                if ( groupTypeGuid != Guid.Empty )
+                {
+                    writer.Write( String.Format( "<div class='badge badge-ingroupoftype badge-id-{0}' data-original-title=''>", badge.Id ) );
 
-                writer.Write("</div>");
+                    writer.Write( "</div>" );
 
-                writer.Write(String.Format( @"
-                    <script>
-                        Sys.Application.add_load(function () {{
+                    writer.Write( String.Format( @"
+<script>
+    Sys.Application.add_load(function () {{
                                                 
-                            $.ajax({{
-                                    type: 'GET',
-                                    url: Rock.settings.get('baseUrl') + 'api/PersonBadges/InGroupOfType/{0}/{1}' ,
-                                    statusCode: {{
-                                        200: function (data, status, xhr) {{
-                                            var badgeHtml = '';
-                                            var groupIcon = data.GroupTypeIconCss;
+        $.ajax({{
+                type: 'GET',
+                url: Rock.settings.get('baseUrl') + 'api/PersonBadges/InGroupOfType/{0}/{1}' ,
+                statusCode: {{
+                    200: function (data, status, xhr) {{
+                        var badgeHtml = '';
+                        var groupIcon = data.GroupTypeIconCss;
                                             
-                                            if (groupIcon == '') {{
-                                                groupIcon = 'fa fa-times';
-                                            }}
+                        if (groupIcon == '') {{
+                            groupIcon = 'fa fa-times';
+                        }}
 
-                                            if (data.PersonInGroup) {{
-                                                badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
-                                                var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
-                                            }} else {{
-                                                badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\' style=\'color: {2}\'></i>';
-                                                var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
-                                            }}
-                                            $('.badge-ingroupoftype.badge-id-{3}').html(badgeHtml);
-                                            $('.badge-ingroupoftype.badge-id-{3}').attr('data-original-title', labelText);
-                                        }}
-                                    }},
-                            }});
-                        }});
-                    </script>
+                        if (data.PersonInGroup) {{
+                            badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                            var labelText = data.NickName + ' is in a ' + data.GroupTypeName + '.';
+                        }} else {{
+                            badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                            var labelText = data.NickName + ' is not in a ' + data.GroupTypeName + '.';
+                        }}
+                        $('.badge-ingroupoftype.badge-id-{3}').html(badgeHtml);
+                        $('.badge-ingroupoftype.badge-id-{3}').attr('data-original-title', labelText);
+                    }}
+                }},
+        }});
+    }});
+</script>
                 
-                ", Person.Id.ToString(), groupTypeId.ToString(), badgeColor, badge.Id));
+", Person.Id.ToString(), groupTypeGuid.ToString(), badgeColor, badge.Id ) );
+                }
             }
 
         }

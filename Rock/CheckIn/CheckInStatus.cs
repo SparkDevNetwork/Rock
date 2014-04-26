@@ -26,7 +26,7 @@ namespace Rock.CheckIn
     /// and the values selected for check-in
     /// </summary>
     [DataContract]
-    public class CheckInStatus : DotLiquid.ILiquidizable
+    public class CheckInStatus 
     {
         /// <summary>
         /// Gets or sets a value indicating whether the search value was entered by a user (vs. scanned)
@@ -85,20 +85,5 @@ namespace Rock.CheckIn
             Families = new List<CheckInFamily>();
         }
 
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public object ToLiquid()
-        {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "UserEnteredSearch", UserEnteredSearch );
-            dictionary.Add( "ConfirmSingleFamily", ConfirmSingleFamily );
-            dictionary.Add( "SearchType", SearchType );
-            dictionary.Add( "SearchValue", SearchValue );
-            dictionary.Add( "Families", Families );
-            return dictionary;
-        }
     }
 }

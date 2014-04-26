@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "CSSFile" ) ) )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ) );
+                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ), false );
             }
 
         }

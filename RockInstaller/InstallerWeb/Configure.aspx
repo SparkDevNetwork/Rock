@@ -256,6 +256,9 @@
 						
 							<h4>Administrator's Account</h4>
 							<p>Please provide a username and password for the administrator's account</p>
+
+                            <div class="validation-summary"></div>
+
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Username</label>
 								<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
@@ -263,15 +266,13 @@
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Password</label>
-								<div class="row">
-                                    <div class="col-md-8"><asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox></div>
-                                    <div class="col-md-4" style="padding-top: 6px;">
-                                        <input id="show-password-admin" type="checkbox" />
-                                        <label for="show-password-admin" id="show-password-admin-label" style="font-weight:normal;">Show Password</label>
-                                    </div>
-								</div>
-                                
+                                <asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="inputEmail">Administrator Password (confirm)</label>
+                                <asp:TextBox ID="txtAdminPasswordConfirm" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
+
 						
                             <div class="btn-list clearfix">
 							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="AdminNext_Click"></asp:LinkButton>
@@ -282,6 +283,7 @@
                         <script>
                             function validateAdminAccount() {
                                 var formValid = true;
+                                var validationMessages = '';
 
                                 // ensure that all values were provided
                                 $("#pAdminAccount .required-field").each(function (index, value) {
@@ -293,11 +295,18 @@
                                     }
                                 });
 
+                                if ($('#txtAdminPassword').val() != $('#txtAdminPasswordConfirm').val()) {
+                                    validationMessages += "<p>The administrator password does not match the confirmation.</p>";
+                                    formValid = false;
+                                }
 
                                 if (formValid) {
                                     return true;
 
                                 } else {
+                                    if (validationMessages.length > 0) {
+                                        $("#pAdminAccount .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
+                                    }
                                     return false;
                                 }
                             }

@@ -120,9 +120,9 @@ namespace Rock.SystemGuid
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
 
         /// <summary>
-        /// Metric Collection Frequency
+        /// Metric Source Type
         /// </summary>
-        public const string METRIC_COLLECTION_FREQUENCY =  "526CB333-2C64-4486-8469-7F7EA9366254";
+        public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
         
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
@@ -143,6 +143,11 @@ namespace Rock.SystemGuid
         /// Guid for the person'S connection status (such as member, attendee, participant, etc.)
         /// </summary>
         public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
+
+        /// <summary>
+        /// Guid for the reasons a person record needs to be reviewed
+        /// </summary>
+        public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
 
         /// <summary>
         /// Guid for the types of Person Titles (such as Mr., Mrs., Dr., etc.)

@@ -153,6 +153,8 @@ namespace RockWeb
                 // Get a db context
                 rockContext = new RockContext();
 
+                RegisterRoutes( rockContext, RouteTable.Routes );
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     new AttributeService( rockContext ).Get( 0 );
@@ -210,8 +212,6 @@ namespace RockWeb
 
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
-                RegisterRoutes( rockContext, RouteTable.Routes );
-
                 Rock.Security.Authorization.Load( rockContext );
 
                 EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
@@ -221,6 +221,9 @@ namespace RockWeb
 
                 // mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
+
+                SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
+
             }
             catch ( Exception ex )
             {
@@ -689,21 +692,21 @@ namespace RockWeb
 
         private void Error66(Exception ex)
         {
-            if ( Session != null )
+            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
-                try { Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
+                try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
                 catch ( HttpException ) { }
-            }
 
-            if ( Server != null )
-            {
-                Server.ClearError();
-            }
+                if ( HttpContext.Current.Server != null )
+                {
+                    HttpContext.Current.Server.ClearError();
+                }
 
-            if ( Response != null )
-            {
-                Response.Clear();
-                Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                if ( HttpContext.Current.Response != null )
+                {
+                    HttpContext.Current.Response.Clear();
+                    HttpContext.Current.Response.Redirect( "~/error.aspx?type=exception&error=66" );  // default error page
+                }
             }
         }
 

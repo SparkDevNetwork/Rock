@@ -39,7 +39,6 @@ namespace Rock.Reporting.DataFilter
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
     public class OtherDataViewFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -118,10 +117,10 @@ namespace Rock.Reporting.DataFilter
         {
             string s = "Another Data View";
 
-            int dvId = int.MinValue;
-            if ( int.TryParse( selection, out dvId ) )
+            int dataviewId = int.MinValue;
+            if ( int.TryParse( selection, out dataviewId ) )
             {
-                var dataView = new DataViewService( new RockContext() ).Get( dvId );
+                var dataView = new DataViewService( new RockContext() ).Get( dataviewId );
                 if ( dataView != null )
                 {
                     return string.Format( "Included in '{0}' Data View", dataView.Name );
@@ -221,10 +220,10 @@ namespace Rock.Reporting.DataFilter
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            int dvId = int.MinValue;
-            if ( int.TryParse( selection, out dvId ) )
+            int dataviewId = int.MinValue;
+            if ( int.TryParse( selection, out dataviewId ) )
             {
-                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dvId );
+                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dataviewId );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
@@ -238,10 +237,12 @@ namespace Rock.Reporting.DataFilter
                         {
                             throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
                         }
+
                         return expression;
                     }
                 }
             }
+
             return null;
         }
 
@@ -283,6 +284,5 @@ namespace Rock.Reporting.DataFilter
         }
 
         #endregion
-
     }
 }

@@ -24,7 +24,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// The data access/service class for <see cref="Rock.Model.BlockType"/> entity type objects, and extends the functionality of <see cref="Rock.Data.Service"/>
+    /// Data access/service class for <see cref="Rock.Model.BlockType"/> objects.
     /// </summary>
     public partial class BlockTypeService 
     {

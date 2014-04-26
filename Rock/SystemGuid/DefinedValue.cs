@@ -224,6 +224,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Metrics
+
+        /// <summary>
+        /// Metric values come from a dataview
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_DATAVIEW = "2EC60BCF-EF63-4CCC-A970-F152292765D0";
+
+        /// <summary>
+        /// Metric values are entered manually
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_MANUAL = "1D6511D6-B15D-4DED-B3C4-459CD2A7EC0E";
+
+        /// <summary>
+        /// Metric values are populated from custom sql
+        /// </summary>
+        public const string METRIC_SOURCE_VALUE_TYPE_SQL = "6A1E1A1B-A636-4E12-B90C-D7FD1BDAE764";
+
+        #endregion
+
         #region Person Marital Status
 
         /// <summary>
@@ -307,6 +326,15 @@ namespace Rock.SystemGuid
         /// TODO: some places have B91BA046-BC1E-400C-B85D-638C1F4E0CE2
         /// </summary>
         public const string PERSON_CONNECTION_STATUS_VISITOR = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2";
+
+        #endregion
+
+        #region Person Review Reason
+
+        /// <summary>
+        /// Member Person Connection Status
+        /// </summary>
+        public const string PERSON_REVIEW_REASON_SELF_INACTIVATED = "D539C356-6856-4E94-80B4-8FEA869AF38B";
 
         #endregion
 

@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -37,9 +38,25 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Defined Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given defined type." )]
+
+    [DefinedTypeField( "Defined Type", "If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", required: false, defaultValue: "" )]
     public partial class DefinedTypeDetail : RockBlock, IDetailBlock
     {
-        #region Control Methods
+
+        #region Fields
+
+        // used for private variables
+        bool _isReadOnly = false;
+
+        #endregion
+
+        #region Properties
+
+        // used for public / protected properties
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -49,12 +66,18 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlSettings );
+
             // assign attributes grid actions
             gDefinedTypeAttributes.DataKeyNames = new string[] { "Guid" };
             gDefinedTypeAttributes.Actions.ShowAdd = true;
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
             gDefinedTypeAttributes.GridReorder += gDefinedTypeAttributes_GridReorder;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DefinedType.FriendlyTypeName );
         }
 
         /// <summary>
@@ -67,15 +90,77 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "definedTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                int? itemId = InitItemId();
+
+                if ( itemId != null )
                 {
-                    ShowDetail( "definedTypeId", int.Parse( itemId ) );
+                    ShowDetail( "definedTypeId", (int)itemId );
                 }
                 else
                 {
                     pnlDetails.Visible = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Determines which item to display based on either the configuration or the definedTypeId that was passed in.
+        /// </summary>
+        /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/> or null if it was not found.</returns>
+        private int? InitItemId()
+        {
+            Guid definedTypeGuid;
+            int? itemId = null;
+
+            // A configured defined type takes precedence over any definedTypeId param value that is passed in.
+            if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
+            {
+                _isReadOnly = true;
+                // hide reorder, edit and delete
+                gDefinedTypeAttributes.Columns[0].Visible = false;
+                gDefinedTypeAttributes.Columns[2].Visible = false;
+                gDefinedTypeAttributes.Columns[3].Visible = false;
+                gDefinedTypeAttributes.Actions.ShowAdd = false;
+
+                itemId = DefinedTypeCache.Read( definedTypeGuid ).Id;
+                var definedType = DefinedTypeCache.Read( definedTypeGuid );
+                if ( definedType != null )
+                {
+                    itemId = definedType.Id;
+                }
+            }
+            else
+            {
+                gDefinedTypeAttributes.Columns[0].Visible = true;
+                gDefinedTypeAttributes.Columns[2].Visible = true;
+                gDefinedTypeAttributes.Columns[3].Visible = true;
+                gDefinedTypeAttributes.Actions.ShowAdd = true;
+
+                itemId = PageParameter( "definedTypeId" ).AsInteger() ?? null;
+            }
+            return itemId;
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            int? itemId = InitItemId();
+
+            if ( itemId != null )
+            {
+                ShowDetail( "definedTypeId", (int)itemId );
+            }
+            else
+            {
+                pnlDetails.Visible = false;
             }
         }
 
@@ -106,10 +191,11 @@ namespace RockWeb.Blocks.Core
                 definedType = typeService.Get( definedTypeId );
             }
 
+            definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             definedType.Name = tbTypeName.Text;
             definedType.Category = tbTypeCategory.Text;
             definedType.Description = tbTypeDescription.Text;
-            definedType.FieldTypeId = int.Parse( ddlTypeFieldType.SelectedValue );
+            definedType.HelpText = tbHelpText.Text;
 
             if ( !definedType.IsValid )
             {
@@ -122,6 +208,41 @@ namespace RockWeb.Blocks.Core
             var qryParams = new Dictionary<string, string>();
             qryParams["definedTypeId"] = definedType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            DefinedType definedType = definedTypeService.Get( int.Parse( hfDefinedTypeId.Value ) );
+
+            if ( definedType != null )
+            {
+                if ( !definedType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "Sorry, You are not authorized to delete this Defined Type.", ModalAlertType.Information );
+                    return;
+                }
+
+                string errorMessage;
+                if ( !definedTypeService.CanDelete( definedType, out errorMessage ) )
+                {
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                definedTypeService.Delete( definedType );
+
+                rockContext.SaveChanges();
+
+            }
+
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -156,15 +277,21 @@ namespace RockWeb.Blocks.Core
             hfDefinedTypeId.SetValue( definedType.Id );
             tbTypeName.Text = definedType.Name;
 
-            /// TODO Should use FieldTypeCache instead of reading from db -DT
-            definedType.FieldType = definedType.FieldType ?? new FieldTypeService( new RockContext() ).Get( definedType.FieldTypeId ?? 0 );
-
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
             lDescription.Text = definedType.Description;
 
+            if ( !string.IsNullOrWhiteSpace( definedType.HelpText ) )
+            {
+                lHelpText.Text = definedType.HelpText;
+                rcHelpText.Visible = true;
+            }
+            else
+            {
+                rcHelpText.Visible = false;
+            }
+
             lblMainDetails.Text = new DescriptionList()
                 .Add("Category", definedType.Category)
-                .Add("FieldType", definedType.FieldType.Name)
                 .Html;
 
             definedType.LoadAttributes();
@@ -190,7 +317,7 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
             tbTypeCategory.Text = definedType.Category;
             tbTypeDescription.Text = definedType.Description;
-            ddlTypeFieldType.SetValue( definedType.FieldTypeId );
+            tbHelpText.Text = definedType.HelpText;
         }
 
         /// <summary>
@@ -236,11 +363,16 @@ namespace RockWeb.Blocks.Core
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 definedType = new DefinedTypeService( new RockContext() ).Get( itemKeyValue );
+                // If bad data was passed in, return and show nothing.
+                if ( definedType == null )
+                {
+                    pnlDetails.Visible = false;
+                    return;
+                }
             }
             else
             {
                 definedType = new DefinedType { Id = 0 };
-                definedType.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
             }
 
             hfDefinedTypeId.SetValue( definedType.Id );
@@ -249,7 +381,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( _isReadOnly || !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );

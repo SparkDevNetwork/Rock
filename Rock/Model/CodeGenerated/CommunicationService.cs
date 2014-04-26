@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.SenderPersonId = source.SenderPersonId;
             target.Subject = source.Subject;
+            target.IsBulkCommunication = source.IsBulkCommunication;
             target.FutureSendDateTime = source.FutureSendDateTime;
             target.Status = source.Status;
             target.ReviewerPersonId = source.ReviewerPersonId;

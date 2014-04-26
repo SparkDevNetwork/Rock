@@ -39,7 +39,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Grade" )]
     public class GradeFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -75,7 +74,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Grade";
@@ -160,16 +159,22 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            DropDownList ddlCompare = controls[0] as DropDownList;
+            NumberBox nbValue = controls[1] as NumberBox;
+            
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[0].RenderControl( writer );
+            ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
+
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[1].RenderControl( writer );
+            nbValue.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -233,51 +238,26 @@ namespace Rock.Reporting.DataFilter.Person
             if ( gradeTransitionDate.HasValue )
             {
                 gradeMaxFactorReactor = ( RockDateTime.Now < gradeTransitionDate ) ? 12 : 13;
-
-                switch ( comparisonType )
-                {
-                    case ComparisonType.EqualTo:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) == gradeValue ) );
-                        break;
-                    case ComparisonType.GreaterThan:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) > gradeValue ) );
-                        break;
-                    case ComparisonType.GreaterThanOrEqualTo:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) >= gradeValue ) );
-                        break;
-                    case ComparisonType.IsBlank:
-                        personGradeQuery = personGradeQuery.Where( p => !p.GraduationDate.HasValue );
-                        break;
-                    case ComparisonType.IsNotBlank:
-                        personGradeQuery = personGradeQuery.Where( p => p.GraduationDate.HasValue );
-                        break;
-                    case ComparisonType.LessThan:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) < gradeValue ) );
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) <= gradeValue ) );
-                        break;
-                    case ComparisonType.NotEqualTo:
-                        personGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) != gradeValue ) );
-                        break;
-                }
+                var personEqualGradeQuery = personGradeQuery.Where( p => ( gradeMaxFactorReactor - ( SqlFunctions.DatePart( "year", p.GraduationDate ) - currentYear ) == gradeValue ) );
+                BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personEqualGradeQuery, parameterExpression, "p" ) as BinaryExpression;
+                BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
+                return result;
             }
             else
             {
-                
                 if ( comparisonType == ComparisonType.IsBlank )
                 {
                     // if no gradeTransitionDate, return true (everybody has a blank grade)
-                    personGradeQuery = personGradeQuery.Where( p => false );
+                    personGradeQuery = personGradeQuery.Where( p => true );
                 }
                 else
                 {
                     // if no gradeTransitionDate, return false (nobody has a grade)
                     personGradeQuery = personGradeQuery.Where( p => false );
                 }
-            }
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, parameterExpression, "p" );
+                return FilterExpressionExtractor.Extract<Rock.Model.Person>( personGradeQuery, parameterExpression, "p" );
+            }
         }
 
         #endregion

@@ -165,13 +165,45 @@ namespace Rock.Services.NuGet
         }
 
         /// <summary>
-        /// Workaround until we get to NuGet 2.7 - Always add the file to the filesystem.
+        /// Workaround until we get to NuGet 2.7 and to del with the
+        /// "because it is being used by another process" dll problem.
+        /// This method will always add the file to the filesystem.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="stream"></param>
         public override void AddFile( string path, Stream stream )
         {
+            string fileToDelete = string.Empty;
+            int fileCount = 0;
+            if ( path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" ) )
+            {
+                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
+                if ( File.Exists( physicalFile ) )
+                {
+                    // generate a unique *.#.rdelete filename
+                    do
+                    {
+                        fileCount++;
+                    }
+                    while ( File.Exists( string.Format( "{0}.{1}.rdelete", physicalFile, fileCount ) ) );
+
+                    fileToDelete = string.Format( "{0}.{1}.rdelete", physicalFile, fileCount );
+                    File.Move( physicalFile, fileToDelete );
+                }
+            }
+
             base.AddFile( path, stream );
+
+            if ( fileToDelete != string.Empty )
+            {
+                try
+                {
+                    File.Delete( fileToDelete );
+                }
+                catch
+                { // delete at a later date
+                };
+            }
 
             if ( path.Equals( Path.Combine( "App_Data", "deletefile.lst" ) ) )
             {
@@ -279,5 +311,38 @@ namespace Rock.Services.NuGet
             return isSuccess;
         }
 
+
+
+        /// <summary>
+        /// Adds the import.
+        /// </summary>
+        /// <param name="targetFullPath">The target full path.</param>
+        /// <param name="location">The location.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void AddImport( string targetFullPath, ProjectImportLocation location )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Files the exists in project.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public bool FileExistsInProject( string path )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Removes the import.
+        /// </summary>
+        /// <param name="targetFullPath">The target full path.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void RemoveImport( string targetFullPath )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

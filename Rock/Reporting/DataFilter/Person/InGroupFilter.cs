@@ -235,7 +235,7 @@ function() {
                 gp_SelectItem( this, new EventArgs() );
                 
                 string[] selectedRoleIds = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                RockCheckBoxList cblRole = ( controls[1] as RockCheckBoxList );
+                RockCheckBoxList cblRole = controls[1] as RockCheckBoxList;
 
                 foreach ( var item in cblRole.Items.OfType<ListItem>() )
                 {

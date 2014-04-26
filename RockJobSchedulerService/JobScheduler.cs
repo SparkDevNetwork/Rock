@@ -30,6 +30,7 @@ using Quartz.Impl;
 using Quartz.Impl.Matchers;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Data;
 
 namespace RockJobSchedulerService
 {
@@ -48,7 +49,7 @@ namespace RockJobSchedulerService
         {
             this.ServiceName = "Rock Job Scheduler Service";
             this.EventLog.Log = "Application";
-            
+
             InitializeComponent();
         }
 
@@ -71,16 +72,32 @@ namespace RockJobSchedulerService
                 // Write an eventlog about web.connectionstring.config not found
                 this.EventLog.WriteEntry( "Unable to find web.connectionstrings.config", EventLogEntryType.Error );
             }
-            
+
             ISchedulerFactory sf;
 
             // create scheduler
             sf = new StdSchedulerFactory();
             sched = sf.GetScheduler();
 
+            var rockContext = new RockContext();
+
             // get list of active jobs
-            ServiceJobService jobService = new ServiceJobService();
-            foreach ( ServiceJob job in jobService.GetActiveJobs().ToList() )
+            ServiceJobService jobService = new ServiceJobService( rockContext );
+            List<ServiceJob> activeJobs = null;
+            try
+            {
+                // make sure that we can connect to the database and get the jobs list.  Write a good EventLog message and exit the app if we can't
+                this.EventLog.WriteEntry( string.Format( "Connecting to database {0}:{1}", rockContext.Database.Connection.DataSource, rockContext.Database.Connection.Database ), EventLogEntryType.Information );
+                rockContext.Database.Connection.Open();
+                activeJobs = jobService.GetActiveJobs().ToList();
+            }
+            catch ( Exception ex )
+            {
+                this.EventLog.WriteEntry( "Unable load active jobs list. " + ex.Message, EventLogEntryType.Error );
+                throw ex;
+            }
+
+            foreach ( ServiceJob job in activeJobs )
             {
                 try
                 {
@@ -102,7 +119,7 @@ namespace RockJobSchedulerService
                     job.LastStatusMessage = message;
                     job.LastStatus = "Error Loading Job";
 
-                    jobService.Save( job, null );
+                    rockContext.SaveChanges();
                 }
             }
 

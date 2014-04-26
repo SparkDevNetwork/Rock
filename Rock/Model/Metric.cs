@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -30,9 +31,8 @@ namespace Rock.Model
     /// </summary>
     [Table( "Metric" )]
     [DataContract]
-    public partial class Metric : Model<Metric>, IOrdered
+    public partial class Metric : Model<Metric>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -44,26 +44,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
-        /// <summary>
-        /// Gets or sets a flag indicating if this Metric supports multiple values.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Boolean"/> that is <c>true</c> if it supports multiple values; otherwise <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool Type { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the category that this Metric belongs to.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the category that this Metric belongs to.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Category { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Title of this Metric.
         /// </summary>
@@ -84,7 +65,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string Subtitle { get; set; }
-    
+
         /// <summary>
         /// Gets or sets a user defined description of the Metric.
         /// </summary>
@@ -95,71 +76,112 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Minimum Value for the Metric.
+        /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the minimum value for the Metric. If no minimum is provided, this value will be null.
+        /// The icon CSS class.
         /// </value>
         [DataMember]
-        public int? MinValue { get; set; }
+        public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the Maximum Value for the Metric.
+        /// Gets or sets a value indicating whether [is cumulative].
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Maximum Value for the Metric. If no maximum value is provided, this value will be null.
+        ///   <c>true</c> if [is cumulative]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public int? MaxValue { get; set; }
+        public bool IsCumulative { get; set; }
 
         /// <summary>
-        /// Gets or sets the DefinedValueId of the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that indicates how often data for the Metric
-        /// will be collected.
+        /// Gets or sets the source value type identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the DefinedValueId of the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that indicates how often 
-        /// data for the Metric is collected.
+        /// The source value type identifier.
         /// </value>
         [DataMember]
-        public int? CollectionFrequencyValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the date and time that data for this Metric was last collected 
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> that represents the last time that data for this Metric was last collected.
-        /// </value>
-        [DataMember]
-        public DateTime? LastCollectedDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that describes the data source of the metric.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that describes the data source of the metric.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Source { get; set; }
+        public int? SourceValueTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the SQL query that returns the data for the Metric.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents the SQL Query that returns the data for the Metric.
+        /// A <see cref="System.String" /> that represents the SQL Query that returns the data for the Metric.
         /// </value>
         [DataMember]
-        public string SourceSQL { get; set; }
+        public string SourceSql { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order for the Metric. Metric order is in ascending order, so the lower the number the higher the display priority for the Metric. This value is required.
+        /// Gets or sets the data view identifier.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32" /> representing the display order for this Metric.
+        /// The data view identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        public int Order { get; set; }
+        [DataMember]
+        public int? DataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the x axis label.
+        /// </summary>
+        /// <value>
+        /// The x axis label.
+        /// </value>
+        [DataMember]
+        public string XAxisLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the y axis label.
+        /// </summary>
+        /// <value>
+        /// The y axis label.
+        /// </value>
+        [DataMember]
+        public string YAxisLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric champion person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The metric champion person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? MetricChampionPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the admin person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The admin person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? AdminPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last run date time.
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
 
         #endregion
 
@@ -171,17 +193,71 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.MetricValue">MetricValues</see> that are associated with this Metric.
         /// </value>
-        [DataMember]
         public virtual ICollection<MetricValue> MetricValues { get; set; }
 
         /// <summary>
-        /// Gets or sets the CollectionFrequency <see cref="Rock.Model.DefinedValue"/> that is associated with this Metric. How often the data for this Metric should be retrieved.
+        /// Gets or sets the type of the source value.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.DefinedValue"/> that represents how often the data for this Metric should be retrieved.
+        /// The type of the source value.
         /// </value>
         [DataMember]
-        public virtual Model.DefinedValue CollectionFrequencyValue { get; set; }
+        public virtual DefinedValue SourceValueType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data view.
+        /// </summary>
+        /// <value>
+        /// The data view.
+        /// </value>
+        public virtual DataView DataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric champion person alias.
+        /// </summary>
+        /// <value>
+        /// The metric champion person alias.
+        /// </value>
+        public virtual PersonAlias MetricChampionPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the admin person alias.
+        /// </summary>
+        /// <value>
+        /// The admin person alias.
+        /// </value>
+        public virtual PersonAlias AdminPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule.
+        /// </summary>
+        /// <value>
+        /// The schedule.
+        /// </value>
+        public virtual Schedule Schedule { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric categories.
+        /// </summary>
+        /// <value>
+        /// The metric categories.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<MetricCategory> MetricCategories
+        {
+            get { return _metricCategories ?? ( _metricCategories = new Collection<MetricCategory>() ); }
+            set { _metricCategories = value; }
+        }
+        private ICollection<MetricCategory> _metricCategories;
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual Model.EntityType EntityType { get; set; }
 
         #endregion
 
@@ -199,7 +275,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -214,10 +289,15 @@ namespace Rock.Model
         /// </summary>
         public MetricConfiguration()
         {
-            this.HasOptional( p => p.CollectionFrequencyValue ).WithMany().HasForeignKey( p => p.CollectionFrequencyValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SourceValueType ).WithMany().HasForeignKey( p => p.SourceValueTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.DataView ).WithMany().HasForeignKey( p => p.DataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.CreatedByPersonAlias ).WithMany().HasForeignKey( p => p.CreatedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetricChampionPersonAlias ).WithMany().HasForeignKey( p => p.MetricChampionPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
-
 }

@@ -54,14 +54,14 @@ namespace RockWeb.Blocks.Examples
             gExample.DataKeyNames = new string[] { "id" };
             gExample.GridRebind += gExample_GridRebind;
 
-            geoPicker.SelectGeography += geoPicker_SelectGeography;
-            geoPicker1.SelectGeography += geoPicker1_SelectGeography;
-            geoPicker1.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            geopExamplePoint.SelectGeography += geoPicker_SelectGeography;
+            geopExamplePolygon.SelectGeography += geoPicker1_SelectGeography;
+            geopExamplePoint.MapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
 
             htmlEditorLight.MergeFields.Add( "GlobalAttribute" );
             htmlEditorLight.MergeFields.Add( "Rock.Model.Person" );
 
-            mergeFieldPicker.MergeFields.Add( "GlobalAttribute,Rock.Model.Person" );
+            mfpExample.MergeFields.Add( "GlobalAttribute,Rock.Model.Person" );
 
             List<string> list = ReadExamples();
             int i = -1;
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Examples
         private void InitSyntaxHighlighting()
         {
             RockPage.AddCSSLink( ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
-            RockPage.AddScriptLink( "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js" );
+            RockPage.AddScriptLink( "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js", false );
         }
 
         /// <summary>
@@ -176,10 +176,10 @@ namespace RockWeb.Blocks.Examples
 
                 ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                RockCheckBoxList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                RockCheckBoxList2.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                RockRadioButtonList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                RockRadioButtonList2.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                cblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                cblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
                 BindGrid();
             }
@@ -192,8 +192,8 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnShowAttributeEditor_Click( object sender, EventArgs e )
         {
-            aeExample.FieldTypeId = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-            aeExampleDiv.Visible = !aeExampleDiv.Visible;
+            edtExample.FieldTypeId = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
+            pnlAttributeEditor.Visible = !pnlAttributeEditor.Visible;
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void aeExample_CancelClick( object sender, EventArgs e )
         {
-            aeExampleDiv.Visible = false;
+            pnlAttributeEditor.Visible = false;
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void aeExample_SaveClick( object sender, EventArgs e )
         {
-            aeExampleDiv.Visible = false;
+            pnlAttributeEditor.Visible = false;
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void binaryFileTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
-            binaryFilePicker.BinaryFileTypeId = binaryFileTypePicker.SelectedValueAsInt();
+            bfpExample.BinaryFileTypeId = bftpExample.SelectedValueAsInt();
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void monthYearPicker_SelectedMonthYearChanged( object sender, EventArgs e )
         {
-            var dateTime = monthDayPicker.SelectedDate;
+            var dateTime = mypExample.SelectedDate;
         }
 
         /// <summary>
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void monthDayPicker_SelectedMonthDayChanged( object sender, EventArgs e )
         {
-            var dateTime = monthDayPicker.SelectedDate;
+            var dateTime = mdpExample.SelectedDate;
         }
 
         /// <summary>
@@ -378,7 +378,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void birthdayPicker_SelectedBirthdayChanged( object sender, EventArgs e )
         {
-            var dateTime = birthdayPicker.SelectedDate;
+            var dateTime = bdaypExample.SelectedDate;
         }
 
         /// <summary>
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void scheduleBuilder_SaveSchedule( object sender, EventArgs e )
         {
-            string debug = scheduleBuilder.iCalendarContent;
+            string debug = schedbExample.iCalendarContent;
         }
 
         /// <summary>
@@ -398,7 +398,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void geoPicker1_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geoPicker1.SelectedValue.AsText();
+            string debug = geopExamplePoint.SelectedValue.AsText();
         }
 
         /// <summary>
@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void geoPicker_SelectGeography( object sender, EventArgs e )
         {
-            string debug = geoPicker.SelectedValue.AsText();
+            string debug = geopExamplePolygon.SelectedValue.AsText();
         }
 
         /// <summary>
@@ -418,7 +418,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fupContentFile_FileUploaded( object sender, EventArgs e )
         {
-            string physicalFileName = this.Request.MapPath( fupContentFile.UploadedContentFilePath );
+            string physicalFileName = this.Request.MapPath( fuprExampleContentFile.UploadedContentFilePath );
             lblPhysicalFileName.Text = "Uploaded File: " + physicalFileName;
         }
     }

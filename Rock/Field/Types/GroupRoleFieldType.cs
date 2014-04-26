@@ -23,6 +23,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,7 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) GroupType
     /// </summary>
-    public class GroupRoleFieldType : FieldType
+    public class GroupRoleFieldType : FieldType, IEntityFieldType
     {
         private const string GROUP_TYPE_KEY = "grouptype";
 
@@ -49,7 +50,7 @@ namespace Rock.Field.Types
             Guid guid = Guid.Empty;
             if ( Guid.TryParse( value, out guid ) )
             {
-                var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( guid );
+                var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
                 if ( groupRole != null )
                 {
                     formattedValue = groupRole.Name;
@@ -89,7 +90,7 @@ namespace Rock.Field.Types
 
             ddl.Items.Add( new ListItem() );
 
-            var groupTypeService = new Rock.Model.GroupTypeService( new RockContext() );
+            var groupTypeService = new GroupTypeService( new RockContext() );
             var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
             groupTypes.ForEach( g =>
                 ddl.Items.Add( new ListItem( g.Name, g.Id.ToString().ToUpper() ) )
@@ -160,7 +161,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Reads new values entered by the user for the field ( as Guid )
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -172,7 +173,7 @@ namespace Rock.Field.Types
             {
                 if ( groupRolePicker.GroupRoleId.HasValue )
                 {
-                    var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( groupRolePicker.GroupRoleId.Value );
+                    var groupRole = new GroupTypeRoleService( new RockContext() ).Get( groupRolePicker.GroupRoleId.Value );
                     if ( groupRole != null )
                     {
                         return groupRole.Guid.ToString();
@@ -184,26 +185,55 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value. ( as Guid )
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            Guid guid = Guid.Empty;
-            if ( Guid.TryParse( value, out guid ) )
+            GroupRolePicker groupRolePicker = control as GroupRolePicker;
+            if ( groupRolePicker != null )
             {
-                GroupRolePicker groupRolePicker = control as GroupRolePicker;
-                if ( groupRolePicker != null )
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( value, out guid ) )
                 {
-                    var groupRole = new Rock.Model.GroupTypeRoleService( new RockContext() ).Get( guid );
+                    var groupRole = new GroupTypeRoleService( new RockContext() ).Get( guid );
                     if ( groupRole != null )
                     {
                         groupRolePicker.GroupRoleId = groupRole.Id;
+                        return;
                     }
                 }
+
+                groupRolePicker.GroupRoleId = null;
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new GroupTypeRoleService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new GroupTypeRoleService( new RockContext() ).Get( id ?? 0 );
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }

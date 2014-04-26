@@ -245,6 +245,11 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _scheduleBuilderPopupContents.iCalendarContent = value;
+
+                if (ShowScheduleFriendlyTextAsToolTip)
+                {
+                    this.ToolTip = new Rock.Model.Schedule { iCalendarContent = _scheduleBuilderPopupContents.iCalendarContent }.ToFriendlyScheduleText();
+                }
             }
         }
 
@@ -263,6 +268,48 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _btnShowPopup.ToolTip = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether prompt for duration in the Schedule Builder
+        /// defaults to true
+        /// Set to false if the schedule only requires start datetime(s)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show duration]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDuration
+        {
+            get
+            {
+                EnsureChildControls();
+                return _scheduleBuilderPopupContents.ShowDuration;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _scheduleBuilderPopupContents.ShowDuration = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show schedule friendly text as tool tip].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show schedule friendly text as tool tip]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowScheduleFriendlyTextAsToolTip
+        {
+            get
+            {
+                return ViewState["ShowScheduleFriendlyTextAsToolTip"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowScheduleFriendlyTextAsToolTip"] = value;
             }
         }
 
@@ -498,6 +545,25 @@ END:VCALENDAR
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [_show duration].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [_show duration]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDuration
+        {
+            get
+            {
+                return ViewState["ShowDuration"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowDuration"] = value;
+            }
+        }
+
+        /// <summary>
         /// Texts the box to positive integer.
         /// </summary>
         /// <param name="textBox">The text box.</param>
@@ -523,7 +589,7 @@ END:VCALENDAR
         {
             EnsureChildControls();
 
-            if ( _dpStartDateTime.SelectedDateTime == null )
+            if ( _dpStartDateTime.SelectedDateTimeIsBlank )
             {
                 return iCalendarContentEmptyEvent;
             }
@@ -532,10 +598,19 @@ END:VCALENDAR
             calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
             calendarEvent.DTStart.HasTime = true;
 
-            int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 1 );
+            int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
 
-            calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+            if ( (durationHours == 0 && durationMins == 0) || this.ShowDuration == false )
+            {
+                // make a one second duration since a zero duration won't be included in occurrences
+                calendarEvent.Duration = new TimeSpan( 0, 0, 1);
+            }
+            else
+            {
+                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+            }
+            
 
             if ( _radRecurring.Checked )
             {
@@ -1260,16 +1335,20 @@ END:VCALENDAR
             _dpStartDateTime.RenderControl( writer );
 
             // Duration
-            writer.AddAttribute( "class", "form-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( "<span class='control-label'>Duration</span>" );
-            writer.AddAttribute("class", "form-control-group");
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _tbDurationHours.RenderControl( writer );
+            if ( this.ShowDuration )
+            {
+                writer.AddAttribute( "class", "form-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _tbDurationMinutes.RenderControl( writer );
-            writer.RenderEndTag();
-            writer.RenderEndTag();
+                writer.Write( "<span class='control-label'>Duration</span>" );
+                writer.AddAttribute( "class", "form-control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _tbDurationHours.RenderControl( writer );
+
+                _tbDurationMinutes.RenderControl( writer );
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
 
             // One-time/Recurring Radiobuttons
             writer.AddAttribute( "class", "form-group" );

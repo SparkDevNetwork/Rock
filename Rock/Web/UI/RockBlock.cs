@@ -717,13 +717,22 @@ namespace Rock.Web.UI
         /// a Url with '~~' to indicate a virtual path to Rock's current theme root folder
         /// </summary>
         /// <param name="url">A <see cref="System.String" /> representing the Url to resolve.</param>
-        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
         /// <returns>
         /// A <see cref="System.String" /> that represents the resolved Url.
         /// </returns>
-        public string ResolveRockUrl( string url, bool includeRoot = false )
+        public string ResolveRockUrl( string url)
         {
-            return RockPage.ResolveRockUrl( url, includeRoot );
+            return RockPage.ResolveRockUrl( url );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL and includes root.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrlIncludeRoot( string url )
+        {
+            return RockPage.ResolveRockUrlIncludeRoot ( url );
         }
 
         /// <summary>

@@ -207,19 +207,20 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void SetExtraRestParams()
         {
-            var parms = new StringBuilder();
-            parms.AppendFormat( "/false/{0}", EntityTypeId );
+            string parms = "?getCategorizedItems=false";
+            parms += string.Format( "&entityTypeId={0}", EntityTypeId );
+            
             if ( !string.IsNullOrEmpty( EntityTypeQualifierColumn ) )
             {
-                parms.AppendFormat( "/{0}", EntityTypeQualifierColumn );
+                parms += string.Format( "&entityQualifier={0}", EntityTypeQualifierColumn );
 
                 if ( !string.IsNullOrEmpty( EntityTypeQualifierValue ) )
                 {
-                    parms.AppendFormat( "/{0}", EntityTypeQualifierValue );
+                    parms += string.Format( "&entityQualifierValue={0}", EntityTypeQualifierValue );
                 }
             }
 
-            ItemRestUrlExtraParams = parms.ToString();
+            ItemRestUrlExtraParams = parms;
         }
 
     }

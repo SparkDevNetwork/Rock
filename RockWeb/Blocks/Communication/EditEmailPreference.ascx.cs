@@ -194,13 +194,20 @@ namespace RockWeb.Blocks.Communication
                     {
                         person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
                         person.RecordStatusReasonValueId = ddlInactiveReason.SelectedValue.AsInteger().Value;
-                        person.InactiveReasonNote = tbInactiveNote.Text;
+                        person.ReviewReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED ).Id;
+                        if ( string.IsNullOrWhiteSpace( person.ReviewReasonNote ) )
+                        {
+                            person.ReviewReasonNote = tbInactiveNote.Text;
+                        }
+                        else
+                        {
+                            person.ReviewReasonNote += " " + tbInactiveNote.Text;
+                        }
                     }
                     else
                     {
                         person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
                         person.RecordStatusReasonValueId = null;
-                        person.InactiveReasonNote = string.Empty;
                     }
 
                     rockContext.SaveChanges();

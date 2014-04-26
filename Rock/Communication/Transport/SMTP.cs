@@ -63,14 +63,31 @@ namespace Rock.Communication.Transport
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
                 (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo(RockDateTime.Now) <= 0))
             {
+
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
+                string fromAddress = communication.GetChannelDataValue( "FromAddress" );
+                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
+
+                // Check to make sure sending domain is a safe sender
+                var safeDomains = globalAttributes.GetValue( "SafeSenderDomains" ).SplitDelimitedValues().ToList();
+                var emailParts = fromAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                if (emailParts.Length != 2 || !safeDomains.Contains(emailParts[1],StringComparer.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(replyTo))
+                    {
+                        replyTo = fromAddress;
+                    }
+                    fromAddress = globalAttributes.GetValue("OrganizationEmail");
+                }
+
                 // From
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(
-                    communication.GetChannelDataValue( "FromAddress" ),
+                    fromAddress,
                     communication.GetChannelDataValue( "FromName" ) );
 
                 // Reply To
-                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
                 if ( !string.IsNullOrWhiteSpace( replyTo ) )
                 {
                     message.ReplyToList.Add( new MailAddress( replyTo ) );
@@ -124,7 +141,6 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService( rockContext );
 
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
                 bool recipientFound = true;
@@ -144,10 +160,18 @@ namespace Rock.Communication.Transport
                             message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
 
                             // Create merge field dictionary
-                            var mergeObjects = MergeValues( globalConfigValues, recipient );
+                            var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
 
                             // Subject
                             message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
+
+                            // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
+                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
+                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                            {
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                message.AlternateViews.Add( plainTextView );
+                            }
 
                             // Add Html view
                             string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
@@ -157,18 +181,11 @@ namespace Rock.Communication.Transport
                                 message.AlternateViews.Add( htmlView );
                             }
 
-                            // Add text view first as last view is usually treated as the the preferred view by email readers (gmail)
-                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
-                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                            {
-                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
-                                message.AlternateViews.Add( plainTextView );
-                            }
-
                             try
                             {
                                 smtpClient.Send( message );
                                 recipient.Status = CommunicationRecipientStatus.Delivered;
+                                recipient.TransportEntityTypeName = this.GetType().FullName;
                             }
                             catch ( Exception ex )
                             {
@@ -273,7 +290,8 @@ namespace Rock.Communication.Transport
                         message.To.Clear();
                         message.To.Add( to );
                         message.Subject = subject.ResolveMergeFields( mergeObjects );
-                        message.Body = body.ResolveMergeFields( mergeObjects );
+                        message.Body = Regex.Replace( body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
                         smtpClient.Send( message );
                     }
                 }

@@ -58,7 +58,7 @@ namespace Rock.Communication.Transport
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) > 0 ) )
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 string fromPhone = string.Empty;
                 string fromValue = communication.GetChannelDataValue( "FromValue" );
@@ -86,33 +86,28 @@ namespace Rock.Communication.Transport
                         {
                             try
                             {
-                                var phoneNumbers = recipient.Person.PhoneNumbers
-                                    .Where( p => 
-                                        p.IsMessagingEnabled &&
-                                        p.Number != null &&
-                                        p.Number != "" )
-                                    .ToList();
+                                var phoneNumber = recipient.Person.PhoneNumbers
+                                    .Where( p => p.IsMessagingEnabled )
+                                    .FirstOrDefault();
 
-                                if (phoneNumbers.Any())
+                                if ( phoneNumber != null )
                                 {
                                     // Create merge field dictionary
-                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
+                                    var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
                                     string message = communication.GetChannelDataValue( "Message" );
                                     message = message.ResolveMergeFields( mergeObjects );
-
-                                    foreach ( var phoneNumber in phoneNumbers )
+ 
+                                    string twillioNumber = phoneNumber.Number;
+                                    if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
                                     {
-                                        string twillioNumber = phoneNumber.Number;
-                                        if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                        {
-                                            twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                        }
-
-                                        twilio.SendMessage( fromPhone, twillioNumber, message );
+                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    var response = twilio.SendMessage( fromPhone, twillioNumber, message );
 
+                                    recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    recipient.TransportEntityTypeName = this.GetType().FullName;
+                                    recipient.UniqueMessageId = response.Sid; 
                                 }
                                 else
                                 {

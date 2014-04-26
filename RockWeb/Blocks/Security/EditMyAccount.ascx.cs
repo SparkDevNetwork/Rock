@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Security
                                 }
                                 else
                                 {
-                                    oldPhoneNumber = phoneNumber.NumberFormatted;
+                                    oldPhoneNumber = phoneNumber.ToString();
                                 }
 
                                 phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Security
                                 phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                 phoneNumberTypeIds.Add( phoneNumberTypeId );
 
-                                History.EvaluateChange( changes, string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ), oldPhoneNumber, phoneNumber.NumberFormatted );
+                                History.EvaluateChange( changes, string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ), oldPhoneNumber, phoneNumber.ToString() );
                             }
                         }
                     }
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Security
                     .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                     .ToList() )
                 {
-                    History.EvaluateChange( changes, string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ), phoneNumber.NumberFormatted, string.Empty );
+                    History.EvaluateChange( changes, string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ), phoneNumber.ToString(), string.Empty );
 
                     person.PhoneNumbers.Remove( phoneNumber );
                     phoneNumberService.Delete( phoneNumber );
