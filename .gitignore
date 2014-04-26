@@ -22,8 +22,6 @@ StyleCop.Cache
 
 #specific folders
 [Oo]bj/
-[Dd]ebug*/
-[Rr]elease*/
 RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
 /scaffolding.config

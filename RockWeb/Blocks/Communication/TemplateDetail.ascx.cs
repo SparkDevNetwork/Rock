@@ -223,8 +223,16 @@ namespace RockWeb.Blocks.Communication
                 template.Description = tbDescription.Text;
                 template.ChannelEntityTypeId = ChannelEntityTypeId;
 
+                template.ChannelData.Clear();
                 GetChannelData();
-                template.ChannelData = ChannelData;
+                foreach(var keyVal in ChannelData)
+                {
+                    if (!string.IsNullOrEmpty(keyVal.Value))
+                    {
+                        template.ChannelData.Add(keyVal.Key, keyVal.Value);
+                    }
+                }
+
                 if ( template.ChannelData.ContainsKey( "Subject" ) )
                 {
                     template.Subject = template.ChannelData["Subject"];
@@ -309,10 +317,7 @@ namespace RockWeb.Blocks.Communication
             ChannelData.Add( "Subject", template.Subject );
 
             ChannelControl control = LoadChannelControl( true );
-            if ( control != null && CurrentPerson != null )
-            {
-                control.InitializeFromSender( CurrentPerson );
-            }
+
         }
 
         /// <summary>
@@ -382,6 +387,7 @@ namespace RockWeb.Blocks.Communication
                 phContent.Controls.Clear();
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
+                channelControl.IsTemplate = true;
                 channelControl.ValidationGroup = btnSave.ValidationGroup;
                 phContent.Controls.Add( channelControl );
 

@@ -116,6 +116,50 @@ namespace Rock.Migrations
                     ) );
         }
 
+        /// <summary>
+        /// Updates the EntityType SingleValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeSingleValueFieldType( string entityTypeName, string fieldTypeGuid)
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [SingleValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid)
+            );
+        }
+
+        /// <summary>
+        /// Updates the EntityType MultiValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeMultiValueFieldType( string entityTypeName, string fieldTypeGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [MultiValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid )
+            );
+        }
+
         #endregion
 
         #region Field Type Methods
@@ -1416,6 +1460,142 @@ INSERT INTO [dbo].[Auth]
                     guid)
             );
         }
+        #endregion
+
+        #region PersonBadge 
+
+        /// <summary>
+        /// Updates the PersonBadge by Guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdatePersonBadge( string name, string description, string entityTypeName, int order, string guid )
+        {
+            Sql( string.Format( @"
+                    DECLARE @EntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+	                
+                    IF EXISTS ( SELECT * FROM [PersonBadge] where [Guid] = '{4}')
+                    BEGIN
+                        UPDATE [PersonBadge] set 
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [EntityTypeId] = @EntityTypeId,
+                            [Order] = {3}
+                        WHERE [Guid] = '{4}'
+                        
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
+                            VALUES ('{0}', '{1}', @EntityTypeId, {3}, '{4}')
+                    END
+
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    entityTypeName,
+                    order,
+                    guid )
+            );
+        }
+        
+        /// <summary>
+        /// Adds (or Deletes and Adds) the person badge attribute.
+        /// </summary>
+        /// <param name="personBadgeGuid">The person badge unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddPersonBadgeAttribute( string personBadgeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @PersonBadgeEntityTypeId int
+                SET @PersonBadgeEntityTypeId = (SELECT [EntityTypeId] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                -- get the EntityTypeId for 'Rock.Model.PersonBadge'
+                DECLARE @EntityTypeId int                
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonBadge')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute] 
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@PersonBadgeEntityTypeId as varchar)
+                AND [Key] = '{2}'
+
+                INSERT INTO [Attribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId, @EntityTypeId,'EntityTypeId',CAST(@PersonBadgeEntityTypeId as varchar),
+                    '{2}','{3}','{4}',
+                    {5},0,'{6}',0,0,
+                    '{7}')
+",
+                    personBadgeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+        /// <summary>
+        /// Adds/Updates the person badge attribute value.
+        /// </summary>
+        /// <param name="personBadgeGuid">The person badge unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddPersonBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @PersonBadgeId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@PersonBadgeId,
+                    0,'{2}',
+                    NEWID())
+",
+                    personBadgeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
         #endregion
     }
 }

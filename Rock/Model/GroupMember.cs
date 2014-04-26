@@ -169,6 +169,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
         /// </summary>
         Active = 1,
+        
         /// <summary>
         /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
         /// </summary>

@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data Access/service class for <see cref="Rock.Model.Group"/> entity type objects that extends the functionality of <see cref="Rock.Data.Service"/>
+    /// Data access/service class for <see cref="Rock.Model.Group"/> objects.
     /// </summary>
     public partial class GroupService 
     {

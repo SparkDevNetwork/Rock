@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             var dictPhoneNumber = new Dictionary<string, object>();
                             dictPhoneNumber.Add( "Name", p.NumberTypeValue.Name );
-                            dictPhoneNumber.Add( "Number", p.NumberFormatted );
+                            dictPhoneNumber.Add( "Number", p.ToString() );
                             phoneTypes.Add( dictPhoneNumber );
                         }
 
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Groups
                     StringBuilder debugInfo = new StringBuilder();
                     debugInfo.Append( "<div class='alert alert-info'><h4>Debug Info</h4>" );
                     debugInfo.Append( "<p><em>Showing first 5 groups.</em></p>" );
-                    debugInfo.Append( "<pre>" + dynamicGroups.Take( 5 ).ToJson() + "</pre>" );
+                    debugInfo.Append( "<pre>" + dynamicGroups.Take( 5 ).LiquidizeChildren().ToJson() + "</pre>" );
                     debugInfo.Append( "</div" );
                     lDebug.Text = debugInfo.ToString();
                 }

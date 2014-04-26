@@ -91,12 +91,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
-                return false;
-            }  
             
             // ignoring PrayerRequest,ApprovedByPersonId 
             
@@ -148,6 +142,7 @@ namespace Rock.Model
             target.RecordStatusValueId = source.RecordStatusValueId;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            target.ReviewReasonValueId = source.ReviewReasonValueId;
             target.IsDeceased = source.IsDeceased;
             target.TitleValueId = source.TitleValueId;
             target.FirstName = source.FirstName;
@@ -168,6 +163,7 @@ namespace Rock.Model
             target.IsEmailActive = source.IsEmailActive;
             target.EmailNote = source.EmailNote;
             target.EmailPreference = source.EmailPreference;
+            target.ReviewReasonNote = source.ReviewReasonNote;
             target.InactiveReasonNote = source.InactiveReasonNote;
             target.SystemNote = source.SystemNote;
             target.ViewedCount = source.ViewedCount;

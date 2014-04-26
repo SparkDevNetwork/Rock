@@ -25,13 +25,23 @@
           email="ted@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="married" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_ted.jpg"
-          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444">
+          homePhone="6235553322" mobilePhone="6235553322" workPhone="6235552444" graduationDate="1/1/1994">
           <attributes>
             <attribute BaptismDate="9/13/2001"/>
             <attribute FirstVisit="12/15/2012"/>
             <attribute Employer="Rock Solid Church"/>
             <attribute Position="Outreach Pastor"/>
           </attributes>
+          <logins>
+            <login userName="tdecker"/>
+          </logins>
+          <notes>
+            <note type="TimeLine" text="Ted celebrates his 4th year with the church." />
+            <note type="TimeLine" text="Left a message for Ted to follow up with Debbie Green
+               who is looking for financial assistance." date="4/1/2014"/>
+            <note type="TimeLine" text="Ted spoke with Debbie and transferred her into Pete's care." date="4/2/2014"/>
+
+          </notes>
         </person>
 
         <person guid="B71494DB-D809-451A-A950-28898D0FD92C"
@@ -43,6 +53,9 @@
           <attributes>
             <attribute FirstVisit="9/13/2001"/>
           </attributes>
+          <logins>
+            <login userName="cdecker"/>
+          </logins>
         </person>
 
         <person guid="32AAB9E4-970D-4551-A17E-385E66113BD5"
@@ -50,14 +63,18 @@
           email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_noah.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="5" />
 
         <person guid="27919690-3CCE-4FA6-95C4-CD21419EB51F"
           firstName="Alexis" nickName="Alex" lastName="Decker" birthDate="2/10/2007" age="7" gender="female"
           email="" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="attendee"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/decker_alexis.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute Allergy="Allergic to peanuts"/>
+          </attributes>
+        </person>
       </members>
     </family>
 
@@ -84,7 +101,10 @@
           email="brian.jones@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/jones_brian.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
+          homePhone="" mobilePhone="" workPhone="" grade="1">
+          <attributes>
+          </attributes>
+        </person>
 
       </members>
     </family>
@@ -143,8 +163,11 @@
           email="madison.lowe@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="child"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/lowe_madison.jpg"
-          homePhone="" mobilePhone="" workPhone=""/>
-
+          homePhone="" mobilePhone="" workPhone="" grade="2">
+          <attributes>
+            <attribute LegalNotes="Frank Lowe (uncle) is not allowed to have contact."/>
+          </attributes>
+        </person>
       </members>
     </family>
 
@@ -195,6 +218,9 @@
             <attribute Employer="Rock Solid Church"/>
             <attribute Position="Assistant"/>
           </attributes>
+          <logins>
+            <login userName="amarble"/>
+          </logins>
         </person>
         
         <person guid="1EA811BB-3118-42D1-B020-32A82BC8081A"
@@ -265,7 +291,11 @@
             <attribute Employer="Rock Solid Church"/>
             <attribute Position="Outreach Pastor"/>
           </attributes>
+          <logins>
+            <login userName="pfoster"/>
+          </logins>
         </person>
+        
         <person guid="F4450E80-F221-4556-881D-CB92B008C2DA"
           firstName="Adelle" nickName="Pamela" lastName="Foster" birthDate="7/4/1976" age="50" gender="female"
           email="pamela@rocksoliddemochurch.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
@@ -275,10 +305,39 @@
           <attributes>
           </attributes>
         </person>
+        <logins>
+          <login userName="afoster"/>
+        </logins>
       </members>
     </family>
-    
- </families>
+
+    <!-- Jenny Michaels is not on staff, but she helps coordinate the Annual Car Show so that’s why she has the Staff-Like User role.
+    -->
+    <family name="Michaels Family" guid="F53EC4A4-300B-4B5D-9A81-CB6198F3583F" campus="main campus">
+      <addresses>
+        <address type="home" street1="3139 W Bloomfield Rd" street2="" city="Phoenix" state="AZ" zip="85029" lat="33.598404" long="-112.12709" />
+      </addresses>
+
+      <members>
+        <person guid="82309081-A110-496F-8295-CE6A4720D7A8"
+          firstName="Jennifer" nickName="Jenny" lastName="Michaels" birthDate="9/19/1992" age="28" gender="female"
+          email="jenny@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
+          recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
+          photoUrl="http://storage.rockrms.com/sampledata/person-images/michaels_jenny.jpg"
+          homePhone="602-555-9659" mobilePhone="" workPhone="">
+          <attributes>
+            <attribute Employer="Honeywell"/>
+            <attribute Position="Systems Engineer"/>
+          </attributes>
+
+        </person>
+
+      </members>
+
+    </family>
+
+
+  </families>
 
   <relationships>
     <relationship a="Ben" personGuid="3C402382-3BD2-4337-A996-9E62F1BAB09D" has="step-child" forGuid="3D7F6605-3666-4AB5-9F4E-D7FEBF93278E" name="Brian" />
@@ -304,6 +363,14 @@
       <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
     </group>
 
+    <group type="smallgroup" name="Alisha Marble’s Group" guid="10B60F8D-0F23-4FAA-B35F-9A5F19F5F995" parentGroupGuid="C05E60C4-6DFC-420D-8DBA-28DBB5F0E3F9"
+          meetsAtHomeOfFamily="6F2E6B64-3592-4543-8D8E-6BA4040CDC4E" meetsAtHomeOfPerson="69DC0FDC-B451-4303-BD91-EF17C0015D23"
+          studyTopic="Women of the Bible" meetingTime="06:00:00"
+          description ="Small group topics involve studying the women of the Bible.">
+      <person fullname="Alisha Marble" guid="69DC0FDC-B451-4303-BD91-EF17C0015D23"/>
+      <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
+    </group>
+    
   </groups>
 
   <securityRoles>
@@ -351,6 +418,7 @@
       <members>
         <person fullname="Cindy Decker" guid="B71494DB-D809-451A-A950-28898D0FD92C"/>
         <person fullname="Adelle Foster" guid="F4450E80-F221-4556-881D-CB92B008C2DA"/>
+        <person fullname="Jenny Michaels" guid="82309081-A110-496F-8295-CE6A4720D7A8"/>
       </members>
     </group>
     <group name="Staff Users" guid="2C112948-FF4C-46E7-981A-0257681EADF4" >

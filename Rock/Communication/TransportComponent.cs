@@ -30,6 +30,20 @@ namespace Rock.Communication
     public abstract class TransportComponent : Component
     {
         /// <summary>
+        /// Gets a value indicating whether transport has ability to track recipients opening the communication.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool CanTrackOpens
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
@@ -43,44 +57,6 @@ namespace Rock.Communication
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         public abstract void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot );
-
-        /// <summary>
-        /// Merges the values.
-        /// </summary>
-        /// <param name="configValues">The config values.</param>
-        /// <param name="recipient">The recipient.</param>
-        /// <returns></returns>
-        protected Dictionary<string, object> MergeValues( Dictionary<string, object> configValues, CommunicationRecipient recipient )
-        {
-            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-
-            configValues.ToList().ForEach( v => mergeValues.Add( v.Key, v.Value ) );
-
-            if ( recipient != null )
-            {
-                if (recipient.Communication != null)
-                {
-                    mergeValues.Add( "Communication", recipient.Communication );
-                }
-
-                if ( recipient.Person != null )
-                {
-                    mergeValues.Add( "Person", recipient.Person );
-                }
-
-                // Add any additional merge fields created through a report
-                foreach ( var mergeField in recipient.AdditionalMergeValues )
-                {
-                    if ( !mergeValues.ContainsKey( mergeField.Key ) )
-                    {
-                        mergeValues.Add( mergeField.Key, mergeField.Value );
-                    }
-                }
-            }
-
-            return mergeValues;
-
-        }
 
     }
    

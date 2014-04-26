@@ -40,8 +40,10 @@ namespace Rock.Address
     [Description( "Address verification service from SmartyStreets" )]
     [Export( typeof( VerificationComponent ) )]
     [ExportMetadata( "ComponentName", "Smarty Streets" )]
-    [TextField( "Auth ID", "The Smarty Streets Authorization ID", true, "", "", 1 )]
-    [TextField( "Auth Token", "The Smarty Streets Authorization Token", true, "", "", 1 )]
+    [TextField( "Auth ID", "The Smarty Streets Authorization ID", true, "", "", 2 )]
+    [TextField( "Auth Token", "The Smarty Streets Authorization Token", true, "", "", 3 )]
+    [TextField( "Acceptable DPV Codes", "The Smarty Streets Delivery Point Validation (DPV) match code values that are considered acceptable levels of standardization (see http://smartystreets.com/kb/liveaddress-api/field-definitions#dpvmatchcode for details).", false, "Y,S,D", "", 4 )]
+    [TextField( "Acceptable Precisions", "The Smarty Streets latitude & longitude precision values that are considered acceptable levels of geocoding (see http://smartystreets.com/kb/liveaddress-api/field-definitions#precision for details).", false, "Zip7,Zip8,Zip9", "", 5 )]
     public class SmartyStreets : VerificationComponent
     {
         /// <summary>
@@ -62,8 +64,11 @@ namespace Rock.Address
                 !( location.IsGeoPointLocked ?? false ) &&
                 ( !location.GeocodeAttemptedDateTime.HasValue || reVerify ) )
             {
+
                 string authId = GetAttributeValue( "AuthID" );
                 string authToken = GetAttributeValue( "AuthToken" );
+                var dpvCodes = GetAttributeValue("AcceptableDPVCodes").SplitDelimitedValues();
+                var precisions = GetAttributeValue("AcceptablePrecisions").SplitDelimitedValues();
 
                 var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.Zip, candidates = 1 } };
 
@@ -80,9 +85,11 @@ namespace Rock.Address
                     if (candidates.Any())
                     {
                         var candidate = candidates.FirstOrDefault();
-                        result = candidate.metadata.precision;
+                        result = string.Format( "record_type: {0}; dpv_match_code: {1}; precision {2}",
+                            candidate.metadata.record_type, candidate.analysis.dpv_match_code, candidate.metadata.precision );
 
-                        if (result == "Zip9")
+                        location.StandardizeAttemptedResult = candidate.analysis.dpv_match_code;
+                        if ( dpvCodes.Contains( candidate.analysis.dpv_match_code ) )
                         {
                             location.Street1 = candidate.delivery_line_1;
                             location.Street2 = candidate.delivery_line_2;
@@ -90,12 +97,19 @@ namespace Rock.Address
                             location.State = candidate.components.state_abbreviation;
                             location.Zip = candidate.components.zipcode + "-" + candidate.components.plus4_code;
                             location.StandardizedDateTime = RockDateTime.Now;
-
-                            location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
-                            location.GeocodedDateTime = RockDateTime.Now;
-
                             verified = true;
                         }
+
+                        location.GeocodeAttemptedResult = candidate.metadata.precision;
+                        if ( precisions.Contains( candidate.metadata.precision ) )
+                        {
+                            location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
+                            location.GeocodedDateTime = RockDateTime.Now;
+                        }
+                    }
+                    else
+                    {
+                        result = "No Match";
                     }
                 }
                 else
@@ -104,12 +118,10 @@ namespace Rock.Address
                 }
 
                 location.StandardizeAttemptedServiceType = "SmartyStreets";
-                location.StandardizedDateTime = RockDateTime.Now;
-                location.StandardizeAttemptedResult = result;
+                location.StandardizeAttemptedDateTime = RockDateTime.Now;
 
                 location.GeocodeAttemptedServiceType = "SmartyStreets";
                 location.GeocodeAttemptedDateTime = RockDateTime.Now;
-                location.GeocodeAttemptedResult = result;
 
             }
 

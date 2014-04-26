@@ -33,13 +33,14 @@ a.aspNetDisabled {
     opacity: 0.5;
 }
 
-.form-group.rock-literal {
+.form-group.rock-literal,
+.rock-control-wrapper {
     label {
         margin-bottom: 0;
     }
 
     p.form-control-static {
-       // padding-top: 0;
+       padding-top: 0;
     }
 }
 
@@ -49,7 +50,6 @@ a.aspNetDisabled {
 }
 
 .form-group .checkbox:last-child {  // used to adjust checkboxes tolook better with labels above
-    margin-top: 0;
     margin-bottom: 30px;
 }
 
@@ -59,7 +59,7 @@ a.aspNetDisabled {
         margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
         label {
             float: left;
-            width: 120px;
+            //width: 120px; commented out 4/24/14 to fix the checkbox at the top of the new family control
             padding-right: 12px;
         }
 

@@ -24,8 +24,11 @@
 
 		    for (var i = 0; i < array.length; i++) {
 		        currentNode = array[i];
-
-		        if (currentNode.id.toString() === id.toString()) {
+		        
+		        // remove surrounding single quotes from id if they exist
+		        var idCompare = id.toString().replace(/(^')|('$)/g, '');
+                
+		        if (currentNode.id.toString() === idCompare) {
 		            return currentNode;
 		        } else if (currentNode.hasChildren) {
 		            node = _findNodeById(id, currentNode.children || []);

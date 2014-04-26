@@ -323,7 +323,7 @@ namespace Rock.Rest.Controllers
 
                 foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
                 {
-                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted );
+                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.ToString() );
                 }
 
                 // TODO: Should also show area: <br /><strong>Area</strong> WestwingS

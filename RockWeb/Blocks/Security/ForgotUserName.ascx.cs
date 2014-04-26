@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( tbEmail.Text, mergeObjects );
 
-                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/", true ), ResolveRockUrl( "~~/", true ) );
+                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ) );
 
                 pnlEntry.Visible = false;
                 pnlSuccess.Visible = true;

@@ -36,7 +36,7 @@ namespace Rock.Communication.Channel
     [Export( typeof( ChannelComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
-    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Email.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubcribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, false, @"
 <p style='float: right;'>
     <small><a href='{{ GlobalAttribute.PublicApplicationRoot }}Unsubscribe/{{ Person.UrlEncodedKey }}'>Unsubscribe</a></small>
 </p>
@@ -73,11 +73,12 @@ You can view an online version of this email here:
 
             StringBuilder sbContent = new StringBuilder();
 
-            // Requery the Communication object
-            communication = new CommunicationService( rockContext ).Get( communication.Id );
-
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
             var mergeValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+
+            // Requery the Communication object
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
+            mergeValues.Add( "Communication", communication );
 
             if ( person != null )
             {
@@ -129,6 +130,96 @@ You can view an online version of this email here:
         }
 
         /// <summary>
+        /// Gets the read-only message details.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <returns></returns>
+        public override string GetMessageDetails( Model.Communication communication )
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("<div class='row'>");
+            sb.AppendLine( "<div class='col-md-6'>" );
+
+            AppendChannelData( communication, sb, "FromName" );
+            AppendChannelData( communication, sb, "FromAddress" );
+            AppendChannelData( communication, sb, "ReplyTo" );
+            AppendChannelData( communication, sb, "Subject" );
+
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "<div class='col-md-6'>" );
+            AppendAttachmentData( sb, communication.GetChannelDataValue( "Attachments" ) );
+            sb.AppendLine( "</div>" );
+            sb.AppendLine( "</div>" );
+
+            string value = communication.GetChannelDataValue( "HtmlMessage" );
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                AppendChannelData( sb, "HtmlMessage", string.Format( @"
+                        <iframe id='js-email-body-iframe' class='email-body'></iframe>
+                        <script id='email-body' type='text/template'>{0}</script>
+                        <script type='text/javascript'>
+                            var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
+                            doc.open();
+                            doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
+                            doc.close();
+                        </script>
+                    ", value ) );
+            }
+
+            AppendChannelData( communication, sb, "TextMessage" );
+
+            return sb.ToString();
+        }
+
+        private void AppendChannelData(Model.Communication communication, StringBuilder sb, string key)
+        {
+            string value = communication.GetChannelDataValue( key );
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                AppendChannelData( sb, key, value );
+            }
+        }
+
+        private void AppendAttachmentData(StringBuilder sb, string value)
+        {
+            var attachments = new Dictionary<int, string>();
+
+            var fileIds = new List<int>();
+            value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add( v.AsInteger() ?? 0 ) );
+
+            new BinaryFileService( new RockContext() ).Queryable()
+                .Where( f => fileIds.Contains( f.Id ) )
+                .Select( f => new
+                {
+                    f.Id,
+                    f.FileName
+                } )
+                .ToList()
+                .ForEach( f => attachments.Add( f.Id, f.FileName ) );
+
+            if (attachments.Any())
+            {
+                StringBuilder sbAttachments = new StringBuilder();
+                sbAttachments.Append( "<ul>" );
+                foreach(var keyValue in attachments)
+                {
+                    sbAttachments.AppendFormat( "<li><a target='_blank' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
+                        System.Web.VirtualPathUtility.ToAbsolute( "~" ), keyValue.Key, keyValue.Value );
+                }
+                sbAttachments.Append( "</ul>" );
+
+                AppendChannelData( sb, "Attachments", sbAttachments.ToString() );
+            }
+        }
+
+        private void AppendChannelData( StringBuilder sb, string key, string value )
+        {
+            sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>",
+                key.SplitCase(), value );
+        }
+
+        /// <summary>
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
@@ -144,8 +235,6 @@ You can view an online version of this email here:
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
-                bool bulkEmail = communication.GetChannelDataValue( "BulkEmail" ).AsBoolean();
-
                 // Update any recipients that should not get sent the communication
                 var recipientService = new CommunicationRecipientService( rockContext );
                 foreach ( var recipient in recipientService.Queryable( "Person" )
@@ -160,7 +249,7 @@ You can view an online version of this email here:
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email Preference of 'Do Not Email!'";
                     }
-                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && bulkEmail )
+                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && communication.IsBulkCommunication )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Email Preference of 'No Mass Emails!'";
@@ -168,7 +257,7 @@ You can view an online version of this email here:
                 }
 
                 // If an unbsubcribe value has been entered, and this is a bulk email, add the text
-                if ( bulkEmail )
+                if ( communication.IsBulkCommunication )
                 {
                     string unsubscribeHtml = GetAttributeValue( "UnsubscribeHTML" );
                     if ( !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
@@ -189,41 +278,63 @@ You can view an online version of this email here:
             base.Send( communication );
         }
 
+        /// <summary>
+        /// Processes the HTML body.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="globalAttributes">The global attributes.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
         public static string ProcessHtmlBody( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
             Dictionary<string, object> mergeObjects )
         {
-            string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" );
             string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
-
-            // If there is unsubscribe html (would have been added by channel PreSend), inject it
-            if ( !string.IsNullOrWhiteSpace( htmlBody ) && !string.IsNullOrWhiteSpace( unsubscribeHtml ) )
+            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
             {
-                string newHtml = Regex.Replace( htmlBody, @"\{\{\s*UnsubscribeOption\s*\}\}", unsubscribeHtml );
-                if ( htmlBody != newHtml )
+                // Get the unsubscribe content and add a merge field for it
+                string unsubscribeHtml = communication.GetChannelDataValue( "UnsubscribeHTML" ).ResolveMergeFields( mergeObjects );
+                if (mergeObjects.ContainsKey( "UnsubscribeOption"))
                 {
-                    // If the content changed, then the merge field was found and newHtml has the unsubscribe contents
-                    htmlBody = newHtml;
+                    mergeObjects.Add( "UnsubscribeOption", unsubscribeHtml );
                 }
                 else
                 {
-                    // If it didn't change, the body did not contain merge field so add unsubscribe contents at end
+                    mergeObjects["UnsubscribeOption"] = unsubscribeHtml;
+                }
+                
+                // Resolve merge fields
+                htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
+
+                // Resolve special syntax needed if option was included in global attribute
+                if ( Regex.IsMatch( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]" ) )
+                {
+                    htmlBody = Regex.Replace( htmlBody, @"\[\[\s*UnsubscribeOption\s*\]\]", unsubscribeHtml );
+                }
+
+                // Add the unsubscribe option at end if it wasn't included in content
+                if ( !htmlBody.Contains( unsubscribeHtml ) )
+                {
                     htmlBody += unsubscribeHtml;
                 }
-            }
 
-            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-            {
+                // Resolve any relative paths
                 string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
                 htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );
                 htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-                htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
             }
 
             return htmlBody;
 
         }
 
+        /// <summary>
+        /// Processes the text body.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        /// <param name="globalAttributes">The global attributes.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
         public static string ProcessTextBody ( Rock.Model.Communication communication,
             Rock.Web.Cache.GlobalAttributesCache globalAttributes,
             Dictionary<string, object> mergeObjects )

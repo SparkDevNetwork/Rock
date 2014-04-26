@@ -3,6 +3,7 @@
 <script>
     $(function () {
         $(".photo a").fluidbox();
+        $('span.js-email-status').tooltip({ html: true, container: 'body', delay: { show: 100, hide: 100 } });
     });
 </script>
 

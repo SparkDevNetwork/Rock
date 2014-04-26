@@ -291,7 +291,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
         /// <returns></returns>
-        protected DropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
+        protected RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
         {
             var ddl = new RockDropDownList();
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )

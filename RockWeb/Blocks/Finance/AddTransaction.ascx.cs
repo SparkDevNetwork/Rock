@@ -466,7 +466,7 @@ achieve our mission.  We are so grateful for your commitment.
                             if ( phoneNumber != null )
                             {
                                 pnbPhone.CountryCode = phoneNumber.CountryCode;
-                                pnbPhone.Number = phoneNumber.NumberFormatted;
+                                pnbPhone.Number = phoneNumber.ToString();
                             }
                             else
                             {

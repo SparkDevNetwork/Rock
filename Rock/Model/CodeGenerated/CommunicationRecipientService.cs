@@ -93,6 +93,9 @@ namespace Rock.Model
             target.StatusNote = source.StatusNote;
             target.OpenedDateTime = source.OpenedDateTime;
             target.OpenedClient = source.OpenedClient;
+            target.TransportEntityTypeName = source.TransportEntityTypeName;
+            target.UniqueMessageId = source.UniqueMessageId;
+            target.ResponseCode = source.ResponseCode;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

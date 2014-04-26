@@ -246,7 +246,11 @@ namespace Rock.Model
             
             // ignoring MarketingCampaignCampus,ModifiedByPersonAliasId 
             
+            // ignoring Metric,AdminPersonAliasId 
+            
             // ignoring Metric,CreatedByPersonAliasId 
+            
+            // ignoring Metric,MetricChampionPersonAliasId 
             
             // ignoring Metric,ModifiedByPersonAliasId 
             

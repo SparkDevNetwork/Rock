@@ -92,6 +92,18 @@
         text-align: center;
         margin-top: @spacing-md-px;
         padding-bottom: 30px;
+
+        .email {
+            .email-status i {
+                color: @accent-semibold-color;
+            }
+            .email-status.do-not-email i {
+                color: @brand-danger;
+            }
+            .email-status.not-active i {
+                color: @brand-warning;
+            }
+        }
     }
 }
 

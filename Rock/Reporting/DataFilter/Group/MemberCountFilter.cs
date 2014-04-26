@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -31,9 +30,9 @@ namespace Rock.Reporting.DataFilter.Group
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Filter groups based on member count" )]
+    [Description( "Filter groups based on the number of members with status or leader criteria" )]
     [Export( typeof( DataFilterComponent ) )]
-    [ExportMetadata( "ComponentName", "Member Count" )]
+    [ExportMetadata( "ComponentName", "Member Count (Advanced)" )]
     public class MemberCountFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +59,20 @@ namespace Rock.Reporting.DataFilter.Group
             get { return "Additional Filters"; }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [simple member count mode].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [simple member count mode]; otherwise, <c>false</c>.
+        /// </value>
+        internal virtual bool SimpleMemberCountMode
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -74,7 +87,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// </value>
         public override string GetTitle( Type entityType )
         {
-            return "Member Count";
+            return "Member Count (Advanced)";
         }
 
         /// <summary>
@@ -90,8 +103,17 @@ namespace Rock.Reporting.DataFilter.Group
         {
             return @"
 function () {
-    var result = 'Number of Members ';
-    result += $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' );
+    var result = 'Number of';
+    result += ' ' + $('.js-member-status', $content).find(':selected').text();
+    result += ' ' + $('.js-member-is-leader', $content).find(':selected').text();
+    if (result.trim() == 'Number of')
+    {
+        result = 'Number of members';
+    }
+
+    result += ' ' + $('.js-filter-compare', $content).find(':selected').text();
+    var countText = $('.js-member-count', $content).filter(':visible').length ? $('.js-member-count', $content).filter(':visible').val() : '';
+    result += ' ' + countText;
     return result; 
 }
 
@@ -107,26 +129,36 @@ function () {
         public override string FormatSelection( Type entityType, string selection )
         {
             var values = selection.Split( '|' );
-            if ( values.Length == 1 )
+            string result = "Member Count";
+            if ( values.Length == 4 )
             {
-                return string.Format( "Number of Members is {0}", values[3] );
-            }
-            else if ( values.Length >= 2 )
-            {
-                ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
-                if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
+                ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                int? memberCountValue = values[1].AsInteger( false );
+                bool? isLeader = values[2].AsBooleanOrNull();
+                GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
+
+                result = "Number of";
+
+                if ( memberStatusValue.HasValue )
                 {
-                    return string.Format( "Number of Members {0}", comparisonType.ConvertToString() );
+                    result += " " + memberStatusValue.Value.ConvertToString();
                 }
-                else
+
+                if ( isLeader.HasValue )
                 {
-                    return string.Format( "Number of Members {0} '{1}'", comparisonType.ConvertToString(), values[1] );
+                    result += isLeader.Value ? " Leader" : " Not Leader";
                 }
+
+                if (result.Trim() == "Number of")
+                {
+                    result = "Number of members";
+                }
+
+                string countText = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? string.Empty : memberCountValue.ToString();
+                result += " " + comparisonType.ConvertToString() + " " + countText;
             }
-            else
-            {
-                return "Member Count";
-            }
+
+            return result;
         }
 
         /// <summary>
@@ -135,23 +167,45 @@ function () {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var controls = new List<Control>();
-
             var ddlIntegerCompare = ComparisonControl( NumericFilterComparisonTypes );
+            ddlIntegerCompare.Label = "Count";
             ddlIntegerCompare.ID = string.Format( "{0}_ddlIntegerCompare", filterControl.ID );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
-            controls.Add( ddlIntegerCompare );
 
             var nbMemberCount = new NumberBox();
-            nbMemberCount.ID = string.Format( "{0}_nbMemberCount", filterControl.ID, controls.Count() );
-            nbMemberCount.AddCssClass( "js-filter-control" );
-            filterControl.Controls.Add( nbMemberCount );
-            controls.Add( nbMemberCount );
-
+            nbMemberCount.Label = "&nbsp;";
+            nbMemberCount.ID = string.Format( "{0}_nbMemberCount", filterControl.ID );
+            nbMemberCount.AddCssClass( "js-filter-control js-member-count" );
             nbMemberCount.FieldName = "Member Count";
+            filterControl.Controls.Add( nbMemberCount );
 
-            return controls.ToArray();
+            RockDropDownList ddlLeader = new RockDropDownList();
+            ddlLeader.ID = string.Format( "{0}_ddlMemberType", filterControl.ID );
+            ddlLeader.AddCssClass( "js-filter-control js-member-is-leader" );
+            ddlLeader.Label = "Member Type";
+            ddlLeader.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            ddlLeader.Items.Add( new ListItem( "Leader", "true" ) );
+            ddlLeader.Items.Add( new ListItem( "Not Leader", "false" ) );
+            filterControl.Controls.Add( ddlLeader );
+            ddlLeader.Style[HtmlTextWriterStyle.Display] = this.SimpleMemberCountMode ? "none" : string.Empty;
+
+            RockDropDownList ddlMemberStatus = new RockDropDownList();
+            ddlMemberStatus.ID = string.Format( "{0}_ddlMemberStatus", filterControl.ID );
+            ddlMemberStatus.AddCssClass( "js-filter-control js-member-status" );
+            ddlMemberStatus.Label = "Member Status";
+            ddlMemberStatus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( GroupMemberStatus memberStatus in Enum.GetValues( typeof( GroupMemberStatus ) ) )
+            {
+                ddlMemberStatus.Items.Add( new ListItem( memberStatus.ConvertToString(), memberStatus.ConvertToInt().ToString() ) );
+            }
+
+            filterControl.Controls.Add( ddlMemberStatus );
+
+            ddlLeader.Visible = !this.SimpleMemberCountMode;
+            ddlMemberStatus.Visible = !this.SimpleMemberCountMode;
+
+            return new Control[] { ddlIntegerCompare, nbMemberCount, ddlLeader, ddlMemberStatus };
         }
 
         /// <summary>
@@ -163,6 +217,17 @@ function () {
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            DropDownList ddlCompare = controls[0] as DropDownList;
+            NumberBox nbValue = controls[1] as NumberBox;
+            DropDownList ddlLeader = controls[2] as DropDownList;
+            DropDownList ddlMemberStatus = controls[3] as DropDownList;
+
+            // Member Status
+            ddlMemberStatus.RenderControl( writer );
+
+            // Is Leader
+            ddlLeader.RenderControl( writer );
+
             // Comparison Row
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -170,13 +235,16 @@ function () {
             // Comparison Type
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[0].RenderControl( writer );
+            ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
+
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             // Comparison Value
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[1].RenderControl( writer );
+            nbValue.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -194,8 +262,17 @@ function () {
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
+            DropDownList ddlLeader = controls[2] as DropDownList;
+            DropDownList ddlMemberStatus = controls[3] as DropDownList;
 
-            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, nbValue.Text );
+            if ( this.SimpleMemberCountMode )
+            {
+                return string.Format( "{0}|{1}|{2}|{3}", ddlCompare.SelectedValue, nbValue.Text, null, null );
+            }
+            else
+            {
+                return string.Format( "{0}|{1}|{2}|{3}", ddlCompare.SelectedValue, nbValue.Text, ddlLeader.SelectedValue, ddlMemberStatus.SelectedValue );
+            }
         }
 
         /// <summary>
@@ -210,11 +287,16 @@ function () {
 
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
+            DropDownList ddlLeader = controls[2] as DropDownList;
+            DropDownList ddlMemberStatus = controls[3] as DropDownList;
 
-            if ( values.Length == 2 )
+            if ( values.Length >= 4 )
             {
-                ddlCompare.SelectedValue = values[0];
+                ComparisonType comparisonType = (ComparisonType)( values[0].AsInteger() ?? 0 );
+                ddlCompare.SelectedValue = comparisonType.ConvertToInt().ToString();
                 nbValue.Text = values[1];
+                ddlLeader.SelectedValue = values[2];
+                ddlMemberStatus.SelectedValue = values[3];
             }
         }
 
@@ -232,38 +314,19 @@ function () {
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? memberCountValue = values[1].AsInteger( false );
+            GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
+            bool? isLeader = values[2].AsBooleanOrNull();
 
             var memberCountQuery = new GroupService( (RockContext)serviceInstance.Context ).Queryable();
+            var memberCountEqualQuery = memberCountQuery.Where( p => p.Members.Count( a =>
+                            ( !memberStatusValue.HasValue || a.GroupMemberStatus == memberStatusValue )
+                            && ( !isLeader.HasValue || ( a.GroupRole.IsLeader == isLeader.Value ) ) )
+                            == memberCountValue );
 
-            switch ( comparisonType )
-            {
-                case ComparisonType.EqualTo:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() == memberCountValue );
-                    break;
-                case ComparisonType.GreaterThan:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() > memberCountValue );
-                    break;
-                case ComparisonType.GreaterThanOrEqualTo:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() >= memberCountValue );
-                    break;
-                case ComparisonType.IsBlank:
-                    memberCountQuery = memberCountQuery.Where( p => !p.Members.Any() );
-                    break;
-                case ComparisonType.IsNotBlank:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Any() );
-                    break;
-                case ComparisonType.LessThan:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() < memberCountValue );
-                    break;
-                case ComparisonType.LessThanOrEqualTo:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() <= memberCountValue );
-                    break;
-                case ComparisonType.NotEqualTo:
-                    memberCountQuery = memberCountQuery.Where( p => p.Members.Count() != memberCountValue );
-                    break;
-            }
+            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( memberCountEqualQuery, parameterExpression, "p" ) as BinaryExpression;
+            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, 0 );
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Group>( memberCountQuery, parameterExpression, "p" );
+            return result;
         }
 
         #endregion

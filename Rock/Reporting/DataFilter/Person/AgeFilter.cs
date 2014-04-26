@@ -38,7 +38,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Age" )]
     public class AgeFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -74,7 +73,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Age";
@@ -159,16 +158,22 @@ namespace Rock.Reporting.DataFilter.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            DropDownList ddlCompare = controls[0] as DropDownList;
+            NumberBox nbValue = controls[1] as NumberBox;
+            
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[0].RenderControl( writer );
+            ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
+
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            controls[1].RenderControl( writer );
+            nbValue.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -223,68 +228,22 @@ namespace Rock.Reporting.DataFilter.Person
             DateTime currentDate = RockDateTime.Today;
             int currentDayOfYear = currentDate.DayOfYear;
 
-
             var values = selection.Split( '|' );
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? ageValue = values[1].AsInteger( false );
 
             var personAgeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
-
-            switch ( comparisonType )
-            {
-                case ComparisonType.EqualTo:
-                    personAgeQuery = personAgeQuery.Where(
+            var personAgeEqualQuery = personAgeQuery.Where(
                         p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
                                 ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
                                 : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
                             == ageValue );
-                    break;
-                case ComparisonType.GreaterThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            > ageValue );
-                    break;
-                case ComparisonType.GreaterThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            >= ageValue );
-                    break;
-                case ComparisonType.IsBlank:
-                    personAgeQuery = personAgeQuery.Where( p => !p.BirthDate.HasValue );
-                    break;
-                case ComparisonType.IsNotBlank:
-                    personAgeQuery = personAgeQuery.Where( p => p.BirthDate.HasValue );
-                    break;
-                case ComparisonType.LessThan:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            < ageValue );
-                    break;
-                case ComparisonType.LessThanOrEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            <= ageValue );
-                    break;
-                case ComparisonType.NotEqualTo:
-                    personAgeQuery = personAgeQuery.Where(
-                        p => ( currentDayOfYear >= SqlFunctions.DatePart( "dayofyear", p.BirthDate )
-                                ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
-                                : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1 )
-                            != ageValue );
-                    break;
-            }
 
+            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeEqualQuery, parameterExpression, "p" ) as BinaryExpression;
+            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personAgeQuery, parameterExpression, "p" );
+            return result;
         }
 
         #endregion

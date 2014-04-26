@@ -47,17 +47,17 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "groupId" );
-                string groupMemberId = PageParameter( "groupMemberId" );
+                string groupId = PageParameter( "GroupId" );
+                string groupMemberId = PageParameter( "GroupMemberId" );
                 if ( !string.IsNullOrWhiteSpace( groupMemberId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( groupId ) )
                     {
-                        ShowDetail( "groupMemberId", int.Parse( groupMemberId ) );
+                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ) );
                     }
                     else
                     {
-                        ShowDetail( "groupMemberId", int.Parse( groupMemberId ), int.Parse( groupId ) );
+                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ), int.Parse( groupId ) );
                     }
                 }
                 else
@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupMemberId = PageParameter( pageReference, "groupMemberId" ).AsInteger();
+            int? groupMemberId = PageParameter( pageReference, "GroupMemberId" ).AsInteger();
             if ( groupMemberId != null )
             {
                 GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["groupId"] = hfGroupId.Value;
+            qryString["GroupId"] = hfGroupId.Value;
             NavigateToParentPage( qryString );
         }
 
@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Groups
             {
                 // Cancelling on Add.  
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["groupId"] = hfGroupId.Value;
+                qryString["GroupId"] = hfGroupId.Value;
                 NavigateToParentPage( qryString );
             }
             else
@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Groups
                 GroupMember groupMember = groupMemberService.Get( int.Parse( hfGroupMemberId.Value ) );
 
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["groupId"] = groupMember.GroupId.ToString();
+                qryString["GroupId"] = groupMember.GroupId.ToString();
                 NavigateToParentPage( qryString );
             }
         }
@@ -308,7 +308,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupId">The group id.</param>
         public void ShowDetail( string itemKey, int itemKeyValue, int? groupId )
         {
-            if ( !itemKey.Equals( "groupMemberId" ) )
+            if ( !itemKey.Equals( "GroupMemberId" ) )
             {
                 return;
             }
@@ -390,6 +390,7 @@ namespace RockWeb.Blocks.Groups
 
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
+            rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();

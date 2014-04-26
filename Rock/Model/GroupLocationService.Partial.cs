@@ -20,7 +20,7 @@ using System.Linq;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data access/service class for <see cref="Rock.Model.GroupLocation"/> entity objects. This class extends the <see cref="Rock.Data.Service"/> class.
+    /// Data access/service class for <see cref="Rock.Model.GroupLocation"/> objects.
     /// </summary>
     public partial class GroupLocationService
     {
