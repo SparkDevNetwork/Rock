@@ -92,7 +92,7 @@ namespace Rock.Reporting.DataTransform.Person
             Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
-            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                 .Where( p => p.Members.Where( a => a.GroupRole.Guid == adultGuid )
                     .Any( a => a.Group.Members
                     .Any( c => c.GroupRole.Guid == childGuid && idQuery.Contains( c.PersonId ) ) ) );

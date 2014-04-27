@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -38,29 +39,30 @@ namespace RockWeb.Blocks.Prayer
 
     [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
-    public partial class PrayerRequestList : Rock.Web.UI.RockBlock
+    public partial class PrayerRequestList : RockBlock
     {
         #region Fields
+
         /// <summary>
         /// The prayer request key parameter used in the QueryString for detail page.
         /// </summary>
         private static readonly string _PrayerRequestKeyParameter = "prayerRequestId";
-        /// <summary>
-        /// The block instance configured group category id.  This causes only requests for the appropriate root/group-level category to be seen.
-        /// </summary>
-        protected int _blockInstanceGroupCategoryId = -1;
+
         /// <summary>
         /// The PrayerRequest entity type id.  This causes only categories that are appropriate to the PrayerRequest entity to be listed.
         /// </summary>
-        protected int? _prayerRequestEntityTypeId = null;
+        private int? _prayerRequestEntityTypeId = null;
+
         /// <summary>
         /// Holds whether or not the person can add, edit, and delete.
         /// </summary>
-        bool _canAddEditDelete = false;
+        private bool _canAddEditDelete = false;
+
         /// <summary>
         /// Holds whether or not the person can approve requests.
         /// </summary>
-        bool _canApprove = false;
+        private bool _canApprove = false;
+
         #endregion
 
         #region Filter's User Preference Setting Keys
@@ -178,12 +180,9 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Set the category picker's selected value
-            int selectedPrayerCategoryId = -1;
-            if ( int.TryParse( gfFilter.GetUserPreference( FilterSetting.PrayerCategory ), out selectedPrayerCategoryId ) )
-            {
-                Category prayerCategory = new CategoryService().Get( selectedPrayerCategoryId );
-                catpPrayerCategoryFilter.SetValue( prayerCategory );
-            }
+            int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger() ?? 0;
+            Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
+            catpPrayerCategoryFilter.SetValue( prayerCategory );
         }
 
         /// <summary>
@@ -193,14 +192,14 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  catpPrayerCategoryFilter.SelectedValue  );
+            gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
             gfFilter.SaveUserPreference( FilterSetting.FromDate, drpDateRange.LowerValue.HasValue ? drpDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
             gfFilter.SaveUserPreference( FilterSetting.ToDate, drpDateRange.UpperValue.HasValue ? drpDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
 
             // only save settings that are not the default "all" preference...
             if ( ddlApprovedFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.ApprovalStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.ApprovalStatus, string.Empty );
             }
             else
             {
@@ -209,7 +208,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ddlUrgentFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.UrgentStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.UrgentStatus, string.Empty );
             }
             else
             {
@@ -218,7 +217,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ddlPublicFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.PublicStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.PublicStatus, string.Empty );
             }
             else
             {
@@ -227,7 +226,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ddlActiveFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.ActiveStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.ActiveStatus, string.Empty );
             }
             else
             {
@@ -236,7 +235,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( ddlAllowCommentsFilter.SelectedValue == "all" )
             {
-                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, "" );
+                gfFilter.SaveUserPreference( FilterSetting.CommentingStatus, string.Empty );
             }
             else
             {
@@ -257,29 +256,27 @@ namespace RockWeb.Blocks.Prayer
             {
                 case "Prayer Category":
 
-                    int categoryId = All.Id;
-                    if ( int.TryParse( e.Value, out categoryId ) )
+                    int categoryId = e.Value.AsInteger( false ) ?? All.Id;
+                    if ( categoryId == All.Id )
                     {
-                        if ( categoryId == All.Id )
+                        e.Value = "All";
+                    }
+                    else
+                    {
+                        var service = new CategoryService( new RockContext() );
+                        var category = service.Get( categoryId );
+                        if ( category != null )
                         {
-                            e.Value = "All";
-                        }
-                        else
-                        {
-                            var service = new CategoryService();
-                            var category = service.Get( categoryId );
-                            if ( category != null )
-                            {
-                                e.Value = category.Name;
-                            }
+                            e.Value = category.Name;
                         }
                     }
+
                     break;
             }
         }
 
         #endregion
-        
+
         #region Prayer Request Grid
 
         /// <summary>
@@ -287,7 +284,7 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindGrid()
         {
-            PrayerRequestService prayerRequestService = new PrayerRequestService();
+            PrayerRequestService prayerRequestService = new PrayerRequestService( new RockContext() );
             SortProperty sortProperty = gPrayerRequests.SortProperty;
 
             var prayerRequests = prayerRequestService.Queryable().Select( a =>
@@ -310,12 +307,11 @@ namespace RockWeb.Blocks.Prayer
                 } );
 
             // Filter by prayer category if one is selected...
-            int selectedPrayerCategoryID = All.Id;
-            int.TryParse( catpPrayerCategoryFilter.SelectedValue, out selectedPrayerCategoryID );
+            int selectedPrayerCategoryID = catpPrayerCategoryFilter.SelectedValue.AsInteger(false) ?? All.Id;
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
-                    || c.CategoryParentCategoryId == selectedPrayerCategoryID);
+                    || c.CategoryParentCategoryId == selectedPrayerCategoryID );
             }
 
             // Filter by approved/unapproved
@@ -438,7 +434,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", _PrayerRequestKeyParameter, e.RowKeyId );
         }
 
         /// <summary>
@@ -452,12 +448,14 @@ namespace RockWeb.Blocks.Prayer
 
             if ( e.RowKeyValue != null )
             {
-                PrayerRequestService prayerRequestService = new PrayerRequestService();
-                PrayerRequest prayerRequest = prayerRequestService.Get( (int)e.RowKeyValue );
+                var rockContext = new RockContext();
+                PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+                PrayerRequest prayerRequest = prayerRequestService.Get( e.RowKeyId );
 
                 if ( prayerRequest != null )
                 {
                     failure = false;
+
                     // if it was approved, set it to unapproved... otherwise
                     if ( prayerRequest.IsApproved ?? false )
                     {
@@ -468,6 +466,7 @@ namespace RockWeb.Blocks.Prayer
                         prayerRequest.IsApproved = true;
                         prayerRequest.ApprovedByPersonId = CurrentPerson.Id;
                         prayerRequest.ApprovedOnDateTime = RockDateTime.Now;
+
                         // reset the flag count only to zero ONLY if it had a value previously.
                         if ( prayerRequest.FlagCount.HasValue && prayerRequest.FlagCount > 0 )
                         {
@@ -475,7 +474,7 @@ namespace RockWeb.Blocks.Prayer
                         }
                     }
 
-                    prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
+                    rockContext.SaveChanges();
                 }
 
                 BindGrid();
@@ -485,7 +484,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 maGridWarning.Show( "Unable to approve that prayer request", ModalAlertType.Warning );
             }
-
         }
 
         /// <summary>
@@ -495,40 +493,43 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
+            PrayerRequest prayerRequest = prayerRequestService.Get( e.RowKeyId );
+
+            if ( prayerRequest != null )
             {
-                PrayerRequestService prayerRequestService = new PrayerRequestService();
-                PrayerRequest prayerRequest = prayerRequestService.Get( (int)e.RowKeyValue );
+                DeleteAllRelatedNotes( prayerRequest );
 
-                if ( prayerRequest != null )
+                string errorMessage;
+                if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
                 {
-                    DeleteAllRelatedNotes( prayerRequest );
-
-                    string errorMessage;
-                    if ( !prayerRequestService.CanDelete( prayerRequest, out errorMessage ) )
-                    {
-                        maGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    prayerRequestService.Delete( prayerRequest, CurrentPersonAlias );
-                    prayerRequestService.Save( prayerRequest, CurrentPersonAlias );
+                    maGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                prayerRequestService.Delete( prayerRequest );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
 
+        /// <summary>
+        /// Deletes all related notes.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
         private void DeleteAllRelatedNotes( PrayerRequest prayerRequest )
         {
-            var noteTypeService = new NoteTypeService();
-            var noteType = noteTypeService.Get( (int)_prayerRequestEntityTypeId, "Prayer Comment" );
-            var noteService = new NoteService();
+            var rockContext = new RockContext();
+            var noteTypeService = new NoteTypeService( rockContext );
+            var noteType = noteTypeService.Get( _prayerRequestEntityTypeId.Value, "Prayer Comment" );
+            var noteService = new NoteService( rockContext );
             var prayerComments = noteService.Get( noteType.Id, prayerRequest.Id );
             foreach ( Note prayerComment in prayerComments )
             {
-                noteService.Delete( prayerComment, CurrentPersonAlias );
-                noteService.Save( prayerComment, CurrentPersonAlias );
+                noteService.Delete( prayerComment );
+                rockContext.SaveChanges();
             }
         }
 
@@ -541,7 +542,7 @@ namespace RockWeb.Blocks.Prayer
         {
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles disabling the Toggle fields if the user does not have Approval rights.
         /// </summary>
@@ -550,7 +551,9 @@ namespace RockWeb.Blocks.Prayer
         protected void gPrayerRequests_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( _canApprove )
+            {
                 return;
+            }
 
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {

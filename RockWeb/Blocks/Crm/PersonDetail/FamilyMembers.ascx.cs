@@ -28,6 +28,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -79,10 +80,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         hlEditFamily.NavigateUrl = string.Format( "~/EditFamily/{0}/{1}", Person.Id, group.Id );
                     }
 
+                    var rockContext = new RockContext();
+
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
-                        var members = new GroupMemberService().Queryable("GroupRole,Person")
+                        var members = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person" )
                             .Where( m => 
                                 m.GroupId == group.Id &&
                                 m.PersonId != Person.Id )
@@ -117,7 +120,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         rptrAddresses.ItemDataBound += rptrAddresses_ItemDataBound;
                         rptrAddresses.ItemCommand += rptrAddresses_ItemCommand;
-                        rptrAddresses.DataSource = new GroupLocationService().Queryable("Location,GroupLocationTypeValue")
+                        rptrAddresses.DataSource = new GroupLocationService( rockContext ).Queryable( "Location,GroupLocationTypeValue" )
                             .Where( l => l.GroupId == group.Id)
                             .OrderBy( l => l.GroupLocationTypeValue.Order)
                             .ToList();
@@ -206,17 +209,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int locationId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out locationId ) )
             {
-                var service = new LocationService();
+                var rockContext = new RockContext();
+                var service = new LocationService( rockContext );
                 var location = service.Get( locationId );
 
                 switch ( e.CommandName )
                 {
                     case "verify":
-                        service.Verify( location, CurrentPersonAlias, true );
+                        service.Verify( location, true );
                         break;
                 }
 
-                service.Save( location, CurrentPersonAlias );
+                rockContext.SaveChanges();
             }
 
             BindFamilies();
@@ -232,7 +236,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Guid familyGroupGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
-                var memberService = new GroupMemberService();
+                var rockContext = new RockContext();
+
+                var memberService = new GroupMemberService( rockContext );
                 var families = memberService.Queryable()
                     .Where( m =>
                         m.PersonId == Person.Id &&
@@ -255,9 +261,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         family.GroupTypeId = familyGroupType.Id;
                         family.Members.Add( groupMember );
 
-                        var groupService = new GroupService();
-                        groupService.Add( family, CurrentPersonAlias );
-                        groupService.Save( family, CurrentPersonAlias );
+                        var groupService = new GroupService( rockContext );
+                        groupService.Add( family );
+                        rockContext.SaveChanges();
 
                         families.Add( groupService.Get( family.Id ) );
                     }

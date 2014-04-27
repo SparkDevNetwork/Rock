@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -97,13 +97,13 @@ namespace Rock.CheckIn
             }
             else
             {
-                var file = new BinaryFileService().Get(id);
+                var file = new BinaryFileService( new RockContext() ).Get( id );
                 if ( file != null )
                 {
                     label = new KioskLabel();
 
                     label.Guid = file.Guid;
-                    label.Url = string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                     label.MergeFields = new Dictionary<string, string>();
                     label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
 

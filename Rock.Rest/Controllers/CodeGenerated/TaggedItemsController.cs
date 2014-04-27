@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class TaggedItemsController : Rock.Rest.ApiController<Rock.Model.TaggedItem>
     {
-        public TaggedItemsController() : base( new Rock.Model.TaggedItemService() ) { } 
+        public TaggedItemsController() : base( new Rock.Model.TaggedItemService( new Rock.Data.RockContext() ) ) { } 
     }
 }

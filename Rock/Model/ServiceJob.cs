@@ -32,6 +32,9 @@ namespace Rock.Model
     [DataContract]
     public partial class ServiceJob : Model<ServiceJob>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this Job is part of the Rock core system/framework
         /// </summary>
@@ -191,6 +194,10 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public JobNotificationStatus NotificationStatus { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this Job.
         /// </summary>
@@ -201,8 +208,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
-        
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Job Configuration class.
@@ -216,6 +227,10 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
+    #region Enumerations
 
     /// <summary>
     /// An enum that represents when a Job notification status should be sent.
@@ -243,4 +258,7 @@ namespace Rock.Model
         /// </summary>
         None = 4
     }
+
+    #endregion
+
 }

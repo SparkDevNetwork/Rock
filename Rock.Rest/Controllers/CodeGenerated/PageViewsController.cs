@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PageViewsController : Rock.Rest.ApiController<Rock.Model.PageView>
     {
-        public PageViewsController() : base( new Rock.Model.PageViewService() ) { } 
+        public PageViewsController() : base( new Rock.Model.PageViewService( new Rock.Data.RockContext() ) ) { } 
     }
 }

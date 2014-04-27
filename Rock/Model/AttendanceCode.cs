@@ -65,7 +65,6 @@ namespace Rock.Model
         /// <value>
         /// The set of <see cref="Rock.Model.Attendance"/> entities that are associated with this AttendanceCode.
         /// </value>
-        [DataMember]
         public virtual ICollection<Attendance> Attendances
         {
             get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }

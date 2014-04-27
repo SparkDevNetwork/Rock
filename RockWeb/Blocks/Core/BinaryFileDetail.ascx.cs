@@ -37,6 +37,29 @@ namespace RockWeb.Blocks.Core
     [WorkflowTypeField( "Workflow", "An optional workflow to activate for any new file uploaded", false, "", "Advanced" )]
     public partial class BinaryFileDetail : RockBlock, IDetailBlock
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the orphaned binary file identifier list.
+        /// </summary>
+        /// <value>
+        /// The orphaned binary file identifier list.
+        /// </value>
+        public List<int> OrphanedBinaryFileIdList
+        {
+            get
+            {
+                return ViewState["OrphanedBinaryFileIdList"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["OrphanedBinaryFileIdList"] = value;
+            }
+        }
+
+        #endregion
+
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -118,7 +141,8 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var binaryFileService = new BinaryFileService();
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -137,7 +161,7 @@ namespace RockWeb.Blocks.Core
                 string friendlyName = BinaryFile.FriendlyTypeName;
                 if ( binaryFileTypeId.HasValue )
                 {
-                    var binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId.Value );
+                    var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId.Value );
                     if ( binaryFileType != null )
                     {
                         friendlyName = binaryFileType.Name;
@@ -146,6 +170,8 @@ namespace RockWeb.Blocks.Core
 
                 lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
             }
+
+            binaryFile.LoadAttributes( rockContext );
 
             // initialize the fileUploader BinaryFileId to whatever file we are editing/viewing
             fsFile.BinaryFileId = binaryFile.Id;
@@ -164,7 +190,7 @@ namespace RockWeb.Blocks.Core
             
             if ( binaryFile.BinaryFileTypeId.HasValue )
             {
-                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId ?? 0).Guid;
+                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId ?? 0 ).Guid;
             }
 
             tbName.Text = binaryFile.FileName;
@@ -183,7 +209,6 @@ namespace RockWeb.Blocks.Core
             }
 
             phAttributes.Controls.Clear();
-            binaryFile.LoadAttributes();
 
             if ( readOnly )
             {
@@ -215,6 +240,23 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
+            if ( OrphanedBinaryFileIdList.Count > 0 )
+            {
+                var rockContext = new RockContext();
+                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+
+                foreach ( var id in OrphanedBinaryFileIdList )
+                {
+                    var tempBinaryFile = binaryFileService.Get( id );
+                    if ( tempBinaryFile != null && tempBinaryFile.IsTemporary )
+                    {
+                        binaryFileService.Delete( tempBinaryFile );
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+            
             NavigateToParentPage();
         }
 
@@ -226,15 +268,16 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             BinaryFile binaryFile;
-            BinaryFileService binaryFileService = new BinaryFileService();
-            AttributeService attributeService = new AttributeService();
+            var rockContext = new RockContext();
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            AttributeService attributeService = new AttributeService( rockContext );
 
             int binaryFileId = int.Parse( hfBinaryFileId.Value );
 
             if ( binaryFileId == 0 )
             {
                 binaryFile = new BinaryFile();
-                binaryFileService.Add( binaryFile, CurrentPersonAlias );
+                binaryFileService.Add( binaryFile );
             }
             else
             {
@@ -262,7 +305,7 @@ namespace RockWeb.Blocks.Core
             binaryFile.MimeType = tbMimeType.Text;
             binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
 
-            binaryFile.LoadAttributes();
+            binaryFile.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
             if ( !Page.IsValid )
@@ -278,8 +321,17 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                binaryFile.SaveAttributeValues( CurrentPersonAlias );
+                foreach ( var id in OrphanedBinaryFileIdList )
+                {
+                    var tempBinaryFile = binaryFileService.Get( id );
+                    if ( tempBinaryFile != null && tempBinaryFile.IsTemporary )
+                    {
+                        binaryFileService.Delete( tempBinaryFile );
+                    }
+                }
+
+                rockContext.SaveChanges();
+                binaryFile.SaveAttributeValues( rockContext );
             } );
 
             NavigateToParentPage();
@@ -296,39 +348,50 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void fsFile_FileUploaded( object sender, EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var binaryFileService = new BinaryFileService( rockContext );
+            BinaryFile binaryFile = null;
+            if ( fsFile.BinaryFileId.HasValue )
             {
-                var binaryFileService = new BinaryFileService();
-                BinaryFile binaryFile = null;
-                if ( fsFile.BinaryFileId.HasValue )
+                binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
+            }
+
+            if ( binaryFile != null )
+            {
+                if ( !string.IsNullOrWhiteSpace( tbName.Text ) )
                 {
-                    binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
+                    binaryFile.FileName = tbName.Text;
                 }
 
-                if ( binaryFile != null )
+                // set binaryFile.Id to original id since the UploadedFile is a temporary binaryFile with a different id
+                binaryFile.Id = hfBinaryFileId.ValueAsInt();
+                binaryFile.Description = tbDescription.Text;
+                binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
+                if ( binaryFile.BinaryFileTypeId.HasValue )
                 {
-                    if ( !string.IsNullOrWhiteSpace( tbName.Text ) )
-                    {
-                        binaryFile.FileName = tbName.Text;
-                    }
+                    binaryFile.BinaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFile.BinaryFileTypeId.Value );
+                }
 
-                    // set binaryFile.Id to original id since the UploadedFile is a temporary binaryFile with a different id
-                    binaryFile.Id = hfBinaryFileId.ValueAsInt();
-                    binaryFile.Description = tbDescription.Text;
-                    binaryFile.BinaryFileTypeId = ddlBinaryFileType.SelectedValueAsInt();
-                    if ( binaryFile.BinaryFileTypeId.HasValue )
-                    {
-                        binaryFile.BinaryFileType = new BinaryFileTypeService().Get( binaryFile.BinaryFileTypeId.Value );
-                    }
+                var tempList = OrphanedBinaryFileIdList;
+                tempList.Add( fsFile.BinaryFileId.Value );
+                OrphanedBinaryFileIdList = tempList;
 
-                    binaryFile.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
+                // load attributes, then get the attribute values from the UI
+                binaryFile.LoadAttributes();
+                Rock.Attribute.Helper.GetEditValues( phAttributes, binaryFile );
 
-                    // Process uploaded file using an optional workflow
-                    Guid workflowTypeGuid = Guid.NewGuid();
-                    if ( Guid.TryParse( GetAttributeValue( "Workflow" ), out workflowTypeGuid ) )
+                // Process uploaded file using an optional workflow (which will probably populate attribute values)
+                Guid workflowTypeGuid = Guid.NewGuid();
+                if ( Guid.TryParse( GetAttributeValue( "Workflow" ), out workflowTypeGuid ) )
+                {
+                    try
                     {
-                        var workflowTypeService = new WorkflowTypeService();
+                        // temporarily set the binaryFile.Id to the uploaded binaryFile.Id so that workflow can do stuff with it
+                        binaryFile.Id = fsFile.BinaryFileId ?? 0;
+
+                        // create a rockContext for the workflow so that it can save it's changes, without 
+                        var workflowRockContext = new RockContext();
+                        var workflowTypeService = new WorkflowTypeService( workflowRockContext );
                         var workflowType = workflowTypeService.Get( workflowTypeGuid );
                         if ( workflowType != null )
                         {
@@ -341,16 +404,21 @@ namespace RockWeb.Blocks.Core
 
                                 if ( workflowType.IsPersisted )
                                 {
-                                    var workflowService = new Rock.Model.WorkflowService();
-                                    workflowService.Add( workflow, CurrentPersonAlias );
-                                    workflowService.Save( workflow, CurrentPersonAlias );
+                                    var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
+                                    workflowService.Add( workflow );
+                                    workflowRockContext.SaveChanges();
                                 }
                             }
                         }
                     }
-                    
-                    ShowBinaryFileDetail( binaryFile );
+                    finally
+                    {
+                        // set binaryFile.Id to original id again since the UploadedFile is a temporary binaryFile with a different id
+                        binaryFile.Id = hfBinaryFileId.ValueAsInt();
+                    }
                 }
+
+                ShowBinaryFileDetail( binaryFile );
             }
         }
 

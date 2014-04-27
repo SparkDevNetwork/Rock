@@ -66,7 +66,8 @@ namespace RockWeb.Blocks.Core
             {
                 string noteTypeName = GetAttributeValue( "NoteType" );
 
-                var service = new NoteTypeService();
+                var rockContext = new RockContext();
+                var service = new NoteTypeService( rockContext );
                 var noteType = service.Get( contextEntity.TypeId, noteTypeName );
 
                 // If a note type with the specified name does not exist for the context entity type, create one
@@ -78,8 +79,8 @@ namespace RockWeb.Blocks.Core
                     noteType.EntityTypeQualifierColumn = string.Empty;
                     noteType.EntityTypeQualifierValue = string.Empty;
                     noteType.Name = noteTypeName;
-                    service.Add( noteType, CurrentPersonAlias );
-                    service.Save( noteType, CurrentPersonAlias );
+                    service.Add( noteType );
+                    rockContext.SaveChanges();
                 }
 
                 notesTimeline.NoteTypeId = noteType.Id;

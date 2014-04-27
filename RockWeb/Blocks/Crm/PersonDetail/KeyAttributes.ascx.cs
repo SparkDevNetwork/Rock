@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Security;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -189,6 +190,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Page.IsValid )
             {
+                var rockContext = new RockContext();
                 foreach ( int attributeId in AttributeList )
                 {
                     var attribute = AttributeCache.Read( attributeId );
@@ -199,7 +201,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         if ( attributeControl != null )
                         {
                             string value = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, CurrentPersonAlias );
+                            Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, value, rockContext );
                         }
                     }
                 }
@@ -235,7 +237,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int attributeEntityTypeId = EntityTypeCache.Read("Rock.Model.Attribute").Id;
             string personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id.ToString();
 
-            foreach ( var category in new CategoryService().Queryable()
+            foreach ( var category in new CategoryService( new RockContext() ).Queryable()
                 .Where( c =>
                     c.EntityTypeId == attributeEntityTypeId &&
                     c.EntityTypeQualifierColumn == "EntityTypeId" &&
@@ -337,7 +339,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
 
-            foreach(var attribute in new AttributeService().Queryable()
+            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a => 
                     a.EntityTypeId == personEntityTypeId &&
                     a.Categories.Select( c=> c.Id).Contains(categoryId))

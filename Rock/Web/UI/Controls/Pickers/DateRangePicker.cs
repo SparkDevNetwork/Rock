@@ -234,7 +234,7 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer, this.CssClass );
             }
         }
 
@@ -349,11 +349,18 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         /// <value>
         /// The delimited values.
         /// </value>
-        public string DelimitedValues
+        public string DelimitedValues 
         {
             get
             {
-                return string.Format( "{0:d},{1:d}", this.LowerValue, this.UpperValue );
+                if ( this.LowerValue == null && this.UpperValue == null )
+                {
+                    return string.Empty;
+                }
+                else
+                {
+                    return string.Format( "{0:d},{1:d}", this.LowerValue, this.UpperValue );
+                }
             }
             set
             {

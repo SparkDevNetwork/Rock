@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Model;
@@ -109,14 +110,16 @@ namespace Rock.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public object ToLiquid()
         {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Location", Location );
-            dictionary.Add( "CurrentCount", CurrentCount );
-            dictionary.Add( "PreSelected", PreSelected );
-            dictionary.Add( "Selected", Selected );
-            dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "Schedules", Schedules );
-            return dictionary;
+            var dictionary = Location.ToLiquid() as Dictionary<string, object>;
+            if ( dictionary != null )
+            {
+                dictionary.Add( "LastCheckIn", LastCheckIn );
+                dictionary.Add( "CurrentCount", CurrentCount );
+                dictionary.Update( "Schedules", Schedules.Where( s => s.Selected ).ToList() );
+                return dictionary;
+            }
+
+            return new Dictionary<string, object>();
         }
     }
 }

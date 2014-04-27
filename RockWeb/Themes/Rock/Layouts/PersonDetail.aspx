@@ -26,13 +26,13 @@
             <div class="container">
                 <div class="row">
                     <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badg Bar Left" runat="server" />
+                        <Rock:Zone Name="Badge Bar Left" runat="server" />
                     </div>
                     <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badg Bar Middle" runat="server" />
+                        <Rock:Zone Name="Badge Bar Middle" runat="server" />
                     </div>
                     <div class="badge-group col-sm-4">
-                        <Rock:Zone Name="Badg Bar Right" runat="server" />
+                        <Rock:Zone Name="Badge Bar Right" runat="server" />
                     </div>
                 </div>
             </div>

@@ -20,9 +20,9 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -100,7 +100,7 @@ namespace Rock.Field.Types
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
 
-            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
+            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )
             {
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
@@ -194,7 +194,7 @@ namespace Rock.Field.Types
                 int definedTypeId = 0;
                 if ( Int32.TryParse( configurationValues[DEFINED_TYPE_KEY].Value, out definedTypeId ) )
                 {
-                    Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService();
+                    Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService( new RockContext() );
                     var definedValues = definedValueService.GetByDefinedTypeId( definedTypeId );
                     if ( definedValues.Any() )
                     {

@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
@@ -93,6 +93,15 @@ namespace Rock.Model
         [DataMember]
         public bool AllowCaching { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires security].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires security]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresSecurity { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -121,7 +130,7 @@ namespace Rock.Model
         {
             get
             {
-                var fileService = new BinaryFileService();
+                var fileService = new BinaryFileService( new RockContext() );
                 var qry = fileService.Queryable()
                     .Where( f => f.BinaryFileTypeId.HasValue && f.BinaryFileTypeId == this.Id );
                 return qry;

@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Core
             {
                 if ( !Page.IsPostBack )
                 {
-                    new EntityTypeService().RegisterEntityTypes( Request.MapPath( "~" ) );
+                    EntityTypeService.RegisterEntityTypes( Request.MapPath( "~" ) );
                     BindGrid();
                 }
                 else
@@ -166,7 +166,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdEdit_SaveClick( object sender, EventArgs e )
         {
-            EntityTypeService entityTypeService = new EntityTypeService();
+            var rockContext = new RockContext();
+            EntityTypeService entityTypeService = new EntityTypeService( rockContext );
             EntityType entityType = entityTypeService.Get( int.Parse( hfEntityTypeId.Value ) );
 
             if (entityType == null)
@@ -174,14 +175,14 @@ namespace RockWeb.Blocks.Core
                 entityType = new EntityType();
                 entityType.IsEntity = true;
                 entityType.IsSecured = true;
-                entityTypeService.Add( entityType, CurrentPersonAlias );
+                entityTypeService.Add( entityType );
             }
 
             entityType.Name = tbName.Text;
             entityType.FriendlyName = tbFriendlyName.Text;
             entityType.IsCommon = cbCommon.Checked;
 
-            entityTypeService.Save( entityType, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             hfEntityTypeId.Value = string.Empty;
 
@@ -199,7 +200,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            EntityTypeService entityTypeService = new EntityTypeService();
+            EntityTypeService entityTypeService = new EntityTypeService( new RockContext() );
             SortProperty sortProperty = gEntityTypes.SortProperty;
 
             if ( sortProperty != null )
@@ -226,7 +227,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="entityTypeId">The entity type id.</param>
         protected void ShowEdit( int entityTypeId )
         {
-            EntityTypeService entityTypeService = new EntityTypeService();
+            EntityTypeService entityTypeService = new EntityTypeService( new RockContext() );
             EntityType entityType = entityTypeService.Get( entityTypeId );
 
             if ( entityType != null )

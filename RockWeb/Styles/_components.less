@@ -26,6 +26,7 @@
     23. TypeAhead - styles for type ahead support
     24. Image Cropper - styles for image crop component
     25. Active Users - styles for the active users block
+    26. Navigation for Paging - styles for creating a pager
 */
 
 // 1. Pickers
@@ -33,7 +34,7 @@
 
 .picker {
     position: relative;
-    width: 225px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
     .clearfix();
 
     .picker-mode-options {
@@ -48,7 +49,7 @@
         border: 1px solid @input-group-addon-border-color;
         border-radius: @border-radius-base;
         display: inline-block;
-        min-width: 200px;
+        width: 225px;
         float: left;
 
         i {
@@ -113,6 +114,7 @@
         border-radius: 0 0 @border-radius-base @border-radius-base;
         margin: 10px -10px -10px -10px;
     }
+
     // details used for pickers like person picker to show the details of the selected item
     .picker-select-item-details {
         margin-left: 20px;
@@ -152,6 +154,12 @@
 
         .picker-select-item-details img {
             width: 65px;
+        }
+    }
+
+    &.picker-novalue { // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
+        .picker-label {
+            width: 100%;
         }
     }
 }
@@ -268,7 +276,7 @@ ul.rocktree ul {
     }
 
     .rocktree-leaf {
-        padding-left: @spacing-md-px;
+        padding-left: 18px;
     }
 }
 
@@ -336,6 +344,7 @@ ul.rocktree ul {
 // -------------------------
 
 .rollover-container {
+    position: relative;
 
     & > .rollover-item {
         opacity: 0;
@@ -370,15 +379,14 @@ ul.rocktree ul {
     }
     
     ul {
-        list-style: none;
-
+        
         li {
             background-color: @pagelist-bg;
             border-radius: @border-radius-base;
             border: 1px solid #bbb;
             float: left;
-            margin: 0 2% @spacing-md-px 2%;
-            width: 20%;
+            margin: 0 1.25% @spacing-md-px;
+            width: 47.5%;
             overflow: hidden;
             color: @pagelist-text-color;
             text-align: center;
@@ -393,12 +401,22 @@ ul.rocktree ul {
     }
 }
 
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .page-list-as-blocks {
+        ul {
+            li {
+                margin: 0 2.5% @spacing-md-px;
+                width: 20%;
+            }
+        }
+    }
+}
+
 // 7. Pagelist Nav
 // -------------------------
 
-.nav-pills.nav-pagelist {
-    margin: @spacing-lg-px 0 @spacing-md-px;
-    padding: @spacing-sm-px @spacing-md-px;
+.nav.nav-pagelist {
+    margin: 10px 0;
     background-color: @accent-light-color;
     border: 1px solid darken(@accent-light-color, 10%);
     border-radius: @border-radius-base;
@@ -413,7 +431,56 @@ ul.rocktree ul {
             color: @accent-bold-color;
         }
     }
+
+    .navbar-toggle {
+        width: 100%;
+        margin: 0;
+
+        &:focus {outline:0;}
+
+        i {
+            float: right;
+            color: @accent-bold-color;
+            margin-top: 8px;
+        }
+
+        .collapse-current-item {
+            background-color: @accent-bold-color;
+            color: @accent-bold-text-color;
+            padding: 10px 15px;
+            border-radius: @border-radius-base;
+            float: left;
+        }
+    }
+
+    .navbar-collapse {
+        padding: 0;
+
+        &.in {
+            overflow-y: inherit;
+        }
+    }
+
+    .nav.nav-pills {
+        margin: 10px 0;
+        padding: 0 15px;
+
+        li {
+            float: none;
+        }
+    }
 }
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .nav.nav-pagelist {
+        .nav.nav-pills {
+            li {
+                float: left;
+            }
+        }
+    }
+}
+
 
 // 8. Tags
 // ------------------------
@@ -440,6 +507,20 @@ div.tagsinput
         text-decoration: none;
         border-bottom-right-radius: @tag-border-radius;
         border-top-right-radius: @tag-border-radius;
+
+        span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            display: block;
+            float: left;
+        }
+
+        a {
+            float: left;
+            display: block;
+        }
 
         small {
             font-size: 11px;
@@ -798,7 +879,8 @@ div.tagsinput
 	    color: @smartsearch-input-text-color;
 	    border-radius: 0;
 	    width: 150px;
-        margin: 2px 0 0 6px;
+        margin: 0 0 0 6px;
+        font-size: 14px;
 
         &:focus {
             box-shadow: 0 0 0 0;
@@ -1353,7 +1435,7 @@ ul.groupmembers {
         float: left;
         margin-right: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        min-width: 150px;
+        min-width: 130px;
 
         .person-image {
             border: 3px solid @accent-bold-color;
@@ -1575,5 +1657,18 @@ ul.rocklist {
 .not-recent {
     i {
         color: @brand-warning;
+    }
+}
+
+// 26. Navigation for Paging
+// -------------------------
+
+.nav-paging {
+    .btn-prev {
+        float: left;
+    }
+
+    .btn-next {
+        float: right;
     }
 }

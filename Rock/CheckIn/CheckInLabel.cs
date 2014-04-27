@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// The label details
     /// </summary>
     [DataContract]
-    public class CheckInLabel : DotLiquid.ILiquidizable
+    public class CheckInLabel 
     {
         /// <summary>
         /// Gets or sets the printer device id.
@@ -125,22 +125,5 @@ namespace Rock.CheckIn
             }
         }
 
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public object ToLiquid()
-        {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "PrinterDeviceId", PrinterDeviceId );
-            dictionary.Add( "PrinterAddress", PrinterAddress );
-            dictionary.Add( "PrintFrom", PrintFrom.ConvertToString() );
-            dictionary.Add( "PrintTo", PrintTo.ConvertToString() );
-            dictionary.Add( "LabelFile", LabelFile );
-            dictionary.Add( "LabelKey", LabelKey );
-            dictionary.Add( "MergeFields", MergeFields );
-            return dictionary;
-        }
     }
 }

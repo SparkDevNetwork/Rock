@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
             }
 
-            var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
@@ -293,17 +293,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var familyMembers = GetControlData();
                     if ( familyMembers.Any() )
                     {
+                        var rockContext = new RockContext();
                         RockTransactionScope.WrapTransaction( () =>
                         {
-                            using ( new UnitOfWorkScope() )
+                            var familyGroup = GroupService.SaveNewFamily( rockContext, familyMembers, cpCampus.SelectedValueAsInt(), true );
+                            if ( familyGroup != null )
                             {
-                                var groupService = new GroupService();
-                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), true, CurrentPersonAlias );
-                                if ( familyGroup != null )
-                                {
-                                    groupService.AddNewFamilyAddress( familyGroup, GetAttributeValue( "LocationType" ),
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
-                                }
+                                GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ),
+                                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
                             }
                         } );
 
@@ -340,7 +337,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeControl.ID = "familyAttributes_" + category.Id.ToString();
                         attributeControl.CategoryId = category.Id;
 
-                        foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
+                        foreach ( var attribute in new AttributeService( new RockContext() ).GetByCategoryId( category.Id ) )
                         {
                             if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
@@ -409,15 +406,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 childMaritalStatusId = childMaritalStatus.Id;
             }
-
             int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
+            int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
-                groupMember.Person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                groupMember.Person.RecordTypeValueId = recordTypePersonId;
+                groupMember.Person.RecordStatusValueId = recordStatusActiveId;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -442,6 +442,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.BirthDate = row.BirthDate;
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
+
+                groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
 

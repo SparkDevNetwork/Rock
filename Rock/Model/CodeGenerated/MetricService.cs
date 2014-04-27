@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricService"/> class
         /// </summary>
-        public MetricService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public MetricService(IRepository<Metric> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public MetricService(RockContext context) : base(context)
         {
@@ -104,24 +88,28 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Metric target, Metric source )
         {
             target.IsSystem = source.IsSystem;
-            target.Type = source.Type;
-            target.Category = source.Category;
             target.Title = source.Title;
             target.Subtitle = source.Subtitle;
             target.Description = source.Description;
-            target.MinValue = source.MinValue;
-            target.MaxValue = source.MaxValue;
-            target.CollectionFrequencyValueId = source.CollectionFrequencyValueId;
-            target.LastCollectedDateTime = source.LastCollectedDateTime;
-            target.Source = source.Source;
-            target.SourceSQL = source.SourceSQL;
-            target.Order = source.Order;
+            target.IconCssClass = source.IconCssClass;
+            target.IsCumulative = source.IsCumulative;
+            target.SourceValueTypeId = source.SourceValueTypeId;
+            target.SourceSql = source.SourceSql;
+            target.DataViewId = source.DataViewId;
+            target.XAxisLabel = source.XAxisLabel;
+            target.YAxisLabel = source.YAxisLabel;
+            target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
+            target.AdminPersonAliasId = source.AdminPersonAliasId;
+            target.ScheduleId = source.ScheduleId;
+            target.LastRunDateTime = source.LastRunDateTime;
+            target.EntityTypeId = source.EntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

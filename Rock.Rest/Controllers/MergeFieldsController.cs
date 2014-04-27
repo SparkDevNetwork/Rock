@@ -53,65 +53,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public virtual string Get( string id )
         {
-            var idParts = id.SplitDelimitedValues().ToList();
-            if ( idParts.Count > 0 )
-            {
-                // Get the root type
-                var entityType = EntityTypeCache.Read( idParts[0], false );
-                if ( entityType != null )
-                {
-                    idParts[0] = entityType.FriendlyName.Replace( " ", string.Empty );
-
-                    Type type = entityType.GetEntityType();
-
-                    var workingParts = idParts.Take( 1 ).ToList();
-                    var formatString = "{0}";
-
-                    // Traverse the Property path
-                    bool itemIsCollection = false;
-
-                    int pathPointer = 1;
-                    while ( idParts.Count > pathPointer )
-                    {
-                        string propertyName =  idParts[pathPointer];
-                        workingParts.Add(propertyName);
-
-                        var childProperty = type.GetProperty( propertyName );
-                        if ( childProperty != null )
-                        {
-                            type = childProperty.PropertyType;
-
-                            if ( type.IsGenericType &&
-                                type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                                type.GetGenericArguments().Length == 1 )
-                            {
-                                string propertyNameSingularized = propertyName.Singularize();
-                                string forString = string.Format( "<% for {0} in {1} %> {{0}} <% endfor %>", propertyNameSingularized, workingParts.AsDelimited( "." ) );
-                                workingParts.Clear();
-                                workingParts.Add( propertyNameSingularized );
-                                formatString = string.Format( formatString, forString );
-
-                                type = type.GetGenericArguments()[0];
-
-                                itemIsCollection = true;
-                            }
-                            else
-                            {
-                                itemIsCollection = false;
-                            }
-
-                        }
-                        pathPointer++;
-                    }
-
-                    string itemString = itemIsCollection ? "" : string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
-                    return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
-                }
-
-                return string.Format( "{{{{ {0} }}}}", idParts.AsDelimited(".") );
-            }
-
-            return string.Empty;
+            return Rock.Web.UI.Controls.MergeFieldPicker.FormatSelectedValue( id );
         }
 
         [Authenticate, Secured]
@@ -125,26 +67,26 @@ namespace Rock.Rest.Controllers
                     
                     if (!string.IsNullOrWhiteSpace(additionalFields))
                     {
-                        foreach(string fieldName in additionalFields.SplitDelimitedValues())
+                        foreach ( string fieldName in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             var entityType = EntityTypeCache.Read( fieldName, false );
-                            if (entityType != null)
+                            if ( entityType != null )
                             {
-                                items.Add(new TreeViewItem
+                                items.Add( new TreeViewItem
                                 {
                                     Id = fieldName,
                                     Name = entityType.FriendlyName,
                                     HasChildren = true
-                                });
+                                } );
                             }
                             else
                             {
-                                items.Add(new TreeViewItem
+                                items.Add( new TreeViewItem
                                 {
                                     Id = fieldName,
                                     Name = fieldName.SplitCase(),
                                     HasChildren = fieldName == "GlobalAttribute"
-                                });
+                                } );
                             }
                         }
                     }
@@ -207,7 +149,7 @@ namespace Rock.Rest.Controllers
                             // Add the tree view items
                             foreach ( var propInfo in type.GetProperties() )
                             {
-                                if ( propInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                                if ( propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                                 {
                                     var treeViewItem = new TreeViewItem
                                     {
@@ -230,7 +172,7 @@ namespace Rock.Rest.Controllers
                                     {
                                         foreach ( var childPropInfo in propertyType.GetProperties() )
                                         {
-                                            if ( childPropInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                                            if ( childPropInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                                             {
                                                 hasChildren = true;
                                                 break;
@@ -245,7 +187,7 @@ namespace Rock.Rest.Controllers
 
                             if ( entityType.IsEntity )
                             {
-                                foreach ( Rock.Model.Attribute attribute in new AttributeService().GetByEntityTypeId( entityType.Id ) )
+                                foreach ( Rock.Model.Attribute attribute in new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id ) )
                                 {
                                     // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
                                     if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&

@@ -6,7 +6,7 @@
     }
 </script>
 
-<asp:UpdatePanel ID="upGroupList" runat="server">
+<asp:UpdatePanel ID="upnlGroupList" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">
@@ -48,7 +48,7 @@
                 <Rock:PanelWidget ID="wpGeneral" runat="server" title="General">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true" />
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" AutoPostBack="true"  OnSelectedIndexChanged="ddlGroupType_SelectedIndexChanged"/>
                             <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                         </div>
                         <div class="col-md-6">

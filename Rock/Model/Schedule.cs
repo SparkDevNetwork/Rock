@@ -42,9 +42,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the Name of the Schedule.
         /// </value>
-        [Required]
         [MaxLength( 50 )]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -445,8 +444,14 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Just return the Name of the schedule
+                    // not any type of recurring, runs once
+                    result = "Once at " + calendarEvent.DTStart.Value.ToString();
                 }
+            }
+            else
+            {
+                // no start time.  Nothing scheduled
+                return "No Schedule";
             }
 
             return result;

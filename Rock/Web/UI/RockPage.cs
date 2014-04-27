@@ -27,6 +27,7 @@ using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Transactions;
@@ -431,17 +432,17 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
 
-            // add ckeditor
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/ckeditor/ckeditor.js" ) );
+            // add ckeditor (doesn't like to be added during an async postback)
+            _scriptManager.Scripts.Add( new ScriptReference( ResolveRockUrl("~/Scripts/ckeditor/ckeditor.js", true) ) );
 
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
-            _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
-            // add Google Maps API
+            // add Google Maps API (doesn't like to be added during an async postback )
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
             _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
 
@@ -505,12 +506,14 @@ namespace Rock.Web.UI
                 }
             }
 
+            var rockContext = new RockContext();
+
             // If the impersonated query key was included then set the current person
             Page.Trace.Warn( "Checking for person impersanation" );
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
-                Rock.Model.PersonService personService = new Model.PersonService();
+                Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                 Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
@@ -540,7 +543,7 @@ namespace Rock.Web.UI
                     }
                     else
                     {
-                        Rock.Model.PersonService personService = new Model.PersonService();
+                        Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                         Rock.Model.Person person = personService.Get( personId.Value );
                         if ( person != null )
                         {
@@ -795,7 +798,14 @@ namespace Rock.Web.UI
                                         block.BlockType.SecurityActions = new Dictionary<string, string>();
                                         foreach ( var action in blockControl.GetSecurityActionAttributes() )
                                         {
-                                            block.BlockType.SecurityActions.Add( action.Key, action.Value );
+                                            if ( block.BlockType.SecurityActions.ContainsKey( action.Key ) )
+                                            {
+                                                block.BlockType.SecurityActions[action.Key] = action.Value;
+                                            }
+                                            else
+                                            {
+                                                block.BlockType.SecurityActions.Add( action.Key, action.Value );
+                                            }
                                         }
                                         block.BlockType.CheckedSecurityActions = true;
                                     }
@@ -854,7 +864,7 @@ namespace Rock.Web.UI
                     if ( _pageCache.IncludeAdminFooter && (canAdministratePage || canAdministrateBlock ) )
                     {
                         // Add the page admin script
-                        AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
+                        AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin", false );
 
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
@@ -1093,20 +1103,22 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime.</param>
-        public void AddCSSLink( string href )
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddCSSLink( string href, bool fingerprint = true )
         {
-            RockPage.AddCSSLink( this, href );
+            RockPage.AddCSSLink( this, href, fingerprint );
         }
 
         /// <summary>
         /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
-        public void AddCSSLink( string href, string mediaType )
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String" /> representing the type of the media to use for the css link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddCSSLink( string href, string mediaType, bool fingerprint = true )
         {
-            RockPage.AddCSSLink( this, href, mediaType );
+            RockPage.AddCSSLink( this, href, mediaType, fingerprint );
         }
 
         /// <summary>
@@ -1130,10 +1142,11 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered.
         /// </summary>
-        /// <param name="path">A <see cref="System.String"/> representing the path to the script link.</param>
-        public void AddScriptLink(string path)
+        /// <param name="path">A <see cref="System.String" /> representing the path to the script link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public void AddScriptLink(string path, bool fingerprint = true)
         {
-            RockPage.AddScriptLink( this, path );
+            RockPage.AddScriptLink( this, path, fingerprint );
         }
 
         /// <summary>
@@ -1211,15 +1224,16 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Returns a resolved Rock URL.  Similar to <see cref="System.Web.UI.Control">System.Web.UI.Control's</see> <c>ResolveUrl</c> method except that you can prefix
+        /// Returns a resolved Rock URL.  Similar to 
+        /// <see cref="System.Web.UI.Control">System.Web.UI.Control's</see>
+        /// <c>ResolveUrl</c> method except that you can prefix
         /// a url with '~~' to indicate a virtual path to Rock's current theme root folder.
         /// </summary>
         /// <param name="url">A <see cref="System.String" /> representing the URL to resolve.</param>
-        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
         /// <returns>
         /// A <see cref="System.String" /> with the resolved URL.
         /// </returns>
-        public string ResolveRockUrl( string url, bool includeRoot = false )
+        public string ResolveRockUrl( string url )
         {
             string themeUrl = url;
             if ( url.StartsWith( "~~" ) )
@@ -1227,16 +1241,36 @@ namespace Rock.Web.UI
                 themeUrl = "~/Themes/" + _pageCache.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }
 
-            string virtualPath = ResolveUrl( themeUrl );
+            return ResolveUrl( themeUrl );
+        }
 
-            if (includeRoot)
+        /// <summary>
+        /// Resolves the rock URL and includes root.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrlIncludeRoot( string url )
+        {
+            string virtualPath = this.ResolveRockUrl( url );
+            return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url, bool fingerprint )
+        {
+            var resolvedUrl = this.ResolveRockUrl( url );
+
+            if ( fingerprint )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                resolvedUrl = Fingerprint.Tag( resolvedUrl );
             }
-            else
-            {
-                return virtualPath;
-            }
+
+            return resolvedUrl;
         }
 
         /// <summary>
@@ -1256,13 +1290,13 @@ namespace Rock.Web.UI
                     {
                         if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
-                            keyModel.Entity = new PersonService()
-                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases" )
+                            keyModel.Entity = new PersonService( new RockContext() )
+                                .Queryable( "MaritalStatusValue,ConnectionStatusValue,RecordStatusValue,RecordStatusReasonValue,RecordTypevalue,SuffixValue,TitleValue,GivingGroup,Photo,Aliases", true, true )
                                 .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
                         }
                         else
                         {
-                            keyModel.Entity = new PersonService().GetByPublicKey( keyModel.Key );
+                            keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
                         }
                     }
                     else
@@ -1665,20 +1699,22 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new CSS link that will be added to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        public static void AddCSSLink( Page page, string href )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddCSSLink( Page page, string href, bool fingerprint = true )
         {
-            AddCSSLink( page, href, string.Empty );
+            AddCSSLink( page, href, string.Empty, fingerprint );
         }
 
         /// <summary>
         /// Adds the CSS link to the page
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="href">A <see cref="System.String"/> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
-        /// <param name="mediaType">A <see cref="System.String"/> representing the type of the media to use for the css link.</param>
-        public static void AddCSSLink( Page page, string href, string mediaType )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="href">A <see cref="System.String" /> representing the path to css file.  Should be relative to layout template.  Will be resolved at runtime</param>
+        /// <param name="mediaType">A <see cref="System.String" /> representing the type of the media to use for the css link.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddCSSLink( Page page, string href, string mediaType, bool fingerprint = true )
         {
             HtmlLink htmlLink = new HtmlLink();
 
@@ -1860,11 +1896,17 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds a new script tag to the page header prior to the page being rendered
         /// </summary>
-        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="path">A <see cref="System.String"/> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
-        public static void AddScriptLink( Page page, string path )
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="path">A <see cref="System.String" /> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
+
+            if (fingerprint)
+            {
+                path = Fingerprint.Tag( page.ResolveUrl(path) );
+            }
 
             if ( scriptManager != null && !scriptManager.Scripts.Any( s => s.Path == path ) )
             {
@@ -1961,12 +2003,18 @@ namespace Rock.Web.UI
 
             var sessionValues = SessionUserPreferences();
             if ( sessionValues.ContainsKey( key ) )
+            {
                 sessionValues[key] = newValues;
+            }
             else
+            {
                 sessionValues.Add( key, newValues );
+            }
 
             if ( CurrentPerson != null )
-                new PersonService().SaveUserPreference( CurrentPerson, key, newValues, CurrentPersonAlias );
+            {
+                PersonService.SaveUserPreference( CurrentPerson, key, newValues );
+            }
         }
 
         /// <summary>
@@ -1985,7 +2033,7 @@ namespace Rock.Web.UI
             if ( userPreferences == null )
             {
                 if ( CurrentPerson != null )
-                    userPreferences = new PersonService().GetUserPreferences( CurrentPerson );
+                    userPreferences = PersonService.GetUserPreferences( CurrentPerson );
                 else
                     userPreferences = new Dictionary<string, List<string>>();
 

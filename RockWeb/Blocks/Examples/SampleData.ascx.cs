@@ -26,8 +26,10 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -37,13 +39,15 @@ namespace RockWeb.Blocks.Examples
 {
     /// <summary>
     /// Block that can load sample data into your Rock database.
+    /// Dev note: You can set the XML Document Url setting to your local
+    /// file when you're testing new data.  Something like C:\Misc\Rock\Documentation\sampledata.xml
     /// </summary>
     [DisplayName( "Rock Solid Church Sample Data" )]
     [Category( "Examples" )]
     [Description( "Loads the Rock Solid Church sample data into your Rock system." )]
 
     [TextField( "XML Document URL", "The URL for the input sample data XML document.", false, "http://storage.rockrms.com/sampledata/sampledata.xml", "", 1 )]
-    [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if given in xml)", true, "", 2 )]
+    [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the xml)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
@@ -62,12 +66,32 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Holds the Person Image binary file type.
         /// </summary>
-        private static BinaryFileType _binaryFileType = new BinaryFileTypeService().Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+        private static BinaryFileType _binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+        /// <summary>
+        /// The id for the "child" role of a family.
+        /// </summary>
+        private static int _childRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+
+        /// <summary>
+        /// The id for the "adult" role of a family.
+        /// </summary>
+        private static int _adultRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+
+        /// <summary>
+        /// The Entity Type Id for the Person entities.
+        /// </summary>
+        private static int _personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
 
         /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
         private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
+
+        /// <summary>
+        /// The Autnentication Database entity type.
+        /// </summary>
+        private static int _authenticationDatabaseEntityTypeId = EntityTypeCache.Read( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id;
 
         /// <summary>
         /// Percent of additional time someone tends to NOT attend during the summer months (7-9)
@@ -89,14 +113,14 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         private static List<ClassGroupLocation> _classes = new List<ClassGroupLocation>
         {
-            new ClassGroupLocation { GroupId = 25, LocationId = 4, MinAge =  0.0, MaxAge = 3.0,   Name = "Nursery - Bunnies Room"  },
-            new ClassGroupLocation { GroupId = 26, LocationId = 5, MinAge =  0.0, MaxAge = 3.99,  Name = "Crawlers/Walkers - Kittens Room" },
-            new ClassGroupLocation { GroupId = 27, LocationId = 6, MinAge =  0.0, MaxAge = 5.99,  Name = "Preschool - Puppies Room" },
-            new ClassGroupLocation { GroupId = 28, LocationId = 7, MinAge =  4.75, MaxAge = 8.75, Name = "Grades K-1 - Bears Room" },
-            new ClassGroupLocation { GroupId = 29, LocationId = 8, MinAge =   6.0, MaxAge = 10.99, Name = "Grades 2-3 - Bobcats Room" },
-            new ClassGroupLocation { GroupId = 30, LocationId = 9, MinAge =   8.0, MaxAge = 13.99, Name = "Grades 4-6 - Outpost Room" },
-            new ClassGroupLocation { GroupId = 31, LocationId = 10, MinAge = 12.0, MaxAge = 15.0,  Name = "Grades 7-8 - Warehouse" },
-            new ClassGroupLocation { GroupId = 32, LocationId = 11, MinAge = 13.0, MaxAge = 19.0,  Name = "Grades 9-12 - Garage" },
+            new ClassGroupLocation { GroupId = 25, LocationId = 4, MinAge = 0.0, MaxAge = 3.0, Name = "Nursery - Bunnies Room" },
+            new ClassGroupLocation { GroupId = 26, LocationId = 5, MinAge = 0.0, MaxAge = 3.99, Name = "Crawlers/Walkers - Kittens Room" },
+            new ClassGroupLocation { GroupId = 27, LocationId = 6, MinAge = 0.0, MaxAge = 5.99, Name = "Preschool - Puppies Room" },
+            new ClassGroupLocation { GroupId = 28, LocationId = 7, MinAge = 4.75, MaxAge = 8.75, Name = "Grades K-1 - Bears Room" },
+            new ClassGroupLocation { GroupId = 29, LocationId = 8, MinAge = 6.0, MaxAge = 10.99, Name = "Grades 2-3 - Bobcats Room" },
+            new ClassGroupLocation { GroupId = 30, LocationId = 9, MinAge = 8.0, MaxAge = 13.99, Name = "Grades 4-6 - Outpost Room" },
+            new ClassGroupLocation { GroupId = 31, LocationId = 10, MinAge = 12.0, MaxAge = 15.0, Name = "Grades 7-8 - Warehouse" },
+            new ClassGroupLocation { GroupId = 32, LocationId = 11, MinAge = 13.0, MaxAge = 19.0, Name = "Grades 9-12 - Garage" },
         };
 
         /// <summary>
@@ -113,11 +137,22 @@ namespace RockWeb.Blocks.Examples
         /// Holds a cache of the person object
         /// </summary>
         private Dictionary<Guid, Person> _personCache = new Dictionary<Guid, Person>();
-        
+
         /// <summary>
         /// Holds a cached copy of the location Id for each family Guid
         /// </summary>
         private Dictionary<Guid, int> _familyLocationDictionary = new Dictionary<Guid, int>();
+
+        /// <summary>
+        /// A dictionary of a Person's login usernames.
+        /// </summary>
+        private Dictionary<Person, List<string>> _peopleLoginsDictionary = new Dictionary<Person, List<string>>();
+
+        /// <summary>
+        /// Holds the dictionary of person guids and a dictionary of their attribute names
+        /// and values from the family section of the XML.
+        /// </summary>
+        private Dictionary<Guid, bool> _personWithAttributes = new Dictionary<Guid, bool>();
 
         /// <summary>
         /// Magic kiosk Id used for attendance data.
@@ -128,13 +163,13 @@ namespace RockWeb.Blocks.Examples
 
         #region Properties
 
-        // used for public / protected properties
+        //// used for public / protected properties
 
         #endregion
 
         #region Base Control Methods
 
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
+        ////  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -157,7 +192,11 @@ namespace RockWeb.Blocks.Examples
         {
             base.OnLoad( e );
             Server.ScriptTimeout = 300;
-            ScriptManager.GetCurrent(Page).AsyncPostBackTimeout = 300;
+            ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 300;
+            if ( ! IsPostBack )
+            {
+                VerifyXMLDocumentExists();
+            }
         }
 
         #endregion
@@ -172,7 +211,7 @@ namespace RockWeb.Blocks.Examples
         protected void bbtnLoadData_Click( object sender, EventArgs e )
         {
             string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
-            
+
             try
             {
                 string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
@@ -182,10 +221,13 @@ namespace RockWeb.Blocks.Examples
                     nbMessage.Visible = true;
                     nbMessage.Title = "Success";
                     nbMessage.NotificationBoxType = NotificationBoxType.Success;
-                    nbMessage.Text = string.Format( @"<p>Happy tire-kicking! The data is in your database. Hint: try <a href='{0}'>searching for the Decker family</a>.</p>
-                        <p>Here are some of the things you'll find in the sample data:</p>{1}"
-                        , ResolveRockUrl( "~/Person/Search/name/Decker" ), GetStories( saveFile ) );
-                    bbtnLoadData.Visible = false;
+                    nbMessage.Text = string.Format(
+@"<p>Happy tire-kicking! The data is in your database. Hint: try <a href='{0}'>searching for the Decker family</a>.</p>
+<p>Here are some of the things you'll find in the sample data:</p>{1}",
+                        ResolveRockUrl( "~/Person/Search/name/Decker" ),
+                        GetStories( saveFile ) );
+                    pnlInputForm.Visible = false;
+                    RecordSuccess();
                 }
             }
             catch ( Exception ex )
@@ -193,7 +235,10 @@ namespace RockWeb.Blocks.Examples
                 nbMessage.Visible = true;
                 nbMessage.Title = "Oops!";
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Text = string.Format( "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}", ex.Message.ConvertCrLfToHtmlBr(), FlattenInnerExceptions(ex.InnerException),
+                nbMessage.Text = string.Format(
+                    "That wasn't supposed to happen.  The error was:<br/>{0}<br/>{1}<br/>{2}",
+                    ex.Message.ConvertCrLfToHtmlBr(),
+                    FlattenInnerExceptions( ex.InnerException ),
                     ex.StackTrace.ConvertCrLfToHtmlBr() );
             }
 
@@ -204,7 +249,21 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Extract the stories out of the XML and put them on the results page.
+        /// Records the current date into the SampleData system setting
+        /// so that other blocks (such as the RockUpdate) can know that
+        /// sample data has been loaded.
+        /// </summary>
+        private void RecordSuccess()
+        {
+            string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
+            if ( xmlFileUrl.StartsWith( "http://storage.rockrms.com/sampledata/" ) )
+            {
+                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
+            }
+        }
+
+        /// <summary>
+        /// Extract the stories out of the XML comments and put them on the results page.
         /// </summary>
         /// <param name="saveFile"></param>
         /// <returns></returns>
@@ -215,25 +274,68 @@ namespace RockWeb.Blocks.Examples
             sb.Append( "<ul>" );
             foreach ( var comment in xdoc.Element( "data" ).DescendantNodes().OfType<XComment>() )
             {
-                sb.AppendFormat( "<li>{0}</li>", comment.ToString().Replace( "<!--", "").Replace( "-->", "" ) );
+                sb.AppendFormat( "<li>{0}</li>", comment.ToString().Replace( "<!--", string.Empty ).Replace( "-->", string.Empty ) );
             }
+
             sb.Append( "</ul>" );
             return sb.ToString();
         }
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the SampleData control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            VerifyXMLDocumentExists();
+            nbMessage.Text = string.Empty;
+            nbMessage.Visible = false;
+            pnlInputForm.Visible = true;
         }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Verify that the configured XML document exists.
+        /// </summary>
+        private void VerifyXMLDocumentExists()
+        {
+            bool fileExists = false;
+
+            try
+            {
+                Uri fileUri = new Uri( GetAttributeValue( "XMLDocumentURL" ) );
+                if ( fileUri.IsFile )
+                {
+                    fileExists = File.Exists( fileUri.LocalPath );
+                }
+                else
+                {
+                    var request = (HttpWebRequest)WebRequest.Create( GetAttributeValue( "XMLDocumentURL" ) );
+                    request.Method = "HEAD";
+                    var response = (HttpWebResponse)request.GetResponse();
+                    fileExists = response.StatusCode == HttpStatusCode.OK;
+                }
+            }
+            catch ( Exception ex )
+            {
+                nbError.Text += string.Format( "<br/>{0} Error trying to check the sample data file. {1}", RockDateTime.Now.ToShortTimeString(), ex.Message );
+            }
+
+            if ( ! fileExists )
+            {
+                nbError.Visible = true;
+                bbtnLoadData.Enabled = false;
+            }
+            else
+            {
+                nbError.Visible = false;
+                bbtnLoadData.Enabled = true;
+            }
+        }
 
         /// <summary>
         /// Download the given fileUrl and store it at the fileOutput.
@@ -246,15 +348,24 @@ namespace RockWeb.Blocks.Examples
             bool isSuccess = false;
             try
             {
-                using ( WebClient client = new WebClient() )
+                Uri fileUri = new Uri( fileUrl );
+                if ( fileUri.IsFile )
                 {
-                    client.DownloadFile( fileUrl, fileOutput );
+                    File.Copy( fileUrl, fileOutput );
                 }
+                else
+                {
+                    using ( WebClient client = new WebClient() )
+                    {
+                        client.DownloadFile( fileUri, fileOutput );
+                    }
+                }
+
                 isSuccess = true;
             }
-            catch ( WebException ex )
+            catch ( Exception ex )
             {
-                nbMessage.Text = string.Format( "While trying to fetch {0}, {1} ", fileUrl, ex.Message);
+                nbMessage.Text = string.Format( "While trying to fetch {0}, {1} ", fileUrl, ex.Message );
                 nbMessage.Visible = true;
             }
 
@@ -270,49 +381,101 @@ namespace RockWeb.Blocks.Examples
         {
             var xdoc = XDocument.Load( sampleXmlFile );
 
+            RockContext rockContext = new RockContext();
+            rockContext.Configuration.AutoDetectChangesEnabled = false;
+
+            var elemFamilies = xdoc.Element( "data" ).Element( "families" );
+            var elemGroups = xdoc.Element( "data" ).Element( "groups" );
+            var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
+            var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
+            TimeSpan ts;
+
+            //// First delete any sample data that might exist already 
+            // using RockContext in case there are multiple saves (like Attributes)
             RockTransactionScope.WrapTransaction( () =>
             {
-                using ( new UnitOfWorkScope() )
-                {
-                    var elemFamilies = xdoc.Element( "data" ).Element( "families" );
-                    var elemGroups = xdoc.Element( "data" ).Element( "groups" );
-                    var elemRelationships = xdoc.Element( "data" ).Element( "relationships" );
-                    var elemSecurityGroups = xdoc.Element( "data" ).Element( "securityRoles" );
-
-                    // First we'll clean up by deleting any previously created data such as
-                    // families, addresses, people, photos, attendance data, etc.
-                    _stopwatch.Start();
-                    DeleteExistingGroups( elemGroups );
-                    DeleteExistingFamilyData( elemFamilies );
-                    TimeSpan ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                    // Now we can add the families (and people) and then groups.
-                    AddFamilies( elemFamilies );
-                    ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                    AddRelationships( elemRelationships );
-                    ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                    AddGroups( elemGroups );
-                    ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-
-                    AddToSecurityGroups( elemSecurityGroups );
-                    ts = _stopwatch.Elapsed;
-                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
-                }
+                // First we'll clean up by deleting any previously created data such as
+                // families, addresses, people, photos, attendance data, etc.
+                _stopwatch.Start();
+                DeleteExistingGroups( elemGroups, rockContext );
+                DeleteExistingFamilyData( elemFamilies, rockContext );
+                //rockContext.ChangeTracker.DetectChanges();
+                //rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
 
-            bool EnableStopwatch = GetAttributeValue("EnableStopwatch").AsBoolean();
-            if ( EnableStopwatch )
+            // Import the sample data
+            // using RockContext in case there are multiple saves (like Attributes)
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                // Now we can add the families (and people) and then groups.
+                AddFamilies( elemFamilies, rockContext );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} families added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddRelationships( elemRelationships, rockContext );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} relationships added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddGroups( elemGroups, rockContext );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} groups added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                AddToSecurityGroups( elemSecurityGroups, rockContext );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} people added to security roles<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                rockContext.ChangeTracker.DetectChanges();
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} changes saved<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // add logins, but only if we were supplied a password
+                if ( !string.IsNullOrEmpty( tbPassword.Text.Trim() ) )
+                {
+                    AddPersonLogins( rockContext );
+                    ts = _stopwatch.Elapsed;
+                    _sb.AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+                }
+
+                // Add Person Notes
+                AddPersonNotes( elemFamilies, rockContext );
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+            } );
+
+            if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 lTime.Text = _sb.ToString();
             }
         }
-   
+
+        /// <summary>
+        /// Adds any notes for any people given in the XML file.
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        /// <param name="rockContext"></param>
+        private void AddPersonNotes( XElement elemFamilies, RockContext rockContext )
+        {
+            var peopleWithNotes = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "notes" ).Elements( "note" )
+                                  select new
+                                  {
+                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                      Type = n.Attribute( "type" ).Value,
+                                      Text = n.Attribute( "text" ).Value,
+                                      Date = n.Attribute( "date" ) != null ?  n.Attribute( "date" ).Value : null
+                                  };
+
+	        foreach ( var r in peopleWithNotes )
+	        {
+                int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
+                AddNote( personId, r.Type, r.Text, r.Date, rockContext );
+	        }
+        }
+
         /// <summary>
         /// Adds a KnownRelationship record between the two supplied Guids with the given 'is' relationship type:
         ///     
@@ -335,7 +498,7 @@ namespace RockWeb.Blocks.Examples
         ///  
         /// </summary>
         /// <param name="elemRelationships"></param>
-        private void AddRelationships( XElement elemRelationships )
+        private void AddRelationships( XElement elemRelationships, RockContext rockContext )
         {
             if ( elemRelationships == null )
             {
@@ -344,15 +507,16 @@ namespace RockWeb.Blocks.Examples
 
             Guid ownerRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
             Guid knownRelationshipsGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
+            var memberService = new GroupMemberService( rockContext );
 
-            var groupTypeRoles = new GroupTypeRoleService().Queryable("GroupType")
+            var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable( "GroupType" )
                 .Where( r => r.GroupType.Guid == knownRelationshipsGroupTypeGuid ).ToList();
 
-            // We have to create (or fetch existing) two groups for each relationship, adding the
-            // other person as a member of that group with the appropriate GroupTypeRole (GTR):
-            //   * a group with person as owner (GTR) and forPerson as type/role (GTR) 
-            //   * a group with forPerson as owner (GTR) and person as inverse-type/role (GTR)
- 
+            //// We have to create (or fetch existing) two groups for each relationship, adding the
+            //// other person as a member of that group with the appropriate GroupTypeRole (GTR):
+            ////   * a group with person as owner (GTR) and forPerson as type/role (GTR) 
+            ////   * a group with forPerson as owner (GTR) and person as inverse-type/role (GTR)
+
             foreach ( var elemRelationship in elemRelationships.Elements( "relationship" ) )
             {
                 // skip any illegally formatted items
@@ -367,12 +531,11 @@ namespace RockWeb.Blocks.Examples
                 int ownerPersonId = _peopleDictionary[personGuid];
                 int forPersonId = _peopleDictionary[forGuid];
 
-                string rType = elemRelationship.Attribute( "has" ).Value.Trim();
-  
-                var memberService = new GroupMemberService();
+                string relationshipType = elemRelationship.Attribute( "has" ).Value.Trim();
+
                 int roleId = -1;
 
-                switch ( rType )
+                switch ( relationshipType )
                 {
                     case "step-parent":
                         roleId = groupTypeRoles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_STEP_PARENT.AsGuid() )
@@ -440,47 +603,47 @@ namespace RockWeb.Blocks.Examples
                         break;
 
                     default:
-                        //throw new NotSupportedException( string.Format( "unknown relationship type {0}", elemRelationship.Attribute( "has" ).Value ) );
+                        //// throw new NotSupportedException( string.Format( "unknown relationship type {0}", elemRelationship.Attribute( "has" ).Value ) );
                         // just skip unknown relationship types
                         continue;
                 }
-                
+
                 // find the person's KnownRelationship "owner" group
-                var group = memberService.Queryable()
+                var knownRelationshipGroup = memberService.Queryable()
                     .Where( m =>
-                    m.PersonId == ownerPersonId &&
-                    m.GroupRole.Guid == ownerRoleGuid
-                    )
+                        m.PersonId == ownerPersonId &&
+                        m.GroupRole.Guid == ownerRoleGuid )
                     .Select( m => m.Group )
                     .FirstOrDefault();
 
                 // create it if it does not yet exist
-                if ( group == null )
+                if ( knownRelationshipGroup == null )
                 {
-                    var ownerRole = new GroupTypeRoleService().Get( ownerRoleGuid );
+                    var ownerRole = new GroupTypeRoleService( rockContext ).Get( ownerRoleGuid );
                     if ( ownerRole != null && ownerRole.GroupTypeId.HasValue )
                     {
                         var ownerGroupMember = new GroupMember();
                         ownerGroupMember.PersonId = ownerPersonId;
                         ownerGroupMember.GroupRoleId = ownerRole.Id;
 
-                        group = new Group();
-                        group.Name = ownerRole.GroupType.Name;
-                        group.GroupTypeId = ownerRole.GroupTypeId.Value;
-                        group.Members.Add( ownerGroupMember );
+                        knownRelationshipGroup = new Group();
+                        knownRelationshipGroup.Name = ownerRole.GroupType.Name;
+                        knownRelationshipGroup.GroupTypeId = ownerRole.GroupTypeId.Value;
+                        knownRelationshipGroup.Members.Add( ownerGroupMember );
 
-                        var groupService = new GroupService();
-                        groupService.Add( group, CurrentPersonAlias );
-                        groupService.Save( group, CurrentPersonAlias );
+                        var groupService = new GroupService( rockContext );
+                        groupService.Add( knownRelationshipGroup );
+                        //rockContext.ChangeTracker.DetectChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
 
-                        group = groupService.Get( group.Id );
+                        knownRelationshipGroup = groupService.Get( knownRelationshipGroup.Id );
                     }
                 }
 
                 // Now find (and add if not found) the forPerson as a member with the "has" role-type
                 var groupMember = memberService.Queryable()
                     .Where( m =>
-                        m.GroupId == group.Id &&
+                        m.GroupId == knownRelationshipGroup.Id &&
                         m.PersonId == forPersonId &&
                         m.GroupRoleId == roleId )
                     .FirstOrDefault();
@@ -489,30 +652,31 @@ namespace RockWeb.Blocks.Examples
                 {
                     groupMember = new GroupMember()
                     {
-                        GroupId = group.Id,
+                        GroupId = knownRelationshipGroup.Id,
                         PersonId = forPersonId,
                         GroupRoleId = roleId,
                     };
-                    memberService.Add( groupMember, CurrentPersonAlias );
+
+                    rockContext.GroupMembers.Add( groupMember );
                 }
 
-                memberService.Save( groupMember, CurrentPersonAlias );
-                
-                // now create thee inverse relationship
-                var inverseGroupMember = memberService.GetInverseRelationship(
-                    groupMember, createGroup: true, personAlias: CurrentPersonAlias );
-                if ( inverseGroupMember != null )
-                {
-                    memberService.Save( inverseGroupMember, CurrentPersonAlias );
-                }
+                // Now create thee inverse relationship.
+                //
+                // (NOTE: Don't panic if your VS tooling complains that there is
+                // an unused variable here.  There is no need to do anything with the
+                // inverseGroupMember relationship because it was already added to the
+                // context.  All we have to do below is save the changes to the context
+                // when we're ready.)
+                var inverseGroupMember = memberService.GetInverseRelationship( groupMember, createGroup: true, personAlias: CurrentPersonAlias );
             }
         }
 
         /// <summary>
         /// Handles adding families from the given XML element snippet
         /// </summary>
-        /// <param name="elemFamilies"></param>
-        private void AddFamilies( XElement elemFamilies )
+        /// <param name="elemFamilies">The xml element containing all the families.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddFamilies( XElement elemFamilies, RockContext rockContext )
         {
             if ( elemFamilies == null )
             {
@@ -520,64 +684,94 @@ namespace RockWeb.Blocks.Examples
             }
 
             bool fabricateAttendance = GetAttributeValue( "FabricateAttendance" ).AsBoolean();
-            GroupService groupService = new GroupService();
-            var allFamilies = groupService.RockContext.Groups;
+            GroupService groupService = new GroupService( rockContext );
+            var allFamilies = rockContext.Groups;
 
-            List<Guid> allGroups = new List<Guid>();
+            List<Group> allGroups = new List<Group>();
 
             // Next create the family along with its members.
             foreach ( var elemFamily in elemFamilies.Elements( "family" ) )
             {
                 Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
-                var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ), groupService.RockContext );
+                var familyMembers = BuildFamilyMembersFromXml( elemFamily.Element( "members" ), rockContext );
 
                 // Call replica of groupService's SaveNewFamily method in an attempt to speed things up
-                Group family = CreateNewFamily( familyMembers, 1, savePersonAttributes: true, personAlias: CurrentPersonAlias );
+                Group family = CreateNewFamily( familyMembers, campusId: 1 );
                 family.Guid = guid;
+
                 // add the family to the context's list of groups
                 allFamilies.Add( family );
 
                 // add the families address(es)
-                AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ) );
+                AddFamilyAddresses( groupService, family, elemFamily.Element( "addresses" ), rockContext );
 
                 // add their attendance data
                 if ( fabricateAttendance )
                 {
-                    AddFamilyAttendance( family, elemFamily );
+                    AddFamilyAttendance( family, elemFamily, rockContext );
                 }
 
-                allGroups.Add( guid );
-                // lastly, save the data and move to the next family
-//groupService.Save( family, CurrentPersonAlias );
+                allGroups.Add( family );
 
                 _stopwatch.Stop();
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added {3}<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10, family.Name );
                 _stopwatch.Start();
             }
+            rockContext.ChangeTracker.DetectChanges();
+            rockContext.SaveChanges( disablePrePostProcessing: true );
 
-            groupService.RockContext.SaveChanges();
-
-            // Now add each person's ID to a dictionary for use later.
-            foreach ( var guid in allGroups )
+            // Now save each person's attributevalues (who had them defined in the XML)
+            // and add each person's ID to a dictionary for use later.
+            AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+            foreach ( var gm in allGroups.SelectMany( g => g.Members ) )
             {
-                var group = groupService.GetByGuid( guid );
-                foreach ( var p in group.Members )
+                // Put the person's id into the people dictionary for later use.
+                if ( !_peopleDictionary.ContainsKey( gm.Person.Guid ) )
                 {
-                    // Put the person's id into the people dictionary for later use.
-                    if ( !_peopleDictionary.ContainsKey( p.Person.Guid ) )
+                    _peopleDictionary.Add( gm.Person.Guid, gm.Person.Id );
+                }
+
+                // Only save if the person had attributes, otherwise it will error.
+                if ( _personWithAttributes.ContainsKey( gm.Person.Guid ) )
+                {
+                    foreach ( var attributeCache in gm.Person.Attributes.Select( a => a.Value ) )
                     {
-                        _peopleDictionary.Add( p.Person.Guid, p.Person.Id );
+                        var newValue = gm.Person.AttributeValues[attributeCache.Key].FirstOrDefault();
+                        if ( newValue != null )
+                        {
+                            newValue.EntityId = gm.Person.Id;
+                            rockContext.AttributeValues.Add( newValue );
+                        }
                     }
                 }
             }
 
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} saved attributes for everyone <br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
+
+            // Create person alias records for each person
+            PersonService personService = new PersonService( rockContext );
+            foreach ( var person in personService.Queryable( "Aliases" )
+                .Where( p =>
+                    _peopleDictionary.Keys.Contains( p.Guid ) &&
+                    !p.Aliases.Any() ) )
+            {
+                person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+            }
+
+            _stopwatch.Stop();
+            _sb.AppendFormat( "{0:00}:{1:00}.{2:00} added person aliases<br/>", _stopwatch.Elapsed.Minutes, _stopwatch.Elapsed.Seconds, _stopwatch.Elapsed.Milliseconds / 10 );
+            _stopwatch.Start();
         }
 
         /// <summary>
         /// Handles adding groups from the given XML element snippet.
         /// </summary>
-        /// <param name="elemGroups"></param>
-        private void AddGroups( XElement elemGroups )
+        /// <param name="elemGroups">The elem groups.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        private void AddGroups( XElement elemGroups, RockContext rockContext )
         {
             // Add groups
             if ( elemGroups == null )
@@ -585,13 +779,13 @@ namespace RockWeb.Blocks.Examples
                 return;
             }
 
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( rockContext );
 
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
             {
                 Guid guid = elemGroup.Attribute( "guid" ).Value.Trim().AsGuid();
-                String type = elemGroup.Attribute( "type" ).Value;
+                string type = elemGroup.Attribute( "type" ).Value;
                 Group group = new Group()
                 {
                     Guid = guid,
@@ -634,7 +828,7 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Set the group's meeting location
-                if ( elemGroup.Attribute( "meetsAtHomeOfFamily") != null )
+                if ( elemGroup.Attribute( "meetsAtHomeOfFamily" ) != null )
                 {
                     int meetingLocationValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_MEETING_LOCATION.AsGuid() ).Id;
                     var groupLocation = new GroupLocation()
@@ -650,6 +844,7 @@ namespace RockWeb.Blocks.Examples
                     {
                         groupLocation.GroupMemberPersonId = _peopleDictionary[elemGroup.Attribute( "meetsAtHomeOfPerson" ).Value.AsGuid()];
                     }
+
                     group.GroupLocations.Add( groupLocation );
                 }
 
@@ -680,24 +875,23 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 groupService.Add( group );
-                groupService.Save( group, CurrentPersonAlias );
-                group.SaveAttributeValues( CurrentPersonAlias );
-
+                group.SaveAttributeValues( rockContext );
             }
         }
 
         /// <summary>
         /// Handles adding people to the security groups from the given XML element snippet.
         /// </summary>
-        /// <param name="elemSecurityGroups"></param>
-        private void AddToSecurityGroups( XElement elemSecurityGroups )
+        /// <param name="elemSecurityGroups">The elem security groups.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddToSecurityGroups( XElement elemSecurityGroups, RockContext rockContext )
         {
             if ( elemSecurityGroups == null )
             {
                 return;
             }
 
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( rockContext );
 
             // Next find each group and add its members
             foreach ( var elemGroup in elemSecurityGroups.Elements( "group" ) )
@@ -717,7 +911,7 @@ namespace RockWeb.Blocks.Examples
                     int personId = _peopleDictionary[personGuid];
 
                     // Don't add if already in the group...
-                    if ( securityGroup.Members.Where( p=>p.PersonId == personId ).Count() > 0 )
+                    if ( securityGroup.Members.Where( p => p.PersonId == personId ).Count() > 0 )
                     {
                         continue;
                     }
@@ -730,8 +924,6 @@ namespace RockWeb.Blocks.Examples
                     securityGroup.Members.Add( groupMember );
                 }
             }
-
-            groupService.RockContext.SaveChanges();
         }
 
         /// <summary>
@@ -739,24 +931,25 @@ namespace RockWeb.Blocks.Examples
         /// TODO: delete attendance codes for attendance data that's about to be deleted when
         /// we delete the person record.
         /// </summary>
-        /// <param name="families"></param>
-        private void DeleteExistingFamilyData( XElement families )
+        /// <param name="families">The families.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void DeleteExistingFamilyData( XElement families, RockContext rockContext )
         {
-            PersonService personService = new PersonService();
-            PhoneNumberService phoneNumberService = new PhoneNumberService();
-            PersonViewedService personViewedService = new PersonViewedService();
-            BinaryFileService binaryFileService = new BinaryFileService();
+            PersonService personService = new PersonService( rockContext );
+            PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
+            PersonViewedService personViewedService = new PersonViewedService( rockContext );
+            PageViewService pageViewService = new PageViewService( rockContext );
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
 
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
                 Guid guid = elemFamily.Attribute( "guid" ).Value.Trim().AsGuid();
 
-                GroupService groupService = new GroupService();
+                GroupService groupService = new GroupService( rockContext );
                 Group family = groupService.Get( guid );
                 if ( family != null )
                 {
-
-                    var groupMemberService = new GroupMemberService();
+                    var groupMemberService = new GroupMemberService( rockContext );
                     var members = groupMemberService.GetByGroupId( family.Id );
 
                     // delete the people records
@@ -765,6 +958,7 @@ namespace RockWeb.Blocks.Examples
 
                     foreach ( var person in members.Select( m => m.Person ) )
                     {
+                        person.GivingGroup = null;
                         person.GivingGroupId = null;
                         person.PhotoId = null;
 
@@ -773,8 +967,7 @@ namespace RockWeb.Blocks.Examples
                         {
                             if ( phone != null )
                             {
-                                phoneNumberService.Delete( phone, CurrentPersonAlias );
-                                phoneNumberService.Save( phone, CurrentPersonAlias );
+                                phoneNumberService.Delete( phone );
                             }
                         }
 
@@ -782,24 +975,35 @@ namespace RockWeb.Blocks.Examples
                         foreach ( var view in personViewedService.GetByTargetPersonId( person.Id ) )
                         {
                             personViewedService.Delete( view );
-                            personViewedService.Save( view );
                         }
+
+                        // delete page viewed records
+                        foreach ( var view in pageViewService.GetByPersonId( person.Id ) )
+                        {
+                            pageViewService.Delete( view );
+                        }
+
+                        // Save these changes so the CanDelete passes the check...
+                        //rockContext.ChangeTracker.DetectChanges();
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
 
                         if ( personService.CanDelete( person, out errorMessage ) )
                         {
-                            personService.Delete( person, CurrentPersonAlias );
+                            personService.Delete( person );
+                            //rockContext.ChangeTracker.DetectChanges();
+                            //rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
-                        personService.Save( person, CurrentPersonAlias );
                     }
+                    //rockContext.ChangeTracker.DetectChanges();
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
 
                     // delete all member photos
                     foreach ( var photo in binaryFileService.GetByIds( photoIds ) )
                     {
                         binaryFileService.Delete( photo );
-                        binaryFileService.Save( photo );
                     }
 
-                    DeleteGroupAndMemberData( family );
+                    DeleteGroupAndMemberData( family, rockContext );
                 }
             }
         }
@@ -807,37 +1011,37 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Generic method to delete the members of a group and then the group.
         /// </summary>
-        /// <param name="group"></param>
-        private void DeleteGroupAndMemberData( Group group )
+        /// <param name="group">The group.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <exception cref="System.InvalidOperationException">Unable to delete group:  + group.Name</exception>
+        private void DeleteGroupAndMemberData( Group group, RockContext rockContext )
         {
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( rockContext );
 
             // delete addresses
-            GroupLocationService groupLocationService = new GroupLocationService();
+            GroupLocationService groupLocationService = new GroupLocationService( rockContext );
             if ( group.GroupLocations.Count > 0 )
             {
                 foreach ( var groupLocations in group.GroupLocations.ToList() )
                 {
                     group.GroupLocations.Remove( groupLocations );
-                    groupLocationService.Delete( groupLocations, CurrentPersonAlias );
-                    groupLocationService.Save( groupLocations, CurrentPersonAlias );
+                    groupLocationService.Delete( groupLocations );
                 }
             }
 
             // delete members
-            var groupMemberService = new GroupMemberService();
-            var members = groupMemberService.GetByGroupId( group.Id );
+            var groupMemberService = new GroupMemberService( rockContext );
+            var members = group.Members;
             foreach ( var member in members.ToList() )
             {
                 group.Members.Remove( member );
                 groupMemberService.Delete( member );
-                groupMemberService.Save( member, CurrentPersonAlias );
             }
 
             // now delete the group
-            if ( groupService.Delete( group, CurrentPersonAlias ) )
+            if ( groupService.Delete( group ) )
             {
-                groupService.Save( group, CurrentPersonAlias );
+                // ok
             }
             else
             {
@@ -848,22 +1052,23 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Delete all groups found in the given XML.
         /// </summary>
-        /// <param name="elemGroups"></param>
-        private void DeleteExistingGroups( XElement elemGroups )
+        /// <param name="elemGroups">The elem groups.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void DeleteExistingGroups( XElement elemGroups, RockContext rockContext )
         {
             if ( elemGroups == null )
             {
                 return;
             }
 
-            GroupService groupService = new GroupService();
+            GroupService groupService = new GroupService( rockContext );
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
             {
                 Guid guid = elemGroup.Attribute( "guid" ).Value.Trim().AsGuid();
                 Group group = groupService.Get( guid );
                 if ( group != null )
                 {
-                    DeleteGroupAndMemberData( group );
+                    DeleteGroupAndMemberData( group, rockContext );
                 }
             }
         }
@@ -872,9 +1077,10 @@ namespace RockWeb.Blocks.Examples
         /// Grabs the necessary parameters from the XML and then calls the CreateAttendance() method
         /// to generate all the attendance data for the family.
         /// </summary>
-        /// <param name="family"></param>
-        /// <param name="elemFamily"></param>
-        private void AddFamilyAttendance( Group family, XElement elemFamily )
+        /// <param name="family">The family.</param>
+        /// <param name="elemFamily">The elem family.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddFamilyAttendance( Group family, XElement elemFamily, RockContext rockContext )
         {
             // return from here if there's not startingAttendance date
             if ( elemFamily.Attribute( "startingAttendance" ) == null )
@@ -915,9 +1121,9 @@ namespace RockWeb.Blocks.Examples
             if ( elemFamily.Attribute( "attendingScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingScheduleId" ).Value.Trim(), out scheduleId );
-                if ( ! _scheduleTimes.ContainsKey(scheduleId) )
+                if ( !_scheduleTimes.ContainsKey( scheduleId ) )
                 {
-                    Schedule schedule = new ScheduleService().Get( scheduleId );
+                    Schedule schedule = new ScheduleService( rockContext ).Get( scheduleId );
                     if ( schedule == null )
                     {
                         // We're not going to continue if they are missing this schedule
@@ -932,9 +1138,9 @@ namespace RockWeb.Blocks.Examples
             if ( elemFamily.Attribute( "attendingAltScheduleId" ) != null )
             {
                 int.TryParse( elemFamily.Attribute( "attendingAltScheduleId" ).Value.Trim(), out altScheduleId );
-                if ( ! _scheduleTimes.ContainsKey( altScheduleId ) )
+                if ( !_scheduleTimes.ContainsKey( altScheduleId ) )
                 {
-                    Schedule schedule = new ScheduleService().Get( altScheduleId );
+                    Schedule schedule = new ScheduleService( rockContext ).Get( altScheduleId );
                     if ( schedule == null )
                     {
                         // We're not going to continue if they are missing this schedule
@@ -964,9 +1170,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="altScheduleId"></param>
         private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, int pctAttendedRegularService, int scheduleId, int altScheduleId )
         {
-            //Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-            int childRoleId = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
-
             // foreach weekend between the starting and ending date...
             for ( DateTime date = startingDate; date <= endDate; date = date.AddDays( 7 ) )
             {
@@ -991,15 +1194,15 @@ namespace RockWeb.Blocks.Examples
                 DateTime checkinDateTime = dtTime.AddMinutes( Convert.ToDouble( plusMinus * minutes ) ).AddSeconds( randomSeconds );
 
                 // foreach child in the family
-                foreach ( var member in familyMembers.Where( m => m.GroupRoleId == childRoleId ) )
+                foreach ( var member in familyMembers.Where( m => m.GroupRoleId == _childRoleId ) )
                 {
                     // Find a class room (group location)
                     // TODO -- someday perhaps we will change this to actually find a real GroupLocationSchedule record
-                    var item = (from classroom in _classes
-                                    where member.Person.AgePrecise >= classroom.MinAge
-                                    && member.Person.AgePrecise <= classroom.MaxAge
-                                    orderby classroom.MinAge, classroom.MaxAge
-                                    select classroom).FirstOrDefault();
+                    var item = ( from classroom in _classes
+                                 where member.Person.AgePrecise >= classroom.MinAge
+                                 && member.Person.AgePrecise <= classroom.MaxAge
+                                 orderby classroom.MinAge, classroom.MaxAge
+                                 select classroom ).FirstOrDefault();
 
                     // If no suitable classroom was found, skip
                     if ( item == null )
@@ -1051,8 +1254,9 @@ namespace RockWeb.Blocks.Examples
         /// 'person' tag.
         /// </summary>
         /// <param name="elemMembers"></param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>a list of family members.</returns>
-        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers, RockContext context )
+        private List<GroupMember> BuildFamilyMembersFromXml( XElement elemMembers, RockContext rockContext )
         {
             var familyMembers = new List<GroupMember>();
 
@@ -1063,9 +1267,8 @@ namespace RockWeb.Blocks.Examples
                 Guid guid = Guid.Parse( personElem.Attribute( "guid" ).Value.Trim() );
 
                 // Attempt to find an existing person...
-                //Person person = new PersonService().Get( guid );
                 Person person = null;
-                if ( _personCache.ContainsKey(guid) )
+                if ( _personCache.ContainsKey( guid ) )
                 {
                     person = _personCache[guid];
                 }
@@ -1090,29 +1293,43 @@ namespace RockWeb.Blocks.Examples
                         person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
                     }
 
+                    if ( personElem.Attribute( "grade" ) != null )
+                    {
+                        person.Grade = int.Parse( personElem.Attribute( "grade" ).Value.Trim() );
+                    }
+                    else if ( personElem.Attribute( "graduationDate" ) != null )
+                    {
+                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim() );
+                    }
+
                     // Now, if their age was given we'll change the given birth year to make them
                     // be this age as of Today.
                     if ( personElem.Attribute( "age" ) != null )
                     {
                         int age = int.Parse( personElem.Attribute( "age" ).Value.Trim() );
-                        int ageDiff = person.Age - age  ?? 0;
+                        int ageDiff = person.Age - age ?? 0;
                         person.BirthDate = person.BirthDate.Value.AddYears( ageDiff );
                     }
-                    
+
+                    person.EmailPreference = EmailPreference.EmailAllowed;
+
                     if ( personElem.Attribute( "email" ) != null )
                     {
                         var emailAddress = personElem.Attribute( "email" ).Value.Trim();
                         if ( emailAddress.IsValidEmail() )
                         {
                             person.Email = emailAddress;
-                            person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.FromTrueFalse();
-                            person.DoNotEmail = personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.FromTrueFalse();
+                            person.IsEmailActive = personElem.Attribute( "emailIsActive" ) != null && personElem.Attribute( "emailIsActive" ).Value.AsBoolean();
+                            if ( personElem.Attribute( "emailDoNotEmail" ) != null && personElem.Attribute( "emailDoNotEmail" ).Value.AsBoolean() )
+                            {
+                                person.EmailPreference = EmailPreference.DoNotEmail;
+                            }
                         }
                     }
 
                     if ( personElem.Attribute( "photoUrl" ) != null )
                     {
-                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), context );
+                        person.Photo = SavePhoto( personElem.Attribute( "photoUrl" ).Value.Trim(), rockContext );
                     }
 
                     if ( personElem.Attribute( "recordType" ) != null && personElem.Attribute( "recordType" ).Value.Trim() == "person" )
@@ -1184,6 +1401,10 @@ namespace RockWeb.Blocks.Examples
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
                             Number = personElem.Attribute( "homePhone" ).Value.Trim()
                         };
+
+                        // Format number since default SaveChanges() is not being used.
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+
                         person.PhoneNumbers.Add( phoneNumber );
                     }
 
@@ -1194,6 +1415,10 @@ namespace RockWeb.Blocks.Examples
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
                             Number = personElem.Attribute( "mobilePhone" ).Value.Trim()
                         };
+
+                        // Format number since default SaveChanges() is not being used.
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+
                         person.PhoneNumbers.Add( phoneNumber );
                     }
 
@@ -1204,6 +1429,10 @@ namespace RockWeb.Blocks.Examples
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
                             Number = personElem.Attribute( "workPhone" ).Value.Trim()
                         };
+
+                        // Format number since default SaveChanges() is not being used.
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+
                         person.PhoneNumbers.Add( phoneNumber );
                     }
 
@@ -1214,17 +1443,32 @@ namespace RockWeb.Blocks.Examples
 
                 if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {
-                    groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
+                    groupMember.GroupRoleId = _adultRoleId;
                 }
                 else
                 {
-                    groupMember.GroupRoleId = new GroupTypeRoleService().Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
+                    groupMember.GroupRoleId = _childRoleId;
                 }
 
                 // person attributes
                 if ( personElem.Elements( "attributes" ).Any() )
                 {
                     AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
+                }
+
+                // person logins
+                if ( personElem.Elements( "logins" ).Any() )
+                {
+                    // in here we are just going to store them in a dictionary for later
+                    // saving because Rock requires that each person have a ID before
+                    // we can call the UserLoginService.Create()
+                    var logins = new List<string>();
+                    foreach ( var login in personElem.Elements( "logins" ).Elements( "login" ) )
+                    {
+                        logins.Add( login.Attribute( "userName" ).Value );
+                    }
+
+                    _peopleLoginsDictionary.Add( groupMember.Person, logins );
                 }
 
                 familyMembers.Add( groupMember );
@@ -1234,7 +1478,76 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// 
+        /// Add a note on the given person's record.
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="noteTypeName"></param>
+        /// <param name="noteText"></param>
+        /// <param name="noteDate">The date the note was created</param>
+        /// <param name="rockContext"></param>
+        private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, RockContext rockContext )
+        {
+            var service = new NoteTypeService( rockContext );
+            var noteType = service.Get( _personEntityTypeId, noteTypeName );
+            // if the note type does not exist, create it
+            if ( noteType == null )
+            {
+                noteType = new NoteType();
+                noteType.IsSystem = false;
+                noteType.EntityTypeId = _personEntityTypeId;
+                noteType.EntityTypeQualifierColumn = string.Empty;
+                noteType.EntityTypeQualifierValue = string.Empty;
+                noteType.Name = noteTypeName;
+                service.Add( noteType );
+                rockContext.SaveChanges();
+            }
+            
+            var noteService = new NoteService( rockContext );
+            var note = new Note()
+            {
+                IsSystem = false,
+                NoteTypeId = noteType.Id,
+                EntityId = personId,
+                Caption = string.Empty,
+                Text = noteText,
+                CreatedDateTime = DateTime.Parse( noteDate ?? RockDateTime.Now.ToString() )
+            };
+            noteService.Add( note );
+        }
+
+        /// <summary>
+        /// Adds any logins stored in the _peopleLoginsDictionary.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddPersonLogins( RockContext rockContext )
+        {
+            var password = tbPassword.Text.Trim();
+            var userLoginService = new UserLoginService( rockContext );
+
+            foreach ( var set in _peopleLoginsDictionary )
+            {
+                foreach ( var userName in set.Value )
+                {
+                    var userLogin = userLoginService.GetByUserName( userName );
+
+                    // only create the login if the username is not already taken
+                    if ( userLogin == null )
+                    {
+                        UserLoginService.Create(
+                                            rockContext,
+                                            set.Key,
+                                            Rock.Model.AuthenticationServiceType.Internal,
+                                            _authenticationDatabaseEntityTypeId,
+                                            userName,
+                                            password,
+                                            isConfirmed: true );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the person attributes and values found in the XML to the person's attribute-value collection.
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
@@ -1245,6 +1558,9 @@ namespace RockWeb.Blocks.Examples
 
             foreach ( var personAttribute in attributes.Elements( "attribute" ) )
             {
+                // Add them to the list of people who need to have their attribute values saved.
+                // This will be done after all the family groups have been saved.
+                _personWithAttributes[groupMember.Person.Guid] = true;
                 foreach ( var pa in personAttribute.Attributes() )
                 {
                     groupMember.Person.SetAttributeValue( pa.Name.LocalName, pa.Value );
@@ -1319,10 +1635,12 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Adds the given addresses in the xml snippet to the given family.
         /// </summary>
-        /// <param name="groupService"></param>
-        /// <param name="family"></param>
-        /// <param name="addresses"></param>
-        private void AddFamilyAddresses( GroupService groupService, Group family, XElement addresses )
+        /// <param name="groupService">The group service.</param>
+        /// <param name="family">The family.</param>
+        /// <param name="addresses">The addresses.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
+        private void AddFamilyAddresses( GroupService groupService, Group family, XElement addresses, RockContext rockContext )
         {
             if ( addresses == null || addresses.Elements( "address" ) == null )
             {
@@ -1332,14 +1650,14 @@ namespace RockWeb.Blocks.Examples
             // First add each person to the familyMembers collection
             foreach ( var addressElem in addresses.Elements( "address" ) )
             {
-                var addressType = ( addressElem.Attribute( "type" ) != null ) ? addressElem.Attribute( "type" ).Value.Trim() : "";
-                var street1 = ( addressElem.Attribute( "street1" ) != null ) ? addressElem.Attribute( "street1" ).Value.Trim() : "";
-                var street2 = ( addressElem.Attribute( "street2" ) != null ) ? addressElem.Attribute( "street2" ).Value.Trim() : "";
-                var city = ( addressElem.Attribute( "city" ) != null ) ? addressElem.Attribute( "city" ).Value.Trim() : "";
-                var state = ( addressElem.Attribute( "state" ) != null ) ? addressElem.Attribute( "state" ).Value.Trim() : "";
-                var zip = ( addressElem.Attribute( "zip" ) != null ) ? addressElem.Attribute( "zip" ).Value.Trim() : "";
-                var lat = ( addressElem.Attribute( "lat" ) != null ) ? addressElem.Attribute( "lat" ).Value.Trim() : "";
-                var lng = ( addressElem.Attribute( "long" ) != null ) ? addressElem.Attribute( "long" ).Value.Trim() : "";
+                var addressType = ( addressElem.Attribute( "type" ) != null ) ? addressElem.Attribute( "type" ).Value.Trim() : string.Empty;
+                var street1 = ( addressElem.Attribute( "street1" ) != null ) ? addressElem.Attribute( "street1" ).Value.Trim() : string.Empty;
+                var street2 = ( addressElem.Attribute( "street2" ) != null ) ? addressElem.Attribute( "street2" ).Value.Trim() : string.Empty;
+                var city = ( addressElem.Attribute( "city" ) != null ) ? addressElem.Attribute( "city" ).Value.Trim() : string.Empty;
+                var state = ( addressElem.Attribute( "state" ) != null ) ? addressElem.Attribute( "state" ).Value.Trim() : string.Empty;
+                var zip = ( addressElem.Attribute( "zip" ) != null ) ? addressElem.Attribute( "zip" ).Value.Trim() : string.Empty;
+                var lat = ( addressElem.Attribute( "lat" ) != null ) ? addressElem.Attribute( "lat" ).Value.Trim() : string.Empty;
+                var lng = ( addressElem.Attribute( "long" ) != null ) ? addressElem.Attribute( "long" ).Value.Trim() : string.Empty;
 
                 string locationTypeGuid;
 
@@ -1359,7 +1677,7 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Call replica of the groupService's AddNewFamilyAddress in an attempt to speed it up
-                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, CurrentPersonAlias );
+                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, rockContext );
 
                 var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
 
@@ -1382,14 +1700,12 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Saves the new family.
+        /// Creates a new family using the given set of people.
         /// </summary>
         /// <param name="familyMembers">The family members.</param>
         /// <param name="campusId">The campus identifier.</param>
-        /// <param name="savePersonAttributes">if set to <c>true</c> [save person attributes].</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId, bool savePersonAttributes, PersonAlias personAlias )
+        public Group CreateNewFamily( List<GroupMember> familyMembers, int? campusId )
         {
             var familyGroupType = GroupTypeCache.GetFamilyGroupType();
 
@@ -1400,13 +1716,6 @@ namespace RockWeb.Blocks.Examples
                 familyGroup.Name = familyMembers.FirstOrDefault().Person.LastName + " Family";
                 familyGroup.CampusId = campusId;
 
-                int? childRoleId = null;
-                var childRole = new GroupTypeRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
-                if ( childRole != null )
-                {
-                    childRoleId = childRole.Id;
-                }
-
                 foreach ( var familyMember in familyMembers )
                 {
                     var person = familyMember.Person;
@@ -1416,37 +1725,16 @@ namespace RockWeb.Blocks.Examples
                     }
                 }
 
-                //Add( familyGroup, personAlias );
-                //Save( familyGroup, personAlias );
-
                 foreach ( var groupMember in familyMembers )
                 {
                     var person = groupMember.Person;
-
-                    if ( savePersonAttributes )
-                    {
-                        var newValues = person.AttributeValues;
-
-                        person.LoadAttributes();
-                        foreach ( var attributeCache in person.Attributes.Select( a => a.Value ) )
-                        {
-                            string oldValue = person.GetAttributeValue( attributeCache.Key ) ?? string.Empty;
-                            string newValue = string.Empty;
-                            if ( newValues != null &&
-                                newValues.ContainsKey( attributeCache.Key ) &&
-                                newValues[attributeCache.Key].Count > 0 )
-                            {
-                                newValue = newValues[attributeCache.Key][0].Value ?? string.Empty;
-                            }
-                        }
-                    }
 
                     //if ( !person.Aliases.Any( a => a.AliasPersonId == person.Id ) )
                     //{
                     //    person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
                     //}
 
-                    if ( groupMember.GroupRoleId != childRoleId )
+                    if ( groupMember.GroupRoleId != _childRoleId )
                     {
                         person.GivingGroup = familyGroup;
                     }
@@ -1468,18 +1756,18 @@ namespace RockWeb.Blocks.Examples
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="zip">The zip.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, PersonAlias personAlias )
+        /// <param name="rockContext">The rock context.</param>
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, RockContext rockContext )
         {
-            if ( !String.IsNullOrWhiteSpace( street1 ) ||
-                 !String.IsNullOrWhiteSpace( street2 ) ||
-                 !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( zip ) )
+            if ( !string.IsNullOrWhiteSpace( street1 ) ||
+                 !string.IsNullOrWhiteSpace( street2 ) ||
+                 !string.IsNullOrWhiteSpace( city ) ||
+                 !string.IsNullOrWhiteSpace( zip ) )
             {
                 var groupLocation = new GroupLocation();
 
                 // Get new or existing location and associate it with group
-                var location = new LocationService().Get( street1, street2, city, state, zip );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip );
                 groupLocation.Location = location;
                 groupLocation.IsMailingLocation = true;
                 groupLocation.IsMappedLocation = true;
@@ -1512,18 +1800,23 @@ namespace RockWeb.Blocks.Examples
                 sb.AppendLine( ex.InnerException.Message.ConvertCrLfToHtmlBr() );
                 ex = ex.InnerException;
             }
+
             return sb.ToString();
         }
 
         #endregion
 
-        # region Helper Class
+        #region Helper Class
         protected class ClassGroupLocation
         {
             public string Name { get; set; }
+
             public int GroupId { get; set; }
+
             public int LocationId { get; set; }
+
             public double MinAge { get; set; }
+
             public double MaxAge { get; set; }
         }
         #endregion

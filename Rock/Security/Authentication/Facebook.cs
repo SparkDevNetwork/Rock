@@ -131,87 +131,98 @@ namespace Rock.Security.ExternalAuthentication
                     dynamic me = fbClient.Get( "me" );
                     string facebookId = "FACEBOOK_" + me.id.ToString();
 
-                    // query for matching id in the user table 
-                    var userLoginService = new UserLoginService();
-                    var user = userLoginService.GetByUserName( facebookId );
+                    UserLogin user = null;
 
-                    // if no user was found see if we can find a match in the person table
-                    if ( user == null )
+                    RockTransactionScope.WrapTransaction( () =>
                     {
-                        try
+                        // query for matching id in the user table 
+                        var rockContext = new RockContext();
+                        var userLoginService = new UserLoginService( rockContext );
+                        user = userLoginService.GetByUserName( facebookId );
+
+                        // if no user was found see if we can find a match in the person table
+                        if ( user == null )
                         {
-                            RockTransactionScope.WrapTransaction( () =>
+                            try
                             {
-                                using ( new UnitOfWorkScope() )
+
+                                var familyChanges = new List<string>();
+                                var familyMemberChanges = new List<string>();
+                                var PersonChanges = new List<string>();
+
+                                // determine if we can find a match and if so add an user login record
+
+                                // get properties from Facebook dynamic object
+                                string lastName = me.last_name.ToString();
+                                string firstName = me.first_name.ToString();
+                                string email = me.email.ToString();
+
+                                var personService = new PersonService( rockContext );
+                                var person = personService.Queryable( "Aliases" ).FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
+
+                                if ( person != null )
                                 {
-                                    var familyChanges = new List<string>();
-                                    var familyMemberChanges = new List<string>();
-                                    var PersonChanges = new List<string>();
+                                    // since we have the data enter the birthday from Facebook to the db if we don't have it yet
+                                    DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
 
-                                    // determine if we can find a match and if so add an user login record
-
-                                    // get properties from Facebook dynamic object
-                                    string lastName = me.last_name.ToString();
-                                    string firstName = me.first_name.ToString();
-                                    string email = me.email.ToString();
-
-                                    var personService = new PersonService();
-                                    var person = personService.Queryable( "Aliases" ).FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
-
-                                    if ( person != null )
+                                    if ( person.BirthDay == null )
                                     {
-                                        // since we have the data enter the birthday from Facebook to the db if we don't have it yet
-                                        DateTime birthdate = Convert.ToDateTime( me.birthday.ToString() );
+                                        History.EvaluateChange( PersonChanges, "Birth Date", person.BirthDate, person.BirthDate );
+                                        person.BirthDate = birthdate;
 
-                                        if ( person.BirthDay == null )
-                                        {
-                                            person.BirthDate = birthdate;
-                                            History.EvaluateChange( PersonChanges, "Birth Date", null, person.BirthDate );
-
-                                            personService.Save( person, person.PrimaryAlias );
-                                            
-                                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                                person.Id, PersonChanges, person.PrimaryAlias );
-                                        }
-
+                                        rockContext.SaveChanges();
+                                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                            person.Id, PersonChanges );
                                     }
-                                    else
-                                    {
-                                        person = new Person();
-                                        person.IsSystem = false;
-                                        person.RecordTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                                        person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                                        person.FirstName = me.first_name.ToString();
-                                        person.LastName = me.last_name.ToString();
-                                        person.Email = me.email.ToString();
-                                        if ( me.gender.ToString() == "male" )
-                                            person.Gender = Gender.Male;
-                                        else if ( me.gender.ToString() == "female" )
-                                            person.Gender = Gender.Female;
-                                        else
-                                            person.Gender = Gender.Unknown;
-                                        person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
-                                        person.DoNotEmail = false;
-
-                                        new GroupService().SaveNewFamily( person, null, false, null );
-                                    }
-
-                                    user = userLoginService.Create( person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
                                 }
-                            } );
+                                else
+                                {
+                                    person = new Person();
+                                    person.IsSystem = false;
+                                    person.RecordTypeValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+                                    person.RecordStatusValueId = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                                    person.FirstName = me.first_name.ToString();
+                                    person.LastName = me.last_name.ToString();
+                                    person.Email = me.email.ToString();
+                                    if ( me.gender.ToString() == "male" )
+                                        person.Gender = Gender.Male;
+                                    else if ( me.gender.ToString() == "female" )
+                                        person.Gender = Gender.Female;
+                                    else
+                                        person.Gender = Gender.Unknown;
+                                    person.BirthDate = Convert.ToDateTime( me.birthday.ToString() );
+                                    person.EmailPreference = EmailPreference.EmailAllowed;
+
+                                    GroupService.SaveNewFamily( rockContext, person, null, false );
+                                }
+
+                                user = UserLoginService.Create( rockContext, person, AuthenticationServiceType.External, this.TypeId, facebookId, "fb", true );
+
+                            }
+                            catch ( Exception ex )
+                            {
+                                string msg = ex.Message;
+                                // TODO: probably should report something...
+                            }
                         }
-                        catch ( Exception ex )
+                        else
                         {
-                            string msg = ex.Message;
-                            // TODO: probably should report something...
+                            // TODO: Show label indicating inability to find user corresponding to facebook id
                         }
+                    } );
 
-                        // TODO: Show label indicating inability to find user corresponding to facebook id
+                    if ( user != null )
+                    {
+                        username = user.UserName;
+                        returnUrl = oAuthResult.State;
+                        return true;
                     }
-
-                    username = user.UserName;
-                    returnUrl = oAuthResult.State;
-                    return true;
+                    else
+                    {
+                        username = string.Empty;
+                        returnUrl = string.Empty;
+                        return false;
+                    }
 
                 }
                 catch ( FacebookOAuthException oae )
@@ -267,6 +278,35 @@ namespace Rock.Security.ExternalAuthentication
         public override string EncodePassword( UserLogin user, string password )
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports change password].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsChangePassword
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="oldPassword">The old password.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <param name="warningMessage">The warning message.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
+        {
+            warningMessage = "not supported";
+            return false;
         }
     }
 }

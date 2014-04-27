@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using Rock.Data;
 
 namespace Rock.Security
 {
@@ -87,7 +88,7 @@ namespace Rock.Security
                 return role;
             else
             {
-                Rock.Model.GroupService groupService = new Rock.Model.GroupService();
+                Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
                 Rock.Model.Group groupModel = groupService.Get( id );
 
                 if ( groupModel != null && groupModel.IsSecurityRole == true )
@@ -120,7 +121,7 @@ namespace Rock.Security
         {
             List<Role> roles = new List<Role>();
 
-            Rock.Model.GroupService groupService = new Rock.Model.GroupService();
+            Rock.Model.GroupService groupService = new Rock.Model.GroupService( new RockContext() );
             foreach ( int id in groupService.Queryable()
                 .Where( g => g.IsSecurityRole == true )
                 .OrderBy( g => g.Name )

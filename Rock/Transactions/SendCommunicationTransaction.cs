@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -44,18 +45,14 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var communication = new CommunicationService().Get( CommunicationId );
+            var communication = new CommunicationService( new RockContext() ).Get( CommunicationId );
 
             if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
                 var channel = communication.Channel;
                 if ( channel != null )
                 {
-                    var transport = channel.Transport;
-                    if ( transport != null )
-                    {
-                        transport.Send( communication, PersonAlias );
-                    }
+                    channel.Send( communication );
                 }
             }
         }

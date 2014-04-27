@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AttributeQualifiersController : Rock.Rest.ApiController<Rock.Model.AttributeQualifier>
     {
-        public AttributeQualifiersController() : base( new Rock.Model.AttributeQualifierService() ) { } 
+        public AttributeQualifiersController() : base( new Rock.Model.AttributeQualifierService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -30,7 +30,8 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField("Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
-    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful lookup.", true, 200 )]
+    [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
+    [DisallowConcurrentExecution]
     public class LocationServicesVerify : IJob
     {
         
@@ -63,8 +64,9 @@ namespace Rock.Jobs
             int retryPeriod = Int32.Parse( dataMap.GetString( "RetryPeriod" ) );
 
             DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
-            
-            LocationService locationService = new LocationService();
+
+            var rockContext = new Rock.Data.RockContext();
+            LocationService locationService = new LocationService(rockContext);
             var addresses = locationService.Queryable()
                                 .Where( l => (
                                     (l.IsGeoPointLocked == null || l.IsGeoPointLocked == false) // don't ever try locked address
@@ -79,8 +81,8 @@ namespace Rock.Jobs
 
             foreach ( var address in addresses )
             {
-                locationService.Verify( address, null, false ); // currently not reverifying 
-                locationService.Save( address );
+                locationService.Verify( address, false ); // currently not reverifying 
+                rockContext.SaveChanges();
                 System.Threading.Thread.Sleep( throttlePeriod );
             }
 

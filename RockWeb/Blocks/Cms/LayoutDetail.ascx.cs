@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Crm
             int? layoutId = PageParameter(pageReference, "layoutId" ).AsInteger();
             if ( layoutId != null )
             {
-                Layout layout = new LayoutService().Get( layoutId.Value );
+                Layout layout = new LayoutService( new RockContext() ).Get( layoutId.Value );
                 if ( layout != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( layout.Name, pageReference ) );
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            var layout = new LayoutService().Get( int.Parse( hfLayoutId.Value ) );
+            var layout = new LayoutService( new RockContext() ).Get( int.Parse( hfLayoutId.Value ) );
             ShowEditDetails( layout );
         }
 
@@ -141,7 +141,8 @@ namespace RockWeb.Blocks.Crm
         {
             if ( Page.IsValid )
             {
-                LayoutService layoutService = new LayoutService();
+                var rockContext = new RockContext();
+                LayoutService layoutService = new LayoutService( rockContext );
                 Layout layout;
 
                 int layoutId = int.Parse( hfLayoutId.Value );
@@ -167,15 +168,12 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                RockTransactionScope.WrapTransaction( () =>
+                if ( layout.Id.Equals( 0 ) )
                 {
-                    if ( layout.Id.Equals( 0 ) )
-                    {
-                        layoutService.Add( layout, CurrentPersonAlias );
-                    }
+                    layoutService.Add( layout );
+                }
 
-                    layoutService.Save( layout, CurrentPersonAlias );
-                } );
+                rockContext.SaveChanges();
 
                 LayoutCache.Flush( layout.Id );
 
@@ -202,7 +200,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 // Cancelling on Edit
-                Layout layout = new LayoutService().Get( int.Parse( hfLayoutId.Value ) );
+                Layout layout = new LayoutService( new RockContext() ).Get( int.Parse( hfLayoutId.Value ) );
                 ShowReadonlyDetails( layout );
             }
         }
@@ -238,7 +236,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                layout = new LayoutService().Get( itemKeyValue );
+                layout = new LayoutService( new RockContext() ).Get( itemKeyValue );
             }
             else
             {

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -164,10 +164,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person id.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -175,10 +174,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }
 
         #endregion
@@ -246,10 +244,10 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Saves the attribute values.
         /// </summary>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void SaveAttributeValues( PersonAlias personAlias )
+        public virtual void SaveAttributeValues()
         {
-            var service = new Rock.Data.Service<T>();
+            var rockContext = new Rock.Data.RockContext();
+            var service = new Rock.Data.Service<T>( rockContext );
             var model = service.Get( this.Id );
 
             if ( model != null )
@@ -259,7 +257,7 @@ namespace Rock.Web.Cache
                 {
                     if ( this.AttributeValues.ContainsKey( attribute.Key ) )
                     {
-                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], personAlias );
+                        Rock.Attribute.Helper.SaveAttributeValues( model, attribute.Value, this.AttributeValues[attribute.Key], rockContext );
                     }
                 }
             }
@@ -278,6 +276,13 @@ namespace Rock.Web.Cache
             {
                 return this.AttributeValues[key][0].Value;
             }
+
+            if (this.Attributes != null &&
+                this.Attributes.ContainsKey(key))
+            {
+                return this.Attributes[key].DefaultValue;
+            }
+
             return null;
         }
 
@@ -288,18 +293,17 @@ namespace Rock.Web.Cache
         /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            if ( this.AttributeValues != null &&
-                this.AttributeValues.ContainsKey( key ) &&
-                this.AttributeValues[key].Count > 0 )
+            string value = GetAttributeValue( key );
+            if (!string.IsNullOrWhiteSpace(value))
             {
-                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+                return value.SplitDelimitedValues().ToList();
             }
 
             return new List<string>();
         }
 
         /// <summary>
-        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues()" /> method to save all values to database
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
@@ -321,7 +325,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public virtual void ReloadAttributeValues()
         {
-            var service = new Rock.Data.Service<T>();
+            var service = new Rock.Data.Service<T>( new RockContext() );
             var model = service.Get( this.Id );
 
             if ( model != null )

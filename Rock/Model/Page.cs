@@ -438,6 +438,21 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add( "PageId", this.Id );
+                Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
         /// </summary>
         /// <returns>

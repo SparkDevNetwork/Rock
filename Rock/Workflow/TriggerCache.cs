@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow
@@ -60,7 +60,7 @@ namespace Rock.Workflow
             {
                 EntityTriggers = new Dictionary<string, List<WorkflowTrigger>>();
 
-                var service = new WorkflowTriggerService();
+                var service = new WorkflowTriggerService( new RockContext() );
 
                 foreach ( var trigger in service.Queryable() )
                 {

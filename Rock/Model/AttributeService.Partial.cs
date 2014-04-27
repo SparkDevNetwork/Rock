@@ -36,7 +36,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Attribute> GetByEntityTypeId( int? entityTypeId )
         {
-            var query = Repository.AsQueryable();
+            var query = Queryable();
 
             if ( entityTypeId.HasValue )
             {
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> that are part of the specified <see cref="Rock.Model.Category"/></returns>
         public IQueryable<Attribute> GetByCategoryId( int categoryId )
         {
-            return Repository.AsQueryable().Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+            return Queryable().Where( a => a.Categories.Any( c => c.Id == categoryId ) );
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.Attribute">Attributes</see> that matches the specified value.</returns>
         public IQueryable<Attribute> Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
         {
-            var query = Repository.AsQueryable();
+            var query = Queryable();
 
             if ( entityTypeId.HasValue )
             {
@@ -106,9 +106,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="fieldTypeId">A <see cref="System.Int32"/> that represents the FileTypeId of the <see cref="Rock.Model.BinaryFileType"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.Attribute">Attributes</see> that uses the specified <see cref="Rock.Model.BinaryFileType"/>.</returns>
-        public IEnumerable<Attribute> GetByFieldTypeId( int fieldTypeId )
+        public IQueryable<Attribute> GetByFieldTypeId( int fieldTypeId )
         {
-            return Repository.Find( t => t.FieldTypeId == fieldTypeId ).OrderBy( t => t.Order );
+            return Queryable().Where( t => t.FieldTypeId == fieldTypeId ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Rock.Model
         /// <returns>A queryable collection containing the Global <see cref="Rock.Model.Attribute">Attributes</see>.</returns>
         public IQueryable<Attribute> GetGlobalAttributes()
         {
-            var query = Repository.AsQueryable( "Categories,AttributeQualifiers" );
+            var query = Queryable( "Categories,AttributeQualifiers" );
             query = query.Where( t => !t.EntityTypeId.HasValue);
 
             return query.Where( t => t.EntityTypeQualifierColumn == string.Empty &&  t.EntityTypeQualifierValue == string.Empty);
@@ -152,35 +152,7 @@ namespace Rock.Model
         {
             return this.Get( null, Attribute.SYSTEM_SETTING_QUALIFIER, string.Empty, key );
         }
-        
-        /// <summary>
-        /// Saves the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        public override bool Save( Attribute item, PersonAlias personAlias )
-        {
-            // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
-            var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
-            var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
 
-            if ( item.FieldTypeId == fieldTypeImage.Id || item.FieldTypeId == fieldTypeBinaryFile.Id )
-            {
-                int? binaryFileId = item.DefaultValue.AsInteger();
-                if ( binaryFileId.HasValue )
-                {
-                    BinaryFileService binaryFileService = new BinaryFileService( this.RockContext );
-                    var binaryFile = binaryFileService.Get( binaryFileId.Value );
-                    if ( binaryFile != null && binaryFile.IsTemporary )
-                    {
-                        binaryFile.IsTemporary = false;
-                    }
-                }
-            }
-
-            return base.Save( item, personAlias );
-        }
     }
 
     

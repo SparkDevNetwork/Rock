@@ -110,7 +110,7 @@ public class SyndicationFeedHelper
 
                 if(!String.IsNullOrEmpty(detailPage))
                 {
-                    detailPageID = new Rock.Model.PageService().Get(new Guid(detailPage)).Id;
+                    detailPageID = new Rock.Model.PageService( new Rock.Data.RockContext() ).Get( new Guid( detailPage ) ).Id;
 
                     detailPageBaseUrl = new PageReference( detailPageID ).BuildUrl();
                 }

@@ -25,6 +25,8 @@ using Rock;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -57,7 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
             if ( Person != null )
             {
-                var personService = new PersonService();
+                var personService = new PersonService( new RockContext() );
                 foreach ( var family in personService.GetFamilies( Person.Id ) )
                 {
                     ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
@@ -112,6 +114,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 ", ddlGrade.ClientID, ypGraduation.ClientID, _gradeTransitionDate.Year, gradeFactorReactor, RockDateTime.Now.Year );
             ScriptManager.RegisterStartupScript( ddlGrade, ddlGrade.GetType(), "grade-selection-" + BlockId.ToString(), script, true );
 
+            string smsScript = @"
+    $('.js-sms-number').click(function () {
+        if ($(this).is(':checked')) {
+            $('.js-sms-number').not($(this)).prop('checked', false);
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
+
         }
 
         /// <summary>
@@ -145,215 +156,237 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new Rock.Data.UnitOfWorkScope() )
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+
+                var changes = new List<string>();
+
+                var person = personService.Get( Person.Id );
+
+                int? orphanedPhotoId = null;
+                if ( person.PhotoId != imgPhoto.BinaryFileId )
                 {
-                    var personService = new PersonService();
+                    orphanedPhotoId = person.PhotoId;
+                    person.PhotoId = imgPhoto.BinaryFileId;
 
-                    var changes = new List<string>();
-
-                    var person = personService.Get( Person.Id );
-
-                    int? orphanedPhotoId = null;
-                    if ( person.PhotoId != imgPhoto.BinaryFileId )
+                    if ( orphanedPhotoId.HasValue )
                     {
-                        orphanedPhotoId = person.PhotoId;
-                        person.PhotoId = imgPhoto.BinaryFileId;
-
-                        if ( orphanedPhotoId.HasValue )
+                        if ( person.PhotoId.HasValue )
                         {
-                            if ( person.PhotoId.HasValue )
-                            {
-                                changes.Add( "Modified the photo." );
-                            }
-                            else
-                            {
-                                changes.Add( "Deleted the photo." );
-                            }
-                        }
-                        else if ( person.PhotoId.HasValue )
-                        {
-                            changes.Add( "Added a photo." );
-                        }
-                    }
-
-                    int? newTitleId = ddlTitle.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
-                    person.TitleValueId = newTitleId;
-
-                    History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
-                    person.FirstName = tbFirstName.Text;
-
-                    string nickName = string.IsNullOrWhiteSpace( tbNickName.Text ) ? tbFirstName.Text : tbNickName.Text;
-                    History.EvaluateChange( changes, "Nick Name", person.NickName, nickName );
-                    person.NickName = tbNickName.Text;
-
-                    History.EvaluateChange( changes, "Middle Name", person.MiddleName, tbMiddleName.Text );
-                    person.MiddleName = tbMiddleName.Text;
-
-                    History.EvaluateChange( changes, "Last Name", person.LastName, tbLastName.Text );
-                    person.LastName = tbLastName.Text;
-
-                    int? newSuffixId = ddlSuffix.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
-                    person.SuffixValueId = newSuffixId;
-
-                    var birthMonth = person.BirthMonth;
-                    var birthDay = person.BirthDay;
-                    var birthYear = person.BirthYear;
-
-                    var birthday = bpBirthDay.SelectedDate;
-                    if ( birthday.HasValue )
-                    {
-                        person.BirthMonth = birthday.Value.Month;
-                        person.BirthDay = birthday.Value.Day;
-                        if ( birthday.Value.Year != DateTime.MinValue.Year )
-                        {
-                            person.BirthYear = birthday.Value.Year;
+                            changes.Add( "Modified the photo." );
                         }
                         else
                         {
-                            person.BirthYear = null;
+                            changes.Add( "Deleted the photo." );
                         }
+                    }
+                    else if ( person.PhotoId.HasValue )
+                    {
+                        changes.Add( "Added a photo." );
+                    }
+                }
+
+                int? newTitleId = ddlTitle.SelectedValueAsInt();
+                History.EvaluateChange( changes, "Title", DefinedValueCache.GetName( person.TitleValueId ), DefinedValueCache.GetName( newTitleId ) );
+                person.TitleValueId = newTitleId;
+
+                History.EvaluateChange( changes, "First Name", person.FirstName, tbFirstName.Text );
+                person.FirstName = tbFirstName.Text;
+
+                string nickName = string.IsNullOrWhiteSpace( tbNickName.Text ) ? tbFirstName.Text : tbNickName.Text;
+                History.EvaluateChange( changes, "Nick Name", person.NickName, nickName );
+                person.NickName = tbNickName.Text;
+
+                History.EvaluateChange( changes, "Middle Name", person.MiddleName, tbMiddleName.Text );
+                person.MiddleName = tbMiddleName.Text;
+
+                History.EvaluateChange( changes, "Last Name", person.LastName, tbLastName.Text );
+                person.LastName = tbLastName.Text;
+
+                int? newSuffixId = ddlSuffix.SelectedValueAsInt();
+                History.EvaluateChange( changes, "Suffix", DefinedValueCache.GetName( person.SuffixValueId ), DefinedValueCache.GetName( newSuffixId ) );
+                person.SuffixValueId = newSuffixId;
+
+                var birthMonth = person.BirthMonth;
+                var birthDay = person.BirthDay;
+                var birthYear = person.BirthYear;
+
+                var birthday = bpBirthDay.SelectedDate;
+                if ( birthday.HasValue )
+                {
+                    person.BirthMonth = birthday.Value.Month;
+                    person.BirthDay = birthday.Value.Day;
+                    if ( birthday.Value.Year != DateTime.MinValue.Year )
+                    {
+                        person.BirthYear = birthday.Value.Year;
                     }
                     else
                     {
-                        person.BirthDate = null;
+                        person.BirthYear = null;
                     }
+                }
+                else
+                {
+                    person.BirthDate = null;
+                }
 
-                    History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
-                    History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
-                    History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
+                History.EvaluateChange( changes, "Birth Month", birthMonth, person.BirthMonth );
+                History.EvaluateChange( changes, "Birth Day", birthDay, person.BirthDay );
+                History.EvaluateChange( changes, "Birth Year", birthYear, person.BirthYear );
 
-                    DateTime? graduationDate = null;
-                    if (ypGraduation.SelectedYear.HasValue)
+                DateTime? graduationDate = null;
+                if ( ypGraduation.SelectedYear.HasValue )
+                {
+                    graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
+                }
+                History.EvaluateChange( changes, "Anniversary Date", person.GraduationDate, graduationDate );
+                person.GraduationDate = graduationDate;
+
+                History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
+                person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
+
+                var newGender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+                History.EvaluateChange( changes, "Gender", person.Gender, newGender );
+                person.Gender = newGender;
+
+                int? newMaritalStatusId = rblMaritalStatus.SelectedValueAsInt();
+                History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
+                person.MaritalStatusValueId = newMaritalStatusId;
+
+                int? newConnectionStatusId = rblStatus.SelectedValueAsInt();
+                History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
+                person.ConnectionStatusValueId = newConnectionStatusId;
+
+                var phoneNumberTypeIds = new List<int>();
+
+                bool smsSelected = false;
+
+                foreach ( RepeaterItem item in rContactInfo.Items )
+                {
+                    HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                    PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                    CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+                    CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+
+                    if ( hfPhoneType != null &&
+                        pnbPhone != null &&
+                        cbSms != null &&
+                        cbUnlisted != null )
                     {
-                        graduationDate = new DateTime( ypGraduation.SelectedYear.Value, _gradeTransitionDate.Month, _gradeTransitionDate.Day );
-                    }
-                    History.EvaluateChange( changes, "Anniversary Date", person.GraduationDate, graduationDate );
-                    person.GraduationDate = graduationDate;
-
-                    History.EvaluateChange( changes, "Anniversary Date", person.AnniversaryDate, dpAnniversaryDate.SelectedDate );
-                    person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-
-                    var newGender = rblGender.SelectedValue.ConvertToEnum<Gender>();
-                    History.EvaluateChange( changes, "Gender", person.Gender, newGender );
-                    person.Gender = newGender;
-
-                    int? newMaritalStatusId = rblMaritalStatus.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Marital Status", DefinedValueCache.GetName( person.MaritalStatusValueId ), DefinedValueCache.GetName( newMaritalStatusId ) );
-                    person.MaritalStatusValueId = newMaritalStatusId;
-
-                    int? newConnectionStatusId = rblStatus.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Connection Status", DefinedValueCache.GetName( person.ConnectionStatusValueId ), DefinedValueCache.GetName( newConnectionStatusId ) );
-                    person.ConnectionStatusValueId = newConnectionStatusId;
-
-                    var phoneNumberTypeIds = new List<int>();
-
-                    foreach ( RepeaterItem item in rContactInfo.Items )
-                    {
-                        HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
-                        TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
-                        CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
-                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
-
-                        if ( hfPhoneType != null &&
-                            tbPhone != null &&
-                            cbSms != null &&
-                            cbUnlisted != null )
+                        if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
                         {
-                            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( tbPhone.Text ) ) )
+                            int phoneNumberTypeId;
+                            if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
                             {
-                                int phoneNumberTypeId;
-                                if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                                var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
+                                string oldPhoneNumber = string.Empty;
+                                if ( phoneNumber == null )
                                 {
-                                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberTypeId );
-                                    string oldPhoneNumber = string.Empty;
-                                    if ( phoneNumber == null )
-                                    {
-                                        phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
-                                        person.PhoneNumbers.Add( phoneNumber );
-                                    }
-                                    else
-                                    {
-                                        oldPhoneNumber = phoneNumber.NumberFormatted;
-                                    }
+                                    phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                                    person.PhoneNumbers.Add( phoneNumber );
+                                }
+                                else
+                                {
+                                    oldPhoneNumber = phoneNumber.NumberFormattedWithCountryCode;
+                                }
 
-                                    phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                                phoneNumber.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
+                                phoneNumber.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
+
+                                // Only allow one number to have SMS selected
+                                if ( smsSelected )
+                                {
+                                    phoneNumber.IsMessagingEnabled = false;
+                                }
+                                else
+                                {
                                     phoneNumber.IsMessagingEnabled = cbSms.Checked;
-                                    phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                                    phoneNumberTypeIds.Add( phoneNumberTypeId );
-
-                                    History.EvaluateChange( changes,
-                                        string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
-                                        oldPhoneNumber, phoneNumber.NumberFormatted );
+                                    smsSelected = cbSms.Checked;
                                 }
+
+                                phoneNumber.IsUnlisted = cbUnlisted.Checked;
+                                phoneNumberTypeIds.Add( phoneNumberTypeId );
+
+                                History.EvaluateChange( changes,
+                                    string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumberTypeId ) ),
+                                    oldPhoneNumber, phoneNumber.NumberFormattedWithCountryCode );
                             }
                         }
                     }
+                }
 
-                    // Remove any blank numbers
-                    var phoneNumberService = new PhoneNumberService();
-                    foreach ( var phoneNumber in person.PhoneNumbers
-                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
-                        .ToList() )
+                // Remove any blank numbers
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                foreach ( var phoneNumber in person.PhoneNumbers
+                    .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                    .ToList() )
+                {
+                    History.EvaluateChange( changes,
+                        string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
+                        phoneNumber.ToString(), string.Empty );
+
+                    person.PhoneNumbers.Remove( phoneNumber );
+                    phoneNumberService.Delete( phoneNumber );
+                }
+
+                History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
+                person.Email = tbEmail.Text.Trim();
+
+                History.EvaluateChange( changes, "Email Active", (person.IsEmailActive ?? true), cbIsEmailActive.Checked );
+                person.IsEmailActive = cbIsEmailActive.Checked;
+
+                var newEmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
+                History.EvaluateChange( changes, "Email Preference", person.EmailPreference, newEmailPreference );
+                person.EmailPreference = newEmailPreference;
+
+                int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
+                if ( person.GivingGroupId != newGivingGroupId )
+                {
+                    string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
+                    string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
+                    History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
+                }
+
+                int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
+                History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
+                person.RecordStatusValueId = newRecordStatusId;
+
+                int? newRecordStatusReasonId = null;
+                if ( person.RecordStatusValueId.HasValue && person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+                {
+                    newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
+                }
+                History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
+                person.RecordStatusReasonValueId = newRecordStatusReasonId;
+
+                if ( person.IsValid )
+                {
+                    if ( rockContext.SaveChanges() > 0 )
                     {
-                        History.EvaluateChange( changes,
-                            string.Format( "{0} Phone", DefinedValueCache.GetName( phoneNumber.NumberTypeValueId ) ),
-                            phoneNumber.NumberFormatted, string.Empty );
-
-                        person.PhoneNumbers.Remove( phoneNumber );
-                        phoneNumberService.Delete( phoneNumber, CurrentPersonAlias );
-                    }
-
-                    History.EvaluateChange( changes, "Email", person.Email, tbEmail.Text );
-                    person.Email = tbEmail.Text.Trim();
-
-                    int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
-                    if ( person.GivingGroupId != newGivingGroupId )
-                    {
-                        string oldGivingGroupName = person.GivingGroup != null ? person.GivingGroup.Name : string.Empty;
-                        string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
-                        History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
-                    }
-
-                    int? newRecordStatusId = ddlRecordStatus.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Record Status", DefinedValueCache.GetName( person.RecordStatusValueId ), DefinedValueCache.GetName( newRecordStatusId ) );
-                    person.RecordStatusValueId = newRecordStatusId;
-
-                    int? newRecordStatusReasonId = ddlReason.SelectedValueAsInt();
-                    History.EvaluateChange( changes, "Record Status Reason", DefinedValueCache.GetName( person.RecordStatusReasonValueId ), DefinedValueCache.GetName( newRecordStatusReasonId ) );
-                    person.RecordStatusReasonValueId = newRecordStatusReasonId;
-
-                    if ( person.IsValid )
-                    {
-                        if ( personService.Save( person, CurrentPersonAlias ) )
+                        if ( changes.Any() )
                         {
-                            if ( changes.Any() )
-                            {
-                                new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                    Person.Id, changes, CurrentPersonAlias );
-                            }
-
-                            if ( orphanedPhotoId.HasValue )
-                            {
-                                BinaryFileService binaryFileService = new BinaryFileService( personService.RockContext );
-                                var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                                if ( binaryFile != null )
-                                {
-                                    // marked the old images as IsTemporary so they will get cleaned up later
-                                    binaryFile.IsTemporary = true;
-                                    binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                                }
-                            }
-
-                            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+                            HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                                Person.Id, changes );
                         }
-                    }
-                } );
-            }
 
+                        if ( orphanedPhotoId.HasValue )
+                        {
+                            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                            var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                            if ( binaryFile != null )
+                            {
+                                // marked the old images as IsTemporary so they will get cleaned up later
+                                binaryFile.IsTemporary = true;
+                                rockContext.SaveChanges();
+                            }
+                        }
+
+                        Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+                    }
+                }
+            } );
         }
 
         /// <summary>
@@ -403,13 +436,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ddlGrade.SelectedValue = selectedGrade;
 
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
-            rblGender.SelectedValue = Person.Gender.ConvertToString();
+            rblGender.SelectedValue = Person.Gender.ConvertToString(false);
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
             rblStatus.SelectedValue = Person.ConnectionStatusValueId.HasValue ? Person.ConnectionStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
+            cbIsEmailActive.Checked = Person.IsEmailActive ?? true;
+            rblEmailPreference.SelectedValue = Person.EmailPreference.ConvertToString(false);
 
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+            ddlReason.Visible = Person.RecordStatusReasonValueId.HasValue && 
+                Person.RecordStatusValueId.Value == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id; 
 
             var mobilePhoneType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
 
@@ -428,6 +465,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
                         phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                    }
+                    else
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
                     }
 
                     phoneNumbers.Add( phoneNumber );

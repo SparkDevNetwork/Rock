@@ -121,6 +121,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> that the batch is associated with.
         /// </value>
+        [DataMember]
         public virtual Campus Campus { get; set; }
 
         /// <summary>

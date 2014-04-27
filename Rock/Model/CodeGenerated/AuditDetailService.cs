@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="AuditDetailService"/> class
         /// </summary>
-        public AuditDetailService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuditDetailService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public AuditDetailService(IRepository<AuditDetail> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuditDetailService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public AuditDetailService(RockContext context) : base(context)
         {
@@ -109,6 +93,7 @@ namespace Rock.Model
             target.CurrentValue = source.CurrentValue;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

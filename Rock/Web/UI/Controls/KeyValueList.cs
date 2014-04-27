@@ -20,7 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls
             List<DefinedValue> values = null;
             if ( DefinedTypeId.HasValue )
             {
-                values = new DefinedValueService().GetByDefinedTypeId( DefinedTypeId.Value ).ToList();
+                values = new DefinedValueService( new RockContext() ).GetByDefinedTypeId( DefinedTypeId.Value ).ToList();
             }
 
             string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Controls
                 writer.WriteLine();
 
                 // Write Name
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-lg js-key-value-input" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-key form-control input-width-md js-key-value-input" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Value, nameAndValue.Length >= 1 ? nameAndValue[0] : string.Empty );
                 writer.AddAttribute( "placeholder", "Key" );
@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
 
         $('a.key-value-add').click(function (e) {{
             e.preventDefault();
-            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-lg js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
+            var newKeyValue = '<div class=""controls controls-row form-control-group""><input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""Key""></input> " );
             if ( values != null )
             {
                 script.Append( @"<select class=""key-value-value form-control input-width-lg js-key-value-input""><option value=""""></option>" );

@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -33,9 +34,9 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all group types with filtering by purpose and system group types." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class GroupTypeList : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -109,10 +110,10 @@ namespace RockWeb.Blocks.Groups
             {
                 case "Purpose":
 
-                    int id = int.MinValue;
-                    if ( int.TryParse( e.Value, out id ) )
+                    int? id = e.Value.AsInteger(false);
+                    if ( id.HasValue )
                     {
-                        var purpose = DefinedValueCache.Read( id );
+                        var purpose = DefinedValueCache.Read( id.Value );
                         if ( purpose != null )
                         {
                             e.Value = purpose.Name;
@@ -121,7 +122,6 @@ namespace RockWeb.Blocks.Groups
 
                     break;
             }
-
         }
 
         /// <summary>
@@ -151,34 +151,32 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            GroupTypeService groupTypeService = new GroupTypeService( rockContext );
+            GroupType groupType = groupTypeService.Get( e.RowKeyId );
+
+            if ( groupType != null )
             {
-                GroupTypeService groupTypeService = new GroupTypeService();
-                GroupType groupType = groupTypeService.Get( e.RowKeyId );
+                int groupTypeId = groupType.Id;
 
-                if ( groupType != null )
+                if ( !groupType.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
-                    int groupTypeId = groupType.Id;
-
-                    if ( !groupType.IsAuthorized("Administrate", CurrentPerson))
-                    {
-                        mdGridWarning.Show( "Sorry, you're not authorized to delete this group type.", ModalAlertType.Alert );
-                        return;
-                    }
-
-                    string errorMessage;
-                    if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return;
-                    }
-
-                    groupTypeService.Delete( groupType, CurrentPersonAlias );
-                    groupTypeService.Save( groupType, CurrentPersonAlias );
-
-                    GroupTypeCache.Flush( groupTypeId );
+                    mdGridWarning.Show( "Sorry, you're not authorized to delete this group type.", ModalAlertType.Alert );
+                    return;
                 }
-            } );
+
+                string errorMessage;
+                if ( !groupTypeService.CanDelete( groupType, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
+                }
+
+                groupTypeService.Delete( groupType );
+                rockContext.SaveChanges();
+
+                GroupTypeCache.Flush( groupTypeId );
+            }
 
             BindGrid();
         }
@@ -190,16 +188,16 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gGroupType_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
-            {
-                var groupTypes = GetGroupTypes();
-                if (groupTypes != null)
-                {
-                    new GroupTypeService().Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
-                }
+            var rockContext = new RockContext();
 
-                BindGrid();
+            var groupTypes = GetGroupTypes();
+            if ( groupTypes != null )
+            {
+                new GroupTypeService( rockContext ).Reorder( groupTypes.ToList(), e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
             }
+
+            BindGrid();
         }
 
         /// <summary>
@@ -232,7 +230,8 @@ namespace RockWeb.Blocks.Groups
         private void BindGrid()
         {
             var selectQry = GetGroupTypes()
-                .Select( a => new {
+                .Select( a => new
+                {
                     a.Id,
                     a.Name,
                     a.Description,
@@ -251,12 +250,12 @@ namespace RockWeb.Blocks.Groups
         /// <returns></returns>
         private IQueryable<GroupType> GetGroupTypes()
         {
-            var qry = new GroupTypeService().Queryable();
+            var qry = new GroupTypeService( new RockContext() ).Queryable();
 
-            int purposeId = int.MinValue;
-            if ( int.TryParse( rFilter.GetUserPreference( "Purpose" ), out purposeId ) )
+            int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsInteger(false);
+            if ( purposeId.HasValue )
             {
-                qry = qry.Where( t => t.GroupTypePurposeValueId == purposeId );
+                qry = qry.Where( t => t.GroupTypePurposeValueId == purposeId.Value );
             }
 
             var isSystem = rFilter.GetUserPreference( "System Group Types" );
@@ -264,9 +263,9 @@ namespace RockWeb.Blocks.Groups
             {
                 qry = qry.Where( t => t.IsSystem );
             }
-            else if (isSystem == "No")
+            else if ( isSystem == "No" )
             {
-                qry = qry.Where( t => !t.IsSystem);
+                qry = qry.Where( t => !t.IsSystem );
             }
 
             return qry.OrderBy( g => g.Order );

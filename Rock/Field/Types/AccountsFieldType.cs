@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -43,7 +44,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var guids = value.SplitDelimitedValues();
-                var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
+                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
                 if ( accounts.Any() )
                 {
                     formattedValue = string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );
@@ -81,7 +82,7 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var accounts = new FinancialAccountService().Queryable().Where( a => ids.Contains( a.Id ) );
+                var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => ids.Contains( a.Id ) );
 
                 if ( accounts.Any() )
                 {
@@ -121,7 +122,7 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid ) );
+                    var accounts = new FinancialAccountService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid ) );
                     picker.SetValues( accounts );
                 }
             }

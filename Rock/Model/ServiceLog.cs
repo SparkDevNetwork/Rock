@@ -31,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class ServiceLog : Model<ServiceLog>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the date and time that the log entry was created 
         /// </summary>
@@ -89,6 +92,10 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool Success { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -100,8 +107,12 @@ namespace Rock.Model
             return this.Name;
         }
 
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Service Log Configuration class.
     /// </summary>
@@ -114,4 +125,7 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
+
 }

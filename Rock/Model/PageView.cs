@@ -135,7 +135,6 @@ namespace Rock.Model
         [MaxLength( 45 )]
         public string IpAddress { get; set; }
 
-        
         #endregion
 
         #region Virtual Properties

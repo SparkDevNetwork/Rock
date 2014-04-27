@@ -22,7 +22,9 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
@@ -34,7 +36,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Handles displaying group search results and redirects to the group detail page (via route ~/Group/) when only one match was found." )]
 
-    public partial class GroupSearch : Rock.Web.UI.RockBlock
+    public partial class GroupSearch : RockBlock
     {
         #region Base Control Methods
 
@@ -61,19 +63,19 @@ namespace RockWeb.Blocks.Groups
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
-            var groupService = new GroupService();
+            var groupService = new GroupService( new RockContext() );
             var groups = new List<Group>();
 
-            if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
+            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )
             {
                 switch ( type.ToLower() )
                 {
-                    case ( "name" ):
+                    case "name":
                         {
                             groups = groupService.Queryable()
                                 .Where( g =>
                                     g.GroupType.ShowInNavigation &&
-                                    ( g.Name ).Contains( term ) )
+                                    g.Name.Contains( term ) )
                                 .OrderBy( g => g.Order )
                                 .ThenBy( g => g.Name )
                                 .ToList();
@@ -103,25 +105,24 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private string ParentStructure(Group group)
+        private string ParentStructure( Group group )
         {
-            if (group == null)
+            if ( group == null )
             {
                 return string.Empty;
             }
 
-            string prefix = ParentStructure(group.ParentGroup);
-            if (!string.IsNullOrWhiteSpace(prefix))
+            string prefix = ParentStructure( group.ParentGroup );
+            if ( !string.IsNullOrWhiteSpace( prefix ) )
             {
                 prefix += " <i class='fa fa-angle-right'></i> ";
             }
 
-            string pageUrl = RockPage.ResolveUrl("~/Group/");
+            string pageUrl = RockPage.ResolveUrl( "~/Group/" );
 
             return string.Format( "{0}<a href='{1}{2}'>{3}</a>", prefix, pageUrl, group.Id, group.Name );
         }
 
         #endregion
-
     }
 }

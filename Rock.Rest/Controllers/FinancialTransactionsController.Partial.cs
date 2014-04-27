@@ -102,7 +102,6 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         public DataSet GetContributionPersonGroupAddress( [FromBody]Rock.Net.RestParameters.ContributionStatementOptions options )
         {
-            Service service = new Service();
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add( "startDate", options.StartDate );
             if ( options.EndDate.HasValue )
@@ -133,7 +132,7 @@ namespace Rock.Rest.Controllers
             }
 
             parameters.Add( "orderByZipCode", options.OrderByZipCode );
-            var result = service.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
+            var result = DbService.GetDataSet( "spFinance_ContributionStatementQuery", System.Data.CommandType.StoredProcedure, parameters );
 
             if ( result.Tables.Count > 0 )
             {
@@ -180,7 +179,7 @@ namespace Rock.Rest.Controllers
             else
             {
                 // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
-                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupMemberService groupMemberService = new GroupMemberService( (RockContext)Service.Context );
                 var personIdList = groupMemberService.GetByGroupId( groupId ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.PersonId ).ToList();
 
                 qry = qry.Where( a => personIdList.Contains( a.AuthorizedPersonId.Value ) );

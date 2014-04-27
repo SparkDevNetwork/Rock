@@ -36,6 +36,9 @@ namespace Rock.Model
     [DataContract]
     public partial class PageContext : Model<PageContext>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this PageContext is a part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -78,14 +81,21 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string IdParameter { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> that this PageContext is used on.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that uses this PageContext.
         /// </value>
-        [DataMember]
         public virtual Page Page { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Entity (type name) and IdParamenter that represents this instance.
@@ -98,7 +108,11 @@ namespace Rock.Model
             return string.Format( "{0}:{1}", this.Entity, this.IdParameter );
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Page Route Configuration class.
@@ -113,4 +127,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Page ).WithMany( p => p.PageContexts ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete(true);
         }
     }
+
+    #endregion
+
 }

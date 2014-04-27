@@ -21,7 +21,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Data access/service class for <see cref="Rock.Model.GroupType"/> entity objects. This class extends <see cref="Rock.Data.Service"/>.
+    /// Data access/service class for <see cref="Rock.Model.GroupType"/> objects.
     /// </summary>
     public partial class GroupTypeService 
     {
@@ -33,7 +33,7 @@ namespace Rock.Model
         /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
-            return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
+            return Queryable().Where( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
         {
-            return Repository.AsQueryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+            return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>
@@ -53,16 +53,38 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupType> GetParentGroupTypes( int groupTypeId )
         {
-            return Repository.AsQueryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
+            return Queryable().Where( t => t.ChildGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
 
         /// <summary>
-        /// Verifies if the specified <see cref="Rock.Model.GroupType"/> can be deleted, and if so deletes it.
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
+        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
         /// </summary>
-        /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the <see cref="Rock.Model.GroupType"/> was able to be successfully deleted, otherwise <c>false</c>.</returns>
-        public override bool Delete( GroupType item, PersonAlias personAlias )
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId )
+        {
+            return this.ExecuteQuery(
+                @"
+                WITH CTE AS (
+		            SELECT [GroupTypeId],[ChildGroupTypeId] FROM [GroupTypeAssociation] WHERE [GroupTypeId] = {0}
+		            UNION ALL
+		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
+		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                 )
+                SELECT *
+                FROM [GroupType]
+                WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
+                ", parentGroupTypeId );
+        }
+
+        /// <summary>
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public override bool Delete( GroupType item )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -70,11 +92,7 @@ namespace Rock.Model
                 return false;
             }
 
-            item.ChildGroupTypes.Clear();
-            this.Save( item, personAlias );
-
-            return base.Delete( item, personAlias );
+            return base.Delete( item );
         }
-
     }
 }

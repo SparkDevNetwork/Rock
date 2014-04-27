@@ -110,40 +110,39 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonBadge_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            PersonBadgeService PersonBadgeService = new PersonBadgeService( rockContext );
+            PersonBadge PersonBadge = PersonBadgeService.Get( (int)e.RowKeyValue );
+
+            if ( PersonBadge != null )
             {
-                PersonBadgeService PersonBadgeService = new PersonBadgeService();
-                PersonBadge PersonBadge = PersonBadgeService.Get( (int)e.RowKeyValue );
-
-                if ( PersonBadge != null )
+                string errorMessage;
+                if ( !PersonBadgeService.CanDelete( PersonBadge, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !PersonBadgeService.CanDelete( PersonBadge, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    PersonBadgeCache.Flush( PersonBadge.Id );
-
-                    PersonBadgeService.Delete( PersonBadge, CurrentPersonAlias );
-                    PersonBadgeService.Save( PersonBadge, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                PersonBadgeCache.Flush( PersonBadge.Id );
+
+                PersonBadgeService.Delete( PersonBadge );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
 
         void gPersonBadge_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
-            {
-                var service = new PersonBadgeService();
-                var badges = service.Queryable().OrderBy( b => b.Order );
-                service.Reorder( badges.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
-                BindGrid();
-            }
-        }   
+            var rockContext = new RockContext();
+            var service = new PersonBadgeService( rockContext );
+            var badges = service.Queryable().OrderBy( b => b.Order );
+            service.Reorder( badges.ToList(), e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
+
+            BindGrid();
+
+        }
         
         /// <summary>
         /// Handles the GridRebind event of the gPersonBadge control.
@@ -164,7 +163,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGrid()
         {
-            gPersonBadge.DataSource = new PersonBadgeService()
+            gPersonBadge.DataSource = new PersonBadgeService( new RockContext() )
                 .Queryable().OrderBy( b => b.Order ).ToList();
             gPersonBadge.DataBind();
         }

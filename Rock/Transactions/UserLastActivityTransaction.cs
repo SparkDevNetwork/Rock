@@ -15,7 +15,7 @@
 // </copyright>
 //
 using System;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -70,14 +70,14 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            var userLoginService = new UserLoginService();
+            var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
             var user = userLoginService.Get( UserId );
 
             if ( user != null )
             {
                 user.LastActivityDateTime = LastActivityDate;
                 user.IsOnLine = IsOnLine;
-                userLoginService.Save( user, null );
 
                 // check if this session had a previous account on-line
                 if ( IsOnLine && SessionUserId.HasValue && SessionUserId != user.Id )
@@ -85,8 +85,9 @@ namespace Rock.Transactions
                     // mark old session offline
                     var oldUser = userLoginService.Get( SessionUserId.Value );
                     oldUser.IsOnLine = false;
-                    userLoginService.Save( oldUser, null );
                 }
+
+                rockContext.SaveChanges();
             }
         }
     }

@@ -18,7 +18,7 @@
 
                                 <asp:Repeater ID="rptAccountList" runat="server">
                                     <ItemTemplate>
-                                        <Rock:RockTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
+                                        <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
@@ -52,7 +52,7 @@
                                 <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
                                 <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
-                                <Rock:RockTextBox ID="txtPhone" runat="server" Label="Phone"></Rock:RockTextBox>
+                                <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                 <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtStreet" runat="server" Label="Address"></Rock:RockTextBox>
                                 
@@ -142,7 +142,7 @@
                                         <asp:ListItem Text="Checking" Selected="true" />
                                         <asp:ListItem Text="Savings" />
                                     </Rock:RockRadioButtonList>
-                                    <asp:Image ID="imgCheck" runat="server" ImageUrl="~/Assets/Images/check-image.png" />                                    
+                                    <asp:Image ID="imgCheck" runat="server" ImageUrl="<%$ Fingerprint:~/Assets/Images/check-image.png %>" />                                    
                                 </div>
                             </fieldset>
                         </div>
@@ -173,7 +173,7 @@
                     <Rock:TermDescription runat="server" />
                     <asp:Repeater ID="rptAccountListConfirmation" runat="server">
                         <ItemTemplate>
-                            <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# "$" + Eval("AmountFormatted") %>' />
+                            <Rock:TermDescription ID="tdAddress" runat="server" Term='<%# Eval("Name") %>' Description='<%# Eval("AmountFormatted") %>' />
                         </ItemTemplate>
                     </asp:Repeater>
                     <Rock:TermDescription ID="tdTotal" runat="server" Term="Total" />

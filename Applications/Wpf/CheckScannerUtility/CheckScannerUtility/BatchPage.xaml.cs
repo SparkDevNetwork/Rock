@@ -994,6 +994,10 @@ namespace Rock.Apps.CheckScannerUtility
                         try
                         {
                             image.BinaryFile.Data = client.GetData<BinaryFileData>( string.Format( "api/BinaryFileDatas/{0}", image.BinaryFileId ) );
+                            if (image.BinaryFile.Data == null || image.BinaryFile.Data.Content == null)
+                            {
+                                throw new Exception( "Image Content is empty" );
+                            }
                         }
                         catch (Exception ex)
                         {

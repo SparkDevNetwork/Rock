@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Model;
 using System.Text.RegularExpressions;
+using Rock.Data;
 
 namespace Rock.Search.Person
 {
@@ -56,7 +57,7 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new PhoneNumberService().GetNumbersBySearchterm( searchterm );
+            return new PhoneNumberService( new RockContext() ).GetNumbersBySearchterm( searchterm );
         }
     }
 }

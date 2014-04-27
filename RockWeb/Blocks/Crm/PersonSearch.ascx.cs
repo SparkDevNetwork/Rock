@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Text.RegularExpressions;
 using System.Data.Entity.SqlServer;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -84,86 +85,85 @@ namespace RockWeb.Blocks.Crm
 
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var rockContext = new RockContext();
+                var personService = new PersonService( rockContext );
+                IQueryable<Person> people = null;
+
+                switch ( type.ToLower() )
                 {
-                    var personService = new PersonService();
-                    IQueryable<Person> people = null;
-
-                    switch ( type.ToLower() )
-                    {
-                        case ( "name" ):
-                            {
-                                bool allowFirstNameOnly = false;
-                                if (!bool.TryParse( PageParameter("allowFirstNameOnly"), out allowFirstNameOnly))
-                                {
-                                    allowFirstNameOnly = false;
-                                }
-                                people = personService.GetByFullName( term, allowFirstNameOnly, true );
-                                break;
-                            }
-                        case ( "phone" ):
-                            {
-                                var phoneService = new PhoneNumberService();
-                                var personIds = phoneService.GetPersonIdsByNumber( term );
-                                people = personService.Queryable().Where( p => personIds.Contains( p.Id ) );
-                                break;
-                            }
-                        case ( "address" ):
-                            {
-                                var groupMemberService = new GroupMemberService();
-                                var personIds2 = groupMemberService.GetPersonIdsByHomeAddress( term );
-                                people = personService.Queryable().Where( p => personIds2.Contains( p.Id ) );
-                                break;
-                            }
-                        case ( "email" ):
-                            {
-                                people = personService.Queryable().Where( p => p.Email.Contains( term ) );
-                                break;
-                            }
-                    }
-
-                    SortProperty sortProperty = gPeople.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        people = people.Sort( sortProperty );
-                    }
-                    else
-                    {
-                        people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
-                    }
-
-                    var personList = people.ToList();
-
-                    if ( personList.Count == 1 )
-                    {
-                        Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
-                        Context.ApplicationInstance.CompleteRequest();
-                    }
-                    else
-                    {
-                        if ( type.ToLower() == "name" )
+                    case ( "name" ):
                         {
-                            var similiarNames = personService.GetSimiliarNames( term,
-                                personList.Select( p => p.Id ).ToList(), true );
-                            if ( similiarNames.Any() )
+                            bool allowFirstNameOnly = false;
+                            if ( !bool.TryParse( PageParameter( "allowFirstNameOnly" ), out allowFirstNameOnly ) )
                             {
-                                var hyperlinks = new List<string>();
-                                foreach ( string name in similiarNames.Distinct() )
-                                {
-                                    var pageRef = CurrentPageReference;
-                                    pageRef.Parameters["SearchTerm"] = name;
-                                    hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
-                                }
-                                string altNames = string.Join( ", ", hyperlinks );
-                                nbNotice.Text = string.Format( "Other Possible Matches: {0}", altNames );
-                                nbNotice.Visible = true;
+                                allowFirstNameOnly = false;
                             }
+                            people = personService.GetByFullName( term, allowFirstNameOnly, true );
+                            break;
                         }
-
-                        gPeople.DataSource = personList;
-                        gPeople.DataBind();
-                    }
+                    case ( "phone" ):
+                        {
+                            var phoneService = new PhoneNumberService( rockContext );
+                            var personIds = phoneService.GetPersonIdsByNumber( term );
+                            people = personService.Queryable().Where( p => personIds.Contains( p.Id ) );
+                            break;
+                        }
+                    case ( "address" ):
+                        {
+                            var groupMemberService = new GroupMemberService( rockContext );
+                            var personIds2 = groupMemberService.GetPersonIdsByHomeAddress( term );
+                            people = personService.Queryable().Where( p => personIds2.Contains( p.Id ) );
+                            break;
+                        }
+                    case ( "email" ):
+                        {
+                            people = personService.Queryable().Where( p => p.Email.Contains( term ) );
+                            break;
+                        }
                 }
+
+                SortProperty sortProperty = gPeople.SortProperty;
+                if ( sortProperty != null )
+                {
+                    people = people.Sort( sortProperty );
+                }
+                else
+                {
+                    people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+                }
+
+                var personList = people.ToList();
+
+                if ( personList.Count == 1 )
+                {
+                    Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    if ( type.ToLower() == "name" )
+                    {
+                        var similiarNames = personService.GetSimiliarNames( term,
+                            personList.Select( p => p.Id ).ToList(), true );
+                        if ( similiarNames.Any() )
+                        {
+                            var hyperlinks = new List<string>();
+                            foreach ( string name in similiarNames.Distinct() )
+                            {
+                                var pageRef = CurrentPageReference;
+                                pageRef.Parameters["SearchTerm"] = name;
+                                hyperlinks.Add( string.Format( "<a href='{0}'>{1}</a>", pageRef.BuildUrl(), name ) );
+                            }
+                            string altNames = string.Join( ", ", hyperlinks );
+                            nbNotice.Text = string.Format( "Other Possible Matches: {0}", altNames );
+                            nbNotice.Visible = true;
+                        }
+                    }
+
+                    gPeople.DataSource = personList;
+                    gPeople.DataBind();
+                }
+
             }
         }
 

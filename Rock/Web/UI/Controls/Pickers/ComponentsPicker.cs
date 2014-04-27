@@ -15,14 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using System.Collections.Generic;
 using Rock.Extension;
-using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -38,7 +36,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The binary file type id.
         /// </value>
-        public string ContainerType
+        public virtual string ContainerType
         {
             set
             {

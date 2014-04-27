@@ -45,6 +45,42 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Deletes the specified Block with extra logic to flush caches.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        [Authenticate, Secured]
+        public override void Delete( int id )
+        {
+            // get the ids of the page and layout so we can flush stuff after the base.Delete
+            int? pageId = null;
+            int? layoutId = null;
+
+            var block = this.Get( id );
+            if (block != null)
+            {
+                pageId = block.PageId;
+                layoutId = block.LayoutId;
+            }
+
+            base.Delete( id );
+
+            // flush all the cache stuff that involves the block
+            Rock.Web.Cache.BlockCache.Flush( id );
+
+            if ( layoutId.HasValue )
+            {
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( layoutId.Value );
+            }
+
+            if (pageId.HasValue)
+            {
+                Rock.Web.Cache.PageCache.Flush( pageId.Value );
+                var page = Rock.Web.Cache.PageCache.Read( pageId.Value );
+                page.FlushBlocks();
+            }
+        }
+
+        /// <summary>
         /// Moves a block from one zone to another
         /// </summary>
         /// <param name="block"></param>
@@ -55,10 +91,9 @@ namespace Rock.Rest.Controllers
         {
             var person = GetPerson();
 
-            var service = new BlockService();
             block.Id = id;
             Block model;
-            if ( !service.TryGet( id, out model ) )
+            if ( !Service.TryGet( id, out model ) )
                 throw new HttpResponseException( HttpStatusCode.NotFound );
 
             CheckCanEdit( model, person );
@@ -82,8 +117,8 @@ namespace Rock.Rest.Controllers
 
             if ( model.IsValid )
             {
-                model.Order = service.GetMaxOrder( model );
-                service.Save( model, person != null ? person.PrimaryAlias : null );
+                model.Order = ((BlockService)Service).GetMaxOrder( model );
+                Service.Context.SaveChanges();
             }
             else
             {

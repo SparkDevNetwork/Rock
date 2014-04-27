@@ -35,6 +35,9 @@ namespace Rock.Model
     [DataContract]
     public partial class PageRoute : Model<PageRoute>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if the PageRoute is part of of the Rock core system/framework. This property is required.
         /// </summary>
@@ -68,15 +71,22 @@ namespace Rock.Model
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Route { get; set; }
-        
+
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Page"/> associated with the RoutePath.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Page"/> that is associated with the RoutePath.
         /// </value>
-        [DataMember]
         public virtual Page Page { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Route and represents this PageRoute
@@ -89,8 +99,12 @@ namespace Rock.Model
             return this.Route;
         }
 
+        #endregion
+
     }
 
+    #region Entity Configuration
+    
     /// <summary>
     /// Page Route Configuration class.
     /// </summary>
@@ -104,4 +118,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Page ).WithMany( p => p.PageRoutes ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

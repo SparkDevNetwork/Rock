@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class AttributeValuesController : Rock.Rest.ApiController<Rock.Model.AttributeValue>
     {
-        public AttributeValuesController() : base( new Rock.Model.AttributeValueService() ) { } 
+        public AttributeValuesController() : base( new Rock.Model.AttributeValueService( new Rock.Data.RockContext() ) ) { } 
     }
 }
