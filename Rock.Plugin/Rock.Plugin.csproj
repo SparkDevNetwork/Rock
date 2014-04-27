@@ -31,28 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotLiquid">
-      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Migration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockVersion.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
-      <Name>Rock</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

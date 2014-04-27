@@ -1,25 +1,64 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Data;
+using System.Data.SqlClient;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Plugin
 {
+    /// <summary>
+    /// Class for defining a plugin migration
+    /// </summary>
     public abstract class Migration
     {
+        /// <summary>
+        /// The commands to run to migrate plugin to the specific version
+        /// </summary>
         public abstract void Up();
 
+        /// <summary>
+        /// The commands to undo a migration from a specific version
+        /// </summary>
         public abstract void Down();
 
-        public void Update()
-        {
-
-        }
-
+        /// <summary>
+        /// Executes a sql statement
+        /// </summary>
+        /// <param name="sql">The SQL.</param>
         public void Sql( string sql )
         {
-            Rock.Data.DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+            var configConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
+            if ( configConnectionString != null )
+            {
+                string connectionString = configConnectionString.ConnectionString;
+                if ( !string.IsNullOrWhiteSpace( connectionString ) )
+                {
+                    using ( SqlConnection con = new SqlConnection( connectionString ) )
+                    {
+                        con.Open();
+                        using ( SqlCommand sqlCommand = new SqlCommand( sql, con ) )
+                        {
+                            sqlCommand.CommandType = CommandType.Text;
+                            sqlCommand.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
         }
 
         #region Helper Methods
@@ -998,7 +1037,7 @@ namespace Rock.Plugin
                     name,
                     description.Replace( "'", "''" ),
                     guid,
-                    isSystem.Bit().ToString()
+                    (isSystem ? "1" : "0")
                     ) );
         }
 
@@ -1053,7 +1092,7 @@ namespace Rock.Plugin
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     guid,
-                    isSystem.Bit().ToString()
+                    (isSystem ? "1" : "0")
                     ) );
         }
 
@@ -1187,7 +1226,7 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.Page";
             EnsureEntityTypeExists( entityTypeName );
@@ -1223,7 +1262,7 @@ INSERT INTO [dbo].[Auth]
            ,@groupId
            ,'{5}')
 ";
-            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole.ConvertToInt(), authGuid, order,
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
         }
 
@@ -1235,7 +1274,7 @@ INSERT INTO [dbo].[Auth]
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.Block";
             EnsureEntityTypeExists( entityTypeName );
@@ -1271,7 +1310,7 @@ INSERT INTO [dbo].[Auth]
            ,@groupId
            ,'{5}')
 ";
-            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, blockGuid, action, specialRole.ConvertToInt(), authGuid, order,
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, blockGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
         }
 
@@ -1285,7 +1324,7 @@ INSERT INTO [dbo].[Auth]
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
             string entityTypeName = "Rock.Model.BinaryFileType";
             EnsureEntityTypeExists( entityTypeName );
@@ -1321,7 +1360,7 @@ INSERT INTO [dbo].[Auth]
            ,@groupId
            ,'{5}')
 ";
-            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, binaryFileTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, binaryFileTypeGuid, action, specialRole, authGuid, order,
                 ( allow ? "A" : "D" ) ) );
         }
 

@@ -300,6 +300,10 @@ namespace Rock.Model
             
             // ignoring PhoneNumber,ModifiedByPersonAliasId 
             
+            // ignoring PluginMigration,CreatedByPersonAliasId 
+            
+            // ignoring PluginMigration,ModifiedByPersonAliasId 
+            
             // ignoring PrayerRequest,CreatedByPersonAliasId 
             
             // ignoring PrayerRequest,ModifiedByPersonAliasId 
