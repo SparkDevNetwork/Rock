@@ -21,9 +21,9 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -122,9 +122,9 @@ $('.filter-item-select').click(function (event) {
                         RockPage rockPage = this.Page as RockPage;
                         if ( rockPage != null )
                         {
-                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ) )
+                            foreach ( var component in DataFilterContainer.GetComponentsByFilteredEntityName( value ).OrderBy( c => c.Order ).ThenBy( c => c.Section ).ThenBy( c => c.GetTitle(FilteredEntityType)) )
                             {
-                                if ( component.IsAuthorized( "View", rockPage.CurrentPerson ) )
+                                if ( component.IsAuthorized( Authorization.VIEW, rockPage.CurrentPerson ) )
                                 {
                                     if ( !AuthorizedComponents.ContainsKey( component.Section ) )
                                     {
@@ -142,6 +142,25 @@ $('.filter-item-select').click(function (event) {
                 }
 
                 RecreateChildControls();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the data view filter unique identifier.
+        /// </summary>
+        /// <value>
+        /// The data view filter unique identifier.
+        /// </value>
+        public Guid DataViewFilterGuid
+        {
+            get
+            {
+                return ViewState["DataViewFilterGuid"] as Guid? ?? Guid.NewGuid();
+            }
+
+            set
+            {
+                ViewState["DataViewFilterGuid"] = value;
             }
         }
 

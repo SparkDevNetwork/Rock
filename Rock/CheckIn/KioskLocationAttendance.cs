@@ -125,28 +125,26 @@ namespace Rock.CheckIn
             }
             else
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var rockContext = new Rock.Data.RockContext();
+                var location = new LocationService(rockContext).Get( id );
+                if ( location != null )
                 {
-                    var location = new LocationService().Get( id );
-                    if ( location != null )
+                    locationAttendance = new KioskLocationAttendance();
+                    locationAttendance.LocationId = location.Id;
+                    locationAttendance.LocationName = location.Name;
+                    locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                    var attendanceService = new AttendanceService(rockContext);
+                    foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
                     {
-                        locationAttendance = new KioskLocationAttendance();
-                        locationAttendance.LocationId = location.Id;
-                        locationAttendance.LocationName = location.Name;
-                        locationAttendance.Groups = new List<KioskGroupAttendance>();
-
-                        var attendanceService = new AttendanceService();
-                        foreach ( var attendance in attendanceService.GetByDateAndLocation( RockDateTime.Today, location.Id ) )
-                        {
-                            AddAttendanceRecord( locationAttendance, attendance );
-                        }
-
-                        var cachePolicy = new CacheItemPolicy();
-                        cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
-                        cache.Set( cacheKey, locationAttendance, cachePolicy );
-
-                        return locationAttendance;
+                        AddAttendanceRecord( locationAttendance, attendance );
                     }
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cachePolicy.AbsoluteExpiration = DateTimeOffset.Now.AddSeconds( 60 );
+                    cache.Set( cacheKey, locationAttendance, cachePolicy );
+
+                    return locationAttendance;
                 }
             }
 

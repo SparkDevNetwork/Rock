@@ -20,7 +20,7 @@
             </div>
 
             <div class="checkin-grouptype-list">
-                <h4>Checkin Areas</h4>
+                <h4>Check-in Areas</h4>
                 <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
             </div>
 

@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Core
             {
                 hfInitialLocationId.Value = _LocationId;
                 hfSelectedLocationId.Value = _LocationId;
-                Location Location = ( new LocationService() ).Get( int.Parse( _LocationId ) );
+                Location Location = ( new LocationService( new RockContext() ) ).Get( int.Parse( _LocationId ) );
                 lbAddLocationChild.Enabled = Location != null;
 
                 // get the parents of the selected item so we can tell the treeview to expand those
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 // also get any additional expanded nodes that were sent in the Post
-                string postedExpandedIds = this.Request.Params["expandedIds"];
+                string postedExpandedIds = this.Request.Params["ExpandedIds"];
                 if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
                 {
                     var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList();
@@ -142,13 +142,13 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddLocationRoot_Click(object sender, EventArgs e)
         {
-            NavigateToLinkedPage("DetailPage", "LocationId", 0, "parentLocationId", 0);
+            NavigateToLinkedPage("DetailPage", "LocationId", 0, "ParentLocationId", 0);
         }
 
         protected void lbAddLocationChild_Click(object sender, EventArgs e)
         {
             int LocationId = hfSelectedLocationId.ValueAsInt();
-            NavigateToLinkedPage("DetailPage", "LocationId", 0, "parentLocationId", LocationId);
+            NavigateToLinkedPage("DetailPage", "LocationId", 0, "ParentLocationId", LocationId);
         }
 
         #endregion
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Core
 
         private Location FindFirstLocation()
         {
-            return new LocationService().Queryable()
+            return new LocationService( new RockContext() ).Queryable()
                 .Where( l => 
                     l.Name != null && 
                     l.Name != string.Empty &&

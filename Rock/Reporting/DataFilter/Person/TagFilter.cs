@@ -112,7 +112,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int selectedTagId = selectionValues[1].AsInteger() ?? 0;
-                var selectedTag = new TagService().Get( selectedTagId );
+                var selectedTag = new TagService( new RockContext() ).Get( selectedTagId );
                 if ( selectedTag != null )
                 {
                     result = string.Format( "Tagged as {0}", selectedTag.Name );
@@ -174,7 +174,7 @@ function() {
         private void PopulateTagList()
         {
             int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
-            var tagQry = new TagService().Queryable().Where( a => a.EntityTypeId == entityTypePersonId );
+            var tagQry = new TagService( new RockContext() ).Queryable().Where( a => a.EntityTypeId == entityTypePersonId );
             RockPage rockPage = _rblTagType.Page as RockPage;
 
             if ( _rblTagType.SelectedValueAsInt() == 1 )
@@ -248,7 +248,7 @@ function() {
                 else
                 {
                     // if the selectedTag is a personal tag, but for a different Owner than the current logged in person, include it in the list 
-                    var selectedTag = new TagService().Get( selectedTagId );
+                    var selectedTag = new TagService( new RockContext() ).Get( selectedTagId );
                     if ( selectedTag != null )
                     {
                         if ( selectedTag.OwnerId != null )
@@ -282,10 +282,10 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 int tagId = selectionValues[1].AsInteger() ?? 0;
-                var tagItemQry = new TaggedItemService( serviceInstance.RockContext ).Queryable()
+                var tagItemQry = new TaggedItemService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( x => x.TagId == tagId );
 
-                var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => tagItemQry.Any( x => x.EntityGuid == p.Guid ) );
 
                 return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

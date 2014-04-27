@@ -1,0 +1,10 @@
+/Rock.dll
+/Rock.pdb
+/RockJobSchedulerService (DAVID-PC's conflicted copy 2013-03-05).exe
+/RockJobSchedulerService.exe
+/RockJobSchedulerService.exe.config
+/RockJobSchedulerService.pdb
+/RockJobSchedulerService.vshost.exe
+/RockJobSchedulerService.vshost.exe.config
+*.dll
+/Quartz.pdb

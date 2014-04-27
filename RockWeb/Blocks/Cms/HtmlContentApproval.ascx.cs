@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Cms
                     int personId = 0;
                     if ( int.TryParse( e.Value, out personId ) && personId != 0 )
                     {
-                        var personService = new PersonService();
+                        var personService = new PersonService( new RockContext() );
                         var person = personService.Get( personId );
                         if ( person != null )
                         {
@@ -139,7 +139,8 @@ namespace RockWeb.Blocks.Cms
 
             if ( e.RowKeyValue != null )
             {
-                var htmlContentService = new HtmlContentService();
+                var rockContext = new RockContext();
+                var htmlContentService = new HtmlContentService( rockContext );
                 var htmlContent = htmlContentService.Get( (int)e.RowKeyValue );
 
                 if ( htmlContent != null )
@@ -159,7 +160,7 @@ namespace RockWeb.Blocks.Cms
                         htmlContent.ApprovedDateTime = RockDateTime.Now;
                     }
 
-                    htmlContentService.Save( htmlContent, CurrentPersonAlias );
+                    rockContext.SaveChanges();
                 }
 
                 BindGrid();
@@ -190,7 +191,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            var sites = new SiteService().Queryable().OrderBy( s => s.Name ).ToList();
+            var rockContext = new RockContext();
+
+            var sites = new SiteService( rockContext ).Queryable().OrderBy( s => s.Name ).ToList();
             ddlSiteFilter.DataSource = sites;
             ddlSiteFilter.DataBind();
             ddlSiteFilter.Items.Insert( 0, Rock.Constants.All.ListItem );
@@ -210,7 +213,7 @@ namespace RockWeb.Blocks.Cms
             int personId = 0;
             if ( int.TryParse( gContentListFilter.GetUserPreference( "Approved By" ), out personId ) )
             {
-                var personService = new PersonService();
+                var personService = new PersonService( rockContext );
                 var person = personService.Get( personId );
                 if ( person != null )
                 {
@@ -224,7 +227,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            var htmlContentService = new HtmlContentService();
+            var rockContext = new RockContext();
+
+            var htmlContentService = new HtmlContentService( rockContext );
             var htmlContent = htmlContentService.Queryable();
 
             string pageName = "";
@@ -236,7 +241,7 @@ namespace RockWeb.Blocks.Cms
                 var blah = content.Block.GetAttributeValue( "RequireApproval" );
                 if ( !string.IsNullOrEmpty( blah ) && blah.ToLower() == "true" )
                 {
-                    var pageService = new PageService();
+                    var pageService = new PageService( rockContext );
                     if ( content.Block.PageId != null )
                     {
                         var page = pageService.Get( (int)content.Block.PageId );
@@ -247,7 +252,7 @@ namespace RockWeb.Blocks.Cms
                             {
                                 page = pageService.Get( (int)page.ParentPageId );
                             }
-                            var siteService = new SiteService();
+                            var siteService = new SiteService( rockContext );
                             siteName = siteService.GetByDefaultPageId( page.Id ).Select( s => s.Name ).FirstOrDefault();
                         }
                     }

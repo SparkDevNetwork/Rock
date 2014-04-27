@@ -70,11 +70,18 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
+            get
+            {
+                var actions = new Dictionary<string, string>();
+                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view.");
+                actions.Add( Authorization.EDIT, "The roles and/or users that have access to edit.");
+                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate.");
+                return actions;
+            }
         }
 
         /// <summary>
@@ -98,7 +105,7 @@ namespace Rock.Security
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -119,10 +126,9 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -130,10 +136,9 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }        
         
         /// <summary>

@@ -225,7 +225,7 @@ namespace Rock.Apps.StatementGenerator
             {
                 if ( grdPersons.SelectedValue != null )
                 {
-                    lblWarning.Visibility = Visibility.Hidden;
+                    lblWarning.Visibility = Visibility.Collapsed;
                 }
             }
         }

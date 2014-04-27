@@ -34,6 +34,8 @@ namespace Rock.Model
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
 
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the First Name of the person that this prayer request is about. This property is required.
         /// </summary>
@@ -214,6 +216,8 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ApprovedOnDateTime { get; set; }
 
+        #endregion
+
         #region Virtual Properties
 
         /// <summary>
@@ -241,7 +245,6 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
-        [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -314,6 +317,8 @@ namespace Rock.Model
         #endregion
     }
 
+    #region Entity Configuration
+
     /// <summary>
     /// PrayerRequest Configuration class.
     /// </summary>
@@ -328,4 +333,7 @@ namespace Rock.Model
             this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

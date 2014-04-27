@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -51,7 +52,7 @@ namespace RockWeb.Blocks.Core
             Guid binaryFileTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( GetAttributeValue( "BinaryFileType" ), out binaryFileTypeGuid ) )
             {
-                var service = new BinaryFileTypeService();
+                var service = new BinaryFileTypeService( new RockContext() );
                 binaryFileType = service.Get( binaryFileTypeGuid );
             }
 
@@ -64,8 +65,8 @@ namespace RockWeb.Blocks.Core
             gBinaryFile.GridRebind += gBinaryFile_GridRebind;
             gBinaryFile.RowItemText = binaryFileType != null ? binaryFileType.Name : "Binary File";
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBinaryFile.Actions.ShowAdd = canAddEditDelete;
             gBinaryFile.IsDeleteEnabled = canAddEditDelete;
         }
@@ -129,24 +130,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            BinaryFile binaryFile = binaryFileService.Get( (int)e.RowKeyValue );
+
+            if ( binaryFile != null )
             {
-                BinaryFileService binaryFileService = new BinaryFileService();
-                BinaryFile binaryFile = binaryFileService.Get( (int)e.RowKeyValue );
-
-                if ( binaryFile != null )
+                string errorMessage;
+                if ( !binaryFileService.CanDelete( binaryFile, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !binaryFileService.CanDelete( binaryFile, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    binaryFileService.Delete( binaryFile, CurrentPersonAlias );
-                    binaryFileService.Save( binaryFile, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                binaryFileService.Delete( binaryFile );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -185,7 +184,7 @@ namespace RockWeb.Blocks.Core
         private void BindGrid()
         {
             Guid binaryFileTypeGuid = binaryFileType != null ? binaryFileType.Guid : Guid.NewGuid();
-            var binaryFileService = new BinaryFileService();
+            var binaryFileService = new BinaryFileService( new RockContext() );
             var queryable = binaryFileService.Queryable().Where( f => f.BinaryFileType.Guid == binaryFileTypeGuid );
 
             bool includeTemp = false;

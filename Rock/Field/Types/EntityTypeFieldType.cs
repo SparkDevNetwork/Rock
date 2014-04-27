@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -157,7 +157,7 @@ namespace Rock.Field.Types
                 }
             }
 
-            entityTypePicker.EntityTypes = new EntityTypeService().GetEntities().ToList();
+            entityTypePicker.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().ToList();
             return entityTypePicker;
         }
 

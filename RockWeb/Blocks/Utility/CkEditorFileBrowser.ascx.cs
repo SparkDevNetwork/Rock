@@ -169,17 +169,39 @@ namespace RockWeb.Blocks.Utility
         /// <returns></returns>
         private string GetRootFolderPath()
         {
-            // the rootFolder param is encrypted to help prevent the web user from specifying a folder
-            string rootFolder = PageParameter( "rootFolder" );
-            if ( !string.IsNullOrWhiteSpace( rootFolder ) )
+            //// the rootFolder param is encrypted to help prevent the web user from specifying a folder 
+            //// and must be provided to help prevent directly browsing to this page and getting access to the filesystem
+            //// we'll return Http 400 if someone is attempting to get to this page directly without a valid (encrypted) rootFolder specified
+            string rootFolderEncrypted = PageParameter( "rootFolder" );
+            string rootFolder = null;
+            if ( !string.IsNullOrWhiteSpace( rootFolderEncrypted ) )
             {
-                rootFolder = Rock.Security.Encryption.DecryptString( rootFolder );
+                try
+                {
+                    rootFolder = Rock.Security.Encryption.DecryptString( rootFolderEncrypted );
+                }
+                catch (Exception)
+                {
+                    // respond with BadRequest if they somehow provided an encrypted rootFolder value that isn't valid
+                    Response.StatusCode = 400;
+                    Response.End();
+                    return null;
+                }
+            }
+            else
+            {
+                // respond with BadRequest if they did not specify rootFolder 
+                Response.StatusCode = 400;
+                Response.End();
+                return null;
             }
 
-            // default to the "~/Content" if the rootFolder is not specified
             if ( string.IsNullOrWhiteSpace( rootFolder ) )
             {
-                rootFolder = "~/Content";
+                // respond with BadRequest if they did not specify rootFolder (or decrypted to emptystring)
+                Response.StatusCode = 400;
+                Response.End();
+                return null;
             }
 
             // ensure that the folder is formatted to be relative to web root

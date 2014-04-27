@@ -380,6 +380,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the drawing style to use on the map.
+        /// </summary>
+        /// <value>
+        ///   A style guid as found in the defined values (e.g., Rock, Retro, Old Timey, etc.) for the Map Styles
+        ///   defined type (<see cref="Rock.SystemGuid.DefinedType.MAP_STYLES" />). 
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK ),
+        Description( "The style to use for the Google map." )
+        ]
+        public Guid MapStyleValueGuid
+        {
+            get
+            {
+                string guid = ViewState["MapStyleValueGuid"] as string;
+                return (guid == null) ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() :  guid.AsGuid();
+            }
+            set { ViewState["MapStyleValueGuid"] = value.ToString(); }
+        }
+
+        /// <summary>
         /// Gets or sets the mode panel.
         /// </summary>
         /// <value>
@@ -544,9 +567,9 @@ namespace Rock.Web.UI.Controls
 
                 // map
                 writer.Write( @"
-                    <h4>Geography Picker</h4>
+                    <h4>Geography Picker <a class='pull-right btn btn-link btn-minimal' title='Toggle Fullscreen' id='btnExpandToggle_{0}'><i class='fa fa-expand'></i></a></h4>
                     <!-- Our custom delete button that we add to the map for deleting polygons. -->
-                    <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
+                    <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 40px; line-height:0;' id='gmnoprint-delete-button_{0}'>
                         <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-bottom-left-radius: 2px; border-top-left-radius: 2px; -webkit-background-clip: padding-box; background-clip: padding-box; border: 1px solid rgba(0, 0, 0, 0.14902); -webkit-box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px; font-weight: 500; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
                             <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='fa fa-times' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
                         </div>
@@ -609,12 +632,41 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string options = string.Format( "controlId: '{0}', drawingMode: '{1}'", this.ClientID, this.DrawingMode );
+            string mapStyle = "null";
+            string markerColor = "";
+
+            try
+            {
+                DefinedValueCache dvcMapStyle = DefinedValueCache.Read( this.MapStyleValueGuid );
+                if ( dvcMapStyle != null )
+                {
+                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", "" );
+                }
+            }
+            catch { } // oh well...
+
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
 
             DbGeography centerPoint = CenterPoint;
             if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )
             {
                 options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
+            }
+            else
+            {
+                // If no centerpoint was defined, try to get it from organization address
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                Guid guid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
+                if ( !guid.Equals( Guid.Empty ) )
+                {
+                    var location = new Rock.Model.LocationService( new Rock.Data.RockContext() ).Get( guid );
+                    if (location != null && location.GeoPoint != null && location.GeoPoint.Latitude != null && location.GeoPoint.Latitude != null )
+                    {
+                        CenterPoint = location.GeoPoint;
+                        options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                    }
+                }
             }
 
             string script = string.Format( @"

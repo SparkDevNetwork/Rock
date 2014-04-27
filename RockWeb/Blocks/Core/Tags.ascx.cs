@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Core
 
             if ( contextEntity != null )
             {
-                var service = new TaggedItemService();
+                var service = new TaggedItemService( new RockContext() );
                 foreach ( dynamic item in service.Get(
                     contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Guid )
                     .Select( i => new {

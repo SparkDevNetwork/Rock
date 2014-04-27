@@ -75,7 +75,7 @@ namespace Rock.Extension
         /// <summary>
         /// Forces a reloading of all the GeocodeService classes
         /// </summary>
-        public void Refresh()
+        public virtual void Refresh()
         {
             Components = new Dictionary<int, Lazy<T, TData>>();
 

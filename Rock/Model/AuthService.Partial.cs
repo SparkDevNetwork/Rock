@@ -35,10 +35,10 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable list of <see cref="Rock.Model.Auth" /> entities that secure a specific entity.
         /// </returns>
-        public IEnumerable<Auth> Get( int entityTypeId, int? entityId )
+        public IQueryable<Auth> Get( int entityTypeId, int? entityId )
         {
-            return Repository
-                .Find( t => 
+            return Queryable()
+                .Where( t => 
                     t.EntityTypeId == entityTypeId && 
                     ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) 
                 )
@@ -52,9 +52,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Group"/>.
         /// </returns>
-        public IEnumerable<Auth> GetByGroupId( int? groupId )
+        public IQueryable<Auth> GetByGroupId( int? groupId )
         {
-            return Repository.Find( t => ( t.GroupId == groupId || ( groupId == null && t.GroupId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.GroupId == groupId || ( groupId == null && t.GroupId == null ) ) ).OrderBy( t => t.Order );
         }
         
         /// <summary>
@@ -64,9 +64,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Auth"/> entities that apply to the specified <see cref="Rock.Model.Person"/>.
         /// </returns>
-        public IEnumerable<Auth> GetByPersonId( int? personId )
+        public IQueryable<Auth> GetByPersonId( int? personId )
         {
-            return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>

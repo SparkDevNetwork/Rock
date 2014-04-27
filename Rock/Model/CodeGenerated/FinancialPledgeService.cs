@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialPledgeService"/> class
         /// </summary>
-        public FinancialPledgeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialPledgeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public FinancialPledgeService(IRepository<FinancialPledge> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialPledgeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public FinancialPledgeService(RockContext context) : base(context)
         {
@@ -115,6 +99,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

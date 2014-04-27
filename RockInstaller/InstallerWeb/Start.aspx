@@ -26,6 +26,7 @@
     const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
     const string rockUtilitiesAssembly = "http://storage.rockrms.com/install/Rock.Install.Utilities.dll";
     const string rockInitalWebConfig = "http://storage.rockrms.com/install/web.config";
+    const string rockInstalledFile = @"\bin\Rock.dll";
 
     const string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
     const string rockStyles = "http://storage.rockrms.com/install/install.css";
@@ -51,7 +52,7 @@
 			// we can't proceed with the install
 			
 			lTitle.Text = "Before We Get Started...";
-			lOutput.Text= "<ul>" + checkMessages + "</ul>";
+            lOutput.Text = "<ul class='list-unstyled'>" + checkMessages + "</ul>";
 			return;
 		}
 		else {
@@ -119,7 +120,7 @@
             }
 					
 			// proceed with the install by downloading the installer files
-			Response.Redirect("Install.aspx");
+            lRedirect.Visible = true;
 		}
 		
 	}
@@ -140,6 +141,8 @@
         <link href="<%=rockLogoIco %>" rel="shortcut icon">
 		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
+        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+
 	</head>
 	<body>
 		<form runat="server">
@@ -148,7 +151,7 @@
 					<h1>Rock RMS</h1>
 					
 					<div id="content-box" class="group">
-						<h1><asp:Literal ID="lTitle" Text="Server Check" runat="server" /></h1>
+						<h1><asp:Literal ID="lTitle" Text="" runat="server" /></h1>
 						
 						<asp:Label ID="lOutput" runat="server" />
 
@@ -161,6 +164,26 @@
                                 It appears that this website is not configured to run ASP.Net.  The Rock RMS
                                 requires that you run on a Windows Hosting Platform running IIS/ASP.Net.
                             </div>
+
+                        </asp:Literal>
+
+                        <asp:Literal runat="server" ID="lRedirect" Visible="false">    
+                            <div id="divNoJavascript" class="alert alert-danger">
+                                <p>
+                                    <strong>JavaScript Required</strong> To enable a robust installation experience we require JavaScript to be enabled.
+                                </p>
+                                <p><em>If you are running this locally on a server, consider completing the install on a client machine or temporarily 
+                                    enabling JavaScript.
+                                   </em>
+                                </p>
+                            </div>
+
+                            <script>
+                                $( document ).ready(function() {
+                                    $('#content-box').hide();
+                                    window.location = "Install.aspx";
+                                });
+                            </script>
 
                         </asp:Literal>
 
@@ -244,21 +267,19 @@
 
         // check for write permissions
         string filename = Server.MapPath(".") + @"\write-permission.test";
-        
+
         try
         {
-            File.Create(filename).Dispose();
-        }
-        catch (Exception ex)
-        {
+            File.Create( filename ).Dispose();
 
-        }
 
-        if (File.Exists(filename))
-        {
-            canWrite = true;
-            File.Delete(filename);
-        }
+            if ( File.Exists( filename ) )
+            {
+                canWrite = true;
+                File.Delete( filename );
+            }
+            
+        } catch(Exception ex){}
         
         if (!canWrite) {
         	checksFailed = true;
@@ -271,34 +292,51 @@
         if (!CheckDotNetVersion(out checkResults))
         {
             checksFailed = true;
-            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i>" + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> " + checkResults + " <a href='http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
         }
         
+        // check that rock not already installed
+        string rockFile = Server.MapPath( "." ) + rockInstalledFile;
+        if ( File.Exists( rockFile ) )
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that Rock is already installed in this directory. You must remove this version of Rock before proceeding.</a></li>";
+        }
         
 		return checksFailed;
 	}
 
     private bool CheckDotNetVersion(out string errorDetails)
     {
-
-        bool checksFailed = false;
+        bool checksPassed = false;
         errorDetails = string.Empty;
 
         // check .net
-        // ok this is not easy as .net 4.5 actually reports as 4.0.30319.269 so instead we need to search for the existence of an assembly that
-        // only exists in 4.5 (could also look for Environment.Version.Major == 4 && Environment.Version.Revision > 17000 but this is not future proof)
-        // sigh... Microsoft... :)
-        if (!(Type.GetType("System.Reflection.ReflectionContext", false) != null))
+        // ok this is not easy as .net 4.5.1 actually reports as 4.0.378675 or 4.0.378758 depending on how it was installed
+        // http://en.wikipedia.org/wiki/List_of_.NET_Framework_versions
+        if ( System.Environment.Version.Major > 4 )
         {
-            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock RMS version requires " + dotNetVersionRequired + ".";
+            checksPassed = true;
+        }
+        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build > 30319 )
+        {
+            checksPassed = true;
+        }
+        else if ( System.Environment.Version.Major == 4 && System.Environment.Version.Build == 30319 && System.Environment.Version.Revision >= 18408 )
+        {
+            checksPassed = true;
+        }
+
+        if ( checksPassed )
+        {
+            errorDetails += String.Format( "You have the correct version of .Net ({0}+).", dotNetVersionRequired );
         }
         else
         {
-            errorDetails += "You have the correct version of .Net (4.5+).";
-            checksFailed = true;
+            errorDetails = "The server does not have the correct .Net runtime.  You have .Net version " + System.Environment.Version.Major.ToString() + "." + System.Environment.Version.ToString() + " the Rock ChMS version requires " + dotNetVersionRequired + ".";
         }
 
-        return checksFailed;
+        return checksPassed;
     }
 
 

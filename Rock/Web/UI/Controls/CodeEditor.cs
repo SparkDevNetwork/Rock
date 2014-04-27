@@ -291,12 +291,13 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
-            // Note: AddScriptLink will not add a script during partial postback (i.e. inside an update panel)  Because of this, this script 
-            // is also added in the AttributeEditor's OnInit since in that scenario this controls OnInit may not get run on the initial page load
-
             this.TextMode = TextBoxMode.MultiLine;
+
+            if (this.Visible && !ScriptManager.GetCurrent(this.Page).IsInAsyncPostBack)
+            {
+                // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
+                RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            }
         }
 
         /// <summary>
@@ -350,6 +351,12 @@ namespace Rock.Web.UI.Controls
 
             // make textbox hidden
             ( (WebControl)this ).Style.Add( HtmlTextWriterStyle.Display, "none" );
+
+            // add ace.js on demand only when there will be a codeeditor rendered
+            if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "ace-include", ResolveUrl( "~/Scripts/ace/ace.js" ) );
+            }
 
             string scriptFormat = @"
                 var ce_{0} = ace.edit('codeeditor-div-{0}');

@@ -21,10 +21,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.Http;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -104,8 +104,7 @@ namespace Rock.Rest.Controllers
                         Type[] modelType = { entityType };
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-
-                        serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
+                        serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
                     }
                 }
             }
@@ -115,7 +114,7 @@ namespace Rock.Rest.Controllers
 
             foreach ( var category in categoryList )
             {
-                if ( category.IsAuthorized( "View", currentPerson ) )
+                if ( category.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     var categoryItem = new CategoryItem();
                     categoryItem.Id = category.Id.ToString();
@@ -134,13 +133,13 @@ namespace Rock.Rest.Controllers
                     foreach ( var item in items )
                     {
                         ICategorized categorizedItem = item as ICategorized;
-                        if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                        if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             var categoryItem = new CategoryItem();
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = "fa fa-list-ol";
+                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue("IconCssClass") as string ?? "fa fa-list-ol";
                             categoryItem.IconSmallUrl = string.Empty;
                             categoryItemList.Add( categoryItem );
                         }
@@ -157,7 +156,7 @@ namespace Rock.Rest.Controllers
 
                     foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
                     {
-                        if ( childCategory.IsAuthorized( "View", currentPerson ) )
+                        if ( childCategory.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {
                             g.HasChildren = true;
                             break;
@@ -174,7 +173,7 @@ namespace Rock.Rest.Controllers
                                 foreach ( var item in childItems )
                                 {
                                     ICategorized categorizedItem = item as ICategorized;
-                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
+                                    if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                                     {
                                         g.HasChildren = true;
                                         break;
@@ -202,12 +201,21 @@ namespace Rock.Rest.Controllers
                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
                 if ( getMethod != null )
                 {
-                    var paramExpression = serviceInstance.ParameterExpression;
-                    var propertyExpreesion = Expression.Property( paramExpression, "CategoryId" );
-                    var zeroExpression = Expression.Constant( 0 );
-                    var coalesceExpression = Expression.Coalesce( propertyExpreesion, zeroExpression );
-                    var constantExpression = Expression.Constant( categoryId );
-                    var compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+                    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+                    MemberExpression propertyExpression = Expression.Property( paramExpression, "CategoryId" );
+                    BinaryExpression compareExpression = null;
+                    ConstantExpression constantExpression = Expression.Constant( categoryId );
+
+                    if ( propertyExpression.Type == typeof( int? ) )
+                    {
+                        var zeroExpression = Expression.Constant( 0 );
+                        var coalesceExpression = Expression.Coalesce( propertyExpression, zeroExpression );
+                        compareExpression = Expression.Equal( coalesceExpression, constantExpression );
+                    }
+                    else
+                    {
+                        compareExpression = Expression.Equal( propertyExpression, constantExpression );
+                    }
 
                     return getMethod.Invoke( serviceInstance, new object[] { paramExpression, compareExpression } );
                 }

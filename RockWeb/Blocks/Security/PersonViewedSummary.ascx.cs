@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -33,6 +34,7 @@ namespace RockWeb.Blocks.Security
     [DisplayName( "Person Viewed" )]
     [Category( "Security" )]
     [Description( "Block for displaying people who have viewed this person's profile and whose profile's this person has viewed. A block level attribute determines which view is displayed." )]
+
     [BooleanField( "See Profiles Viewed", "Flag indicating whether this block will show you a list of people this person has viewed or a list of people who have viewed this person (this is the default).", false )]
     [ContextAware( typeof( Person ) )]
     [LinkedPage( "Detail Page" )]
@@ -56,7 +58,7 @@ namespace RockWeb.Blocks.Security
             gViewed.DataKeyNames = new string[] { "id" };
             gViewedBy.DataKeyNames = new string[] { "id" };
             var person = ContextEntity<Person>();
-            if (person != null)
+            if ( person != null )
             {
                 personId = person.Id;
             }
@@ -72,7 +74,7 @@ namespace RockWeb.Blocks.Security
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
@@ -140,39 +142,39 @@ namespace RockWeb.Blocks.Security
         protected void BindGrid()
         {
             var showProfilesViewed = GetAttributeValue( "SeeProfilesViewed" ).AsBoolean();
-            var personViewedService = new PersonViewedService();
+            var rockContext = new RockContext();
+
+            var personViewedService = new PersonViewedService( rockContext );
+            var personService = new PersonService( rockContext );
             if ( showProfilesViewed )
             {
                 // This grid should show the profiles viewed by this person.
                 pnlViewed.Visible = true;
                 pnlViewedBy.Visible = false;
 
-                var profilesViewedList = personViewedService.Queryable()
-                    .Where( p => p.ViewerPersonId == personId )
-                    .GroupBy( p => p.TargetPersonId )
-                    .Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() )
-                    .ToList();
-
-                var firstViewedList = personViewedService.Queryable()
-                    .Where( p => p.ViewerPersonId == personId )
-                    .GroupBy( p => p.TargetPersonId )
-                    .Select( p => new {
+                var viewedList = personViewedService.Queryable()
+                    .Where( p => p.ViewerPersonAlias != null && p.ViewerPersonAlias.PersonId == personId )
+                    .GroupBy( p => p.TargetPersonAlias.PersonId )
+                    .Select( p => new
+                    {
                         TargetPersonId = p.Key,
                         FirstViewed = p.Min( g => g.ViewDateTime ),
+                        LastViewed = p.Max( g => g.ViewDateTime ),
                         ViewedCount = p.Count()
-                    } )
-                    .ToList();
+                    } );
 
-                var qry = profilesViewedList.AsQueryable()
-                    .Select( q => new
+                var pQry = personService.Queryable();
+
+                var qry = viewedList
+                    .Join( pQry, v => v.TargetPersonId, p => p.Id, ( v, p ) => new
                     {
-                        Id = q.TargetPersonId,
-                        FullName = q.TargetPerson.FullName,
-                        Age = q.TargetPerson.Age,
-                        Gender = q.TargetPerson.Gender,
-                        FirstViewedDate = firstViewedList.Where( p => p.TargetPersonId == q.TargetPersonId ).Select( p => p.FirstViewed ).FirstOrDefault(),
-                        LastViewedDate = q.ViewDateTime,
-                        ViewedCount = firstViewedList.Where( p => p.TargetPersonId == q.TargetPersonId ).Select( p => p.ViewedCount ).FirstOrDefault()
+                        p.Id,
+                        FullName = p.NickName + " " + p.LastName,
+                        p.BirthDate,
+                        p.Gender,
+                        FirstViewedDate = v.FirstViewed,
+                        LastViewedDate = v.LastViewed,
+                        ViewedCount = v.ViewedCount
                     } );
 
                 SortProperty sortProperty = gViewed.SortProperty;
@@ -193,33 +195,30 @@ namespace RockWeb.Blocks.Security
                 // This grid should show the profiles that have viewed this person.
                 pnlViewed.Visible = false;
                 pnlViewedBy.Visible = true;
-                var profilesViewedByList = personViewedService.Queryable()
-                    .Where( p => p.TargetPersonId == personId )
-                    .GroupBy( p => p.ViewerPersonId )
-                    .Select( g => g.OrderByDescending( p => p.ViewDateTime ).FirstOrDefault() )
-                    .ToList();
 
-                var firstViewedList = personViewedService.Queryable()
-                    .Where( p => p.TargetPersonId == personId )
-                    .GroupBy( p => p.ViewerPersonId )
+                var viewedList = personViewedService.Queryable()
+                    .Where( p => p.TargetPersonAlias != null && p.TargetPersonAlias.PersonId == personId )
+                    .GroupBy( p => p.ViewerPersonAlias.PersonId )
                     .Select( p => new
                     {
                         ViewerPersonId = p.Key,
                         FirstViewed = p.Min( g => g.ViewDateTime ),
+                        LastViewed = p.Max( g => g.ViewDateTime ),
                         ViewedCount = p.Count()
-                    } )
-                    .ToList();
+                    } );
 
-                var qry = profilesViewedByList.AsQueryable()
-                    .Select( q => new
+                var pQry = personService.Queryable();
+
+                var qry = viewedList
+                    .Join( pQry, v => v.ViewerPersonId, p => p.Id, ( v, p ) => new
                     {
-                        Id = q.ViewerPersonId,
-                        FullName = q.ViewerPerson.FullName,
-                        Age = q.ViewerPerson.Age,
-                        Gender = q.ViewerPerson.Gender,
-                        FirstViewedDate = firstViewedList.Where( p => p.ViewerPersonId == q.ViewerPersonId ).Select( p => p.FirstViewed ).FirstOrDefault(),
-                        LastViewedDate = q.ViewDateTime,
-                        ViewedCount = firstViewedList.Where( p => p.ViewerPersonId == q.ViewerPersonId ).Select( p => p.ViewedCount ).FirstOrDefault()
+                        p.Id,
+                        FullName = p.NickName + " " + p.LastName,
+                        p.BirthDate,
+                        p.Gender,
+                        FirstViewedDate = v.FirstViewed,
+                        LastViewedDate = v.LastViewed,
+                        ViewedCount = v.ViewedCount
                     } );
 
                 SortProperty sortProperty = gViewedBy.SortProperty;
@@ -238,5 +237,5 @@ namespace RockWeb.Blocks.Security
         }
 
         #endregion
-}
+    }
 }

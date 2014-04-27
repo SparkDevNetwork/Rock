@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PageViewService"/> class
         /// </summary>
-        public PageViewService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PageViewService(IRepository<PageView> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PageViewService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PageViewService(RockContext context) : base(context)
         {
@@ -110,10 +94,12 @@ namespace Rock.Model
             target.UserAgent = source.UserAgent;
             target.ClientType = source.ClientType;
             target.Url = source.Url;
+            target.PageTitle = source.PageTitle;
             target.SessionId = source.SessionId;
             target.IpAddress = source.IpAddress;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

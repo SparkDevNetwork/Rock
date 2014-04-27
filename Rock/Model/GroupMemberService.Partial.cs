@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember"/></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased )
         {
-            return base.Repository.AsQueryable()
+            return base.Queryable()
                 .Where( g => includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
         }
 
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> with specified properties eagerly loaded.</returns>
         public IQueryable<GroupMember> Queryable( string includes, bool includeDeceased )
         {
-            return base.Repository.AsQueryable( includes ).Where( g => 
+            return base.Queryable( includes ).Where( g => 
                 includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
         }
 
@@ -156,7 +156,7 @@ namespace Rock.Model
                 OrderBy( m => m.GroupRole.Order ).
                 ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
                 ThenBy( m => m.Person.Gender ).
-                Select( m => m.Person.FirstName ).
+                Select( m => m.Person.NickName ).
                 ToList();
         }
 
@@ -273,14 +273,14 @@ namespace Rock.Model
 
                                 if ( inverseGroupMember == null )
                                 {
-                                    var inverseRole = new GroupTypeRoleService().Get( inverseRoleGuid );
+                                    var inverseRole = new GroupTypeRoleService( (RockContext)Context ).Get( inverseRoleGuid );
                                     if ( inverseRole != null )
                                     {
                                         inverseGroupMember = new GroupMember();
                                         inverseGroupMember.PersonId = ownerPersonId.Value;
                                         inverseGroupMember.Group = inverseGroup;
                                         inverseGroupMember.GroupRoleId = inverseRole.Id;
-                                        Add( inverseGroupMember, personAlias );
+                                        Add( inverseGroupMember );
                                     }
                                 }
 

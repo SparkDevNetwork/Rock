@@ -47,21 +47,25 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="CurrentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, PersonAlias CurrentPersonAlias )
+        public override void Send( Rock.Model.Communication communication )
         {
+            var rockContext = new RockContext();
+
+            // Requery the Communication
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
+
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
-                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) > 0 ) )
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 string fromPhone = string.Empty;
                 string fromValue = communication.GetChannelDataValue( "FromValue" );
                 int fromValueId = int.MinValue;
                 if ( int.TryParse( fromValue, out fromValueId ) )
                 {
-                    fromPhone = DefinedValueCache.Read( fromValueId ).Description;
+                    fromPhone = DefinedValueCache.Read( fromValueId ).Name;
                 }
 
                 if ( !string.IsNullOrWhiteSpace( fromPhone ) )
@@ -70,52 +74,59 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     var twilio = new TwilioRestClient( accountSid, authToken );
 
-                    var recipientService = new CommunicationRecipientService();
+                    var recipientService = new CommunicationRecipientService( rockContext );
 
                     var globalConfigValues = GlobalAttributesCache.GetMergeFields( null );
 
                     bool recipientFound = true;
                     while ( recipientFound )
                     {
-                        RockTransactionScope.WrapTransaction( () =>
+                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                        if ( recipient != null )
                         {
-                            var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
-                            if ( recipient != null )
+                            try
                             {
-                                string phoneNumber = recipient.Person.PhoneNumbers
+                                var phoneNumber = recipient.Person.PhoneNumbers
                                     .Where( p => p.IsMessagingEnabled )
-                                    .Select( p => p.Number )
                                     .FirstOrDefault();
 
-                                if ( string.IsNullOrWhiteSpace( phoneNumber ) )
+                                if ( phoneNumber != null )
+                                {
+                                    // Create merge field dictionary
+                                    var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
+                                    string message = communication.GetChannelDataValue( "Message" );
+                                    message = message.ResolveMergeFields( mergeObjects );
+ 
+                                    string twillioNumber = phoneNumber.Number;
+                                    if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                    {
+                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                    }
+
+                                    var response = twilio.SendMessage( fromPhone, twillioNumber, message );
+
+                                    recipient.Status = CommunicationRecipientStatus.Delivered;
+                                    recipient.TransportEntityTypeName = this.GetType().FullName;
+                                    recipient.UniqueMessageId = response.Sid; 
+                                }
+                                else
                                 {
                                     recipient.Status = CommunicationRecipientStatus.Failed;
                                     recipient.StatusNote = "No Phone Number with Messaging Enabled";
                                 }
-                                else
-                                {
-                                    // Create merge field dictionary
-                                    var mergeObjects = MergeValues( globalConfigValues, recipient );
-                                    string subject = communication.Subject.ResolveMergeFields( mergeObjects );
-
-                                    try
-                                    {
-                                        twilio.SendMessage( fromPhone, phoneNumber, subject );
-                                        recipient.Status = CommunicationRecipientStatus.Success;
-                                    }
-                                    catch ( Exception ex )
-                                    {
-                                        recipient.Status = CommunicationRecipientStatus.Failed;
-                                        recipient.StatusNote = "Twilio Exception: " + ex.Message;
-                                    }
-                                }
-                                recipientService.Save( recipient, CurrentPersonAlias );
                             }
-                            else
+                            catch ( Exception ex )
                             {
-                                recipientFound = false;
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "Twilio Exception: " + ex.Message;
                             }
-                        } );
+
+                            rockContext.SaveChanges();
+                        }
+                        else
+                        {
+                            recipientFound = false;
+                        }
                     }
                 }
             }

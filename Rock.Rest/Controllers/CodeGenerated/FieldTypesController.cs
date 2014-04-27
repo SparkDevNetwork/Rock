@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FieldTypesController : Rock.Rest.ApiController<Rock.Model.FieldType>
     {
-        public FieldTypesController() : base( new Rock.Model.FieldTypeService() ) { } 
+        public FieldTypesController() : base( new Rock.Model.FieldTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

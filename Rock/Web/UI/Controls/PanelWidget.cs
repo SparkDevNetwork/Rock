@@ -266,7 +266,11 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description js-header-title" );
                 if ( Expanded )
                 {
-                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                    // if the panel is expanded and there are special HeaderControls to show instead of the Title, hide the title (and the header controls will be shown instead)
+                    if ( this.HeaderControls != null )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                    }
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

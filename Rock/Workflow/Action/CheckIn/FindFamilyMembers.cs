@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -49,7 +49,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    var service = new GroupMemberService();
+                    var service = new GroupMemberService( new RockContext() );
                     foreach ( var groupMember in service.GetByGroupId( family.Group.Id ).ToList() )
                     {
                         if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )

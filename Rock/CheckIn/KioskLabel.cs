@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -97,7 +97,7 @@ namespace Rock.CheckIn
             }
             else
             {
-                var file = new BinaryFileService().Get(id);
+                var file = new BinaryFileService( new RockContext() ).Get( id );
                 if ( file != null )
                 {
                     label = new KioskLabel();

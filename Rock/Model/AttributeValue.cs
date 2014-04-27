@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class AttributeValue : Model<AttributeValue>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this AttributeValue is part of the Rock core system/framework.
         /// </summary>
@@ -80,12 +84,17 @@ namespace Rock.Model
         [DataMember]
         public string Value {get; set;}
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.FieldType"/> that represents the type of value that is being represented by the AttributeValue, and provides a UI for the user to set the value.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.FieldType"/> that is represented by this Attribute Value.
         /// </value>
+        [NotMapped]
         private Rock.Field.IFieldType FieldType
         {
             get
@@ -114,6 +123,39 @@ namespace Rock.Model
         [DataMember]
         public virtual Attribute Attribute { get; set; }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            var attributeCache = AttributeCache.Read( this.AttributeId );
+            if (attributeCache != null)
+            {
+                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+                if ( attributeCache.FieldTypeId == fieldTypeImage.Id || attributeCache.FieldTypeId == fieldTypeBinaryFile.Id )
+                {
+                    int? binaryFileId = Value.AsInteger();
+                    if ( binaryFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -124,7 +166,12 @@ namespace Rock.Model
         {
             return this.Value;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Attribute Value Configuration class.
@@ -139,4 +186,7 @@ namespace Rock.Model
             this.HasRequired( p => p.Attribute ).WithMany().HasForeignKey( p => p.AttributeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

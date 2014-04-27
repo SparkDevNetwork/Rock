@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -132,7 +132,7 @@ namespace Rock.Web.Cache
                 {
                     definedValueIds = new List<int>();
 
-                    var definedValueService = new Model.DefinedValueService();
+                    var definedValueService = new Model.DefinedValueService( new RockContext() );
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( this.Id ) )
                     {
                         definedValueIds.Add( definedValue.Id );
@@ -211,7 +211,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedTypeService = new DefinedTypeService();
+                var definedTypeService = new DefinedTypeService( new RockContext() );
                 var definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Id == id )
@@ -251,7 +251,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedTypeService = new DefinedTypeService();
+                var definedTypeService = new DefinedTypeService( new RockContext() );
                 var definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Guid == guid )

@@ -27,11 +27,14 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Data;
 using System.Data.Entity;
 using System.Text;
+using Rock.Security;
+
 
 namespace RockWeb.Blocks.Administraton
 {
@@ -58,7 +61,7 @@ namespace RockWeb.Blocks.Administraton
             base.OnInit( e );
 
             //Only show clear exceptions button if user has edit rights
-            btnClearExceptions.Visible = IsUserAuthorized( "Edit" );
+            btnClearExceptions.Visible = IsUserAuthorized( Authorization.EDIT );
 
             //Set Exception List filter properties
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
@@ -83,7 +86,7 @@ namespace RockWeb.Blocks.Administraton
             }
 
 
-            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi" );
+            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi", false );
             RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
 
@@ -102,7 +105,7 @@ namespace RockWeb.Blocks.Administraton
             }
 
             // get data for graphs
-            ExceptionLogService exceptionLogService = new ExceptionLogService();
+            ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
             var exceptionList = exceptionLogService.Queryable()
             .Where(x => x.HasInnerException == false && x.CreatedDateTime != null)
             .GroupBy( x => DbFunctions.TruncateTime(x.CreatedDateTime.Value ))
@@ -111,7 +114,7 @@ namespace RockWeb.Blocks.Administraton
                 DateValue = eg.Key,
                 ExceptionCount = eg.Count(),
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
-            } ).ToList();
+            } ).OrderBy(eg => eg.DateValue).ToList();
 
             if ( exceptionList.Count > 1 )
             {
@@ -254,8 +257,7 @@ namespace RockWeb.Blocks.Administraton
                     int siteId;
                     if ( int.TryParse( e.Value, out siteId ) )
                     {
-                        SiteService siteService = new SiteService();
-                        var site = siteService.Get( siteId );
+                        var site = SiteCache.Read( siteId );
                         if ( site != null )
                         {
                             e.Value = site.Name;
@@ -266,8 +268,7 @@ namespace RockWeb.Blocks.Administraton
                     int pageId;
                     if ( int.TryParse( e.Value, out pageId ) )
                     {
-                        PageService pageService = new PageService();
-                        var page = pageService.Get( pageId );
+                        var page = PageCache.Read( pageId );
                         if ( page != null )
                         {
                             e.Value = page.InternalName;
@@ -278,7 +279,7 @@ namespace RockWeb.Blocks.Administraton
                     int userPersonId;
                     if ( int.TryParse( e.Value, out userPersonId ) )
                     {
-                        PersonService personService = new PersonService();
+                        PersonService personService = new PersonService( new RockContext() );
                         var user = personService.Get( userPersonId );
                         if ( user != null )
                         {
@@ -323,7 +324,7 @@ namespace RockWeb.Blocks.Administraton
             int exceptionID = 0;
             if ( int.TryParse( hfBaseExceptionID.Value, out exceptionID ) )
             {
-                ExceptionLogService exceptionService = new ExceptionLogService();
+                ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
                 ExceptionLog baseException = exceptionService.Get( exceptionID );
 
                 BindExceptionOccurrenceGrid( baseException );
@@ -376,6 +377,8 @@ namespace RockWeb.Blocks.Administraton
 
             int siteId;
 
+            var rockContext = new RockContext();
+
             if ( int.TryParse( fExceptionList.GetUserPreference( "Site" ), out siteId )
                     && ddlSite.Items.FindByValue( siteId.ToString() ) != null )
             {
@@ -385,7 +388,7 @@ namespace RockWeb.Blocks.Administraton
             int pageId;
             if ( int.TryParse( fExceptionList.GetUserPreference( "Page" ), out pageId ) )
             {
-                PageService pageService = new PageService();
+                PageService pageService = new PageService( rockContext );
                 ppPage.SetValue( pageService.Get( pageId ) );
             }
             else
@@ -396,7 +399,7 @@ namespace RockWeb.Blocks.Administraton
             int userPersonId;
             if ( int.TryParse( fExceptionList.GetUserPreference( "User" ), out userPersonId ) )
             {
-                PersonService personService = new PersonService();
+                PersonService personService = new PersonService( rockContext );
                 ppUser.SetValue( personService.Get( userPersonId ) );
             }
 
@@ -470,7 +473,7 @@ namespace RockWeb.Blocks.Administraton
         /// <param name="baseException">Exception to base the occurrence grid off of.</param>
         private void BindExceptionOccurrenceGrid( ExceptionLog baseException )
         {
-            ExceptionLogService exceptionService = new ExceptionLogService();
+            ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
 
             var query = exceptionService.Queryable()
                 .Where( e => e.HasInnerException == null || e.HasInnerException == false )
@@ -485,7 +488,7 @@ namespace RockWeb.Blocks.Administraton
                             e.CreatedByPersonAlias.Person != null ) ?
                             e.CreatedByPersonAlias.Person.LastName + ", " + e.CreatedByPersonAlias.Person.NickName : "",
                         Description = e.Description
-                    } );
+                    } ).OrderBy(e => e.CreatedDateTime);
 
             if ( gExceptionOccurrences.SortProperty == null )
             {
@@ -504,7 +507,7 @@ namespace RockWeb.Blocks.Administraton
         /// </summary>
         private void BindSitesFilter()
         {
-            SiteService siteService = new SiteService();
+            SiteService siteService = new SiteService( new RockContext() );
             ddlSite.DataTextField = "Name";
             ddlSite.DataValueField = "Id";
             ddlSite.DataSource = siteService.Queryable().OrderBy( s => s.Name ).ToList();
@@ -520,7 +523,7 @@ namespace RockWeb.Blocks.Administraton
         /// <returns>IQueryable containing filtered ExceptionLog records</returns>
         private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
         {
-            ExceptionLogService exceptionLogService = new ExceptionLogService();
+            ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
             IQueryable<ExceptionLog> query = exceptionLogService.Queryable();
 
             int siteId;
@@ -573,8 +576,7 @@ namespace RockWeb.Blocks.Administraton
         /// </summary>
         private void ClearExceptionLog()
         {
-            Service service = new Service();
-            service.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
+            DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
         }
 
         /// <summary>
@@ -594,7 +596,7 @@ namespace RockWeb.Blocks.Administraton
         private void LoadExceptionOccurrences( int exceptionId )
         {
             //get the base exception
-            ExceptionLogService exceptionService = new ExceptionLogService();
+            ExceptionLogService exceptionService = new ExceptionLogService( new RockContext() );
             ExceptionLog exception = exceptionService.Get( exceptionId );
 
             //set the summary fields for the base exception

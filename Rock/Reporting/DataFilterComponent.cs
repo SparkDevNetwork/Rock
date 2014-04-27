@@ -291,7 +291,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="supportedComparisonTypes">The supported comparison types.</param>
         /// <returns></returns>
-        protected DropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
+        protected RockDropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
         {
             var ddl = new RockDropDownList();
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
@@ -366,6 +366,30 @@ namespace Rock.Reporting
                     ComparisonType.LessThan |
                     ComparisonType.LessThanOrEqualTo;
             }
+        }
+
+        /// <summary>
+        /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
+        /// </summary>
+        /// <value>
+        /// </value>
+        public void RegisterFilterCompareChangeScript( FilterField filterControl )
+        {
+            string filterComparescript = @"
+            $('.js-filter-compare').change( function () {
+        var $fieldCriteriaRow = $(this).closest('.field-criteria');
+        var compareValue = $(this).val();
+        var isNullCompare = (compareValue == 32 || compareValue == 64);
+        if (isNullCompare) {
+            $fieldCriteriaRow.find('.js-filter-control').hide();
+        }
+        else {
+            $fieldCriteriaRow.find('.js-filter-control').show();
+        }
+    });
+";
+            // only need this script once per page
+            ScriptManager.RegisterStartupScript( filterControl.Page, filterControl.Page.GetType(), "js-filter-compare-change-script", filterComparescript, true );
         }
 
         #endregion

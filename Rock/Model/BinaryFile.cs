@@ -114,16 +114,6 @@ namespace Rock.Model
         [DataMember]
         public int? StorageEntityTypeId { get; private set; }
 
-        /// <summary>
-        /// Sets the type of the storage entity.
-        /// Should only be set by the BinaryFileService
-        /// </summary>
-        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
-        public void SetStorageEntityTypeId( int? storageEntityTypeId)
-        {
-            StorageEntityTypeId = storageEntityTypeId;
-        }
-
         #endregion
 
         #region Virtual Properties
@@ -134,6 +124,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFileType"/> of the file.
         /// </value>
+        [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         /// <summary>
@@ -150,11 +141,75 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> representing the Storage Service that is being used.
         /// </value>
+        [DataMember]
         public virtual EntityType StorageEntityType { get; set; }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Sets the type of the storage entity.
+        /// Should only be set by the BinaryFileService
+        /// </summary>
+        /// <param name="storageEntityTypeId">The storage entity type identifier.</param>
+        public void SetStorageEntityTypeId( int? storageEntityTypeId )
+        {
+            StorageEntityTypeId = storageEntityTypeId;
+        }
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            Rock.Storage.ProviderComponent storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
+
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                if ( storageProvider != null )
+                {
+                    storageProvider.RemoveFile( this, System.Web.HttpContext.Current );
+                }
+            }
+            else
+            {
+
+                if ( storageProvider != null )
+                {
+                    //// if this file is getting replaced, and we can determine the StorageProvider, use the provider to get and remove the file from the provider's 
+                    //// external storage medium before we save it again. This especially important in cases where the provider for this filetype has changed 
+                    //// since it was last saved
+
+                    // first get the FileContent from the old/current fileprovider in case we need to save it somewhere else
+                    Data = Data ?? new BinaryFileData();
+                    Data.Content = storageProvider.GetFileContent( this, System.Web.HttpContext.Current );
+
+                    // now, remove it from the old/current fileprovider
+                    storageProvider.RemoveFile( this, System.Web.HttpContext.Current );
+                }
+
+                // when a file is saved (unless it is getting Deleted/Saved), it should use the StoredEntityType that is associated with the BinaryFileType
+                if ( BinaryFileType != null )
+                {
+                    // make sure that it updated to use the same storage as specified by the BinaryFileType
+                    if ( StorageEntityTypeId != BinaryFileType.StorageEntityTypeId )
+                    {
+                        SetStorageEntityTypeId( BinaryFileType.StorageEntityTypeId );
+                        storageProvider = BinaryFileService.DetermineBinaryFileStorageProvider( (Rock.Data.RockContext)dbContext, this );
+                    }
+                }
+
+                if ( storageProvider != null )
+                {
+                    // save the file to the provider's new storage medium
+                    storageProvider.SaveFile( this, System.Web.HttpContext.Current );
+                }
+
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the name of the file and  represents this instance.
@@ -166,7 +221,34 @@ namespace Rock.Model
         {
             return this.FileName;
         }
-    
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.BinaryFileType;
+            }
+        }
+
+        private Storage.ProviderComponent DetermineBinaryFileStorageProvider(  )
+        {
+            Rock.Storage.ProviderComponent storageProvider = null;
+
+            StorageEntityType = StorageEntityType ?? new EntityTypeService( new RockContext() ).Get( StorageEntityTypeId ?? 0 );
+            if ( StorageEntityType != null )
+            {
+                storageProvider = Rock.Storage.ProviderContainer.GetComponent( StorageEntityType.Name );
+            }
+
+            return storageProvider;
+        }
+
         #endregion
 
         #region StaticMethods
@@ -178,8 +260,7 @@ namespace Rock.Model
         public static void MakePermanent( string commaDelimitedIds )
         {
             string query = string.Format( "UPDATE BinaryFile SET IsTemporary = 0 WHERE Id IN ({0})", commaDelimitedIds );
-            var service = new Service();
-            service.ExecuteCommand( query );
+            Rock.Data.DbService.ExecuteCommand( query );
         }
 
         /// <summary>
@@ -189,8 +270,7 @@ namespace Rock.Model
         public static void MakePermanent( int id)
         {
             string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);
-            var service = new Service();
-            service.ExecuteCommand( query );
+            Rock.Data.DbService.ExecuteCommand( query );
         }
 
         #endregion

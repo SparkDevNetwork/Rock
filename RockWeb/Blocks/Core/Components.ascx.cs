@@ -20,10 +20,11 @@ using System.Linq;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Extension;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -38,11 +39,13 @@ namespace RockWeb.Blocks.Core
     [System.ComponentModel.Category( "Core" )]
     [System.ComponentModel.Description( "Block to administrate MEF plugins." )]
 
-    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage")]
+    [TextField( "Component Container", "The Rock Extension Managed Component Container to manage", true, "", "", 1)]
+    [BooleanField( "Support Ordering", "Should user be allowed to re-order list of components?", true, "", 2)]
     public partial class Components : RockBlock
     {
         #region Private Variables
 
+        private bool _supportOrdering = true;
         private bool _isAuthorizedToConfigure = false;
         private IContainer _container;
 
@@ -54,8 +57,10 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            _isAuthorizedToConfigure = RockPage.IsAuthorized( "Administrate", CurrentPerson );
-
+            _isAuthorizedToConfigure = IsUserAuthorized( Authorization.ADMINISTRATE );
+            
+            _supportOrdering = GetAttributeValue( "SupportOrdering" ).AsBoolean( true );
+            
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
@@ -72,9 +77,8 @@ namespace RockWeb.Blocks.Core
                             _container.Refresh();
 
                         rGrid.DataKeyNames = new string[] { "id" };
-                        if ( _isAuthorizedToConfigure )
-                            rGrid.GridReorder += rGrid_GridReorder;
-                        rGrid.Columns[0].Visible = _isAuthorizedToConfigure;    // Reorder
+                        rGrid.Columns[0].Visible = _supportOrdering && _isAuthorizedToConfigure;
+                        rGrid.GridReorder += rGrid_GridReorder;
                         rGrid.GridRebind += rGrid_GridRebind;
                         rGrid.RowDataBound += rGrid_RowDataBound;
 
@@ -159,18 +163,16 @@ namespace RockWeb.Blocks.Core
             else
                 components.Insert( e.NewIndex, movedItem );
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            int order = 0;
+            foreach ( var item in components )
             {
-                int order = 0;
-                foreach ( var item in components )
+                Component component = item.Value.Value;
+                if (  component.Attributes.ContainsKey("Order") )
                 {
-                    Component component = item.Value.Value;
-                    if (  component.Attributes.ContainsKey("Order") )
-                    {
-                        Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), CurrentPersonAlias );
-                    }
-                    order++;
+                    Rock.Attribute.Helper.SaveAttributeValue( component, component.Attributes["Order"], order.ToString(), rockContext );
                 }
+                order++;
             }
 
             _container.Refresh();
@@ -230,7 +232,7 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
 
             Rock.Attribute.Helper.GetEditValues( phProperties, component );
-            component.SaveAttributeValues( CurrentPersonAlias );
+            component.SaveAttributeValues();
 
             HideDialog();
 
@@ -260,16 +262,30 @@ namespace RockWeb.Blocks.Core
         private void BindGrid()
         {
             var dataSource = new List<ComponentDescription>();
-            foreach ( var component in _container.Dictionary )
+
+            // Get components ordered by 'Order' attribute (if ordering is supported) or by Name
+            var components = new Dictionary<int,KeyValuePair<string,Component>>();
+            if (_supportOrdering)
+            {
+                components = _container.Dictionary;
+            }
+            else
+            {
+                components = new Dictionary<int,KeyValuePair<string,Component>>();
+                _container.Dictionary.OrderBy( c => c.Value.Key ).ToList().ForEach( c =>
+                {
+                    components.Add( c.Key, c.Value );
+                } );
+            }
+
+            foreach ( var component in components)
             {
                 Type type = component.Value.Value.GetType();
-                using ( new Rock.Data.UnitOfWorkScope() )
+                if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
                 {
-                    if ( Rock.Attribute.Helper.UpdateAttributes( type, Rock.Web.Cache.EntityTypeCache.GetId( type.FullName ), string.Empty, string.Empty, null ) )
-                    {
-                        component.Value.Value.LoadAttributes();
-                    }
+                    component.Value.Value.LoadAttributes();
                 }
+
                 dataSource.Add( new ComponentDescription( component.Key, component.Value ) );
             }
 

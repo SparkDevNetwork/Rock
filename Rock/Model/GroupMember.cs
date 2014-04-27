@@ -30,6 +30,9 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupMember : Model<GroupMember>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this GroupMember is part of the Rock core system/framework. This property is required.
         /// </summary>
@@ -81,6 +84,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public GroupMemberStatus GroupMemberStatus { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Person"/> representing the GroupMember.
@@ -97,7 +103,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
-        [DataMember]
         public virtual Group Group { get; set; }
         
         /// <summary>
@@ -109,6 +114,10 @@ namespace Rock.Model
         [DataMember]
         public virtual GroupTypeRole GroupRole { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -119,7 +128,12 @@ namespace Rock.Model
         {
             return Person.ToStringSafe();
         }
+
+        #endregion
+    
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Member Configuration class.
@@ -137,6 +151,10 @@ namespace Rock.Model
         }
     }
 
+    #endregion
+
+    #region Enumerations
+
     /// <summary>
     /// Represents the status of a <see cref="Rock.Model.GroupMember"/> in a <see cref="Rock.Model.Group"/>.
     /// </summary>
@@ -151,9 +169,12 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.GroupMember"/> is an active member of the <see cref="Rock.Model.Group"/>.
         /// </summary>
         Active = 1,
+        
         /// <summary>
         /// The <see cref="Rock.Model.GroupMember">GroupMember's</see> membership in the <see cref="Rock.Model.Group"/> is pending.
         /// </summary>
         Pending = 2 
     }
+
+    #endregion
 }

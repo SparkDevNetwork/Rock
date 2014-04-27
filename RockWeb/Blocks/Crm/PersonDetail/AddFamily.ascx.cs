@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -38,7 +39,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Location Type",
         "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 0 )]
-    [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
+        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 1 )]
     [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "The default marital status for adults in the family.", false, false, "", "", 3)]
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "The marital status to use for children in the family.", false, false,
@@ -105,7 +107,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 ddlMaritalStatus.SetValue( AdultMaritalStatus.Id );
             }
 
-            var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
@@ -120,9 +122,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
             bool.TryParse( GetAttributeValue( "Grade" ), out _requireGrade );
-
-            bool showNickName = false;
-            nfmMembers.ShowNickName = bool.TryParse( GetAttributeValue( "NickName" ), out showNickName ) && showNickName;
 
             lTitle.Text = ("Add Family").FormatAsHtmlTitle(); 
         }
@@ -294,17 +293,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var familyMembers = GetControlData();
                     if ( familyMembers.Any() )
                     {
+                        var rockContext = new RockContext();
                         RockTransactionScope.WrapTransaction( () =>
                         {
-                            using ( new UnitOfWorkScope() )
+                            var familyGroup = GroupService.SaveNewFamily( rockContext, familyMembers, cpCampus.SelectedValueAsInt(), true );
+                            if ( familyGroup != null )
                             {
-                                var groupService = new GroupService();
-                                var familyGroup = groupService.SaveNewFamily( familyMembers, cpCampus.SelectedValueAsInt(), true, CurrentPersonAlias );
-                                if ( familyGroup != null )
-                                {
-                                    groupService.AddNewFamilyAddress( familyGroup, GetAttributeValue( "LocationType" ),
-                                        tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text, CurrentPersonAlias );
-                                }
+                                GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ),
+                                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
                             }
                         } );
 
@@ -341,9 +337,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         attributeControl.ID = "familyAttributes_" + category.Id.ToString();
                         attributeControl.CategoryId = category.Id;
 
-                        foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
+                        foreach ( var attribute in new AttributeService( new RockContext() ).GetByCategoryId( category.Id ) )
                         {
-                            if ( attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            if ( attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                             {
                                 attributeControl.AttributeList.Add( AttributeCache.Read( attribute ) );
                             }
@@ -373,8 +369,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     {
                         familyMemberRow.TitleValueId = familyMember.Person.TitleValueId;
                         familyMemberRow.FirstName = familyMember.Person.FirstName;
-                        familyMemberRow.NickName = familyMember.Person.NickName;
                         familyMemberRow.LastName = familyMember.Person.LastName;
+                        familyMemberRow.SuffixValueId = familyMember.Person.SuffixValueId;
                         familyMemberRow.Gender = familyMember.Person.Gender;
                         familyMemberRow.BirthDate = familyMember.Person.BirthDate;
                         familyMemberRow.ConnectionStatusValueId = familyMember.Person.ConnectionStatusValueId;
@@ -410,15 +406,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 childMaritalStatusId = childMaritalStatus.Id;
             }
-
             int? adultMaritalStatusId = ddlMaritalStatus.SelectedValueAsInt();
+
+            int recordTypePersonId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            int recordStatusActiveId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
             foreach ( NewFamilyMembersRow row in nfmMembers.FamilyMemberRows )
             {
                 var groupMember = new GroupMember();
                 groupMember.Person = new Person();
                 groupMember.Person.Guid = row.PersonGuid.Value;
-                groupMember.Person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                groupMember.Person.RecordTypeValueId = recordTypePersonId;
+                groupMember.Person.RecordStatusValueId = recordStatusActiveId;
 
                 if ( row.RoleId.HasValue )
                 {
@@ -436,21 +435,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.FirstName = row.FirstName;
-                if ( nfmMembers.ShowNickName )
-                {
-                    groupMember.Person.NickName = row.NickName;
-                }
-
-                if (string.IsNullOrWhiteSpace(groupMember.Person.NickName))
-                {
-                    groupMember.Person.NickName = groupMember.Person.FirstName;
-                }
-
+                groupMember.Person.NickName = groupMember.Person.FirstName;
                 groupMember.Person.LastName = row.LastName;
+                groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
                 groupMember.Person.BirthDate = row.BirthDate;
                 groupMember.Person.ConnectionStatusValueId = row.ConnectionStatusValueId;
                 groupMember.Person.Grade = row.Grade;
+
+                groupMember.Person.EmailPreference = EmailPreference.EmailAllowed;
 
                 groupMember.Person.LoadAttributes();
 
@@ -494,6 +487,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             else
             {
                 familyMemberRow.ShowGrade = false;
+            }
+
+            var ConnectionStatusValue = DefinedValueCache.Read( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
+            if ( ConnectionStatusValue != null )
+            {
+                familyMemberRow.ConnectionStatusValueId = ConnectionStatusValue.Id;
             }
 
             if ( rows.Count > 0 )

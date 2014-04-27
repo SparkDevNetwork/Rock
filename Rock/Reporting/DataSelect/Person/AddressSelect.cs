@@ -131,10 +131,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? locationTypeValidId = selection.AsInteger( false );
+            int? groupLocationTypeValueId = selection.AsInteger( false );
 
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-            int familyGroupTypeId = new GroupTypeService().Get( familyGuid ).Id;
+            int familyGroupTypeId = new GroupTypeService( context ).Get( familyGuid ).Id;
 
             var groupMemberQuery = new GroupMemberService( context ).Queryable();
 
@@ -144,7 +144,7 @@ namespace Rock.Reporting.DataSelect.Person
                     groupMemberQuery
                     .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
                     .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValueId == locationTypeValidId )
+                    .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId )
                     .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
                     .FirstOrDefault() );
 

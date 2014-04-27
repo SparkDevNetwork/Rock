@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             string cssFile = GetAttributeValue( "CSSFile" );
             if ( !String.IsNullOrWhiteSpace( cssFile ) )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( cssFile ) );
+                RockPage.AddCSSLink( ResolveRockUrl( cssFile ), false );
             }
 
         }
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Cms
             }
             catch ( Exception ex )
             {
-                if ( IsUserAuthorized( "Administrate" ) )
+                if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
                 {
                     throw ex;
                 }
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( messages.Count > 0 )
             {
-                if ( IsUserAuthorized( "Administrate" ) )
+                if ( IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE ) )
                 {
                     SetNotificationBox( messages.FirstOrDefault().Key, messages.FirstOrDefault().Value, isError ? NotificationBoxType.Warning : NotificationBoxType.Info );
                 }

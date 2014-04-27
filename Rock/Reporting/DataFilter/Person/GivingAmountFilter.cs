@@ -118,7 +118,6 @@ function() {
                 DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-
                 result = string.Format( "Giving amount total {0} {1} between {2} and {3}", comparisonType.ConvertToString().ToLower(), amount.ToString("C"), startDate.ToShortDateString(), endDate.ToShortDateString() );
             }
 
@@ -135,8 +134,10 @@ function() {
             comparisonControl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( comparisonControl );
 
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
             NumberBox numberBoxAmount = new NumberBox();
-            numberBoxAmount.PrependText = "$";
+            numberBoxAmount.PrependText = globalAttributes.GetValue("CurrencySymbol") ?? "$";
             numberBoxAmount.NumberType = ValidationDataType.Currency;
             numberBoxAmount.ID = filterControl.ID + "_1";
             numberBoxAmount.Label = "Amount";
@@ -223,6 +224,8 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+            var rockContext = (RockContext)serviceInstance.Context;
+
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length != 4 )
             {
@@ -234,13 +237,13 @@ function() {
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
-            var financialTransactionQry = new FinancialTransactionService( serviceInstance.RockContext ).Queryable()
+            var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
                 .GroupBy( xx => xx.AuthorizedPersonId ).Select( xx =>
                     new
                     {
                         PersonId = xx.Key,
-                        TotalAmount = xx.Sum( ss => ss.TotalAmount )
+                        TotalAmount = xx.Sum( ss => ss.TransactionDetails.Sum( td => td.Amount) )
                     } );
 
             if ( comparisonType == ComparisonType.LessThan )
@@ -254,7 +257,7 @@ function() {
 
             var innerQry = financialTransactionQry.Select( xx => xx.PersonId ?? 0 ).AsQueryable();
 
-            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+            var qry = new PersonService( rockContext ).Queryable()
                 .Where( p => innerQry.Any( xx => xx == p.Id ) );
 
             Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

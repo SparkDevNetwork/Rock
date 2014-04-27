@@ -18,13 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.Security.Application;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -48,7 +45,7 @@ namespace RockWeb.Blocks.Prayer
         #region Fields
         private string _sessionKey = "Rock.PrayerRequestIDs";
         private bool _enableCommunityFlagging = false;
-        private string _categoryGuidString = "";
+        private string _categoryGuidString = string.Empty;
         private int? _flagLimit = 1;
         private string[] _savedCategoryIdsSetting;
         #endregion
@@ -156,16 +153,17 @@ namespace RockWeb.Blocks.Prayer
 
             index++;
 
-            List<int> prayerRequestIds  = (List<int>) Session[ _sessionKey ];
+            List<int> prayerRequestIds = (List<int>)Session[_sessionKey];
             int currentNumber = index + 1;
             if ( currentNumber <= prayerRequestIds.Count )
             {
                 UpdateSessionCountLabel( currentNumber, prayerRequestIds.Count );
 
                 hfPrayerIndex.Value = index.ToString();
-                PrayerRequestService service = new PrayerRequestService();
+                var rockContext = new RockContext();
+                PrayerRequestService service = new PrayerRequestService( rockContext );
                 PrayerRequest request = service.Get( prayerRequestIds[index] );
-                ShowPrayerRequest( request, service );
+                ShowPrayerRequest( request, rockContext );
             }
             else
             {
@@ -197,7 +195,7 @@ namespace RockWeb.Blocks.Prayer
             pnlFinished.Visible = false;
             pnlNoPrayerRequestsMessage.Visible = false;
             pnlPrayer.Visible = false;
-            lbStart.Focus();                
+            lbStart.Focus();
 
             DisplayCategories();
         }
@@ -222,7 +220,8 @@ namespace RockWeb.Blocks.Prayer
         {
             int prayerRequestId = hfIdValue.ValueAsInt();
 
-            var service = new PrayerRequestService();
+            var rockContext = new RockContext();
+            var service = new PrayerRequestService( rockContext );
 
             PrayerRequest request = service.Get( prayerRequestId );
 
@@ -233,7 +232,8 @@ namespace RockWeb.Blocks.Prayer
                 {
                     request.IsApproved = false;
                 }
-                service.Save( request, this.CurrentPersonAlias );
+
+                rockContext.SaveChanges();
             }
 
             mdFlag.Hide();
@@ -244,12 +244,16 @@ namespace RockWeb.Blocks.Prayer
 
         #region Methods
 
+        /// <summary>
+        /// Sets the type of the note.
+        /// </summary>
         private void SetNoteType()
         {
             var entityTypeId = EntityTypeCache.Read( typeof( PrayerRequest ) ).Id;
             string noteTypeName = GetAttributeValue( "NoteType" );
 
-            var service = new NoteTypeService();
+            var rockContext = new RockContext();
+            var service = new NoteTypeService( rockContext );
             var noteType = service.Get( entityTypeId, noteTypeName );
 
             // If a note type with the specified name does not exist, create one
@@ -261,8 +265,8 @@ namespace RockWeb.Blocks.Prayer
                 noteType.EntityTypeQualifierColumn = string.Empty;
                 noteType.EntityTypeQualifierValue = string.Empty;
                 noteType.Name = noteTypeName;
-                service.Add( noteType, CurrentPersonAlias );
-                service.Save( noteType, CurrentPersonAlias );
+                service.Add( noteType );
+                rockContext.SaveChanges();
             }
 
             NoteTypeId = noteType.Id;
@@ -303,7 +307,7 @@ namespace RockWeb.Blocks.Prayer
         {
             string settingPrefix = string.Format( "prayer-categories-{0}-", this.BlockId );
 
-            var prayerRequestQuery = new PrayerRequestService().GetActiveApprovedUnexpired();
+            IQueryable<PrayerRequest> prayerRequestQuery = new PrayerRequestService( new RockContext() ).GetActiveApprovedUnexpired();
 
             // Filter categories if one has been selected in the configuration
             if ( !string.IsNullOrEmpty( categoryGuid ) )
@@ -316,7 +320,7 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-            var inUseCategories = prayerRequestQuery
+            var categoryList = prayerRequestQuery
                 .Where( p => p.Category != null )
                 .Select( p => new { p.Category.Id, p.Category.Name } )
                 .GroupBy( g => new { g.Id, g.Name } )
@@ -327,11 +331,11 @@ namespace RockWeb.Blocks.Prayer
                     Name = a.Key.Name + " (" + System.Data.Entity.SqlServer.SqlFunctions.StringConvert( (double)a.Count() ).Trim() + ")",
                     Count = a.Count()
                     //,Checked = selectedIDs.Contains( a.Key.Id )
-                } );
+                } ).ToList();
 
             cblCategories.DataTextField = "Name";
             cblCategories.DataValueField = "Id";
-            cblCategories.DataSource = inUseCategories.ToList();
+            cblCategories.DataSource = categoryList;
             cblCategories.DataBind();
 
             // use the users preferences to set which items are checked.
@@ -342,7 +346,7 @@ namespace RockWeb.Blocks.Prayer
                 item.Selected = _savedCategoryIdsSetting.Contains( item.Value );
             }
 
-            return ( inUseCategories.Count() > 0 );
+            return categoryList.Count() > 0;
         }
 
         /// <summary>
@@ -377,26 +381,27 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="categoriesList"></param>
         private void SetAndDisplayPrayerRequests( RockCheckBoxList categoriesList )
         {
-            PrayerRequestService service = new PrayerRequestService();
+            RockContext rockContext = new RockContext();
+            PrayerRequestService service = new PrayerRequestService( rockContext );
             var prayerRequests = service.GetByCategoryIds( categoriesList.SelectedValuesAsInt ).OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
             List<int> list = prayerRequests.Select( p => p.Id ).ToList<int>();
 
-            Session[ _sessionKey ] = list;
+            Session[_sessionKey] = list;
             if ( list.Count > 0 )
             {
                 UpdateSessionCountLabel( 1, list.Count );
                 hfPrayerIndex.Value = "0";
                 PrayerRequest request = prayerRequests.First();
-                ShowPrayerRequest( request, service );
+                ShowPrayerRequest( request, rockContext );
             }
         }
 
         /// <summary>
         /// Displays the details for a single, given prayer request.
         /// </summary>
-        /// <param name="prayerRequest"></param>
-        /// <param name="service"></param>
-        private void ShowPrayerRequest( PrayerRequest prayerRequest, PrayerRequestService service )
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ShowPrayerRequest( PrayerRequest prayerRequest, RockContext rockContext )
         {
             pnlPrayer.Visible = true;
             pPrayerAnswer.Visible = false;
@@ -407,7 +412,7 @@ namespace RockWeb.Blocks.Prayer
             lTitle.Text = prayerRequest.FullName.FormatAsHtmlTitle();
 
             //lPrayerText.Text = prayerRequest.Text.EncodeHtmlThenConvertCrLfToHtmlBr();
-            lPrayerText.Text = ScrubHtmlAndConvertCrLfToBr( prayerRequest.Text );
+            lPrayerText.Text = prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr();
             hlblCategory.Text = prayerRequest.Category.Name;
 
             // Show their answer if there is one on the request.
@@ -423,41 +428,16 @@ namespace RockWeb.Blocks.Prayer
             lPersonIconHtml.Text = Person.GetPhotoImageTag( prayerRequest.RequestedByPerson, 50, 50 );
 
             notesComments.Visible = prayerRequest.AllowComments ?? false;
-            if (notesComments.Visible)
+            if ( notesComments.Visible )
             {
                 notesComments.EntityId = prayerRequest.Id;
                 notesComments.RebuildNotes( true );
             }
+
             CurrentPrayerRequestId = prayerRequest.Id;
 
             // save because the prayer count was just modified.
-            service.Save( prayerRequest, CurrentPersonAlias );
-        }
-
-        #endregion
-
-        # region Possible Extension Method -- but it depends on Microsoft.Security.Application.Sanitizer
-
-        /// <summary>
-        /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
-        /// </summary>
-        /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
-        /// <returns>a string that has been scrubbed of any html with carriage returns converted to html br</returns>
-        public static string ScrubHtmlAndConvertCrLfToBr( string str )
-        {
-            if ( str == null )
-            {
-                return string.Empty;
-            }
-
-            // Note: \u00A7 is the section symbol
-
-            // First we convert newlines and carriage returns to a character that can
-            // pass through the Sanitizer.
-            str = str.Replace( Environment.NewLine, "\u00A7" ).Replace( "\x0A", "\u00A7" );
-
-            // Now we pass it to sanitizer and then convert those section-symbols to <br/>
-            return Sanitizer.GetSafeHtmlFragment( str ).ConvertCrLfToHtmlBr().Replace( "\u00A7", "<br/>" );
+            rockContext.SaveChanges();
         }
 
         #endregion

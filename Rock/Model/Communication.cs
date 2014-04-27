@@ -55,8 +55,18 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the Subject of the communication.
         /// </value>
+        [DataMember]
         [MaxLength( 100 )]
         public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is bulk communication.
+        /// </summary>
+        /// <value>
+        /// The is bulk communication.
+        /// </value>
+        [DataMember]
+        public bool IsBulkCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets the future send date for the communication. This allows a user to schedule when a communication is sent 
@@ -375,7 +385,7 @@ namespace Rock.Model
         /// <summary>
         /// Communication has been submitted but not yet approved or denied
         /// </summary>
-        Submitted = 2,
+        PendingApproval = 2,
 
         /// <summary>
         /// Communication has been approved for sending

@@ -71,15 +71,6 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system) Attribute.
-        /// </value>
-        [DataMember]
-        public virtual Model.EntityType EntityType { get; set; }
-
-        /// <summary>
         /// Gets or sets the entity type qualifier column that contains the value (see <see cref="EntityTypeQualifierValue"/>) that is used narrow the scope of the Attribute to a subset or specific instance of an EntityType.
         /// </summary>
         /// <value>
@@ -184,6 +175,15 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will not be populated if the Attribute is a Global (system) Attribute.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.EntityType"/> that this Attribute is used to configure. This property will be null if the Attribute is a Global (system) Attribute.
+        /// </value>
+        [DataMember]
+        public virtual Model.EntityType EntityType { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.AttributeQualifier">AttributeQualifiers</see> for this Attribute.
         /// </summary>
         /// <value>
@@ -223,6 +223,35 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( state != System.Data.Entity.EntityState.Deleted )
+            {
+                // ensure that the BinaryFile.IsTemporary flag is set to false for any BinaryFiles that are associated with this record
+                var fieldTypeImage = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.IMAGE.AsGuid() );
+                var fieldTypeBinaryFile = Rock.Web.Cache.FieldTypeCache.Read( Rock.SystemGuid.FieldType.BINARY_FILE.AsGuid() );
+
+                if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
+                {
+                    int? binaryFileId = DefaultValue.AsInteger();
+                    if ( binaryFileId.HasValue )
+                    {
+                        BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                        var binaryFile = binaryFileService.Get( binaryFileId.Value );
+                        if ( binaryFile != null && binaryFile.IsTemporary )
+                        {
+                            binaryFile.IsTemporary = false;
+                        }
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -1,4 +1,5 @@
-﻿// Copyright 2013 by the Spark Development Network
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,9 +30,10 @@ namespace Rock.PersonProfile.Badge
     /// </summary>
     [Description( "Liquid Badge" )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata("ComponentName", "Liquid Badge")]
+    [ExportMetadata( "ComponentName", "Liquid Badge" )]
 
-    [CodeEditorField( "Display Text", "The text (or html) to display as a badge",CodeEditorMode.Liquid, CodeEditorTheme.Rock, 100 )]
+    [CodeEditorField( "Display Text", "The text (or html) to display as a badge", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200 )]
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false )]
     public class Liquid : BadgeComponent
     {
         /// <summary>
@@ -47,6 +49,19 @@ namespace Rock.PersonProfile.Badge
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
                 mergeValues.Add( "Person", Person );
                 displayText = displayText.ResolveMergeFields( mergeValues );
+
+                if ( GetAttributeValue( badge, "EnableDebug" ).AsBoolean() )
+                {
+                    string debugInfo = string.Format( @"
+                            <small><a data-toggle='collapse' data-parent='#accordion' href='#badge-debug'><i class='fa fa-eye'></i></a></small>
+                            <pre id='badge-debug' class='collapse well badge-debug'>
+                                {0}
+                            </pre>
+                        ", mergeValues.LiquidHelpText() );
+
+                    displayText += debugInfo;
+                }
+
             }
             writer.Write( displayText );
         }

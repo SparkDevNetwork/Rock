@@ -35,6 +35,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_SMS_FROM = "611BDE1F-7405-4D16-8626-CCFEDB0E62BE";
 
         /// <summary>
+        /// The list of phone country code formats and how to format their numbers 
+        /// </summary>
+        public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
@@ -43,6 +48,11 @@ namespace Rock.SystemGuid
         /// Guid for Device Type
         /// </summary>
         public const string DEVICE_TYPE = "0368B637-327A-4F5E-80C2-832079E482EE";
+
+        /// <summary>
+        /// Guid for External Application
+        /// </summary>
+        public const string EXTERNAL_APPLICATION = "1FAC459C-5F62-4E7C-8933-61FF9FE2DFEF";
 
         /// <summary>
         /// Guid for Financial Currency Type
@@ -135,6 +145,11 @@ namespace Rock.SystemGuid
         public const string PERSON_CONNECTION_STATUS =  "2e6540ea-63f0-40fe-be50-f2a84735e600";
 
         /// <summary>
+        /// Guid for the reasons a person record needs to be reviewed
+        /// </summary>
+        public const string PERSON_REVIEW_REASON = "7680C445-AD69-4E5D-94F0-CBAA96DB0FF8";
+
+        /// <summary>
         /// Guid for the types of Person Titles (such as Mr., Mrs., Dr., etc.)
         /// </summary>
         public const string PERSON_TITLE =  "4784cd23-518b-43ee-9b97-225bf6e07846";
@@ -158,6 +173,11 @@ namespace Rock.SystemGuid
         /// Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.)
         /// </summary>
         public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
+
+        /// <summary>
+        /// Guid for the types of map styles
+        /// </summary>
+        public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
 
     }
 }

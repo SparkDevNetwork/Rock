@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypeService"/> class
         /// </summary>
-        public FieldTypeService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FieldTypeService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public FieldTypeService(IRepository<FieldType> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FieldTypeService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public FieldTypeService(RockContext context) : base(context)
         {
@@ -68,13 +52,13 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attribute>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
+            if ( new Service<Attribute>( Context ).Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, Attribute.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<DefinedType>().Queryable().Any( a => a.FieldTypeId == item.Id ) )
+            if ( new Service<DefinedType>( Context ).Queryable().Any( a => a.FieldTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
                 return false;
@@ -126,6 +110,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

@@ -28,12 +28,13 @@ namespace Rock.Model
     public partial class MarketingCampaignAdTypeService
     {
         /// <summary>
-        /// Deletes a specified <see cref="MarketingCampaignAdType"/>.
+        /// Deletes a specified <see cref="MarketingCampaignAdType" />.
         /// </summary>
-        /// <param name="item">The <see cref="MarketingCampaignAdType"/> to delete</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns>A <see cref="System.Boolean"/> flag that indicates if the deletion was completed successfully.</returns>
-        public override bool Delete( MarketingCampaignAdType item, PersonAlias personAlias )
+        /// <param name="item">The <see cref="MarketingCampaignAdType" /> to delete</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> flag that indicates if the deletion was completed successfully.
+        /// </returns>
+        public override bool Delete( MarketingCampaignAdType item )
         {
             string message;
             if ( !CanDelete( item, out message ) )
@@ -41,7 +42,7 @@ namespace Rock.Model
                 return false;
             }
 
-            return base.Delete( item, personAlias );
+            return base.Delete( item );
         }
     }
 }

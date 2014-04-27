@@ -22,6 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Core
             gWorkflowTrigger.Actions.AddClick += gWorkflowTrigger_Add;
             gWorkflowTrigger.GridRebind += gWorkflowTrigger_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gWorkflowTrigger.Actions.ShowAdd = canAddEditDelete;
             gWorkflowTrigger.IsDeleteEnabled = canAddEditDelete;
         }
@@ -109,24 +110,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflowTrigger_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService( rockContext );
+            WorkflowTrigger WorkflowTrigger = WorkflowTriggerService.Get( (int)e.RowKeyValue );
+
+            if ( WorkflowTrigger != null )
             {
-                WorkflowTriggerService WorkflowTriggerService = new WorkflowTriggerService();
-                WorkflowTrigger WorkflowTrigger = WorkflowTriggerService.Get( (int)e.RowKeyValue );
-
-                if ( WorkflowTrigger != null )
+                string errorMessage;
+                if ( !WorkflowTriggerService.CanDelete( WorkflowTrigger, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !WorkflowTriggerService.CanDelete( WorkflowTrigger, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    WorkflowTriggerService.Delete( WorkflowTrigger, CurrentPersonAlias );
-                    WorkflowTriggerService.Save( WorkflowTrigger, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                WorkflowTriggerService.Delete( WorkflowTrigger );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -158,7 +157,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var triggers = new WorkflowTriggerService().Queryable();
+            var triggers = new WorkflowTriggerService( new RockContext() ).Queryable();
 
             string includeInactive = gfWorkflowTrigger.GetUserPreference( "Include Inactive" );
 

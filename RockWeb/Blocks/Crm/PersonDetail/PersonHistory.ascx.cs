@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
-                new PersonService().GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
+                new PersonService( new RockContext() ).GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
             }
 
             if ( !Page.IsPostBack )
@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         int personId = int.MinValue;
                         if ( int.TryParse( e.Value, out personId ) )
                         {
-                            var person = new PersonService().Get( personId );
+                            var person = new PersonService( new RockContext() ).Get( personId );
                             if ( person != null )
                             {
                                 e.Value = person.FullName;
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int personId = int.MinValue;
             if ( int.TryParse( gfSettings.GetUserPreference( "Who" ), out personId ) )
             {
-                var person = new PersonService().Get( personId );
+                var person = new PersonService( new RockContext() ).Get( personId );
                 if ( person != null )
                 {
                     ppWhoFilter.SetValue( person );
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if (Person != null)
             {
                 var familyIds = families.Select( f => f.Key ).ToList();
-                var qry = new HistoryService().Queryable( "CreatedByPersonAlias.Person" )
+                var qry = new HistoryService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
                     .Where( h =>
                         ( h.EntityTypeId == personEntityTypeId && h.EntityId == Person.Id ) ||
                         ( h.EntityTypeId == groupEntityTypeId && familyIds.Contains( h.EntityId ) ) );

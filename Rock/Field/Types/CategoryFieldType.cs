@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -71,7 +71,7 @@ namespace Rock.Field.Types
             var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( None.Text, None.IdValue ) );
-            foreach ( var entityType in new EntityTypeService().GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
+            foreach ( var entityType in new EntityTypeService( new RockContext() ).GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
             {
                 ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
@@ -249,7 +249,7 @@ namespace Rock.Field.Types
                 {
                     Guid guid;
                     Guid.TryParse( value, out guid );
-                    var category = new CategoryService().Get( guid );
+                    var category = new CategoryService( new RockContext() ).Get( guid );
                     picker.SetValue( category );
                 }
             }

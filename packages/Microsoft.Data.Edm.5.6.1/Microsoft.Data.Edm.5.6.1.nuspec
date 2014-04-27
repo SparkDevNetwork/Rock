@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Data.Edm</id>
+    <version>5.6.1</version>
+    <title>EdmLib for OData v1-3</title>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <licenseUrl>http://go.microsoft.com/?linkid=9809688</licenseUrl>
+    <projectUrl>http://go.microsoft.com/fwlink/?LinkId=220868</projectUrl>
+    <iconUrl>http://static.tumblr.com/hgchgxz/9ualgdf98/icon.png</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Classes to represent, construct, parse, serialize and validate entity data models. Targets .NET 4.0, Silverlight 4.0, or .NET Portable Lib with support for .NET 4.0, SL 4.0, Win Phone 7, and Win 8. Localized for CHS, CHT, DEU, ESN, FRA, ITA, JPN, KOR and RUS.</description>
+    <releaseNotes>What is in the release: 
+
+Bug fixes
+1. Fixed a bug where empty action parameter payloads was not supported, even when the parameters are optional.
+2. Fixed a bug where client generates invalid payload when user calls AddLink multiple times.
+3. Fixed a bug where the client could not deserialize action/functions in the JSON format when they are not declared in model.
+4. Fixed a bug where calling AddQueryOption() with same system query option will cause duplication.
+5. Fixed a bug where the client response pipeline will throw when the entry is null.
+6. Fixed a bug where client didn’t set the response body to empty on some batch payloads.
+7. Fixed a bug where DateTimeOffset is not encoded correctly in URL.</releaseNotes>
+    <tags>wcf data services odata odatalib edmlib spatial ado.net ef entity framework open protocol wcfds wcfdataservices dataservices</tags>
+  </metadata>
+</package>

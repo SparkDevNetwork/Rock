@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -44,7 +45,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var service = new PageService();
+                var service = new PageService( new RockContext() );
                 var page = service.Get( new Guid( value ) );
                 if ( page != null )
                 {
@@ -87,7 +88,7 @@ namespace Rock.Field.Types
                 if ( ppPage.IsPageRoute )
                 {
                     int? pageRouteId = ppPage.PageRouteId;
-                    var pageRoute = new PageRouteService().Get( pageRouteId ?? 0 );
+                    var pageRoute = new PageRouteService( new RockContext() ).Get( pageRouteId ?? 0 );
                     if ( pageRoute != null )
                     {
                         result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
@@ -95,7 +96,7 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    var page = new PageService().Get( ppPage.PageId ?? 0 );
+                    var page = new PageService( new RockContext() ).Get( ppPage.PageId ?? 0 );
                     if ( page != null )
                     {
                         result = page.Guid.ToString();
@@ -128,11 +129,13 @@ namespace Rock.Field.Types
                     //// If only the Page.Guid is specified this is just a reference to a page without a special route
                     //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
 
+                    var rockContext = new RockContext();
+
                     if ( valuePair.Length == 2 )
                     {
                         Guid pageRouteGuid;
                         Guid.TryParse( valuePair[1], out pageRouteGuid );
-                        pageRoute = new PageRouteService().Get( pageRouteGuid );
+                        pageRoute = new PageRouteService( rockContext ).Get( pageRouteGuid );
                     }
 
                     if ( pageRoute != null )
@@ -145,7 +148,7 @@ namespace Rock.Field.Types
                         {
                             Guid pageGuid;
                             Guid.TryParse( valuePair[0], out pageGuid );
-                            page = new PageService().Get( pageGuid );
+                            page = new PageService( rockContext ).Get( pageGuid );
                         }
 
                         ppPage.SetValue( page );

@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -67,8 +67,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var editControl = new GroupTypePicker { ID = id }; 
-            editControl.GroupTypes = new GroupTypeService().Queryable()
+            var editControl = new GroupTypePicker { ID = id };
+            editControl.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
                 .OrderBy( a => a.Name ).ToList();
             return editControl;
         }
@@ -113,7 +113,7 @@ namespace Rock.Field.Types
                 Guid groupTypeGuid = Guid.Empty;
                 if (Guid.TryParse(value, out groupTypeGuid))
                 {
-                    dropDownList.SelectedGroupTypeId = new GroupTypeService().Queryable()
+                    dropDownList.SelectedGroupTypeId = new GroupTypeService( new RockContext() ).Queryable()
                         .Where( g => g.Guid.Equals(groupTypeGuid))
                         .Select( g => g.Id )
                         .FirstOrDefault();

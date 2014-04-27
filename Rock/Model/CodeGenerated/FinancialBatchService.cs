@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
         /// </summary>
-        public FinancialBatchService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public FinancialBatchService(IRepository<FinancialBatch> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public FinancialBatchService(RockContext context) : base(context)
         {
@@ -68,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.BatchId == item.Id ) )
+            if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.BatchId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialBatch.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
@@ -122,6 +106,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

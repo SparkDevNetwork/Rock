@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Field;
 using Rock.Model;
 using Rock.Security;
@@ -446,9 +446,9 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public virtual List<string> SupportedActions { get; private set; }
+        public virtual Dictionary<string, string> SupportedActions { get; private set; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -471,7 +471,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -492,10 +492,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -503,10 +502,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias currentPersonAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }        
         
         #endregion
@@ -537,7 +535,8 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var attributeService = new Rock.Model.AttributeService();
+                var rockContext = new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {

@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -45,7 +45,7 @@ namespace Rock.Web.UI.Controls
                 this.Items.Clear();
                 this.DataTextField = "FileName";
                 this.DataValueField = "Id";
-                this.DataSource = new BinaryFileService()
+                this.DataSource = new BinaryFileService( new RockContext() )
                     .Queryable()
                     .Where( f => f.BinaryFileTypeId == value && !f.IsTemporary )
                     .OrderBy( f => f.FileName )

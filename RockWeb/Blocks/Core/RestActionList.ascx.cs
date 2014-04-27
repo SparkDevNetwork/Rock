@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Administration
             int controllerId = int.MinValue;
             if (int.TryParse(PageParameter( "controller" ), out controllerId))
             {
-                var controller = new RestControllerService().Get( controllerId );
+                var controller = new RestControllerService( new RockContext() ).Get( controllerId );
                 if (controller != null)
                 {
                     string name = controller.Name.SplitCase();
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Administration
             int controllerId = int.MinValue;
             if ( int.TryParse( PageParameter( "controller" ), out controllerId ) )
             {
-                var service = new RestActionService();
+                var service = new RestActionService( new RockContext() );
                 var sortProperty = gActions.SortProperty;
 
                 IQueryable<RestAction> qry = service.Queryable()

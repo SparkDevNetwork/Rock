@@ -49,10 +49,12 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                int entityTypeId = int.MinValue;
-                if ( int.TryParse( value, out entityTypeId ) )
+                var selectedGuids = new List<Guid>();
+                value.SplitDelimitedValues().ToList().ForEach( v => selectedGuids.Add( Guid.Parse( v ) ) );
+
+                foreach( Guid guid in selectedGuids)
                 {
-                    var entityType = EntityTypeCache.Read( entityTypeId );
+                    var entityType = EntityTypeCache.Read( guid );
                     if ( entityType != null )
                     {
                         names.Add( entityType.FriendlyName );
@@ -61,6 +63,7 @@ namespace Rock.Field.Types
             }
 
             formattedValue = names.AsDelimited( ", " );
+
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 

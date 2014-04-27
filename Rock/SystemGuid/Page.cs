@@ -32,5 +32,10 @@ namespace Rock.SystemGuid
         /// Gets the Plugin Manager guid
         /// </summary>
         public const string PLUGIN_MANAGER= "B13FCF9A-FAE5-4E53-AF7C-32DF9CA5AAE3";
+
+        /// <summary>
+        /// The ckeditor rockfilebrowser plugin frame
+        /// </summary>
+        public const string CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
     }
 }

@@ -29,6 +29,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -123,7 +124,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                CategoryService service = new CategoryService();
+                CategoryService service = new CategoryService( new RockContext() );
                 Category category = service.Get( hfCategoryId.ValueAsInt() );
                 ShowReadonlyDetails( category );
             }
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            CategoryService service = new CategoryService();
+            CategoryService service = new CategoryService( new RockContext() );
             Category category = service.Get( hfCategoryId.ValueAsInt() );
             ShowEditDetails( category );
         }
@@ -150,7 +151,8 @@ namespace RockWeb.Blocks.Core
         {
             int? parentCategoryId = null;
 
-            var categoryService = new CategoryService();
+            var rockContext = new RockContext();
+            var categoryService = new CategoryService( rockContext );
             var category = categoryService.Get( int.Parse( hfCategoryId.Value ) );
 
             if ( category != null )
@@ -165,8 +167,10 @@ namespace RockWeb.Blocks.Core
                 {
                     parentCategoryId = category.ParentCategoryId;
 
-                    categoryService.Delete( category, CurrentPersonAlias );
-                    categoryService.Save( category, CurrentPersonAlias );
+                    CategoryCache.Flush( category.Id );
+
+                    categoryService.Delete( category );
+                    rockContext.SaveChanges();
 
                     // reload page, selecting the deleted category's parent
                     var qryParams = new Dictionary<string, string>();
@@ -199,65 +203,56 @@ namespace RockWeb.Blocks.Core
         {
             Category category;
 
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            CategoryService categoryService = new CategoryService( rockContext );
+
+            int categoryId = hfCategoryId.ValueAsInt();
+
+            if ( categoryId == 0 )
             {
-                CategoryService categoryService = new CategoryService();
-
-                int categoryId = hfCategoryId.ValueAsInt();
-
-                if ( categoryId == 0 )
-                {
-                    category = new Category();
-                    category.IsSystem = false;
-                    category.EntityTypeId = entityTypeId;
-                    category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
-                    category.EntityTypeQualifierValue = entityTypeQualifierValue;
-                    category.Order = 0;
-                }
-                else
-                {
-                    category = categoryService.Get( categoryId );
-                }
-
-                category.Name = tbName.Text;
-                category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
-                category.IconCssClass = tbIconCssClass.Text;
-
-                List<int> orphanedBinaryFileIdList = new List<int>();
-
-                if ( !Page.IsValid )
-                {
-                    return;
-                }
-
-                if ( !category.IsValid )
-                {
-                    // Controls will render the error messages                    
-                    return;
-                }
-
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    if ( category.Id.Equals( 0 ) )
-                    {
-                        categoryService.Add( category, CurrentPersonAlias );
-                    }
-
-                    categoryService.Save( category, CurrentPersonAlias );
-
-                    BinaryFileService binaryFileService = new BinaryFileService();
-                    foreach (int binaryFileId in orphanedBinaryFileIdList)
-                    {
-                        var binaryFile = binaryFileService.Get(binaryFileId);
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                        }
-                    }
-                } );
+                category = new Category();
+                category.IsSystem = false;
+                category.EntityTypeId = entityTypeId;
+                category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
+                category.EntityTypeQualifierValue = entityTypeQualifierValue;
+                category.Order = 0;
+                categoryService.Add( category );
             }
+            else
+            {
+                category = categoryService.Get( categoryId );
+            }
+
+            category.Name = tbName.Text;
+            category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
+            category.IconCssClass = tbIconCssClass.Text;
+
+            List<int> orphanedBinaryFileIdList = new List<int>();
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !category.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            foreach ( int binaryFileId in orphanedBinaryFileIdList )
+            {
+                var binaryFile = binaryFileService.Get( binaryFileId );
+                if ( binaryFile != null )
+                {
+                    // marked the old images as IsTemporary so they will get cleaned up later
+                    binaryFile.IsTemporary = true;
+                }
+            }
+
+            rockContext.SaveChanges();
+            CategoryCache.Flush( category.Id );
 
             var qryParams = new Dictionary<string, string>();
             qryParams["CategoryId"] = category.Id.ToString();
@@ -292,7 +287,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            var categoryService = new CategoryService();
+            var categoryService = new CategoryService( new RockContext() );
             Category category = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
@@ -307,7 +302,7 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
 
-            if ( category == null || !category.IsAuthorized( "View", CurrentPerson ) )
+            if ( category == null || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -319,7 +314,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !category.IsAuthorized( "Edit", CurrentPerson ) )
+            if ( !category.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Category.FriendlyTypeName );
@@ -331,7 +326,7 @@ namespace RockWeb.Blocks.Core
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Category.FriendlyTypeName );
             }
 
-            btnSecurity.Visible = category.IsAuthorized( "Administrate", CurrentPerson );
+            btnSecurity.Visible = category.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = category.Name;
             btnSecurity.EntityId = category.Id;
 

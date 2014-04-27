@@ -46,21 +46,23 @@ namespace Rock.Attribute
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
         {
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( definedTypeGuid ) );
-
-            var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
-            FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
-
-            var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
-            FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
-
-            if ( string.IsNullOrWhiteSpace( Name ) )
+            if ( definedType != null )
             {
-                Name = definedType.Name;
-            }
+                var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );
+                FieldConfigurationValues.Add( DEFINED_TYPE_KEY, definedTypeConfigValue );
 
-            if ( string.IsNullOrWhiteSpace( Key ) )
-            {
-                Key = Name.Replace( " ", string.Empty );
+                var allowMultipleConfigValue = new Field.ConfigurationValue( allowMultiple.ToString() );
+                FieldConfigurationValues.Add( ALLOW_MULTIPLE_KEY, allowMultipleConfigValue );
+
+                if ( string.IsNullOrWhiteSpace( Name ) )
+                {
+                    Name = definedType.Name;
+                }
+
+                if ( string.IsNullOrWhiteSpace( Key ) )
+                {
+                    Key = Name.Replace( " ", string.Empty );
+                }
             }
         }
     }

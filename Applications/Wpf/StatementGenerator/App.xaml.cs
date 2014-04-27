@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.IO;
 using System.Windows;
 using Rock.Wpf;
 
@@ -29,6 +30,11 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         public App()
         {
+            string applicationFolder = Path.GetDirectoryName( System.Reflection.Assembly.GetExecutingAssembly().Location );
+
+            // set the current directory to the same as the current exe so that we can find the layout and logo files
+            Directory.SetCurrentDirectory( applicationFolder );
+            
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
         }
 

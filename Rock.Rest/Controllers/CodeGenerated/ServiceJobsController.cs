@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ServiceJobsController : Rock.Rest.ApiController<Rock.Model.ServiceJob>
     {
-        public ServiceJobsController() : base( new Rock.Model.ServiceJobService() ) { } 
+        public ServiceJobsController() : base( new Rock.Model.ServiceJobService( new Rock.Data.RockContext() ) ) { } 
     }
 }

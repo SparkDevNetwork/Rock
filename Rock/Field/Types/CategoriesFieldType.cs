@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -48,7 +48,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var guids = value.SplitDelimitedValues();
-                var categories = new CategoryService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
+                var categories = new CategoryService( new RockContext() ).Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
                 if ( categories.Any() )
                 {
                     formattedValue = string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
@@ -107,7 +107,7 @@ namespace Rock.Field.Types
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var categories = new CategoryService().Queryable().Where( c => ids.Contains( c.Id ) );
+                var categories = new CategoryService( new RockContext() ).Queryable().Where( c => ids.Contains( c.Id ) );
 
                 if ( categories.Any() )
                 {
@@ -148,7 +148,7 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var categories = new CategoryService().Queryable().Where( c => guids.Contains( c.Guid ) );
+                    var categories = new CategoryService( new RockContext() ).Queryable().Where( c => guids.Contains( c.Guid ) );
                     picker.SetValues( categories );
                 }
             }

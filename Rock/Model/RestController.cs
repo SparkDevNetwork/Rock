@@ -65,6 +65,7 @@ namespace Rock.Model
         /// <value>
         /// The actions.
         /// </value>
+        [DataMember]
         public virtual ICollection<RestAction> Actions { get; set; }
 
         #endregion

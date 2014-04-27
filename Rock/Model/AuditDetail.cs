@@ -85,7 +85,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Audit"/>
         /// </value>
-        [DataMember]
         public virtual Model.Audit Audit { get; set; }
 
         #endregion

@@ -132,6 +132,11 @@ namespace RockWeb
                 Directory.CreateDirectory( physicalContentFolderName );
             }
 
+            if ( File.Exists( physicalFilePath ) )
+            {
+                File.Delete( physicalFilePath );
+            }
+
             File.WriteAllBytes( physicalFilePath, fileContent );
 
             var response = new
@@ -167,7 +172,8 @@ namespace RockWeb
 
             var binaryFileService = new BinaryFileService( rockContext );
             binaryFileService.Add( binaryFile );
-            binaryFileService.Save( binaryFile );
+
+            rockContext.SaveChanges();
 
             var response = new
             {

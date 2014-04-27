@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -38,7 +39,6 @@ namespace Rock.Reporting.DataFilter
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
     public class OtherDataViewFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -117,10 +117,10 @@ namespace Rock.Reporting.DataFilter
         {
             string s = "Another Data View";
 
-            int dvId = int.MinValue;
-            if ( int.TryParse( selection, out dvId ) )
+            int dataviewId = int.MinValue;
+            if ( int.TryParse( selection, out dataviewId ) )
             {
-                var dataView = new DataViewService().Get( dvId );
+                var dataView = new DataViewService( new RockContext() ).Get( dataviewId );
                 if ( dataView != null )
                 {
                     return string.Format( "Included in '{0}' Data View", dataView.Name );
@@ -145,10 +145,10 @@ namespace Rock.Reporting.DataFilter
             RockPage page = filterControl.Page as RockPage;
             if ( page != null )
             {
-                foreach ( var dataView in new DataViewService().GetByEntityTypeId( entityTypeId ) )
+                foreach ( var dataView in new DataViewService( new RockContext() ).GetByEntityTypeId( entityTypeId ) )
                 {
-                    if ( dataView.IsAuthorized( "View", page.CurrentPerson ) &&
-                        dataView.DataViewFilter.IsAuthorized( "View", page.CurrentPerson ) )
+                    if ( dataView.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) &&
+                        dataView.DataViewFilter.IsAuthorized( Authorization.VIEW, page.CurrentPerson ) )
                     {
                         ddlDataViews.Items.Add( new ListItem( dataView.Name, dataView.Id.ToString() ) );
                     }
@@ -220,10 +220,10 @@ namespace Rock.Reporting.DataFilter
         /// <exception cref="System.Exception">Filter issue(s):  + errorMessages.AsDelimited( ;  )</exception>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            int dvId = int.MinValue;
-            if ( int.TryParse( selection, out dvId ) )
+            int dataviewId = int.MinValue;
+            if ( int.TryParse( selection, out dataviewId ) )
             {
-                var dataView = new DataViewService( serviceInstance.RockContext ).Get( dvId );
+                var dataView = new DataViewService( (RockContext)serviceInstance.Context ).Get( dataviewId );
                 if ( dataView != null && dataView.DataViewFilter != null )
                 {
                     // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
@@ -237,10 +237,12 @@ namespace Rock.Reporting.DataFilter
                         {
                             throw new System.Exception( "Filter issue(s): " + errorMessages.AsDelimited( "; " ) );
                         }
+
                         return expression;
                     }
                 }
             }
+
             return null;
         }
 
@@ -282,6 +284,5 @@ namespace Rock.Reporting.DataFilter
         }
 
         #endregion
-
     }
 }

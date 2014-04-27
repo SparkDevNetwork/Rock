@@ -26,35 +26,15 @@ namespace Rock.Model
     /// </summary>
     public partial class PageService 
     {
-        /// <summary>
-        /// Deletes the specified page.
-        /// </summary>
-        /// <param name="item">The page.</param>
-        /// <param name="personAlias">The person alias.</param>
-        /// <returns></returns>
-        public override bool Delete( Page item, PersonAlias personAlias )
-        {
 
-            Service service = new Service();
-
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
-            parameters.Add( "PageId", item.Id );
-
-            service.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
-
-            return base.Delete( item, personAlias );
-        }
-
-        
-        
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Page"/> entities by the parent <see cref="Rock.Model.Page">Page's</see> Id.
         /// </summary>
         /// <param name="parentPageId">The Id of the Parent <see cref="Rock.Model.Page"/> to search by. </param>
         /// <returns>An enumerable list of <see cref="Rock.Model.Page"/> entities who's ParentPageId matches the provided value.</returns>
-        public IEnumerable<Page> GetByParentPageId( int? parentPageId )
+        public IOrderedQueryable<Page> GetByParentPageId( int? parentPageId )
         {
-            return Repository.Find( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.ParentPageId == parentPageId || ( parentPageId == null && t.ParentPageId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -64,9 +44,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the provided layout.
         /// </returns>
-        public IEnumerable<Page> GetByLayoutId( int? layoutId )
+        public IOrderedQueryable<Page> GetByLayoutId( int? layoutId )
         {
-            return Repository.Find( t => ( t.LayoutId == layoutId || ( layoutId == null && t.LayoutId == null ) ) ).OrderBy( t => t.Order );
+            return Queryable().Where( t => ( t.LayoutId == layoutId || ( layoutId == null && t.LayoutId == null ) ) ).OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -76,9 +56,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the given site.
         /// </returns>
-        public IEnumerable<Page> GetBySiteId( int? siteId )
+        public IOrderedQueryable<Page> GetBySiteId( int? siteId )
         {
-            return Repository.Find( t => t.Layout.SiteId == siteId ).OrderBy( t => t.Layout.Name ).ThenBy( t => t.InternalName );
+            return Queryable().Where( t => t.Layout.SiteId == siteId ).OrderBy( t => t.Layout.Name ).ThenBy( t => t.InternalName );
         }
 
         /// <summary>
@@ -88,7 +68,7 @@ namespace Rock.Model
         /// <returns>A collection of <see cref="Rock.Model.Page"/> entities that are descendants of the provided parent <see cref="Rock.Model.Page"/>.</returns>
         public IEnumerable<Page> GetAllDescendents( int parentPageId )
         {
-            return Repository.ExecuteQuery(
+            return ExecuteQuery(
                 @"
                 with CTE as (
                 select * from [Page] where [ParentPageId]={0}
@@ -117,7 +97,7 @@ namespace Rock.Model
 
             bool canDelete = CanDelete( item, out errorMessage );
 
-            var site = new Service<Site>().Queryable().Where( s => ( s.DefaultPageId == item.Id || s.LoginPageId == item.Id
+            var site = new Service<Site>( this.Context ).Queryable().Where( s => ( s.DefaultPageId == item.Id || s.LoginPageId == item.Id
                 || s.RegistrationPageId == item.Id || s.PageNotFoundPageId == item.Id ) ).FirstOrDefault();
             if ( canDelete && includeSecondLvl && site != null )
             {

@@ -19,11 +19,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -57,8 +57,8 @@ namespace RockWeb.Blocks.Core
             gDefinedType.Actions.AddClick += gDefinedType_Add;
             gDefinedType.GridRebind += gDefinedType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gDefinedType.Actions.ShowAdd = canAddEditDelete;
             gDefinedType.IsDeleteEnabled = canAddEditDelete;
         }
@@ -124,8 +124,9 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Delete( object sender, RowEventArgs e )
         {
-            var definedValueService = new DefinedValueService();
-            var definedTypeService = new DefinedTypeService();
+            var rockContext = new RockContext();
+            var definedValueService = new DefinedValueService( rockContext );
+            var definedTypeService = new DefinedTypeService( rockContext );
 
             DefinedType type = definedTypeService.Get( e.RowKeyId );
 
@@ -150,17 +151,14 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                RockTransactionScope.WrapTransaction( () =>
+                foreach ( var value in definedValues )
                 {
-                    foreach ( var value in definedValues )
-                    {
-                        definedValueService.Delete( value, CurrentPersonAlias );
-                        definedValueService.Save( value, CurrentPersonAlias );
-                    }
+                    definedValueService.Delete( value );
+                }
 
-                    definedTypeService.Delete( type, CurrentPersonAlias );
-                    definedTypeService.Save( type, CurrentPersonAlias );
-                } );
+                definedTypeService.Delete( type );
+
+                rockContext.SaveChanges();
             }
 
             gDefinedType_Bind();
@@ -188,7 +186,7 @@ namespace RockWeb.Blocks.Core
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( new ListItem( Rock.Constants.All.Text, string.Empty ) );
 
-            var items = new DefinedTypeService().Queryable()
+            var items = new DefinedTypeService( new RockContext() ).Queryable()
                 .Where( a => a.Category != string.Empty)
                 .OrderBy( a => a.Category )
                 .Select( a => a.Category )
@@ -208,7 +206,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void gDefinedType_Bind()
         {
-            var queryable = new DefinedTypeService().Queryable().Select( a =>
+            var queryable = new DefinedTypeService( new RockContext() ).Queryable().Select( a =>
                 new
                 {
                     a.Id,

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Reporting
 {
@@ -79,6 +80,48 @@ namespace Rock.Reporting
             var filterExpressionVisitor = new ParameterExpressionVisitor( parameterExpression, parameterName );
 
             return filterExpressionVisitor.Visit( extractedExpression );
+        }
+
+        /// <summary>
+        /// Alters the type of the comparison.
+        /// </summary>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="compareEqualExpression">The compare equal expression.</param>
+        /// <param name="blankValue">the value to compare equal to for IsBlank/IsNotBlank.</param>
+        /// <returns></returns>
+        public static BinaryExpression AlterComparisonType( ComparisonType comparisonType, BinaryExpression compareEqualExpression, object blankValue = null )
+        {
+            BinaryExpression result = compareEqualExpression;
+
+            switch ( comparisonType )
+            {
+                case ComparisonType.EqualTo:
+                    result = Expression.MakeBinary( ExpressionType.Equal, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+                case ComparisonType.GreaterThan:
+                    result = Expression.MakeBinary( ExpressionType.GreaterThan, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+                case ComparisonType.GreaterThanOrEqualTo:
+                    result = Expression.MakeBinary( ExpressionType.GreaterThanOrEqual, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+                case ComparisonType.IsBlank:
+                    result = Expression.MakeBinary( ExpressionType.Equal, compareEqualExpression.Left, Expression.Constant( blankValue, compareEqualExpression.Right.Type ) );
+                    break;
+                case ComparisonType.IsNotBlank:
+                    result = Expression.MakeBinary( ExpressionType.NotEqual, compareEqualExpression.Left, Expression.Constant( blankValue, compareEqualExpression.Right.Type ) );
+                    break;
+                case ComparisonType.LessThan:
+                    result = Expression.MakeBinary( ExpressionType.LessThan, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+                case ComparisonType.LessThanOrEqualTo:
+                    result = Expression.MakeBinary( ExpressionType.LessThanOrEqual, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+                case ComparisonType.NotEqualTo:
+                    result = Expression.MakeBinary( ExpressionType.NotEqual, compareEqualExpression.Left, compareEqualExpression.Right );
+                    break;
+            }
+
+            return result;
         }
     }
 }

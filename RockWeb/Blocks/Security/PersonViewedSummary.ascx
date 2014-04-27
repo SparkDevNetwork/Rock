@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonViewedSummary.ascx.cs" Inherits="RockWeb.Blocks.Security.PersonViewedSummary" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upPersonViewed" runat="server">
     <ContentTemplate>
@@ -11,7 +12,7 @@
                 <Rock:Grid ID="gViewedBy" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Profiles Found" OnRowSelected="gViewedBy_RowSelected">
                     <Columns>
                         <asp:BoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                        <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
+                        <asp:TemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></asp:TemplateField>
                         <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                         <asp:BoundField DataField="FirstViewedDate" HeaderText="First Viewed" SortExpression="FirstViewedDate" />
                         <asp:BoundField DataField="LastViewedDate" HeaderText="Last Viewed" SortExpression="LastViewedDate" />
@@ -25,7 +26,7 @@
                 <Rock:Grid ID="gViewed" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Profiles Found" OnRowSelected="gViewed_RowSelected">
                     <Columns>
                         <asp:BoundField DataField="FullName" HeaderText="Person" SortExpression="FullName" />
-                        <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
+                        <asp:TemplateField HeaderText="Age" SortExpression="Age" ItemStyle-HorizontalAlign="Right"><ItemTemplate><%# ((DateTime?)Eval("BirthDate")).Age() %></ItemTemplate></asp:TemplateField>
                         <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                         <asp:BoundField DataField="FirstViewedDate" HeaderText="First Viewed" SortExpression="FirstViewedDate" />
                         <asp:BoundField DataField="LastViewedDate" HeaderText="Last Viewed" SortExpression="LastViewedDate" />

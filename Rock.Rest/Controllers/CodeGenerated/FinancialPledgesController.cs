@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialPledgesController : Rock.Rest.ApiController<Rock.Model.FinancialPledge>
     {
-        public FinancialPledgesController() : base( new Rock.Model.FinancialPledgeService() ) { } 
+        public FinancialPledgesController() : base( new Rock.Model.FinancialPledgeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

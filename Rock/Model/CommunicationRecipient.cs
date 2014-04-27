@@ -78,6 +78,54 @@ namespace Rock.Model
         public string StatusNote { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was opened by recipient.
+        /// </summary>
+        /// <value>
+        /// The opened date time.
+        /// </value>
+        [DataMember]
+        public DateTime? OpenedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets type of client that the recipient used to open the communication.
+        /// </summary>
+        /// <value>
+        /// The client.
+        /// </value>
+        [DataMember]
+        [MaxLength(200)]
+        public string OpenedClient { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transport entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The transport identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string TransportEntityTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique message identifier.
+        /// </summary>
+        /// <value>
+        /// The unique message identifier.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string UniqueMessageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response code.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the response code.
+        /// </value>
+        [DataMember]
+        public string ResponseCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the AdditionalMergeValues as a Json string.
         /// </summary>
         /// <value>
@@ -123,8 +171,21 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [DataMember]
         public virtual Communication Communication { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> for the Communication.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.CommunicationRecipient">CommunicationRecipients</see> of the Communication.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CommunicationRecipientActivity> Activities
+        {
+            get { return _activities ?? ( _activities = new Collection<CommunicationRecipientActivity>() ); }
+            set { _activities = value; }
+        }
+        private ICollection<CommunicationRecipientActivity> _activities;
 
         /// <summary>
         /// Gets or sets a dictionary containing the Additional Merge values for this communication
@@ -144,6 +205,39 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Helper method to get recipient merge values for sending communication.
+        /// </summary>
+        /// <param name="globalConfigValues">The global configuration values.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> CommunicationMergeValues( Dictionary<string, object> globalConfigValues )
+        {
+            Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+
+            globalConfigValues.ToList().ForEach( v => mergeValues.Add( v.Key, v.Value ) );
+
+            if ( this.Communication != null )
+            {
+                mergeValues.Add( "Communication", this.Communication );
+            }
+
+            if ( this.Person != null )
+            {
+                mergeValues.Add( "Person", this.Person );
+            }
+
+            // Add any additional merge fields created through a report
+            foreach ( var mergeField in this.AdditionalMergeValues )
+            {
+                if ( !mergeValues.ContainsKey( mergeField.Key ) )
+                {
+                    mergeValues.Add( mergeField.Key, mergeField.Value );
+                }
+            }
+
+            return mergeValues;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -198,9 +292,9 @@ namespace Rock.Model
         Pending = 0,
 
         /// <summary>
-        /// Communication was successfully sent to recipient
+        /// Communication was successfully delivered to recipient's mail server
         /// </summary>
-        Success = 1,
+        Delivered = 1,
 
         /// <summary>
         /// Communication failed to be sent to recipient
@@ -210,7 +304,12 @@ namespace Rock.Model
         /// <summary>
         /// Communication was cancelled prior to sending to the recipient
         /// </summary>
-        Cancelled = 3
+        Cancelled = 3,
+
+        /// <summary>
+        /// Communication was sent and opened (viewed) by the recipient
+        /// </summary>
+        Opened = 4
     }
 }
 

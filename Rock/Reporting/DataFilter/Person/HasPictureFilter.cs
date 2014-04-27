@@ -35,7 +35,6 @@ namespace Rock.Reporting.DataFilter.Person
     [ExportMetadata( "ComponentName", "Person Has Picture Filter" )]
     public class HasPictureFilter : DataFilterComponent
     {
-
         #region Properties
 
         /// <summary>
@@ -71,7 +70,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         /// <value>
         /// The title.
-        ///   </value>
+        /// </value>
         public override string GetTitle( Type entityType )
         {
             return "Has Picture";
@@ -99,9 +98,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
+            bool hasPicture = selection.AsBoolean();
 
             if ( hasPicture )
             {
@@ -174,7 +171,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var qry = new PersonService( serviceInstance.RockContext ).Queryable()
+            var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                 .Where( p => p.PhotoId.HasValue == ( selection == "1" ) );
 
             return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

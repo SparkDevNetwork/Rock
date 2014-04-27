@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PrayerRequestsController : Rock.Rest.ApiController<Rock.Model.PrayerRequest>
     {
-        public PrayerRequestsController() : base( new Rock.Model.PrayerRequestService() ) { } 
+        public PrayerRequestsController() : base( new Rock.Model.PrayerRequestService( new Rock.Data.RockContext() ) ) { } 
     }
 }

@@ -16,22 +16,11 @@
 //
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Communication;
-using Rock.Constants;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
-
-using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -42,16 +31,10 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Confirmation block that will update a group member's status to active. (Use with Group Simple Register block)." )]
 
-    #region Block Attributes
-
     [TextField("Success Message", "The text to display when a valid group member key is provided", false, "You have been registered.")]
     [TextField("Error Message", "The text to display when a valid group member key is NOT provided", false, "Sorry, there was a problem confirming your registration.  Please try to register again.")]
-
-    #endregion
-
     public partial class GroupSimpleRegisterConfirm : Rock.Web.UI.RockBlock
     {
-
          #region overridden control methods
 
         /// <summary>
@@ -71,7 +54,8 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    var groupMemberService = new GroupMemberService();
+                    var rockContext = new RockContext();
+                    var groupMemberService = new GroupMemberService( rockContext );
                     var groupMember = groupMemberService.GetByUrlEncodedKey( PageParameter( "gm" ) );
                     if ( groupMember == null )
                     {
@@ -80,7 +64,7 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                        groupMemberService.Save( groupMember, CurrentPersonAlias );
+                        rockContext.SaveChanges();
 
                         nbMessage.NotificationBoxType = NotificationBoxType.Success;
                         nbMessage.Title = "Success";
@@ -109,7 +93,5 @@ namespace RockWeb.Blocks.Groups
                 nbMessage.Text = string.Format( "{0} [{1}]", GetAttributeValue( "ErrorMessage" ), errorDetail );
             }
         }
-
     }
-      
 }
