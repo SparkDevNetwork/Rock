@@ -34,15 +34,16 @@
 </script>
 <asp:UpdatePanel id="upPanel" runat="server">
 <ContentTemplate>
- 
-    <ul class="nav nav-pills nav-pagelist">
-        <asp:Repeater ID="rptActions" runat="server">
-            <ItemTemplate>
-                <li class='<%# GetTabClass( Eval( "Key" ) ) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
-            </ItemTemplate>
-        </asp:Repeater>
-        <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
-    </ul>
+    <div class="nav navbar nav-pagelist">
+        <ul class="nav nav-pills">
+            <asp:Repeater ID="rptActions" runat="server">
+                <ItemTemplate>
+                    <li class='<%# GetTabClass( Eval( "Key" ) ) %>'><asp:LinkButton ID="lbAction" runat="server" Text='<%# Eval( "Key" ) %>' OnClick="lbAction_Click"></asp:LinkButton> </li>
+                </ItemTemplate>
+            </asp:Repeater>
+            <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
+        </ul>
+    </div>
 
     <div class="tab-content">
 

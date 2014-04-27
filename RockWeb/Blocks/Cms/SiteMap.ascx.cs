@@ -15,13 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
-using System.ComponentModel;
 
 
 namespace RockWeb.Blocks.Cms
@@ -39,7 +41,26 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            PageService pageService = new PageService();
+            PageService pageService = new PageService( new RockContext() );
+
+            List<int> expandedPageIds = new List<int>();
+
+            string pageSearch = this.PageParameter( "pageSearch" );
+            if ( !string.IsNullOrWhiteSpace( pageSearch ) )
+            {
+                foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
+                {
+                    Page selectedPage = page;
+                    while ( selectedPage != null )
+                    {
+                        selectedPage = selectedPage.ParentPage;
+                        if (selectedPage != null)
+                        {
+                            expandedPageIds.Add( selectedPage.Id );
+                        }
+                    }
+                }
+            }
 
             var sb = new StringBuilder();
 
@@ -47,7 +68,7 @@ namespace RockWeb.Blocks.Cms
             var allPages = pageService.Queryable( "Pages, Blocks, Blocks.BlockType" ).ToList();
             foreach ( var page in allPages.Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
             {
-                sb.Append( PageNode( page ) );
+                sb.Append( PageNode( page, expandedPageIds ) );
             }
             sb.AppendLine( "</ul>" );
 
@@ -59,11 +80,21 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        protected string PageNode( Page page )
+        protected string PageNode( Page page, List<int> expandedPageIdList )
         {
             var sb = new StringBuilder();
 
-            sb.AppendFormat( "<li data-expanded='false' data-model='Page' data-id='{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), page.InternalName, Environment.NewLine );
+            string pageSearch = this.PageParameter( "pageSearch" );
+            bool isSelected = false;
+            if ( !string.IsNullOrWhiteSpace( pageSearch ) )
+            {
+                isSelected = page.InternalName.IndexOf( pageSearch, StringComparison.OrdinalIgnoreCase ) >= 0;
+            }
+
+
+            bool isExpanded = expandedPageIdList.Contains(page.Id);
+
+            sb.AppendFormat( "<li data-expanded='{4}' data-model='Page' data-id='p{0}'><span><i class=\"fa fa-file-o\">&nbsp;</i> <a href='{1}'>{2}</a></span>{3}", page.Id, new PageReference( page.Id ).BuildUrl(), isSelected ? "<strong>" + page.InternalName + "</strong>" : page.InternalName, Environment.NewLine, isExpanded.ToString().ToLower() );
 
             if ( page.Pages.Any() || page.Blocks.Any() )
             {
@@ -71,12 +102,12 @@ namespace RockWeb.Blocks.Cms
 
                 foreach ( var childPage in page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.InternalName ) )
                 {
-                    sb.Append( PageNode( childPage ) );
+                    sb.Append( PageNode( childPage, expandedPageIdList ) );
                 }
 
                 foreach ( var block in page.Blocks.OrderBy( b => b.Order ) )
                 {
-                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, block.BlockType.Name, Environment.NewLine );
+                    sb.AppendFormat( "<li data-expanded='false' data-model='Block' data-id='b{0}'><span>{1}{2}:{3}</span></li>{4}", block.Id, CreateConfigIcon( block ), block.Name, block.BlockType.Name, Environment.NewLine );
                 }
 
                 sb.AppendLine( "</ul>" );

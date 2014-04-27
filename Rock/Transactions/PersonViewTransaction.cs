@@ -74,19 +74,18 @@ namespace Rock.Transactions
             // store the view to the database if the viewer is NOT the target (don't track looking at your own record)
             if ( ViewerPersonAliasId != TargetPersonAliasId )
             {
-                using ( new Rock.Data.UnitOfWorkScope() )
-                {
-                    var pvRecord = new PersonViewed();
-                    pvRecord.TargetPersonAliasId = TargetPersonAliasId;
-                    pvRecord.ViewerPersonAliasId = ViewerPersonAliasId;
-                    pvRecord.ViewDateTime = DateTimeViewed;
-                    pvRecord.IpAddress = IPAddress;
-                    pvRecord.Source = Source;
 
-                    var pvService = new PersonViewedService();
-                    pvService.Add( pvRecord, null );
-                    pvService.Save( pvRecord, null );
-                }
+                var pvRecord = new PersonViewed();
+                pvRecord.TargetPersonAliasId = TargetPersonAliasId;
+                pvRecord.ViewerPersonAliasId = ViewerPersonAliasId;
+                pvRecord.ViewDateTime = DateTimeViewed;
+                pvRecord.IpAddress = IPAddress;
+                pvRecord.Source = Source;
+
+                var rockContext = new Rock.Data.RockContext();
+                var pvService = new PersonViewedService( rockContext );
+                pvService.Add( pvRecord );
+                rockContext.SaveChanges();
             }
         }
     }

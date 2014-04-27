@@ -101,7 +101,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType" /> that performs this ActionType.
         /// </value>
-        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>

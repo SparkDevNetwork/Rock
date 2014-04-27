@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
         /// </summary>
-        public CommunicationRecipientService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public CommunicationRecipientService(IRepository<CommunicationRecipient> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public CommunicationRecipientService(RockContext context) : base(context)
         {
@@ -107,6 +91,11 @@ namespace Rock.Model
             target.CommunicationId = source.CommunicationId;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
+            target.OpenedDateTime = source.OpenedDateTime;
+            target.OpenedClient = source.OpenedClient;
+            target.TransportEntityTypeName = source.TransportEntityTypeName;
+            target.UniqueMessageId = source.UniqueMessageId;
+            target.ResponseCode = source.ResponseCode;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
@@ -114,6 +103,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

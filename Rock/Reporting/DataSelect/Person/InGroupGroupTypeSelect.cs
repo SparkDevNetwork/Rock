@@ -169,7 +169,7 @@ namespace Rock.Reporting.DataSelect.Person
             groupTypePicker = new GroupTypePicker();
             groupTypePicker.ID = parentControl.ID + "_0";
             groupTypePicker.Label = "Group Type";
-            groupTypePicker.GroupTypes = new GroupTypeService().Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            groupTypePicker.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             groupTypePicker.SelectedIndexChanged += groupTypePicker_SelectedIndexChanged;
             groupTypePicker.AutoPostBack = true;
             groupTypePicker.SelectedGroupTypeId = selectedGroupTypeId;
@@ -206,7 +206,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( groupType != null )
             {
                 cblRole.Items.Clear();
-                foreach ( var item in new GroupTypeRoleService().GetByGroupTypeId( groupType.Id ) )
+                foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupType.Id ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
                 }

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class FinancialPersonSavedAccountsController : Rock.Rest.ApiController<Rock.Model.FinancialPersonSavedAccount>
     {
-        public FinancialPersonSavedAccountsController() : base( new Rock.Model.FinancialPersonSavedAccountService() ) { } 
+        public FinancialPersonSavedAccountsController() : base( new Rock.Model.FinancialPersonSavedAccountService( new Rock.Data.RockContext() ) ) { } 
     }
 }

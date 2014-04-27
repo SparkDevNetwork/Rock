@@ -24,6 +24,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Data;
 
 namespace Rock.Jobs
 {
@@ -33,6 +34,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField( "Delay Period", "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).", false, 30, "", 0 )]
     [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
+    [DisallowConcurrentExecution]
     public class SendCommunications : IJob
     {
         /// <summary>
@@ -52,7 +54,7 @@ namespace Rock.Jobs
             var beginWindow = RockDateTime.Now.AddDays( 0 - dataMap.GetInt( "ExpirationPeriod" ));
             var endWindow = RockDateTime.Now.AddMinutes( 0 - dataMap.GetInt( "DelayPeriod" ));
 
-            foreach (var comm in new CommunicationService().Queryable()
+            foreach ( var comm in new CommunicationService( new RockContext() ).Queryable()
                 .Where( c => 
                     c.Status == CommunicationStatus.Approved &&
                     c.Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending).Any() &&
@@ -64,11 +66,7 @@ namespace Rock.Jobs
                 var channel = comm.Channel;
                 if ( channel != null )
                 {
-                    var transport = channel.Transport;
-                    if ( transport != null )
-                    {
-                        transport.Send( comm, null );
-                    }
+                    channel.Send( comm );
                 }
             }
         }

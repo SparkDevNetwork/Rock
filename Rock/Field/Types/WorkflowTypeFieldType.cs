@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of workflow types
     /// </summary>
     [Serializable]
-    public class WorkflowTypeFieldType : FieldType
+    public class WorkflowTypeFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -47,7 +47,7 @@ namespace Rock.Field.Types
             Guid workflowTypeGuid = Guid.Empty;
             if (Guid.TryParse( value, out workflowTypeGuid ))
             {
-                var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
+                var workflowtype = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
                 if ( workflowtype != null )
                 {
                     formattedValue = workflowtype.Name;
@@ -72,7 +72,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Reads new values entered by the user for the field ( as Guid )
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues"></param>
@@ -84,7 +84,7 @@ namespace Rock.Field.Types
                 int id = int.MinValue;
                 if ( Int32.TryParse( ( (WorkflowTypePicker)control ).SelectedValue, out id ) )
                 {
-                    var workflowtype = new WorkflowTypeService().Get( id );
+                    var workflowtype = new WorkflowTypeService( new RockContext() ).Get( id );
                     if ( workflowtype != null )
                     {
                         return workflowtype.Guid.ToString();
@@ -95,7 +95,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value. ( as Guid )
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
@@ -107,13 +107,39 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is WorkflowTypePicker )
                 {
-                    var workflowtype = new WorkflowTypeService().Get( workflowTypeGuid );
+                    var workflowtype = new WorkflowTypeService( new RockContext() ).Get( workflowTypeGuid );
                     if ( workflowtype != null )
                     {
                         ( (WorkflowTypePicker)control ).SetValue( workflowtype.Id.ToString() );
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new WorkflowTypeService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new WorkflowTypeService( new RockContext() ).Get( id ?? 0 );
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
 
     }

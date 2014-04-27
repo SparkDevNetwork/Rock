@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void LoadDropDowns()
         {
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( new RockContext() );
             var adtypes = marketingCampaignAdTypeService.Queryable().OrderBy( a => a.Name ).ToList();
             ddlMarketingCampaignAdType.DataSource = adtypes;
             ddlMarketingCampaignAdType.DataBind();
@@ -156,9 +156,11 @@ namespace RockWeb.Blocks.Cms
             lbApprove.Visible = IsUserAuthorized( "Approve" );
             lbDeny.Visible = IsUserAuthorized( "Approve" );
 
+            var rockContext = new RockContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                marketingCampaignAd = new MarketingCampaignAdService().Get( itemKeyValue );
+                marketingCampaignAd = new MarketingCampaignAdService( rockContext ).Get( itemKeyValue );
                 marketingCampaignAd.LoadAttributes();
             }
             else
@@ -168,7 +170,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
                     marketingCampaignAd.MarketingCampaignId = marketingCampaignId.Value;
-                    marketingCampaignAd.MarketingCampaign = new MarketingCampaignService().Get( marketingCampaignAd.MarketingCampaignId );
+                    marketingCampaignAd.MarketingCampaign = new MarketingCampaignService( rockContext ).Get( marketingCampaignAd.MarketingCampaignId );
                 }
             }
 
@@ -194,17 +196,19 @@ namespace RockWeb.Blocks.Cms
             ddlMarketingCampaignAdType.SetValue( marketingCampaignAd.MarketingCampaignAdTypeId );
             tbPriority.Text = marketingCampaignAd.Priority.ToString();
 
-            SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, new PersonService().Get( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
+            SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, new PersonService( rockContext ).Get( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
 
             if ( itemKeyValue.Equals( 0 ) )
             {
-                tbAdDateRangeStartDate.SelectedDate = null;
-                tbAdDateRangeEndDate.SelectedDate = null;
+                drpAdDateRange.LowerValue = null;
+                drpAdDateRange.UpperValue = null;
+                dpAdSingleDate.SelectedDate = null;
             }
             else
             {
-                tbAdDateRangeStartDate.SelectedDate = marketingCampaignAd.StartDate;
-                tbAdDateRangeEndDate.SelectedDate = marketingCampaignAd.EndDate;
+                drpAdDateRange.LowerValue = marketingCampaignAd.StartDate;
+                drpAdDateRange.UpperValue = marketingCampaignAd.EndDate;
+                dpAdSingleDate.SelectedDate = marketingCampaignAd.StartDate;
             }
 
             tbUrl.Text = marketingCampaignAd.Url;
@@ -246,8 +250,9 @@ namespace RockWeb.Blocks.Cms
 
             int marketingAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
 
-            MarketingCampaignAdType marketingCampaignAdType = new MarketingCampaignAdTypeService().Get( marketingAdTypeId );
-            tbAdDateRangeEndDate.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+            MarketingCampaignAdType marketingCampaignAdType = new MarketingCampaignAdTypeService( new RockContext() ).Get( marketingAdTypeId );
+            drpAdDateRange.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.DateRange );
+            dpAdSingleDate.Visible = marketingCampaignAdType.DateRangeType.Equals( DateRangeTypeEnum.SingleDate );
 
             List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
@@ -292,7 +297,9 @@ namespace RockWeb.Blocks.Cms
         protected void btnSave_Click( object sender, EventArgs e )
         {
             int marketingCampaignAdId = int.Parse( hfMarketingCampaignAdId.Value );
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+
+            var rockContext = new RockContext();
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( rockContext );
 
             MarketingCampaignAd marketingCampaignAd;
             if ( marketingCampaignAdId.Equals( 0 ) )
@@ -324,32 +331,16 @@ namespace RockWeb.Blocks.Cms
                 marketingCampaignAd.MarketingCampaignStatusPersonId = null;
             }
 
-            if ( tbAdDateRangeStartDate.SelectedDate == null )
+            if (drpAdDateRange.Visible)
             {
-                tbAdDateRangeStartDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "StartDate" ) );
-                return;
+                marketingCampaignAd.StartDate = drpAdDateRange.LowerValue ?? DateTime.MinValue;
+                marketingCampaignAd.EndDate = drpAdDateRange.UpperValue ?? DateTime.MaxValue;
             }
 
-            marketingCampaignAd.StartDate = tbAdDateRangeStartDate.SelectedDate ?? DateTime.MinValue;
-
-            if ( tbAdDateRangeEndDate.Visible )
+            if (dpAdSingleDate.Visible)
             {
-                if ( tbAdDateRangeEndDate.SelectedDate == null )
-                {
-                    tbAdDateRangeEndDate.ShowErrorMessage( Rock.Constants.WarningMessage.CannotBeBlank( "EndDate" ) );
-                    return;
-                }
-
-                marketingCampaignAd.EndDate = tbAdDateRangeEndDate.SelectedDate ?? DateTime.MaxValue;
-            }
-            else
-            {
+                marketingCampaignAd.StartDate = dpAdSingleDate.SelectedDate ?? DateTime.MinValue;
                 marketingCampaignAd.EndDate = marketingCampaignAd.StartDate;
-            }
-
-            if ( marketingCampaignAd.EndDate < marketingCampaignAd.StartDate )
-            {
-                tbAdDateRangeStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
             }
 
             marketingCampaignAd.Url = tbUrl.Text;
@@ -368,15 +359,16 @@ namespace RockWeb.Blocks.Cms
             }
 
             RockTransactionScope.WrapTransaction( () =>
+            {
+                if ( marketingCampaignAd.Id.Equals( 0 ) )
                 {
-                    if ( marketingCampaignAd.Id.Equals( 0 ) )
-                    {
-                        marketingCampaignAdService.Add( marketingCampaignAd, CurrentPersonAlias );
-                    }
+                    marketingCampaignAdService.Add( marketingCampaignAd );
+                }
 
-                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
-                    marketingCampaignAd.SaveAttributeValues( CurrentPersonAlias );
-                } );
+                rockContext.SaveChanges();
+
+                marketingCampaignAd.SaveAttributeValues( rockContext );
+            } );
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();
             qryString["marketingCampaignId"] = hfMarketingCampaignId.Value;

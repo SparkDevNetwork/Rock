@@ -18,7 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -50,6 +51,22 @@ namespace Rock.Web
         }
 
         /// <summary>
+        /// Gets the RockInstanceId for this particular installation.
+        /// </summary>
+        /// <returns>the Guid of this Rock instance</returns>
+        public static Guid GetRockInstanceId()
+        {
+            var settings = SystemSettings.Read();
+            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( SystemSettingKeys.ROCK_INSTANCE_ID, StringComparison.OrdinalIgnoreCase ) );
+            if ( attributeCache != null )
+            {
+                return attributeCache.Guid;
+            }
+
+            return new Guid(); // 0000-0000-0000...
+        }
+
+        /// <summary>
         /// Gets the Global Attribute values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -71,10 +88,10 @@ namespace Rock.Web
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public static void SetValue( string key, string value, PersonAlias currentPersonAlias )
+        public static void SetValue( string key, string value )
         {
-            var attributeService = new AttributeService();
+            var rockContext = new Rock.Data.RockContext();
+            var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.GetSystemSetting( key );
 
             if ( attribute == null )
@@ -86,14 +103,14 @@ namespace Rock.Web
                 attribute.Key = key;
                 attribute.Name = key.SplitCase();
                 attribute.DefaultValue = value;
-                attributeService.Add( attribute, currentPersonAlias );
-                attributeService.Save( attribute, currentPersonAlias );
+                attributeService.Add( attribute );
             }
             else
             {
                 attribute.DefaultValue = value;
-                attributeService.Save( attribute, currentPersonAlias );
             }
+
+            rockContext.SaveChanges();
 
             AttributeCache.Flush( attribute.Id );
 
@@ -130,7 +147,8 @@ namespace Rock.Web
                 systemSettings = new SystemSettings();
                 systemSettings.Attributes = new List<AttributeCache>();
 
-                var attributeService = new Rock.Model.AttributeService();
+                var rockContext = new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
 
                 foreach ( Rock.Model.Attribute attribute in attributeService.GetSystemSettings() )
                 {

@@ -69,39 +69,37 @@ namespace RockWeb.Blocks.Finance
         protected void btnSave_Click( object sender, EventArgs e )
         {
             FinancialAccount account;
+            var rockContext = new RockContext();
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var accountService = new Rock.Model.FinancialAccountService( rockContext );
+
+            int accountId = hfAccountId.Value.AsInteger() ?? 0;
+
+            if ( accountId == 0 )
             {
-                var accountService = new Rock.Model.FinancialAccountService();
-
-                int accountId = Int32.Parse( hfAccountId.Value );
-
-                if ( accountId == 0 )
-                {
-                    account = new Rock.Model.FinancialAccount();
-                    accountService.Add( account, CurrentPersonAlias );
-                }
-                else
-                {
-                    account = accountService.Get( accountId );
-                }
-
-                account.Name = tbName.Text;
-                account.IsActive = cbIsActive.Checked;
-                account.Description = tbDescription.Text;
-
-                account.ParentAccountId = apParentAccount.SelectedValueAsInt();
-                account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
-                account.PublicName = tbPublicName.Text;
-                account.CampusId = cpCampus.SelectedValueAsInt();
-
-                account.GlCode = tbGLCode.Text;
-                account.StartDate = dtpStartDate.SelectedDate;
-                account.EndDate = dtpEndDate.SelectedDate;
-                account.IsTaxDeductible = cbIsTaxDeductible.Checked;
-
-                accountService.Save( account, CurrentPersonAlias );
+                account = new Rock.Model.FinancialAccount();
+                accountService.Add( account );
             }
+            else
+            {
+                account = accountService.Get( accountId );
+            }
+
+            account.Name = tbName.Text;
+            account.IsActive = cbIsActive.Checked;
+            account.Description = tbDescription.Text;
+
+            account.ParentAccountId = apParentAccount.SelectedValueAsInt();
+            account.AccountTypeValueId = ddlAccountType.SelectedValueAsInt();
+            account.PublicName = tbPublicName.Text;
+            account.CampusId = cpCampus.SelectedValueAsInt();
+
+            account.GlCode = tbGLCode.Text;
+            account.StartDate = dtpStartDate.SelectedDate;
+            account.EndDate = dtpEndDate.SelectedDate;
+            account.IsTaxDeductible = cbIsTaxDeductible.Checked;
+
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }
@@ -120,6 +118,11 @@ namespace RockWeb.Blocks.Finance
 
         #region Internal Methods
 
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = false;
@@ -135,7 +138,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                account = new FinancialAccountService().Get( itemKeyValue );
+                account = new FinancialAccountService( new RockContext() ).Get( itemKeyValue );
                 editAllowed = account.IsAuthorized( Authorization.EDIT, CurrentPerson );
             }
             else
@@ -170,6 +173,10 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="account">The account.</param>
         private void ShowEditDetails( FinancialAccount account )
         {
             if ( account.Id == 0 )
@@ -185,10 +192,7 @@ namespace RockWeb.Blocks.Finance
 
             SetEditMode( true );
 
-            using ( new UnitOfWorkScope() )
-            {
-                LoadDropDowns();
-            }
+            LoadDropDowns();
 
             tbName.Text = account.Name;
             cbIsActive.Checked = account.IsActive;
@@ -205,6 +209,10 @@ namespace RockWeb.Blocks.Finance
             dtpEndDate.SelectedDate = account.EndDate;
         }
 
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="account">The account.</param>
         private void ShowReadonlyDetails( FinancialAccount account )
         {
             SetEditMode( false );
@@ -215,10 +223,14 @@ namespace RockWeb.Blocks.Finance
             lAccountDescription.Text = account.Description;
 
             DescriptionList descriptionList = new DescriptionList();
-            descriptionList.Add( "", "" );
+            descriptionList.Add( string.Empty, string.Empty );
             lblMainDetails.Text = descriptionList.Html;
         }
 
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
@@ -227,11 +239,14 @@ namespace RockWeb.Blocks.Finance
             this.HideSecondaryBlocks( editable );
         }
 
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
         private void LoadDropDowns()
         {
             ddlAccountType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_ACCOUNT_TYPE.AsGuid() ) );
 
-            cpCampus.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Visible = cpCampus.Items.Count > 0;
         }
 

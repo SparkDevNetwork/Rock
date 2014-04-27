@@ -35,7 +35,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of <see cref="Rock.Model.WorkflowTrigger"/> entities that meet the specified criteria.</returns>
         public IQueryable<WorkflowTrigger> Get( string entityTypeName, WorkflowTriggerType triggerType )
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( t =>
                     t.EntityType.Name == entityTypeName &&
                     t.WorkflowTriggerType == triggerType );

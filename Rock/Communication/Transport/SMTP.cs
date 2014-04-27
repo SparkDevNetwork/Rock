@@ -23,6 +23,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
@@ -49,23 +50,44 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send( Rock.Model.Communication communication, PersonAlias currentPersonAlias )
+        public override void Send( Rock.Model.Communication communication )
         {
+            var rockContext = new RockContext();
+
+            // Requery the Communication object
+            communication = new CommunicationService( rockContext ).Get( communication.Id );
+
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
                 communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
                 (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo(RockDateTime.Now) <= 0))
             {
+
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
+                string fromAddress = communication.GetChannelDataValue( "FromAddress" );
+                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
+
+                // Check to make sure sending domain is a safe sender
+                var safeDomains = globalAttributes.GetValue( "SafeSenderDomains" ).SplitDelimitedValues().ToList();
+                var emailParts = fromAddress.Split( new char[] { '@' }, StringSplitOptions.RemoveEmptyEntries );
+                if (emailParts.Length != 2 || !safeDomains.Contains(emailParts[1],StringComparer.OrdinalIgnoreCase))
+                {
+                    if (string.IsNullOrWhiteSpace(replyTo))
+                    {
+                        replyTo = fromAddress;
+                    }
+                    fromAddress = globalAttributes.GetValue("OrganizationEmail");
+                }
+
                 // From
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(
-                    communication.GetChannelDataValue( "FromAddress" ),
+                    fromAddress,
                     communication.GetChannelDataValue( "FromName" ) );
 
                 // Reply To
-                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
                 if ( !string.IsNullOrWhiteSpace( replyTo ) )
                 {
                     message.ReplyToList.Add( new MailAddress( replyTo ) );
@@ -100,7 +122,7 @@ namespace Rock.Communication.Transport
                 string attachmentIds = communication.GetChannelDataValue( "Attachments" );
                 if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                 {
-                    var binaryFileService = new BinaryFileService();
+                    var binaryFileService = new BinaryFileService( rockContext );
 
                     foreach(string idVal in attachmentIds.SplitDelimitedValues())
                     {
@@ -117,71 +139,67 @@ namespace Rock.Communication.Transport
                     }
                 }
 
-                var recipientService = new CommunicationRecipientService();
+                var recipientService = new CommunicationRecipientService( rockContext );
 
-                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
                 bool recipientFound = true;
                 while ( recipientFound )
                 {
-                    RockTransactionScope.WrapTransaction( () =>
+                    var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
+                    if ( recipient != null )
                     {
-                        var recipient = recipientService.Get( communication.Id, CommunicationRecipientStatus.Pending ).FirstOrDefault();
-                        if ( recipient != null )
+                        if ( string.IsNullOrWhiteSpace( recipient.Person.Email ) )
                         {
-                            if ( string.IsNullOrWhiteSpace( recipient.Person.Email ) )
-                            {
-                                recipient.Status = CommunicationRecipientStatus.Failed;
-                                recipient.StatusNote = "No Email Address";
-                            }
-                            else
-                            {
-                                message.To.Clear();
-                                message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
-
-                                // Create merge field dictionary
-                                var mergeObjects = MergeValues( globalConfigValues, recipient );
-
-                                message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
-
-                                string plainTextBody = communication.GetChannelDataValue( "TextMessage" );
-                                if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
-                                {
-                                    plainTextBody = plainTextBody.ResolveMergeFields( mergeObjects );
-                                    AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
-                                    message.AlternateViews.Add( plainTextView );
-                                }
-
-                                string htmlBody = communication.GetChannelDataValue( "HtmlMessage" );
-                                if ( !string.IsNullOrWhiteSpace( htmlBody ) )
-                                {
-                                    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash();
-                                    htmlBody = htmlBody.Replace( @" src=""/", @" src=""" + publicAppRoot );     
-                                    htmlBody = htmlBody.Replace( @" href=""/", @" href=""" + publicAppRoot );
-                                    htmlBody = htmlBody.ResolveMergeFields( mergeObjects );
-                                    AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
-                                    message.AlternateViews.Add( htmlView );
-                                }
-
-                                try
-                                {
-                                    smtpClient.Send( message );
-                                    recipient.Status = CommunicationRecipientStatus.Success;
-                                }
-                                catch ( Exception ex )
-                                {
-                                    recipient.Status = CommunicationRecipientStatus.Failed;
-                                    recipient.StatusNote = "SMTP Exception: " + ex.Message;
-                                }
-                            }
-                            recipientService.Save( recipient, currentPersonAlias );
+                            recipient.Status = CommunicationRecipientStatus.Failed;
+                            recipient.StatusNote = "No Email Address";
                         }
                         else
                         {
-                            recipientFound = false;
+                            message.To.Clear();
+                            message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
+
+                            // Create merge field dictionary
+                            var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
+
+                            // Subject
+                            message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
+
+                            // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
+                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
+                            if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
+                            {
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                message.AlternateViews.Add( plainTextView );
+                            }
+
+                            // Add Html view
+                            string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
+                            if ( !string.IsNullOrWhiteSpace( htmlBody ) )
+                            {
+                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                message.AlternateViews.Add( htmlView );
+                            }
+
+                            try
+                            {
+                                smtpClient.Send( message );
+                                recipient.Status = CommunicationRecipientStatus.Delivered;
+                                recipient.TransportEntityTypeName = this.GetType().FullName;
+                            }
+                            catch ( Exception ex )
+                            {
+                                recipient.Status = CommunicationRecipientStatus.Failed;
+                                recipient.StatusNote = "SMTP Exception: " + ex.Message;
+                            }
                         }
-                    } );
+
+                        rockContext.SaveChanges();
+                    }
+                    else
+                    {
+                        recipientFound = false;
+                    }
                 }
             }
         }
@@ -272,7 +290,8 @@ namespace Rock.Communication.Transport
                         message.To.Clear();
                         message.To.Add( to );
                         message.Subject = subject.ResolveMergeFields( mergeObjects );
-                        message.Body = body.ResolveMergeFields( mergeObjects );
+                        message.Body = Regex.Replace( body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
                         smtpClient.Send( message );
                     }
                 }

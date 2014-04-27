@@ -15,15 +15,18 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -33,8 +36,10 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page" )]
     [EntityTypeField( "Entity Type", "Display categories associated with this type of entity" )]
+    [TextField( "Entity Type Friendly Name", "The text to show for the entity type name. Leave blank to get it from the specified Entity Type" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity type Qualifier Value", "", false )]
+    [BooleanField( "Show Unnamed Entity Items", "Set to false to hide any EntityType items that have a blank name.", true )]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
     public partial class CategoryTreeView : RockBlock
     {
@@ -56,10 +61,15 @@ namespace RockWeb.Blocks.Core
         {
             base.OnLoad( e );
 
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            // hide all the actions if user doesn't have EDIT to the block
+            divTreeviewActions.Visible = canEditBlock;
+
             RockPage.AddScriptLink( "~/Scripts/jquery.tinyscrollbar.js" );
 
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
-             
+
             // Get EntityTypeName
             Guid entityTypeGuid = Guid.Empty;
             if ( Guid.TryParse( GetAttributeValue( "EntityType" ), out entityTypeGuid ) )
@@ -67,34 +77,42 @@ namespace RockWeb.Blocks.Core
                 int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeGuid ).Id;
                 string entityTypeQualiferColumn = GetAttributeValue( "EntityTypeQualifierProperty" );
                 string entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
+                bool showUnnamedEntityItems = GetAttributeValue("ShowUnnamedEntityItems").AsBooleanOrNull() ?? true;
 
-                var parms = new StringBuilder();
-                parms.AppendFormat( "/True/{0}", entityTypeId );
+                string parms = string.Format("?getCategorizedItems=true&showUnnamedEntityItems={0}", showUnnamedEntityItems.ToTrueFalse().ToLower());
+                parms += string.Format( "&entityTypeId={0}", entityTypeId );
+
                 if ( !string.IsNullOrEmpty( entityTypeQualiferColumn ) )
                 {
-                    parms.AppendFormat( "/{0}", entityTypeQualiferColumn );
+                    parms += string.Format( "&entityQualifier={0}", entityTypeQualiferColumn );
 
                     if ( !string.IsNullOrEmpty( entityTypeQualifierValue ) )
                     {
-                        parms.AppendFormat( "/{0}", entityTypeQualifierValue );
+                        parms += string.Format( "&entityQualifierValue={0}", entityTypeQualifierValue );
                     }
                 }
 
-                RestParms = parms.ToString();
+                RestParms = parms;
 
                 var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
                 if ( cachedEntityType != null )
                 {
-                    lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
-                    lAddItem.Text = cachedEntityType.FriendlyName;
-                }
+                    string entityTypeFriendlyName = GetAttributeValue( "EntityTypeFriendlyName" );
+                    if ( string.IsNullOrWhiteSpace( entityTypeFriendlyName ) )
+                    {
+                        entityTypeFriendlyName = cachedEntityType.FriendlyName;
+                    }
 
+                    lbAddItem.ToolTip = "Add " + entityTypeFriendlyName;
+                    lAddItem.Text = entityTypeFriendlyName;
+                }
+ 
                 PageParameterName = GetAttributeValue( "PageParameterKey" );
                 string itemId = PageParameter( PageParameterName );
                 string selectedEntityType = cachedEntityType.Name;
                 if ( string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    itemId = PageParameter( "categoryId" );
+                    itemId = PageParameter( "CategoryId" );
                     selectedEntityType = "category";
                 }
 
@@ -109,10 +127,10 @@ namespace RockWeb.Blocks.Core
                     hfSelectedCategoryId.Value = itemId;
                     List<string> parentIdList = new List<string>();
 
-                    Category category = null;
+                    CategoryCache category = null;
                     if ( selectedEntityType.Equals( "category" ) )
                     {
-                        category = new CategoryService().Get( int.Parse( itemId ) );
+                        category = CategoryCache.Read( int.Parse( itemId ) );
                         lbAddItem.Enabled = true;
                         lbAddCategoryChild.Enabled = true;
                     }
@@ -129,7 +147,7 @@ namespace RockWeb.Blocks.Core
                                     Type serviceType = typeof( Rock.Data.Service<> );
                                     Type[] modelType = { entityType };
                                     Type service = serviceType.MakeGenericType( modelType );
-                                    var serviceInstance = Activator.CreateInstance( service );
+                                    var serviceInstance = Activator.CreateInstance( service, new object[] { new RockContext() } );
                                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                                     ICategorized entity = getMethod.Invoke( serviceInstance, new object[] { id } ) as ICategorized;
 
@@ -137,10 +155,13 @@ namespace RockWeb.Blocks.Core
                                     {
                                         lbAddCategoryRoot.Enabled = false;
                                         lbAddCategoryChild.Enabled = false;
-                                        category = entity.Category;
-                                        if ( category != null )
+                                        if ( entity.CategoryId.HasValue )
                                         {
-                                            parentIdList.Insert( 0, category.Id.ToString() );
+                                            category = CategoryCache.Read( entity.CategoryId.Value );
+                                            if ( category != null )
+                                            {
+                                                parentIdList.Insert( 0, category.Id.ToString() );
+                                            }
                                         }
                                     }
                                 }
@@ -159,7 +180,7 @@ namespace RockWeb.Blocks.Core
 
                     }
                     // also get any additional expanded nodes that were sent in the Post
-                    string postedExpandedIds = this.Request.Params["expandedIds"];
+                    string postedExpandedIds = this.Request.Params["ExpandedIds"];
                     if ( !string.IsNullOrWhiteSpace( postedExpandedIds ) )
                     {
                         var postedExpandedIdList = postedExpandedIds.Split( ',' ).ToList();
@@ -177,7 +198,6 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-
         /// <summary>
         /// Handles the Click event of the lbAddItem control.
         /// </summary>
@@ -191,21 +211,33 @@ namespace RockWeb.Blocks.Core
                 NavigateToLinkedPage( "DetailPage", PageParameterName, 0, "parentCategoryId", parentCategoryId );
             }
         }
-        protected void lbAddCategoryChild_Click(object sender, EventArgs e)
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCategoryChild control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddCategoryChild_Click( object sender, EventArgs e )
         {
             int parentCategoryId = 0;
-            if (Int32.TryParse(hfSelectedCategoryId.Value, out parentCategoryId))
+            if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
-                NavigateToLinkedPage("DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId);
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId );
             }
             else
             {
-                NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
             }
         }
-        protected void lbAddCategoryRoot_Click(object sender, EventArgs e)
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCategoryRoot control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddCategoryRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage("DetailPage", "CategoryId", 0);
+            NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
         }
-}
+    }
 }

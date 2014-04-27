@@ -252,7 +252,7 @@ namespace Rock.Reporting.DataSelect.Person
                     var accountList = new List<FinancialAccount>();
                     foreach (string accountId in selectionAccountIdValues)
                     {
-                        var account = new FinancialAccountService().Get( accountId.AsInteger() ?? 0 );
+                        var account = new FinancialAccountService( new RockContext() ).Get( accountId.AsInteger() ?? 0 );
                         if (account != null)
                         {
                             accountList.Add(account);

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -109,6 +109,50 @@ namespace Rock.Web.Cache
         /// </value>
         public bool IsSecured { get; set; }
 
+        /// <summary>
+        /// Gets or sets the single value field type identifier.
+        /// </summary>
+        /// <value>
+        /// The single value field type identifier.
+        /// </value>
+        private int? SingleValueFieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets the type of the single value field.
+        /// </summary>
+        /// <value>
+        /// The type of the single value field.
+        /// </value>
+        public FieldTypeCache SingleValueFieldType
+        {
+            get
+            {
+                return FieldTypeCache.Read( this.SingleValueFieldTypeId ?? 0 );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the multi value field type identifier.
+        /// </summary>
+        /// <value>
+        /// The multi value field type identifier.
+        /// </value>
+        private int? MultiValueFieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets the type of the multi value field.
+        /// </summary>
+        /// <value>
+        /// The type of the multi value field.
+        /// </value>
+        public FieldTypeCache MultiValueFieldType
+        {
+            get
+            {
+                return FieldTypeCache.Read( this.MultiValueFieldTypeId ?? 0 );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -139,6 +183,8 @@ namespace Rock.Web.Cache
             this.FriendlyName = entityType.FriendlyName;
             this.IsEntity = entityType.IsEntity;
             this.IsSecured = entityType.IsSecured;
+            this.SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
+            this.MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
 
             lock ( obj )
             {
@@ -221,7 +267,7 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService();
+            var entityTypeService = new EntityTypeService( new RockContext() );
             var entityTypeModel = entityTypeService.Get( type, true, null );
             return Read( entityTypeModel );
         }
@@ -260,8 +306,8 @@ namespace Rock.Web.Cache
                 return Read( entityTypeId.Value );
             }
 
-            var entityTypeService = new EntityTypeService();
-            var entityTypeModel = entityTypeService.Get( name, createNew, null );
+            var entityTypeService = new EntityTypeService( new RockContext() );
+            var entityTypeModel = entityTypeService.Get( name, createNew );
             if ( entityTypeModel != null )
             {
                 return Read( entityTypeModel );
@@ -291,7 +337,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var entityTypeService = new EntityTypeService();
+                var entityTypeService = new EntityTypeService( new RockContext() );
                 var entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
@@ -326,7 +372,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var entityTypeService = new EntityTypeService();
+                var entityTypeService = new EntityTypeService( new RockContext() );
                 var entityTypeModel = entityTypeService.Get( guid );
                 if ( entityTypeModel != null )
                 {

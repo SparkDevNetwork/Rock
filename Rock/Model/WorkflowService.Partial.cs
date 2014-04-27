@@ -29,39 +29,37 @@ namespace Rock.Model
     public partial class WorkflowService 
     {
         /// <summary>
-        /// Activates a new <see cref="Rock.Model.Workflow"/> instance.
+        /// Activates a new <see cref="Rock.Model.Workflow" /> instance.
         /// </summary>
-        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType"/> to be activated.</param>
-        /// <param name="name">A <see cref="System.String"/> representing the name of the <see cref="Rock.Model.Workflow"/> instance.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
-        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
-        /// <returns>The activated <see cref="Rock.Model.Workflow"/> instance</returns>
-        public Workflow Activate( WorkflowType workflowType, string name, PersonAlias currentPersonAlias )
+        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" /> to be activated.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
+        /// <returns>
+        /// The activated <see cref="Rock.Model.Workflow" /> instance
+        /// </returns>
+        public Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = Workflow.Activate( workflowType, name );
 
-            this.Add( workflow, currentPersonAlias );
-            this.Save( workflow, currentPersonAlias );
+            this.Add( workflow );
+            this.Context.SaveChanges();
 
             return workflow;
         }
 
         /// <summary>
-        /// Processes the specified <see cref="Rock.Model.Workflow"/>
+        /// Processes the specified <see cref="Rock.Model.Workflow" />
         /// </summary>
-        /// <param name="workflow">The <see cref="Rock.Model.Workflow"/> instance to process.</param>
-        /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the <see cref="Rock.Model.Person"/> who is activating the 
-        /// <see cref="Rock.Model.Workflow"/> instance; this will be null if it was completed by the anonymous user.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow"/>.</param>
-        public void Process( Workflow workflow, PersonAlias currentPersonAlias, out List<string> errorMessages )
+        /// <param name="workflow">The <see cref="Rock.Model.Workflow" /> instance to process.</param>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}" /> that contains any error messages that were returned while processing the <see cref="Rock.Model.Workflow" />.</param>
+        public void Process( Workflow workflow, out List<string> errorMessages )
         {
             workflow.IsProcessing = true;
-            this.Save( workflow, currentPersonAlias );
+            this.Context.SaveChanges();
 
             workflow.Process(out errorMessages); 
 
             workflow.IsProcessing = false;
-            this.Save( workflow, currentPersonAlias );
+            this.Context.SaveChanges();
         }
 
         /// <summary>
@@ -70,7 +68,7 @@ namespace Rock.Model
         /// <returns>A queryable collection of active <see cref="Rock.Model.Workflow"/>entities ordered by LastProcessedDate.</returns>
         public IQueryable<Workflow> GetActive()
         {
-            return Repository.AsQueryable()
+            return this.Queryable()
                 .Where( w =>
                     w.ActivatedDateTime.HasValue &&
                     !w.CompletedDateTime.HasValue )

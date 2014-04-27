@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -130,12 +131,13 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Delete( object sender, RowEventArgs e )
         {
-            SystemEmailService emailTemplateService = new SystemEmailService();
+            var rockContext = new RockContext();
+            SystemEmailService emailTemplateService = new SystemEmailService( rockContext );
             SystemEmail emailTemplate = emailTemplateService.Get( (int)gEmailTemplates.DataKeys[e.RowIndex]["id"] );
             if ( emailTemplate != null )
             {
-                emailTemplateService.Delete( emailTemplate, CurrentPersonAlias );
-                emailTemplateService.Save( emailTemplate, CurrentPersonAlias );
+                emailTemplateService.Delete( emailTemplate );
+                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -163,7 +165,7 @@ namespace RockWeb.Blocks.Communication
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( new ListItem(All.Text, All.Id.ToString()) );
 
-            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
             var items = emailTemplateService.Queryable().
                 Where( a => a.Category.Trim() != "" && a.Category != null ).
                 OrderBy( a => a.Category ).
@@ -183,7 +185,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindGrid()
         {
-            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
             SortProperty sortProperty = gEmailTemplates.SortProperty;
 
             var emailTemplates = emailTemplateService.Queryable();

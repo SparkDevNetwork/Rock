@@ -3,6 +3,7 @@
 <script>
     $(function () {
         $(".photo a").fluidbox();
+        $('span.js-email-status').tooltip({ html: true, container: 'body', delay: { show: 100, hide: 100 } });
     });
 </script>
 
@@ -51,7 +52,7 @@
                         <ul class="list-unstyled phonenumbers">
                         <asp:Repeater ID="rptPhones" runat="server">
                             <ItemTemplate>
-                                <li data-value="<%# Eval("Number") %>"><%# (bool)Eval("IsUnlisted") ? "Unlisted" : Rock.Model.PhoneNumber.FormattedNumber(Eval("Number").ToString()) %> <small><%# Eval("NumberTypeValue.Name") %></small></li>
+                                <li data-value="<%# Eval("Number") %>"><%# (bool)Eval("IsUnlisted") ? "Unlisted" : FormatPhoneNumber( Eval("CountryCode"), Eval("Number") ) %> <small><%# Eval("NumberTypeValue.Name") %></small></li>
                             </ItemTemplate>
                         </asp:Repeater>
                         </ul>

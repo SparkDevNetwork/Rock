@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using Newtonsoft.Json;
+using Rock.Data;
 using Rock.Model;
 using Rock.PersonProfile;
 using Rock.Security;
@@ -172,7 +173,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var personBadgeService = new PersonBadgeService();
+                var personBadgeService = new PersonBadgeService( new RockContext() );
                 var personBadgeModel = personBadgeService.Get( id );
                 if ( personBadgeModel != null )
                 {
@@ -208,7 +209,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var personBadgeService = new PersonBadgeService();
+                var personBadgeService = new PersonBadgeService( new RockContext() );
                 var personBadgeModel = personBadgeService.Get( guid );
                 if ( personBadgeModel != null )
                 {

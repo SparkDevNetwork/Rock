@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Cms
                 int? adId = PageParameter( "Ad" ).AsInteger();
                 if ( adId.HasValue )
                 {
-                    MarketingCampaignAd ad = new MarketingCampaignAdService().Get( adId.Value );
+                    MarketingCampaignAd ad = new MarketingCampaignAdService( new RockContext() ).Get( adId.Value );
                     if ( ad != null )
                     {
                         // TODO: Still need to add checks for Ad approval, ad type, start/end date etc.

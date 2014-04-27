@@ -155,5 +155,56 @@ namespace Rock.Security.Authentication
         {
             throw new NotImplementedException();
         }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports change password].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsChangePassword
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="oldPassword">The old password.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <param name="warningMessage">The warning message.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that indicates if the password change was successful. <c>true</c> if successful; otherwise <c>false</c>.
+        /// </returns>
+        /// <exception cref="System.Exception">Cannot change password on external service type</exception>
+        public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
+        {
+            warningMessage = null;
+            AuthenticationComponent authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
+            {
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
+            }
+
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+            {
+                throw new Exception( "Cannot change password on external service type" );
+            }
+
+            if ( !authenticationComponent.Authenticate( user, oldPassword ) )
+            {
+                return false;
+            }
+
+            user.Password = authenticationComponent.EncodePassword( user, newPassword );
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
+
+            return true;
+        }
+
     }
 }

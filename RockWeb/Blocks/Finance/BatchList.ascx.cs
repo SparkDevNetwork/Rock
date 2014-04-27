@@ -15,26 +15,27 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
-using System.Collections.Generic;
 using Rock.Data;
+using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Batch List" )]
     [Category( "Finance" )]
     [Description( "Lists all financial batches and provides filtering by campus, status, etc." )]
-    [LinkedPage("Detail Page")]
+
+    [LinkedPage( "Detail Page" )]
     public partial class BatchList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -123,8 +124,8 @@ namespace RockWeb.Blocks.Finance
             gfBatchFilter.SaveUserPreference( "Status", statusFilter.HasValue && statusFilter.Value >= 0 ? statusFilter.ToString() : string.Empty );
 
             int? campusFilter = campCampus.SelectedCampusId;
-            gfBatchFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : string.Empty ); 
-                        
+            gfBatchFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : string.Empty );
+
             BindGrid();
         }
 
@@ -135,27 +136,25 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gBatchList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            FinancialBatchService financialBatchService = new FinancialBatchService( rockContext );
+            FinancialBatch financialBatch = financialBatchService.Get( e.RowKeyId );
+            if ( financialBatch != null )
             {
-                FinancialBatchService financialBatchService = new FinancialBatchService();
-                FinancialBatch financialBatch = financialBatchService.Get( e.RowKeyId );
-                if ( financialBatch != null )
+                string errorMessage;
+                if ( !financialBatchService.CanDelete( financialBatch, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !financialBatchService.CanDelete( financialBatch, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    financialBatchService.Delete( financialBatch, CurrentPersonAlias );
-                    financialBatchService.Save( financialBatch, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                financialBatchService.Delete( financialBatch );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the RowSelected event of the gBatchList control.
         /// </summary>
@@ -184,11 +183,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gBatchList_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var batchService = new Rock.Model.FinancialBatchService();
+            var rockContext = new RockContext();
+            var batchService = new Rock.Model.FinancialBatchService( rockContext );
             var queryable = batchService.Queryable();
 
             List<Rock.Model.FinancialBatch> items = queryable.ToList();
-            batchService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            batchService.Reorder( items, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
             BindGrid();
         }
 
@@ -222,7 +223,7 @@ namespace RockWeb.Blocks.Finance
                     var totalSum = data.Sum( d => d.TotalAmount );
                     transactionTotal.Text = string.Format( "{0:C}", totalSum );
 
-                    Label variance = e.Row.FindControl("lblVariance") as Label;
+                    Label variance = e.Row.FindControl( "lblVariance" ) as Label;
                     if ( variance != null )
                     {
                         if ( batch.ControlAmount > 0 )
@@ -244,7 +245,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var status = e.Row.DataItem.GetPropertyValue( "Status" ).ToString();
-                if ( !string.IsNullOrWhiteSpace(status) )
+                if ( !string.IsNullOrWhiteSpace( status ) )
                 {
                     switch ( status.ToUpper() )
                     {
@@ -265,9 +266,9 @@ namespace RockWeb.Blocks.Finance
                 var warningList = GetWarnings( batch );
                 if ( warningList != null )
                 {
-                    foreach (var warning in warningList)
+                    foreach ( var warning in warningList )
                     {
-                        switch (warning.ToUpper())
+                        switch ( warning.ToUpper() )
                         {
                             case "UNTIED":
                                 warnings.Text += "<span class='label label-danger'>Untied Transactions</span>";
@@ -291,7 +292,7 @@ namespace RockWeb.Blocks.Finance
             var warningList = new List<string>();
             if ( batch.Status == BatchStatus.Open )
             {
-                var transactionService = new FinancialTransactionService();
+                var transactionService = new FinancialTransactionService( new RockContext() );
                 var transactionList = transactionService.Queryable().Where( trans => trans.BatchId == batch.Id && trans.AuthorizedPersonId == null ).ToList();
                 if ( transactionList.Count > 0 )
                 {
@@ -314,7 +315,7 @@ namespace RockWeb.Blocks.Finance
             ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
             ddlStatus.SetValue( gfBatchFilter.GetUserPreference( "Status" ) );
 
-            var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            var campusi = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
             campCampus.Campuses = campusi;
             campCampus.Visible = campusi.Any();
             campCampus.SetValue( gfBatchFilter.GetUserPreference( "Campus" ) );
@@ -338,7 +339,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var batchService = new FinancialBatchService();
+            var batchService = new FinancialBatchService( new RockContext() );
             var batches = batchService.Queryable();
 
             if ( dpBatchDate.SelectedDate.HasValue )
@@ -386,5 +387,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-    }        
+    }
 }

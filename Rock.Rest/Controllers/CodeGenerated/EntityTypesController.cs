@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class EntityTypesController : Rock.Rest.ApiController<Rock.Model.EntityType>
     {
-        public EntityTypesController() : base( new Rock.Model.EntityTypeService() ) { } 
+        public EntityTypesController() : base( new Rock.Model.EntityTypeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

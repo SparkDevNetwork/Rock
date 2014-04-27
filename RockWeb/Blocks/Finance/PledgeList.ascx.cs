@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -31,7 +32,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Generic list of all pledges in the system." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class PledgeList : RockBlock
     {
         /// <summary>
@@ -92,7 +93,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "pledgeId", (int) e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "pledgeId", (int)e.RowKeyValue );
         }
 
         /// <summary>
@@ -102,26 +103,24 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
-                {
-                    var pledgeService = new FinancialPledgeService();
-                    var pledge = pledgeService.Get( (int) e.RowKeyValue );
-                    string errorMessage;
-                    
-                    if ( pledge == null )
-                    {
-                        return;
-                    }
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
+            var pledge = pledgeService.Get( e.RowKeyId );
+            string errorMessage;
 
-                    if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+            if ( pledge == null )
+            {
+                return;
+            }
 
-                    pledgeService.Delete( pledge, CurrentPersonAlias );
-                    pledgeService.Save( pledge, CurrentPersonAlias );
-                });
+            if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
+            {
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
+
+            pledgeService.Delete( pledge );
+            rockContext.SaveChanges();
 
             BindGrid();
         }
@@ -141,10 +140,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var pledgeService = new FinancialPledgeService();
+            var pledgeService = new FinancialPledgeService( new RockContext() );
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
-            
+
             if ( ppFilterPerson.PersonId.HasValue )
             {
                 pledges = pledges.Where( p => p.PersonId == ppFilterPerson.PersonId.Value );

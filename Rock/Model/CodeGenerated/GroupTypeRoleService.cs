@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
         /// </summary>
-        public GroupTypeRoleService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public GroupTypeRoleService(IRepository<GroupTypeRole> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeRoleService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public GroupTypeRoleService(RockContext context) : base(context)
         {
@@ -68,13 +52,13 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<GroupMember>().Queryable().Any( a => a.GroupRoleId == item.Id ) )
+            if ( new Service<GroupMember>( Context ).Queryable().Any( a => a.GroupRoleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupMember.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<GroupType>().Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.DefaultGroupRoleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupTypeRole.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
@@ -129,6 +113,7 @@ namespace Rock.Model
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

@@ -22,7 +22,9 @@ using System.Threading;
 using System.Web;
 using ImageResizer;
 using Rock;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 
 namespace RockWeb
 {
@@ -132,7 +134,9 @@ namespace RockWeb
                 SendNotFound( context );
             }
 
-            var binaryFileQuery = new BinaryFileService().Queryable();
+            var rockContext = new RockContext();
+
+            var binaryFileQuery = new BinaryFileService( rockContext ).Queryable();
             if ( fileGuid != Guid.Empty )
             {
                 binaryFileQuery = binaryFileQuery.Where( a => a.Guid == fileGuid );
@@ -147,6 +151,7 @@ namespace RockWeb
             var binaryFileMetaData = binaryFileQuery.Select( a => new
             {
                 BinaryFileType_AllowCaching = a.BinaryFileType.AllowCaching,
+                BinaryFileType_RequiresSecurity = a.BinaryFileType.RequiresSecurity,
                 ModifiedDateTime = a.ModifiedDateTime ?? DateTime.MaxValue,
                 a.MimeType,
                 a.FileName
@@ -156,6 +161,20 @@ namespace RockWeb
             {
                 SendNotFound( context );
                 return;
+            }
+
+            //// if the binaryFile's BinaryFileType requires security, check security
+            //// note: we put a RequiresSecurity flag on BinaryFileType because checking security for every image would be slow (~40ms+ per image request)
+            if ( binaryFileMetaData.BinaryFileType_RequiresSecurity )
+            {
+                var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
+                Person currentPerson = currentUser != null ? currentUser.Person : null;
+                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).First( a => a.Guid == fileGuid || a.Id == fileId );
+                if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    SendNotAuthorized( context );
+                    return;
+                }
             }
 
             byte[] fileContent = null;
@@ -216,6 +235,13 @@ namespace RockWeb
             // respond with File
             context.Response.ContentType = binaryFileMetaData.MimeType;
             context.Response.AddHeader( "content-disposition", "inline;filename=" + binaryFileMetaData.FileName );
+            if ( binaryFileMetaData.BinaryFileType_AllowCaching )
+            {
+                // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
+                context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
+                context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
+            }
+
             context.Response.BinaryWrite( fileContent );
             context.Response.Flush();
         }
@@ -231,14 +257,14 @@ namespace RockWeb
             NameValueCollection cleanedQueryString = new NameValueCollection( queryString );
 
             // remove params that don't have impact on uniqueness
-            cleanedQueryString.Remove("isBinaryFile");
-            cleanedQueryString.Remove("rootFolder");
-            cleanedQueryString.Remove("fileName");
-            
+            cleanedQueryString.Remove( "isBinaryFile" );
+            cleanedQueryString.Remove( "rootFolder" );
+            cleanedQueryString.Remove( "fileName" );
+
             string fileName = string.Empty;
-            foreach (var key in cleanedQueryString.Keys)
+            foreach ( var key in cleanedQueryString.Keys )
             {
-                fileName += (string.Format( "{0}_{1}", key, cleanedQueryString[key as string] )).RemoveSpecialCharacters() + "-";
+                fileName += ( string.Format( "{0}_{1}", key, cleanedQueryString[key as string] ) ).RemoveSpecialCharacters() + "-";
             }
 
             fileName = fileName.TrimEnd( new char[] { '-' } );
@@ -267,12 +293,14 @@ namespace RockWeb
             BinaryFile binaryFile = null;
             System.Threading.ManualResetEvent completedEvent = new ManualResetEvent( false );
 
+            var rockContext = new RockContext();
+
             // use the binaryFileService.BeginGet/EndGet which is a little faster than the regular get
             AsyncCallback cb = ( IAsyncResult asyncResult ) =>
             {
                 // restore the context from the asyncResult.AsyncState 
                 HttpContext asyncContext = (HttpContext)asyncResult.AsyncState;
-                binaryFile = new BinaryFileService().EndGet( asyncResult, context );
+                binaryFile = new BinaryFileService( rockContext ).EndGet( asyncResult, context );
                 completedEvent.Set();
             };
 
@@ -280,11 +308,11 @@ namespace RockWeb
 
             if ( fileGuid != Guid.Empty )
             {
-                beginGetResult = new BinaryFileService().BeginGet( cb, context, fileGuid );
+                beginGetResult = new BinaryFileService( rockContext ).BeginGet( cb, context, fileGuid );
             }
             else
             {
-                beginGetResult = new BinaryFileService().BeginGet( cb, context, fileId );
+                beginGetResult = new BinaryFileService( rockContext ).BeginGet( cb, context, fileId );
             }
 
             // wait up to 5 minutes for the response
@@ -355,8 +383,19 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void SendNotFound( HttpContext context )
         {
-            context.Response.StatusCode = 404;
+            context.Response.StatusCode = System.Net.HttpStatusCode.NotFound.ConvertToInt(); ;
             context.Response.StatusDescription = "The requested image could not be found.";
+            context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Sends a 403 (forbidden)
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void SendNotAuthorized( HttpContext context )
+        {
+            context.Response.StatusCode = System.Net.HttpStatusCode.Forbidden.ConvertToInt();
+            context.Response.StatusDescription = "Not authorized to view image";
             context.ApplicationInstance.CompleteRequest();
         }
 

@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class ReportFieldsController : Rock.Rest.ApiController<Rock.Model.ReportField>
     {
-        public ReportFieldsController() : base( new Rock.Model.ReportFieldService() ) { } 
+        public ReportFieldsController() : base( new Rock.Model.ReportFieldService( new Rock.Data.RockContext() ) ) { } 
     }
 }

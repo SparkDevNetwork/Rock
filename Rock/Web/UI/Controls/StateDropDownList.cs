@@ -16,6 +16,8 @@
 //
 using System;
 using System.Linq;
+using Rock.Constants;
+using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -25,9 +27,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : RockDropDownList
     {
-        const string LOC_GUID = "com.rockrms.orgLocatoinGuid";
-        const string LOC_STATE = "com.rockrms.orgLocationState";
-        
         private bool _rebindRequired = false;
 
         /// <summary>
@@ -56,11 +55,33 @@ namespace Rock.Web.UI.Controls
 
             _rebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-            this.SelectedValue = null;
-            this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
-            this.DataBind();
+            var stateList = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } ).ToList();
+            this.DataSource = stateList;
 
-            if ( !this.Page.IsPostBack )
+            // make sure it isn't set to a selected value that doesn't exist and default to Org State if nothing is set
+            var selectedValue = _cachedSelectedValue ?? this.DefaultSelectedValue;
+
+            if ( !stateList.Any( a => a.Id == selectedValue ) )
+            {
+                this.SelectedValue = null;
+            }
+            else
+            {
+                this.SelectedValue = selectedValue;
+            }
+
+            this.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the default selected value which is the Organizations Address's State
+        /// </summary>
+        /// <value>
+        /// The default selected value.
+        /// </value>
+        public string DefaultSelectedValue
+        {
+            get
             {
                 string orgState = string.Empty;
 
@@ -69,32 +90,24 @@ namespace Rock.Web.UI.Controls
                 if ( !locGuid.Equals( Guid.Empty ) )
                 {
                     // If the organization location is still same as last check, use saved value
-                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( LOC_GUID ).AsGuid() ) )
+                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
                     {
-                        orgState = Rock.Web.SystemSettings.GetValue( LOC_STATE );
+                        orgState = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
                     }
                     else
                     {
                         // otherwise read the new location and save the state
-                        Rock.Web.SystemSettings.SetValue( LOC_GUID, locGuid.ToString(), null );
-                        var location = new Rock.Model.LocationService().Get( locGuid );
+                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
+                        var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
                         if ( location != null )
                         {
                             orgState = location.State;
-                            Rock.Web.SystemSettings.SetValue( LOC_STATE, orgState, null );
+                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, orgState );
                         }
                     }
                 }
 
-                // If a state was found, set the default value
-                if ( !string.IsNullOrWhiteSpace( orgState ) )
-                {
-                    var li = this.Items.FindByValue( orgState );
-                    if ( li != null )
-                    {
-                        li.Selected = true;
-                    }
-                }
+                return orgState;
             }
         }
 
@@ -121,5 +134,25 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
         }
 
+        
+        /// <summary>
+        /// Gets the value of the selected item in the list control, or selects the item in the list control that contains the specified value.
+        /// </summary>
+        /// <returns>The value of the selected item in the list control. The default is an empty string ("").</returns>
+        public override string SelectedValue
+        {
+            get
+            {
+                return base.SelectedValue;
+            }
+            set
+            {
+                // keep track of the selected value that they want to set to prevent having it bind with a value that doesn't exist
+                _cachedSelectedValue = value;
+                base.SelectedValue = value;
+            }
+        }
+
+        private string _cachedSelectedValue;
     }
 }

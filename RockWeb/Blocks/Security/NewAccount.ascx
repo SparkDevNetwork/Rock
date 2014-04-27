@@ -10,7 +10,7 @@
         availabilityMessageRow.hide();
 
         usernameTextbox.blur(function () {
-            if ($(this).val()) {
+            if ($(this).val() && $.trim($(this).val()) != '') {
                 $.ajax({
                     type: 'GET',
                     contentType: 'application/json',
@@ -19,14 +19,12 @@
                     success: function (getData, status, xhr) {
 
                         if (getData) {
-                            if (availabilityMessageRow.is(':visible')) {
-                                usernameUnavailable.html('This username is available.');
-                                usernameUnavailable.addClass('alert-success');
-                                usernameUnavailable.removeClass('alert-warning');
-                            }
+                            usernameUnavailable.html('This Username is available.');
+                            usernameUnavailable.addClass('alert-success');
+                            usernameUnavailable.removeClass('alert-warning');
                         } else {
                             availabilityMessageRow.show();
-                            usernameUnavailable.html('This username is already taken!');
+                            usernameUnavailable.html('This Username is already taken!');
                             usernameUnavailable.addClass('alert-warning');
                             usernameUnavailable.removeClass('alert-success');
                         }
@@ -35,7 +33,12 @@
                         alert(status + ' [' + error + ']: ' + xhr.responseText);
                     }
                 });
+            } else {
+                usernameUnavailable.html('Username is required!');
+                usernameUnavailable.addClass('alert-warning');
+                usernameUnavailable.removeClass('alert-success');
             }
+            availabilityMessageRow.show();
         });
 
     });

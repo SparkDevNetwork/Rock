@@ -101,13 +101,22 @@ namespace Rock.Model
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the reason a record needs to be reviewed.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the reason a record needs to be reviewed.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.PERSON_REVIEW_REASON )]
+        public int? ReviewReasonValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if the Person is deceased.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        [MergeField]
         public bool? IsDeceased
         {
             get
@@ -160,7 +169,6 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         public string NickName { get; set; }
 
         /// <summary>
@@ -182,7 +190,6 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         public string LastName { get; set; }
 
         /// <summary>
@@ -216,7 +223,6 @@ namespace Rock.Model
         /// this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthDay { get; set; }
 
         /// <summary>
@@ -226,7 +232,6 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the month portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthMonth { get; set; }
 
         /// <summary>
@@ -236,7 +241,6 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the year portion of the Person's birth date. If the birth date is not known this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         public int? BirthYear { get; set; }
 
         /// <summary>
@@ -249,7 +253,6 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        [MergeField]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -269,7 +272,6 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the anniversary date of the Person's wedding. If the anniversary date is not known or they are not married this value will be null.
         /// </value>
         [DataMember]
-        [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? AnniversaryDate { get; set; }
 
@@ -281,10 +283,8 @@ namespace Rock.Model
         /// Person has not entered school.
         /// </value>
         [DataMember]
-        [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
-
 
         /// <summary>
         /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
@@ -294,7 +294,6 @@ namespace Rock.Model
         /// The giving group id.
         /// </value>
         [DataMember]
-        [MergeField]
         [HideFromReporting]
         public int? GivingGroupId { get; set; }
 
@@ -307,7 +306,6 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [MergeField]
         [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
         public string Email { get; set; }
 
@@ -328,19 +326,36 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
-        [MergeField]
         public string EmailNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag that indicates that the Person does not want to receive email.
+        /// Gets or sets the email preference.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person does not wish to receive email; otherwise <c>false</c>.
+        /// The email preference.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
-        [MergeField]
-        public bool DoNotEmail { get; set; }
+        [DataMember]
+        public EmailPreference EmailPreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets notes about why a person profile needs to be reviewed
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing an Review Reason Note.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string ReviewReasonNote { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Inactive Reason Note
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing an Inactive Reason Note.
+        /// </value>
+        [MaxLength( 1000 )]
+        [DataMember]
+        public string InactiveReasonNote { get; set; }
 
         /// <summary>
         /// Gets or sets the System Note
@@ -350,7 +365,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
-        [MergeField]
         public string SystemNote { get; set; }
 
         /// <summary>
@@ -388,6 +402,7 @@ namespace Rock.Model
         /// <value>
         /// The primary alias.
         /// </value>
+        [NotMapped]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -397,12 +412,36 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the primary alias identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public int? PrimaryAliasId
+        {
+            get
+            {
+                var primaryAlias = PrimaryAlias;
+                if ( primaryAlias != null )
+                {
+                    return primaryAlias.Id;
+                }
+
+                return null;
+            }
+            private set { }
+        }
+
+        /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
         [DataMember]
+        [NotMapped]
         public virtual string FullName
         {
             get
@@ -416,6 +455,7 @@ namespace Rock.Model
 
                 return fullName.ToString();
             }
+            private set { }
         }
 
 
@@ -425,7 +465,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
+        [NotMapped]
         public virtual string FullNameReversed
         {
             get
@@ -448,7 +488,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        [DataMember]
+        [NotMapped]
         public virtual string FullNameFormal
         {
             get
@@ -471,7 +511,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        [DataMember]
+        [NotMapped]
         public virtual string FullNameFormalReversed
         {
             get
@@ -488,17 +528,70 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the day of the week the person's birthday falls on for the current year.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the day of the week the person's birthday falls on for the current year.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string BirthdayDayOfWeek
+        {
+            get
+            {
+                string birthdayDayOfWeek = string.Empty;
+
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
+                }
+
+                return birthdayDayOfWeek;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the day of the week the person's birthday falls on for the current year as a shortened string (e.g. Wed.)
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the shortened day of the week the person's birthday falls on for the current year.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string BirthdayDayOfWeekShort
+        {
+            get
+            {
+                string birthdayDayOfWeek = string.Empty;
+
+                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                {
+                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
+                }
+
+                return birthdayDayOfWeek;
+            }
+            private set { }
+        }
+
+        /// <summary>
         /// Gets the URL of the person's photo.
         /// </summary>
         /// <value>
         /// URL of the photo
         /// </value>
+        [DataMember]
+        [NotMapped]
         public virtual string PhotoUrl
         {
             get 
             {
                 return Person.GetPhotoUrl( this.PhotoId, this.Gender );
             }
+            private set { }
         }
 
         /// <summary>
@@ -508,7 +601,6 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.UserLogin">UserLogins</see> that belong to the Person.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual ICollection<UserLogin> Users
         {
             get { return _users; }
@@ -523,7 +615,6 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.PhoneNumber"/> entities representing the phone numbers that are associated with this Person.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers
         {
             get { return _phoneNumbers; }
@@ -538,7 +629,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [MergeField]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -552,7 +642,6 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Attendance"/> entities representing the Person's attendance history.
         /// </value>
-        [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
             get { return _attendances; }
@@ -580,7 +669,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue MaritalStatusValue { get; set; }
 
         /// <summary>
@@ -590,8 +678,16 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object representing the Person's connection status. 
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the review reason value.
+        /// </summary>
+        /// <value>
+        /// The review reason value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue ReviewReasonValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the record status.
@@ -600,7 +696,6 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object representing the record status.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordStatusValue { get; set; }
 
         /// <summary>
@@ -610,7 +705,6 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> that represents the Record Status Reason (disposition)
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
 
         /// <summary>
@@ -620,7 +714,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> representing the record type.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue RecordTypeValue { get; set; }
 
         /// <summary>
@@ -630,7 +723,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue" /> representing the name suffix.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue SuffixValue { get; set; }
 
         /// <summary>
@@ -640,7 +732,6 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.DefinedValue"/> object representing the Person's salutation title.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual DefinedValue TitleValue { get; set; }
 
         /// <summary>
@@ -650,7 +741,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Person's photo.
         /// </value>
         [DataMember]
-        [MergeField]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -659,7 +749,6 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
-        [DataMember]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -670,7 +759,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
-        [MergeField]
         public DateTime? BirthDate
         {
             get
@@ -715,7 +803,8 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the person's age.  If the birthdate and age is not available then returns null.
         /// </value>
-        [MergeField]
+        [DataMember]
+        [NotMapped]
         public virtual int? Age
         {
             get
@@ -730,6 +819,7 @@ namespace Rock.Model
                 }
                 return null;
             }
+            private set { }
         }
 
         /// <summary>
@@ -738,7 +828,8 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the number of days until the Person's birthday. If the person's birthdate is not available returns Int.MaxValue
         /// </value>
-        [MergeField]
+        [DataMember]
+        [NotMapped]
         public virtual int DaysToBirthday
         {
             get
@@ -771,6 +862,7 @@ namespace Rock.Model
                 }
                 return int.MaxValue;
             }
+            private set { }
         }
 
         /// <summary>
@@ -779,6 +871,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year) 
         /// </value>
+        [NotMapped]
         public virtual double? AgePrecise
         {
             get
@@ -813,7 +906,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [MergeField]
         public virtual int? Grade
         {
             get
@@ -864,7 +956,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        [MergeField]
         public virtual string GradeFormatted
         {
             get 
@@ -893,6 +984,7 @@ namespace Rock.Model
 
                 return string.Empty;
             }
+            private set { }
         }
 
         /// <summary>
@@ -901,6 +993,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
+        [NotMapped]
         public virtual string ImpersonationParameter
         {
             get
@@ -915,6 +1008,7 @@ namespace Rock.Model
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </value>
+        [NotMapped]
         public virtual UserLogin ImpersonatedUser
         {
             get
@@ -942,7 +1036,30 @@ namespace Rock.Model
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
-        
+
+        /// <summary>
+        /// Pres the save.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (string.IsNullOrWhiteSpace(NickName))
+            {
+                NickName = FirstName;
+            }
+
+            if ( PhotoId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                var binaryFile = binaryFileService.Get( PhotoId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Person's FullName that represents this instance.
         /// </summary>
@@ -1088,49 +1205,50 @@ namespace Rock.Model
         /// <param name="currentPersonAlias">A <see cref="Rock.Model.PersonAlias"/> representing the Person who is logged in.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, PersonAlias currentPersonAlias )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            var groupMemberService = new GroupMemberService( rockContext );
+            var knownRelationshipGroup = groupMemberService.Queryable()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                .Select( m => m.Group )
+                .FirstOrDefault();
+
+            if ( knownRelationshipGroup != null )
             {
-                var groupMemberService = new GroupMemberService();
-                var knownRelationshipGroup = groupMemberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    .Select( m => m.Group )
+                int? canCheckInRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
+                    .Select( r => r.Id )
                     .FirstOrDefault();
-
-                if ( knownRelationshipGroup != null )
+                if ( canCheckInRoleId.HasValue )
                 {
-                    int? canCheckInRoleId = new GroupTypeRoleService().Queryable()
-                        .Where( r =>
-                            r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    if ( canCheckInRoleId.HasValue )
+                    var canCheckInMember = groupMemberService.Queryable()
+                        .FirstOrDefault( m =>
+                            m.GroupId == knownRelationshipGroup.Id &&
+                            m.PersonId == relatedPersonId &&
+                            m.GroupRoleId == canCheckInRoleId.Value );
+
+                    if ( canCheckInMember == null )
                     {
-                        var canCheckInMember = groupMemberService.Queryable()
-                            .FirstOrDefault( m =>
-                                m.GroupId == knownRelationshipGroup.Id &&
-                                m.PersonId == relatedPersonId &&
-                                m.GroupRoleId == canCheckInRoleId.Value );
-
-                        if ( canCheckInMember == null )
-                        {
-                            canCheckInMember = new GroupMember();
-                            canCheckInMember.GroupId = knownRelationshipGroup.Id;
-                            canCheckInMember.PersonId = relatedPersonId;
-                            canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
-                            groupMemberService.Add( canCheckInMember, currentPersonAlias );
-                            groupMemberService.Save( canCheckInMember, currentPersonAlias );
-                        }
-
-                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
-                        if ( inverseGroupMember != null )
-                        {
-                            groupMemberService.Save( inverseGroupMember, currentPersonAlias );
-                        }
+                        canCheckInMember = new GroupMember();
+                        canCheckInMember.GroupId = knownRelationshipGroup.Id;
+                        canCheckInMember.PersonId = relatedPersonId;
+                        canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
+                        rockContext.SaveChanges();
                     }
+
+                    var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonAlias );
+                    if ( inverseGroupMember != null )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
+                    rockContext.SaveChanges();
                 }
             }
+
         }
 
         #endregion
@@ -1154,6 +1272,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ReviewReasonValue ).WithMany().HasForeignKey( p => p.ReviewReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
@@ -1276,6 +1395,27 @@ namespace Rock.Model
         Twelfth = 12
     }
 
+    /// <summary>
+    /// The person's email preference
+    /// </summary>
+    public enum EmailPreference
+    {
+        /// <summary>
+        /// Emails can be sent to person
+        /// </summary>
+        EmailAllowed = 0,
+
+        /// <summary>
+        /// No Mass emails should be sent to person
+        /// </summary>
+        NoMassEmails = 1,
+
+        /// <summary>
+        /// No emails should be sent to person
+        /// </summary>
+        DoNotEmail = 2
+    }
+
     #endregion
 
     #region Extension Methods
@@ -1289,7 +1429,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<Group> GetFamilies( this Person person )
         {
-            return new PersonService().GetFamilies( person != null ? person.Id : 0);
+            return new PersonService( new RockContext() ).GetFamilies( person != null ? person.Id : 0 );
         }
 
         /// <summary>
@@ -1300,7 +1440,7 @@ namespace Rock.Model
         /// <returns>Returns a queryable collection of <see cref="Rock.Model.Person"/> entities representing the provided Person's family.</returns>
         public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
         {
-            return new PersonService().GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
+            return new PersonService( new RockContext() ).GetFamilyMembers( person != null ? person.Id : 0, includeSelf );
         }
 
         /// <summary>
@@ -1310,7 +1450,7 @@ namespace Rock.Model
         /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
         public static Person GetSpouse( this Person person )
         {
-            return new PersonService().GetSpouse( person );
+            return new PersonService( new RockContext() ).GetSpouse( person );
         }
 
     }

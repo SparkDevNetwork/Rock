@@ -21,7 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -618,7 +618,7 @@ namespace Rock.Web.UI.Controls
 
                 int noteCount = 0;
 
-                var qry = new NoteService().Queryable( "CreatedByPersonAlias.Person" )
+                var qry = new NoteService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
                     .Where( n =>
                         n.NoteTypeId == NoteTypeId.Value &&
                         n.EntityId == EntityId.Value );

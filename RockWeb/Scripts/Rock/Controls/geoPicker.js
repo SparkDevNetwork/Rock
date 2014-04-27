@@ -17,6 +17,10 @@
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
 
+            // An array of styles that controls the look of the Google Map
+            // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
+            obj.styles = options.mapStyle;
+
             // This is used to temporarily store in case of user cancel.
             obj.pathTemp = null;
 
@@ -37,40 +41,40 @@
 
             // An array of styles that controls the look of the Google Map
             // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
-            obj.styles = [
-              {
-                  "stylers": [
-                    { "visibility": "simplified" },
-                    { "saturation": -100 }
-                  ]
-              }, {
-                  "featureType": "road",
-                  "elementType": "labels",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }, {
-                  "featureType": "poi",
-                  "stylers": [
-                    { "visibility": "off" }
-                  ]
-              }, {
-                  "featureType": "landscape",
-                  "stylers": [
-                    { "visibility": "off" }
-                  ]
-              }, {
-                  "featureType": "administrative.province",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }, {
-                  "featureType": "administrative.locality",
-                  "stylers": [
-                    { "visibility": "on" }
-                  ]
-              }
-            ];
+            //obj.styles = [
+            //  {
+            //      "stylers": [
+            //        { "visibility": "simplified" },
+            //        { "saturation": -100 }
+            //      ]
+            //  }, {
+            //      "featureType": "road",
+            //      "elementType": "labels",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }, {
+            //      "featureType": "poi",
+            //      "stylers": [
+            //        { "visibility": "off" }
+            //      ]
+            //  }, {
+            //      "featureType": "landscape",
+            //      "stylers": [
+            //        { "visibility": "off" }
+            //      ]
+            //  }, {
+            //      "featureType": "administrative.province",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }, {
+            //      "featureType": "administrative.locality",
+            //      "stylers": [
+            //        { "visibility": "on" }
+            //      ]
+            //  }
+            //];
 
             /** 
             * Initializes the map viewport boundary coordinates.
@@ -172,6 +176,28 @@
             }
 
             /**
+            * Returns a marker image styled according to the stroke color.
+            */
+            this.getMarkerImage = function getMarkerImage() {
+
+                return new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + obj.strokeColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(10, 34));
+            }
+
+            /**
+            * Returns a marker image shadow.
+            */
+            this.getMarkerImageShadow = function getMarkerImageShadow() {
+
+                return new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_shadow',
+                    new google.maps.Size(40, 37),
+                    new google.maps.Point(0, 0),
+                    new google.maps.Point(12, 35));
+            }
+
+            /**
             * Finds the point/polygon boundary and sets the map viewport to fit
             */
             this.fitBounds = function () {
@@ -228,7 +254,7 @@
             }
 
             /**
-            * Disable the drawing manager so they cannot add anything to the map.
+            * Disables the drawing manager so they cannot add anything to the map.
             */
             this.disableDrawingManager = function () {
                 // Switch back to non-drawing mode after drawing a shape.
@@ -267,7 +293,7 @@
                         pathArray.push(new google.maps.LatLng(lat, lng));
                     }
 
-                    // reverse geo code the first point to an address and display.
+                    // reverse geocode the first point to an address and display.
                     var $label = $('#selectedGeographyLabel_' + this.controlId);
                     obj.toAddress(pathArray[0], $label);
 
@@ -325,9 +351,10 @@
                             var point = new google.maps.Marker({
                                 position: pathArray[0],
                                 map: map,
-                                clickable: true
+                                clickable: true,
+                                icon: obj.getMarkerImage(),
+                                shadow: obj.getMarkerImageShadow()
                             });
-                            //point.setMap(map);
 
                             // Select the point
                             obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
@@ -423,12 +450,87 @@
             */
             $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().toggle();
-                if ($('#' + controlId).find('.picker-menu').first().is(":visible")) {
+                var $control = $('#' + controlId)
+                $control.find('.picker-menu').first().toggle();
+                if ( $control.find('.picker-menu').first().is(":visible") ) {
                     google.maps.event.trigger(self.map, "resize");
                     // now we can safely fit the map to any polygon boundary
                     self.fitBounds();
+
+                    // Scroll down so you can see the done/cancel buttons
+                    $("html,body").animate({
+                        scrollTop: $control.offset().top
+                    }, 1000);
                 }
+            });
+
+            /**
+            * Handle the toggle expand fullscreen button click.
+            */
+            $('#btnExpandToggle_' + controlId).click(function () {
+
+                var $myElement = $('#geoPicker_' + self.controlId);
+
+                var isExpaned = $myElement.data("fullscreen");
+
+                $(this).children('i').toggleClass("fa-expand", isExpaned);
+                $(this).children('i').toggleClass("fa-compress", ! isExpaned);
+
+                // Shrink to regular size
+                if ( isExpaned ) {
+                    $myElement.data("fullscreen", false);
+                    
+                    $(this).closest('.picker-menu').css({
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        height: '',
+                        width: 520
+                    });
+                    // resize the map
+                    $myElement.css({
+                        height: 300,
+                        width: 500
+                    });
+
+                    // move the delete button
+                    $('#gmnoprint-delete-button_' + self.controlId).css({
+                        left: '105px',
+                        top: '40',
+                    });
+
+                }
+                else {
+
+                    // Expand to fullscreen
+
+                    $myElement.data("fullscreen", true);
+                    // resize the container
+                    $(this).closest('.picker-menu').css({
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        height: '100%',
+                        width: '100%'
+                    });
+
+                    // resize the map
+                    $myElement.css({
+                        height: '85%',
+                        width: '100%'
+                    });
+
+                    // move the delete button
+                    $('#gmnoprint-delete-button_' + self.controlId).css({
+                        left: '160px',
+                        top: '40',
+                    });
+                }
+
+                // tell the map to resize/redraw
+                google.maps.event.trigger(self.map, 'resize');
+                self.fitBounds();
+
             });
 
             /**
@@ -561,6 +663,10 @@
                     fillColor: self.fillColor,
                     strokeWeight: 2
                 },
+                markerOptions: {
+                    icon: self.getMarkerImage(),
+                    shadow: self.getMarkerImageShadow()
+                }
             });
             
             self.drawingManager.setMap(self.map);
@@ -585,6 +691,14 @@
                         self.setSelection(newShape, e.type);
                     });
                     self.setSelection(newShape, e.type);
+
+                    // Add an event listener to implement right-click to delete node
+                    google.maps.event.addListener(newShape, 'rightclick', function (ev) {
+                        if (ev.vertex != null) {
+                            newShape.getPath().removeAt(ev.vertex);
+                        }
+                        obj.setSelection(newShape, google.maps.drawing.OverlayType.POLYGON);
+                    });
                 }
             });
 
@@ -593,13 +707,13 @@
             google.maps.event.addListener(self.drawingManager, 'drawingmode_changed', self.clearSelection);
             google.maps.event.addListener(self.map, 'click', self.clearSelection);
 
+            // Move our custom delete button into place once the map is idle.
             // as per http://stackoverflow.com/questions/832692/how-to-check-if-google-maps-is-fully-loaded
             google.maps.event.addListenerOnce(self.map, 'idle', function () {
                 // move the custom delete button to the second to last item in the gmnoprint list
-                $('#' + deleteButtonId).insertAfter($myElement.find('div.gmnoprint:nth-last-child(2)'));
+                //$('#' + deleteButtonId).insertAfter($myElement.find('div.gmnoprint:nth-last-child(2)'));
                 $('#' + deleteButtonId).fadeIn();
-                //console.log("insert delete button after:");
-                //console.log($myElement.find('div.gmnoprint:nth-last-child(2)'));
+
                 // wire up an event handler to the delete button
                 google.maps.event.addDomListener(document.getElementById(deleteButtonId), 'click', self.deleteSelectedShape);
             });

@@ -67,17 +67,17 @@ namespace Rock.Constants
     public static class None
     {
         /// <summary>
-        /// 0
+        /// returns 0
         /// </summary>
         public const int Id = 0;
 
         /// <summary>
-        /// 0
+        /// returns "0"
         /// </summary>
         public const string IdValue = "0";
 
         /// <summary>
-        /// <!--<none>-->
+        /// returns ""
         /// </summary>
         public const string Text = "";
 
@@ -87,7 +87,7 @@ namespace Rock.Constants
         public const string TextHtml = "";
 
         /// <summary>
-        /// Return a ListItem with Text: "None", Value: 0
+        /// Return a ListItem with Text: "", Value: "0"
         /// </summary>
         /// <value>
         /// The list item.
@@ -122,7 +122,7 @@ namespace Rock.Constants
         public const string Text = "All";
 
         /// <summary>
-        /// Gets the list item.
+        /// Gets the list item with Text "All", Value: -1
         /// </summary>
         /// <value>
         /// The list item.
@@ -184,7 +184,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string ReadOnlySystem( string itemFriendlyName )
         {
-            return string.Format( "<h4> Note</h4>Because this {0} is used by Rock, editing is not enabled.", itemFriendlyName.ToLower() );
+            return string.Format( "<strong>Note</strong> Because this {0} is used by Rock, editing is not enabled.", itemFriendlyName.ToLower() );
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string System( string itemFriendlyName )
         {
-            return string.Format( "<h4> Note</h4>Because this {0} is used by Rock, editing is restricted.", itemFriendlyName.ToLower() );
+            return string.Format( "<strong>Note</strong> Because this {0} is used by Rock, editing is restricted.", itemFriendlyName.ToLower() );
         }
 
         /// <summary>

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 using System.Web;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -175,7 +176,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var LayoutService = new LayoutService();
+                var LayoutService = new LayoutService( new RockContext() );
                 var LayoutModel = LayoutService.Get( id );
                 if ( LayoutModel != null )
                 {
@@ -211,7 +212,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var LayoutService = new LayoutService();
+                var LayoutService = new LayoutService( new RockContext() );
                 var LayoutModel = LayoutService.Get( guid );
                 if ( LayoutModel != null )
                 {

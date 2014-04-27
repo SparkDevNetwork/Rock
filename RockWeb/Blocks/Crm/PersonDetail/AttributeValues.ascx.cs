@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -75,6 +76,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlAttributeValues );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -84,36 +98,44 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !Page.IsPostBack )
             {
-                string categoryGuid = GetAttributeValue( "Category" );
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( categoryGuid, out guid ) )
-                {
-                    var category = CategoryCache.Read( guid );
-                    if ( category != null )
-                    {
-                        if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
-                        {
-                            lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
-                        }
-                        else
-                        {
-                            lCategoryName.Text = category.Name;
-                        }
+                BindData();
+            }
+        }
 
-                        var orderedAttributeList = new AttributeService().GetByCategoryId( category.Id )
-                            .OrderBy( a => a.Order ).ThenBy( a => a.Name );
-                        foreach ( var attribute in orderedAttributeList )
+        /// <summary>
+        /// Bind the data based on the configured category setting.
+        /// </summary>
+        private void BindData()
+        {
+            string categoryGuid = GetAttributeValue( "Category" );
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( categoryGuid, out guid ) )
+            {
+                var category = CategoryCache.Read( guid );
+                if ( category != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
+                    {
+                        lCategoryName.Text = string.Format( "<i class='{0}'></i> {1}", category.IconCssClass, category.Name );
+                    }
+                    else
+                    {
+                        lCategoryName.Text = category.Name;
+                    }
+
+                    var orderedAttributeList = new AttributeService( new RockContext() ).GetByCategoryId( category.Id )
+                        .OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                    foreach ( var attribute in orderedAttributeList )
+                    {
+                        if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         {
-                            if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                AttributeList.Add( attribute.Id );
-                            }
+                            AttributeList.Add( attribute.Id );
                         }
                     }
                 }
-
-                CreateControls( true );
             }
+
+            CreateControls( true );
         }
 
         protected override void LoadViewState( object savedState )
@@ -152,6 +174,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlActions.Visible = EditMode;
         }
 
+        #region Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            AttributeList = null;
+            BindData();
+        }
+
         protected void lbEdit_Click( object sender, EventArgs e )
         {
             EditMode = true;
@@ -164,54 +199,51 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
-                using ( new Rock.Data.UnitOfWorkScope() )
+                var rockContext = new RockContext();
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
                 {
-                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    var changes = new List<string>();
+
+                    foreach ( int attributeId in AttributeList )
                     {
-                        var changes = new List<string>();
-                        var historyService = new HistoryService();
+                        var attribute = AttributeCache.Read( attributeId );
 
-                        foreach ( int attributeId in AttributeList )
+                        if ( Person != null && EditMode && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                         {
-                            var attribute = AttributeCache.Read( attributeId );
-
-                            if ( Person != null && EditMode && attribute.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                            Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                            if ( attributeControl != null )
                             {
-                                Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
-                                if ( attributeControl != null )
+                                string originalValue = Person.GetAttributeValue( attribute.Key );
+                                string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
+                                Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, rockContext );
+
+                                // Check for changes to write to history
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
-                                    string originalValue = Person.GetAttributeValue( attribute.Key );
-                                    string newValue = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );
-                                    Rock.Attribute.Helper.SaveAttributeValue( Person, attribute, newValue, CurrentPersonAlias );
-
-                                    // Check for changes to write to history
-                                    if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
                                     {
-                                        string formattedOriginalValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( originalValue ) )
-                                        {
-                                            formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
-                                        }
-
-                                        string formattedNewValue = string.Empty;
-                                        if ( !string.IsNullOrWhiteSpace( newValue ) )
-                                        {
-                                            formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
-                                        }
-
-                                        History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
                                     }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    History.EvaluateChange( changes, attribute.Name, formattedOriginalValue, formattedNewValue );
                                 }
                             }
                         }
+                    }
 
-                        if ( changes.Any() )
-                        {
-                            new HistoryService().SaveChanges( typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                                Person.Id, changes, CurrentPersonAlias );
-                        }
-                    } );
-                }
+                    if ( changes.Any() )
+                    {
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                            Person.Id, changes );
+                    }
+                } );
 
                 EditMode = false;
                 CreateControls( false );
@@ -223,5 +255,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             EditMode = false;
             CreateControls( false );
         }
+
+        #endregion
     }
 }

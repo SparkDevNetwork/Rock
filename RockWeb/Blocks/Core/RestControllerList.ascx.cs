@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( !Page.IsPostBack )
             {
-                var service = new RestControllerService();
+                var service = new RestControllerService( new RockContext() );
                 if ( !service.Queryable().Any() )
                 {
                     RefreshControllerList();
@@ -119,32 +119,33 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            var service = new RestControllerService();
+            var service = new RestControllerService( new RockContext() );
             var sortProperty = gControllers.SortProperty;
 
-            IQueryable<RestController> qry = null;
-            if (sortProperty != null)
-            {
-                qry = service.Queryable().Sort(sortProperty);
-            }
-            else
-            {
-                qry = service.Queryable().OrderBy( c => c.Name);
-            }
-
-            gControllers.DataSource = qry.Select( c => new
+            var qry = service.Queryable().Select( c => new
             {
                 c.Id,
                 c.Name,
                 c.ClassName,
                 Actions = c.Actions.Count()
-            } ).ToList();
+            } );
+
+            if (sortProperty != null)
+            {
+                qry = qry.Sort(sortProperty);
+            }
+            else
+            {
+                qry = qry.OrderBy( c => c.Name);
+            }
+
+            gControllers.DataSource = qry.ToList();
             gControllers.DataBind();
         }
 
         private void RefreshControllerList()
         {
-            new RestControllerService().RegisterControllers( CurrentPersonAlias );
+            RestControllerService.RegisterControllers();
         }
 
         #endregion

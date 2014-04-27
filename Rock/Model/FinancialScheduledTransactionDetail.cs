@@ -98,7 +98,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialScheduledTransaction"/> that the transaction detail belongs to.
         /// </value>
-        [DataMember]
         public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
@@ -107,7 +106,6 @@ namespace Rock.Model
         /// <value>
         /// Tehe <see cref="Rock.Model.FinancialAccount"/>/fund that the <see cref="Amount"/> of this transaction detail will be credited toward.
         /// </value>
-        [DataMember]
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>

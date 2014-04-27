@@ -84,7 +84,7 @@ namespace Rock.Web.UI.Controls
                 }
                 if (!string.IsNullOrWhiteSpace(additionalCssClass))
                 {
-                    cssClass.Append( additionalCssClass );
+                    cssClass.Append( " " + additionalCssClass );
                 }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );

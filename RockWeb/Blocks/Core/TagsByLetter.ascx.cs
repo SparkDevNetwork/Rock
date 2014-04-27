@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Core
         // handlers called by the controls on your block
 
         /// <summary>
-        /// Handles the BlockUpdated event of the PageLiquid control.
+        /// Handles the BlockUpdated event of the TagsByLetter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
         private void DisplayTags(int? ownerId, int entityId)
         {
             // get tags
-            var qry = new TagService()
+            var qry = new TagService( new RockContext() )
                 .Queryable()
                 .Where(t => t.EntityTypeId == entityId && t.OwnerId == ownerId)
                 .Select(t => new

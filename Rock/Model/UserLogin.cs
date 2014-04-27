@@ -57,7 +57,6 @@ namespace Rock.Model
         [Required]
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public string UserName { get; set; }
         
         /// <summary>
@@ -86,7 +85,6 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
-        [MergeField]
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary>
@@ -97,7 +95,6 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
-        [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary>
@@ -108,7 +105,6 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
-        [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
@@ -165,7 +161,6 @@ namespace Rock.Model
         /// The last password expiration warning date time.
         /// </value>
         [DataMember]
-        [MergeField]
         public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
 
         /// <summary>
@@ -197,8 +192,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
-        [DataMember]
-        [MergeField]
         public virtual Model.Person Person { get; set; }
 
         /// <summary>
@@ -233,6 +226,45 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets an encrypted confirmation code for the UserLogin.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the encrypted confirmation code.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string ConfirmationCode
+        {
+            get
+            {
+                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, RockDateTime.Now.Ticks );
+                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
+                return encryptedCode;
+            }
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets a URL encoded  and encrypted confirmation code.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual string ConfirmationCodeEncoded
+        {
+            get
+            {
+                return HttpUtility.UrlEncode( ConfirmationCode );
+            }
+            private set { }
+        }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Returns a boolean flag indicating if the provided action is allowed by default
@@ -242,57 +274,6 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
-        }
-
-        /// <summary>
-        /// Gets an encrypted confirmation code for the UserLogin.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing the encrypted confirmation code.
-        /// </value>
-        [MergeField]
-        public virtual string ConfirmationCode
-        {
-            get
-            {
-                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, RockDateTime.Now.Ticks );
-                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
-                return encryptedCode;
-            }
-        }
-
-        /// <summary>
-        /// Gets a URL encoded  and encrypted confirmation code.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
-        /// </value>
-        [MergeField]
-        public virtual string ConfirmationCodeEncoded
-        {
-            get
-            {
-                return HttpUtility.UrlEncode( ConfirmationCode );
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of this UserLogin object.
-        /// </returns>
-        public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
-        {
-            var dictionary = base.ToDictionary();
-            dictionary.Add( "Person", Person );
-            dictionary.Add( "ConfirmationCode", ConfirmationCode );
-            dictionary.Add( "ConfirmationCodeEncoded", ConfirmationCodeEncoded );
-            return dictionary;
         }
 
         /// <summary>

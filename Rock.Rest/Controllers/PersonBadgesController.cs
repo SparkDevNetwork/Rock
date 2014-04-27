@@ -58,6 +58,15 @@ namespace Rock.Rest.Controllers
                 });
 
             routes.MapHttpRoute(
+                name: "GetLastVisitOnSite",
+                routeTemplate: "api/PersonBadges/LastVisitOnSite/{personId}/{siteId}",
+                defaults: new
+                {
+                    controller = "PersonBadges",
+                    action = "GetLastVisitOnSite"
+                } );
+
+            routes.MapHttpRoute(
                 name: "GetInGroupOfType",
                 routeTemplate: "api/PersonBadges/InGroupOfType/{personId}/{groupTypeId}",
                 defaults: new
@@ -82,7 +91,7 @@ namespace Rock.Rest.Controllers
             result.GroupList = new List<GroupSummary>();
 
             // get person info
-            Person person = new PersonService().Get(personId);
+            Person person = new PersonService( (Rock.Data.RockContext)Service.Context ).Get( personId );
 
             if (person != null)
             {
@@ -91,7 +100,7 @@ namespace Rock.Rest.Controllers
             }
 
             // get group type info
-            GroupType groupType = new GroupTypeService().Get(groupTypeId);
+            GroupType groupType = new GroupTypeService( (Rock.Data.RockContext)Service.Context ).Get( groupTypeId );
 
             if (groupType != null)
             {
@@ -101,7 +110,7 @@ namespace Rock.Rest.Controllers
             }
 
             // determine if person is in this type of group
-            GroupMemberService groupMemberService = new GroupMemberService();
+            GroupMemberService groupMemberService = new GroupMemberService( (Rock.Data.RockContext)Service.Context );
             IQueryable<GroupMember> groupMembershipsQuery = groupMemberService.Queryable("Person,GroupRole,Group")
                                         .Where(t => t.Group.GroupType.Guid == groupTypeId && t.PersonId == personId )
                                         .OrderBy(g => g.GroupRole.Order);
@@ -129,16 +138,37 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public int GetWeeksAttendedInDuration(int personId, int weekCount)
         {
-            Service service = new Service();
-
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
             parameters.Add("WeekDuration", weekCount);
 
-            var result = service.ExecuteScaler("spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters);
+            var result = DbService.ExecuteScaler( "spCheckin_WeeksAttendedInDuration", System.Data.CommandType.StoredProcedure, parameters );
             if (result != null)
             {
                 return (int)result;
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Gets the attendance summary data for the 24 month attenance badge 
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public int GetLastVisitOnSite( int personId, int siteId )
+        {
+            PageView mostRecentPageView = new PageViewService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                                                .Where( p => p.PersonAlias.PersonId == personId && p.SiteId == siteId )
+                                                .OrderByDescending( p => p.DateTimeViewed )
+                                                .FirstOrDefault();
+
+            if ( mostRecentPageView != null && mostRecentPageView.DateTimeViewed.HasValue)
+            {
+                TimeSpan duration = RockDateTime.Now - mostRecentPageView.DateTimeViewed.Value;
+                return duration.Days;
             }
 
             return -1;
@@ -155,13 +185,11 @@ namespace Rock.Rest.Controllers
         {
             List<MonthlyAttendanceSummary> attendanceSummary = new List<MonthlyAttendanceSummary>();
             
-            Service service = new Service();
-
             Dictionary<string, object> parameters = new Dictionary<string, object>();
             parameters.Add("PersonId", personId);
             parameters.Add("MonthCount", monthCount);
 
-            var table = service.GetDataTable("spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters);
+            var table = DbService.GetDataTable( "spCheckin_BadgeAttendance", System.Data.CommandType.StoredProcedure, parameters );
 
             if (table != null)
             {

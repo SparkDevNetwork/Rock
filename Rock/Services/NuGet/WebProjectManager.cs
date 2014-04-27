@@ -269,7 +269,8 @@ namespace Rock.Services.NuGet
         /// <returns></returns>
         private static IEnumerable<IPackage> GetPackageDependencies( IPackage package, IPackageRepository localRepository, IPackageRepository sourceRepository )
         {
-            InstallWalker walker = new InstallWalker( localRepository: localRepository, sourceRepository: sourceRepository, logger: NullLogger.Instance, ignoreDependencies: false, allowPrereleaseVersions: false, targetFramework: null );
+
+            InstallWalker walker = new InstallWalker( localRepository: localRepository, sourceRepository: sourceRepository, targetFramework: null, logger: NullLogger.Instance, ignoreDependencies: false, allowPrereleaseVersions: false, dependencyVersion: DependencyVersion.Highest );
             IEnumerable<PackageOperation> operations = walker.ResolveOperations( package );
 
             return from operation in operations
@@ -350,6 +351,11 @@ namespace Rock.Services.NuGet
                 {
                     _errors.Add( String.Format( CultureInfo.CurrentCulture, message, args ) );
                 }
+            }
+
+            public FileConflictResolution ResolveFileConflict( string message )
+            {
+                throw new NotImplementedException();
             }
         }
     }

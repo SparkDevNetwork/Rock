@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Field.Types
@@ -94,7 +95,7 @@ namespace Rock.Field.Types
                 int? binaryFileTypeId = configurationValues["binaryFileType"].Value.AsInteger();
                 if ( binaryFileTypeId.HasValue )
                 {
-                    var binaryFileType = new BinaryFileTypeService().Get( binaryFileTypeId.Value );
+                    var binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( binaryFileTypeId.Value );
 
                     if ( binaryFileType != null )
                     {

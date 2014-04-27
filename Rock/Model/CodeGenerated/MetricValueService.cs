@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="MetricValueService"/> class
         /// </summary>
-        public MetricValueService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricValueService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public MetricValueService(IRepository<MetricValue> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetricValueService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public MetricValueService(RockContext context) : base(context)
         {
@@ -103,20 +87,21 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this MetricValue target, MetricValue source )
         {
-            target.IsSystem = source.IsSystem;
-            target.MetricId = source.MetricId;
-            target.Value = source.Value;
-            target.Description = source.Description;
-            target.xValue = source.xValue;
-            target.isDateBased = source.isDateBased;
-            target.Label = source.Label;
+            target.MetricValueType = source.MetricValueType;
+            target.XValue = source.XValue;
+            target.YValue = source.YValue;
             target.Order = source.Order;
+            target.MetricId = source.MetricId;
+            target.Note = source.Note;
+            target.MetricValueDateTime = source.MetricValueDateTime;
+            target.EntityId = source.EntityId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
             target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

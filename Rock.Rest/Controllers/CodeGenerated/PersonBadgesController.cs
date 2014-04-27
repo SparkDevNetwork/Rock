@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PersonBadgesController : Rock.Rest.ApiController<Rock.Model.PersonBadge>
     {
-        public PersonBadgesController() : base( new Rock.Model.PersonBadgeService() ) { } 
+        public PersonBadgesController() : base( new Rock.Model.PersonBadgeService( new Rock.Data.RockContext() ) ) { } 
     }
 }

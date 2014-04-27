@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// Object for maintaining the state of a check-in kiosk and workflow
     /// </summary>
     [DataContract]
-    public class CheckInState : DotLiquid.ILiquidizable
+    public class CheckInState 
     {
         /// <summary>
         /// Gets or sets the device id
@@ -91,17 +91,5 @@ namespace Rock.CheckIn
           
         }
 
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <returns></returns>
-        public object ToLiquid()
-        {
-            var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "DeviceId", DeviceId );
-            dictionary.Add( "ConfiguredGroupTypes", ConfiguredGroupTypes );
-            dictionary.Add( "CheckIn", CheckIn );
-            return dictionary;
-        }
     }
 }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -138,7 +139,7 @@ namespace RockWeb.Blocks.Communication
                         int personId = 0;
                         if ( int.TryParse( e.Value, out personId ) && personId != 0 )
                         {
-                            var personService = new PersonService();
+                            var personService = new PersonService( new RockContext() );
                             var person = personService.Get( personId );
                             if ( person != null )
                             {
@@ -167,20 +168,24 @@ namespace RockWeb.Blocks.Communication
                     bPending.Visible = communicationItem.PendingRecipients > 0;
                     bPending.Text = communicationItem.PendingRecipients.ToString( "N0" );
 
-                    var bSuccess = e.Row.FindControl( "bSuccess" ) as Badge;
-                    bSuccess.Visible = communicationItem.SuccessRecipients > 0;
-                    bSuccess.Text = communicationItem.SuccessRecipients.ToString( "N0" );
-
-                    var bWarning = e.Row.FindControl( "bWarning" ) as Badge;
-                    bWarning.Visible = communicationItem.CancelledRecipients > 0;
-                    bWarning.Text = communicationItem.CancelledRecipients.ToString( "N0" );
+                    var bCancelled = e.Row.FindControl( "bCancelled" ) as Badge;
+                    bCancelled.Visible = communicationItem.CancelledRecipients > 0;
+                    bCancelled.Text = communicationItem.CancelledRecipients.ToString( "N0" );
 
                     var bFailed = e.Row.FindControl( "bFailed" ) as Badge;
                     bFailed.Visible = communicationItem.FailedRecipients > 0;
                     bFailed.Text = communicationItem.FailedRecipients.ToString( "N0" );
 
+                    var bDelivered = e.Row.FindControl( "bDelivered" ) as Badge;
+                    bDelivered.Visible = communicationItem.DeliveredRecipients > 0;
+                    bDelivered.Text = communicationItem.DeliveredRecipients.ToString( "N0" );
+
+                    var bOpened = e.Row.FindControl( "bOpened" ) as Badge;
+                    bOpened.Visible = communicationItem.OpenedRecipients > 0;
+                    bOpened.Text = communicationItem.OpenedRecipients.ToString( "N0" );
+
                     // Hide delete button if there are any successful recipients
-                    e.Row.Cells[7].Controls[0].Visible = communicationItem.SuccessRecipients <= 0;
+                    e.Row.Cells[7].Controls[0].Visible = communicationItem.DeliveredRecipients <= 0;
                 }
             }
         }
@@ -202,23 +207,22 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+            var communication = communicationService.Get( e.RowKeyId );
+            if ( communication != null )
             {
-                var communicationService = new CommunicationService();
-                var communication = communicationService.Get( e.RowKeyId );
-                if ( communication != null )
+                string errorMessage;
+                if ( !communicationService.CanDelete( communication, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !communicationService.CanDelete( communication, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    communicationService.Delete( communication, CurrentPersonAlias );
-                    communicationService.Save( communication, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                communicationService.Delete( communication );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -263,7 +267,7 @@ namespace RockWeb.Blocks.Communication
                 int personId = 0;
                 if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
                 {
-                    var personService = new PersonService();
+                    var personService = new PersonService( new RockContext() );
                     var person = personService.Get( personId );
                     if ( person != null )
                     {
@@ -277,77 +281,106 @@ namespace RockWeb.Blocks.Communication
 
         private void BindGrid()
         {
-            using ( new UnitOfWorkScope() )
-            {
-                var communications = new CommunicationService()
-                    .Queryable()
+            var rockContext = new RockContext();
+
+            var communications = new CommunicationService( rockContext )
+                    .Queryable( "ChannelEntityType,Sender,Reviewer" )
                     .Where( c => c.Status != CommunicationStatus.Transient );
 
-                string subject = rFilter.GetUserPreference( "Subject" );
-                if ( !string.IsNullOrWhiteSpace( subject ) )
-                {
-                    communications = communications.Where( c => c.Subject.Contains( subject ) );
-                }
-
-                Guid entityTypeGuid = Guid.Empty;
-                if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
-                {
-                    communications = communications.Where( c => c.ChannelEntityType != null && c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
-                }
-
-                string status = rFilter.GetUserPreference( "Status" );
-                if ( !string.IsNullOrWhiteSpace( status ) )
-                {
-                    var communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
-                    communications = communications.Where( c => c.Status == communicationStatus );
-                }
-
-                if ( canApprove )
-                {
-                    int personId = 0;
-                    if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
-                    {
-                        communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == personId );
-                    }
-                }
-                else
-                {
-                    communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == CurrentPersonId );
-                }
-
-                string content = rFilter.GetUserPreference( "Content" );
-                if ( !string.IsNullOrWhiteSpace( content ) )
-                {
-                    communications = communications.Where( c => c.ChannelDataJson.Contains( content ) );
-                }
-
-                var recipients = new CommunicationRecipientService().Queryable();
-
-                var queryable = communications
-                    .Select( c => new CommunicationItem
-                    {
-                        Id = c.Id,
-                        Communication = c,
-                        Recipients = recipients.Where( r => r.CommunicationId == c.Id).Count(),
-                        PendingRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending).Count(),
-                        SuccessRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Success).Count(),
-                        FailedRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed).Count(),
-                        CancelledRecipients = recipients.Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled).Count()
-                    } );
-
-                var sortProperty = gCommunication.SortProperty;
-                if ( sortProperty != null )
-                {
-                    queryable = queryable.Sort( sortProperty );
-                }
-                else
-                {
-                    queryable = queryable.OrderByDescending( c => c.Communication.Id );
-                }
-
-                gCommunication.DataSource = queryable.ToList();
-                gCommunication.DataBind();
+            string subject = rFilter.GetUserPreference( "Subject" );
+            if ( !string.IsNullOrWhiteSpace( subject ) )
+            {
+                communications = communications.Where( c => c.Subject.Contains( subject ) );
             }
+
+            Guid entityTypeGuid = Guid.Empty;
+            if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
+            {
+                communications = communications.Where( c => c.ChannelEntityType != null && c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
+            }
+
+            string status = rFilter.GetUserPreference( "Status" );
+            if ( !string.IsNullOrWhiteSpace( status ) )
+            {
+                var communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
+                communications = communications.Where( c => c.Status == communicationStatus );
+            }
+
+            if ( canApprove )
+            {
+                int personId = 0;
+                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) && personId != 0 )
+                {
+                    communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == personId );
+                }
+            }
+            else
+            {
+                communications = communications.Where( c => c.SenderPersonId.HasValue && c.SenderPersonId.Value == CurrentPersonId );
+            }
+
+            string content = rFilter.GetUserPreference( "Content" );
+            if ( !string.IsNullOrWhiteSpace( content ) )
+            {
+                communications = communications.Where( c => c.ChannelDataJson.Contains( content ) );
+            }
+
+            var recipients = new CommunicationRecipientService( rockContext ).Queryable();
+
+            var queryable = communications
+                .Select( c => new CommunicationItem
+                {
+                    Id = c.Id,
+                    Communication = c,
+                    Recipients = recipients
+                        .Where( r => r.CommunicationId == c.Id)
+                        .Count(),
+                    PendingRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Pending)
+                        .Count(),
+                    CancelledRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Cancelled)
+                        .Count(),
+                    FailedRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Failed)
+                        .Count(),
+                    DeliveredRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && 
+                            (r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Opened))
+                        .Count(),
+                    OpenedRecipients = recipients
+                        .Where( r => r.CommunicationId == c.Id && r.Status == CommunicationRecipientStatus.Opened)
+                        .Count()
+                } );
+
+            var sortProperty = gCommunication.SortProperty;
+            if ( sortProperty != null )
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
+            else
+            {
+                queryable = queryable.OrderByDescending( c => c.Communication.Id );
+            }
+
+            // Get the channel names
+            var channels = new Dictionary<int, string>();
+            foreach ( var item in Rock.Communication.ChannelContainer.Instance.Components.Values )
+            {
+                var entityType = item.Value.EntityType;
+                channels.Add( entityType.Id, item.Metadata.ComponentName );
+            }
+
+            var communicationItems = queryable.ToList();
+            foreach( var c in communicationItems)
+            {
+                c.ChannelName = channels.ContainsKey( c.Communication.ChannelEntityTypeId ?? 0 ) ?
+                    channels[c.Communication.ChannelEntityTypeId ?? 0] :
+                    c.Communication.ChannelEntityType.FriendlyName;
+            }
+
+            gCommunication.DataSource = communicationItems;
+            gCommunication.DataBind();
 
         }
 
@@ -357,11 +390,13 @@ namespace RockWeb.Blocks.Communication
         {
             public int Id { get; set; }
             public Rock.Model.Communication Communication { get; set; }
+            public string ChannelName { get; set; }
             public int Recipients { get; set; }
             public int PendingRecipients { get; set; }
-            public int SuccessRecipients { get; set; }
-            public int FailedRecipients { get; set; }
             public int CancelledRecipients { get; set; }
+            public int FailedRecipients { get; set; }
+            public int DeliveredRecipients { get; set; }
+            public int OpenedRecipients { get; set; }
         }
 
     }

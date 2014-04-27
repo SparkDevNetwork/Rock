@@ -17,16 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Linq;
+using System.Web.UI;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web;
 using Rock.Security;
+using Rock.Web;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -47,17 +47,17 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "groupId" );
-                string groupMemberId = PageParameter( "groupMemberId" );
+                string groupId = PageParameter( "GroupId" );
+                string groupMemberId = PageParameter( "GroupMemberId" );
                 if ( !string.IsNullOrWhiteSpace( groupMemberId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( groupId ) )
                     {
-                        ShowDetail( "groupMemberId", int.Parse( groupMemberId ) );
+                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ) );
                     }
                     else
                     {
-                        ShowDetail( "groupMemberId", int.Parse( groupMemberId ), int.Parse( groupId ) );
+                        ShowDetail( "GroupMemberId", int.Parse( groupMemberId ), int.Parse( groupId ) );
                     }
                 }
                 else
@@ -88,10 +88,10 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupMemberId = PageParameter(pageReference, "groupMemberId" ).AsInteger();
+            int? groupMemberId = PageParameter( pageReference, "GroupMemberId" ).AsInteger();
             if ( groupMemberId != null )
             {
-                GroupMember groupMember = new GroupMemberService().Get( groupMemberId.Value );
+                GroupMember groupMember = new GroupMemberService( new RockContext() ).Get( groupMemberId.Value );
                 if ( groupMember != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
@@ -124,15 +124,17 @@ namespace RockWeb.Blocks.Groups
 
             if ( Page.IsValid )
             {
-                GroupMemberService groupMemberService = new GroupMemberService();
+                var rockContext = new RockContext();
+
+                GroupMemberService groupMemberService = new GroupMemberService( rockContext );
                 GroupMember groupMember;
 
                 int groupMemberId = int.Parse( hfGroupMemberId.Value );
 
-                GroupTypeRole role = new GroupTypeRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+                GroupTypeRole role = new GroupTypeRoleService( rockContext ).Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
 
-                //check to see if the user selected a role
-                if (role == null)
+                // check to see if the user selected a role
+                if ( role == null )
                 {
                     nbErrorMessage.Title = "Please select a Role";
                     return;
@@ -141,38 +143,36 @@ namespace RockWeb.Blocks.Groups
                 // if adding a new group member 
                 if ( groupMemberId.Equals( 0 ) )
                 {
-
                     groupMember = new GroupMember { Id = 0 };
                     groupMember.GroupId = hfGroupId.ValueAsInt();
 
-                    //check to see if the person is alread a member of the gorup/role
+                    // check to see if the person is alread a member of the gorup/role
                     var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
                         hfGroupId.ValueAsInt(), ppGroupMemberPerson.SelectedValue ?? 0, ddlGroupRole.SelectedValueAsId() ?? 0 );
 
                     if ( existingGroupMember != null )
                     {
-                        //if so, don't add and show error message
-                        var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+                        // if so, don't add and show error message
+                        var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
 
                         nbErrorMessage.Title = "Person already added";
-                        nbErrorMessage.Text = string.Format( "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
+                        nbErrorMessage.Text = string.Format( 
+                            "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role. <a href=\"/page/{3}?groupMemberId={4}\">Click here</a> to view existing membership.",
                             person.FullName,
                             ddlGroupRole.SelectedItem.Text,
                             role.GroupType.GroupTerm,
                             RockPage.PageId,
-                            existingGroupMember.Id
-                            );
+                            existingGroupMember.Id );
                         return;
-
                     }
                 }
                 else
                 {
-                    //load existing group member
+                    // load existing group member
                     groupMember = groupMemberService.Get( groupMemberId );
                 }
 
-                int memberCountInRole = new GroupMemberService().Queryable()
+                int memberCountInRole = new GroupMemberService( rockContext ).Queryable()
                     .Where( m =>
                         m.GroupId == groupMember.GroupId &&
                         m.GroupRoleId == role.Id &&
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Groups
 
                 bool roleMembershipAboveMax = false;
 
-                //if adding new active group member
+                // if adding new active group member..
                 if ( groupMemberId.Equals( 0 ) && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
                 {
                     // verify that active count has not exceeded the max
@@ -190,11 +190,10 @@ namespace RockWeb.Blocks.Groups
                         roleMembershipAboveMax = true;
                     }
                 }
-
-                //if existing group member changing role or status
                 else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != rblStatus.SelectedValueAsEnum<GroupMemberStatus>() )
                         && rblStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
                 {
+                    // if existing group member changing role or status..
                     // verify that active count has not exceeded the max
                     if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
                     {
@@ -202,14 +201,17 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                //show error if above max.. do not proceed
+                // show error if above max.. do not proceed
                 if ( roleMembershipAboveMax )
                 {
-                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+                    var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
 
-                    nbErrorMessage.Title = string.Format("Maximum {0} Exceeded", role.Name.Pluralize() );
-                    nbErrorMessage.Text = string.Format( "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.", 
-                        role.Name.Pluralize(), role.GroupType.GroupTerm, role.MaxCount,
+                    nbErrorMessage.Title = string.Format( "Maximum {0} Exceeded", role.Name.Pluralize() );
+                    nbErrorMessage.Text = string.Format( 
+                        "<br />The number of {0} for this {1} is at or above its maximum allowed limit of {2:N0} active {3}.",
+                        role.Name.Pluralize(), 
+                        role.GroupType.GroupTerm, 
+                        role.MaxCount,
                         role.MaxCount == 1 ? role.GroupType.GroupMemberTerm : role.GroupType.GroupMemberTerm.Pluralize() );
 
                     return;
@@ -233,18 +235,19 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
+                // using WrapTransaction because there are two Saves
                 RockTransactionScope.WrapTransaction( () =>
                 {
                     if ( groupMember.Id.Equals( 0 ) )
                     {
-                        groupMemberService.Add( groupMember, CurrentPersonAlias );
+                        groupMemberService.Add( groupMember );
                     }
 
-                    groupMemberService.Save( groupMember, CurrentPersonAlias );
-                    groupMember.SaveAttributeValues( CurrentPersonAlias );
+                    groupMember.SaveAttributeValues( rockContext );
+                    rockContext.SaveChanges();
                 } );
 
-                Group group = new GroupService().Get( groupMember.GroupId );
+                Group group = new GroupService( rockContext ).Get( groupMember.GroupId );
                 if ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
                 {
                     Rock.Security.Role.Flush( group.Id );
@@ -253,7 +256,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["groupId"] = hfGroupId.Value;
+            qryString["GroupId"] = hfGroupId.Value;
             NavigateToParentPage( qryString );
         }
 
@@ -268,17 +271,17 @@ namespace RockWeb.Blocks.Groups
             {
                 // Cancelling on Add.  
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["groupId"] = hfGroupId.Value;
+                qryString["GroupId"] = hfGroupId.Value;
                 NavigateToParentPage( qryString );
             }
             else
             {
                 // Cancelling on Edit.  Return to Details
-                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
                 GroupMember groupMember = groupMemberService.Get( int.Parse( hfGroupMemberId.Value ) );
 
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["groupId"] = groupMember.GroupId.ToString();
+                qryString["GroupId"] = groupMember.GroupId.ToString();
                 NavigateToParentPage( qryString );
             }
         }
@@ -305,16 +308,17 @@ namespace RockWeb.Blocks.Groups
         /// <param name="groupId">The group id.</param>
         public void ShowDetail( string itemKey, int itemKeyValue, int? groupId )
         {
-            if ( !itemKey.Equals( "groupMemberId" ) )
+            if ( !itemKey.Equals( "GroupMemberId" ) )
             {
                 return;
             }
 
+            var rockContext = new RockContext();
             GroupMember groupMember = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                groupMember = new GroupMemberService().Get( itemKeyValue );
+                groupMember = new GroupMemberService( rockContext ).Get( itemKeyValue );
                 groupMember.LoadAttributes();
             }
             else
@@ -324,7 +328,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupMember = new GroupMember { Id = 0 };
                     groupMember.GroupId = groupId.Value;
-                    groupMember.Group = new GroupService().Get( groupMember.GroupId );
+                    groupMember.Group = new GroupService( rockContext ).Get( groupMember.GroupId );
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                 }
@@ -358,10 +362,11 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
-            } 
-            
+            }
+
+            // user has to have EDIT Auth to both the Block and the group
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) || !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Group.FriendlyTypeName );
@@ -377,7 +382,7 @@ namespace RockWeb.Blocks.Groups
 
             LoadDropDowns();
 
-            ppGroupMemberPerson.SetValue(groupMember.Person);
+            ppGroupMemberPerson.SetValue( groupMember.Person );
             ppGroupMemberPerson.Enabled = !readOnly;
 
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
@@ -385,11 +390,12 @@ namespace RockWeb.Blocks.Groups
 
             rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
+            rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
             groupMember.LoadAttributes();
             phAttributes.Controls.Clear();
 
-            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, true, "", true );
             if ( readOnly )
             {
                 Rock.Attribute.Helper.AddDisplayControls( groupMember, phAttributesReadOnly );
@@ -408,8 +414,8 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void ClearErrorMessage()
         {
-            nbErrorMessage.Title = String.Empty;
-            nbErrorMessage.Text = String.Empty;
+            nbErrorMessage.Title = string.Empty;
+            nbErrorMessage.Text = string.Empty;
         }
 
         /// <summary>
@@ -418,7 +424,7 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns()
         {
             int groupId = hfGroupId.ValueAsInt();
-            Group group = new GroupService().Get( groupId );
+            Group group = new GroupService( new RockContext() ).Get( groupId );
             if ( group != null )
             {
                 ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.Order ).ToList();

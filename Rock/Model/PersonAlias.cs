@@ -45,7 +45,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [DataMember]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [MaxLength(200)]
         public string Name { get; set; }
 
@@ -67,7 +67,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
-        [AlternateKey]
+        [Index( IsUnique = true )]
         [DataMember( IsRequired = true )]
         public int AliasPersonId { get; set; }
 

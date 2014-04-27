@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Security
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Invalid UserName Caption", "", false, "The User Name/Password combination is not valid.", "Captions", 0 )]
     [TextField( "Invalid Password Caption","", false, "The User Name/Password combination is not valid.", "Captions", 1 )]
     [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 2 )]
+    [TextField( "Change Password Not Supported Caption", "", false, "Changing your password is not supported.", "Captions", 3 )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
 
@@ -47,12 +48,26 @@ namespace RockWeb.Blocks.Security
             base.OnLoad( e );
 
             if ( CurrentUser == null || !CurrentUser.IsAuthenticated )
-                DisplayError( "You must login before changing your password" );
+            {
+                DisplayErrorText( "You must login before changing your password" );
+                pnlChangePassword.Visible = false;
+            }
 
             if ( !Page.IsPostBack )
             {
                 if ( CurrentUser != null )
-                    tbUserName.Text = CurrentUser.UserName;
+                {
+                    var component = Rock.Security.AuthenticationContainer.GetComponent( CurrentUser.EntityType.Name );
+                    if ( component.SupportsChangePassword )
+                    {
+                        tbUserName.Text = CurrentUser.UserName;
+                    }
+                    else
+                    {
+                        DisplayErrorFromAttribute( "ChangePasswordNotSupportedCaption" );
+                        pnlChangePassword.Visible = false;
+                    }
+                }
             }
         }
 
@@ -67,22 +82,46 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChange_Click( object sender, EventArgs e )
         {
-            var userLoginService = new UserLoginService();
+            RockContext rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbUserName.Text );
+
             if ( userLogin != null )
             {
                 if ( UserLoginService.IsPasswordValid( tbPassword.Text ) )
                 {
-                    if ( userLoginService.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text ) )
-                    {
-                        userLoginService.Save( userLogin, CurrentPersonAlias );
+                    var component = Rock.Security.AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
 
-                        lSuccess.Text = GetAttributeValue( "SuccessCaption" );
-                        pnlEntry.Visible = false;
-                        pnlSuccess.Visible = true;
+                    if ( component.SupportsChangePassword )
+                    {
+
+                        string warningMessage;
+                        if ( component.ChangePassword( userLogin, tbOldPassword.Text, tbPassword.Text, out warningMessage ) )
+                        {
+                            rockContext.SaveChanges();
+
+                            lSuccess.Text = GetAttributeValue( "SuccessCaption" );
+                            pnlEntry.Visible = false;
+                            pnlSuccess.Visible = true;
+                        }
+                        else
+                        {
+                            if ( string.IsNullOrWhiteSpace( warningMessage ) )
+                            {
+                                DisplayErrorFromAttribute( "InvalidPasswordCaption" );
+                            }
+                            else
+                            {
+                                DisplayErrorText( warningMessage );
+                            }
+                        }
                     }
                     else
-                        DisplayError( "InvalidPasswordCaption" );
+                    {
+                        // shouldn't happen, but just in case
+                        DisplayErrorFromAttribute( "ChangePasswordNotSupportedCaption" );
+                        pnlChangePassword.Visible = false;
+                    }
                 }
                 else
                 {
@@ -90,23 +129,41 @@ namespace RockWeb.Blocks.Security
                 }
             }
             else
-                DisplayError( "InvalidUserNameCaption" );
+            {
+                DisplayErrorFromAttribute( "InvalidUserNameCaption" );
+            }
         }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Invalids the password.
+        /// </summary>
         private void InvalidPassword()
         {
-            lInvalid.Text = UserLoginService.FriendlyPasswordRules();
-            pnlInvalid.Visible = true;
+            nbPasswordMessage.Text = UserLoginService.FriendlyPasswordRules();
+            nbPasswordMessage.Visible = true;
         }
 
-        private void DisplayError( string message )
+        /// <summary>
+        /// Displays the error from attribute.
+        /// </summary>
+        /// <param name="messageKey">The message key.</param>
+        private void DisplayErrorFromAttribute( string messageKey )
         {
-            lInvalid.Text = GetAttributeValue( message );
-            pnlInvalid.Visible = true;
+            DisplayErrorText( GetAttributeValue( messageKey ) );
+        }
+
+        /// <summary>
+        /// Displays the error text.
+        /// </summary>
+        /// <param name="messageText">The message text.</param>
+        private void DisplayErrorText (string messageText)
+        {
+            nbPasswordMessage.Text = messageText;
+            nbPasswordMessage.Visible = true;
         }
 
         #endregion

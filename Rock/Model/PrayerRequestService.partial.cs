@@ -45,13 +45,13 @@ namespace Rock.Model
             var prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type );
 
             // Get all PrayerRequest category Ids that are the **parent or child** of the given categoryIds.
-            CategoryService categoryService = new CategoryService();
+            CategoryService categoryService = new CategoryService( (RockContext)Context );
             IEnumerable<int> expandedCategoryIds = categoryService.GetByEntityTypeId( prayerRequestEntityTypeId )
                 .Where( c => categoryIds.Contains( c.Id ) || categoryIds.Contains( c.ParentCategoryId ?? -1 ) )
                 .Select( a => a.Id );
 
             // Now find the active PrayerRequests that have any of those category Ids.
-            var list = Repository.Find( p => p.IsActive == true && categoryIds.Contains( p.CategoryId ?? -1 ) );
+            var list = Queryable().Where( p => p.IsActive == true && categoryIds.Contains( p.CategoryId ?? -1 ) );
 
             if ( onlyApproved )
             {
@@ -71,9 +71,9 @@ namespace Rock.Model
         /// order by urgency and then by total prayer count.
         /// </summary>
         /// <returns>A queryable collection of <see cref="Rock.Model.PrayerRequest">PrayerRequest</see>.</returns>
-        public IQueryable<PrayerRequest> GetActiveApprovedUnexpired()
+        public IOrderedQueryable<PrayerRequest> GetActiveApprovedUnexpired()
         {
-            return Repository.AsQueryable()
+            return Queryable()
                 .Where( p => p.IsActive == true && p.IsApproved == true && RockDateTime.Today <= p.ExpirationDate )
                 .OrderByDescending( p => p.IsUrgent ).ThenBy( p => p.PrayerCount );
         }

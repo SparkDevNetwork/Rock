@@ -33,13 +33,6 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
-
-        #region Fields
-
-        string action = string.Empty;
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -55,6 +48,7 @@ namespace RockWeb.Blocks.Security
             {
                 url = ResolveRockUrl( "~/MyAccount" );
             }
+
             hlMyAccount.NavigateUrl = url;
         }
 
@@ -65,8 +59,6 @@ namespace RockWeb.Blocks.Security
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            action = hfTest.Value;
 
             var currentPerson = CurrentPerson;
             if ( currentPerson != null )
@@ -85,7 +77,7 @@ namespace RockWeb.Blocks.Security
                 lbLoginLogout.Text = "Login";
             }
 
-            hfTest.Value = lbLoginLogout.Text;
+            hfActionType.Value = lbLoginLogout.Text;
         }
 
         #endregion
@@ -99,6 +91,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
+            string action = hfActionType.Value;
             if ( action == "Login" )
             {
                 var site = RockPage.Layout.Site;
@@ -136,11 +129,9 @@ namespace RockWeb.Blocks.Security
                 {
                     RockPage.Layout.Site.RedirectToDefaultPage();
                 }
-
             }
         }
 
         #endregion
-
     }
 }

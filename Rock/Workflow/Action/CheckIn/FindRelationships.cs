@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.Caching;
-
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -49,11 +49,13 @@ namespace Rock.Workflow.Action.CheckIn
             ObjectCache cache = MemoryCache.Default;
             List<int> roles = cache[cacheKey] as List<int>;
 
+            var rockContext = new RockContext();
+
             if ( roles == null )
             {
                 roles = new List<int>();
 
-                foreach ( var role in new GroupTypeRoleService().Queryable()
+                foreach ( var role in new GroupTypeRoleService( rockContext ).Queryable()
                     .Where( r => r.GroupType.Guid.Equals( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ) ) ) )
                 {
                     role.LoadAttributes();
@@ -83,7 +85,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    var service = new GroupMemberService();
+                    var service = new GroupMemberService( rockContext );
 
                     var familyMemberIds = family.People.Select( p => p.Person.Id ).ToList();
 

@@ -20,9 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -79,7 +79,8 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
 
             if ( Page.IsPostBack )
             {
-                var definedValueService = new DefinedValueService();
+                var rockContext = new RockContext();
+                var definedValueService = new DefinedValueService(rockContext);
 
                 foreach ( RepeaterItem item in rptrValues.Items )
                 {
@@ -95,7 +96,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                             if ( value.GetAttributeValue( attributeKey ) != cbValue.Checked.ToString() )
                             {
                                 value.SetAttributeValue( attributeKey, cbValue.Checked.ToString() );
-                                value.SaveAttributeValues( CurrentPersonAlias );
+                                value.SaveAttributeValues();
                                 DefinedValueCache.Flush( value.Id );
                             }
                         }
