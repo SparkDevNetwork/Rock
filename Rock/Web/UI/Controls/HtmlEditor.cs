@@ -19,6 +19,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -259,6 +261,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the document folder root.
+        /// Defaults to ~/Content
         /// </summary>
         /// <value>
         /// The document folder root.
@@ -267,7 +270,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["DocumentFolderRoot"] as string;
+                var result = ViewState["DocumentFolderRoot"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = "~/Content";
+                }
+
+                return result;
             }
 
             set
@@ -278,6 +287,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the image folder root.
+        /// Defaults to ~/Content
         /// </summary>
         /// <value>
         /// The image folder root.
@@ -286,7 +296,13 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ImageFolderRoot"] as string;
+                var result = ViewState["ImageFolderRoot"] as string;
+                if ( string.IsNullOrWhiteSpace( result ) )
+                {
+                    result = "~/Content";
+                }
+
+                return result;
             }
 
             set
@@ -339,6 +355,19 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["MergeFields"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets any additional configuration settings for the CKEditor.  Should be in SettingName: SettingValue, ... format.  
+        /// For example: autoParagrapth: false, enterMode: 3,
+        /// </summary>
+        /// <value>
+        /// The additional configurations.
+        /// </value>
+        public string AdditionalConfigurations
+        {
+            get { return ViewState["AdditionalConfigurations"] as string ?? string.Empty; }
+            set { ViewState["AdditionalConfigurations"] = value; }
         }
 
         #endregion
@@ -435,6 +464,7 @@ if (CKEDITOR.instances.{0}) {{
 }}
   
 CKEDITOR.replace('{0}', {{ 
+    {11}
     allowedContent: true,
     toolbar: toolbar_RockCustomConfig{1},
     removeButtons: '',
@@ -487,20 +517,56 @@ CKEDITOR.replace('{0}', {{
                 enabledPlugins.Add( "rockmergefield" );
             }
 
-            enabledPlugins.Add( "rockfilebrowser" );
+            // only show the File/Image plugin if they have Auth to the file browser page
+            var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.CKEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
+            if ( fileBrowserPage != null )
+            {
+                var currentPerson = this.RockBlock().CurrentPerson;
+                if ( currentPerson != null )
+                {
+                    if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        enabledPlugins.Add( "rockfilebrowser" );
+                    }
+                }
+            }
 
             var globalAttributesCache = GlobalAttributesCache.Read();
 
             string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
             string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
 
-            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, this.ClientID, this.Toolbar.ConvertToString(),
-                this.Height, this.ResizeMaxWidth ?? 0, customOnChangeScript, enabledPlugins.AsDelimited( "," ),
-                Rock.Security.Encryption.EncryptString( this.DocumentFolderRoot ), // encrypt the folders so the folder can only be configured on the server
-                Rock.Security.Encryption.EncryptString( this.ImageFolderRoot ),
-                imageFileTypeWhiteList,
-                fileTypeBlackList,
-                this.MergeFields.AsDelimited( "," ) );
+            string documentFolderRoot = this.DocumentFolderRoot;
+            string imageFolderRoot = this.ImageFolderRoot;
+            if ( this.UserSpecificRoot )
+            {
+                var currentUser = this.RockBlock().CurrentUser;
+                if ( currentUser != null )
+                {
+                    documentFolderRoot = System.Web.VirtualPathUtility.Combine( documentFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                    imageFolderRoot = System.Web.VirtualPathUtility.Combine( imageFolderRoot.EnsureTrailingBackslash(), currentUser.UserName.ToString() );
+                }
+            }
+
+            // Make sure that if additional configurations are defined, that the string ends in a comma.
+            if (!string.IsNullOrWhiteSpace(this.AdditionalConfigurations) && !this.AdditionalConfigurations.Trim().EndsWith(","))
+            {
+                this.AdditionalConfigurations = this.AdditionalConfigurations.Trim() + ",";
+            }
+
+            string ckeditorInitScript = string.Format( ckeditorInitScriptFormat, 
+                this.ClientID,                                                  // {0}
+                this.Toolbar.ConvertToString(),                                 // {1}
+                this.Height,                                                    // {2}
+                this.ResizeMaxWidth ?? 0,                                       // {3}
+                customOnChangeScript,                                           // {4}
+                enabledPlugins.AsDelimited( "," ),                              // {5}
+                Rock.Security.Encryption.EncryptString( documentFolderRoot ),   // {6} encrypt the folders so the folder can only be configured on the server
+                Rock.Security.Encryption.EncryptString( imageFolderRoot ),      // {7}
+                imageFileTypeWhiteList,                                         // {8}
+                fileTypeBlackList,                                              // {9}
+                this.MergeFields.AsDelimited( "," ),                            // {10}
+                this.AdditionalConfigurations );                                // {11}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 

@@ -30,6 +30,7 @@ BEGIN
         , bf.[IsTemporary] 
         , bf.[IsSystem]
         , bf.[BinaryFileTypeId]
+		, bft.[RequiresSecurity]
         , bf.[Url]
         , bf.[FileName] 
         , bf.[MimeType]

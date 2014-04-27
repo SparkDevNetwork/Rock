@@ -16,13 +16,14 @@
 //
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
+
+using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
-using Rock;
 
 namespace RockWeb.Blocks.Core
 {
@@ -77,14 +78,15 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Campus campus;
-            CampusService campusService = new CampusService();
+            var rockContext = new RockContext();
+            CampusService campusService = new CampusService( rockContext );
 
             int campusId = int.Parse( hfCampusId.Value );
 
             if ( campusId == 0 )
             {
                 campus = new Campus();
-                campusService.Add( campus, CurrentPersonAlias );
+                campusService.Add( campus);
             }
             else
             {
@@ -100,10 +102,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                campusService.Save( campus, CurrentPersonAlias );
-            } );
+            rockContext.SaveChanges();
 
             Rock.Web.Cache.CampusCache.Flush( campus.Id );
 
@@ -129,7 +128,7 @@ namespace RockWeb.Blocks.Core
             Campus campus = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                campus = new CampusService().Get( itemKeyValue );
+                campus = new CampusService( new RockContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
@@ -146,7 +145,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Campus.FriendlyTypeName );

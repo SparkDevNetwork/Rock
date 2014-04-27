@@ -33,9 +33,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="pageId">An <see cref="System.Int32"/> value containing the Id of the <see cref="Rock.Model.Page"/> .</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.PageRoute"/> entities that reference the supplied PageId.</returns>
-        public IEnumerable<PageRoute> GetByPageId( int pageId )
+        public IQueryable<PageRoute> GetByPageId( int pageId )
         {
-            return Repository.Find( t => t.PageId == pageId );
+            return Queryable().Where( t => t.PageId == pageId );
         }
     }
 }

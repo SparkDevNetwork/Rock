@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Migrations</RootNamespace>
     <AssemblyName>Rock.Migrations</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,13 +34,11 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -720,6 +719,138 @@
     <Compile Include="Migrations\201403101815320_MakeStatesNonSystem.Designer.cs">
       <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201403110047245_GroupDetailLimitGroupTypeOption.cs" />
+    <Compile Include="Migrations\201403110047245_GroupDetailLimitGroupTypeOption.Designer.cs">
+      <DependentUpon>201403110047245_GroupDetailLimitGroupTypeOption.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403110633568_AdminCheckListUpdates.cs" />
+    <Compile Include="Migrations\201403110633568_AdminCheckListUpdates.Designer.cs">
+      <DependentUpon>201403110633568_AdminCheckListUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403112107249_RemoveSMTPAttributes.cs" />
+    <Compile Include="Migrations\201403112107249_RemoveSMTPAttributes.Designer.cs">
+      <DependentUpon>201403112107249_RemoveSMTPAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403112339079_UpdateAttendanceBadgeSP.cs" />
+    <Compile Include="Migrations\201403112339079_UpdateAttendanceBadgeSP.Designer.cs">
+      <DependentUpon>201403112339079_UpdateAttendanceBadgeSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403121226203_PersonViewedAlias.cs" />
+    <Compile Include="Migrations\201403121226203_PersonViewedAlias.Designer.cs">
+      <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.cs" />
+    <Compile Include="Migrations\201403131239078_FixPersonMerge.Designer.cs">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.cs" />
+    <Compile Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.Designer.cs">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403131829216_FixAdultMembersDataView.cs" />
+    <Compile Include="Migrations\201403131829216_FixAdultMembersDataView.Designer.cs">
+      <DependentUpon>201403131829216_FixAdultMembersDataView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403141842057_CommunicationJob.cs" />
+    <Compile Include="Migrations\201403141842057_CommunicationJob.Designer.cs">
+      <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.cs" />
+    <Compile Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.Designer.cs">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403171556065_AddFamilyAttribute.cs" />
+    <Compile Include="Migrations\201403171556065_AddFamilyAttribute.Designer.cs">
+      <DependentUpon>201403171556065_AddFamilyAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403171835360_IncreaseAccountNumberLength.cs" />
+    <Compile Include="Migrations\201403171835360_IncreaseAccountNumberLength.Designer.cs">
+      <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.cs" />
+    <Compile Include="Migrations\201403180042036_AddressVerificationService.Designer.cs">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403241216199_CommunicationStatus.cs" />
+    <Compile Include="Migrations\201403241216199_CommunicationStatus.Designer.cs">
+      <DependentUpon>201403241216199_CommunicationStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403261648315_ExternalApplicationDefinedType.cs" />
+    <Compile Include="Migrations\201403261648315_ExternalApplicationDefinedType.Designer.cs">
+      <DependentUpon>201403261648315_ExternalApplicationDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403271548291_GoogleMapStyles.cs" />
+    <Compile Include="Migrations\201403271548291_GoogleMapStyles.Designer.cs">
+      <DependentUpon>201403271548291_GoogleMapStyles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.cs" />
+    <Compile Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.Designer.cs">
+      <DependentUpon>201403282057374_RemoveCommunicationTemplateOwnerPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403291138225_AddInactiveReason.cs" />
+    <Compile Include="Migrations\201403291138225_AddInactiveReason.Designer.cs">
+      <DependentUpon>201403291138225_AddInactiveReason.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403300445046_BinaryFileSecurity.cs" />
+    <Compile Include="Migrations\201403300445046_BinaryFileSecurity.Designer.cs">
+      <DependentUpon>201403300445046_BinaryFileSecurity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201403311909020_GroupMapStyles.cs" />
+    <Compile Include="Migrations\201403311909020_GroupMapStyles.Designer.cs">
+      <DependentUpon>201403311909020_GroupMapStyles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404011847059_ReportFetchTop.cs" />
+    <Compile Include="Migrations\201404011847059_ReportFetchTop.Designer.cs">
+      <DependentUpon>201404011847059_ReportFetchTop.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404050016302_AddForeignId.cs" />
+    <Compile Include="Migrations\201404050016302_AddForeignId.Designer.cs">
+      <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404050034562_EF61.cs" />
+    <Compile Include="Migrations\201404050034562_EF61.Designer.cs">
+      <DependentUpon>201404050034562_EF61.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404080041145_MiscCommunication.cs" />
+    <Compile Include="Migrations\201404080041145_MiscCommunication.Designer.cs">
+      <DependentUpon>201404080041145_MiscCommunication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404092208485_NewPersonAndRecipientFields.cs" />
+    <Compile Include="Migrations\201404092208485_NewPersonAndRecipientFields.Designer.cs">
+      <DependentUpon>201404092208485_NewPersonAndRecipientFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404120459167_AddResponseRecipient.cs" />
+    <Compile Include="Migrations\201404120459167_AddResponseRecipient.Designer.cs">
+      <DependentUpon>201404120459167_AddResponseRecipient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404121456216_BulkCommunication.cs" />
+    <Compile Include="Migrations\201404121456216_BulkCommunication.Designer.cs">
+      <DependentUpon>201404121456216_BulkCommunication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404140531224_AddRecipientCode.cs" />
+    <Compile Include="Migrations\201404140531224_AddRecipientCode.Designer.cs">
+      <DependentUpon>201404140531224_AddRecipientCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404141655095_LengthenActivityDetail.cs" />
+    <Compile Include="Migrations\201404141655095_LengthenActivityDetail.Designer.cs">
+      <DependentUpon>201404141655095_LengthenActivityDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404141715372_LastVisitToSiteBadge.cs" />
+    <Compile Include="Migrations\201404141715372_LastVisitToSiteBadge.Designer.cs">
+      <DependentUpon>201404141715372_LastVisitToSiteBadge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404142016079_FormattedPhone.cs" />
+    <Compile Include="Migrations\201404142016079_FormattedPhone.Designer.cs">
+      <DependentUpon>201404142016079_FormattedPhone.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404142302079_MetricsTables.cs" />
+    <Compile Include="Migrations\201404142302079_MetricsTables.Designer.cs">
+      <DependentUpon>201404142302079_MetricsTables.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404162027109_MetricCategoryAsEntity.cs" />
+    <Compile Include="Migrations\201404162027109_MetricCategoryAsEntity.Designer.cs">
+      <DependentUpon>201404162027109_MetricCategoryAsEntity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1240,6 +1371,105 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201403101815320_MakeStatesNonSystem.resx">
       <DependentUpon>201403101815320_MakeStatesNonSystem.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403110047245_GroupDetailLimitGroupTypeOption.resx">
+      <DependentUpon>201403110047245_GroupDetailLimitGroupTypeOption.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403110633568_AdminCheckListUpdates.resx">
+      <DependentUpon>201403110633568_AdminCheckListUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403112107249_RemoveSMTPAttributes.resx">
+      <DependentUpon>201403112107249_RemoveSMTPAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403112339079_UpdateAttendanceBadgeSP.resx">
+      <DependentUpon>201403112339079_UpdateAttendanceBadgeSP.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403121226203_PersonViewedAlias.resx">
+      <DependentUpon>201403121226203_PersonViewedAlias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131239078_FixPersonMerge.resx">
+      <DependentUpon>201403131239078_FixPersonMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131633146_CkEditorBrowserPageSecurity.resx">
+      <DependentUpon>201403131633146_CkEditorBrowserPageSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403131829216_FixAdultMembersDataView.resx">
+      <DependentUpon>201403131829216_FixAdultMembersDataView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403141842057_CommunicationJob.resx">
+      <DependentUpon>201403141842057_CommunicationJob.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403170553360_AddPageTitleColumnToPageViews.resx">
+      <DependentUpon>201403170553360_AddPageTitleColumnToPageViews.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403171556065_AddFamilyAttribute.resx">
+      <DependentUpon>201403171556065_AddFamilyAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403171835360_IncreaseAccountNumberLength.resx">
+      <DependentUpon>201403171835360_IncreaseAccountNumberLength.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403180042036_AddressVerificationService.resx">
+      <DependentUpon>201403180042036_AddressVerificationService.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403241216199_CommunicationStatus.resx">
+      <DependentUpon>201403241216199_CommunicationStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403261648315_ExternalApplicationDefinedType.resx">
+      <DependentUpon>201403261648315_ExternalApplicationDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403271548291_GoogleMapStyles.resx">
+      <DependentUpon>201403271548291_GoogleMapStyles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403282057374_RemoveCommunicationTemplateOwnerPerson.resx">
+      <DependentUpon>201403282057374_RemoveCommunicationTemplateOwnerPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403291138225_AddInactiveReason.resx">
+      <DependentUpon>201403291138225_AddInactiveReason.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403300445046_BinaryFileSecurity.resx">
+      <DependentUpon>201403300445046_BinaryFileSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201403311909020_GroupMapStyles.resx">
+      <DependentUpon>201403311909020_GroupMapStyles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404011847059_ReportFetchTop.resx">
+      <DependentUpon>201404011847059_ReportFetchTop.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404050016302_AddForeignId.resx">
+      <DependentUpon>201404050016302_AddForeignId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404050034562_EF61.resx">
+      <DependentUpon>201404050034562_EF61.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404080041145_MiscCommunication.resx">
+      <DependentUpon>201404080041145_MiscCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404092208485_NewPersonAndRecipientFields.resx">
+      <DependentUpon>201404092208485_NewPersonAndRecipientFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404120459167_AddResponseRecipient.resx">
+      <DependentUpon>201404120459167_AddResponseRecipient.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404121456216_BulkCommunication.resx">
+      <DependentUpon>201404121456216_BulkCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404140531224_AddRecipientCode.resx">
+      <DependentUpon>201404140531224_AddRecipientCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404141655095_LengthenActivityDetail.resx">
+      <DependentUpon>201404141655095_LengthenActivityDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404141715372_LastVisitToSiteBadge.resx">
+      <DependentUpon>201404141715372_LastVisitToSiteBadge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404142016079_FormattedPhone.resx">
+      <DependentUpon>201404142016079_FormattedPhone.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404142302079_MetricsTables.resx">
+      <DependentUpon>201404142302079_MetricsTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404162027109_MetricCategoryAsEntity.resx">
+      <DependentUpon>201404162027109_MetricCategoryAsEntity.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -48,17 +48,24 @@ namespace Rock.PersonProfile
         private BadgeContainer()
         {
             Refresh();
+        }
+
+        /// <summary>
+        /// Refreshes this instance.
+        /// </summary>
+        public override void Refresh()
+        {
+            base.Refresh();
 
             // Create any attributes that need to be created
             int personBadgeEntityTypeId = EntityTypeCache.Read( typeof( PersonBadge ) ).Id;
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+
+            foreach ( var badge in this.Components )
             {
-                foreach ( var badge in this.Components )
-                {
-                    Type badgeType = badge.Value.Value.GetType();
-                    int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), null );
-                }
+                Type badgeType = badge.Value.Value.GetType();
+                int badgeComponentEntityTypeId = EntityTypeCache.Read( badgeType ).Id;
+                Rock.Attribute.Helper.UpdateAttributes( badgeType, personBadgeEntityTypeId, "EntityTypeId", badgeComponentEntityTypeId.ToString(), rockContext );
             }
         }
 

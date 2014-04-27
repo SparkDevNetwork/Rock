@@ -99,6 +99,15 @@ namespace Rock.Model
         [DataMember]
         public int? DataViewId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of records to fetch in the report.  Null means all records.
+        /// </summary>
+        /// <value>
+        /// The fetch top.
+        /// </value>
+        [DataMember]
+        public int? FetchTop { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -246,10 +255,10 @@ namespace Rock.Model
                     Expression selector = Expression.Lambda( memberInitExpression, paramExpression );
                     Expression whereExpression = this.DataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
 
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ) } );
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
                     if ( getMethod != null )
                     {
-                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
+                        var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty, this.FetchTop } );
                         var qry = getResult as IQueryable<IEntity>;
 
                         var selectExpression = Expression.Call( typeof( Queryable ), "Select", new Type[] { qry.ElementType, dynamicType }, Expression.Constant( qry ), selector );

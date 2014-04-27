@@ -121,7 +121,7 @@
                             <Rock:RockDropDownList ID="ddlTransactionAccount" runat="server" Label="Account"></Rock:RockDropDownList>
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbTransactionAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Amount"
+                            <Rock:CurrencyBox ID="tbTransactionAmount" runat="server" CssClass="input-width-md" Label="Amount"
                                 SourceTypeName="Rock.Model.FinancialTransactionDetail, Rock" PropertyName="Amount" />
                         </div>
                     </div>

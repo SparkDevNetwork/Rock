@@ -35,22 +35,6 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonViewedService"/> class
         /// </summary>
-        public PersonViewedService()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonViewedService"/> class
-        /// </summary>
-        /// <param name="repository">The repository.</param>
-        public PersonViewedService(IRepository<PersonViewed> repository) : base(repository)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonViewedService"/> class
-        /// </summary>
         /// <param name="context">The context.</param>
         public PersonViewedService(RockContext context) : base(context)
         {
@@ -103,13 +87,14 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PersonViewed target, PersonViewed source )
         {
-            target.ViewerPersonId = source.ViewerPersonId;
-            target.TargetPersonId = source.TargetPersonId;
+            target.ViewerPersonAliasId = source.ViewerPersonAliasId;
+            target.TargetPersonAliasId = source.TargetPersonAliasId;
             target.ViewDateTime = source.ViewDateTime;
             target.IpAddress = source.IpAddress;
             target.Source = source.Source;
             target.Id = source.Id;
             target.Guid = source.Guid;
+            target.ForeignId = source.ForeignId;
 
         }
     }

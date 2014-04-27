@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -194,7 +195,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Page"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Layout"/>.
         /// </value>
-        [DataMember]
         public virtual Page Page { get; set; }
 
         /// <summary>
@@ -205,7 +205,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Layout"/> entity that this Block is being implemented on. This value will 
         /// be null if the Block is implemented as part of a <see cref="Rock.Model.Page"/>.
         /// </value>
-        [DataMember]
         public virtual Layout Layout { get; set; }
         
         /// <summary>
@@ -217,10 +216,17 @@ namespace Rock.Model
         /// <example>
         /// <c>BlockLocation.Page</c>
         /// </example>
+        [DataMember]
+        [NotMapped]
         public virtual BlockLocation BlockLocation
         {
             get { return this.PageId.HasValue ? BlockLocation.Page : BlockLocation.Layout; }
+            private set { }
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
@@ -244,6 +250,28 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
+                }
+                return _supportedActions;
+            }
+        }
+        private Dictionary<string, string> _supportedActions;
 
         #endregion
 

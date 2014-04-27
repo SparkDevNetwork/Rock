@@ -31,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class DefinedValue : Model<DefinedValue>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets a flag indicating if this DefinedValue is part of the Rock core system/framework. this property is required.
         /// </summary>
@@ -70,7 +73,6 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        [MergeField]
         public string Name { get; set; }
 
         /// <summary>
@@ -82,6 +84,10 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Defined Type that this DefinedValue belongs to.
         /// </summary>
@@ -89,6 +95,10 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.DefinedType"/> that this DefinedValue belongs to.
         /// </value>
         public virtual DefinedType DefinedType { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Gets the parent security authority for this DefinedValue.
@@ -111,7 +121,12 @@ namespace Rock.Model
         {
             return this.Name;
         }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Defined Value Configuration class.
@@ -126,4 +141,7 @@ namespace Rock.Model
             this.HasRequired( p => p.DefinedType ).WithMany( p => p.DefinedValues ).HasForeignKey( p => p.DefinedTypeId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

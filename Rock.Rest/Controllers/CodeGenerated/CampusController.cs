@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class CampusController : Rock.Rest.ApiController<Rock.Model.Campus>
     {
-        public CampusController() : base( new Rock.Model.CampusService() ) { } 
+        public CampusController() : base( new Rock.Model.CampusService( new Rock.Data.RockContext() ) ) { } 
     }
 }

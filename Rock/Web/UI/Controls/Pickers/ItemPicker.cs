@@ -584,7 +584,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 writer.AddAttribute( "id", this.ID.ToString() );
-                writer.AddAttribute( "class", "picker picker-select rollover-container" );
+                writer.AddAttribute( "class", "picker picker-select rollover-container " + this.CssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( !HidePickerLabel )
@@ -649,7 +649,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.AddAttribute( "class", "picker picker-select" );
+                writer.AddAttribute( "class", "picker picker-select");
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";

@@ -143,7 +143,7 @@ namespace Rock.Field.Types
                     if ( listSource.ToUpper().Contains( "SELECT" ) && listSource.ToUpper().Contains( "FROM" ) )
                     {
                         var tableValues = new List<string>();
-                        DataTable dataTable = new Rock.Data.Service().GetDataTable( listSource, CommandType.Text, null );
+                        DataTable dataTable = Rock.Data.DbService.GetDataTable( listSource, CommandType.Text, null );
                         if ( dataTable != null && dataTable.Columns.Contains( "Value" ) && dataTable.Columns.Contains( "Text" ) )
                         {
                             foreach ( DataRow row in dataTable.Rows )

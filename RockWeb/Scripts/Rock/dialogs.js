@@ -28,6 +28,11 @@
                 },
 
                 confirmDelete: function (e, nameText, additionalMsg) {
+                    // make sure the element that triggered this event isn't disabled
+                    if (e.currentTarget && e.currentTarget.disabled) {
+                        return false;
+                    }
+
                     e.preventDefault();
                     var msg = 'Are you sure you want to delete this ' + nameText + '?';
                     if (additionalMsg)

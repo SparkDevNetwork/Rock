@@ -22,6 +22,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -78,14 +79,15 @@ namespace RockWeb.Blocks.Core
         protected void btnSave_Click( object sender, EventArgs e )
         {
             BlockType blockType;
-            BlockTypeService blockTypeService = new BlockTypeService();
+            var rockContext = new RockContext();
+            BlockTypeService blockTypeService = new BlockTypeService( rockContext );
 
             int blockTypeId = int.Parse( hfBlockTypeId.Value );
 
             if ( blockTypeId == 0 )
             {
                 blockType = new BlockType();
-                blockTypeService.Add( blockType, CurrentPersonAlias );
+                blockTypeService.Add( blockType );
             }
             else
             {
@@ -103,10 +105,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                blockTypeService.Save( blockType, CurrentPersonAlias );
-            } );
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }
@@ -148,7 +147,7 @@ namespace RockWeb.Blocks.Core
             BlockType blockType = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                blockType = new BlockTypeService().Get( itemKeyValue );
+                blockType = new BlockTypeService( new RockContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
                 lstPages.Visible = true;
                 lblStatus.Visible = true;
@@ -189,7 +188,7 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( BlockType.FriendlyTypeName );

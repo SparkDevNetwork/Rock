@@ -53,9 +53,9 @@ namespace Rock.Security
         ISecured ParentAuthority { get; }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        List<string> SupportedActions { get; }
+        Dictionary<string, string> SupportedActions { get; }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -90,15 +90,13 @@ namespace Rock.Security
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        void MakePrivate( string action, Person person, PersonAlias personAlias );
+        void MakePrivate( string action, Person person );
 
         /// <summary>
         /// If action on the current entity is private, removes security that made it private.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
-        void MakeUnPrivate( string action, Person person, PersonAlias personAlias );
+        void MakeUnPrivate( string action, Person person );
     }
 }

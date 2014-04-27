@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupLocationsController : Rock.Rest.ApiController<Rock.Model.GroupLocation>
     {
-        public GroupLocationsController() : base( new Rock.Model.GroupLocationService() ) { } 
+        public GroupLocationsController() : base( new Rock.Model.GroupLocationService( new Rock.Data.RockContext() ) ) { } 
     }
 }

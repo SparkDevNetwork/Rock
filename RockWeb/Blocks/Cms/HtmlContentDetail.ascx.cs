@@ -27,6 +27,7 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -37,9 +38,10 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Adds an editable HTML fragment to the page." )]
 
-    [AdditionalActions( new string[] { "Approve" } )]
+    [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
+    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
 
-    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", false, "", 0 )]
+    [BooleanField( "Use Code Editor", "Use the code editor instead of the WYSIWYG editor", true, "", 0 )]
     [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 1 )]
     [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 2 )]
     [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 3 )]
@@ -149,20 +151,11 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
-
-            if ( CurrentUser != null )
-            {
-                bool userSpecificFolders = false;
-                if ( bool.TryParse( GetAttributeValue( "UserSpecificFolders" ), out userSpecificFolders ) && userSpecificFolders )
-                {
-                    documentRoot = System.Web.VirtualPathUtility.Combine( documentRoot, CurrentUser.Id.ToString() );
-                    imageRoot = System.Web.VirtualPathUtility.Combine( imageRoot, CurrentUser.Id.ToString() );
-                }
-            }
-
+            htmlEditor.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
             htmlEditor.DocumentFolderRoot = documentRoot;
             htmlEditor.ImageFolderRoot = imageRoot;
 
@@ -180,7 +173,7 @@ namespace RockWeb.Blocks.Cms
             lbDeny.Enabled = IsUserAuthorized( "Approve" );
 
             string entityValue = EntityValue();
-            HtmlContent htmlContent = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
+            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
 
             // set Height of editors
             if ( supportsVersioning && requireApproval )
@@ -209,6 +202,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
+            FlushCacheItem( EntityValue() );
+            ShowView();
         }
 
         /// <summary>
@@ -220,7 +215,10 @@ namespace RockWeb.Blocks.Cms
         {
             bool supportVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
             bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
-            HtmlContentService htmlContentService = new HtmlContentService();
+
+
+            var rockContext = new RockContext();
+            HtmlContentService htmlContentService = new HtmlContentService( rockContext );
 
             // get settings
             string entityValue = EntityValue();
@@ -270,7 +268,7 @@ namespace RockWeb.Blocks.Cms
                     htmlContent.Version = 1;
                 }
 
-                htmlContentService.Add( htmlContent, CurrentPersonAlias );
+                htmlContentService.Add( htmlContent );
             }
 
             htmlContent.StartDateTime = drpDateRange.LowerValue;
@@ -310,7 +308,7 @@ namespace RockWeb.Blocks.Cms
 
             htmlContent.Content = newContent;
 
-            if ( htmlContentService.Save( htmlContent, CurrentPersonAlias ) )
+            if ( rockContext.SaveChanges() > 0 )
             {
                 // flush cache content 
                 this.FlushCacheItem( entityValue );
@@ -350,7 +348,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void SelectVersion_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            HtmlContent htmlContent = new HtmlContentService().Get( e.RowKeyId );
+            HtmlContent htmlContent = new HtmlContentService( new RockContext() ).Get( e.RowKeyId );
             pnlVersionGrid.Visible = false;
             pnlEdit.Visible = true;
             ShowEditDetail( htmlContent );
@@ -408,8 +406,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            var htmlContentService = new HtmlContentService();
-            var content = htmlContentService.GetContent( this.BlockId, EntityValue() ).OrderByDescending(a => a.Version).ThenByDescending( a => a.ModifiedDateTime );
+            var htmlContentService = new HtmlContentService( new RockContext() );
+            var content = htmlContentService.GetContent( this.BlockId, EntityValue() ).OrderByDescending( a => a.Version ).ThenByDescending( a => a.ModifiedDateTime ).ToList();
 
             var versions = content.Select( v =>
                 new
@@ -497,7 +495,7 @@ namespace RockWeb.Blocks.Cms
         private int? GetMaxVersionOfHtmlContent()
         {
             string entityValue = this.EntityValue();
-            int? maxVersion = new HtmlContentService().Queryable()
+            int? maxVersion = new HtmlContentService( new RockContext() ).Queryable()
                 .Where( c => c.BlockId == this.BlockId && c.EntityValue == entityValue )
                 .Select( c => (int?)c.Version ).Max();
             return maxVersion;
@@ -525,11 +523,17 @@ namespace RockWeb.Blocks.Cms
             // if content not cached load it from DB
             if ( cachedContent == null )
             {
-                HtmlContent content = new HtmlContentService().GetActiveContent( this.BlockId, entityValue );
+                HtmlContent content = new HtmlContentService( new RockContext() ).GetActiveContent( this.BlockId, entityValue );
 
                 if ( content != null )
                 {
-                    html = content.Content.ResolveMergeFields( Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson ) );
+                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                    if (CurrentPerson != null)
+                    {
+                        mergeFields.Add( "Person", CurrentPerson );
+                    }
+
+                    html = content.Content.ResolveMergeFields( mergeFields );
                 }
                 else
                 {

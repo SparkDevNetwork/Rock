@@ -340,6 +340,7 @@
 		<col def="S0">ISDotNetInstallerArgsCommit</col>
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
+		<row><td>ISX_DEFAULTCOMPONENT</td><td>{DFFFDBC3-44A9-444B-B3D2-6CBDB9D648FE}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>StatementGenerator.Primary_output</td><td>{5E81DD6B-0B02-459D-A2FC-C246A414CFF7}</td><td>INSTALLDIR</td><td>2</td><td/><td>statementgenerator.primary_o</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
@@ -1862,6 +1863,7 @@
 	<table name="FeatureComponents">
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT</td></row>
 		<row><td>AlwaysInstall</td><td>StatementGenerator.Primary_output</td></row>
 	</table>
 
@@ -1877,6 +1879,8 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
+		<row><td>logo.jpg</td><td>ISX_DEFAULTCOMPONENT</td><td>logo.jpg</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\Applications\Wpf\StatementGenerator\logo.jpg</td><td>1</td><td/></row>
+		<row><td>rock_standard.dplx</td><td>ISX_DEFAULTCOMPONENT</td><td>ROCK-S~1.DPL|rock-standard.dplx</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Projects\Rock\Applications\Wpf\StatementGenerator\rock-standard.dplx</td><td>1</td><td/></row>
 		<row><td>statementgenerator.primary_o</td><td>StatementGenerator.Primary_output</td><td>StatementGenerator.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;StatementGenerator&gt;|Built</td><td>3</td><td/></row>
 	</table>
 
@@ -2021,6 +2025,7 @@
 		<col def="S0">FTPLocation</col>
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
+		<row><td>ISX_DEFAULTCOMPONENT</td><td/><td/><td>_F04FB79D_13FA_4333_B011_07B6AE042D35_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>StatementGenerator.Primary_output</td><td/><td/><td>_FDF88752_9443_46EE_98D4_B0CCA54EFAAC_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
@@ -2091,6 +2096,13 @@
 	<table name="ISDependency">
 		<col key="yes" def="S50">ISDependency</col>
 		<col def="I2">Exclude</col>
+		<row><td>AJAXCONTROLTOOLKIT.DLL</td><td>1</td></row>
+		<row><td>AJAXMIN.DLL</td><td>1</td></row>
+		<row><td>DDAY.ICAL.DLL</td><td>1</td></row>
+		<row><td>IMAGERESIZER.DLL</td><td>1</td></row>
+		<row><td>MICROSOFT.WINDOWSAZURE.STORAGE</td><td>1</td></row>
+		<row><td>RESTSHARP</td><td>1</td></row>
+		<row><td>TWILIO.API.DLL</td><td>1</td></row>
 	</table>
 
 	<table name="ISDisk1File">
@@ -3984,7 +3996,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUSLock</td><td>{75F61807-2681-4DB0-AACA-BCF21C809F3A}</td></row>
 		<row><td>ISUSSignature</td><td>{9447C305-C38F-4044-9598-85064274890A}</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewProject</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewProject,viewAppFiles,viewFeatureFiles,viewObjects</td></row>
 		<row><td>Limited</td><td>1</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>

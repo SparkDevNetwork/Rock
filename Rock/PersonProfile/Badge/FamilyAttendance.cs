@@ -62,13 +62,13 @@ namespace Rock.PersonProfile.Badge
                 annimateClass = " annimate";
             }
 
-            writer.Write(String.Format("<div class='badge badge-attendance{0}' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass));
+            writer.Write(String.Format("<div class='badge badge-attendance{0} badge-id-{1}' data-original-title='Family attendance for the last 24 months. Each bar is a month.'>", annimateClass, badge.Id));
 
             writer.Write("</div>");
 
-            writer.Write(String.Format(@"
+            writer.Write(String.Format( @"
                 <script>
-                    $( document ).ready(function() {{
+                    Sys.Application.add_load(function () {{
                         
                         var monthNames = [ 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December' ];
                         
@@ -89,7 +89,7 @@ namespace Rock.PersonProfile.Badge
                                             }});
                                             chartHtml += '</ul>';
                                             
-                                            $('.badge-attendance').html(chartHtml);
+                                            $('.badge-attendance.badge-id-{3}').html(chartHtml);
 
                                         }}
                                 }},
@@ -97,7 +97,7 @@ namespace Rock.PersonProfile.Badge
                     }});
                 </script>
                 
-            ", Person.Id.ToString(), monthsToDisplay , minBarHeight ));
+            ", Person.Id.ToString(), monthsToDisplay , minBarHeight, badge.Id ));
 
         }
 

@@ -32,9 +32,8 @@ namespace Rock.Migrations
     {
         #region Entity Type Methods
 
-
         /// <summary>
-        /// Updates the type of the entity.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="guid">The GUID.</param>
@@ -64,7 +63,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Updates the type of the entity.
+        /// Updates the EntityType by name (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="friendlyName">Name of the friendly.</param>
@@ -105,7 +104,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the entity.
+        /// Deletes the EntityType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteEntityType( string guid )
@@ -122,7 +121,7 @@ namespace Rock.Migrations
         #region Field Type Methods
 
         /// <summary>
-        /// Updates the type of the field.
+        /// Updates the FieldType by assembly and className (if it exists); otherwise it inserts a new record.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -163,7 +162,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the field.
+        /// Deletes the FieldType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteFieldType( string guid )
@@ -180,7 +179,8 @@ namespace Rock.Migrations
         #region Block Type Methods
 
         /// <summary>
-        /// Adds the type of the block.
+        /// Updates the BlockType by path (if it exists);
+        /// otherwise it inserts a new record. In either case it will be marked IsSystem.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -221,6 +221,14 @@ namespace Rock.Migrations
                     ) );
         }
         
+        /// <summary>
+        /// Adds a new BlockType.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="description"></param>
+        /// <param name="path"></param>
+        /// <param name="category"></param>
+        /// <param name="guid"></param>
         public void AddBlockType( string name, string description, string path, string category, string guid )
         {
             Sql( string.Format( @"
@@ -241,7 +249,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the block.
+        /// Deletes the BlockType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlockType( string guid )
@@ -258,7 +266,7 @@ namespace Rock.Migrations
         #region Layout Methods
 
         /// <summary>
-        /// Adds the Layout.
+        /// Adds a new Layout to the given site.
         /// </summary>
         /// <param name="siteGuid">The site GUID.</param>
         /// <param name="fileName">Name of the file.</param>
@@ -286,7 +294,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the page.
+        /// Deletes the Layout.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteLayout( string guid )
@@ -303,7 +311,8 @@ namespace Rock.Migrations
         #region Page Methods
 
         /// <summary>
-        /// Adds the page.
+        /// Adds a new Page to the given parent page.
+        /// The new page will be ordered as last child of the parent page.
         /// </summary>
         /// <param name="parentPageGuid">The parent page GUID.</param>
         /// <param name="layoutGuid">The layout GUID.</param>
@@ -351,7 +360,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Moves the page.
+        /// Moves the Page to the new given parent page.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="parentPageGuid">The parent page GUID.</param>
@@ -367,12 +376,17 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the page.
+        /// Deletes the Page and any PageViews that use the page.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeletePage( string guid )
         {
             Sql( string.Format( @"
+
+                DELETE PV
+                FROM [PageView] PV
+                INNER JOIN [Page] P ON P.[Id] = PV.[PageId] AND P.[Guid] = '{0}'
+
                 DELETE [Page] WHERE [Guid] = '{0}'
 ",
                     guid
@@ -380,7 +394,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the page route.
+        /// Adds a new PageRoute to the given page but only if the given route name does not exist.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
@@ -401,7 +415,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the page context.
+        /// Adds a new PageContext to the given page.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="entity">The entity.</param>
@@ -426,7 +440,10 @@ namespace Rock.Migrations
         #region Block Methods
 
         /// <summary>
-        /// Adds the block.
+        /// Adds a new Block of the given block type to the given page (optional) and layout (optional),
+        /// setting its values with the given parameter values. If only the layout is given,
+        /// edit/configuration authorization will also be inserted into the Auth table
+        /// for the admin role (GroupId 2).
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="layoutGuid">The layout GUID.</param>
@@ -498,7 +515,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the block.
+        /// Deletes the block and any authorization records that belonged to it.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlock( string guid )
@@ -519,6 +536,19 @@ namespace Rock.Migrations
 
         #region Attribute Methods
 
+        /// <summary>
+        /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="blockTypeGuid"></param>
+        /// <param name="fieldTypeGuid"></param>
+        /// <param name="name"></param>
+        /// <param name="key"></param>
+        /// <param name="category"></param>
+        /// <param name="description"></param>
+        /// <param name="order"></param>
+        /// <param name="defaultValue"></param>
+        /// <param name="guid"></param>
         public void UpdateBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
         {
             if ( !string.IsNullOrWhiteSpace( category ) )
@@ -582,7 +612,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the block attribute.
+        /// Adds a new BlockType Attribute for the given blocktype and key.
         /// </summary>
         /// <param name="blockTypeGuid">The block GUID.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -641,7 +671,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the block attribute.
+        /// Deletes the block Attribute.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteBlockAttribute( string guid )
@@ -650,7 +680,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the entity attribute.
+        /// Adds a new EntityType Attribute for the given EntityType, FieldType, and name (key).
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
@@ -711,7 +741,8 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds a global attribute.
+        /// Adds a global Attribute for the given FieldType, entityTypeQualifierColumn, entityTypeQualifierValue and name (key).
+        /// Note: This method delets the Attribute first if it had already existed.
         /// </summary>
         /// <param name="fieldTypeGuid">The field type GUID.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
@@ -761,7 +792,7 @@ namespace Rock.Migrations
 
 
         /// <summary>
-        /// Ensures the entity type exists.
+        /// Ensures the entity type exists by adding it by name if it did not already exist.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         private void EnsureEntityTypeExists( string entityTypeName )
@@ -785,7 +816,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the attribute value.
+        /// Adds a new attribute value for the given attributeGuid if it does not already exist.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
         /// <param name="entityId">The entity id.</param>
@@ -829,7 +860,8 @@ namespace Rock.Migrations
         #region Block Attribute Value Methods
 
         /// <summary>
-        /// Adds the block attribute value.
+        /// Adds a new block attribute value for the given block guid and attribute guid,
+        /// deleting any previously existing attribute value first.
         /// </summary>
         /// <param name="blockGuid">The block GUID.</param>
         /// <param name="attributeGuid">The attribute GUID.</param>
@@ -892,7 +924,7 @@ namespace Rock.Migrations
         #region DefinedType Methods
 
         /// <summary>
-        /// Adds the type of the defined.
+        /// Adds a new DefinedType.
         /// </summary>
         /// <param name="category">The category.</param>
         /// <param name="name">The name.</param>
@@ -925,7 +957,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the type of the defined.
+        /// Deletes the DefinedType.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteDefinedType( string guid )
@@ -942,7 +974,7 @@ namespace Rock.Migrations
         #region DefinedValue Methods
 
         /// <summary>
-        /// Adds the defined value.
+        /// Adds a new DefinedValue for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="name">The name.</param>
@@ -977,7 +1009,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Updates (or Adds) the defined value.
+        /// Updates (or Adds) the defined value for the given DefinedType.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="name">The name.</param>
@@ -1032,7 +1064,7 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Deletes the defined value.
+        /// Deletes the DefinedValue.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteDefinedValue( string guid )
@@ -1095,7 +1127,7 @@ INSERT INTO [dbo].[Group]
         }
 
         /// <summary>
-        /// Adds the security auth.
+        /// Adds the security auth record for the given entity type and group.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="action">The action.</param>
@@ -1133,11 +1165,174 @@ INSERT INTO [dbo].[Auth]
            ,@groupId
            ,'{3}')
 ";
-            @Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
+            Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
+        }
+
+        public void DeleteSecurityAuthForPage( string pageGuid )
+        {
+            string sql = @"
+DECLARE @pageId int
+SET @pageId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Page')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @pageId
+";
+            Sql( string.Format( sql, pageGuid ) );
+
         }
 
         /// <summary>
-        /// Deletes the security auth.
+        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.Page";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @pageId int
+SET @pageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@pageId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, pageGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
+        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.Block";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @blockId int
+SET @blockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@blockId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, blockGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
+        /// Adds the binaryfiletype security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="binaryFileTypeGuid">The binary file type unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.BinaryFileType";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @binaryFileTypeId int
+SET @binaryFileTypeId = (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@binaryFileTypeId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, binaryFileTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+        /// <summary>
+        /// Deletes the security auth record.
         /// </summary>
         /// <param name="guid">The GUID.</param>
         public void DeleteSecurityAuth( string guid )
@@ -1150,7 +1345,7 @@ INSERT INTO [dbo].[Auth]
         #region Group Type
 
         /// <summary>
-        /// Adds a GroupType "Group Attribute" for the given GroupType (guid) with given parameters. 
+        /// Adds a new GroupType "Group Attribute" for the given GroupType using the given values. 
         /// </summary>
         /// <param name="groupTypeGuid"></param>
         /// <param name="fieldTypeGuid"></param>
@@ -1223,5 +1418,140 @@ INSERT INTO [dbo].[Auth]
         }
         #endregion
 
+        #region PersonBadge 
+
+        /// <summary>
+        /// Updates the PersonBadge by Guid (if it exists); otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdatePersonBadge( string name, string description, string entityTypeName, int order, string guid )
+        {
+            Sql( string.Format( @"
+                    DECLARE @EntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+	                
+                    IF EXISTS ( SELECT * FROM [PersonBadge] where [Guid] = '{4}')
+                    BEGIN
+                        UPDATE [PersonBadge] set 
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [EntityTypeId] = @EntityTypeId,
+                            [Order] = {3}
+                        WHERE [Guid] = '{4}'
+                        
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [PersonBadge] ([Name],[Description],[EntityTypeId],[Order],[Guid])
+                            VALUES ('{0}', '{1}', @EntityTypeId, {3}, '{4}')
+                    END
+
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    entityTypeName,
+                    order,
+                    guid )
+            );
+        }
+        
+        /// <summary>
+        /// Adds (or Deletes and Adds) the person badge attribute.
+        /// </summary>
+        /// <param name="personBadgeGuid">The person badge unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddPersonBadgeAttribute( string personBadgeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @PersonBadgeEntityTypeId int
+                SET @PersonBadgeEntityTypeId = (SELECT [EntityTypeId] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                -- get the EntityTypeId for 'Rock.Model.PersonBadge'
+                DECLARE @EntityTypeId int                
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.PersonBadge')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute] 
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@PersonBadgeEntityTypeId as varchar)
+                AND [Key] = '{2}'
+
+                INSERT INTO [Attribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId, @EntityTypeId,'EntityTypeId',CAST(@PersonBadgeEntityTypeId as varchar),
+                    '{2}','{3}','{4}',
+                    {5},0,'{6}',0,0,
+                    '{7}')
+",
+                    personBadgeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+        /// <summary>
+        /// Adds/Updates the person badge attribute value.
+        /// </summary>
+        /// <param name="personBadgeGuid">The person badge unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddPersonBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [PersonBadge] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @PersonBadgeId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@PersonBadgeId,
+                    0,'{2}',
+                    NEWID())
+",
+                    personBadgeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
+        #endregion
     }
 }

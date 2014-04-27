@@ -72,7 +72,7 @@ namespace Rock.Web.Utilities
         {
             var doc = new HtmlDocument();
 
-            doc.LoadHtml( html.Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos>" ) );
+            doc.LoadHtml( html.Replace( "&nbsp;", "<nbsp />" ).Replace( "&#39;", "<apos />" ).Replace("&quot;", "<quote />") );
 
             SanitizeHtmlNode( doc.DocumentNode );
 
@@ -98,7 +98,7 @@ namespace Rock.Web.Utilities
             }
             doc = null;
 
-            return output.Replace( "<nbsp />", "&nbsp;" ).Replace("<apos>", "&#39;");
+            return output.Replace( "<nbsp />", "&nbsp;" ).Replace( "<apos />", "&#39;" ).Replace( "<quote />", "&quot;" );
         }
 
         private void SanitizeHtmlNode( HtmlNode node )

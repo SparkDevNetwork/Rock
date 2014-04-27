@@ -22,6 +22,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Core
             gBlockTypes.Actions.AddClick += gBlockTypes_Add;
             gBlockTypes.GridRebind += gBlockTypes_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBlockTypes.Actions.ShowAdd = canAddEditDelete;
             gBlockTypes.IsDeleteEnabled = canAddEditDelete;
 
@@ -73,7 +74,7 @@ namespace RockWeb.Blocks.Core
                 ddlCategoryFilter.SetValue( gfSettings.GetUserPreference( "Category" ) );
                 cbExcludeSystem.Checked = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Exclude System" ) );
 
-                new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias );
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
 
                 BindGrid();
             }
@@ -126,24 +127,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            BlockTypeService blockTypeService = new BlockTypeService( rockContext );
+            BlockType blockType = blockTypeService.Get( (int)e.RowKeyValue );
+            if ( blockType != null )
             {
-                BlockTypeService blockTypeService = new BlockTypeService();
-                BlockType blockType = blockTypeService.Get( (int)e.RowKeyValue );
-                if ( blockType != null )
+                string errorMessage;
+                if ( !blockTypeService.CanDelete( blockType, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !blockTypeService.CanDelete( blockType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    blockTypeService.Delete( blockType, CurrentPersonAlias );
-                    blockTypeService.Save( blockType, CurrentPersonAlias );
-                    Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                blockTypeService.Delete( blockType );
+                rockContext.SaveChanges();
+                Rock.Web.Cache.BlockTypeCache.Flush( blockType.Id );
+            }
 
             BindGrid();
         }
@@ -186,7 +185,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRefreshAll_Click( object sender, EventArgs e )
         {
-            new BlockTypeService().RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonAlias, true );
+            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, true );
             BindGrid();
         }
         
@@ -198,7 +197,7 @@ namespace RockWeb.Blocks.Core
         {
             ddlCategoryFilter.Items.Clear();
             ddlCategoryFilter.Items.Add( string.Empty );
-            foreach(string category in new BlockTypeService().Queryable()
+            foreach ( string category in new BlockTypeService( new RockContext() ).Queryable()
                 .Where( b => b.Category != null && b.Category != "")
                 .OrderBy( b=> b.Category)
                 .Select( b => b.Category)
@@ -213,7 +212,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            BlockTypeService blockTypeService = new BlockTypeService();
+            BlockTypeService blockTypeService = new BlockTypeService( new RockContext() );
             SortProperty sortProperty = gBlockTypes.SortProperty;
 
             var blockTypes = blockTypeService.Queryable();

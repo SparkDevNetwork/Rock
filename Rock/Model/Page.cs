@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -331,6 +332,22 @@ namespace Rock.Model
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
+        /// Gets the supported actions.
+        /// </summary>
+        /// <value>
+        /// The supported actions.
+        /// </value>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var actions = new Dictionary<string, string>();
+                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view the page." );
+                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the page.  This includes setting properties of the page, setting security for the page, managing the zones and blocks on the page, and editing the child pages." );
+                return actions;
+            }
+        }
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Layout"/> that the pages uses.
         /// </summary>
         /// <value>
@@ -419,6 +436,21 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if (state == System.Data.Entity.EntityState.Deleted)
+            {
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add( "PageId", this.Id );
+                Rock.Data.DbService.ExecuteCommand( "spCore_PageViewNullPageId", System.Data.CommandType.StoredProcedure, parameters );
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.

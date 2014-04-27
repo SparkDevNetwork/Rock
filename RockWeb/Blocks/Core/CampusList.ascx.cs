@@ -16,12 +16,12 @@
 //
 using System;
 using System.ComponentModel;
-
 using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,8 +48,8 @@ namespace RockWeb.Blocks.Core
             gCampuses.Actions.AddClick += gCampuses_Add;
             gCampuses.GridRebind += gCampuses_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gCampuses.Actions.ShowAdd = canAddEditDelete;
             gCampuses.IsDeleteEnabled = canAddEditDelete;
         }
@@ -99,23 +99,21 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            CampusService campusService = new CampusService( rockContext );
+            Campus campus = campusService.Get( (int)e.RowKeyValue );
+            if ( campus != null )
             {
-                CampusService campusService = new CampusService();
-                Campus campus = campusService.Get( (int)e.RowKeyValue );
-                if ( campus != null )
+                string errorMessage;
+                if ( !campusService.CanDelete( campus, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !campusService.CanDelete( campus, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    campusService.Delete( campus, CurrentPersonAlias );
-                    campusService.Save( campus, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                campusService.Delete( campus );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -139,7 +137,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            CampusService campusService = new CampusService();
+            CampusService campusService = new CampusService( new RockContext() );
             SortProperty sortProperty = gCampuses.SortProperty;
 
             if ( sortProperty != null )

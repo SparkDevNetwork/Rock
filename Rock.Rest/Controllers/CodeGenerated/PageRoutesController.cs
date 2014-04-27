@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class PageRoutesController : Rock.Rest.ApiController<Rock.Model.PageRoute>
     {
-        public PageRoutesController() : base( new Rock.Model.PageRouteService() ) { } 
+        public PageRoutesController() : base( new Rock.Model.PageRouteService( new Rock.Data.RockContext() ) ) { } 
     }
 }

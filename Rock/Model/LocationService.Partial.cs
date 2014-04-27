@@ -51,7 +51,7 @@ namespace Rock.Model
             }
 
             // First check if a location exists with the entered values
-            Location existingLocation = Repository.FirstOrDefault( t =>
+            Location existingLocation = Queryable().FirstOrDefault( t =>
                 ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
                 ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) &&
                 ( t.City == city || ( city == null && t.City == null ) ) &&
@@ -73,9 +73,9 @@ namespace Rock.Model
                 Zip = zip
             };
 
-            Standardize( newLocation, null );
+            Verify( newLocation, false );
 
-            existingLocation = Repository.FirstOrDefault( t =>
+            existingLocation = Queryable().FirstOrDefault( t =>
                 ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
                 ( t.Street2 == newLocation.Street2 || ( newLocation.Street2 == null && t.Street2 == null ) ) &&
                 ( t.City == newLocation.City || ( newLocation.City == null && t.City == null ) ) &&
@@ -87,13 +87,11 @@ namespace Rock.Model
                 return existingLocation;
             }
 
-            // Open Question on if we Add/Save the location if Standardize failed
-
-            // If still no existing location, geocode the new location and save it.
-            Geocode( newLocation, null );
-
-            Add( newLocation );
-            Save( newLocation );
+            // Create a new context/service so that save does not affect calling method's context
+            var rockContext = new RockContext();
+            var locationService = new LocationService( rockContext );
+            locationService.Add( newLocation );
+            rockContext.SaveChanges();
 
             // refetch it from the database to make sure we get a valid .Id
             return Get(newLocation.Guid);
@@ -124,8 +122,13 @@ namespace Rock.Model
                     Guid = Guid.NewGuid()
                 };
 
-                Add( newLocation );
-                Save( newLocation );
+                // Create a new context/service so that save does not affect calling method's context
+                var rockContext = new RockContext();
+                var locationService = new LocationService( rockContext );
+                locationService.Add( newLocation );
+                rockContext.SaveChanges();
+
+                // refetch it from the database to make sure we get a valid .Id
                 return Get( newLocation.Guid );
             }
 
@@ -158,8 +161,13 @@ namespace Rock.Model
                     Guid = Guid.NewGuid()
                 };
 
-                Add( newLocation );
-                Save( newLocation );
+                // Create a new context/service so that save does not affect calling method's context
+                var rockContext = new RockContext();
+                var locationService = new LocationService( rockContext );
+                locationService.Add( newLocation );
+                rockContext.SaveChanges();
+
+                // refetch it from the database to make sure we get a valid .Id
                 return Get( newLocation.Guid );
             }
 
@@ -168,92 +176,42 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Performs an Address Standardization on the provided <see cref="Rock.Model.Location"/>.
+        /// Performs Address Verification on the provided <see cref="Rock.Model.Location" />.
         /// </summary>
-        /// <param name="location">A <see cref="Rock.Model.Location"/> to standardize.</param>
-        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the address standardization.</param>
-        public void Standardize( Location location, PersonAlias personAlias )
+        /// <param name="location">A <see cref="Rock.Model.Location" /> to verify.</param>
+        /// <param name="reVerify">if set to <c>true</c> [re verify].</param>
+        public void Verify( Location location, bool reVerify )
         {
-            Model.ServiceLogService logService = new Model.ServiceLogService();
             string inputLocation = location.ToString();
 
+            // Create new context to save service log without affecting calling method's context
+            var rockContext = new RockContext();
+            Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
+
             // Try each of the standardization services that were found through MEF
-            foreach ( var service in Rock.Address.StandardizeContainer.Instance.Components )
+            foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
             {
                 if ( service.Value.Value.IsActive )
                 {
                     string result;
-                    bool success = service.Value.Value.Standardize( location, out result );
-
-                    // Log the results of the service
-                    Model.ServiceLog log = new Model.ServiceLog();
-                    log.LogDateTime = RockDateTime.Now;
-                    log.Type = "Location Standardize";
-                    log.Name = service.Value.Metadata.ComponentName;
-                    log.Input = inputLocation;
-                    log.Result = result;
-                    log.Success = success;
-                    logService.Add( log, personAlias );
-                    logService.Save( log, personAlias );
-
-                    // If successful, set the results and stop processing
-                    if ( success )
+                    bool success = service.Value.Value.VerifyLocation( location, reVerify, out result );
+                    if ( !string.IsNullOrWhiteSpace( result ) )
                     {
-                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                        location.StandardizeAttemptedResult = result;
-                        location.StandardizedDateTime = RockDateTime.Now;
-                        break;
-                    }
-
-                    location.StandardizeAttemptedDateTime = RockDateTime.Now;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Performs a geolocation on the provided Location.
-        /// </summary>
-        /// <param name="location">The <see cref="Rock.Model.Location"/> entity to geocode.</param>
-        /// <param name="personAlias">An <see cref="Rock.Model.PersonAlias"/> that represents the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
-        public void Geocode( Location location, PersonAlias personAlias )
-        {
-            if ( !( location.IsGeoPointLocked ?? false ) )
-            {
-                Model.ServiceLogService logService = new Model.ServiceLogService();
-                string inputLocation = location.ToString();
-
-                // Try each of the geocoding services that were found through MEF
-                foreach ( var service in Rock.Address.GeocodeContainer.Instance.Components )
-                {
-                    if ( service.Value.Value.IsActive )
-                    {
-                        string result;
-                        bool success = service.Value.Value.Geocode( location, out result );
-
                         // Log the results of the service
                         Model.ServiceLog log = new Model.ServiceLog();
                         log.LogDateTime = RockDateTime.Now;
-                        log.Type = "Location Geocode";
+                        log.Type = "Location Standardize";
                         log.Name = service.Value.Metadata.ComponentName;
                         log.Input = inputLocation;
                         log.Result = result;
                         log.Success = success;
-                        logService.Add( log, personAlias );
-                        logService.Save( log, personAlias );
-
-                        // If successful, set the results and stop processing
-                        if ( success )
-                        {
-                            location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                            location.GeocodeAttemptedResult = result;
-                            location.GeocodedDateTime = RockDateTime.Now;
-                            break;
-                        }
-
-                        location.GeocodeAttemptedDateTime = RockDateTime.Now;
+                        logService.Add( log );
                     }
                 }
             }
+
+            rockContext.SaveChanges();
+
         }
 
         /// <summary>
@@ -263,7 +221,7 @@ namespace Rock.Model
         /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {
-            return Repository.ExecuteQuery(
+            return ExecuteQuery(
                 @"
                 with CTE as (
                 select * from [Location] where [ParentLocationId]={0}

@@ -26,6 +26,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Reporting;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -124,6 +125,10 @@ namespace Rock.Model
         }
         private ICollection<DataViewFilter> _filters;
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Determines whether the specified action is authorized.
         /// </summary>
@@ -139,7 +144,7 @@ namespace Rock.Model
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
-            if ( authorized && string.Compare( action, "View", true ) == 0 )
+            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
             {
                 if ( EntityType != null )
                 {
@@ -164,11 +169,7 @@ namespace Rock.Model
 
             return authorized;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
         /// </summary>

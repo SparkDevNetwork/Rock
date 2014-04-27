@@ -27,6 +27,7 @@ using Rock.Web.UI;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Data;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -52,8 +53,8 @@ namespace RockWeb.Blocks.Cms
             gPages.GridRebind += gPages_GridRebind;
             gPagesFilter.ApplyFilterClick += gPagesFilter_ApplyFilterClick;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPages.IsDeleteEnabled = canAddEditDelete;
         }
 
@@ -125,32 +126,30 @@ namespace RockWeb.Blocks.Cms
         {
             bool canDelete = false;
 
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            PageService pageService = new PageService( rockContext );
+
+            Rock.Model.Page page = pageService.Get( new Guid( e.RowKeyValue.ToString() ) );
+            if ( page != null )
             {
-                PageService pageService = new PageService();
-                Rock.Model.Page page = pageService.Get( new Guid( e.RowKeyValue.ToString() ) );
-                if ( page != null )
+                string errorMessage;
+                canDelete = pageService.CanDelete( page, out errorMessage, includeSecondLvl: true );
+                if ( !canDelete )
                 {
-                    string errorMessage;
-                    canDelete = pageService.CanDelete( page, out errorMessage, includeSecondLvl: true );
-                    if ( ! canDelete )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
-                        return; // returns out of RockTransactionScope
-                    }
-
-                    pageService.Delete( page, CurrentPersonAlias );
-                    pageService.Save( page, CurrentPersonAlias );
-
-                    PageCache.Flush( page.Id );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
+                    return;
                 }
-            } );
 
-            if ( canDelete )
-            {
-                BindPagesGrid();
+                pageService.Delete( page );
+
+                rockContext.SaveChanges();
+
+                PageCache.Flush( page.Id );
             }
+
+            BindPagesGrid();
         }
+
         #endregion
 
         #region Methods
@@ -166,8 +165,8 @@ namespace RockWeb.Blocks.Cms
                 // quit if the siteId can't be determined
                 return;
             }
-            LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
+            LayoutService layoutService = new LayoutService( new RockContext() );
             var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).ToList();
             ddlLayoutFilter.DataSource = layouts;
             ddlLayoutFilter.DataBind();
@@ -195,46 +194,52 @@ namespace RockWeb.Blocks.Cms
             // Question: Is this RegisterLayouts necessary here?  Since if it's a new layout
             // there would not be any pages on them (which is our concern here).
             // It seems like it should be the concern of some other part of the puzzle.
-            LayoutService layoutService = new LayoutService();
-            layoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ), CurrentPersonAlias );
+            LayoutService.RegisterLayouts( Request.MapPath( "~" ), SiteCache.Read( siteId ) );
             //var layouts = layoutService.Queryable().Where( a => a.SiteId.Equals( siteId ) ).Select( a => a.Id ).ToList();
 
             // Find all the pages that are related to this site...
             // 1) pages used by one of this site's layouts and
             // 2) the site's 'special' pages used directly by the site.
-            var siteService = new SiteService();
+            var rockContext = new RockContext();
+            var siteService = new SiteService( rockContext );
+            var pageService = new PageService( rockContext );
+
             var site = siteService.Get( siteId );
-            var pageService = new PageService();
-
-            var qry = pageService.GetBySiteId( siteId ).AsQueryable()
-                    .Concat( pageService.GetByIds(
-                        new List<int>
-                        {
-                            site.DefaultPageId ?? -1,
-                            site.LoginPageId ?? -1,
-                            site.RegistrationPageId ?? -1, site.PageNotFoundPageId ?? -1
-                        }
-                    )
-                );
-
-            string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
-            if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
+            if ( site != null )
             {
-                qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
-            }
+                var sitePages = new List<int> {
+                    site.DefaultPageId ?? -1,
+                    site.LoginPageId ?? -1,
+                    site.RegistrationPageId ?? -1, 
+                    site.PageNotFoundPageId ?? -1
+                };
 
-            SortProperty sortProperty = gPages.SortProperty;
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderBy( q => q.Id );
-            }
+                var qry = pageService.Queryable()
+                    .Where( t => 
+                        t.Layout.SiteId == siteId ||
+                        sitePages.Contains( t.Id ) );
 
-            gPages.DataSource = qry.ToList();
-            gPages.DataBind();
+                string layoutFilter = gPagesFilter.GetUserPreference( "Layout" );
+                if ( !string.IsNullOrWhiteSpace( layoutFilter ) && layoutFilter != Rock.Constants.All.Text )
+                {
+                    qry = qry.Where( a => a.Layout.ToString() == layoutFilter );
+                }
+
+                SortProperty sortProperty = gPages.SortProperty;
+                if ( sortProperty != null )
+                {
+                    qry = qry.Sort( sortProperty );
+                }
+                else
+                {
+                    qry = qry
+                        .OrderBy( t => t.Layout.Name )
+                        .ThenBy( t => t.InternalName );
+                }
+
+                gPages.DataSource = qry.ToList();
+                gPages.DataBind();
+            }
         }
 
         /// <summary>

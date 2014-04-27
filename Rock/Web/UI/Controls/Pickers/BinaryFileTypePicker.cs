@@ -16,7 +16,7 @@
 //
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
             this.Items.Clear();
             this.DataTextField = "Name";
             this.DataValueField = "Id";
-            this.DataSource = new BinaryFileTypeService().Queryable().OrderBy( f => f.Name ).ToList();
+            this.DataSource = new BinaryFileTypeService( new RockContext() ).Queryable().OrderBy( f => f.Name ).ToList();
             this.DataBind();
         }
 

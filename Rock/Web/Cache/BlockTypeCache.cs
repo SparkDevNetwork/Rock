@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -88,12 +88,20 @@ namespace Rock.Web.Cache
         public bool IsInstancePropertiesVerified { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [checked additional security actions].
+        /// Gets or sets a value indicating whether [checked security actions].
         /// </summary>
         /// <value>
-        /// <c>true</c> if [checked additional security actions]; otherwise, <c>false</c>.
+        /// <c>true</c> if [checked security actions]; otherwise, <c>false</c>.
         /// </value>
-        public bool CheckedAdditionalSecurityActions { get; set; }
+        public bool CheckedSecurityActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security actions that were defined by a SecurityActionAttribute on the block type
+        /// </summary>
+        /// <value>
+        /// The security actions.
+        /// </value>
+        public Dictionary<string, string> SecurityActions { get; set; }
 
         #endregion
 
@@ -158,7 +166,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockTypeService = new BlockTypeService();
+                var blockTypeService = new BlockTypeService( new RockContext() );
                 var blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
@@ -198,7 +206,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockTypeService = new BlockTypeService();
+                var blockTypeService = new BlockTypeService( new RockContext() );
                 var blockTypeModel = blockTypeService.Get( guid );
                 if ( blockTypeModel != null )
                 {

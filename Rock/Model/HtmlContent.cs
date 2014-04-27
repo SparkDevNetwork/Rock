@@ -33,6 +33,9 @@ namespace Rock.Model
     [DataContract]
     public partial class HtmlContent : Model<HtmlContent>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Block"/> that the HTML content should appear on. This property is required.
         /// </summary>
@@ -120,13 +123,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ExpireDateTime { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Block"/> that this HTMLContent appears on. 
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Block"/> that this HTML content appears on.
         /// </value>
-        [DataMember]
         public virtual Block Block { get; set; }
         
         /// <summary>
@@ -135,8 +141,11 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who approved the HTMLContent.
         /// </value>
-        [DataMember]
         public virtual Model.Person ApprovedByPerson { get; set; }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -149,7 +158,11 @@ namespace Rock.Model
             return Content;
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Html Content Configuration class.
@@ -165,4 +178,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ApprovedByPerson ).WithMany().HasForeignKey( p => p.ApprovedByPersonId ).WillCascadeOnDelete(false);
         }
     }
+
+    #endregion
+
 }

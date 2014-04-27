@@ -133,6 +133,19 @@ namespace Rock.Data
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="state"></param>
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+        }
+
+        #endregion
+
         #region ISecured implementation
 
         /// <summary>
@@ -157,14 +170,24 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
         [NotMapped]
-        public virtual List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return _supportedActions; }
+            get
+            {
+                if ( _supportedActions == null )
+                {
+                    _supportedActions = new Dictionary<string, string>();
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                }
+                return _supportedActions;
+            }
         }
-        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+        private Dictionary<string, string> _supportedActions;
 
 
         /// <summary>
@@ -188,7 +211,7 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -209,10 +232,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        public virtual void MakePrivate( string action, Person person, PersonAlias personAlias )
+        public virtual void MakePrivate( string action, Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, personAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -220,10 +242,9 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The current person alias.</param>
-        public virtual void MakeUnPrivate( string action, Person person, PersonAlias personAlias )
+        public virtual void MakeUnPrivate( string action, Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, personAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }
 
         /// <summary>
@@ -231,24 +252,35 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="personAlias">The person alias.</param>
-        public virtual void AllowPerson( string action, Person person, PersonAlias personAlias )
+        public virtual void AllowPerson( string action, Person person )
         {
-            Security.Authorization.AllowPerson( this, action, person, personAlias );
+            Security.Authorization.AllowPerson( this, action, person );
         }
 
         /// <summary>
-        /// To the liquid.
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>DotLiquid compatible dictionary.</returns>
         public override object ToLiquid()
         {
-            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
+            return this.ToLiquid( false );
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug = false )
+        {
+            Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
             this.LoadAttributes();
             foreach ( var attribute in this.Attributes )
             {
-                if (attribute.Value.IsAuthorized("View", null))
+                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                 {
                     string value = GetAttributeValue( attribute.Key );
                     dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
@@ -352,18 +384,7 @@ namespace Rock.Data
         }
 
         #endregion
+
     }
 
-    //public partial class RockModelConfiguration<T> : EntityTypeConfiguration<T>
-    //    where T : Model<T>, new()
-    //{
-    //    /// <summary>
-    //    /// Initializes a new instance of the <see cref="AuthConfiguration"/> class.
-    //    /// </summary>
-    //    public RockModelConfiguration()
-    //    {
-    //        this.HasOptional( m => m.CreatedByPersonAlias ).WithMany().HasForeignKey( m => m.CreatedByPersonAliasId).WillCascadeOnDelete( false );
-    //        this.HasOptional( m => m.ModifiedByPersonAlias ).WithMany().HasForeignKey( m => m.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
-    //    }
-    //}
 }

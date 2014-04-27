@@ -164,6 +164,10 @@ small
                 margin-left: 4px;
             }
         }
+
+        small {
+            color: lighten(@accent-text-color, 20%);
+        }
     }
 }
 
@@ -191,8 +195,20 @@ small
     .panel-body {
         background-color: @body-bg;
 
-        .form-group {
+        .form-group.static-control {
+            .clearfix();
+            margin-bottom: 2px;
+
+            label {
+                width: 40%;
+                text-align: right;
+                float: left;
+                padding-right: 12px;
+            }
+
             .form-control-static {
+                width: 60%;
+                float: left;
                 padding-top: 0;
             }
         }
@@ -216,6 +232,27 @@ small
 
 .btn-security {
     .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%));
+}
+
+.btn-authenication {
+    .button-variant(@accent-text-color; @accent-color; darken(@accent-color, 10%));
+    width: 100%;
+
+    &:hover {
+        background-color: darken(@accent-color, 10%);
+    }
+
+    &.facebook:before {
+        font-family: 'FontAwesome';
+        content: @fa-var-facebook;
+        margin-right: 12px;
+    }
+}
+
+.btn-minimal {
+    text-decoration: none;
+    color: lighten(@text-color, 30%);
+    padding: 0;
 }
 
 // alert extentions
@@ -257,10 +294,30 @@ small
     margin-top: -10px;
 }
 
+.carousel-control .fa-chevron-left {
+    left: 40px;
+}
+
+.carousel-control .fa-chevron-right {
+    right: 40px;
+}
+
 // form extensions
 
 .form-no-margin {
     margin: 0;
+}
+
+// list extensions
+
+ul.list-padded {
+    li {
+        margin-top: 12px;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
 }
 
 // 4. ASP.Net Overrides

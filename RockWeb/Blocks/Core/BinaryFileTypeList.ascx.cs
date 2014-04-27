@@ -22,8 +22,11 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -49,10 +52,13 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.Actions.AddClick += gBinaryFileType_Add;
             gBinaryFileType.GridRebind += gBinaryFileType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gBinaryFileType.Actions.ShowAdd = canAddEditDelete;
             gBinaryFileType.IsDeleteEnabled = canAddEditDelete;
+
+            SecurityField securityField = gBinaryFileType.Columns.OfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Read(typeof(Rock.Model.BinaryFileType)).Id;
         }
 
         /// <summary>
@@ -100,24 +106,22 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
+            BinaryFileType binaryFileType = binaryFileTypeService.Get( e.RowKeyId );
+
+            if ( binaryFileType != null )
             {
-                BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
-                BinaryFileType binaryFileType = binaryFileTypeService.Get( e.RowKeyId );
-
-                if ( binaryFileType != null )
+                string errorMessage;
+                if ( !binaryFileTypeService.CanDelete( binaryFileType, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !binaryFileTypeService.CanDelete( binaryFileType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    binaryFileTypeService.Delete( binaryFileType, CurrentPersonAlias );
-                    binaryFileTypeService.Save( binaryFileType, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                binaryFileTypeService.Delete( binaryFileType );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -141,8 +145,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            // use the same rockContext for both services so we can join
-            // TODO: Can/Should this be refactored to use UnitOfWorkScope?
             RockContext rockContext = new RockContext();
             BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -162,7 +164,8 @@ namespace RockWeb.Blocks.Administration
                           BinaryFileCount = x.Key == null ? 0 : x.Count(),
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
                           ft.IsSystem,
-                          ft.AllowCaching
+                          ft.AllowCaching,
+                          ft.RequiresSecurity
                       };
 
             if ( sortProperty != null )
@@ -177,6 +180,22 @@ namespace RockWeb.Blocks.Administration
             gBinaryFileType.DataBind();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gBinaryFileType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gBinaryFileType_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var anonymousObject = e.Row.DataItem;
+                var securityField = gBinaryFileType.Columns.OfType<SecurityField>().First();
+                e.Row.Cells[gBinaryFileType.Columns.IndexOf(securityField)].Style[System.Web.UI.HtmlTextWriterStyle.Visibility] = (bool)anonymousObject.GetPropertyValue("RequiresSecurity") ? "visible" : "hidden";
+            }
+        }
+
         #endregion
-    }
+        
+}
 }

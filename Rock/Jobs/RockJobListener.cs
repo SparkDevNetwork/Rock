@@ -16,9 +16,8 @@
 //
 using System;
 using System.Text;
-
 using Quartz;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -90,8 +89,9 @@ namespace Rock.Jobs
             int jobId = Convert.ToInt16(context.JobDetail.Description);
 
             // load job
-            ServiceJobService jobService = new ServiceJobService();
-            ServiceJob job = jobService.Get(jobId);
+            var rockContext = new RockContext();
+            var jobService = new ServiceJobService( rockContext );
+            var job = jobService.Get(jobId);
             
             // format the message
             message.Append( String.Format( "The job {0} ran for {1} seconds on {2}.  Below is the results:<p>" , job.Name, context.JobRunTime.TotalSeconds, context.FireTimeUtc.Value.DateTime.ToLocalTime()) );
@@ -139,7 +139,7 @@ namespace Rock.Jobs
                     sendMessage = true;
             }
 
-            jobService.Save( job, null );
+            rockContext.SaveChanges();
 
             // send notification
             if ( sendMessage )

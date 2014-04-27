@@ -20,9 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Communication
             int? emailId = PageParameter( "EmailId" ).AsInteger( false );
             if ( emailId.HasValue )
             {
-                SystemEmail email = new SystemEmailService().Get( emailId.Value );
+                SystemEmail email = new SystemEmailService( new RockContext() ).Get( emailId.Value );
                 if ( email != null )
                 {
                     pageTitle = email.Title;
@@ -106,7 +106,9 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            SystemEmailService emailTemplateService = new SystemEmailService();
+            var rockContext = new RockContext();
+
+            SystemEmailService emailTemplateService = new SystemEmailService( rockContext );
             SystemEmail emailTemplate;
 
             int emailTemplateId = int.Parse(hfEmailTemplateId.Value);
@@ -114,7 +116,7 @@ namespace RockWeb.Blocks.Communication
             if ( emailTemplateId == 0 )
             {
                 emailTemplate = new SystemEmail();
-                emailTemplateService.Add( emailTemplate, CurrentPersonAlias );
+                emailTemplateService.Add( emailTemplate );
             }
             else
             {
@@ -137,7 +139,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            emailTemplateService.Save( emailTemplate, CurrentPersonAlias );
+            rockContext.SaveChanges();
 
             NavigateToParentPage();
         }
@@ -160,7 +162,7 @@ namespace RockWeb.Blocks.Communication
             string globalFrom = globalAttributes.GetValue( "OrganizationEmail" );
             tbFrom.Help = string.Format( "If a From Address value is not entered the 'Organization Email' Global Attribute value of '{0}' will be used when this template is sent.", globalFrom );
 
-            SystemEmailService emailTemplateService = new SystemEmailService();
+            SystemEmailService emailTemplateService = new SystemEmailService( new RockContext() );
             SystemEmail emailTemplate = emailTemplateService.Get( emailTemplateId );
 
             if ( emailTemplate != null )

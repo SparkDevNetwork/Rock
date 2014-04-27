@@ -225,7 +225,6 @@
 
         <Rock:ModalDialog ID="dlgGroupTypeRoles" runat="server" OnSaveClick="gGroupTypeRoles_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Roles">
             <Content>
-                <asp:HiddenField ID="hfRoleId" runat="server" />
                 <asp:HiddenField ID="hfRoleGuid" runat="server" />
                 <asp:ValidationSummary ID="vsRoles" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="Roles" />
                 <div class="row">

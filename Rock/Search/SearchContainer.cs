@@ -56,6 +56,25 @@ namespace Rock.Search
             Refresh();
         }
 
+        /// <summary>
+        /// Gets the component.
+        /// </summary>
+        /// <param name="searchComponentType">Type of the search component.</param>
+        /// <returns></returns>
+        public static SearchComponent GetComponent( Type searchComponentType )
+        {
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.TypeName == searchComponentType.FullName )
+                {
+                    return component;
+                }
+            }
+
+            return null;
+        }
+
         // MEF Import Definition
 #pragma warning disable
         [ImportMany( typeof( SearchComponent ) )]

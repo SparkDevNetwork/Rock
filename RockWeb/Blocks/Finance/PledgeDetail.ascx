@@ -21,7 +21,7 @@
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="True"/>
                         <Rock:AccountPicker ID="fpFund" runat="server" Label="Fund" Required="True"/>
             
-                        <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="TotalAmount" Label="Total Amount" PrependText="$" Required="True" />
+                        <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" Required="True" />
                     </div>
 
                     <div class="col-md-6">

@@ -70,6 +70,11 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the btnSend control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
             var mergeObjects = new Dictionary<string, object>();
@@ -79,16 +84,19 @@ namespace RockWeb.Blocks.Security
             {
                 url = ResolveRockUrl( "~/ConfirmAccount" );
             }
+
             mergeObjects.Add( "ConfirmAccountUrl", RootPath + url.TrimStart( new char[] { '/' } ) );
 
             var personDictionaries = new List<IDictionary<string, object>>();
 
-            var personService = new PersonService();
-            var userLoginService = new UserLoginService();
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var userLoginService = new UserLoginService( rockContext );
 
-            foreach ( Person person in personService.GetByEmail( tbEmail.Text ) )
+            foreach ( Person person in personService.GetByEmail( tbEmail.Text )
+                .Where( p => p.Users.Any()))
             {
-                var users = new List<IDictionary<string, object>>();
+                var users = new List<UserLogin>();
                 foreach ( UserLogin user in userLoginService.GetByPersonId( person.Id ) )
                 {
                     if ( user.EntityType != null )
@@ -96,15 +104,23 @@ namespace RockWeb.Blocks.Security
                         var component = AuthenticationContainer.GetComponent( user.EntityType.Name );
                         if ( component.ServiceType == AuthenticationServiceType.Internal )
                         {
-                            users.Add( user.ToDictionary() );
+                            users.Add( user );
                         }
                     }
                 }
 
                 if ( users.Count > 0 )
                 {
-                    IDictionary<string, object> personDictionary = person.ToDictionary();
-                    personDictionary.Add( "Users", users.ToArray() );
+                    var personDictionary = person.ToLiquid() as Dictionary<string, object>;
+                    if (personDictionary.Keys.Contains("Users"))
+                    {
+                        personDictionary["Users"] = users;
+                    }
+                    else
+                    {
+                        personDictionary.Add( "Users", users );
+                    }
+
                     personDictionaries.Add( personDictionary );
                 }
             }
@@ -115,17 +131,17 @@ namespace RockWeb.Blocks.Security
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
                 recipients.Add( tbEmail.Text, mergeObjects );
 
-                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrl( "~/", true ), ResolveRockUrl( "~~/", true ) );
+                Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ) );
 
                 pnlEntry.Visible = false;
                 pnlSuccess.Visible = true;
             }
             else
+            {
                 pnlWarning.Visible = true;
-
+            }
         }
 
         #endregion
-
     }
 }

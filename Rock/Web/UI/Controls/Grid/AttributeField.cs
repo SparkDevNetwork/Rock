@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
                         var attrib = dataItem.Attributes[this.DataField];
                         string rawValue = dataItem.GetAttributeValue( this.DataField );
                         string resultHtml = attrib.FieldType.Field.FormatValue( controlContainer, rawValue, attrib.QualifierValues, true );
-                        return new HtmlString( resultHtml );
+                        return new HtmlString( resultHtml ?? string.Empty );
                     }
                 }
             }

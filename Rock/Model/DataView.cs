@@ -141,6 +141,19 @@ namespace Rock.Model
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the type of the entity used for an optional transformation
+        /// </summary>
+        /// <value>
+        /// The transformation type of entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType TransformEntityType { get; set; }
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets the parent security authority for the DataView
         /// </summary>
@@ -160,15 +173,6 @@ namespace Rock.Model
             }
         }
 
-        /// <summary>
-        /// Gets or sets the type of the entity used for an optional transformation
-        /// </summary>
-        /// <value>
-        /// The transformation type of entity.
-        /// </value>
-        [DataMember]
-        public virtual EntityType TransformEntityType { get; set; }
-
         #endregion
 
         #region Methods
@@ -176,6 +180,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the query.
         /// </summary>
+        /// <param name="sortProperty">The sort property.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public IQueryable<IEntity> GetQuery( SortProperty sortProperty, out List<string> errorMessages )
@@ -195,7 +200,7 @@ namespace Rock.Model
                         Type genericServiceType = typeof( Rock.Data.Service<> );
                         Type modelServiceType = genericServiceType.MakeGenericType( modelType );
 
-                        IService serviceInstance = Activator.CreateInstance( modelServiceType ) as IService;
+                        IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { new RockContext() } ) as IService;
 
                         if ( serviceInstance != null )
                         {

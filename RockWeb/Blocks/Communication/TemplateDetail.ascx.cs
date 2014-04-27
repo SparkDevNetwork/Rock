@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Communication
     {
         #region Fields
 
-        private bool canEdit = false;
+        private bool _canEdit = false;
 
         #endregion
 
@@ -105,8 +105,7 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            canEdit = this.IsUserAuthorized( "Edit" );
-            ppOwner.Visible = canEdit;
+            _canEdit = IsUserAuthorized( Authorization.EDIT );
         }
 
         /// <summary>
@@ -154,7 +153,7 @@ namespace RockWeb.Blocks.Communication
             int? templateId = PageParameter( "TemplateId" ).AsInteger( false );
             if ( templateId.HasValue )
             {
-                var template = new CommunicationTemplateService().Get( templateId.Value );
+                var template = new CommunicationTemplateService( new RockContext() ).Get( templateId.Value );
                 if ( template != null )
                 {
                     pageTitle = template.Name;
@@ -202,18 +201,57 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid )
             {
-                using ( new UnitOfWorkScope() )
-                {
-                    var service = new CommunicationTemplateService();
-                    var template = UpdateTemplate( service );
+                var rockContext = new RockContext();
 
-                    if ( template != null )
+                var service = new CommunicationTemplateService( rockContext );
+
+                Rock.Model.CommunicationTemplate template = null;
+                if ( CommunicationTemplateId.HasValue )
+                {
+                    template = service.Get( CommunicationTemplateId.Value );
+                }
+
+                bool newTemplate = false;
+                if ( template == null )
+                {
+                    newTemplate = true;
+                    template = new Rock.Model.CommunicationTemplate();
+                    service.Add( template );
+                }
+
+                template.Name = tbName.Text;
+                template.Description = tbDescription.Text;
+                template.ChannelEntityTypeId = ChannelEntityTypeId;
+
+                template.ChannelData.Clear();
+                GetChannelData();
+                foreach(var keyVal in ChannelData)
+                {
+                    if (!string.IsNullOrEmpty(keyVal.Value))
                     {
-                        service.Save( template, CurrentPersonAlias );
-                        NavigateToParentPage();
+                        template.ChannelData.Add(keyVal.Key, keyVal.Value);
                     }
                 }
+
+                if ( template.ChannelData.ContainsKey( "Subject" ) )
+                {
+                    template.Subject = template.ChannelData["Subject"];
+                    template.ChannelData.Remove( "Subject" );
+                }
+
+                if ( template != null )
+                {
+                    rockContext.SaveChanges();
+                    NavigateToParentPage();
+                }
+
+                if ( newTemplate && !_canEdit )
+                {
+                    template.MakePrivate( Authorization.VIEW, CurrentPerson );
+                    template.MakePrivate( Authorization.EDIT, CurrentPerson );
+                }
             }
+
         }
 
         /// <summary>
@@ -246,8 +284,8 @@ namespace RockWeb.Blocks.Communication
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                template = new CommunicationTemplateService()
-                    .Queryable( "OwnerPersonAlias.Person" )
+                template = new CommunicationTemplateService( new RockContext() )
+                    .Queryable()
                     .Where( c => c.Id == itemKeyValue )
                     .FirstOrDefault();
                 if ( template != null )
@@ -267,28 +305,9 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            ShowDetail( template );
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="template">The communication.</param>
-        private void ShowDetail (Rock.Model.CommunicationTemplate template)
-        {
             CommunicationTemplateId = template.Id;
 
             tbName.Text = template.Name;
-            if (template.OwnerPersonAlias != null &&
-                template.OwnerPersonAlias.Person != null)
-            {
-                ppOwner.SetValue( template.OwnerPersonAlias.Person );
-            }
-            else
-            {
-                ppOwner.SetValue( null );
-            }
-
             tbDescription.Text = template.Description;
 
             ChannelEntityTypeId = template.ChannelEntityTypeId;
@@ -298,10 +317,7 @@ namespace RockWeb.Blocks.Communication
             ChannelData.Add( "Subject", template.Subject );
 
             ChannelControl control = LoadChannelControl( true );
-            if ( control != null && CurrentPerson != null )
-            {
-                control.InitializeFromSender( CurrentPerson );
-            }
+
         }
 
         /// <summary>
@@ -371,6 +387,8 @@ namespace RockWeb.Blocks.Communication
                 phContent.Controls.Clear();
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
+                channelControl.IsTemplate = true;
+                channelControl.ValidationGroup = btnSave.ValidationGroup;
                 phContent.Controls.Add( channelControl );
 
                 if ( setData  )
@@ -407,63 +425,6 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Updates a communication model with the user-entered values
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        private Rock.Model.CommunicationTemplate UpdateTemplate(CommunicationTemplateService service)
-        {
-            Rock.Model.CommunicationTemplate template = null;
-            if ( CommunicationTemplateId.HasValue )
-            {
-                template = service.Get( CommunicationTemplateId.Value );
-            }
-
-            if (template == null)
-            {
-                template = new Rock.Model.CommunicationTemplate();
-                service.Add( template, CurrentPersonAlias );
-            }
-
-            template.Name = tbName.Text;
-
-            if (canEdit)
-            {
-                if ( ppOwner.PersonId.HasValue )
-                {
-                    if ( template.OwnerPersonAlias == null || template.OwnerPersonAlias.PersonId != ppOwner.PersonId.Value )
-                    {
-                        template.OwnerPersonAlias = new PersonAliasService().Queryable()
-                            .Where( p => p.AliasPersonId == ppOwner.PersonId.Value )
-                            .FirstOrDefault();
-                    }
-                }
-                else
-                {
-                    template.OwnerPersonAlias = null;
-                }
-            }
-            else
-            {
-                template.OwnerPersonAlias = CurrentPersonAlias;
-            }
-
-            template.Description = tbDescription.Text;
-
-            template.ChannelEntityTypeId = ChannelEntityTypeId;
-
-            GetChannelData();
-            template.ChannelData = ChannelData;
-            if ( template.ChannelData.ContainsKey( "Subject" ) )
-            {
-                template.Subject = template.ChannelData["Subject"];
-                template.ChannelData.Remove( "Subject" );
-            }
-
-            return template;
         }
 
         #endregion

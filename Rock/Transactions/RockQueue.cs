@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Rock.Transactions
 {
@@ -29,14 +29,14 @@ namespace Rock.Transactions
         /// <value>
         /// The transaction queue.
         /// </value>
-        public static Queue<ITransaction> TransactionQueue { get; set; }
+        public static ConcurrentQueue<ITransaction> TransactionQueue { get; set; }
         
         /// <summary>
         /// Initializes the <see cref="RockQueue" /> class.
         /// </summary>
         static RockQueue()
         {
-            TransactionQueue = new Queue<ITransaction>();
+            TransactionQueue = new ConcurrentQueue<ITransaction>();
         }
     }
 }

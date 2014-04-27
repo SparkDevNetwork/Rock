@@ -73,7 +73,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> that is being logged.
         /// </value>
-        [DataMember]
         public virtual Workflow Workflow { get; set; }
 
         #endregion

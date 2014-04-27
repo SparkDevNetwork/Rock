@@ -7,12 +7,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <title></title>
 
-    <script src="<%# ResolveUrl("~/Scripts/modernizr.js") %>"></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-1.10.2.min.js") %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
 
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
 
     <style>
         html, body {

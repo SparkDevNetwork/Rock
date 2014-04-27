@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -38,10 +39,9 @@ namespace RockWeb.Blocks.Groups
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [GroupField( "Root Group", "Select the root group to use as a starting point for the tree view.", false )]
     [BooleanField( "Limit to Security Role Groups" )]
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class GroupTreeView : RockBlock
     {
-
         #region Fields
 
         private string _groupId = string.Empty;
@@ -59,10 +59,15 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             _groupId = PageParameter( "groupId" );
-            
+
             hfPageRouteTemplate.Value = ( this.RockPage.RouteData.Route as System.Web.Routing.Route ).Url;
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "RootGroup" );
+
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            // hide all the actions if user doesn't have EDIT to the block
+            divTreeviewActions.Visible = canEditBlock;
         }
 
         /// <summary>
@@ -73,7 +78,9 @@ namespace RockWeb.Blocks.Groups
         {
             base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+
+            if ( !Page.IsPostBack )
             {
                 if ( string.IsNullOrWhiteSpace( _groupId ) )
                 {
@@ -113,7 +120,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group == null )
                 {
                     int id = _groupId.AsInteger() ?? 0;
-                    group = new GroupService().Queryable( "GroupType" )
+                    group = new GroupService( new RockContext() ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();
                     RockPage.SaveSharedItem( key, group );
@@ -122,7 +129,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group != null )
                 {
                     // show the Add button if the selected Group's GroupType can have children
-                    lbAddGroupChild.Enabled = group.GroupType.ChildGroupTypes.Count > 0;
+                    lbAddGroupChild.Enabled = canEditBlock && group.GroupType.ChildGroupTypes.Count > 0;
                 }
                 else
                 {
@@ -169,14 +176,14 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                // let the Add button be visible if there is nothing selected
-                lbAddGroupChild.Enabled = true;
+                // let the Add button be visible if there is nothing selected (if authorized)
+                lbAddGroupChild.Enabled = canEditBlock;
             }
 
             // disable add child group if no group is selected
             int selectedGroupId = hfSelectedGroupId.ValueAsInt();
 
-            if (selectedGroupId == 0)
+            if ( selectedGroupId == 0 )
             {
                 lbAddGroupChild.Enabled = false;
             }
@@ -191,21 +198,30 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void lbAddGroupRoot_Click(object sender, EventArgs e)
+        protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage("DetailPage", "groupId", 0, "parentGroupId", 0);
+            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", 0 );
         }
 
-        protected void lbAddGroupChild_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the Click event of the lbAddGroupChild control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddGroupChild_Click( object sender, EventArgs e )
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
-            NavigateToLinkedPage("DetailPage", "groupId", 0, "parentGroupId", groupId);
+            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", groupId );
         }
 
         #endregion
 
         #region Methods
 
+        /// <summary>
+        /// Finds the first group.
+        /// </summary>
+        /// <returns></returns>
         private Group FindFirstGroup()
         {
             // limit GroupType selection to what Block Attributes allow
@@ -227,12 +243,13 @@ namespace RockWeb.Blocks.Groups
                 groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
             }
 
-            var groupService = new GroupService();
+            var groupService = new GroupService( new RockContext() );
             var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
             foreach ( var group in qry )
             {
-                if ( group.IsAuthorized( "View", CurrentPerson ) )
+                // return first group they are authorized to view
+                if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     return group;
                 }

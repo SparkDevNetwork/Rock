@@ -28,6 +28,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock;
 using Attribute = Rock.Model.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Core
 {
@@ -54,8 +55,8 @@ namespace RockWeb.Blocks.Core
             gWorkflows.Actions.AddClick += gWorkflows_Add;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gWorkflows.Actions.ShowAdd = canAddEditDelete;
             gWorkflows.IsDeleteEnabled = canAddEditDelete;
         }
@@ -105,23 +106,21 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            WorkflowService workflowService = new WorkflowService( rockContext );
+            Workflow workflow = workflowService.Get( (int)e.RowKeyValue );
+            if ( workflow != null )
             {
-                WorkflowService workflowService = new WorkflowService();
-                Workflow workflow = workflowService.Get( (int)e.RowKeyValue );
-                if ( workflow != null )
+                string errorMessage;
+                if ( !workflowService.CanDelete( workflow, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !workflowService.CanDelete( workflow, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    workflowService.Delete( workflow, CurrentPersonAlias );
-                    workflowService.Save( workflow, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                workflowService.Delete( workflow );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -145,7 +144,9 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            WorkflowService workflowService = new WorkflowService();
+            var rockContext = new RockContext();
+
+            WorkflowService workflowService = new WorkflowService( rockContext );
             SortProperty sortProperty = gWorkflows.SortProperty;
 
             var qry = workflowService.Queryable();
@@ -174,7 +175,7 @@ namespace RockWeb.Blocks.Core
                 lGridTitle.Text = workflowType.WorkTerm.Pluralize();
             }
 
-            AttributeService attributeService = new AttributeService();
+            AttributeService attributeService = new AttributeService( rockContext );
 
             // add attributes with IsGridColumn to grid
             string qualifierValue = workflowType.Id.ToString();
@@ -201,6 +202,13 @@ namespace RockWeb.Blocks.Core
                     boundField.DataField = dataFieldExpression;
                     boundField.HeaderText = item.Name;
                     boundField.SortExpression = string.Empty;
+                    
+                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( item.Id );
+                    if ( attributeCache != null )
+                    {
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                    }
+
                     int insertPos = gWorkflows.Columns.IndexOf( gWorkflows.Columns.OfType<DeleteField>().First() );
                     gWorkflows.Columns.Insert( insertPos, boundField );
                 }

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls.Communication
@@ -97,7 +97,7 @@ namespace Rock.Web.UI.Controls.Communication
                 var fileIds = new List<int>();
                 hfAttachments.Value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add(v.AsInteger() ?? 0));
 
-                new BinaryFileService().Queryable()
+                new BinaryFileService( new RockContext() ).Queryable()
                     .Where( f => fileIds.Contains( f.Id ) )
                     .Select( f => new
                     {
@@ -131,7 +131,6 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromAddress = new RockTextBox();
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
             tbFromAddress.Label = "From Address";
-            tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
             tbReplyToAddress = new RockTextBox();
@@ -146,9 +145,11 @@ namespace Rock.Web.UI.Controls.Communication
 
             htmlMessage = new HtmlEditor();
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
+            htmlMessage.AdditionalConfigurations = "autoParagraph: false,";
             htmlMessage.MergeFields.Clear();
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
+            htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
             Controls.Add( htmlMessage );
@@ -170,6 +171,28 @@ namespace Rock.Web.UI.Controls.Communication
             fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public override string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return tbFromName.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                tbFromName.ValidationGroup = value;
+                tbFromAddress.ValidationGroup = value;
+                tbSubject.ValidationGroup = value;
+            }
         }
 
         /// <summary>
@@ -198,6 +221,10 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            tbFromName.Required = !IsTemplate;
+            tbFromAddress.Required = !IsTemplate;
+            tbSubject.Required = !IsTemplate;
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -251,15 +278,14 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.RenderEndTag();  // row div
 
+            // Html and Text properties
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             htmlMessage.RenderControl( writer );
             tbTextMessage.RenderControl( writer );
             writer.RenderEndTag();
-
             writer.RenderEndTag();
 
             RegisterClientScript();

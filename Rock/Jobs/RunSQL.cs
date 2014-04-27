@@ -31,8 +31,6 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to run quick SQL queries on a schedule
     /// </summary>
-    /// <author>Rich Dubay</author>
-    /// <author>Spark Development Network</author>
     [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
     public class RunSQL : IJob
     {
@@ -62,7 +60,7 @@ namespace Rock.Jobs
             string query = dataMap.GetString( "SQLQuery" );
             try
             {
-                int rows = new Service().ExecuteCommand( query );
+                int rows = DbService.ExecuteCommand( query );
             }
             catch ( System.Exception ex )
             {

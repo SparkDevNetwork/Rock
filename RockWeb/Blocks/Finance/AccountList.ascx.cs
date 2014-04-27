@@ -18,10 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +36,6 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Account List" )]
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial accounts." )]
-
     [LinkedPage( "Detail Page" )]
     public partial class AccountList : RockBlock
     {
@@ -47,10 +49,17 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            bool canEdit = IsUserAuthorized( "Edit" );
+            bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rAccountFilter.DisplayFilterValue += rAccountFilter_DisplayFilterValue;
+
+            var campusList = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            if ( campusList.Count > 0 )
+            {
+                ddlCampus.Visible = true;
+                rGridAccount.Columns[3].Visible = true;
+            }
 
             rGridAccount.DataKeyNames = new string[] { "id" };
             rGridAccount.Actions.ShowAdd = canEdit;
@@ -74,7 +83,7 @@ namespace RockWeb.Blocks.Finance
 
             base.OnLoad( e );
         }
-                
+
         #endregion
 
         #region Events
@@ -110,8 +119,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_Delete( object sender, RowEventArgs e )
         {
-            var accountService = new FinancialAccountService();
-            var account = accountService.Get( (int)e.RowKeyValue );
+            var rockContext = new RockContext();
+            var accountService = new FinancialAccountService( rockContext );
+            var account = accountService.Get( e.RowKeyId );
             if ( account != null )
             {
                 string errorMessage;
@@ -121,8 +131,8 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                accountService.Delete( account, CurrentPersonAlias );
-                accountService.Save( account, CurrentPersonAlias );
+                accountService.Delete( account );
+                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -135,18 +145,17 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_GridReorder( object sender, GridReorderEventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            var accounts = GetAccounts( rockContext );
+            if ( accounts != null )
             {
-                var accounts = GetAccounts();
-                if ( accounts != null )
-                {
-                    new FinancialAccountService().Reorder( accounts.ToList(), e.OldIndex, e.NewIndex, CurrentPersonAlias );
-                }
-
-                BindGrid();
+                new FinancialAccountService( rockContext ).Reorder( accounts.ToList(), e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
             }
+
+            BindGrid();
         }
-        
+
         /// <summary>
         /// Handles the GridRebind event of the rGridAccount control.
         /// </summary>
@@ -162,30 +171,53 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        protected void rAccountFilter_DisplayFilterValue(object sender, GridFilter.DisplayFilterValueArgs e )
+        protected void rAccountFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            switch ( e.Key )
+            {
+                case "Campus":
+
+                    int? campusId = e.Value.AsInteger(false);
+                    if ( campusId.HasValue )
+                    {
+                        var service = new CampusService( new RockContext() );
+                        var campus = service.Get( campusId.Value );
+                        if ( campus != null )
+                        {
+                            e.Value = campus.Name;
+                        }
+                    }
+
+                    break;
+            }
         }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rAccountFilter control.
         /// </summary>
-        /// <param name="Sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rAccountFilter_ApplyFilterClick( object Sender, EventArgs e )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rAccountFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rAccountFilter.SaveUserPreference( "Account Name", txtAccountName.Text );
+            rAccountFilter.SaveUserPreference( "Campus", ddlCampus.SelectedValue );
             rAccountFilter.SaveUserPreference( "Active", ddlIsActive.SelectedValue );
             rAccountFilter.SaveUserPreference( "Tax Deductible", ddlIsTaxDeductible.SelectedValue );
             BindGrid();
         }
-        
+
         #endregion
 
         #region Internal Methods
 
-        private IQueryable<FinancialAccount> GetAccounts()
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private IQueryable<FinancialAccount> GetAccounts( RockContext rockContext )
         {
-            var accountService = new FinancialAccountService();
+            var accountService = new FinancialAccountService( rockContext );
             SortProperty sortProperty = rGridAccount.SortProperty;
             var accountQuery = accountService.Queryable();
 
@@ -195,8 +227,14 @@ namespace RockWeb.Blocks.Finance
                 accountQuery = accountQuery.Where( account => account.Name.Contains( accountNameFilter ) );
             }
 
+            int campusId = int.MinValue;
+            if ( int.TryParse( rAccountFilter.GetUserPreference( "Campus" ), out campusId ) )
+            {
+                accountQuery = accountQuery.Where( account => account.Campus.Id == campusId );
+            }
+
             string activeFilter = rAccountFilter.GetUserPreference( "Active" );
-            if ( !string.IsNullOrWhiteSpace(activeFilter) )
+            if ( !string.IsNullOrWhiteSpace( activeFilter ) )
             {
                 accountQuery = accountQuery.Where( account => account.IsActive == ( activeFilter == "Yes" ) );
             }
@@ -217,13 +255,25 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            rGridAccount.DataSource = GetAccounts().ToList();
+            rGridAccount.DataSource = GetAccounts( new RockContext() ).ToList();
             rGridAccount.DataBind();
         }
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
             txtAccountName.Text = rAccountFilter.GetUserPreference( "Account Name" );
+            var campusService = new CampusService( new RockContext() );
+            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            foreach ( Campus campus in campusService.Queryable() )
+            {
+                ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
+                li.Selected = campus.Id.ToString() == rAccountFilter.GetUserPreference( "Campus" );
+                ddlCampus.Items.Add( li );
+            }
+
             ddlIsActive.SelectedValue = rAccountFilter.GetUserPreference( "Active" );
             ddlIsTaxDeductible.SelectedValue = rAccountFilter.GetUserPreference( "Tax Deductible" );
         }

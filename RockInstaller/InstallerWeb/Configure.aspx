@@ -47,6 +47,12 @@
         }
     }
 
+    void AddressesBack_Click( Object sender, EventArgs e )
+    {
+        pAdminAccount.Visible = true;
+        pHosting.Visible = false;
+    }
+    
     void AddressesNext_Click(Object sender, EventArgs e)
     {
         // clean addresses
@@ -91,6 +97,12 @@
         pHosting.Visible = false;
         pOrganization.Visible = true;
     }
+
+    void OrgBack_Click( Object sender, EventArgs e )
+    {
+        pHosting.Visible = true;
+        pOrganization.Visible = false;
+    }
     
     void OrgNext_Click(Object sender, EventArgs e)
     {
@@ -104,6 +116,12 @@
     	
     	pOrganization.Visible = false;
     	pEmailSettings.Visible = true;
+    }
+
+    void EmailBack_Click( Object sender, EventArgs e )
+    {
+        pOrganization.Visible = true;
+        pEmailSettings.Visible = false;
     }
     
     void EmailNext_Click(Object sender, EventArgs e)
@@ -209,7 +227,7 @@
 		     <ProgressTemplate>
 		         
                 <div class="updateprogress-status">
-                    <p>This could take a few minutes...</p>
+                    <p>This could take a moment...</p>
                     <div class="spinner">
                         <div class="rect1"></div>
                         <div class="rect2"></div>
@@ -238,6 +256,9 @@
 						
 							<h4>Administrator's Account</h4>
 							<p>Please provide a username and password for the administrator's account</p>
+
+                            <div class="validation-summary"></div>
+
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Username</label>
 								<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
@@ -245,18 +266,16 @@
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Password</label>
-								<div class="row">
-                                    <div class="col-md-8"><asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox></div>
-                                    <div class="col-md-4" style="padding-top: 6px;">
-                                        <input id="show-password-admin" type="checkbox" />
-                                        <label for="show-password-admin" id="show-password-admin-label" style="font-weight:normal;">Show Password</label>
-                                    </div>
-								</div>
-                                
+                                <asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="inputEmail">Administrator Password (confirm)</label>
+                                <asp:TextBox ID="txtAdminPasswordConfirm" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
+
 						
-                            <div class="btn-list">
-							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="AdminNext_Click"></asp:LinkButton>
+                            <div class="btn-list clearfix">
+							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="AdminNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 
@@ -264,6 +283,7 @@
                         <script>
                             function validateAdminAccount() {
                                 var formValid = true;
+                                var validationMessages = '';
 
                                 // ensure that all values were provided
                                 $("#pAdminAccount .required-field").each(function (index, value) {
@@ -275,11 +295,18 @@
                                     }
                                 });
 
+                                if ($('#txtAdminPassword').val() != $('#txtAdminPasswordConfirm').val()) {
+                                    validationMessages += "<p>The administrator password does not match the confirmation.</p>";
+                                    formValid = false;
+                                }
 
                                 if (formValid) {
                                     return true;
 
                                 } else {
+                                    if (validationMessages.length > 0) {
+                                        $("#pAdminAccount .validation-summary").html("<div class='alert alert-danger'>" + validationMessages + "</div>");
+                                    }
                                     return false;
                                 }
                             }
@@ -316,8 +343,9 @@
 								<asp:DropDownList ID="ddTimeZone" runat="server" CssClass="form-control"></asp:DropDownList>
 							</div>
 						
-                            <div class="btn-list">
-							    <asp:LinkButton id="btnAddressesNext" runat="server" OnClientClick="return validateHosting();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="AddressesNext_Click"></asp:LinkButton>
+                            <div class="btn-list clearfix">
+                                <asp:LinkButton id="btnAddressesBack" runat="server" Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default pull-left" OnClick="AddressesBack_Click"></asp:LinkButton>
+							    <asp:LinkButton id="btnAddressesNext" runat="server" OnClientClick="return validateHosting();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="AddressesNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 
@@ -393,8 +421,9 @@
 								<asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 
-                            <div class="btn-list">
-							    <asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="OrgNext_Click"></asp:LinkButton>
+                            <div class="btn-list clearfix">
+                                <asp:LinkButton id="btnOrgBack" runat="server" Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default pull-left" OnClick="OrgBack_Click"></asp:LinkButton>
+							    <asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="OrgNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 
@@ -472,8 +501,9 @@
 								<asp:TextBox ID="txtEmailExceptions" placeholder="administrator@yourchurch.com" CssClass="form-control" runat="server" Text=""></asp:TextBox>
 							</div>
 						
-							<div class="btn-list">
-                                <asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EmailNext_Click"></asp:LinkButton>
+							<div class="btn-list clearfix">                            
+                                <asp:LinkButton id="btnEmailBack" runat="server" Text="<i class='fa fa-chevron-left'></i> Back"  CssClass="btn btn-default pull-left" OnClick="EmailBack_Click"></asp:LinkButton>
+                                <asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="EmailNext_Click"></asp:LinkButton>
 						    </div>
                         </asp:Panel>
 
@@ -556,10 +586,10 @@
             // validates urls 
 			function validateURL(textval) {
 			    var urlregex = new RegExp(
-                      "^(http|https|ftp)\://([a-zA-Z0-9\.\-]+(\:[a-zA-Z0-9\.&amp;%\$\-]+)*@)*((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(\:[0-9]+)*(/($|[a-zA-Z0-9\.\,\?\'\\\+&amp;%\$#\=~_\-]+))*$");
+                      "^(http|https)\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$");
 			    return urlregex.test(textval);
 			}
-
+			
 		</script>
 		
 	</body>

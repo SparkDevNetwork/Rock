@@ -65,8 +65,8 @@
     2. Bootstrap Overides
     3. Page Header
     4. Footer
-    5. Responsive Tweaks
-    6. Layout Specific Styles
+    5. Layout Specific Styles
+    6. Responsive Overrides
 
 */
 
@@ -160,7 +160,7 @@ a:hover i.fs
 // augment the grid striping when on a panel
 .panel-default {
     .table-striped > tbody > tr:nth-child(odd) > td {
-        background-color: #dde3e8;
+        background-color: lighten(@accent-light-color, 4%);
     }
 }
 
@@ -168,13 +168,17 @@ a:hover i.fs
 // 3. Page Header
 // -------------------------
 
+#jPanelMenu-menu {
+    width: 265px !important;
+}
+
 // brand bar
 .pageheader {
     background: none;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
     color: @header-text-color;
-    --padding-bottom: @spacing-md-px;
     margin-bottom: @spacing-md-px;
+    text-align: center;
 
     a {
         color: @header-text-color;
@@ -186,29 +190,41 @@ a:hover i.fs
         }
     }
 
-    .header-zone {
-        margin-top: 8px;
+    #zone-login {
+        margin-top: 12px;
         margin-left: 10px;
+        float: right;
     }
 
     .smartsearch {
-        margin: 0 auto;
+        margin: 0 auto 20px;
+        text-align: left;
     }
 
+    .loginstatus {
+        display: none;
+    }
 
-    .brandbar-logo {
-	    width: 110px;
-        height: 41px;
+    .navbar-brand {
+        float: none;
+        display: block;
+
+        .brandbar-logo {
+	        width: 110px;
+            height: 41px;
+        }
     }
 
     .navbar-toggle {
         color: @header-text-color;
         border-color: @header-text-color;
+        position: absolute;
+        left: 0;
+        margin: 8px 0 0 12px;
+        
+        &:focus {outline:0;}
     }
-    
-    .loginstatus {
-        display: none;
-    }   
+     
 }
 
 
@@ -216,57 +232,49 @@ a:hover i.fs
 .pagenav {
     border-top: 1px solid lighten(@header-bg, 10%);
     border-bottom: 1px solid darken(@header-bg, 10%);
-
     background: @header-bg;
-	
+    max-height: inherit; // override bootstraps max-height 340px
+    padding: 24px 0 0 0;
+    text-align: left;
+
     .navbar-nav {
         margin: 0;
     }
 
     .nav {
-        border-left: 1px solid lighten(@header-bg, 10%);
         width: 100%;
 
         > li {
-            height: 67px;
-            border-left: 1px solid darken(@header-bg, 10%);
-            border-right: 1px solid lighten(@header-bg, 10%);
-            width: 12.5%; // set to allow 8 nav items 
+            height: auto;
+            width: 100%;
             float: left;
-            
-            &:last-child:after { // add the final shadow to the last nav element 
+
+            &:last-child:after { // add the final shadow to the last nav element
                 content: " ";
                 position: absolute;
                 top: 0;
                 right: 0;
                 bottom: 0;
-                border-right: 1px solid darken(@header-bg, 10%);
             }
 
             > a {
-                padding: 4px 15px;
-                text-align: center;
-                font-size: 11px;
+                padding: 14px 0;
+                font-size: 14px;
                 color: @header-text-color;
                 position: relative;
                 height: 100%;
-                min-height: 67px;
                 line-height: 1em;
 
                 .fa.fa-caret-down {
-                    display: block;
-                    margin-bottom: 6px;
-                    position: absolute;
-                    bottom: 0;
-                    left: 48%;
+                    display: none;
                 }
 
                 i.fa {
                     display: block;
-                    margin: 6px auto 0;
+                    margin: 4px 12px 0 0;
                     font-size: 18px;
+                    float: left;
                 }
-
                 // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
                 div {
                     height: 26px;
@@ -279,17 +287,36 @@ a:hover i.fs
                     line-height: 11px;
                 }
             }
-        }
 
-        /* remove last divider out of the menu */
-        li.divider:last-child { 
-            display: none;
+            .dropdown-menu {
+                margin-left: 8px;
+
+                > li {
+                    
+                    &.dropdown-header {
+                        padding-left: 0;
+                    }
+
+                    a {
+                        color: @header-text-color;
+                        padding-left: 0;
+
+                        &:hover {
+                            background-color: inherit;
+                        }
+                    }
+
+                    &.divider {
+                        display: none;
+                    }
+                }
+            }
         }
     }
 
-    .dropdown-menu 
-    {
-	    left: -2px;
+
+    .dropdown-menu {
+        left: -2px;
         width: 240px;
     }
 }
@@ -330,21 +357,40 @@ a:hover i.fs
 }
 
 
+// 5. Layout Specific Styles
+// -------------------------
+// splash screen
+#splash {
+    background: none;
 
-// 5. Responsive Tweaks
+    .pageheader-logo {
+        height: 45px;
+        width: 127.57px;
+        margin-top: 45px;
+        margin-bottom: 6px;
+    }
+
+    #content {
+        margin-bottom: 60px;
+
+        #content-box {
+            background-color: @body-bg;
+            overflow: hidden;
+            padding: 15px;
+
+            .form-actions {
+                margin: 0 -15px -15px -15px;
+            }
+        }
+    }
+} 
+
+// 6. Responsive Overrides 
 // -------------------------
 
-// 4. Responsive Overrides 
-// -------------------------
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
 
-// default styling should be for phones 767px or less
-
-// Small devices (tablets, 768px and up)
-@media (min-width: @screen-sm-min) {
-    
     .pageheader {
-        padding-bottom: 0;
-
         .smartsearch {
             margin: 20px auto;
             float: right;
@@ -355,125 +401,110 @@ a:hover i.fs
         }
     }
 
+    .pagenav { // change menu to show as boxes
+        padding-top: 0;
+
+        .nav {
+            border-left: 1px solid lighten(@header-bg, 10%);
+
+            & > li {
+                width: 12.5%;
+                height: 67px;
+                border-left: 1px solid darken(@header-bg, 10%);
+                border-right: 1px solid lighten(@header-bg, 10%);
+
+                > a {
+                    text-align: center;
+                    padding: 4px 15px;
+                    min-height: 67px;
+                    font-size: 11px;
+
+                    i.fa {
+                        margin: 6px auto 0;
+                        float: none;
+                    }
+
+                    .fa.fa-caret-down {
+                        display: block;
+                        margin-bottom: 6px;
+                        position: absolute;
+                        bottom: 0;
+                        left: 48%;
+                    }
+                }
+
+                .dropdown-menu {
+                    margin-left: 0;
+
+                    > li {
+                        
+                        &.dropdown-header {
+                            padding-left: 20px;
+                        }
+                        
+                        > a {
+                            color: @text-color;
+                            padding-left: 20px;
+
+                            &:hover {
+                                background-color: @accent-light-color;
+                            }
+                        }
+
+                        &:last-child:after {
+                            border-right: 1px solid darken(@header-bg, 10%);
+                        }
+
+                        &.divider {
+                            display: inherit;
+                        }
+
+                            &.divider:last-child { // remove last divider out of the menu
+                                display: none;
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    #splash {
+        
+        .pageheader-logo {
+            margin-top: 0;
+        }
+        
+        #content {
+            width: 700px;
+            margin: 5% auto 0;
+
+            #content-box {
+                border-radius: @border-radius-base;
+            }
+        }
+    }
 }
 
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
-
+    
+    .pagenav {
+        .nav {
+            .dropdown-menu > li {
+                
+            }
+        }
+    }
 }
 
-// Large devices (large desktops, 1200px and up) 
+// Large devices (large desktops, 1200px and up)
 @media (min-width: @screen-lg-min) {
-    
+
     .container { // allow the rock screen to grow wide
         width: 90%;
     }
-
 }
 
 
-
-@media (max-width: @screen-sm-min) { // if screen smaller than sm
-
-    .pageheader {
-        .smartsearch {
-            margin: 0 auto 20px;
-            float: none !important;
-        }
-    }
-                                     
-    header .header-zone {
-        margin: -10px 0 0 0;
-
-        .navbar-nav .open .dropdown-menu {
-            a {
-                color: @header-text-color;
-            }
-
-            .divider {
-                display: none;
-            }
-        }
-    }
-
-    .pagenav { // responsive menu rules
-        .nav {
-            border: 0;
-
-            & > li {
-                width: 33%;
-                height: auto;
-                border: 0;
-
-                &:last-child:after {
-		            border-right: 0;
-	            }
-
-                .dropdown-menu > li {
-                    > a {
-                        color: white;
-
-                        &:hover {
-                            background-color: lighten(@header-bg, 10%) !important;
-                        }
-                    }
-
-                    &.divider {
-                        display: none;
-                    }
-                } 
-            }
-        }
-    }
-}
-
-@media (max-width: @screen-xs-min) { // if screen smaller than sm
-
-    .pagenav .nav > li { // 2 columns of icons
-        width: 50%;
-    }
-}
-
-// 6. Layout Specific Styles
-// -------------------------
-
-// splash screen
-body#splash
-{
-    background: none;
-}
-
-#splash .pageheader-logo {
-    height: 45px;
-	width: 127.57px;
-    margin-bottom: 6px;
-}
-
-#splash #content {
-    width: 550px;
-    margin: 5% auto 0 auto;
-}
-
-body#splash #content-box {
-    background-color: @body-bg;
-    border-radius: @border-radius-base;
-    overflow: hidden;
-}
-
-#splash #content-box
-{
-   padding: 15px;
-}
-
-#splash .login .form-actions {
-    margin: 0 -15px -15px -15px;
-}
-
-
-
-
-.no-person-outline {
-    fill: #000000;
-}
 
 

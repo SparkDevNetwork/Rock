@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DefinedTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.DefinedTypeDetail" %>
 
-<asp:UpdatePanel ID="upSettings" runat="server">
+<asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
@@ -30,11 +30,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
-                            
                         </div>
-
                         <div class="col-md-6">
-                            <Rock:FieldTypeList ID="ddlTypeFieldType" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="FieldType" />
                         </div>
                     </div>
 
@@ -74,8 +71,9 @@
                     <div class="col-md-6">
                         <asp:Panel ID="pnlAttributeTypes" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
-                            <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                            <Rock:Grid ID="gDefinedTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <asp:BoundField DataField="Name" HeaderText="Attributes for Defined Type" />
                                     <Rock:EditField OnClick="gDefinedTypeAttributes_Edit" />
                                     <Rock:DeleteField OnClick="gDefinedTypeAttributes_Delete" />

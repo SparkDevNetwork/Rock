@@ -17,8 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.Web.Security;
-
+using Rock;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Security
 {
@@ -32,13 +33,6 @@ namespace RockWeb.Blocks.Security
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
-
-        #region Fields
-
-        string action = string.Empty;
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -54,6 +48,7 @@ namespace RockWeb.Blocks.Security
             {
                 url = ResolveRockUrl( "~/MyAccount" );
             }
+
             hlMyAccount.NavigateUrl = url;
         }
 
@@ -64,8 +59,6 @@ namespace RockWeb.Blocks.Security
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            action = hfTest.Value;
 
             var currentPerson = CurrentPerson;
             if ( currentPerson != null )
@@ -84,7 +77,7 @@ namespace RockWeb.Blocks.Security
                 lbLoginLogout.Text = "Login";
             }
 
-            hfTest.Value = lbLoginLogout.Text;
+            hfActionType.Value = lbLoginLogout.Text;
         }
 
         #endregion
@@ -98,6 +91,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
+            string action = hfActionType.Value;
             if ( action == "Login" )
             {
                 var site = RockPage.Layout.Site;
@@ -112,11 +106,21 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
+                if ( CurrentUser != null )
+                {
+                    var transaction = new Rock.Transactions.UserLastActivityTransaction();
+                    transaction.UserId = CurrentUser.Id;
+                    transaction.LastActivityDate = RockDateTime.Now;
+                    transaction.IsOnLine = false;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+
                 FormsAuthentication.SignOut();
 
                 // After logging out check to see if an anonymous user is allowed to view the current page.  If so
                 // redirect back to the current page, otherwise redirect to the site's default page
-                if ( RockPage.IsAuthorized( "View", null ) )
+                var currentPage = Rock.Web.Cache.PageCache.Read( RockPage.PageId );
+                if ( currentPage != null && currentPage.IsAuthorized(Authorization.VIEW, null))
                 {
                     Response.Redirect( CurrentPageReference.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
@@ -125,11 +129,9 @@ namespace RockWeb.Blocks.Security
                 {
                     RockPage.Layout.Site.RedirectToDefaultPage();
                 }
-
             }
         }
 
         #endregion
-
     }
 }

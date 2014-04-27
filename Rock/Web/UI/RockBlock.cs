@@ -24,7 +24,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -466,12 +466,11 @@ namespace Rock.Web.UI
         /// <summary>
         /// Saves the block attribute values.
         /// </summary>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void SaveAttributeValues( PersonAlias currentPersonAlias )
+        public void SaveAttributeValues()
         {
             if ( _blockCache != null )
             {
-                _blockCache.SaveAttributeValues( currentPersonAlias );
+                _blockCache.SaveAttributeValues();
             }
         }
 
@@ -507,10 +506,10 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(PersonAlias)" /> method to save all values to database 
+        /// Sets the value of an block attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues()" /> method to save all values to database
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the block attribute's key name.</param>
-        /// <param name="value">A <see cref="System.String"/> representing the value of the attribute.</param>
+        /// <param name="key">A <see cref="System.String" /> representing the block attribute's key name.</param>
+        /// <param name="value">A <see cref="System.String" /> representing the value of the attribute.</param>
         public void SetAttributeValue( string key, string value )
         {
             if ( _blockCache != null )
@@ -718,13 +717,22 @@ namespace Rock.Web.UI
         /// a Url with '~~' to indicate a virtual path to Rock's current theme root folder
         /// </summary>
         /// <param name="url">A <see cref="System.String" /> representing the Url to resolve.</param>
-        /// <param name="includeRoot">if set to <c>true</c> [include root].</param>
         /// <returns>
         /// A <see cref="System.String" /> that represents the resolved Url.
         /// </returns>
-        public string ResolveRockUrl( string url, bool includeRoot = false )
+        public string ResolveRockUrl( string url)
         {
-            return RockPage.ResolveRockUrl( url, includeRoot );
+            return RockPage.ResolveRockUrl( url );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL and includes root.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrlIncludeRoot( string url )
+        {
+            return RockPage.ResolveRockUrlIncludeRoot ( url );
         }
 
         /// <summary>
@@ -855,7 +863,7 @@ namespace Rock.Web.UI
                 iSecureBlock.Attributes.Add( "class", "fa fa-lock" );
 
                 var pageCache = PageCache.Read( RockPage.PageId );
-                if ( pageCache.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     // Move
                     HtmlGenericControl aMoveBlock = new HtmlGenericControl( "a" );
@@ -916,35 +924,33 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
-            using ( new Rock.Data.UnitOfWorkScope() )
+            var rockContext = new RockContext();
+            if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId", this._blockCache.BlockTypeId.ToString(), rockContext ) )
             {
-                if ( Rock.Attribute.Helper.UpdateAttributes( this.GetType(), blockEntityTypeId, "BlockTypeId",
-                    this._blockCache.BlockTypeId.ToString(), CurrentPersonAlias ) )
-                {
-                    this._blockCache.ReloadAttributeValues();
-                }
+                this._blockCache.ReloadAttributeValues();
             }
         }
 
         /// <summary>
-        /// Reads the <see cref="Rock.Security.AdditionalActionsAttribute">additional action attributes</see> for this <see cref="Rock.Model.Block"/>
+        /// Reads the <see cref="Rock.Security.SecurityActionAttribute">security action attributes</see> for this <see cref="Rock.Model.Block"/>
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.List{String}" /> containing the action values for the <see cref="Rock.Model.Block">Block's</see>
-        /// <see cref="Rock.Security.AdditionalActionsAttribute">AdditionalActionsAttributes</see>.</returns>
-        internal List<string> GetAdditionalActions()
+        /// <returns>A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see>
+        /// <see cref="Rock.Security.SecurityActionAttribute">SecurityActionAttributes</see>.</returns>
+        internal Dictionary<string, string> GetSecurityActionAttributes()
         {
-            var additionalActions = new List<string>();
+            var securityActions = new Dictionary<string, string>();
 
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
-            if ( customAttributes.Length > 0 )
+            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( SecurityActionAttribute ), true );
+            foreach ( var customAttribute in customAttributes )
             {
-                foreach ( string action in ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions )
+                var securityActionAttribute = customAttribute as SecurityActionAttribute;
+                if (securityActionAttribute != null)
                 {
-                    additionalActions.Add( action );
+                    securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
                 }
             }
 
-            return additionalActions;
+            return securityActions;
         }
 
         /// <summary>

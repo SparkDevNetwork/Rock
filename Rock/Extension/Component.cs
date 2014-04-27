@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.Cache;
 
@@ -268,11 +269,17 @@ namespace Rock.Extension
         }
 
         /// <summary>
-        /// A list of actions that this class supports.
+        /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public List<string> SupportedActions
+        public virtual Dictionary<string, string> SupportedActions
         {
-            get { return new List<string>() { "View", "Administrate" }; }
+            get
+            {
+                var actions = new Dictionary<string, string>();
+                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view or access the service." );
+                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the service.  This includes activating the service, setting property values, and setting security for the service." );
+                return actions;
+            }
         }
 
         /// <summary>
@@ -296,7 +303,7 @@ namespace Rock.Extension
         /// <returns></returns>
         public bool IsAllowedByDefault( string action )
         {
-            return action == "View";
+            return action == Authorization.VIEW;
         }
 
         /// <summary>
@@ -317,10 +324,9 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void MakePrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
+        public void MakePrivate( string action, Model.Person person )
         {
-            Security.Authorization.MakePrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakePrivate( this, action, person );
         }
 
         /// <summary>
@@ -328,10 +334,9 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        /// <param name="currentPersonAlias">The current person alias.</param>
-        public void MakeUnPrivate( string action, Model.Person person, Rock.Model.PersonAlias currentPersonAlias )
+        public void MakeUnPrivate( string action, Model.Person person )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person, currentPersonAlias );
+            Security.Authorization.MakeUnPrivate( this, action, person );
         }
     }
 }

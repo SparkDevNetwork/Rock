@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -37,15 +38,20 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
 
-        private Rock.Model.AuthService authService = new Rock.Model.AuthService();
         private ISecured iSecured;
 
+        /// <summary>
+        /// Gets or sets the current action.
+        /// </summary>
+        /// <value>
+        /// The current action.
+        /// </value>
         protected string CurrentAction
         {
             get
             {
                 object currentAction = ViewState["CurrentAction"];
-                return currentAction != null ? currentAction.ToString() : "View";
+                return currentAction != null ? currentAction.ToString() : Authorization.VIEW;
             }
             set
             {
@@ -92,48 +98,53 @@ namespace RockWeb.Blocks.Administration
                 {
                     // Get the context type since this may be for a non-rock core object
                     Type contextType = null;
-                    var contexts = Rock.Reflection.SearchAssembly( type.Assembly, typeof( System.Data.Entity.DbContext ) );
+                    var contexts = Rock.Reflection.SearchAssembly( type.Assembly, typeof( Rock.Data.DbContext ) );
                     if ( contexts.Any() )
                     {
                         contextType = contexts.First().Value;
                     } 
+                    else
+                    {
+                        contextType = typeof( RockContext );
+                    }
                     
                     Type serviceType = typeof( Rock.Data.Service<> );
                     Type[] modelType = { type };
                     Type service = serviceType.MakeGenericType( modelType );
                     var getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
 
-                    if ( contextType != null )
-                    {
-                        var context = Activator.CreateInstance( contextType );
-                        var serviceInstance = Activator.CreateInstance( service, new object[] { context } );
-                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
-                    }
-                    else
-                    {
-                        var serviceInstance = Activator.CreateInstance( service );
-                        iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
-                    }
+                    var context = Activator.CreateInstance( contextType );
+                    var serviceInstance = Activator.CreateInstance( service, new object[] { context } );
+                    iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
                 }
 
                 var block = iSecured as Rock.Model.Block;
                 if ( block != null )
                 {
-                    // If the entity is a block, get the cachedblock's supported action, as the RockPage may have
-                    // added additional actions when the cache was created.
-                    foreach ( var action in BlockCache.Read( block.Id ).SupportedActions )
+                    // If the entity is a block, get any actions that were updated or added by the block type using
+                    // one or more SecurityActionAttributes.
+                    foreach ( var action in BlockCache.Read( block.Id ).BlockType.SecurityActions )
                     {
-                        if ( !block.SupportedActions.Contains( action ) )
+                        if ( block.SupportedActions.ContainsKey( action.Key ) )
                         {
-                            block.SupportedActions.Add( action );
+                            block.SupportedActions[action.Key] = action.Value;
+                        }
+                        else
+                        {
+                            block.SupportedActions.Add( action.Key, action.Value );
                         }
                     }
 
                     iSecured = block;
                 }
 
-                if ( iSecured != null && iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
+                if ( iSecured != null && iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
+                    if (iSecured.SupportedActions.Any())
+                    {
+                        lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
+                    }
+
                     rptActions.DataSource = iSecured.SupportedActions;
                     rptActions.DataBind();
 
@@ -181,7 +192,7 @@ namespace RockWeb.Blocks.Administration
         {
             nbMessage.Visible = false;
 
-            if ( iSecured.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( iSecured.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                     BindGrid();
@@ -208,8 +219,11 @@ namespace RockWeb.Blocks.Administration
         {
             int entityTypeId = iSecured.TypeId;
 
+            var rockContext = new RockContext();
+            var authService = new Rock.Model.AuthService( rockContext );
             List<Rock.Model.Auth> rules = authService.GetAuths( iSecured.TypeId, iSecured.Id, CurrentAction ).ToList();
-            authService.Reorder( rules, e.OldIndex, e.NewIndex, CurrentPersonAlias );
+            authService.Reorder( rules, e.OldIndex, e.NewIndex );
+            rockContext.SaveChanges();
 
             Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
 
@@ -228,11 +242,13 @@ namespace RockWeb.Blocks.Administration
 
         protected void rGrid_Delete( object sender, RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            var authService = new Rock.Model.AuthService( rockContext );
             Rock.Model.Auth auth = authService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
             if ( auth != null )
             {
-                authService.Delete( auth, CurrentPersonAlias );
-                authService.Save( auth, CurrentPersonAlias );
+                authService.Delete( auth );
+                rockContext.SaveChanges();
 
                 Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
@@ -271,11 +287,13 @@ namespace RockWeb.Blocks.Administration
             {
                 int id = (int)rGrid.DataKeys[selectedRow.RowIndex]["id"];
 
+                var rockContext = new RockContext();
+                var authService = new Rock.Model.AuthService( rockContext );
                 Rock.Model.Auth auth = authService.Get( id );
                 if ( auth != null )
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
-                    authService.Save( auth, CurrentPersonAlias );
+                    rockContext.SaveChanges();
 
                     Authorization.ReloadAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
@@ -349,6 +367,9 @@ namespace RockWeb.Blocks.Administration
 
                     if ( !alreadyExists )
                     {
+                        var rockContext = new RockContext();
+                        var authService = new Rock.Model.AuthService( rockContext );
+
                         Rock.Model.Auth auth = new Rock.Model.Auth();
                         auth.EntityTypeId = iSecured.TypeId;
                         auth.EntityId = iSecured.Id;
@@ -357,8 +378,9 @@ namespace RockWeb.Blocks.Administration
                         auth.SpecialRole = specialRole;
                         auth.GroupId = groupId;
                         auth.Order = ++maxOrder;
-                        authService.Add( auth, CurrentPersonAlias );
-                        authService.Save( auth, CurrentPersonAlias );
+                        authService.Add( auth );
+
+                        rockContext.SaveChanges();
 
                         actionUpdated = true;
                     }
@@ -399,6 +421,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !alreadyExists )
                 {
+                    var rockContext = new RockContext();
+                    var authService = new Rock.Model.AuthService( rockContext );
+
                     Rock.Model.Auth auth = new Rock.Model.Auth();
                     auth.EntityTypeId = iSecured.TypeId;
                     auth.EntityId = iSecured.Id;
@@ -407,8 +432,9 @@ namespace RockWeb.Blocks.Administration
                     auth.SpecialRole = Rock.Model.SpecialRole.None;
                     auth.PersonId = personId;
                     auth.Order = ++maxOrder;
-                    authService.Add( auth, CurrentPersonAlias );
-                    authService.Save( auth, CurrentPersonAlias );
+                    authService.Add( auth );
+
+                    rockContext.SaveChanges();
 
                     actionUpdated = true;
                 }
@@ -487,11 +513,13 @@ namespace RockWeb.Blocks.Administration
         {
             cblRoleActionList.Items.Clear();
 
-            foreach ( string action in iSecured.SupportedActions )
+            foreach ( var action in iSecured.SupportedActions )
             {
-                if ( action == CurrentAction )
+                if ( action.Key == CurrentAction )
                 {
-                    ListItem roleItem = new ListItem( action );
+                    lActionDescription.Text = action.Value;
+
+                    ListItem roleItem = new ListItem( action.Key );
                     roleItem.Selected = true;
                     cblRoleActionList.Items.Add( roleItem );
                 }
@@ -513,7 +541,7 @@ namespace RockWeb.Blocks.Administration
                     if ( groupId < 0 )
                         groupId = null;
 
-                    foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action ) )
+                    foreach ( AuthRule rule in Authorization.AuthRules( iSecured.TypeId, iSecured.Id, action.Key ) )
                     {
                         if ( rule.SpecialRole == specialRole && rule.GroupId == groupId )
                         {
@@ -523,7 +551,7 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     if ( !alreadyAdded )
-                        cblRoleActionList.Items.Add( new ListItem( action ) );
+                        cblRoleActionList.Items.Add( new ListItem( action.Key ) );
                 }
             }
         }

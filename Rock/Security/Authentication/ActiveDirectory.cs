@@ -32,6 +32,7 @@ namespace Rock.Security.Authentication
     [ExportMetadata("ComponentName", "Active Directory")]
     [TextField( "Server", "The Active Directory server name", true, "", "Server", 0 )]
     [TextField( "Domain", "The network domain that users belongs to", true, "", "Server", 1 )]
+    [BooleanField( "Allow Change Password", "Set to true to allow user to change their Active Directory user password from the Rock system", false, "Server")]
     public class ActiveDirectory : AuthenticationComponent
     {
         /// <summary>
@@ -67,7 +68,9 @@ namespace Rock.Security.Authentication
         {
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
+            {
                 username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
+            }
 
             var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
             using ( context )
@@ -131,6 +134,59 @@ namespace Rock.Security.Authentication
         public override string ImageUrl()
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports change password].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports change password]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SupportsChangePassword
+        {
+            get 
+            { 
+                return GetAttributeValue("AllowChangePassword").AsBoolean(); 
+            }
+        }
+
+        /// <summary>
+        /// Changes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="oldPassword">The old password.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <param name="warningMessage">The warning message.</param>
+        /// <returns></returns>
+        public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
+        {
+            warningMessage = null;
+            string username = user.UserName;
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
+            {
+                username = string.Format( @"{0}\{1}", GetAttributeValue( "Domain" ), user.UserName );
+            }
+
+            var context = new PrincipalContext( ContextType.Domain, GetAttributeValue( "Server" ) );
+            using ( context )
+            {
+                var userPrincipal = UserPrincipal.FindByIdentity( context, username );
+                if ( userPrincipal != null )
+                {
+                    try
+                    {
+                        userPrincipal.ChangePassword( oldPassword, newPassword );
+                        return true;
+                    }
+                    catch (PasswordException pex)
+                    {
+                        warningMessage = pex.Message;
+                        return false;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -16,9 +16,9 @@
                 <Columns>
                     <Rock:EnumField DataField="AuditType" HeaderText="Action" SortExpression="AuditType" />
                     <asp:BoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
-                    <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <Rock:RockBoundField DataField="Title" HeaderText="Entity Description" SortExpression="Title" TruncateLength="80" HtmlEncode="true" />
-                    <asp:BoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <Rock:DateTimeField DataField="DateTime" HeaderText="When" SortExpression="DateTime" />
                     <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="PersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
                 </Columns>

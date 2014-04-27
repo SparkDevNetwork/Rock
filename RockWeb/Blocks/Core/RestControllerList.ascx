@@ -7,7 +7,7 @@
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Controller Name" SortExpression="Name" />
                 <asp:BoundField DataField="ClassName" HeaderText="Controller Type" SortExpression="ClassName" />
-                <asp:BoundField DataField="Actions" HeaderText="Actions" SortExpression="Actions" />
+                <asp:BoundField DataField="Actions" HeaderText="Actions" SortExpression="Actions" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 <Rock:SecurityField TitleField="Name" />
             </Columns>
         </Rock:Grid>

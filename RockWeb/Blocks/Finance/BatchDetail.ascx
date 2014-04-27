@@ -21,7 +21,7 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbControlAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Control Amount" TabIndex="2" 
+                        <Rock:CurrencyBox ID="tbControlAmount" runat="server" CssClass="input-width-md" Label="Control Amount" TabIndex="2" 
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
                         <Rock:RockDropDownList ID="ddlStatus" TabIndex="3" runat="server" Label="Status"></Rock:RockDropDownList>
                     </div>

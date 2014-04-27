@@ -22,6 +22,7 @@
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="Description" />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
                         <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching" Text="Yes" Help="Should the file be cached from the storage provider to the server's file system.  This is not recommended for files that need heightened security. " />
+                        <Rock:RockCheckBox ID="cbRequiresSecurity" runat="server" Label="Requires Security" Text="Yes" Help="Should security be validated on files of this type. This is not recommended for files that don't really need security." />
                         <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" Required="true" AutoPostBack="true"/>
                     </div>
                     <div class="col-md-6">

@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -50,8 +51,8 @@ namespace RockWeb.Blocks.Cms
             gMarketingCampaignAdType.Actions.AddClick += gMarketingCampaignAdType_Add;
             gMarketingCampaignAdType.GridRebind += gMarketingCampaignAdType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gMarketingCampaignAdType.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaignAdType.IsDeleteEnabled = canAddEditDelete;
         }
@@ -100,24 +101,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaignAdType_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( rockContext );
+            MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( (int)e.RowKeyValue );
+
+            if ( marketingCampaignAdType != null )
             {
-                MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
-                MarketingCampaignAdType marketingCampaignAdType = marketingCampaignAdTypeService.Get( (int)e.RowKeyValue );
-
-                if ( marketingCampaignAdType != null )
+                string errorMessage;
+                if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !marketingCampaignAdTypeService.CanDelete( marketingCampaignAdType, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    marketingCampaignAdTypeService.Delete( marketingCampaignAdType, CurrentPersonAlias );
-                    marketingCampaignAdTypeService.Save( marketingCampaignAdType, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                marketingCampaignAdTypeService.Delete( marketingCampaignAdType );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( new RockContext() );
             SortProperty sortProperty = gMarketingCampaignAdType.SortProperty;
 
             if ( sortProperty != null )

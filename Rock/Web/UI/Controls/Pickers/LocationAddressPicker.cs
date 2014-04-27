@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -232,7 +233,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return new LocationService().Get( _hfLocationId.ValueAsInt() );
+                return new LocationService( new RockContext() ).Get( _hfLocationId.ValueAsInt() );
             }
 
             private set
@@ -257,7 +258,7 @@ namespace Rock.Web.UI.Controls
                     _tbAddress1.Text = string.Empty;
                     _tbAddress2.Text = string.Empty;
                     _tbCity.Text = string.Empty;
-                    _ddlState.SelectedValue = string.Empty;
+                    _ddlState.SelectedValue = _ddlState.DefaultSelectedValue;
                     _tbZip.Text = string.Empty;
                 }
             }
@@ -321,6 +322,8 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "block";
             }
 
+            
+
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelectNone );
         }
@@ -336,6 +339,8 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
+            
             base.Render( writer );
         }
 
@@ -354,7 +359,6 @@ namespace Rock.Web.UI.Controls
 
             _btnPickerLabel = new HtmlAnchor { ID = "btnPickerLabel" };
             _btnPickerLabel.Attributes["class"] = "picker-label";
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );
             this.Controls.Add( _btnPickerLabel );
 
             _btnSelectNone = new HtmlAnchor();
@@ -460,7 +464,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
-            LocationService locationService = new LocationService();
+            LocationService locationService = new LocationService( new RockContext() );
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
             _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-user'></i>{0}<b class='fa fa-caret-down pull-right'></b>", this.AddressSummaryText );

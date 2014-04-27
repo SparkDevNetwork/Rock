@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class CategoriesController : Rock.Rest.ApiController<Rock.Model.Category>
     {
-        public CategoriesController() : base( new Rock.Model.CategoryService() ) { } 
+        public CategoriesController() : base( new Rock.Model.CategoryService( new Rock.Data.RockContext() ) ) { } 
     }
 }

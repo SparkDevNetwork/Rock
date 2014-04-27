@@ -30,6 +30,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class GroupTypeRolesController : Rock.Rest.ApiController<Rock.Model.GroupTypeRole>
     {
-        public GroupTypeRolesController() : base( new Rock.Model.GroupTypeRoleService() ) { } 
+        public GroupTypeRolesController() : base( new Rock.Model.GroupTypeRoleService( new Rock.Data.RockContext() ) ) { } 
     }
 }

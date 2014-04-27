@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -60,13 +61,13 @@ namespace RockWeb.Blocks.Cms
             gMarketingCampaignAds.GridRebind += gMarketingCampaignAds_GridRebind;
             gMarketingCampaignAds.EmptyDataText = Server.HtmlEncode( None.Text );
 
-            // Block Security on Ads grid (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security on Ads grid (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gMarketingCampaignAds.Actions.ShowAdd = canAddEditDelete;
             gMarketingCampaignAds.IsDeleteEnabled = canAddEditDelete;
 
             Dictionary<string, BoundField> boundFields = gMarketingCampaignAds.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
-            boundFields["MarketingCampaign.Title"].Visible = GetAttributeValue( "ShowMarketingCampaignTitle" ).FromTrueFalse();
+            boundFields["MarketingCampaign.Title"].Visible = GetAttributeValue( "ShowMarketingCampaignTitle" ).AsBoolean();
         }
 
         /// <summary>
@@ -122,7 +123,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService();
+            MarketingCampaignAdTypeService marketingCampaignAdTypeService = new MarketingCampaignAdTypeService( new RockContext() );
             var adTypeList = marketingCampaignAdTypeService.Queryable().Select( a => new { a.Id, a.Name } ).OrderBy( a => a.Name ).ToList();
             foreach ( var adType in adTypeList )
             {
@@ -207,7 +208,7 @@ namespace RockWeb.Blocks.Cms
 
                 case "Ad Type":
 
-                    var adType = new MarketingCampaignAdTypeService().Get( e.Value.AsInteger() ?? 0 );
+                    var adType = new MarketingCampaignAdTypeService( new RockContext() ).Get( e.Value.AsInteger() ?? 0 );
                     if ( adType != null )
                     {
                         e.Value = adType.Name;
@@ -287,23 +288,22 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaignAds_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
-                MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( e.RowKeyId );
-                if ( marketingCampaignAd != null )
-                {
-                    string errorMessage;
-                    if ( !marketingCampaignAdService.CanDelete( marketingCampaignAd, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+            var rockContext = new RockContext();
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( rockContext );
 
-                    marketingCampaignAdService.Delete( marketingCampaignAd, CurrentPersonAlias );
-                    marketingCampaignAdService.Save( marketingCampaignAd, CurrentPersonAlias );
+            MarketingCampaignAd marketingCampaignAd = marketingCampaignAdService.Get( e.RowKeyId );
+            if ( marketingCampaignAd != null )
+            {
+                string errorMessage;
+                if ( !marketingCampaignAdService.CanDelete( marketingCampaignAd, out errorMessage ) )
+                {
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                marketingCampaignAdService.Delete( marketingCampaignAd );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
+            MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService( new RockContext() );
             var qry = marketingCampaignAdService.Queryable( "MarketingCampaign, MarketingCampaignAdType" );
 
             // limit to current marketingCampaign context (if there is one)

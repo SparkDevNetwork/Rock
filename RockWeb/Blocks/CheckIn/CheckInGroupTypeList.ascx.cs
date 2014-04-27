@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.ComponentModel;
+using Rock.Security;
 
 namespace RockWeb.Blocks.CheckIn
 {
@@ -55,8 +56,8 @@ namespace RockWeb.Blocks.CheckIn
             gGroupType.Actions.AddClick += gGroupType_Add;
             gGroupType.GridRebind += gGroupType_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gGroupType.Actions.ShowAdd = canAddEditDelete;
 
         }
@@ -98,7 +99,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void BindGrid()
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
+            GroupTypeService groupTypeService = new GroupTypeService( new RockContext() );
             SortProperty sortProperty = gGroupType.SortProperty;
 
             var qry = groupTypeService.Queryable();
@@ -168,15 +169,19 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddCheckinGroupType_SaveClick( object sender, EventArgs e )
         {
-            var groupTypeService = new GroupTypeService();
+            var rockContext = new RockContext();
+            var groupTypeService = new GroupTypeService( rockContext );
+            
             GroupType groupType = new GroupType();
             groupType.Name = tbGroupTypeName.Text;
             groupType.GroupTypePurposeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ).Id;
             groupType.ShowInNavigation = false;
             groupType.ShowInGroupList = false;
 
-            groupTypeService.Add( groupType, CurrentPersonAlias );
-            groupTypeService.Save( groupType, CurrentPersonAlias );
+            groupTypeService.Add( groupType );
+
+            rockContext.SaveChanges();
+
             mdAddCheckinGroupType.Hide();
 
             BindGrid();

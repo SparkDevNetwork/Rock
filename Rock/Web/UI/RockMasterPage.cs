@@ -65,10 +65,29 @@ namespace Rock.Web.UI
                 {
                     theme = _pageCache.Layout.Site.Theme;
                 }
+
                 themeUrl = "~/Themes/" + theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
             }
 
             return ResolveUrl( themeUrl );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url, bool fingerprint )
+        {
+            var resolvedUrl = this.ResolveRockUrl( url );
+
+            if (fingerprint)
+            {
+                resolvedUrl = Fingerprint.Tag( resolvedUrl );
+            }
+
+            return resolvedUrl;
         }
 
     }

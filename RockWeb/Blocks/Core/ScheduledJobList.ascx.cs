@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -48,8 +49,8 @@ namespace RockWeb.Blocks.Administration
             gScheduledJobs.Actions.AddClick += gScheduledJobs_Add;
             gScheduledJobs.GridRebind += gScheduledJobs_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gScheduledJobs.Actions.ShowAdd = canAddEditDelete;
             gScheduledJobs.IsDeleteEnabled = canAddEditDelete;
 
@@ -152,21 +153,19 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            var jobService = new ServiceJobService( rockContext );
+            ServiceJob job = jobService.Get( (int)e.RowKeyValue );
+
+            string errorMessage;
+            if ( !jobService.CanDelete( job, out errorMessage ) )
             {
-                var jobService = new ServiceJobService();
-                ServiceJob job = jobService.Get( (int)e.RowKeyValue );
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                return;
+            }
 
-                string errorMessage;
-                if ( !jobService.CanDelete( job, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-                jobService.Delete( job, CurrentPersonAlias );
-                jobService.Save( job, CurrentPersonAlias );
-            } );
+            jobService.Delete( job );
+            rockContext.SaveChanges();
 
             BindGrid();
         }
@@ -190,7 +189,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            var jobService = new ServiceJobService();
+            var jobService = new ServiceJobService( new RockContext() );
             SortProperty sortProperty = gScheduledJobs.SortProperty;
 
             if ( sortProperty != null )

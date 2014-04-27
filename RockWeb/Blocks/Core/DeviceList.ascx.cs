@@ -19,11 +19,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -56,8 +56,8 @@ namespace RockWeb.Blocks.Core
             gDevice.Actions.AddClick += gDevice_Add;
             gDevice.GridRebind += gDevice_GridRebind;
 
-            // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gDevice.Actions.ShowAdd = canAddEditDelete;
             gDevice.IsDeleteEnabled = canAddEditDelete;
         }
@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Core
                     int deviceId = 0;
                     if ( int.TryParse( e.Value, out deviceId ) )
                     {
-                        var service = new DeviceService();
+                        var service = new DeviceService( new RockContext() );
                         var device = service.Get( deviceId );
                         if ( device != null )
                         {
@@ -175,24 +175,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDevice_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var rockContext = new RockContext();
+            DeviceService DeviceService = new DeviceService( rockContext );
+            Device Device = DeviceService.Get( (int)e.RowKeyValue );
+
+            if ( Device != null )
             {
-                DeviceService DeviceService = new DeviceService();
-                Device Device = DeviceService.Get( (int)e.RowKeyValue );
-
-                if ( Device != null )
+                string errorMessage;
+                if ( !DeviceService.CanDelete( Device, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !DeviceService.CanDelete( Device, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    DeviceService.Delete( Device, CurrentPersonAlias );
-                    DeviceService.Save( Device, CurrentPersonAlias );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                DeviceService.Delete( Device );
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -226,7 +224,7 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
             ddlPrinter.Items.Clear();
-            ddlPrinter.DataSource = new DeviceService()
+            ddlPrinter.DataSource = new DeviceService( new RockContext() )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
                 .ToList();
             ddlPrinter.DataBind();
@@ -248,7 +246,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var deviceService = new DeviceService();
+            var deviceService = new DeviceService( new RockContext() );
             var sortProperty = gDevice.SortProperty;
 
             var queryable = deviceService.Queryable().Select( a =>

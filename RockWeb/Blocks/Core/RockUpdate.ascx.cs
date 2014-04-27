@@ -36,6 +36,7 @@ using Rock.Services.NuGet;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
+using Rock.Data;
 
 namespace RockWeb.Blocks.Core
 {
@@ -44,13 +45,17 @@ namespace RockWeb.Blocks.Core
     [Description( "Handles checking for and performing upgrades to the Rock system." )]
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
-
         #region Fields
 
         WebProjectManager nuGetService = null;
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+
+        /// <summary>
+        /// Holds the System Setting key for the sample data load date/time.
+        /// </summary>
+        private static readonly string SYSTEM_SETTING_SD_DATE = "com.rockrms.sampledata.datetime";
 
         #endregion
 
@@ -93,7 +98,8 @@ namespace RockWeb.Blocks.Core
                 _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                 if ( IsUpdateAvailable() )
                 {
-                    divPackage.Visible = true;
+                    pnlUpdatesAvailable.Visible = true;
+                    pnlNoUpdates.Visible = false;
                     cbIncludeStats.Visible = true;
                     BindGrid();
                 }
@@ -111,11 +117,12 @@ namespace RockWeb.Blocks.Core
             rptPackageVersions.DataSource = _availablePackages;
             rptPackageVersions.DataBind();
         }
-
+        
         /// <summary>
         /// Wraps the install or update process in some guarded code while putting the app in "offline"
         /// mode and then back "online" when it's complete.
         /// </summary>
+        /// <param name="version">the semantic version number</param>
         private void Update( string version )
         {
             WriteAppOffline();
@@ -123,17 +130,19 @@ namespace RockWeb.Blocks.Core
             {
                 if ( ! UpdateRockPackage( version ) )
                 {
-                    nbErrors.Visible = true;
-                    nbSuccess.Visible = false;
+                    pnlError.Visible = true;
+                    pnlUpdateSuccess.Visible = false;
                 }
 
-                divPackage.Visible = false;
-                litRockVersion.Text = "";
+                pnlUpdatesAvailable.Visible = false;
+                lRockVersion.Text = "";
+
+                SendStatictics( version );
             }
             catch ( Exception ex )
             {
-                nbErrors.Visible = true;
-                nbSuccess.Visible = false;
+                pnlError.Visible = true;
+                pnlUpdateSuccess.Visible = false;
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }
@@ -198,32 +207,33 @@ namespace RockWeb.Blocks.Core
                     errors = NuGetService.UpdatePackage( update );
                 }
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
-                nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
 
                 // register any new REST controllers
                 try
                 {
-                    new RestControllerService().RegisterControllers( CurrentPersonAlias );
+                    RestControllerService.RegisterControllers();
                 }
                 catch (Exception ex)
                 {
                     errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
+                    LogException( ex );
                 }
             }
             catch ( InvalidOperationException ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
+                LogException( ex );
             }
 
             if ( errors != null && errors.Count() > 0 )
             {
-                nbErrors.Visible = true;
-                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                pnlError.Visible = true;
+                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul class='list-padded'>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
                 return false;
             }
             else
             {
-                nbSuccess.Visible = true;
+                pnlUpdateSuccess.Visible = true;
                 rptPackageVersions.Visible = false;
                 return true;
             }
@@ -234,7 +244,9 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         protected void DisplayRockVersion()
         {
-            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
+            lRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersionFullName() );
+            lNoUpdateVersion.Text = VersionInfo.GetRockProductVersionFullName();
+            lSuccessVersion.Text = VersionInfo.GetRockProductVersionFullName();
         }
         
         /// <summary>
@@ -283,7 +295,9 @@ namespace RockWeb.Blocks.Core
             }
             catch ( InvalidOperationException ex )
             {
-                litMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
+                pnlNoUpdates.Visible = false;
+                pnlError.Visible = true;
+                lMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
 
             if (verifiedPackages.Count > 0 )
@@ -410,9 +424,71 @@ namespace RockWeb.Blocks.Core
             }
 
             // if we had a match then wrap it in <ul></ul> markup
-            return foundMatch ? string.Format( "<ul>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
+            return foundMatch ? string.Format( "<ul class='list-padded'>{0}</ul>", htmlBuilder.ToString() ) : htmlBuilder.ToString();
         }
-        #endregion
 
+        /// <summary>
+        /// Sends statistics to the SDN server but only if the sample data has not been 
+        /// loaded. The statistics are:
+        ///     * Rock Instance Id
+        ///     * Update Version
+        ///     * IP Address - The IP address of your Rock server.
+        ///     
+        /// ...and we only send these if they checked the "Include Impact Statistics":
+        ///     * Organization Name and Address
+        ///     * Public Web Address
+        ///     * Number of Active Records
+        ///     
+        /// As per http://www.rockrms.com/Rock/Impact
+        /// </summary>
+        /// <param name="version">the semantic version number</param>
+        private void SendStatictics( string version )
+        {
+            try
+            {
+                DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SYSTEM_SETTING_SD_DATE ).AsDateTime();
+                string organizationName = string.Empty;
+                string organizationAddress = string.Empty;
+                int numberOfActiveRecords = 0;
+
+                if ( sampleDataLoadDate == null )
+                {
+                    var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
+                    var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
+
+                    if ( cbIncludeStats.Checked )
+                    {
+                        var globalAttributes = GlobalAttributesCache.Read();
+                        organizationName = globalAttributes.GetValue( "OrganizationName" );
+
+                        var rockContext = new RockContext();
+
+                        // Fetch their organization address
+                        var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
+                        if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
+                        {
+                            var location = new Rock.Model.LocationService( rockContext ).Get( organizationAddressLocationGuid );
+                            if ( location != null )
+                            {
+                                organizationAddress = location.GetFullStreetAddress();
+                            }
+                        }
+
+                        numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
+                    }
+
+                    // TODO now send them to SDN
+                    //SendToSpark( rockInstanceId, version, ipAddress, organizationName, organizationAddress, numberOfActiveRecords );
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Just catch any exceptions, log it, and keep moving... We don't want to mess up the experience
+                // over a few statistics/metrics.
+                LogException( ex );
+            }
+        }
+
+        #endregion
     }
 }

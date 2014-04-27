@@ -279,5 +279,38 @@ namespace Rock.Services.NuGet
             return isSuccess;
         }
 
+
+
+        /// <summary>
+        /// Adds the import.
+        /// </summary>
+        /// <param name="targetFullPath">The target full path.</param>
+        /// <param name="location">The location.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void AddImport( string targetFullPath, ProjectImportLocation location )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Files the exists in project.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public bool FileExistsInProject( string path )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Removes the import.
+        /// </summary>
+        /// <param name="targetFullPath">The target full path.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void RemoveImport( string targetFullPath )
+        {
+            throw new NotImplementedException();
+        }
     }
 }

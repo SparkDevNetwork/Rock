@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -184,7 +185,6 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
-        private Image _imgPhoto;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private FileUpload _fileUpload;
@@ -376,10 +376,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            _imgPhoto = new Image();
-            _imgPhoto.ID = this.ID + "_imgPhoto";
-            Controls.Add( _imgPhoto );
-
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
             Controls.Add( _hfBinaryFileId );
@@ -450,7 +446,8 @@ namespace Rock.Web.UI.Controls
         {
             try
             {
-                BinaryFileService binaryFileService = new BinaryFileService();
+                var rockContext = new RockContext();
+                BinaryFileService binaryFileService = new BinaryFileService(rockContext);
 
                 // load image from database
                 var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
@@ -467,8 +464,9 @@ namespace Rock.Web.UI.Controls
                     croppedBinaryFile.Data = new BinaryFileData();
                     croppedBinaryFile.Data.Content = croppedImage;
 
-                    binaryFileService.Add( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
-                    binaryFileService.Save( croppedBinaryFile, this.RockBlock().CurrentPersonAlias );
+                    binaryFileService.Add( croppedBinaryFile );
+                    rockContext.SaveChanges();
+
                     this.BinaryFileId = croppedBinaryFile.Id;
                 }
 
@@ -581,7 +579,7 @@ namespace Rock.Web.UI.Controls
 
             _nbImageWarning.Visible = false;
             _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + CropBinaryFileId;
-            var binaryFile = new BinaryFileService().Get( CropBinaryFileId ?? 0 );
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
             if ( binaryFile != null )
             {
                 if ( binaryFile.MimeType != "image/svg+xml" )
@@ -636,18 +634,19 @@ namespace Rock.Web.UI.Controls
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
 
+            string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1});background-size:cover;background-position:50%'></div>";
+            string imageDivHtml = "";
+
             if ( BinaryFileId != null )
             {
-                _imgPhoto.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150";
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150" ) );
             }
             else
             {
-                _imgPhoto.ImageUrl = this.NoPictureUrl;
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl);
             }
 
-            _imgPhoto.RenderControl( writer );
+            writer.Write( imageDivHtml );
             writer.WriteLine();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
@@ -749,7 +748,7 @@ $('#{5}').click(function () {{
                 this.BinaryFileId,
                 this.BinaryFileTypeGuid,
                 _hfBinaryFileId.ClientID,
-                _imgPhoto.ClientID,
+                this.ClientID + "_divPhoto",
                 _aRemove.ClientID,
                 _imgCropSource.ClientID,
                 _hfCropCoords.ClientID,

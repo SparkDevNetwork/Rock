@@ -12,8 +12,8 @@
         </Rock:GridFilter>
         <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" OnRowDataBound="gGroupLocationSchedule_RowDataBound" >
             <Columns>
-                <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="GroupName" />
-                <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
+                <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="Group.Name" />
+                <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="Location.Name" />
             </Columns>
         </Rock:Grid>
 

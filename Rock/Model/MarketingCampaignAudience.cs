@@ -31,6 +31,9 @@ namespace Rock.Model
     [DataContract]
     public partial class MarketingCampaignAudience : Model<MarketingCampaignAudience>
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the MarketingCampaignId of the <see cref="Rock.Model.MarketingCampaign"/> that is being promoted to the Audience.
         /// </summary>
@@ -58,6 +61,10 @@ namespace Rock.Model
         [DataMember]
         public bool IsPrimary { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets the Name of this MarketingCampaignAudience.
         /// </summary>
@@ -65,12 +72,14 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the MarketingCampaignAudience.
         /// </value>
         [DataMember]
+        [NotMapped]
         public virtual string Name
         {
             get
             {
                 return ( AudienceTypeValueId > 0 ? DefinedValueCache.Read(AudienceTypeValueId).Name : string.Empty );
             }
+            private set { }
         }
 
         /// <summary>
@@ -79,7 +88,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.MarketingCampaign"/> that is being promoted to this Audience.
         /// </value>
-        [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
         /// <summary>
@@ -90,7 +98,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Model.DefinedValue AudienceTypeValue { get; set; }
+
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// 
@@ -106,4 +119,7 @@ namespace Rock.Model
             this.HasRequired( p => p.AudienceTypeValue ).WithMany().HasForeignKey( p => p.AudienceTypeValueId ).WillCascadeOnDelete( true );
         }
     }
+
+    #endregion
+
 }

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Caching;
-
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -133,7 +133,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                CampusService campusService = new CampusService();
+                CampusService campusService = new CampusService( new RockContext() );
                 Campus campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
@@ -169,7 +169,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var campusService = new CampusService();
+                var campusService = new CampusService( new RockContext() );
                 var campusModel = campusService.Get( guid );
                 if ( campusModel != null )
                 {
