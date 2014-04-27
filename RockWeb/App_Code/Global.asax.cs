@@ -126,16 +126,17 @@ namespace RockWeb
 
                         // Migrate any plugins that have pending migrations
                         List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Rock.Plugin.Migration ) ).Select( a => a.Value ).ToList();
-
-                        foreach ( var migrationType in migrationList.OrderBy( m => m.Name ) )
+                        if ( migrationList.Any() )
                         {
-                            if ( migrationType != typeof( Rock.Plugin.Migration ) )
+                            Version rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                            foreach ( var migrationType in migrationList.OrderBy( m => m.Name ) )
                             {
-                                var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
-                                migration.Update();
+                                if ( migrationType != typeof( Rock.Plugin.Migration ) )
+                                {
+                                    var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
+                                }
                             }
                         }
-
                     }
                     catch ( Exception ex )
                     {

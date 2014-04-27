@@ -563,6 +563,14 @@ namespace Rock.Data
         public DbSet<PhoneNumber> PhoneNumbers { get; set; }
 
         /// <summary>
+        /// Gets or sets the plugin migrations.
+        /// </summary>
+        /// <value>
+        /// The plugin migrations.
+        /// </value>
+        public DbSet<PluginMigration> PluginMigrations { get; set; }
+
+        /// <summary>
         /// Gets or sets the prayer requests.
         /// </summary>
         /// <value>
