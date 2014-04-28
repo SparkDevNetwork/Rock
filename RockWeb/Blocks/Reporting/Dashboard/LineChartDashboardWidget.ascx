@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfColumns" runat="server" />
-        <asp:HiddenField ID="hfDataTable" runat="server" />
+        <asp:HiddenField ID="hfRestUrlParams" runat="server" />
         <asp:HiddenField ID="hfOptions" runat="server" />
 
         <script type="text/javascript">
@@ -13,9 +13,27 @@
             google.load('visualization', '1.0', { 'packages': ['corechart'] });
 
             // Set a callback to run when the Google Visualization API is loaded.
-            google.setOnLoadCallback(drawChart);
+            google.setOnLoadCallback(getChartDatatable);
 
-            function drawChart() {
+            function getChartDatatable() {
+
+                var restUrl = '<%= ResolveUrl( "~/api/MetricValuesController/GetChartData/" ) %>';
+                var metricId = 61;
+
+                $.ajax({
+                    url: restUrl + $('#<%= hfRestUrlParams.ClientID%>').val(),
+                    dataType: 'json',
+                    contentType: 'application/json'
+                })
+                .done(function (data) {
+                    drawChart(data);
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    debugger
+                });
+            }
+
+            function drawChart(chartDataJS) {
 
                 // define chart
                 var columnsText = $('#<%=hfColumns.ClientID%>').val();
@@ -26,10 +44,10 @@
                         cols: columnsData
                     });
 
-                // data for chart
-                var arrayText = $('#<%=hfDataTable.ClientID%>').val();
-                var arrayData = eval(arrayText);
-                dataTable.addRows(arrayData);
+                // data for chart is in JS object literal notation, so we need to eval it first
+                var chartDataArray = eval(chartDataJS);
+
+                dataTable.addRows(chartDataArray);
 
                 // options for chart
                 var optionsText = $('#<%=hfOptions.ClientID%>').val();

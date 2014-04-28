@@ -112,19 +112,15 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 // Data for Chart
                 Guid attendanceMetricGuid = new Guid( "D4752628-DFC9-4681-ADB3-01936B8F38CA" );
-                var qry = new MetricValueService( new RockContext() ).Queryable().Where( w => w.MetricValueDateTime.HasValue && w.Metric.Guid == attendanceMetricGuid );
-                DateTime startDate = new DateTime( 2013, 1, 1 );
-                DateTime endDate = new DateTime( 2014, 1, 1 );
-                qry = qry.Where( a => a.MetricValueDateTime.Value >= startDate && a.MetricValueDateTime.Value < endDate );
-
-                var dataList = qry.ToList().Select( a => new object[]
-                    {
-                        a.MetricValueDateTime,
-                        a.YValue,
-                        HttpUtility.JavaScriptStringEncode(a.Note)
-                    } );
-
-                hfDataTable.Value = JsonConvert.SerializeObject( dataList, new JsonSerializerSettings { Converters = new JsonConverter[] { new ChartDateTimeJsonConverter() } } );
+                int metricId = new MetricService( new RockContext()).Get(attendanceMetricGuid).Id;
+                DateTime? startDate = new DateTime( 2013, 1, 1 );
+                DateTime? endDate = new DateTime( 2014, 1, 1 );
+                int? entityId = null;
+                hfRestUrlParams.Value = string.Format( "{0}?startDate={1}&endDate={2}", metricId, startDate ?? DateTime.MinValue, endDate ?? DateTime.MaxValue);
+                if (entityId.HasValue)
+                {
+                    hfRestUrlParams.Value += string.Format( "&entityId={0}", entityId );
+                }
             }
         }
 
