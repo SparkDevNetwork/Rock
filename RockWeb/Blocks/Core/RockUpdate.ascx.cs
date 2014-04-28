@@ -199,6 +199,9 @@ namespace RockWeb.Blocks.Core
                 {
                     errors = NuGetService.UpdatePackage( update );
                 }
+
+                CheckForManualFileMoves( version );
+
                 nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
                 lSuccessVersion.Text = update.Title;
 
@@ -382,6 +385,43 @@ namespace RockWeb.Blocks.Core
     </body>
 </html>
 " );
+        }
+
+        private void CheckForManualFileMoves(string version)
+        {
+            var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
+            if ( versionDirectory.Exists )
+            {
+                foreach ( var file in versionDirectory.EnumerateFiles( "*", SearchOption.AllDirectories ) )
+                {
+                    ManuallyMoveFile( file, file.FullName.Replace( "\\App_Data\\" + version, "" ) );
+                }
+
+                versionDirectory.Delete( true );
+            }
+
+        }
+
+        private void ManuallyMoveFile(FileInfo file, string newPath)
+        {
+            if ( newPath.EndsWith( ".dll" ) && !newPath.Contains( @"\bin\" ) )
+            {
+                int fileCount = 0;
+                if ( File.Exists( newPath ) )
+                {
+                    // generate a unique *.#.rdelete filename
+                    do
+                    {
+                        fileCount++;
+                    }
+                    while ( File.Exists( string.Format( "{0}.{1}.rdelete", newPath, fileCount ) ) );
+
+                    string fileToDelete = string.Format( "{0}.{1}.rdelete", newPath, fileCount );
+                    File.Move( newPath, fileToDelete );
+                }
+            }
+
+            file.CopyTo( newPath, true );
         }
 
         /// <summary>
