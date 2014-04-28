@@ -18,12 +18,20 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="row">
-                    <div class="col-md-6"><Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" /></div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                    </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                        <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
                     </div>
                 </div>
 
