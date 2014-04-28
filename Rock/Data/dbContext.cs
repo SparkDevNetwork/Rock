@@ -183,12 +183,6 @@ namespace Rock.Data
                             model.ModifiedByPersonAliasId = personAliasId;
                         }
 
-                        if ( model is Person )
-                        {
-                            var person = model as Person;
-                            var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
                     }
                 }
                 else if (entry.State == EntityState.Deleted)
