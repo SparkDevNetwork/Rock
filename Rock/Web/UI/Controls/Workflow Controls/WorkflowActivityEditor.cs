@@ -27,7 +27,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
-    public class WorkflowActivityTypeEditor : CompositeControl
+    public class WorkflowActivityEditor : CompositeControl
     {
         private HiddenField _hfActivityTypeGuid;
         private Label _lblActivityTypeName;
@@ -51,6 +51,37 @@ namespace Rock.Web.UI.Controls
         public bool ForceContentVisible { private get; set; }
 
         /// <summary>
+        /// Gets or sets the activity type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The activity type unique identifier.
+        /// </value>
+        public Guid ActivityTypeGuid
+        {
+            get 
+            {
+                EnsureChildControls();
+                return _hfActivityTypeGuid.Value.AsGuid();
+            }
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbActivityTypeName.Text;
+            }
+
+        }
+        
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -68,7 +99,7 @@ $('.workflow-activity > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-activity a.btn-danger').click(function (event) {
+$('.workflow-activity a.js-activity-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -119,7 +150,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             result.IsActivatedWithWorkflow = _cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
             int order = 0;
-            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
+            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
             {
                 WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
                 workflowActionType.Order = order++;
@@ -169,11 +200,11 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             _lbDeleteActivityType = new LinkButton();
             _lbDeleteActivityType.CausesValidation = false;
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
-            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger js-activity-delete";
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
-            _cbActivityTypeIsActive = new RockCheckBox { Label = "Active" };
+            _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
@@ -202,14 +233,14 @@ javascript:
             _tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
             _tbActivityTypeDescription.Label = "Description";
             _tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
-            _tbActivityTypeDescription.Rows = 4;
+            _tbActivityTypeDescription.Rows = 2;
 
             // set label when they exit the edit field
             _tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActivityTypeDescription.ID );
             _tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
             _tbActivityTypeDescription.PropertyName = "Description";
 
-            _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Label = "Activated with Workflow" };
+            _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
             _lbAddActionType = new LinkButton();
@@ -298,7 +329,7 @@ javascript:
 
             if ( !forceContentVisible )
             {
-                foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
                 {
                     if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
                     {
@@ -324,18 +355,22 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             _tbActivityTypeName.RenderControl( writer );
-            _tbActivityTypeDescription.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbActivityTypeIsActive.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
+            _tbActivityTypeDescription.RenderControl( writer );
 
             // actions
             writer.RenderBeginTag( "fieldset" );
@@ -350,7 +385,7 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
             {
                 workflowActionTypeEditor.RenderControl( writer );
             }

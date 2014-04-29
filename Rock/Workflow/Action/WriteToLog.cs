@@ -25,13 +25,13 @@ using Rock.Model;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets a workflow status
+    /// Writes a message to Workflow log.
     /// </summary>
-    [Description( "Set the workflow status" )]
+    [Description( "Writes a message to Workflow log." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Status" )]
-    [TextField( "Status", "The status to set workflow to" )]
-    public class SetStatus : ActionComponent
+    [ExportMetadata( "ComponentName", "Write To Log" )]
+    [MemoField( "Message", "The message to write to the log", true, "" )]
+    public class WriteToLog : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -43,9 +43,9 @@ namespace Rock.Workflow.Action
         public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            string status = GetAttributeValue( action, "Status" );
-            action.Activity.Workflow.Status = status;
-            action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
+
+            var message = GetAttributeValue( action, "Message" );
+            action.Activity.Workflow.AddLogEntry( message );
 
             return true;
         }

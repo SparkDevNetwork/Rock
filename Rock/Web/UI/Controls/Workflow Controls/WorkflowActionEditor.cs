@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionTypeEditor : CompositeControl
+    public class WorkflowActionEditor : CompositeControl
     {
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
@@ -42,6 +42,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlEntityType;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
+        private WorkflowFormEditor _formEditor;
         private PlaceHolder _phActionAttributes;
 
         /// <summary>
@@ -70,7 +71,7 @@ $('.workflow-action > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-action a.btn-danger').click(function (event) {
+$('.workflow-action a.js-action-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -78,8 +79,42 @@ $('.workflow-action a.btn-danger').click(function (event) {
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
+
+$('a.workflow-formfield-reorder').click(function (event) {
+    event.stopImmediatePropagation();
+});
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActionTypeEditorScript", script, true );
+        }
+
+        /// <summary>
+        /// Sets the workflow attributes.
+        /// </summary>
+        /// <value>
+        /// The workflow attributes.
+        /// </value>
+        public Dictionary<Guid, string> WorkflowAttributes
+        {
+            set
+            {
+                EnsureChildControls();
+                _formEditor.WorkflowAttributes = value;
+            }
+        }
+
+        /// <summary>
+        /// Sets the workflow activities.
+        /// </summary>
+        /// <value>
+        /// The workflow activities.
+        /// </value>
+        public Dictionary<string, string> WorkflowActivities
+        {
+            set
+            {
+                EnsureChildControls();
+                _formEditor.WorkflowActivities = value;
+            }
         }
 
         /// <summary>
@@ -119,6 +154,17 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
                 result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
                 result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
+
+                var entityType = EntityTypeCache.Read( result.EntityTypeId );
+                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+                {
+                    result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                }
+                else
+                {
+                    result.WorkflowForm = null;
+                }
+
                 result.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
                 return result;
@@ -130,8 +176,21 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 _hfActionTypeGuid.Value = value.Guid.ToString();
                 _tbActionTypeName.Text = value.Name;
                 _ddlEntityType.SetValue( value.EntityTypeId );
-                _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+
+                var entityType = EntityTypeCache.Read( value.EntityTypeId );
+                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+                {
+                    _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                    _cbIsActionCompletedOnSuccess.Checked = true;
+                    _cbIsActionCompletedOnSuccess.Enabled = false;
+                }
+                else
+                {
+                    _formEditor.Form = null;
+                    _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
+                    _cbIsActionCompletedOnSuccess.Enabled = true;
+                }
 
                 var action = EntityTypeCache.Read( value.EntityTypeId );
                 if ( action != null )
@@ -163,7 +222,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             _lbDeleteActionType = new LinkButton();
             _lbDeleteActionType.CausesValidation = false;
             _lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
-            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger js-action-delete";
             _lbDeleteActionType.Click += lbDeleteActionType_Click;
 
             var iDelete = new HtmlGenericControl( "i" );
@@ -214,11 +273,14 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             _tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             _tbActionTypeName.PropertyName = "Name";
 
-            _cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "Action is Completed on Success" };
+            _cbIsActionCompletedOnSuccess = new RockCheckBox { Text = "Action is Completed on Success" };
             _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "Activity is Completed on Success" };
+            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Text = "Activity is Completed on Success" };
             _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
+
+            _formEditor = new WorkflowFormEditor();
+            _formEditor.ID = this.ID + "_formEditor";
 
             _phActionAttributes = new PlaceHolder();
             _phActionAttributes.ID = this.ID + "_phActionAttributes";
@@ -229,6 +291,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             Controls.Add( _ddlEntityType );
             Controls.Add( _cbIsActionCompletedOnSuccess );
             Controls.Add( _cbIsActivityCompletedOnSuccess );
+            Controls.Add( _formEditor );
             Controls.Add( _phActionAttributes );
             Controls.Add( _lbDeleteActionType );
         }
@@ -301,12 +364,25 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // action edit fields
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbActionTypeName.RenderControl( writer );
             _ddlEntityType.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbIsActionCompletedOnSuccess.RenderControl( writer );
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
+            writer.RenderEndTag();
 
-            // action attributes
+            writer.RenderEndTag();
+
+            _formEditor.RenderControl( writer );
+
             _phActionAttributes.RenderControl( writer );
 
             // widget-content div
