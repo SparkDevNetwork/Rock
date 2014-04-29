@@ -34,9 +34,9 @@ begin
    -- example metric
    
    set @metricGuid = NEWID();
-   INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass],[IsCumulative],[Guid])
+   INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass],[IsCumulative],[Guid])
      VALUES 
-        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'fa fa-gift', 0, @metricGuid)
+        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'Weekend', 'Visitors', 'fa fa-gift', 0, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
 
@@ -51,47 +51,47 @@ begin
     -- example metric    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     set @metricGuid = NEWID();
-    INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass], [IsCumulative],[Guid])
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative],[Guid])
      VALUES 
-        (0,'Free Lunches','Number of Free Lunches per day', 'fa fa-thumbs-up', 1, @metricGuid)
+        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-thumbs-up', 1, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
     
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
         values ( @metricId, @categoryId, 0, NEWID())
 
-INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [XValue], [YValue], [Order], [Guid])
+INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime], [XValue], [YValue], [Order], [Guid])
         values 
-( @metricId, 1, '12/11/2013', 500, 0, NEWID()),
-( @metricId, 1, '12/18/2013', 200, 0, NEWID()),
-( @metricId, 1, '12/25/2013', 0, 0, NEWID()),
-( @metricId, 1, '01/03/2013', 0, 0, NEWID()),
-( @metricId, 1, '01/10/2013', 999, 0, NEWID()),
-( @metricId, 1, '01/17/2013', 5000, 0, NEWID()),
-( @metricId, 1, '01/24/2013', 12, 0, NEWID()),
-( @metricId, 1, '02/01/2013', 45, 0, NEWID()),
-( @metricId, 1, '02/05/2013', 10, 0, NEWID()),
-( @metricId, 1, '02/10/2013', 200, 0, NEWID()),
-( @metricId, 1, '02/18/2013', 300, 0, NEWID()),
-( @metricId, 1, '03/01/2013', 400, 0, NEWID()),
-( @metricId, 1, '04/01/2013', 500, 0, NEWID()),
-( @metricId, 1, '05/01/2013', 600, 0, NEWID()),
-( @metricId, 1, '06/01/2013', 700, 0, NEWID()),
-( @metricId, 1, '07/01/2013', 300, 0, NEWID()),
-( @metricId, 1, '08/01/2013', 200, 0, NEWID()),
-( @metricId, 1, '09/01/2013', 100, 0, NEWID()),
-( @metricId, 1, '10/01/2013', 50, 0, NEWID()),
-( @metricId, 1, '10/02/2013', 1.9199065065406540, 0, NEWID()),
-( @metricId, 1, '11/01/2013', 9, 0, NEWID())
+( @metricId, 1, '12/11/2013', 0, 500, 0, NEWID()),
+( @metricId, 1, '12/18/2013', 0, 200, 0, NEWID()),
+( @metricId, 1, '12/25/2013', 0, 0, 0, NEWID()),
+( @metricId, 1, '01/03/2013', 0, 0, 0, NEWID()),
+( @metricId, 1, '01/10/2013', 0, 999, 0, NEWID()),
+( @metricId, 1, '01/17/2013', 0, 5000, 0, NEWID()),
+( @metricId, 1, '01/24/2013', 0, 12, 0, NEWID()),
+( @metricId, 1, '02/01/2013', 0, 45, 0, NEWID()),
+( @metricId, 1, '02/05/2013', 0, 10, 0, NEWID()),
+( @metricId, 1, '02/10/2013', 0, 200, 0, NEWID()),
+( @metricId, 1, '02/18/2013', 0, 300, 0, NEWID()),
+( @metricId, 1, '03/01/2013', 0, 400, 0, NEWID()),
+( @metricId, 1, '04/01/2013', 0, 500, 0, NEWID()),
+( @metricId, 1, '05/01/2013', 0, 600, 0, NEWID()),
+( @metricId, 1, '06/01/2013', 0, 700, 0, NEWID()),
+( @metricId, 1, '07/01/2013', 0, 300, 0, NEWID()),
+( @metricId, 1, '08/01/2013', 0, 200, 0, NEWID()),
+( @metricId, 1, '09/01/2013', 0, 100, 0, NEWID()),
+( @metricId, 1, '10/01/2013', 0, 50, 0, NEWID()),
+( @metricId, 1, '10/02/2013', 0, 1.9199065065406540, 0, NEWID()),
+( @metricId, 1, '11/01/2013', 0, 9, 0, NEWID())
 
 
 
 -- example metric    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     set @metricGuid = 'D4752628-DFC9-4681-ADB3-01936B8F38CA';
-    INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass], [IsCumulative],[Guid])
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative],[Guid])
      VALUES 
-        (0,'Adult Attendence','Number of adults in the weekend service', 'fa fa-thumbs-up', 1, @metricGuid)
+        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-thumbs-up', 1, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
     

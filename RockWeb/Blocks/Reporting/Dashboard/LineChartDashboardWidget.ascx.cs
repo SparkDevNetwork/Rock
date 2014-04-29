@@ -66,42 +66,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             if ( !Page.IsPostBack )
             {
                 // Options for Chart
-                var chartOptions = new ChartOptions();
+                var chartOptions = ChartOptions.Default;
                 chartOptions.vAxis.title = this.Title;
                 if ( !string.IsNullOrWhiteSpace( this.Subtitle ) )
                 {
                     chartOptions.vAxis.title += Environment.NewLine + this.Subtitle;
                 }
-
-                chartOptions.vAxis.minValue = 0;
-                chartOptions.vAxis.titleTextStyle = new
-                {
-                    color = "#515151",
-                    italic = false
-                };
-
-                chartOptions.colors = new string[] { "#8498ab", "#a4b4c4", "#b9c7d5", "#c6d2df", "#d8e1ea" };
-                chartOptions.hAxis = new
-                {
-                    textStyle = new
-                    {
-                        color = "#515151"
-                    },
-                    baselineColor = "#515151"
-                };
-
-                chartOptions.width = null;
-                chartOptions.height = null;
-                chartOptions.legend = new
-                {
-                    position = "bottom",
-                    textStyle = new
-                    {
-                        color = "#515151"
-                    }
-                };
-
-                chartOptions.backgroundColor = "transparent";
 
                 hfOptions.Value = ( chartOptions as object ).ToJson();
                 List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();

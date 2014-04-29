@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Rock.Utility;
 
 namespace Rock.Reporting.Dashboard
 {
@@ -45,6 +47,15 @@ namespace Rock.Reporting.Dashboard
         /// The title.
         /// </value>
         public string title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the curve for Line Charts
+        /// </summary>
+        /// <value>
+        /// The type of the curve.
+        /// </value>
+        [JsonConverter( typeof( EnumAsStringJsonConverter ) )]
+        public LineChartCurveType curveType {get; set;}
 
         /// <summary>
         /// Gets or sets the title text style.
@@ -109,6 +120,47 @@ namespace Rock.Reporting.Dashboard
         /// The height.
         /// </value>
         public int? height { get; set; }
+
+        public static ChartOptions Default
+        {
+            get
+            {
+                var chartOptions = new ChartOptions();
+                chartOptions.vAxis.title = "Chart";
+
+                chartOptions.vAxis.minValue = 0;
+                chartOptions.vAxis.titleTextStyle = new
+                {
+                    color = "#515151",
+                    italic = false
+                };
+
+                chartOptions.colors = new string[] { "#8498ab", "#a4b4c4", "#b9c7d5", "#c6d2df", "#d8e1ea" };
+                chartOptions.hAxis = new
+                {
+                    textStyle = new
+                    {
+                        color = "#515151"
+                    },
+                    baselineColor = "#515151"
+                };
+
+                chartOptions.width = null;
+                chartOptions.height = null;
+                chartOptions.legend = new
+                {
+                    position = "bottom",
+                    textStyle = new
+                    {
+                        color = "#515151"
+                    }
+                };
+
+                chartOptions.backgroundColor = "transparent";
+
+                return chartOptions;
+            }
+        }
     }
 
     /// <summary>
@@ -195,4 +247,18 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         @string
     }
+
+    /// <summary>
+    /// Controls the curve of the lines when the line width is not zero
+    /// </summary>
+    public enum LineChartCurveType
+    {
+        // Straight lines without curve
+        none,
+
+        // The angles of the line will be smoothed
+        function
+    }
+
+    
 }
