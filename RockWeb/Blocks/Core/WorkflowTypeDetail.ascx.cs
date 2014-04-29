@@ -127,6 +127,10 @@ namespace RockWeb.Blocks.Core
                     pnlDetails.Visible = false;
                 }
             }
+            else
+            {
+                ShowDialog();
+            }
 
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
             if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
@@ -157,10 +161,12 @@ namespace RockWeb.Blocks.Core
         private void SortWorkflowActivityListContents( string eventParam, string[] values )
         {
             // put viewstate list into a new list, shuffle the contents, then save it back to the viewstate list
-            SaveWorkflowActivityControlsToViewState();
+            // SaveWorkflowActivityControlsToViewState();
             List<WorkflowActivityType> workflowActivityTypeSortList = WorkflowActivityTypesState.ToList();
             Guid? activeWorkflowActivityTypeGuid = null;
             Guid? activeWorkflowActionTypeGuid = null;
+
+            var workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityEditor>().ToList();
 
             if ( eventParam.Equals( "re-order-activity" ) )
             {
@@ -500,7 +506,7 @@ namespace RockWeb.Blocks.Core
                             }
 
                             int attributeOrder = 0;
-                            foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes )
+                            foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
                             {
                                 int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid ).Id;
 
@@ -943,7 +949,7 @@ namespace RockWeb.Blocks.Core
             gAttributes.DataBind();
 
             var workflowAttributes = new Dictionary<Guid, string>();
-            AttributesState.ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
+            AttributesState.OrderBy( a => a.Order).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
 
             foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
             {
@@ -1045,6 +1051,8 @@ namespace RockWeb.Blocks.Core
             {
                 CreateWorkflowActivityTypeEditorControls( workflowActivityType, workflowActivityType.Guid.Equals( activeWorkflowActivityTypeGuid ?? Guid.Empty ), activeWorkflowActionTypeGuid );
             }
+
+            RefreshActivityLists();
         }
 
         /// <summary>
@@ -1070,14 +1078,17 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void SaveWorkflowActivityControlsToViewState()
         {
-            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
+            var activityTypes = new List<WorkflowActivityType>();
             int order = 0;
             foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
             {
                 WorkflowActivityType workflowActivityType = activityEditor.GetWorkflowActivityType();
                 workflowActivityType.Order = order++;
-                WorkflowActivityTypesState.Add( workflowActivityType );
+                activityTypes.Add( workflowActivityType );
             }
+
+            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
+            WorkflowActivityTypesState.AddAll( activityTypes );
         }
 
         /// <summary>
@@ -1154,7 +1165,7 @@ namespace RockWeb.Blocks.Core
             workflowActionTypeEditor.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             
             var workflowAttributes = new Dictionary<Guid, string>();
-            AttributesState.ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
+            AttributesState.OrderBy( a => a.Order).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
             workflowActionTypeEditor.WorkflowAttributes = workflowAttributes;
 
             workflowActionTypeEditor.WorkflowActionType = workflowActionType;
