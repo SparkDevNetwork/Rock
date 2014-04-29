@@ -90,7 +90,7 @@ namespace Rock.Web.UI.Controls
                     _kvlActions.Value = value.Actions;
                     _tbInactiveMessage.Text = value.InactiveMessage;
 
-                    UpdateRows(value.FormAttributes);
+                    UpdateRows( value.FormAttributes.OrderBy( a => a.Order ) );
                 }
                 else
                 {
@@ -360,6 +360,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            int artificialOrder = 1000;
             foreach ( var workflowAttribute in workflowAttributes )
             {
                 WorkflowFormAttributeRow row = null;
@@ -374,6 +375,8 @@ namespace Rock.Web.UI.Controls
                     row.AttributeName = workflowAttribute.Value;
                     Controls.Add( row );
                 }
+
+                row.Order = artificialOrder++;
 
                 if ( formAttributes != null )
                 {

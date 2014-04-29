@@ -19,19 +19,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
-using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets a workflow status
+    /// Activates all the actions for the current action's activity.
     /// </summary>
-    [Description( "Set the workflow status" )]
+    [Description( "Activates all the actions for the current action's activity." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Status" )]
-    [TextField( "Status", "The status to set workflow to" )]
-    public class SetStatus : ActionComponent
+    [ExportMetadata( "ComponentName", "Activate Actions" )]
+
+    public class ActivateActions : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -43,9 +42,13 @@ namespace Rock.Workflow.Action
         public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            string status = GetAttributeValue( action, "Status" );
-            action.Activity.Workflow.Status = status;
-            action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
+
+            foreach ( var a in action.Activity.Actions )
+            {
+                a.CompletedDateTime = null;
+            }
+
+            action.AddLogEntry( string.Format( "Activated all actions for '{0}' activity.", action.ActionType.Name ) );
 
             return true;
         }

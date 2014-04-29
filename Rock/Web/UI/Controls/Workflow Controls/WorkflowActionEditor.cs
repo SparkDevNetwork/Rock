@@ -176,17 +176,20 @@ $('a.workflow-formfield-reorder').click(function (event) {
                 _hfActionTypeGuid.Value = value.Guid.ToString();
                 _tbActionTypeName.Text = value.Name;
                 _ddlEntityType.SetValue( value.EntityTypeId );
-                _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
                 var entityType = EntityTypeCache.Read( value.EntityTypeId );
                 if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
                 {
                     _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                    _cbIsActionCompletedOnSuccess.Checked = true;
+                    _cbIsActionCompletedOnSuccess.Enabled = false;
                 }
                 else
                 {
                     _formEditor.Form = null;
+                    _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
+                    _cbIsActionCompletedOnSuccess.Enabled = true;
                 }
 
                 var action = EntityTypeCache.Read( value.EntityTypeId );
