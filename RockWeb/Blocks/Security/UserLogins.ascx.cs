@@ -85,9 +85,6 @@ namespace RockWeb.Blocks.Security
             {
                 gUserLogins.RowSelected += gUserLogins_Edit;
             }
-
-            mdDetails.SaveClick += mdDetails_SaveClick;
-            mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
         }
 
         /// <summary>
@@ -107,8 +104,10 @@ namespace RockWeb.Blocks.Security
                 {
                     nbErrorMessage.Visible = false;
                     SetPasswordState();
-                    mdDetails.Show();
                 }
+
+                ShowDialog();
+
             }
 
             base.OnLoad( e );
@@ -243,11 +242,11 @@ namespace RockWeb.Blocks.Security
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the modalDetails control.
+        /// Handles the SaveClick event of the dlgDetails control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void mdDetails_SaveClick( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgDetails_SaveClick( object sender, EventArgs e )
         {
             if ( _canEdit )
             {
@@ -337,7 +336,7 @@ namespace RockWeb.Blocks.Security
 
                 rockContext.SaveChanges();
 
-                mdDetails.Hide();
+                HideDialog();
                 BindGrid();
             }
         }
@@ -484,7 +483,7 @@ namespace RockWeb.Blocks.Security
 
             SetPasswordState();
 
-            mdDetails.Show();
+            ShowDialog( "EDITLOGIN", true );
         }
 
         /// <summary>
@@ -518,6 +517,47 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "EDITLOGIN":
+                    dlgDetails.Show();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "EDITLOGIN":
+                    dlgDetails.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+
         #endregion
-    }
+}
 }
