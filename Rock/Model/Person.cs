@@ -1058,6 +1058,10 @@ namespace Rock.Model
                     binaryFile.IsTemporary = false;
                 }
             }
+
+            var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+
         }
 
         /// <summary>
