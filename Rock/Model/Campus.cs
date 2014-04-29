@@ -113,7 +113,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Person"/> that is associated as the leader of the campus.
         /// </value>
         [DataMember]
-        public virtual PersonAlias Leader { get; set; }
+        public virtual PersonAlias LeaderPersonAlias { get; set; }
 
         #endregion
 
@@ -147,7 +147,7 @@ namespace Rock.Model
         public CampusConfiguration()
         {
             this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
-            this.HasOptional( c => c.Leader ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

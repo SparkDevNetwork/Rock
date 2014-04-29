@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Core
             tbCampusName.Text = campus.Name;
             tbCampusCode.Text = campus.ShortCode;
             tbPhoneNumber.Text = campus.PhoneNumber;
-            ppCampusLeader.SetValue( campus.Leader != null ? campus.Leader.Person : null );
+            ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
