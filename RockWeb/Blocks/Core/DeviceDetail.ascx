@@ -36,13 +36,14 @@
                             <Rock:DataTextBox ID="tbIpAddress" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="IPAddress"
                                 Help="What is the IP Address of this device?" />
                             <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true"
-                                Help="What type of device is this?" />
+                                Help="What type of device is this?" AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged" />
 
                             <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
                             <Rock:GeoPicker ID="geopFence" runat="server" Required="false" Label="Geo-fence" DrawingMode="Polygon" />
                             
                         </div>
                         <div class="col-md-6">
+                            <asp:Panel ID="pnlPrinterSettings" runat="server" Visible="true">
                             <div class="well">
                                 <h4>Print Settings</h4>
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using" AutoPostBack="true" OnSelectedIndexChanged="ddlPrintTo_SelectedIndexChanged"
@@ -56,6 +57,7 @@
                                 <Rock:RockDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" Required="false" 
                                     Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
                             </div>
+                            </asp:Panel>
                         </div>
                     </div>
 
