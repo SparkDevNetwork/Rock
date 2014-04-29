@@ -130,6 +130,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the workflow activities.
+        /// </summary>
+        /// <value>
+        /// The workflow activities.
+        /// </value>
+        public Dictionary<string, string> WorkflowActivities
+        {
+            get
+            {
+                EnsureChildControls();
+                return _kvlActions.CustomValues;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _kvlActions.CustomValues = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the attribute rows.
         /// </summary>
         /// <value>

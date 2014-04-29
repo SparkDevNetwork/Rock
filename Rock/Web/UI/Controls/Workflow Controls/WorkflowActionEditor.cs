@@ -71,7 +71,7 @@ $('.workflow-action > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-action a.btn-danger').click(function (event) {
+$('.workflow-action a.js-action-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -99,6 +99,21 @@ $('a.workflow-formfield-reorder').click(function (event) {
             {
                 EnsureChildControls();
                 _formEditor.WorkflowAttributes = value;
+            }
+        }
+
+        /// <summary>
+        /// Sets the workflow activities.
+        /// </summary>
+        /// <value>
+        /// The workflow activities.
+        /// </value>
+        public Dictionary<string, string> WorkflowActivities
+        {
+            set
+            {
+                EnsureChildControls();
+                _formEditor.WorkflowActivities = value;
             }
         }
 
@@ -204,7 +219,7 @@ $('a.workflow-formfield-reorder').click(function (event) {
             _lbDeleteActionType = new LinkButton();
             _lbDeleteActionType.CausesValidation = false;
             _lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
-            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger js-action-delete";
             _lbDeleteActionType.Click += lbDeleteActionType_Click;
 
             var iDelete = new HtmlGenericControl( "i" );
