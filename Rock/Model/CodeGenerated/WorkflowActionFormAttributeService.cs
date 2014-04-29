@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// WorkflowForm Service class
+    /// WorkflowActionFormAttribute Service class
     /// </summary>
-    public partial class WorkflowFormService : Service<WorkflowActionForm>
+    public partial class WorkflowActionFormAttributeService : Service<WorkflowActionFormAttribute>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowFormService"/> class
+        /// Initializes a new instance of the <see cref="WorkflowActionFormAttributeService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public WorkflowFormService(RockContext context) : base(context)
+        public WorkflowActionFormAttributeService(RockContext context) : base(context)
         {
         }
 
@@ -48,15 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( WorkflowActionForm item, out string errorMessage )
+        public bool CanDelete( WorkflowActionFormAttribute item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<WorkflowActionType>( Context ).Queryable().Any( a => a.WorkflowFormId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionForm.FriendlyTypeName, WorkflowActionType.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -64,37 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class WorkflowFormExtensionMethods
+    public static partial class WorkflowActionFormAttributeExtensionMethods
     {
         /// <summary>
-        /// Clones this WorkflowForm object to a new WorkflowForm object
+        /// Clones this WorkflowActionFormAttribute object to a new WorkflowActionFormAttribute object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static WorkflowActionForm Clone( this WorkflowActionForm source, bool deepCopy )
+        public static WorkflowActionFormAttribute Clone( this WorkflowActionFormAttribute source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as WorkflowActionForm;
+                return source.Clone() as WorkflowActionFormAttribute;
             }
             else
             {
-                var target = new WorkflowActionForm();
+                var target = new WorkflowActionFormAttribute();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another WorkflowForm object to this WorkflowForm object
+        /// Copies the properties from another WorkflowActionFormAttribute object to this WorkflowActionFormAttribute object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this WorkflowActionForm target, WorkflowActionForm source )
+        public static void CopyPropertiesFrom( this WorkflowActionFormAttribute target, WorkflowActionFormAttribute source )
         {
-            target.Header = source.Header;
-            target.Footer = source.Footer;
+            target.WorkflowActionFormId = source.WorkflowActionFormId;
+            target.AttributeId = source.AttributeId;
+            target.Order = source.Order;
+            target.IsVisible = source.IsVisible;
+            target.IsReadOnly = source.IsReadOnly;
+            target.IsRequired = source.IsRequired;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

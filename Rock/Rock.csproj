@@ -239,7 +239,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\CodeGenerated\MetricValueService.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowFormService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionFormAttributeService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionFormService.cs" />
+    <Compile Include="Model\CodeGenerated\WorkflowActionService.cs" />
     <Compile Include="Model\CommunicationRecipientActivity.cs" />
     <Compile Include="Model\CommunicationTemplate.cs" />
     <Compile Include="Model\FinancialPersonBankAccountService.Partial.cs" />
@@ -481,7 +483,6 @@
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
-    <Compile Include="Model\CodeGenerated\WorkflowActionService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActionTypeService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityService.cs" />
     <Compile Include="Model\CodeGenerated\WorkflowActivityTypeService.cs" />
@@ -640,6 +641,7 @@
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionEditor.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormAttributeRow.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormEditor.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// WorkflowForms REST API
+    /// WorkflowActionForms REST API
     /// </summary>
-    public partial class WorkflowFormsController : Rock.Rest.ApiController<Rock.Model.WorkflowActionForm>
+    public partial class WorkflowActionFormsController : Rock.Rest.ApiController<Rock.Model.WorkflowActionForm>
     {
-        public WorkflowFormsController() : base( new Rock.Model.WorkflowFormService( new Rock.Data.RockContext() ) ) { } 
+        public WorkflowActionFormsController() : base( new Rock.Model.WorkflowActionFormService( new Rock.Data.RockContext() ) ) { } 
     }
 }

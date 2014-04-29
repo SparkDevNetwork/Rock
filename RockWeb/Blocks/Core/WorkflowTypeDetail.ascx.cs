@@ -19,7 +19,10 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -38,6 +41,25 @@ namespace RockWeb.Blocks.Core
     public partial class WorkflowTypeDetail : RockBlock, IDetailBlock
     {
         #region WorkflowActivityType ViewStateList
+
+        /// <summary>
+        /// Gets or sets the state of the group type attributes.
+        /// </summary>
+        /// <value>
+        /// The state of the group type attributes.
+        /// </value>
+        private ViewStateList<Attribute> AttributesState
+        {
+            get
+            {
+                return ViewState["AttributesState"] as ViewStateList<Attribute>;
+            }
+
+            set
+            {
+                ViewState["AttributesState"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the state of the workflow activity types.
@@ -71,10 +93,10 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             // assign attributes grid actions
-            gWorkflowTypeAttributes.DataKeyNames = new string[] { "Guid" };
-            gWorkflowTypeAttributes.Actions.ShowAdd = true;
-            gWorkflowTypeAttributes.Actions.AddClick += gWorkflowTypeAttributes_Add;
-            gWorkflowTypeAttributes.GridRebind += gWorkflowTypeAttributes_GridRebind;
+            gAttributes.DataKeyNames = new string[] { "Guid" };
+            gAttributes.Actions.ShowAdd = true;
+            gAttributes.Actions.AddClick += gAttributes_Add;
+            gAttributes.GridRebind += gAttributes_GridRebind;
         }
 
         /// <summary>
@@ -113,7 +135,9 @@ namespace RockWeb.Blocks.Core
                 if ( nameValue.Count() == 2 )
                 {
                     string eventParam = nameValue[0];
-                    if ( eventParam.Equals( "re-order-activity" ) || eventParam.Equals( "re-order-action" ) )
+                    if ( eventParam.Equals( "re-order-activity" ) || 
+                        eventParam.Equals( "re-order-action" ) ||
+                        eventParam.Equals( "re-order-formfield" ) )
                     {
                         string[] values = nameValue[1].Split( new char[] { ';' } );
                         if ( values.Count() == 2 )
@@ -136,6 +160,7 @@ namespace RockWeb.Blocks.Core
             SaveWorkflowActivityControlsToViewState();
             List<WorkflowActivityType> workflowActivityTypeSortList = WorkflowActivityTypesState.ToList();
             Guid? activeWorkflowActivityTypeGuid = null;
+            Guid? activeWorkflowActionTypeGuid = null;
 
             if ( eventParam.Equals( "re-order-activity" ) )
             {
@@ -166,33 +191,83 @@ namespace RockWeb.Blocks.Core
                 Guid workflowActionTypeGuid = new Guid( values[0] );
                 int newIndex = int.Parse( values[1] );
                 WorkflowActivityType workflowActivityType = workflowActivityTypeSortList.FirstOrDefault( a => a.ActionTypes.Any( b => b.Guid.Equals( workflowActionTypeGuid ) ) );
-                WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( workflowActionTypeGuid ) );
-                workflowActivityTypeSortList.RemoveEntity( workflowActionTypeGuid );
                 if ( workflowActivityType != null )
                 {
-                    activeWorkflowActivityTypeGuid = workflowActivityType.Guid;
-                    List<WorkflowActionType> workflowActionTypes = workflowActivityType.ActionTypes.ToList();
-                    workflowActionTypes.Remove( workflowActionType );
-                    if ( newIndex >= workflowActionTypes.Count() )
+                    WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( workflowActionTypeGuid ) );
+                    if ( workflowActionType != null )
                     {
-                        workflowActionTypes.Add( workflowActionType );
-                    }
-                    else
-                    {
-                        workflowActionTypes.Insert( newIndex, workflowActionType );
-                    }
+                        activeWorkflowActivityTypeGuid = workflowActivityType.Guid;
+                        List<WorkflowActionType> workflowActionTypes = workflowActivityType.ActionTypes.ToList();
+                        workflowActionTypes.Remove( workflowActionType );
+                        if ( newIndex >= workflowActionTypes.Count() )
+                        {
+                            workflowActionTypes.Add( workflowActionType );
+                        }
+                        else
+                        {
+                            workflowActionTypes.Insert( newIndex, workflowActionType );
+                        }
 
-                    int order = 0;
-                    foreach ( var item in workflowActionTypes )
+                        int order = 0;
+                        foreach ( var item in workflowActionTypes )
+                        {
+                            item.Order = order++;
+                        }
+                    }
+                }
+            }
+            else if ( eventParam.Equals( "re-order-formfield" ) )
+            {
+                Guid workflowFormFieldGuid = new Guid( values[0] );
+                int newIndex = int.Parse( values[1] );
+                WorkflowActivityType workflowActivityType = workflowActivityTypeSortList
+                    .FirstOrDefault( a => 
+                        a.ActionTypes.Any( b => 
+                            b.WorkflowForm != null &&
+                            b.WorkflowForm.FormAttributes.Any ( c =>
+                                c.Guid.Equals(workflowFormFieldGuid) ) ) );
+                if ( workflowActivityType != null )
+                {
+                    WorkflowActionType workflowActionType = workflowActivityType.ActionTypes
+                        .FirstOrDefault( a =>
+                            a.WorkflowForm != null &&
+                            a.WorkflowForm.FormAttributes != null &&
+                            a.WorkflowForm.FormAttributes.Any( b =>
+                                b.Guid.Equals( workflowFormFieldGuid ) ) );
+                    if ( workflowActionType != null )
                     {
-                        item.Order = order++;
+                        WorkflowActionFormAttribute workflowFormAttribute = workflowActionType.WorkflowForm.FormAttributes
+                            .Where( a => a.Guid.Equals( workflowFormFieldGuid ) )
+                            .FirstOrDefault();
+                        if ( workflowFormAttribute != null )
+                        {
+                            activeWorkflowActivityTypeGuid = workflowActivityType.Guid;
+                            activeWorkflowActionTypeGuid = workflowActionType.Guid;
+
+                            List<WorkflowActionFormAttribute> workflowFormAttributes = workflowActionType.WorkflowForm.FormAttributes.ToList();
+                            workflowFormAttributes.Remove( workflowFormAttribute );
+                            if ( newIndex >= workflowFormAttributes.Count() )
+                            {
+                                workflowFormAttributes.Add( workflowFormAttribute );
+                            }
+                            else
+                            {
+                                workflowFormAttributes.Insert( newIndex, workflowFormAttribute );
+                            }
+
+                            int order = 0;
+                            foreach ( var item in workflowFormAttributes )
+                            {
+                                item.Order = order++;
+                            }
+                        }
                     }
                 }
             }
 
             WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
             WorkflowActivityTypesState.AddAll( workflowActivityTypeSortList );
-            BuildWorkflowActivityControlsFromViewState( activeWorkflowActivityTypeGuid );
+            BuildWorkflowActivityControlsFromViewState( activeWorkflowActivityTypeGuid, activeWorkflowActionTypeGuid );
         }
 
         #endregion
@@ -238,9 +313,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            WorkflowTypeService service = new WorkflowTypeService( new RockContext() );
+            var rockContext = new RockContext();
+            WorkflowTypeService service = new WorkflowTypeService( rockContext );
             WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
-            ShowEditDetails( item );
+            ShowEditDetails( item, rockContext );
         }
 
         /// <summary>
@@ -305,11 +381,23 @@ namespace RockWeb.Blocks.Core
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                List<WorkflowActivityEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityEditor>().ToList();
+                // Save the entity field changes to workflow type
+                if ( workflowType.Id.Equals( 0 ) )
+                {
+                    service.Add( workflowType );
+                }
+                rockContext.SaveChanges();
+
+                // Save the attributes
+                SaveAttributes( new Workflow().TypeId, "WorkflowTypeId", workflowType.Id.ToString(), AttributesState, rockContext );
+
+                WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
+                WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
+                WorkflowActionFormService workflowFormService = new WorkflowActionFormService( rockContext );
+                WorkflowActionFormAttributeService workflowFormAttributeService = new WorkflowActionFormAttributeService( rockContext );
 
                 // delete WorkflowActionTypes that aren't assigned in the UI anymore
-                WorkflowActionTypeService workflowActionTypeService = new WorkflowActionTypeService( rockContext );
-                WorkflowFormService workflowFormService = new WorkflowFormService( rockContext );
+                List<WorkflowActivityEditor> workflowActivityTypeEditorList = phActivities.Controls.OfType<WorkflowActivityEditor>().ToList();
                 List<WorkflowActionType> actionTypesInDB = workflowActionTypeService.Queryable().Where( a => a.ActivityType.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActionType> actionTypesInUI = new List<WorkflowActionType>();
                 foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
@@ -319,11 +407,9 @@ namespace RockWeb.Blocks.Core
                         actionTypesInUI.Add( editor.WorkflowActionType );
                     }
                 }
-
                 var deletedActionTypes = from actionType in actionTypesInDB
                                          where !actionTypesInUI.Select( u => u.Guid ).Contains( actionType.Guid )
                                          select actionType;
-
                 deletedActionTypes.ToList().ForEach( actionType =>
                 {
                     if (actionType.WorkflowForm != null)
@@ -335,41 +421,34 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
 
                 // delete WorkflowActivityTypes that aren't assigned in the UI anymore
-                WorkflowActivityTypeService workflowActivityTypeService = new WorkflowActivityTypeService( rockContext );
                 List<WorkflowActivityType> activityTypesInDB = workflowActivityTypeService.Queryable().Where( a => a.WorkflowTypeId.Equals( workflowType.Id ) ).ToList();
                 List<WorkflowActivityType> activityTypesInUI = workflowActivityTypeEditorList.Select( a => a.GetWorkflowActivityType() ).ToList();
-
                 var deletedActivityTypes = from activityType in activityTypesInDB
                                            where !activityTypesInUI.Select( u => u.Guid ).Contains( activityType.Guid )
                                            select activityType;
-
                 deletedActivityTypes.ToList().ForEach( activityType =>
                 {
                     workflowActivityTypeService.Delete( activityType );
                 } );
                 rockContext.SaveChanges();
 
-
                 // add or update WorkflowActivityTypes(and Actions) that are assigned in the UI
                 int workflowActivityTypeOrder = 0;
                 foreach ( WorkflowActivityEditor workflowActivityTypeEditor in workflowActivityTypeEditorList )
                 {
+                    // Add or Update the activity type
                     WorkflowActivityType editorWorkflowActivityType = workflowActivityTypeEditor.GetWorkflowActivityType();
                     WorkflowActivityType workflowActivityType = workflowType.ActivityTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActivityType.Guid ) );
-
                     if ( workflowActivityType == null )
                     {
-                        workflowActivityType = editorWorkflowActivityType;
+                        workflowActivityType = new WorkflowActivityType();
                         workflowType.ActivityTypes.Add( workflowActivityType );
-                    }
-                    else
-                    {
-                        workflowActivityType.Name = editorWorkflowActivityType.Name;
-                        workflowActivityType.Description = editorWorkflowActivityType.Description;
-                        workflowActivityType.IsActive = editorWorkflowActivityType.IsActive;
-                        workflowActivityType.IsActivatedWithWorkflow = editorWorkflowActivityType.IsActivatedWithWorkflow;
-                    }
 
+                    }
+                    workflowActivityType.IsActive = editorWorkflowActivityType.IsActive;
+                    workflowActivityType.Name = editorWorkflowActivityType.Name;
+                    workflowActivityType.Description = editorWorkflowActivityType.Description;
+                    workflowActivityType.IsActivatedWithWorkflow = editorWorkflowActivityType.IsActivatedWithWorkflow;
                     workflowActivityType.Order = workflowActivityTypeOrder++;
 
                     int workflowActionTypeOrder = 0;
@@ -377,61 +456,77 @@ namespace RockWeb.Blocks.Core
                     {
                         WorkflowActionType editorWorkflowActionType = workflowActionTypeEditor.WorkflowActionType;
                         WorkflowActionType workflowActionType = workflowActivityType.ActionTypes.FirstOrDefault( a => a.Guid.Equals( editorWorkflowActionType.Guid ) );
-
                         if ( workflowActionType == null )
                         {
                             // New action
-                            workflowActionType = editorWorkflowActionType;
+                            workflowActionType = new WorkflowActionType();
                             workflowActivityType.ActionTypes.Add( workflowActionType );
                         }
-                        else
+                        workflowActionType.Name = editorWorkflowActionType.Name;
+                        workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
+                        workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
+                        workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
+                        workflowActionType.Attributes = editorWorkflowActionType.Attributes;
+                        workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
+                        workflowActionType.Order = workflowActionTypeOrder++;
+
+                        if ( workflowActionType.WorkflowForm != null && editorWorkflowActionType.WorkflowForm == null )
                         {
-                            // Updated action
-                            workflowActionType.Name = editorWorkflowActionType.Name;
-                            workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
-                            workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
-                            workflowActionType.IsActivityCompletedOnSuccess = editorWorkflowActionType.IsActivityCompletedOnSuccess;
-                            workflowActionType.Attributes = editorWorkflowActionType.Attributes;
-                            workflowActionType.AttributeValues = editorWorkflowActionType.AttributeValues;
-
-                            if (workflowActionType.WorkflowForm == null)
-                            {
-                                // Form added
-                                workflowActionType.WorkflowForm = editorWorkflowActionType.WorkflowForm;
-                            }
-                            else
-                            {
-                                if (editorWorkflowActionType.WorkflowForm != null)
-                                {
-                                    // Form updated
-                                    workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
-                                    workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
-                                    workflowActionType.WorkflowForm.InactiveMessage = editorWorkflowActionType.WorkflowForm.InactiveMessage;
-                                    workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
-                                }
-                                else
-                                {
-                                    // Form removed
-                                    workflowFormService.Delete( workflowActionType.WorkflowForm );
-                                    workflowActionType.WorkflowForm = null;
-                                }
-                            }
-
-                            WorkflowActionForm editorForm = editorWorkflowActionType.WorkflowForm;
-                            WorkflowActionForm workflowForm = workflowActionType.WorkflowForm;
-
+                            // Form removed
+                            workflowFormService.Delete( workflowActionType.WorkflowForm );
+                            workflowActionType.WorkflowForm = null;
                         }
 
-                        workflowActionType.Order = workflowActionTypeOrder++;
+                        if (editorWorkflowActionType.WorkflowForm != null)
+                        {
+                            if (workflowActionType.WorkflowForm == null)
+                            {
+                                workflowActionType.WorkflowForm = new WorkflowActionForm();
+                            }
+
+                            workflowActionType.WorkflowForm.Header = editorWorkflowActionType.WorkflowForm.Header;
+                            workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
+                            workflowActionType.WorkflowForm.InactiveMessage = editorWorkflowActionType.WorkflowForm.InactiveMessage;
+                            workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
+
+                            var editorGuids = editorWorkflowActionType.WorkflowForm.FormAttributes
+                                .Select( a => a.Attribute.Guid)
+                                .ToList();
+
+                            foreach( var formAttribute in workflowActionType.WorkflowForm.FormAttributes
+                                .Where( a => !editorGuids.Contains(a.Attribute.Guid) ) )
+                            {
+                                workflowFormAttributeService.Delete(formAttribute);
+                            }
+
+                            int attributeOrder = 0;
+                            foreach ( var editorAttribute in editorWorkflowActionType.WorkflowForm.FormAttributes )
+                            {
+                                int attributeId = AttributeCache.Read( editorAttribute.Attribute.Guid ).Id;
+
+                                var formAttribute = workflowActionType.WorkflowForm.FormAttributes
+                                    .Where( a => a.AttributeId == attributeId )
+                                    .FirstOrDefault();
+
+                                if (formAttribute == null)
+                                {
+                                    formAttribute = new WorkflowActionFormAttribute();
+                                    formAttribute.Guid = editorAttribute.Guid;
+                                    formAttribute.AttributeId = attributeId;
+                                    workflowActionType.WorkflowForm.FormAttributes.Add( formAttribute );
+                                }
+
+                                formAttribute.Order = attributeOrder++;
+                                formAttribute.IsVisible = editorAttribute.IsVisible;
+                                formAttribute.IsReadOnly = editorAttribute.IsReadOnly;
+                                formAttribute.IsRequired = editorAttribute.IsRequired;
+                            }
+                        }
                     }
                 }
 
-                if ( workflowType.Id.Equals( 0 ) )
-                {
-                    service.Add( workflowType );
-                }
-
                 rockContext.SaveChanges();
+
 
                 foreach ( var activityType in workflowType.ActivityTypes )
                 {
@@ -441,13 +536,13 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                
             } );
             
             var qryParams = new Dictionary<string, string>();
             qryParams["workflowTypeId"] = workflowType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
         }
+
 
         #endregion
 
@@ -485,11 +580,13 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
+            var rockContext = new RockContext();
+
             WorkflowType workflowType = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                workflowType = new WorkflowTypeService( new RockContext() ).Get( itemKeyValue );
+                workflowType = new WorkflowTypeService( rockContext ).Get( itemKeyValue );
             }
             else
             {
@@ -537,18 +634,16 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    ShowEditDetails( workflowType );
+                    ShowEditDetails( workflowType, rockContext );
                 }
             }
-
-            BindWorkflowTypeAttributesGrid();
         }
 
         /// <summary>
         /// Shows the edit details.
         /// </summary>
         /// <param name="workflowType">Type of the workflow.</param>
-        private void ShowEditDetails( WorkflowType workflowType )
+        private void ShowEditDetails( WorkflowType workflowType, RockContext rockContext )
         {
             if ( workflowType.Id == 0 )
             {
@@ -568,6 +663,17 @@ namespace RockWeb.Blocks.Core
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+
+            var attributeService = new AttributeService( rockContext );
+            AttributesState = new ViewStateList<Attribute>();
+            AttributesState.AddAll( attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList() );
+            BindAttributesGrid();
 
             phActivities.Controls.Clear();
             foreach ( WorkflowActivityType workflowActivityType in workflowType.ActivityTypes.OrderBy( a => a.Order ) )
@@ -644,153 +750,249 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #endregion
-
-        #region WorkflowTypeAttributes Grid and Picker
 
         /// <summary>
-        /// Handles the Add event of the gWorkflowTypeAttributes control.
+        /// Sets the attribute list order.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
+        {
+            int order = 0;
+            itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
+        }
+
+        /// <summary>
+        /// Reorders the attribute list.
+        /// </summary>
+        /// <param name="itemList">The item list.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
+        {
+            var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( newIndex < oldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in itemList.Where( a => a.Order < oldIndex && a.Order >= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in itemList.Where( a => a.Order > oldIndex && a.Order <= newIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = newIndex;
+            }
+        }
+
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
+        {
+            // Get the existing attributes for this entity type and qualifier value
+            var attributeService = new AttributeService( rockContext );
+            var attributes = attributeService.Get( entityTypeId, qualifierColumn, qualifierValue );
+
+            // Delete any of those attributes that were removed in the UI
+            var selectedAttributeGuids = viewStateAttributes.Select( a => a.Guid );
+            foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
+            {
+                attributeService.Delete( attr );
+                rockContext.SaveChanges();
+                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+            }
+
+            // Update the Attributes that were assigned in the UI
+            foreach ( var attributeState in viewStateAttributes )
+            {
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+            }
+        }
+
+        #endregion
+
+        #region Attributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gWorkflowTypeAttributes_Add( object sender, EventArgs e )
+        protected void gAttributes_Add( object sender, EventArgs e )
         {
-            gWorkflowTypeAttributes_ShowEdit( Guid.Empty );
+            gAttributes_ShowEdit( Guid.Empty );
         }
 
         /// <summary>
-        /// Handles the Edit event of the gWorkflowTypeAttributes control.
+        /// Handles the Edit event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gWorkflowTypeAttributes_Edit( object sender, RowEventArgs e )
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            gWorkflowTypeAttributes_ShowEdit( attributeGuid );
+            gAttributes_ShowEdit( attributeGuid );
         }
 
         /// <summary>
-        /// Gs the workflow type attributes_ show edit.
+        /// Gs the group attributes_ show edit.
         /// </summary>
         /// <param name="attributeGuid">The attribute GUID.</param>
-        protected void gWorkflowTypeAttributes_ShowEdit( Guid attributeGuid )
+        protected void gAttributes_ShowEdit( Guid attributeGuid )
         {
-            pnlDetails.Visible = false;
-            pnlWorkflowTypeAttributes.Visible = true;
-
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
                 attribute = new Attribute();
                 attribute.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
-                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for workflow type " + tbName.Text );
+                edtAttributes.ActionTitle = ActionTitle.Add( "attribute for workflows of workflow type " + tbName.Text );
             }
             else
             {
-                AttributeService attributeService = new AttributeService( new RockContext() );
-                attribute = attributeService.Get( attributeGuid );
-                edtWorkflowTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflow type " + tbName.Text );
+                attribute = AttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflows of workflow type " + tbName.Text );
             }
 
-            edtWorkflowTypeAttributes.SetAttributeProperties( attribute, typeof( Workflow ) );
+            edtAttributes.SetAttributeProperties( attribute, typeof( Group ) );
+
+            ShowDialog( "Attributes" );
         }
 
         /// <summary>
-        /// Handles the Delete event of the gWorkflowTypeAttributes control.
+        /// Handles the GridReorder event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ReorderAttributeList( AttributesState, e.OldIndex, e.NewIndex );
+            BindAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gWorkflowTypeAttributes_Delete( object sender, RowEventArgs e )
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
         {
             Guid attributeGuid = (Guid)e.RowKeyValue;
-            var rockContext = new RockContext();
-            AttributeService attributeService = new AttributeService( rockContext );
-            Attribute attribute = attributeService.Get( attributeGuid );
+            AttributesState.RemoveEntity( attributeGuid );
 
-            if ( attribute != null )
-            {
-                string errorMessage;
-                if ( !attributeService.CanDelete( attribute, out errorMessage ) )
-                {
-                    mdGridWarningAttributes.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                attributeService.Delete( attribute );
-                rockContext.SaveChanges();
-
-                // reload page so that other blocks respond to any data that was changed
-                var qryParams = new Dictionary<string, string>();
-                qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
-                NavigateToPage( RockPage.Guid, qryParams );
-            }
+            BindAttributesGrid();
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gWorkflowTypeAttributes control.
+        /// Handles the GridRebind event of the gAttributes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gWorkflowTypeAttributes_GridRebind( object sender, EventArgs e )
+        protected void gAttributes_GridRebind( object sender, EventArgs e )
         {
-            BindWorkflowTypeAttributesGrid();
+            BindAttributesGrid();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSaveWorkflowTypeAttribute control.
+        /// Handles the SaveClick event of the dlgAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSaveWorkflowTypeAttribute_Click( object sender, EventArgs e )
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgAttribute_SaveClick( object sender, EventArgs e )
         {
-            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtWorkflowTypeAttributes, EntityTypeCache.Read( typeof( Workflow ) ).Id, "WorkflowTypeId", hfWorkflowTypeId.Value );
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtAttributes.GetAttributeProperties( attribute );
 
-            // Attribute will be null if it was not valid
-            if ( attribute == null )
+            // Controls will show warnings
+            if ( !attribute.IsValid )
             {
                 return;
             }
 
-            pnlDetails.Visible = true;
-            pnlWorkflowTypeAttributes.Visible = false;
+            if ( AttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                attribute.Order = AttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                AttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = AttributesState.Any() ? AttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+            AttributesState.Add( attribute );
 
-            // reload page so that other blocks respond to any data that was changed
-            var qryParams = new Dictionary<string, string>();
-            qryParams["workflowTypeId"] = hfWorkflowTypeId.Value;
-            NavigateToPage( RockPage.Guid, qryParams );
+            BindAttributesGrid();
+            HideDialog();
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancelWorkflowTypeAttribute control.
+        /// Binds the group type attributes grid.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancelWorkflowTypeAttribute_Click( object sender, EventArgs e )
+        private void BindAttributesGrid()
         {
-            pnlDetails.Visible = true;
-            pnlWorkflowTypeAttributes.Visible = false;
-        }
+            gAttributes.AddCssClass( "attribute-grid" );
+            SetAttributeListOrder( AttributesState );
+            gAttributes.DataSource = AttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gAttributes.DataBind();
 
-        /// <summary>
-        /// Binds the workflow type attributes grid.
-        /// </summary>
-        private void BindWorkflowTypeAttributesGrid()
-        {
-            AttributeService attributeService = new AttributeService( new RockContext() );
+            var workflowAttributes = new Dictionary<Guid, string>();
+            AttributesState.ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
 
-            int workflowTypeId = hfWorkflowTypeId.ValueAsInt();
-
-            string qualifierValue = workflowTypeId.ToString();
-            var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            gWorkflowTypeAttributes.DataSource = qryWorkflowTypeAttributes.OrderBy( a => a.Name ).ToList();
-            gWorkflowTypeAttributes.DataBind();
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
+            {
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in activityEditor.Controls.OfType<WorkflowActionEditor>() )
+                {
+                    workflowActionTypeEditor.WorkflowAttributes = workflowAttributes;
+                }
+            }
         }
 
         #endregion
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( string dialog, bool setValues = false )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog( setValues );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void ShowDialog( bool setValues = false )
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ATTRIBUTES":
+                    dlgAttribute.Show();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ATTRIBUTES":
+                    dlgAttribute.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
 
         #region Activities and Actions
 
@@ -807,13 +1009,13 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Builds the state of the workflow activity controls from view.
         /// </summary>
-        private void BuildWorkflowActivityControlsFromViewState( Guid? activeWorkflowActivityTypeGuid = null )
+        private void BuildWorkflowActivityControlsFromViewState( Guid? activeWorkflowActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null )
         {
             phActivities.Controls.Clear();
 
             foreach ( WorkflowActivityType workflowActivityType in WorkflowActivityTypesState )
             {
-                CreateWorkflowActivityTypeEditorControls( workflowActivityType, workflowActivityType.Guid.Equals( activeWorkflowActivityTypeGuid ?? Guid.Empty ) );
+                CreateWorkflowActivityTypeEditorControls( workflowActivityType, workflowActivityType.Guid.Equals( activeWorkflowActivityTypeGuid ?? Guid.Empty ), activeWorkflowActionTypeGuid );
             }
         }
 
@@ -825,6 +1027,11 @@ namespace RockWeb.Blocks.Core
         /// </returns>
         protected override object SaveViewState()
         {
+            if ( AttributesState != null )
+            {
+                AttributesState.SaveViewState();
+            }
+
             SaveWorkflowActivityControlsToViewState();
 
             return base.SaveViewState();
@@ -864,7 +1071,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="workflowActivityType">Type of the workflow activity.</param>
         /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
-        private void CreateWorkflowActivityTypeEditorControls( WorkflowActivityType workflowActivityType, bool forceContentVisible = false )
+        private void CreateWorkflowActivityTypeEditorControls( WorkflowActivityType workflowActivityType, bool forceContentVisible = false, Guid? activeWorkflowActionTypeGuid = null )
         {
             WorkflowActivityEditor workflowActivityTypeEditor = new WorkflowActivityEditor();
             workflowActivityTypeEditor.ID = "WorkflowActivityTypeEditor_" + workflowActivityType.Guid.ToString( "N" );
@@ -874,7 +1081,7 @@ namespace RockWeb.Blocks.Core
             workflowActivityTypeEditor.ForceContentVisible = forceContentVisible;
             foreach ( WorkflowActionType actionType in workflowActivityType.ActionTypes.OrderBy( a => a.Order ) )
             {
-                CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, actionType );
+                CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, actionType, actionType.Guid.Equals( activeWorkflowActionTypeGuid ?? Guid.Empty ) );
             }
 
             phActivities.Controls.Add( workflowActivityTypeEditor );
@@ -900,12 +1107,19 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="workflowActivityTypeEditor">The workflow activity type editor.</param>
         /// <param name="workflowActionType">Type of the workflow action.</param>
-        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType )
+        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType, bool forceContentVisible = false )
         {
             WorkflowActionEditor workflowActionTypeEditor = new WorkflowActionEditor();
             workflowActionTypeEditor.ID = "WorkflowActionTypeEditor_" + workflowActionType.Guid.ToString( "N" );
             workflowActionTypeEditor.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
+            
+            var workflowAttributes = new Dictionary<Guid, string>();
+            AttributesState.ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
+            workflowActionTypeEditor.WorkflowAttributes = workflowAttributes;
+
             workflowActionTypeEditor.WorkflowActionType = workflowActionType;
+            workflowActionTypeEditor.ForceContentVisible = forceContentVisible;
+
             workflowActivityTypeEditor.Controls.Add( workflowActionTypeEditor );
         }
 
