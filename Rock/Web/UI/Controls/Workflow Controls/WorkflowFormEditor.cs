@@ -29,7 +29,7 @@ using Rock.Workflow;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Report Filter control
+    /// Workflow Action Form Editor
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionFormEditor runat=server></{0}:WorkflowActionFormEditor>" )]
     public class WorkflowFormEditor : CompositeControl
@@ -41,12 +41,18 @@ namespace Rock.Web.UI.Controls
         private RockControlWrapper _rcwActions;
         private KeyValueList _kvlActions;
 
+        /// <summary>
+        /// Gets or sets the form.
+        /// </summary>
+        /// <value>
+        /// The form.
+        /// </value>
         public WorkflowActionForm Form 
         {
             get
             {
                 EnsureChildControls();
-                WorkflowActionForm form = new WorkflowActionForm();
+                var form = new WorkflowActionForm();
                 form.Guid = _hfFormGuid.Value.AsGuid();
                 if ( form.Guid != Guid.Empty )
                 {
@@ -54,6 +60,19 @@ namespace Rock.Web.UI.Controls
                     form.Footer = _tbFooterText.Text;
                     form.Actions = _kvlActions.Value;
                     form.InactiveMessage = _tbInactiveMessage.Text;
+
+                    foreach ( var row in AttributeRows )
+                    {
+                        var formAttribute = new WorkflowActionFormAttribute();
+                        formAttribute.Attribute = new Rock.Model.Attribute { Guid = row.AttributeGuid };
+                        formAttribute.Guid = row.Guid;
+                        formAttribute.Order = row.Order;
+                        formAttribute.IsVisible = row.IsVisible;
+                        formAttribute.IsReadOnly = !row.IsEditable;
+                        formAttribute.IsRequired = row.IsRequired;
+                        form.FormAttributes.Add( formAttribute );
+                    }
+
                     return form;
                 }
                 return null;
@@ -62,6 +81,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
+                
                 if ( value != null )
                 {
                     _hfFormGuid.Value = value.Guid.ToString();
@@ -69,6 +89,8 @@ namespace Rock.Web.UI.Controls
                     _tbFooterText.Text = value.Footer;
                     _kvlActions.Value = value.Actions;
                     _tbInactiveMessage.Text = value.InactiveMessage;
+
+                    UpdateRows(value.FormAttributes);
                 }
                 else
                 {
@@ -81,8 +103,60 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        public WorkflowActionType WorkflowActionType { get; set; }
+        /// <summary>
+        /// Gets or sets the workflow attributes.
+        /// </summary>
+        /// <value>
+        /// The workflow attributes.
+        /// </value>
+        public Dictionary<Guid, string> WorkflowAttributes
+        {
+            get
+            {
+                var workflowAttributes = ViewState["WorkflowAttributes"] as Dictionary<Guid, string>;
+                if ( workflowAttributes == null )
+                {
+                    workflowAttributes = new Dictionary<Guid, string>();
+                    ViewState["WorkflowAttributes"] = workflowAttributes;
+                }
+                return workflowAttributes;
+            }
 
+            set
+            {
+                ViewState["WorkflowAttributes"] = value;
+                UpdateRows();
+            }
+        }
+
+        /// <summary>
+        /// Gets the attribute rows.
+        /// </summary>
+        /// <value>
+        /// The attribute rows.
+        /// </value>
+        public List<WorkflowFormAttributeRow> AttributeRows
+        {
+            get
+            {
+                var rows = new List<WorkflowFormAttributeRow>();
+
+                foreach ( Control control in Controls )
+                {
+                    if ( control is WorkflowFormAttributeRow )
+                    {
+                        var workflowFormAttributeRow = control as WorkflowFormAttributeRow;
+                        if ( workflowFormAttributeRow != null )
+                        {
+                            rows.Add( workflowFormAttributeRow );
+                        }
+                    }
+                }
+
+                return rows.OrderBy( r => r.Order ).ToList();
+            }
+        }
+        
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -140,11 +214,168 @@ namespace Rock.Web.UI.Controls
             if ( _hfFormGuid.Value.AsGuid() != Guid.Empty )
             {
                 _tbHeaderText.RenderControl( writer );
+
+                // Attributes
+                if ( AttributeRows.Any() )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                    writer.Write( "Form Fields" );
+
+                    writer.AddAttribute( "class", "help" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.AddAttribute( "class", "fa fa-question-circle" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.I );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( "class", "alert alert-info" );
+                    writer.AddAttribute( "style", "display:none" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Small );
+                    writer.Write( "The fields (attributes) to display on the entry form" );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+
+                    writer.RenderEndTag();      // Label
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-table table table-condensed table-light" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Table );
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Thead );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Tr );
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-columncommand" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "&nbsp;" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "Field" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "Visible" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "Editable" );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Scope, "col" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "Required" );
+                    writer.RenderEndTag();
+
+                    writer.RenderEndTag();  // tr
+                    writer.RenderEndTag();  // thead
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-formfield-list" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
+
+                    foreach ( var row in AttributeRows )
+                    {
+                        row.RenderControl( writer );
+                    }
+
+                    writer.RenderEndTag();  // tbody
+
+                    writer.RenderEndTag();  // table
+
+                    writer.RenderEndTag();  // Div.form-group
+                }
+
                 _tbFooterText.RenderControl( writer );
                 _rcwActions.RenderControl( writer );
                 _tbInactiveMessage.RenderControl( writer );
             }
         }
 
+        /// <summary>
+        /// Clears the rows.
+        /// </summary>
+        public void ClearRows()
+        {
+            for ( int i = Controls.Count - 1; i >= 0; i-- )
+            {
+                if ( Controls[i] is WorkflowFormAttributeRow )
+                {
+                    Controls.RemoveAt( i );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the rows.
+        /// </summary>
+        /// <param name="formAttributes">The form attributes.</param>
+        public void UpdateRows( IEnumerable<WorkflowActionFormAttribute> formAttributes = null )
+        {
+            // Get attributes
+            var workflowAttributes = WorkflowAttributes;
+
+            // Find any existing rows that are still valid and remove any invalid rows
+            var existingRows = new Dictionary<Guid, WorkflowFormAttributeRow>();
+            for ( int i = Controls.Count - 1; i >= 0; i-- )
+            {
+                var row = Controls[i] as WorkflowFormAttributeRow;
+                if ( row != null )
+                {
+                    if ( workflowAttributes.ContainsKey( row.AttributeGuid ) )
+                    {
+                        existingRows.Add( row.AttributeGuid, row );
+                    }
+                    else
+                    {
+                        Controls.RemoveAt( i );
+                    }
+                }
+            }
+
+            foreach ( var workflowAttribute in workflowAttributes )
+            {
+                WorkflowFormAttributeRow row = null;
+                if ( existingRows.ContainsKey( workflowAttribute.Key ) )
+                {
+                    row = existingRows[workflowAttribute.Key];
+                }
+                else
+                {
+                    row = new WorkflowFormAttributeRow();
+                    row.AttributeGuid = workflowAttribute.Key;
+                    row.AttributeName = workflowAttribute.Value;
+                    Controls.Add( row );
+                }
+
+                if ( formAttributes != null )
+                {
+                    var formAttribute = formAttributes
+                        .Where( a => a.Attribute.Guid == workflowAttribute.Key )
+                        .FirstOrDefault();
+
+                    if ( formAttribute != null )
+                    {
+                        row.Guid = formAttribute.Guid;
+                        row.Order = formAttribute.Order;
+                        row.IsVisible = formAttribute.IsVisible;
+                        row.IsEditable = !formAttribute.IsReadOnly;
+                        row.IsRequired = formAttribute.IsRequired;
+                    }
+                }
+
+                if ( row.Guid.IsEmpty() )
+                {
+                    row.Guid = Guid.NewGuid();
+                }
+
+            }
+        }
     }
 }

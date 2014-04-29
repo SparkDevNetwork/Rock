@@ -79,8 +79,27 @@ $('.workflow-action a.btn-danger').click(function (event) {
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
+
+$('a.workflow-formfield-reorder').click(function (event) {
+    event.stopImmediatePropagation();
+});
 ";
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActionTypeEditorScript", script, true );
+        }
+
+        /// <summary>
+        /// Sets the workflow attributes.
+        /// </summary>
+        /// <value>
+        /// The workflow attributes.
+        /// </value>
+        public Dictionary<Guid, string> WorkflowAttributes
+        {
+            set
+            {
+                EnsureChildControls();
+                _formEditor.WorkflowAttributes = value;
+            }
         }
 
         /// <summary>

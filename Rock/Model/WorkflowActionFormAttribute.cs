@@ -109,6 +109,7 @@ namespace Rock.Model
         /// <value>
         /// The attribute.
         /// </value>
+        [DataMember]
         public virtual Attribute Attribute { get; set; }
 
         #endregion
