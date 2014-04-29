@@ -680,6 +680,8 @@ namespace RockWeb.Blocks.Core
             {
                 CreateWorkflowActivityTypeEditorControls( workflowActivityType );
             }
+
+            RefreshActivityLists();
         }
 
         /// <summary>
@@ -952,6 +954,32 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        private void RefreshActivityLists()
+        {
+            var activityControls = new List<WorkflowActivityEditor>();
+            var activities = new Dictionary<Guid, string>();
+
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
+            {
+                activityControls.Add(activityEditor);
+                activities.Add(activityEditor.ActivityTypeGuid, activityEditor.Name);
+            }
+
+            foreach( var activityEditor in activityControls)
+            {
+                var workflowActivities = new Dictionary<string, string>();
+                activities
+                    .Where( a => !a.Key.Equals( activityEditor.ActivityTypeGuid ) )
+                    .ToList()
+                    .ForEach( a => workflowActivities.Add( a.Key.ToString().ToUpper(), a.Value ) );
+
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in activityEditor.Controls.OfType<WorkflowActionEditor>() )
+                {
+                    workflowActionTypeEditor.WorkflowActivities = workflowActivities;
+                }
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -1064,6 +1092,8 @@ namespace RockWeb.Blocks.Core
             workflowActivityType.IsActive = true;
 
             CreateWorkflowActivityTypeEditorControls( workflowActivityType );
+
+            RefreshActivityLists();
         }
 
         /// <summary>
@@ -1098,7 +1128,17 @@ namespace RockWeb.Blocks.Core
             if ( sender is WorkflowActivityEditor )
             {
                 WorkflowActivityEditor workflowActivityTypeEditor = sender as WorkflowActivityEditor;
-                CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, new WorkflowActionType { Guid = Guid.NewGuid() } );
+                var actionEditor = CreateWorkflowActionTypeEditorControl( workflowActivityTypeEditor, new WorkflowActionType { Guid = Guid.NewGuid() } );
+
+                var workflowActivities = new Dictionary<string, string>();
+                foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
+                {
+                    if (!activityEditor.ActivityTypeGuid.Equals(workflowActivityTypeEditor.ActivityTypeGuid))
+                    {
+                        workflowActivities.Add( activityEditor.ActivityTypeGuid.ToString().ToUpper(), activityEditor.Name );
+                    }
+                }
+                actionEditor.WorkflowActivities = workflowActivities;
             }
         }
 
@@ -1107,7 +1147,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         /// <param name="workflowActivityTypeEditor">The workflow activity type editor.</param>
         /// <param name="workflowActionType">Type of the workflow action.</param>
-        private void CreateWorkflowActionTypeEditorControl( WorkflowActivityEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType, bool forceContentVisible = false )
+        private WorkflowActionEditor CreateWorkflowActionTypeEditorControl( WorkflowActivityEditor workflowActivityTypeEditor, WorkflowActionType workflowActionType, bool forceContentVisible = false )
         {
             WorkflowActionEditor workflowActionTypeEditor = new WorkflowActionEditor();
             workflowActionTypeEditor.ID = "WorkflowActionTypeEditor_" + workflowActionType.Guid.ToString( "N" );
@@ -1121,6 +1161,8 @@ namespace RockWeb.Blocks.Core
             workflowActionTypeEditor.ForceContentVisible = forceContentVisible;
 
             workflowActivityTypeEditor.Controls.Add( workflowActionTypeEditor );
+
+            return workflowActionTypeEditor;
         }
 
         /// <summary>
@@ -1154,6 +1196,8 @@ namespace RockWeb.Blocks.Core
                     phActivities.Controls.Remove( editor );
                 }
             }
+
+            RefreshActivityLists();
         }
 
         #endregion

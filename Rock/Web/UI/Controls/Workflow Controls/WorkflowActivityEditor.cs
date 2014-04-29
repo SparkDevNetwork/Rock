@@ -51,6 +51,37 @@ namespace Rock.Web.UI.Controls
         public bool ForceContentVisible { private get; set; }
 
         /// <summary>
+        /// Gets or sets the activity type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The activity type unique identifier.
+        /// </value>
+        public Guid ActivityTypeGuid
+        {
+            get 
+            {
+                EnsureChildControls();
+                return _hfActivityTypeGuid.Value.AsGuid();
+            }
+        }
+
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbActivityTypeName.Text;
+            }
+
+        }
+        
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -68,7 +99,7 @@ $('.workflow-activity > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event 
-$('.workflow-activity a.btn-danger').click(function (event) {
+$('.workflow-activity a.js-activity-delete').click(function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -169,7 +200,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             _lbDeleteActivityType = new LinkButton();
             _lbDeleteActivityType.CausesValidation = false;
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
-            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger js-activity-delete";
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
