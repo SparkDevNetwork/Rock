@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                        gGroupMembers.Caption = string.Format( "{0}_{1}_{2}", _group.Name, _group.GroupType.GroupTerm, _group.GroupType.GroupMemberTerm.Pluralize() );
 
                         // make sure they have Auth to the block AND Edit to the Group
                         bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
