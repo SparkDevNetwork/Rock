@@ -65,9 +65,10 @@ namespace Rock.Web.UI
             base.OnLoad( e );
 
             if ( !Page.IsPostBack && 
+                CurrentPersonAlias != null && 
                 Context.Items["PersonViewed"] == null &&
                 Person != null && 
-                CurrentPersonAlias != null && 
+                Person.PrimaryAlias != null &&
                 Person.PrimaryAlias.Id != CurrentPersonAlias.Id )
             {
                 var transaction = new PersonViewTransaction();
