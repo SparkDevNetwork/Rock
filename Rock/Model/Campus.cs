@@ -113,7 +113,7 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.Person"/> that is associated as the leader of the campus.
         /// </value>
         [DataMember]
-        public virtual Person Leader { get; set; }
+        public virtual PersonAlias Leader { get; set; }
 
         #endregion
 
