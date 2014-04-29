@@ -825,7 +825,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            GroupLocationsState = new ViewStateList<GroupLocation>();
+            var groupLocations = new List<GroupLocation>();
             foreach ( var groupLocation in group.GroupLocations )
             {
                 var groupLocationState = new GroupLocation();
@@ -841,9 +841,10 @@ namespace RockWeb.Blocks.Groups
                     groupLocationState.GroupLocationTypeValue = new DefinedValue();
                     groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
                 }
-
-                GroupLocationsState.Add( groupLocationState );
+                groupLocations.Add( groupLocationState );
             }
+            GroupLocationsState = new ViewStateList<GroupLocation>();
+            GroupLocationsState.AddAll( groupLocations );
 
             ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, true );
 

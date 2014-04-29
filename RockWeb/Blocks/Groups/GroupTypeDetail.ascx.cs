@@ -738,12 +738,14 @@ namespace RockWeb.Blocks.Groups
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
 
-            GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
+            var groupTypeRoles = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
             {
                 role.LoadAttributes();
-                GroupTypeRolesState.Add( role );
+                groupTypeRoles.Add( role );
             }
+            GroupTypeRolesState = new ViewStateList<GroupTypeRole>();
+            GroupTypeRolesState.AddAll( groupTypeRoles );
 
             BindGroupTypeRolesGrid();
 
