@@ -867,6 +867,8 @@ namespace RockWeb.Blocks.Core
                 edtAttributes.ActionTitle = ActionTitle.Edit( "attribute for workflows of workflow type " + tbName.Text );
             }
 
+            edtAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
             edtAttributes.SetAttributeProperties( attribute, typeof( Group ) );
 
             ShowDialog( "Attributes" );
