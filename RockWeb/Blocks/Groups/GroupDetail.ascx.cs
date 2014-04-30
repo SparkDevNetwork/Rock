@@ -1187,6 +1187,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupMemberAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -1548,6 +1549,11 @@ namespace RockWeb.Blocks.Groups
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
+
+            var reservedKeyNames = new List<string>();
+            GroupMemberAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupMemberAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupMemberAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 

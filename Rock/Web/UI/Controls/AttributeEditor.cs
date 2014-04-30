@@ -933,10 +933,6 @@ namespace Rock.Web.UI.Controls
             keyValue = $('#' + nameControlId).val().replace(/\s+/g, '');
             var newKeyValue = keyValue;
         
-            alert(newKeyValue);
-            alert(reservedKeyNames);
-            alert($.inArray(newKeyValue, reservedKeyNames));
-
             var i = 1;
             while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {
                 newKeyValue = keyValue + i++;
