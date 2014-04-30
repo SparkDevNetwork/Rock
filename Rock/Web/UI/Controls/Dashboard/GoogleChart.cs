@@ -16,11 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Model;
 using Rock.Reporting.Dashboard;
 
 namespace Rock.Web.UI.Controls
@@ -37,7 +35,7 @@ namespace Rock.Web.UI.Controls
         {
             Options = ChartOptions.Default;
         }
-        
+
         #region Controls
 
         private HiddenField _hfMetricId;
@@ -70,13 +68,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the type of the metric value.
+        /// </summary>
+        /// <value>
+        /// The type of the metric value.
+        /// </value>
+        public MetricValueType? MetricValueType { get; set; }
+
+        /// <summary>
         /// Gets or sets the start date.
         /// </summary>
         /// <value>
         /// The start date.
         /// </value>
         public DateTime? StartDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the end date.
         /// </summary>
@@ -99,7 +105,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the chart.
         /// </value>
-        public abstract GoogleChartType? ChartType { get;}
+        public abstract GoogleChartType? ChartType { get; }
 
         /// <summary>
         /// Gets or sets the options.
@@ -155,13 +161,13 @@ namespace Rock.Web.UI.Controls
         protected virtual void RegisterJavaScript()
         {
             var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
-            
+
             // setup ChartOptions (unless caller set them up manually)
-            if (this.Options == null)
+            if ( this.Options == null )
             {
                 this.Options = ChartOptions.Default;
 
-                if (metric != null)
+                if ( metric != null )
                 {
                     this.Options.vAxis.title = metric.Title;
                     if ( !string.IsNullOrWhiteSpace( metric.Subtitle ) )
@@ -170,7 +176,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            
+
             _hfOptions.Value = this.Options.ToJson();
 
             // setup ColumnDefinitions (unless caller set them up manually)
@@ -196,6 +202,11 @@ namespace Rock.Web.UI.Controls
             if ( this.MetricId.HasValue )
             {
                 _hfRestUrlParams.Value = string.Format( "{0}?startDate={1}&endDate={2}", this.MetricId, this.StartDate ?? DateTime.MinValue, this.EndDate ?? DateTime.MaxValue );
+                if ( this.MetricValueType.HasValue )
+                {
+                    _hfRestUrlParams.Value += string.Format( "&metricValueType={0}", this.MetricValueType );
+                }
+
                 if ( this.EntityId.HasValue )
                 {
                     _hfRestUrlParams.Value += string.Format( "&entityId={0}", this.EntityId );
@@ -205,15 +216,14 @@ namespace Rock.Web.UI.Controls
             {
                 _hfRestUrlParams.Value = string.Empty;
             }
-            
 
             string loadScript = @"
             // Load the Visualization API and the corechart package.
             google.load('visualization', '1.0', { 'packages': ['corechart'] });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "google-chart-script-load", loadScript, true );
-            
-            const string scriptFormat =
+
+            string scriptFormat =
 @"
             // Set a callback to run when the Google Visualization API is loaded.
             google.setOnLoadCallback(function () {{
@@ -263,15 +273,14 @@ namespace Rock.Web.UI.Controls
 ";
 
             string restUrl = this.ResolveUrl( this.DataSourceUrl ?? "~/api/MetricValuesController/GetChartData/" );
-            string script = string.Format( 
-                scriptFormat, 
-                restUrl, 
-                _hfRestUrlParams.ClientID, 
-                _hfColumns.ClientID, 
-                _hfOptions.ClientID, 
-                this.ClientID, 
-                this.ChartType.ConvertToString(false)
-                );
+            string script = string.Format(
+                scriptFormat,
+                restUrl,
+                _hfRestUrlParams.ClientID,
+                _hfColumns.ClientID,
+                _hfOptions.ClientID,
+                this.ClientID,
+                this.ChartType.ConvertToString( false ) );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "google-chart-script_" + this.ClientID, script, true );
         }
