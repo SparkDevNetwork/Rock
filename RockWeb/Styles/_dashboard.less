@@ -12,17 +12,13 @@
 // 1. Basic Widgets
 // -------------------------
 
-.dashboardwidget {
-     margin: 24px 0 0 ;
+// panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+.panel-dashboard {
+    margin: 24px 0 0 ;
+    height: 220px;
 
-    .dashboardwidget-content {
-        height: 220px;
-        border: 1px solid @widget-border-color;
-        border-radius: @border-radius-base;
-    }
+    .panel-variant(@accent-color; @accent-text-color; @accent-color; @accent-color;);
 }
-
-
 
 // 2. 
 // -------------------------
