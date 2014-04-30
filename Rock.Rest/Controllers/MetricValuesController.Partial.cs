@@ -19,6 +19,7 @@ using System.Linq;
 using System.Web.Http;
 using System.Web.Routing;
 using Newtonsoft.Json;
+using Rock.Model;
 
 namespace Rock.Rest.Controllers
 {
@@ -48,13 +49,14 @@ namespace Rock.Rest.Controllers
         /// See http://www.json.org/js.html which explains javascript literal notation vs JSON
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValueType">Type of the metric value.</param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
-        public string GetChartData( int metricId, DateTime? startDate = null, DateTime? endDate = null, int? entityId = null )
+        public string GetChartData( int metricId, MetricValueType metricValueType = MetricValueType.Measure, DateTime? startDate = null, DateTime? endDate = null, int? entityId = null )
         {
-            var dataQry = this.Get().Where( a => a.MetricId == metricId );
+            var dataQry = this.Get().Where( a => a.MetricId == metricId && a.MetricValueType == metricValueType );
             if (startDate.HasValue)
             {
                 dataQry = dataQry.Where( a => a.MetricValueDateTime >= startDate.Value );
