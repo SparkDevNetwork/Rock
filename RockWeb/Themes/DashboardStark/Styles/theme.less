@@ -35,7 +35,7 @@ main {
 header {
     background-color: @header-bg;
     color: @header-text-color;
-    min-height: 100px;
+    min-height: 80px;
 }
 
 main {
@@ -48,7 +48,8 @@ footer {
     width: 100%;
     background-color: @footer-bg;
     color: @footer-text-color;
-    min-height: 100px;
+    min-height: 80px;
+    padding-top: 24px;
 }
 
 
@@ -65,7 +66,9 @@ footer {
 
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
-
+    .container {
+        width: 100%;
+    }
 }
 
 // Large devices (large desktops, 1200px and up) 

@@ -2070,13 +2070,21 @@ dl dd {
     5. 
 
 */
-.dashboardwidget {
+.panel-dashboard {
   margin: 24px 0 0 ;
-}
-.dashboardwidget .dashboardwidget-content {
   height: 220px;
-  border: 1px solid #c4c4c4;
-  border-radius: 4px;
+  border-color: #d9e1e8;
+}
+.panel-dashboard > .panel-heading {
+  color: #515151;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-dashboard > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-dashboard > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
 }
 /*
     Used to manage styles for specific blocks.
