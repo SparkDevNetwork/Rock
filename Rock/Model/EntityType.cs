@@ -94,6 +94,24 @@ namespace Rock.Model
         [DataMember]
         public bool IsCommon { get; set; }
 
+        /// <summary>
+        /// Gets or sets the single value field type identifier.
+        /// </summary>
+        /// <value>
+        /// The single value field type identifier.
+        /// </value>
+        [DataMember]
+        public int? SingleValueFieldTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the multi value field type identifier.
+        /// </summary>
+        /// <value>
+        /// The multi value field type identifier.
+        /// </value>
+        [DataMember]
+        public int? MultiValueFieldTypeId { get; set; }
+
         #endregion
 
         #region virtual Properties
@@ -108,6 +126,24 @@ namespace Rock.Model
         {
             get { return IsSecured || IsEntity; }
         }
+
+        /// <summary>
+        /// Gets or sets the type of the single value field. 
+        /// This helps determine what type of control can be used to select this type of Entity (single values)
+        /// </summary>
+        /// <value>
+        /// The type of the single value field.
+        /// </value>
+        public virtual FieldType SingleValueFieldType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the multi value field.  
+        /// This helps determine what type of control can be used to select this type of Entity (multiple values)
+        /// </summary>
+        /// <value>
+        /// The type of the multi value field.
+        /// </value>
+        public virtual FieldType MultiValueFieldType { get; set; }
 
         #endregion
 
@@ -140,6 +176,8 @@ namespace Rock.Model
         /// </summary>
         public EntityTypeConfiguration()
         {
+            this.HasOptional( p => p.SingleValueFieldType ).WithMany().HasForeignKey( p => p.SingleValueFieldTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MultiValueFieldType ).WithMany().HasForeignKey( p => p.MultiValueFieldTypeId ).WillCascadeOnDelete( false );
         }
     }
 

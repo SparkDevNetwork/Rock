@@ -601,8 +601,8 @@ namespace RockWeb.Blocks.Core
         protected void ShowEdit( int attributeId )
         {
             var rockContext = new RockContext();
-
-            var attributeModel = new AttributeService( rockContext ).Get( attributeId );
+            var attributeService = new AttributeService( rockContext );
+            var attributeModel = attributeService.Get( attributeId );
 
             if ( attributeModel == null )
             {
@@ -635,7 +635,13 @@ namespace RockWeb.Blocks.Core
             if ( _entityTypeId.HasValue )
             {
                 type = EntityTypeCache.Read( _entityTypeId.Value ).GetEntityType();
+                edtAttribute.ReservedKeyNames = attributeService.Get(_entityTypeId, _entityQualifierColumn, _entityQualifierValue)
+                    .Where( a => a.Id != attributeId)
+                    .Select( a => a.Key )
+                    .Distinct()
+                    .ToList();
             }
+
             edtAttribute.SetAttributeProperties( attributeModel, type  );
 
             if ( _configuredType )

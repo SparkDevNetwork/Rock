@@ -200,6 +200,12 @@
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
+    <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
+    <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
+    <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Data\DbService.cs" />
     <Compile Include="Data\IgnoreCanDelete.cs" />
     <Compile Include="Data\IModel.cs" />
@@ -325,6 +331,7 @@
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Utility\DoubleMetaphone.cs" />
+    <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -556,6 +563,9 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\ColumnChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\GoogleChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
@@ -1037,8 +1047,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
-    <Folder Include="SqlServerTypes\x64\" />
-    <Folder Include="SqlServerTypes\x86\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

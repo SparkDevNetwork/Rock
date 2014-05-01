@@ -863,6 +863,30 @@
     <Compile Include="Migrations\201404212311146_CommunicationDetail.Designer.cs">
       <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201404232209594_AddHelpTextToDefinedTypes.cs" />
+    <Compile Include="Migrations\201404232209594_AddHelpTextToDefinedTypes.Designer.cs">
+      <DependentUpon>201404232209594_AddHelpTextToDefinedTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404232359013_MetricEntityType.cs" />
+    <Compile Include="Migrations\201404232359013_MetricEntityType.Designer.cs">
+      <DependentUpon>201404232359013_MetricEntityType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404241327081_AddBusinesses.cs" />
+    <Compile Include="Migrations\201404241327081_AddBusinesses.Designer.cs">
+      <DependentUpon>201404241327081_AddBusinesses.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404281605232_CampusModelChanges.cs" />
+    <Compile Include="Migrations\201404281605232_CampusModelChanges.Designer.cs">
+      <DependentUpon>201404281605232_CampusModelChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404291730340_MoreCampusChanges.cs" />
+    <Compile Include="Migrations\201404291730340_MoreCampusChanges.Designer.cs">
+      <DependentUpon>201404291730340_MoreCampusChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404292234090_WorkflowFormEntry.cs" />
+    <Compile Include="Migrations\201404292234090_WorkflowFormEntry.Designer.cs">
+      <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1491,6 +1515,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404212311146_CommunicationDetail.resx">
       <DependentUpon>201404212311146_CommunicationDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404232209594_AddHelpTextToDefinedTypes.resx">
+      <DependentUpon>201404232209594_AddHelpTextToDefinedTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404232359013_MetricEntityType.resx">
+      <DependentUpon>201404232359013_MetricEntityType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404241327081_AddBusinesses.resx">
+      <DependentUpon>201404241327081_AddBusinesses.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404281605232_CampusModelChanges.resx">
+      <DependentUpon>201404281605232_CampusModelChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404291730340_MoreCampusChanges.resx">
+      <DependentUpon>201404291730340_MoreCampusChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404292234090_WorkflowFormEntry.resx">
+      <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

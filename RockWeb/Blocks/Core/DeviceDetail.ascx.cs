@@ -86,7 +86,6 @@ namespace RockWeb.Blocks.Core
             ddlDeviceType.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.DEVICE_TYPE ) ) );
             ddlDeviceType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            ddlPrintTo.BindToEnum( typeof( PrintTo ) );
             ddlPrintFrom.BindToEnum( typeof( PrintFrom ) );
 
             ddlPrinter.Items.Clear();
@@ -137,6 +136,9 @@ namespace RockWeb.Blocks.Core
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
+
+            SetPrinterVisibility();
+            SetPrinterSettingsVisibility();
 
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
             if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
@@ -270,7 +272,43 @@ namespace RockWeb.Blocks.Core
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
         }
 
-        #endregion
+        /// <summary>
+        /// Handles when the Print To selection is changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlPrintTo_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPrinterVisibility();
+        }
 
-}
+        /// <summary>
+        /// Decide if the printer drop down list should be hidden.
+        /// </summary>
+        private void SetPrinterVisibility()
+        {
+            var printTo = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
+            ddlPrinter.Visible = printTo != PrintTo.Location;
+        }
+
+        /// <summary>
+        /// Handles when the device type selection is changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlDeviceType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPrinterSettingsVisibility();
+        }
+
+        /// <summary>
+        /// Decide if the printer settings section should be hidden.
+        /// </summary>
+        private void SetPrinterSettingsVisibility()
+        {
+            var checkinKioskDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsInteger() == checkinKioskDeviceTypeId );
+        }
+        #endregion
+    }
 }

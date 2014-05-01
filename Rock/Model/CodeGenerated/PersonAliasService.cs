@@ -250,9 +250,9 @@ namespace Rock.Model
             
             // ignoring Metric,CreatedByPersonAliasId 
             
-            // ignoring Metric,ModifiedByPersonAliasId 
+            // ignoring Metric,MetricChampionPersonAliasId 
             
-            // ignoring Metric,StewardPersonAliasId 
+            // ignoring Metric,ModifiedByPersonAliasId 
             
             // ignoring MetricValue,CreatedByPersonAliasId 
             

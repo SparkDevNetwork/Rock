@@ -28,6 +28,12 @@
                     </div>
 
                     <div class="row">
+                         <div class="col-md-12">
+                             <Rock:DataTextBox ID="tbHelpText" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="HelpText" TextMode="MultiLine" Rows="3" />
+                         </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbTypeCategory" runat="server" SourceTypeName="Rock.Model.DefinedType, Rock" PropertyName="Category" />
                         </div>
@@ -57,9 +63,17 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="row">
+                <div class="row margin-b-md">
                     <div class="col-md-12">
                         <asp:Literal ID="lDescription" runat="server" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockControlWrapper ID="rcHelpText" runat="server" Label="Help Text">
+                           <p class="form-control-static"><asp:Literal ID="lHelpText" runat="server" /></p>
+                        </Rock:RockControlWrapper>
                     </div>
                 </div>
                 
@@ -83,7 +97,9 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                 </div>
 
             </fieldset>

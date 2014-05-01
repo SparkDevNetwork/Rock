@@ -69,12 +69,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<MetricValue>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, MetricValue.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -122,7 +116,8 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
-
+            target.PhoneNumber = source.PhoneNumber;
+            target.LeaderPersonAliasId = source.LeaderPersonAliasId;
         }
     }
 }

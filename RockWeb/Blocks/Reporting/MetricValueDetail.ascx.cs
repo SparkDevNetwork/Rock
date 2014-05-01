@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -24,9 +24,12 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -45,10 +48,25 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnLoad( e );
 
+            if ( Page.IsPostBack )
+            {
+                // create dynamic controls
+                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() ?? 0 );
+                if ( fieldType != null )
+                {
+                    var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
+                    phEntityTypeEntityIdValue.Controls.Add( entityTypeEditControl );
+                    if ( entityTypeEditControl is IRockControl )
+                    {
+                        ( entityTypeEditControl as IRockControl ).Label = fieldType.Name;
+                    }
+                }
+            }
+
             if ( !Page.IsPostBack )
             {
                 int? itemId = PageParameter( "MetricValueId" ).AsInteger( false );
-                
+
                 // in case called with MetricId as the parent id parameter
                 int? metricId = PageParameter( "MetricId" ).AsInteger( false );
 
@@ -72,7 +90,7 @@ namespace RockWeb.Blocks.Reporting
                         metricId = 0;
                     }
                 }
-                
+
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
 
                 if ( itemId.HasValue )
@@ -121,6 +139,7 @@ namespace RockWeb.Blocks.Reporting
                 metricValue = new MetricValue();
                 metricValueService.Add( metricValue );
                 metricValue.MetricId = hfMetricId.ValueAsInt();
+                metricValue.Metric = metricValue.Metric ?? new MetricService(rockContext).Get(metricValue.MetricId);
             }
             else
             {
@@ -132,7 +151,18 @@ namespace RockWeb.Blocks.Reporting
             metricValue.YValue = tbYValue.Text.AsDecimal( false );
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
-            metricValue.CampusId = cpCampus.SelectedCampusId;
+
+            // Setup EntityType UI controls
+            var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
+            Control entityTypeEditControl = phEntityTypeEntityIdValue.FindControl("entityTypeEditControl");
+            if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )
+            {
+                metricValue.EntityId = ( metricEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
+            }
+            else
+            {
+                metricValue.EntityId = null;
+            }
 
             if ( !metricValue.IsValid )
             {
@@ -183,7 +213,8 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                metricValue = new MetricValue { Id = 0, MetricId = metricId ?? 0};
+                metricValue = new MetricValue { Id = 0, MetricId = metricId ?? 0 };
+                metricValue.Metric = metricValue.Metric ?? new MetricService( new RockContext() ).Get( metricValue.MetricId );
                 lActionTitle.Text = ActionTitle.Add( MetricValue.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
@@ -197,7 +228,29 @@ namespace RockWeb.Blocks.Reporting
             hfMetricId.Value = metricValue.MetricId.ToString();
             tbNote.Text = metricValue.Note;
             dtpMetricValueDateTime.SelectedDateTime = metricValue.MetricValueDateTime;
-            cpCampus.SelectedCampusId = metricValue.CampusId;
+
+            var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
+
+            // Setup EntityType UI controls
+            Control entityTypeEditControl = null;
+            if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null )
+            {
+                hfSingleValueFieldTypeId.Value = metricEntityType.SingleValueFieldType.Id.ToString();
+                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() ?? 0 );
+                entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
+
+                if ( entityTypeEditControl is IRockControl )
+                {
+                    ( entityTypeEditControl as IRockControl ).Label = fieldType.Name;
+                }
+
+                phEntityTypeEntityIdValue.Controls.Add( entityTypeEditControl );
+                IEntityFieldType entityFieldType = metricEntityType.SingleValueFieldType.Field as IEntityFieldType;
+                if ( entityFieldType != null )
+                {
+                    entityFieldType.SetEditValueFromEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>(), metricValue.EntityId );
+                }
+            }
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -220,7 +273,10 @@ namespace RockWeb.Blocks.Reporting
             tbYValue.ReadOnly = readOnly;
             tbNote.ReadOnly = readOnly;
             dtpMetricValueDateTime.Enabled = !readOnly;
-            cpCampus.Enabled = !readOnly;
+            if ( entityTypeEditControl is WebControl )
+            {
+                ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
+            }
 
             btnSave.Visible = !readOnly;
         }
@@ -235,8 +291,6 @@ namespace RockWeb.Blocks.Reporting
             {
                 ddlMetricValueType.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
             }
-
-            cpCampus.Campuses = new CampusService( new RockContext() ).Queryable().ToList();
         }
 
         #endregion

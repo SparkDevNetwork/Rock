@@ -155,7 +155,16 @@ You can view an online version of this email here:
             string value = communication.GetChannelDataValue( "HtmlMessage" );
             if (!string.IsNullOrWhiteSpace(value))
             {
-                AppendChannelData( sb, "HtmlMessage", string.Format( "<pre>{0}</pre>", value.EncodeHtml() ) );
+                AppendChannelData( sb, "HtmlMessage", string.Format( @"
+                        <iframe id='js-email-body-iframe' class='email-body'></iframe>
+                        <script id='email-body' type='text/template'>{0}</script>
+                        <script type='text/javascript'>
+                            var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
+                            doc.open();
+                            doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
+                            doc.close();
+                        </script>
+                    ", value ) );
             }
 
             AppendChannelData( communication, sb, "TextMessage" );

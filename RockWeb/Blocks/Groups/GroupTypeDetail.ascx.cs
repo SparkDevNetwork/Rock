@@ -477,7 +477,7 @@ namespace RockWeb.Blocks.Groups
             groupType.IconCssClass = tbIconCssClass.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
-            groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
+            groupType.AttendancePrintTo = ddlPrintTo.SelectedValueAsEnum<PrintTo>();
             groupType.LocationSelectionMode = locationSelectionMode;
             groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
             groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
@@ -732,7 +732,7 @@ namespace RockWeb.Blocks.Groups
             // Check In
             cbTakesAttendance.Checked = groupType.TakesAttendance;
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
-            ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
+            ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -829,7 +829,6 @@ namespace RockWeb.Blocks.Groups
         private void LoadDropDowns( int? groupTypeId )
         {
             ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
-            ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
 
             cblLocationSelectionModes.Items.Clear();
             cblLocationSelectionModes.Items.Add( new ListItem( "Named", "2" ) );
@@ -965,6 +964,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupTypeAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -980,6 +980,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -995,6 +996,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupMemberAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -1512,6 +1514,11 @@ namespace RockWeb.Blocks.Groups
                 edtGroupTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for group type " + tbName.Text );
             }
 
+            var reservedKeyNames = new List<string>();
+            GroupTypeAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupTypeAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupTypeAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+
             edtGroupTypeAttributes.SetAttributeProperties( attribute, typeof( GroupType ) );
 
             ShowDialog( "GroupTypeAttributes" );
@@ -1660,6 +1667,11 @@ namespace RockWeb.Blocks.Groups
                 edtGroupAttributes.ActionTitle = ActionTitle.Edit( "attribute for groups of group type " + tbName.Text );
             }
 
+            var reservedKeyNames = new List<string>();
+            GroupAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+
             edtGroupAttributes.SetAttributeProperties( attribute, typeof( Group ) );
 
             ShowDialog( "GroupAttributes" );
@@ -1806,6 +1818,11 @@ namespace RockWeb.Blocks.Groups
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for members in groups of group type " + tbName.Text );
             }
+
+            var reservedKeyNames = new List<string>();
+            GroupMemberAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupMemberAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupMemberAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 

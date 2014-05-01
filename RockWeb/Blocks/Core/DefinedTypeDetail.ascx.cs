@@ -76,6 +76,8 @@ namespace RockWeb.Blocks.Core
             gDefinedTypeAttributes.Actions.AddClick += gDefinedTypeAttributes_Add;
             gDefinedTypeAttributes.GridRebind += gDefinedTypeAttributes_GridRebind;
             gDefinedTypeAttributes.GridReorder += gDefinedTypeAttributes_GridReorder;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DefinedType.FriendlyTypeName );
         }
 
         /// <summary>
@@ -193,6 +195,7 @@ namespace RockWeb.Blocks.Core
             definedType.Name = tbTypeName.Text;
             definedType.Category = tbTypeCategory.Text;
             definedType.Description = tbTypeDescription.Text;
+            definedType.HelpText = tbHelpText.Text;
 
             if ( !definedType.IsValid )
             {
@@ -205,6 +208,41 @@ namespace RockWeb.Blocks.Core
             var qryParams = new Dictionary<string, string>();
             qryParams["definedTypeId"] = definedType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            RockContext rockContext = new RockContext();
+            DefinedTypeService definedTypeService = new DefinedTypeService( rockContext );
+            DefinedType definedType = definedTypeService.Get( int.Parse( hfDefinedTypeId.Value ) );
+
+            if ( definedType != null )
+            {
+                if ( !definedType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "Sorry, You are not authorized to delete this Defined Type.", ModalAlertType.Information );
+                    return;
+                }
+
+                string errorMessage;
+                if ( !definedTypeService.CanDelete( definedType, out errorMessage ) )
+                {
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                definedTypeService.Delete( definedType );
+
+                rockContext.SaveChanges();
+
+            }
+
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -242,6 +280,16 @@ namespace RockWeb.Blocks.Core
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
             lDescription.Text = definedType.Description;
 
+            if ( !string.IsNullOrWhiteSpace( definedType.HelpText ) )
+            {
+                lHelpText.Text = definedType.HelpText;
+                rcHelpText.Visible = true;
+            }
+            else
+            {
+                rcHelpText.Visible = false;
+            }
+
             lblMainDetails.Text = new DescriptionList()
                 .Add("Category", definedType.Category)
                 .Html;
@@ -269,6 +317,7 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
             tbTypeCategory.Text = definedType.Category;
             tbTypeDescription.Text = definedType.Description;
+            tbHelpText.Text = definedType.HelpText;
         }
 
         /// <summary>
@@ -413,6 +462,16 @@ namespace RockWeb.Blocks.Core
                 attribute = attributeService.Get( attributeGuid );
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
+
+            edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
+                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
+                    !a.Guid.Equals(attributeGuid) )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
 
             edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
 

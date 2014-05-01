@@ -95,6 +95,11 @@ namespace RockWeb.Blocks.Core
 
             campus.Name = tbCampusName.Text;
             campus.ShortCode = tbCampusCode.Text;
+            campus.PhoneNumber = tbPhoneNumber.Text;
+
+            var personService = new PersonService( rockContext );
+            var leaderPerson = personService.Get( ppCampusLeader.SelectedValue ?? 0 );
+            campus.LeaderPersonAliasId = leaderPerson != null ? leaderPerson.PrimaryAliasId : null;
 
             if ( !campus.IsValid )
             {
@@ -140,6 +145,8 @@ namespace RockWeb.Blocks.Core
             hfCampusId.Value = campus.Id.ToString();
             tbCampusName.Text = campus.Name;
             tbCampusCode.Text = campus.ShortCode;
+            tbPhoneNumber.Text = campus.PhoneNumber;
+            ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

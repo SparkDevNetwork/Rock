@@ -75,6 +75,24 @@ namespace Rock.Model
         [DataMember]
         public int? LocationId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the phone number of the campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the campus phone number.
+        /// </value>
+        [DataMember]
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is the leader of the campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> that represents the Id of the person who leads the campus.
+        /// </value>
+        [DataMember]
+        public int? LeaderPersonAliasId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -87,6 +105,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Location Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Person"/> entity that is associated with the leader of the campus.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Person"/> that is associated as the leader of the campus.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias LeaderPersonAlias { get; set; }
 
         #endregion
 
@@ -120,6 +147,7 @@ namespace Rock.Model
         public CampusConfiguration()
         {
             this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

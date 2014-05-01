@@ -360,6 +360,8 @@ namespace RockWeb.Blocks.Core
                 edtBinaryFileAttributes.ActionTitle = ActionTitle.Edit( "attribute for binary files of type " + tbName.Text );
             }
 
+            edtBinaryFileAttributes.ReservedKeyNames = BinaryFileAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
             edtBinaryFileAttributes.SetAttributeProperties( attribute, typeof( BinaryFile ) );
         }
 

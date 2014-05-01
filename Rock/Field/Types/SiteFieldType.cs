@@ -27,7 +27,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) SiteFieldType
     /// </summary>
-    public class SiteFieldType : FieldType
+    public class SiteFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
@@ -58,7 +58,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Reads new values entered by the user for the field ( as int )
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -85,7 +85,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value. ( as int )
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -97,6 +97,28 @@ namespace Rock.Field.Types
                 DropDownList dropDownList = control as DropDownList;
                 dropDownList.SetValue( value );
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetEditValue( control, configurationValues ).AsInteger( false );
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            SetEditValue( control, configurationValues, id.ToString() );
         }
     }
 }

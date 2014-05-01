@@ -15,29 +15,26 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Reflection;
-using System.IO;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using NuGet;
+using RestSharp;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Services.NuGet;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.VersionInfo;
-using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Core
 {
@@ -202,7 +199,10 @@ namespace RockWeb.Blocks.Core
                 {
                     errors = NuGetService.UpdatePackage( update );
                 }
-                nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
+
+                CheckForManualFileMoves( version );
+
+                nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
                 lSuccessVersion.Text = update.Title;
 
                 // Record the current version to the database
@@ -387,6 +387,43 @@ namespace RockWeb.Blocks.Core
 " );
         }
 
+        private void CheckForManualFileMoves( string version )
+        {
+            var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
+            if ( versionDirectory.Exists )
+            {
+                foreach ( var file in versionDirectory.EnumerateFiles( "*", SearchOption.AllDirectories ) )
+                {
+                    ManuallyMoveFile( file, file.FullName.Replace( @"\App_Data\" + version, "" ) );
+                }
+
+                versionDirectory.Delete( true );
+            }
+
+        }
+
+        private void ManuallyMoveFile( FileInfo file, string newPath )
+        {
+            if ( newPath.EndsWith( ".dll" ) && !newPath.Contains( @"\bin\" ) )
+            {
+                int fileCount = 0;
+                if ( File.Exists( newPath ) )
+                {
+                    // generate a unique *.#.rdelete filename
+                    do
+                    {
+                        fileCount++;
+                    }
+                    while ( File.Exists( string.Format( "{0}.{1}.rdelete", newPath, fileCount ) ) );
+
+                    string fileToDelete = string.Format( "{0}.{1}.rdelete", newPath, fileCount );
+                    File.Move( newPath, fileToDelete );
+                }
+            }
+
+            file.CopyTo( newPath, true );
+        }
+
         /// <summary>
         /// Converts + and * to html line items (li) wrapped in unordered lists (ul).
         /// </summary>
@@ -447,48 +484,115 @@ namespace RockWeb.Blocks.Core
             {
                 DateTime? sampleDataLoadDate = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime();
                 string organizationName = string.Empty;
-                string organizationAddress = string.Empty;
+                ImpactLocation organizationLocation = null;
                 int numberOfActiveRecords = 0;
+                string publicUrl = string.Empty;
 
                 if ( sampleDataLoadDate == null )
                 {
                     var rockInstanceId = Rock.Web.SystemSettings.GetRockInstanceId();
-
                     var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
 
                     if ( cbIncludeStats.Checked )
                     {
                         var globalAttributes = GlobalAttributesCache.Read();
                         organizationName = globalAttributes.GetValue( "OrganizationName" );
+                        publicUrl = globalAttributes.GetValue( "PublicApplicationRoot" );
 
                         var rockContext = new RockContext();
 
-                        // Fetch their organization address
+                        // Fetch the organization address
                         var organizationAddressLocationGuid = globalAttributes.GetValue( "OrganizationAddress" ).AsGuid();
                         if ( !organizationAddressLocationGuid.Equals( Guid.Empty ) )
                         {
                             var location = new Rock.Model.LocationService( rockContext ).Get( organizationAddressLocationGuid );
                             if ( location != null )
                             {
-                                organizationAddress = location.GetFullStreetAddress();
+                                organizationLocation = new ImpactLocation( location );
                             }
                         }
 
                         numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
                     }
 
-                    // TODO now send them to SDN
-                    //SendToSpark( rockInstanceId, version, ipAddress, organizationName, organizationAddress, numberOfActiveRecords );
+                    // TODO now send them to SDN/Rock server
+                    SendToSpark( rockInstanceId, version, ipAddress, publicUrl, organizationName, organizationLocation, numberOfActiveRecords );
                 }
             }
             catch ( Exception ex )
             {
                 // Just catch any exceptions, log it, and keep moving... We don't want to mess up the experience
                 // over a few statistics/metrics.
-                LogException( ex );
+                try
+                {
+                    LogException( ex );
+                }
+                catch { }
             }
+        }
+
+        /// <summary>
+        /// Sends the public data and impact statistics to the Rock server.
+        /// </summary>
+        /// <param name="rockInstanceId"></param>
+        /// <param name="version"></param>
+        /// <param name="ipAddress"></param>
+        /// <param name="publicUrl"></param>
+        /// <param name="organizationName"></param>
+        /// <param name="organizationAddress"></param>
+        /// <param name="numberOfActiveRecords"></param>
+        private void SendToSpark( Guid rockInstanceId, string version, string ipAddress, string publicUrl, string organizationName, ImpactLocation organizationLocation, int numberOfActiveRecords )
+        {
+            ImpactStatistic impactStatistic = new ImpactStatistic()
+            {
+                RockInstanceId = rockInstanceId,
+                Version = version,
+                IpAddress = ipAddress,
+                PublicUrl = publicUrl,
+                OrganizationName = organizationName,
+                OrganizationLocation = organizationLocation,
+                NumberOfActiveRecords = numberOfActiveRecords
+            };
+
+            var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
+            var request = new RestRequest( Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddBody( impactStatistic );
+            var response = client.Execute( request );
         }
 
         #endregion
     }
+
+    [Serializable]
+    public class ImpactStatistic
+    {
+        public Guid RockInstanceId { get; set; }
+        public string Version { get; set; }
+        public string IpAddress { get; set; }
+        public string PublicUrl { get; set; }
+        public string OrganizationName { get; set; }
+        public ImpactLocation OrganizationLocation { get; set; }
+        public int NumberOfActiveRecords { get; set; }
+    }
+
+    [Serializable]
+    public class ImpactLocation
+    {
+        public string Street1 { get; set; }
+        public string Street2 { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
+        public string Zip { get; set; }
+
+        public ImpactLocation( Rock.Model.Location location )
+        {
+            Street1 = location.Street1;
+            Street2 = location.Street2;
+            City = location.City;
+            State = location.State;
+            Zip = location.Zip;
+        }
+    }
+
 }
