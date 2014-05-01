@@ -115,15 +115,6 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the campus id.
-        /// </summary>
-        /// <value>
-        /// The campus id.
-        /// </value>
-        [DataMember]
-        public int? CampusId { get; set; }
-
-        /// <summary>
         /// Gets or sets the metric.
         /// </summary>
         /// <value>
@@ -136,13 +127,26 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets or sets the Campus.
+        /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
         /// </summary>
         /// <value>
-        /// A <see cref="Campus"/> object.
+        /// The metric value javascript time stamp.
         /// </value>
         [DataMember]
-        public virtual Campus Campus { get; set; }
+        public long MetricValueJavascriptTimeStamp
+        {
+            get
+            {
+                if ( this.MetricValueDateTime.HasValue )
+                {
+                    return this.MetricValueDateTime.Value.ToJavascriptMilliseconds();
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.

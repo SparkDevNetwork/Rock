@@ -826,7 +826,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            GroupLocationsState = new ViewStateList<GroupLocation>();
+            var groupLocations = new List<GroupLocation>();
             foreach ( var groupLocation in group.GroupLocations )
             {
                 var groupLocationState = new GroupLocation();
@@ -842,9 +842,10 @@ namespace RockWeb.Blocks.Groups
                     groupLocationState.GroupLocationTypeValue = new DefinedValue();
                     groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
                 }
-
-                GroupLocationsState.Add( groupLocationState );
+                groupLocations.Add( groupLocationState );
             }
+            GroupLocationsState = new ViewStateList<GroupLocation>();
+            GroupLocationsState.AddAll( groupLocations );
 
             ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, true );
 
@@ -1186,6 +1187,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupMemberAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -1547,6 +1549,11 @@ namespace RockWeb.Blocks.Groups
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
+
+            var reservedKeyNames = new List<string>();
+            GroupMemberAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupMemberAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupMemberAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 

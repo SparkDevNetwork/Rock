@@ -18,10 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
 
 namespace Rock.Workflow.Action
 {
@@ -29,8 +28,8 @@ namespace Rock.Workflow.Action
     /// Sets a workflow status
     /// </summary>
     [Description( "Set the workflow status" )]
-    [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Set Status")]
+    [Export( typeof( ActionComponent ) )]
+    [ExportMetadata( "ComponentName", "Set Status" )]
     [TextField( "Status", "The status to set workflow to" )]
     public class SetStatus : ActionComponent
     {
@@ -44,11 +43,10 @@ namespace Rock.Workflow.Action
         public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-
             string status = GetAttributeValue( action, "Status" );
             action.Activity.Workflow.Status = status;
             action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
-            
+
             return true;
         }
     }

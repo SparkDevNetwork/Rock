@@ -33,6 +33,14 @@ namespace Rock.Attribute
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the key.
+        /// </summary>
+        /// <value>
+        /// The key.
+        /// </value>
+        public string Key { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -63,9 +71,10 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="url">The URL.</param>
         /// <param name="groupType">Type of the group.</param>
-        public InheritedAttribute( string name, string description, string url, string groupType )
+        public InheritedAttribute( string name, string key, string description, string url, string groupType )
         {
             Name = name;
+            Key = key;
             Description = description;
             Url = url;
             GroupType = groupType;

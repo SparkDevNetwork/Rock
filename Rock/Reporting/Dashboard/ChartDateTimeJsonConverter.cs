@@ -30,7 +30,8 @@ namespace Rock.Reporting.Dashboard
     public class ChartDateTimeJsonConverter : JsonConverter
     {
         /// <summary>
-        /// Writes the JSON representation of the object.
+        /// Writes the JSON representation of the object
+        /// However, since it contains date constructors, it technically is a Javascript Literal object, and not JSON
         /// </summary>
         /// <param name="writer">The <see cref="T:Newtonsoft.Json.JsonWriter" /> to write to.</param>
         /// <param name="value">The value.</param>
