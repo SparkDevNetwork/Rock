@@ -12,49 +12,50 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <div class="form-horizontal">
-                <div class="row">
+
+                <asp:Literal ID="lFutureSend" runat="server"></asp:Literal>
+
+                <div class="row margin-b-lg">
                     <div class="col-md-6">
-                        <Rock:RockControlWrapper ID="rcCreatedBy" runat="server" Label="Created By">
-                            <p class="form-control-static"><asp:Literal ID="lCreatedBy" runat="server"></asp:Literal></p>
-                        </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcCreatedOn" runat="server" Label="On">
-                            <p class="form-control-static"><asp:Literal ID="lCreatedOn" runat="server"></asp:Literal></p>
-                        </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcFutureSend" runat="server" Label="Send Date/Time">
-                            <p class="form-control-static"><asp:Literal ID="lFutureSend" runat="server"></asp:Literal></p>
-                        </Rock:RockControlWrapper>
+                        <asp:Literal ID="lCreatedBy" runat="server"></asp:Literal>
                     </div>
-                    <div class="col-md-6">
-                        <Rock:RockControlWrapper ID="rcApprovedBy" runat="server" Label="Approved By">
-                            <p class="form-control-static"><asp:Literal ID="lApprovedBy" runat="server"></asp:Literal></p>
-                        </Rock:RockControlWrapper>
-                        <Rock:RockControlWrapper ID="rcApprovedOn" runat="server" Label="On">
-                            <p class="form-control-static"><asp:Literal ID="lApprovedOn" runat="server"></asp:Literal></p>
-                        </Rock:RockControlWrapper>
+                    <div class="col-md-6 text-right">
+                        <asp:Literal ID="lApprovedBy" runat="server"></asp:Literal>
                     </div>
                 </div>
             </div>
-            <div class="recipient-status">
-                <a id="aPending" runat="server" class="btn btn-lg btn-default">
-                    <asp:Literal ID="lPending" runat="server"></asp:Literal><br />
-                    <small>Pending</small></a>
-                <a id="aDelivered" runat="server" class="btn btn-lg btn-info">
-                    <asp:Literal ID="lDelivered" runat="server"></asp:Literal><br />
-                    <small>Delivered</small></a>
-                <a id="aFailed" runat="server" class="btn btn-lg btn-danger">
-                    <asp:Literal ID="lFailed" runat="server"></asp:Literal><br />
-                    <small>Failed</small></a>
-                <a id="aCancelled" runat="server" class="btn btn-lg btn-warning">
-                    <asp:Literal ID="lCancelled" runat="server"></asp:Literal><br />
-                    <small>Cancelled</small></a>
-                <a id="aOpened" runat="server" class="btn btn-lg btn-success" disabled="disabled">
-                    <asp:Literal ID="lOpened" runat="server"></asp:Literal><br />
-                    <small>Opened</small></a>
+
+            <div class="recipient-status row">
+                <asp:Panel id="pnlPending" runat="server">
+                    <a id="aPending" runat="server" class="btn btn-lg btn-block btn-default">
+                        <asp:Literal ID="lPending" runat="server"></asp:Literal><br />
+                        <small>Pending</small></a>
+                </asp:Panel>
+                <asp:Panel id="pnlDelivered" runat="server">
+                    <a id="aDelivered" runat="server" class="btn btn-lg btn-block btn-info">
+                        <asp:Literal ID="lDelivered" runat="server"></asp:Literal><br />
+                        <small>Delivered</small></a>
+                </asp:Panel>
+                <asp:Panel id="pnlOpened" runat="server">
+                    <a id="aOpened" runat="server" class="btn btn-lg btn-block btn-success" disabled="disabled">
+                        <asp:Literal ID="lOpened" runat="server"></asp:Literal><br />
+                        <small>Opened</small></a>
+                </asp:Panel>
+                <asp:Panel id="pnlFailed" runat="server">
+                    <a id="aFailed" runat="server" class="btn btn-lg btn-block btn-danger">
+                        <asp:Literal ID="lFailed" runat="server"></asp:Literal><br />
+                        <small>Failed</small></a>
+                </asp:Panel>
+                <asp:Panel id="pnlCancelled" runat="server">
+                    <a id="aCancelled" runat="server" class="btn btn-lg btn-block btn-warning">
+                        <asp:Literal ID="lCancelled" runat="server"></asp:Literal><br />
+                        <small>Cancelled</small></a>
+                </asp:Panel>
             </div>
 
             <asp:HiddenField ID="hfActiveRecipient" runat="server" />
 
-            <section id="divPending" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sPending" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Pending Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gPending" runat="server" AllowSorting="true">
@@ -66,7 +67,7 @@
                 </div>
             </section>
 
-            <section id="divDelivered" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sDelivered" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Delivered Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gDelivered" runat="server" AllowSorting="true" ShowActionRow="false">
@@ -77,13 +78,13 @@
                             <Rock:DateTimeField HeaderText="Opened" DataField="OpenedDateTime" SortExpression="OpenedDateTime" />
                             <asp:BoundField HeaderText="Client" DataField="OpenedClient" SortExpression="OpenedClient" />
                             <asp:BoundField HeaderText="Message ID" DataField="UniqueMessageId" SortExpression="UniqueMessageId" />
-                            <asp:BoundField HeaderText="Activity" DataField="ActivityList" HtmlEncode="false" />
+                            <asp:BoundField HeaderText="Activity" ItemStyle-CssClass="wrap-contents" DataField="ActivityList" HtmlEncode="false" />
                         </Columns>
                     </Rock:Grid>
                 </div>
             </section>
 
-            <section id="divFailed" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sFailed" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Failed Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gFailed" runat="server" AllowSorting="true">
@@ -95,7 +96,7 @@
                 </div>
             </section>
 
-            <section id="divCancelled" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sCancelled" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Cancelled Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gCancelled" runat="server" AllowSorting="true">
@@ -107,7 +108,7 @@
                 </div>
             </section>
 
-            <section id="divOpened" runat="server" class="js-communication-recipients panel panel-widget">
+            <section id="sOpened" runat="server" class="js-communication-recipients panel panel-widget">
                 <header class="panel-heading clearfix">Opened Recipients</header>
                 <div class="panel-body">
                     <Rock:Grid ID="gOpened" runat="server" AllowSorting="true">
@@ -133,7 +134,7 @@
                         <Rock:DateTimeField HeaderText="Date" DataField="ActivityDateTime" SortExpression="ActivityDateTime" />
                         <Rock:PersonField HeaderText="Person" DataField="CommunicationRecipient.Person" SortExpression="CommunicationRecipient.Person.LastName,CommunicationRecipient.Person.NickName" />
                         <asp:BoundField HeaderText="Activity" DataField="ActivityType" SortExpression="ActivityType" />
-                        <Rock:EnumField HeaderText="Details" DataField="ActivityDetail" SortExpression="ActivityDetail" />
+                        <Rock:EnumField HeaderText="Details" ItemStyle-CssClass="wrap-contents" DataField="ActivityDetail" SortExpression="ActivityDetail" />
                     </Columns>
                 </Rock:Grid>
             </Rock:PanelWidget>
@@ -152,6 +153,10 @@
             <br />
             <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
         </asp:Panel>
+
+        <script>
+            $('.js-date-rollover').tooltip();
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

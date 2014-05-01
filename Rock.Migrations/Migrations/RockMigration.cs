@@ -116,6 +116,50 @@ namespace Rock.Migrations
                     ) );
         }
 
+        /// <summary>
+        /// Updates the EntityType SingleValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeSingleValueFieldType( string entityTypeName, string fieldTypeGuid)
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [SingleValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid)
+            );
+        }
+
+        /// <summary>
+        /// Updates the EntityType MultiValueFieldType
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        public void UpdateEntityTypeMultiValueFieldType( string entityTypeName, string fieldTypeGuid )
+        {
+            EnsureEntityTypeExists( entityTypeName );
+
+            Sql( string.Format( @"
+                 
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                UPDATE [EntityType] SET [MultiValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
+                ", entityTypeName, fieldTypeGuid )
+            );
+        }
+
         #endregion
 
         #region Field Type Methods
@@ -1168,6 +1212,10 @@ INSERT INTO [dbo].[Auth]
             Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
         }
 
+        /// <summary>
+        /// Deletes the security authentication for page.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
         public void DeleteSecurityAuthForPage( string pageGuid )
         {
             string sql = @"
@@ -1233,6 +1281,27 @@ INSERT INTO [dbo].[Auth]
                 ( allow ? "A" : "D" ) ) );
         }
 
+
+        /// <summary>
+        /// Deletes the security authentication for block.
+        /// </summary>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        public void DeleteSecurityAuthForBlock( string blockGuid )
+        {
+            string sql = @"
+DECLARE @blockId int
+SET @blockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Block')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @blockId
+";
+            Sql( string.Format( sql, blockGuid ) );
+
+        }
         /// <summary>
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>

@@ -123,6 +123,7 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
+            var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
             var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
@@ -155,6 +156,11 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
+                // TODO: Could be thousands of page views.  Can we set this up as cascade?
+                foreach( var pageView in pageViewService.GetByPageId(page.Id))
+                {
+                    pageViewService.Delete( pageView );
+                }
                 pageService.Delete( page );
 
                 rockContext.SaveChanges();

@@ -27,6 +27,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to keep a heartbeat of the job process so we know when the jobs stop working
     /// </summary>
+    [DisallowConcurrentExecution]
     public class JobPulse : IJob
     {
         /// <summary> 

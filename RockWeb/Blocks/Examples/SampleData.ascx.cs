@@ -79,6 +79,11 @@ namespace RockWeb.Blocks.Examples
         private static int _adultRoleId = new GroupTypeRoleService( new RockContext() ).Get( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 
         /// <summary>
+        /// The Entity Type Id for the Person entities.
+        /// </summary>
+        private static int _personEntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+        /// <summary>
         /// The storage type to use for the people photos.
         /// </summary>
         private static EntityTypeCache _storageEntityType = EntityTypeCache.Read( Rock.SystemGuid.EntityType.STORAGE_PROVIDER_DATABASE.AsGuid() );
@@ -314,7 +319,6 @@ namespace RockWeb.Blocks.Examples
                     var response = (HttpWebResponse)request.GetResponse();
                     fileExists = response.StatusCode == HttpStatusCode.OK;
                 }
-
             }
             catch ( Exception ex )
             {
@@ -401,7 +405,7 @@ namespace RockWeb.Blocks.Examples
                 _sb.AppendFormat( "{0:00}:{1:00}.{2:00} data deleted <br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
             } );
 
-            //// Import the sample data
+            // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
             RockTransactionScope.WrapTransaction( () =>
             {
@@ -435,12 +439,59 @@ namespace RockWeb.Blocks.Examples
                     _sb.AppendFormat( "{0:00}:{1:00}.{2:00} person logins added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
                 }
 
+                // Add Person Notes
+                AddPersonNotes( elemFamilies, rockContext );
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                ts = _stopwatch.Elapsed;
+                _sb.AppendFormat( "{0:00}:{1:00}.{2:00} notes added<br/>", ts.Minutes, ts.Seconds, ts.Milliseconds / 10 );
+
+                // Add Person Metaphone/Sounds-like stuff
+                AddMetaphone();
+
             } );
 
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 lTime.Text = _sb.ToString();
             }
+        }
+
+        /// <summary>
+        /// Adds a transaction to add the metaphone stuff for each person we've added.
+        /// </summary>
+        private void AddMetaphone()
+        {
+            foreach ( Person person in _personCache.Values )
+            {
+                //var person = pair.Value as Person;
+                var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            }
+        }
+
+        /// <summary>
+        /// Adds any notes for any people given in the XML file.
+        /// </summary>
+        /// <param name="elemFamilies"></param>
+        /// <param name="rockContext"></param>
+        private void AddPersonNotes( XElement elemFamilies, RockContext rockContext )
+        {
+            var peopleWithNotes = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "notes" ).Elements( "note" )
+                                  select new
+                                  {
+                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                      Type = n.Attribute( "type" ).Value,
+                                      Text = n.Attribute( "text" ).Value,
+                                      IsPrivate = n.Attribute( "isPrivate" ) != null ? n.Attribute( "isPrivate" ).Value : "false",
+                                      ByPersonGuid = n.Attribute( "byGuid" ) != null ? n.Attribute( "byGuid" ).Value : null,
+                                      Date = n.Attribute( "date" ) != null ? n.Attribute( "date" ).Value : null
+                                  };
+
+	        foreach ( var r in peopleWithNotes )
+	        {
+                int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
+                AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, rockContext );
+	        }
         }
 
         /// <summary>
@@ -641,7 +692,7 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// Handles adding families from the given XML element snippet
         /// </summary>
-        /// <param name="elemFamilies">The elem families.</param>
+        /// <param name="elemFamilies">The xml element containing all the families.</param>
         /// <param name="rockContext">The rock context.</param>
         private void AddFamilies( XElement elemFamilies, RockContext rockContext )
         {
@@ -907,6 +958,9 @@ namespace RockWeb.Blocks.Examples
             PersonViewedService personViewedService = new PersonViewedService( rockContext );
             PageViewService pageViewService = new PageViewService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            NoteService noteService = new NoteService( rockContext );
+            AuthService authService = new AuthService( rockContext );
 
             foreach ( var elemFamily in families.Elements( "family" ) )
             {
@@ -949,6 +1003,33 @@ namespace RockWeb.Blocks.Examples
                         {
                             pageViewService.Delete( view );
                         }
+
+                        // delete notes created by them or on their record.
+                        foreach ( var note in noteService.Queryable().Where ( n => n.CreatedByPersonAlias.PersonId == person.Id
+                            || (n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
+                        {
+                            noteService.Delete( note );
+                        }
+
+                        //// delete any GroupMember records they have
+                        //foreach ( var groupMember in groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ) )
+                        //{
+                        //    groupMemberService.Delete( groupMember );
+                        //}
+
+                        //// delete any Authorization data
+                        //foreach ( var auth in authService.Queryable().Where( a => a.PersonId == person.Id ) )
+                        //{
+                        //    authService.Delete( auth );
+                        //}
+
+                        // delete their aliases
+                        foreach ( var alias in personAliasService.Queryable().Where( a => a.PersonId == person.Id ) )
+                        {
+                            personAliasService.Delete( alias );
+                        }
+
+                        //foreach ( var relationship in person.Gro)
 
                         // Save these changes so the CanDelete passes the check...
                         //rockContext.ChangeTracker.DetectChanges();
@@ -1260,6 +1341,15 @@ namespace RockWeb.Blocks.Examples
                         person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
                     }
 
+                    if ( personElem.Attribute( "grade" ) != null )
+                    {
+                        person.Grade = int.Parse( personElem.Attribute( "grade" ).Value.Trim() );
+                    }
+                    else if ( personElem.Attribute( "graduationDate" ) != null )
+                    {
+                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim() );
+                    }
+
                     // Now, if their age was given we'll change the given birth year to make them
                     // be this age as of Today.
                     if ( personElem.Attribute( "age" ) != null )
@@ -1433,6 +1523,61 @@ namespace RockWeb.Blocks.Examples
             }
 
             return familyMembers;
+        }
+
+        /// <summary>
+        /// Add a note on the given person's record.
+        /// </summary>
+        /// <param name="personId"></param>
+        /// <param name="noteTypeName"></param>
+        /// <param name="noteText"></param>
+        /// <param name="noteDate">(optional) The date the note was created</param>
+        /// <param name="byPersonGuid">(optional) The guid of the person who created the note</param>
+        /// <param name="rockContext"></param>
+        private void AddNote( int personId, string noteTypeName, string noteText, string noteDate, string byPersonGuid, string isPrivate, RockContext rockContext )
+        {
+            var service = new NoteTypeService( rockContext );
+            var noteType = service.Get( _personEntityTypeId, noteTypeName );
+            // if the note type does not exist, create it
+            if ( noteType == null )
+            {
+                noteType = new NoteType();
+                noteType.IsSystem = false;
+                noteType.EntityTypeId = _personEntityTypeId;
+                noteType.EntityTypeQualifierColumn = string.Empty;
+                noteType.EntityTypeQualifierValue = string.Empty;
+                noteType.Name = noteTypeName;
+                service.Add( noteType );
+                rockContext.SaveChanges();
+            }
+
+            // Find the person's alias
+            int? createdByPersonAliasId = null;
+            if ( byPersonGuid != null )
+            {
+                createdByPersonAliasId = _personCache[byPersonGuid.AsGuid()].PrimaryAliasId;
+            }
+
+            var noteService = new NoteService( rockContext );
+            var note = new Note()
+            {
+                IsSystem = false,
+                NoteTypeId = noteType.Id,
+                EntityId = personId,
+                Caption = string.Empty,
+                CreatedByPersonAliasId = createdByPersonAliasId,
+                Text = noteText,
+                CreatedDateTime = DateTime.Parse( noteDate ?? RockDateTime.Now.ToString() )
+            };
+
+            noteService.Add( note );
+
+            if ( isPrivate.AsBoolean() )
+            {
+                rockContext.SaveChanges( disablePrePostProcessing: true );
+                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()] );
+            }
+
         }
 
         /// <summary>

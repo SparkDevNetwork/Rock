@@ -103,7 +103,7 @@ namespace Rock.CheckIn
                     label = new KioskLabel();
 
                     label.Guid = file.Guid;
-                    label.Url = string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                     label.MergeFields = new Dictionary<string, string>();
                     label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
 

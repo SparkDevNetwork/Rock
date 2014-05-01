@@ -26,7 +26,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class AccountFieldType : FieldType
+    public class AccountFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -69,6 +69,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Reads new values entered by the user for the field
+        /// returns Account.Guid
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -97,6 +98,7 @@ namespace Rock.Field.Types
 
         /// <summary>
         /// Sets the value.
+        /// value is an Account.Guid
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -115,6 +117,32 @@ namespace Rock.Field.Types
                     picker.SetValue( account );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            Guid guid = GetEditValue( control, configurationValues ).AsGuid();
+            var item = new FinancialAccountService( new RockContext() ).Get( guid );
+            return item != null ? item.Id : (int?)null;
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            var item = new FinancialAccountService( new RockContext() ).Get( id ?? 0 );
+            string guidValue = item != null ? item.Guid.ToString() : string.Empty;
+            SetEditValue( control, configurationValues, guidValue );
         }
     }
 }

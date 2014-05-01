@@ -154,6 +154,8 @@ namespace RockWeb
                 // Get a db context
                 rockContext = new RockContext();
 
+                RegisterRoutes( rockContext, RouteTable.Routes );
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     new AttributeService( rockContext ).Get( 0 );
@@ -211,8 +213,6 @@ namespace RockWeb
 
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
-                RegisterRoutes( rockContext, RouteTable.Routes );
-
                 Rock.Security.Authorization.Load( rockContext );
 
                 EntityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
@@ -222,6 +222,9 @@ namespace RockWeb
 
                 // mark any user login stored as 'IsOnline' in the database as offline
                 MarkOnlineUsersOffline();
+
+                SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
+
             }
             catch ( Exception ex )
             {

@@ -63,6 +63,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FieldType.FriendlyTypeName, DefinedType.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring EntityType,MultiValueFieldTypeId 
+            
+            // ignoring EntityType,SingleValueFieldTypeId 
             return true;
         }
     }
