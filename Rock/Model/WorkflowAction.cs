@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -70,6 +71,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary>
+        /// If ActionType is a UserEntryForm Gets or sets the form action.
+        /// </summary>
+        /// <value>
+        /// The form action.
+        /// </value>
+        [MaxLength( 20 )]
+        [DataMember]
+        public string FormAction { get; set; }
 
         #endregion
 

@@ -1,5 +1,11 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UserLogins.ascx.cs" Inherits="RockWeb.Blocks.Security.UserLogins" %>
 
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=hfActiveDialog.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -39,7 +45,9 @@
 
         </asp:Panel>
 
-        <Rock:ModalDialog ID="mdDetails" runat="server" Title="Login" ValidationGroup="Login">
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgDetails" runat="server" Title="Login" OnSaveClick="dlgDetails_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Login">
             <Content>
 
                 <asp:HiddenField ID="hfIdValue" runat="server" />

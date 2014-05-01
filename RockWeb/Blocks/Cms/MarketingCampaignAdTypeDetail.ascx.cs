@@ -149,6 +149,8 @@ namespace RockWeb.Blocks.Cms
                 edtAdTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for ad type " + tbName.Text );
             }
 
+            edtAdTypeAttributes.ReservedKeyNames = AttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
+
             edtAdTypeAttributes.SetAttributeProperties( attribute, typeof( MarketingCampaignAd ) );
         }
 

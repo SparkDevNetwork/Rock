@@ -78,7 +78,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
+                // run 'Dev Tools/Sql/Populate_Metrics.sql' to populate this metric
+                Guid attendanceMetricGuid = new Guid( "D4752628-DFC9-4681-ADB3-01936B8F38CA" );
+                lcExample.MetricId = new MetricService( new RockContext()).Get(attendanceMetricGuid).Id;
+                lcExample.StartDate = new DateTime( 2011, 6, 1 );
+                lcExample.EndDate = new DateTime( 2011, 10, 1 );
+                lcExample.Options.curveType = LineChartCurveType.function;
             }
         }
 
