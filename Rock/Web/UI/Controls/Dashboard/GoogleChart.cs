@@ -127,7 +127,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the data source URL.
-        /// Defaults to "~/api/MetricValuesController/GetChartData/"
+        /// Defaults to "~/api/MetricValues/GetChartData/"
         /// </summary>
         /// <value>
         /// The data source URL.
@@ -272,7 +272,7 @@ namespace Rock.Web.UI.Controls
             }});
 ";
 
-            string restUrl = this.ResolveUrl( this.DataSourceUrl ?? "~/api/MetricValuesController/GetChartData/" );
+            string restUrl = this.ResolveUrl( this.DataSourceUrl ?? "~/api/MetricValues/GetChartData/" );
             string script = string.Format(
                 scriptFormat,
                 restUrl,

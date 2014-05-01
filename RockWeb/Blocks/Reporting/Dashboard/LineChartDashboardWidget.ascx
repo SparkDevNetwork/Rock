@@ -15,7 +15,7 @@
             // Set a callback to run when the Google Visualization API is loaded.
             google.setOnLoadCallback(function() {
 
-                var restUrl = '<%= ResolveUrl( "~/api/MetricValuesController/GetChartData/" ) %>';
+                var restUrl = '<%= ResolveUrl( "~/api/MetricValues/GetChartData/" ) %>';
 
                 $.ajax({
                     url: restUrl + $('#<%= hfRestUrlParams.ClientID%>').val(),

@@ -17,9 +17,11 @@
 using System;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.OData.Query;
 using System.Web.Routing;
 using Newtonsoft.Json;
 using Rock.Model;
+using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {
@@ -35,13 +37,41 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "MetricValuesControllerGetChartData",
-                routeTemplate: "api/MetricValuesController/GetChartData/{metricId}",
+                name: "MetricValuesGetChartData",
+                routeTemplate: "api/MetricValues/GetChartData/{metricId}",
                 defaults: new
                 {
                     controller = "MetricValues",
                     action = "GetChartData"
                 } );
+
+            routes.MapHttpRoute(
+                name: "MetricValuesGetByMetricId",
+                routeTemplate: "api/MetricValues/GetByMetricId/{metricId}",
+                defaults: new
+                {
+                    controller = "MetricValues",
+                    action = "GetByMetricId"
+                } );
+        }
+
+        /// <summary>
+        /// Gets the by metric identifier.
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="metricValueType">Type of the metric value.</param>
+        /// <returns></returns>
+        //[Authenticate, Secured]
+        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
+        public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
+        {
+            var result = base.Get().Where( a => a.MetricId == metricId );
+            if ( metricValueType.HasValue )
+            {
+                result = result.Where( a => a.MetricValueType == metricValueType );
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -57,7 +87,7 @@ namespace Rock.Rest.Controllers
         public string GetChartData( int metricId, MetricValueType metricValueType = MetricValueType.Measure, DateTime? startDate = null, DateTime? endDate = null, int? entityId = null )
         {
             var dataQry = this.Get().Where( a => a.MetricId == metricId && a.MetricValueType == metricValueType );
-            if (startDate.HasValue)
+            if ( startDate.HasValue )
             {
                 dataQry = dataQry.Where( a => a.MetricValueDateTime >= startDate.Value );
             }
