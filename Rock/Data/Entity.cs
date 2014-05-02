@@ -302,7 +302,7 @@ namespace Rock.Data
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public virtual object ToLiquid( bool debug = false )
+        public virtual object ToLiquid( bool debug )
         {
             var dictionary = new Dictionary<string, object>();
 

@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Displays the details of the given workflow type." )]
     public partial class WorkflowTypeDetail : RockBlock, IDetailBlock
     {
-        #region WorkflowActivityType ViewStateList
+        #region WorkflowActivityType Sessiont Lists
 
         /// <summary>
         /// Gets or sets the state of the group type attributes.
@@ -48,16 +48,16 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The state of the group type attributes.
         /// </value>
-        private ViewStateList<Attribute> AttributesState
+        private List<Attribute> AttributesState
         {
             get
             {
-                return ViewState["AttributesState"] as ViewStateList<Attribute>;
+                return Session[ViewStateKey + "_AttributeState"] as List<Attribute>;
             }
 
             set
             {
-                ViewState["AttributesState"] = value;
+                Session[ViewStateKey + "_AttributeState"] = value;
             }
         }
 
@@ -67,16 +67,16 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The state of the workflow activity types.
         /// </value>
-        private ViewStateList<WorkflowActivityType> WorkflowActivityTypesState
+        private List<WorkflowActivityType> WorkflowActivityTypesState
         {
             get
             {
-                return ViewState["WorkflowActivityTypesState"] as ViewStateList<WorkflowActivityType>;
+                return Session[ViewStateKey + "_WorkflowActivityTypesState"] as List<WorkflowActivityType>;
             }
 
             set
             {
-                ViewState["WorkflowActivityTypesState"] = value;
+                Session[ViewStateKey + "_WorkflowActivityTypesState"] = value;
             }
         }
 
@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Core
         private void SortWorkflowActivityListContents( string eventParam, string[] values )
         {
             // put viewstate list into a new list, shuffle the contents, then save it back to the viewstate list
-            // SaveWorkflowActivityControlsToViewState();
+            SaveWorkflowActivityControlsToViewState();
             List<WorkflowActivityType> workflowActivityTypeSortList = WorkflowActivityTypesState.ToList();
             Guid? activeWorkflowActivityTypeGuid = null;
             Guid? activeWorkflowActionTypeGuid = null;
@@ -271,8 +271,8 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
-            WorkflowActivityTypesState.AddAll( workflowActivityTypeSortList );
+            WorkflowActivityTypesState = new List<WorkflowActivityType>();
+            workflowActivityTypeSortList.ForEach(a => WorkflowActivityTypesState.Add(a));
             BuildWorkflowActivityControlsFromViewState( activeWorkflowActivityTypeGuid, activeWorkflowActionTypeGuid );
         }
 
@@ -671,14 +671,16 @@ namespace RockWeb.Blocks.Core
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
 
             var attributeService = new AttributeService( rockContext );
-            AttributesState = new ViewStateList<Attribute>();
-            AttributesState.AddAll( attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
-                    a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
-                .ToList() );
+            AttributesState = new List<Attribute>();
+            attributeService.GetByEntityTypeId(new Workflow().TypeId).AsQueryable()
+                .Where(a =>
+                    a.EntityTypeQualifierColumn.Equals("WorkflowTypeId", StringComparison.OrdinalIgnoreCase) &&
+                    a.EntityTypeQualifierValue.Equals(workflowType.Id.ToString()))
+                .OrderBy(a => a.Order)
+                .ThenBy(a => a.Name)
+                .ToList()
+                .ForEach(a => AttributesState.Add(a));
+
             BindAttributesGrid();
 
             phActivities.Controls.Clear();
@@ -763,7 +765,7 @@ namespace RockWeb.Blocks.Core
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="itemList">The item list.</param>
-        private void SetAttributeListOrder( ViewStateList<Attribute> itemList )
+        private void SetAttributeListOrder( List<Attribute> itemList )
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
@@ -775,7 +777,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
+        private void ReorderAttributeList( List<Attribute> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
@@ -801,7 +803,7 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, ViewStateList<Attribute> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<Attribute> viewStateAttributes, RockContext rockContext )
         {
             // Get the existing attributes for this entity type and qualifier value
             var attributeService = new AttributeService( rockContext );
@@ -1065,13 +1067,7 @@ namespace RockWeb.Blocks.Core
         /// </returns>
         protected override object SaveViewState()
         {
-            if ( AttributesState != null )
-            {
-                AttributesState.SaveViewState();
-            }
-
             SaveWorkflowActivityControlsToViewState();
-
             return base.SaveViewState();
         }
 
@@ -1089,8 +1085,8 @@ namespace RockWeb.Blocks.Core
                 activityTypes.Add( workflowActivityType );
             }
 
-            WorkflowActivityTypesState = new ViewStateList<WorkflowActivityType>();
-            WorkflowActivityTypesState.AddAll( activityTypes );
+            WorkflowActivityTypesState = new List<WorkflowActivityType>();
+            activityTypes.ForEach( a => WorkflowActivityTypesState.Add(a) );
         }
 
         /// <summary>
