@@ -114,11 +114,11 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                int? campusId = selectionValues[0].AsInteger(false);
+                int? campusId = GetCampusIdFromSelection( selectionValues );
                 if ( campusId.HasValue )
                 {
                     var campus = new CampusService( new RockContext() ).Get( campusId.Value );
-                    if (campus != null)
+                    if ( campus != null )
                     {
                         result = string.Format( "Campus: {0}", campus.Name );
                     }
@@ -167,8 +167,15 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var value1 = ( controls[0] as CampusPicker ).SelectedValueAsId().ToString();
-            return value1;
+            int? campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
+            Guid? campusGuid = null;
+            var campus = new CampusService( new RockContext() ).Get(campusId ?? 0);
+            if (campus != null)
+            {
+                campusGuid = campus.Guid;
+            }
+
+            return campusGuid.ToString();
         }
 
         /// <summary>
@@ -182,7 +189,8 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                ( controls[0] as CampusPicker ).SetValue( selectionValues[0].AsInteger() );
+                int? campusId = GetCampusIdFromSelection( selectionValues );
+                ( controls[0] as CampusPicker ).SetValue( campusId );
             }
         }
 
@@ -199,7 +207,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                int? campusId = selectionValues[0].AsInteger(false);
+                int? campusId = GetCampusIdFromSelection( selectionValues );
 
                 var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => p.CampusId == campusId );
@@ -210,6 +218,26 @@ function() {
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the campus identifier from selection.
+        /// </summary>
+        /// <param name="selectionValues">The selection values.</param>
+        /// <returns></returns>
+        private static int? GetCampusIdFromSelection( string[] selectionValues )
+        {
+            Guid? campusGuid = selectionValues[0].AsGuidOrNull();
+            int? campusId = null;
+            if ( campusGuid.HasValue )
+            {
+                var campus = new CampusService( new RockContext() ).Get( campusGuid.Value );
+                if ( campus != null )
+                {
+                    campusId = campus.Id;
+                }
+            }
+            return campusId;
         }
 
         #endregion
