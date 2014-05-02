@@ -115,18 +115,18 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 var rockContext = new RockContext();
-                var group = new GroupService( rockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
+                var group = new GroupService( rockContext ).Get( selectionValues[0].AsGuid() );
 
-                var groupTypeRoleIdList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).ToList();
+                var groupTypeRoleGuidList = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsGuid() ).ToList();
 
-                var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleIdList.Contains( a.Id ) ).ToList();
+                var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().Where( a => groupTypeRoleGuidList.Contains( a.Guid ) ).ToList();
 
                 if ( group != null )
                 {
                     result = string.Format( "In group: {0}", group.Name );
                     if ( groupTypeRoles.Count() > 0 )
                     {
-                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select(a => a.Name).ToList().AsDelimited(",") );
+                        result += string.Format( ", with role(s): {0}", groupTypeRoles.Select( a => a.Name ).ToList().AsDelimited( "," ) );
                     }
                 }
             }
@@ -138,7 +138,7 @@ function() {
         /// The GroupPicker
         /// </summary>
         private GroupPicker gp = null;
-        
+
         /// <summary>
         /// The GroupTypeRole CheckBoxList
         /// </summary>
@@ -183,9 +183,9 @@ function() {
                 cblRole.Items.Clear();
                 foreach ( var item in list )
                 {
-                    cblRole.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                    cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );
                 }
-                
+
                 cblRole.Visible = list.Count > 0;
             }
             else
@@ -214,9 +214,16 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var value1 = ( controls[0] as GroupPicker ).SelectedValueAsId().ToString();
-            var value2 = ( controls[1] as RockCheckBoxList ).SelectedValuesAsInt.AsDelimited( "," );
-            return value1 + "|" + value2;
+            int groupId = ( controls[0] as GroupPicker ).SelectedValueAsInt() ?? 0;
+            Guid? groupGuid = null;
+            var group = new GroupService( new RockContext() ).Get( groupId );
+            if ( group != null )
+            {
+                groupGuid = group.Guid;
+            }
+
+            var value2 = ( controls[1] as RockCheckBoxList ).SelectedValues.AsDelimited( "," );
+            return groupGuid.ToString() + "|" + value2;
         }
 
         /// <summary>
@@ -230,16 +237,21 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                ( controls[0] as GroupPicker ).SetValue( selectionValues[0].AsInteger() );
+                Guid groupGuid = selectionValues[0].AsGuid();
+                var group = new GroupService( new RockContext() ).Get( groupGuid );
+                if ( group != null )
+                {
+                    ( controls[0] as GroupPicker ).SetValue( group.Id );
+                }
 
                 gp_SelectItem( this, new EventArgs() );
-                
-                string[] selectedRoleIds = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+                string[] selectedRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                 RockCheckBoxList cblRole = controls[1] as RockCheckBoxList;
 
                 foreach ( var item in cblRole.Items.OfType<ListItem>() )
                 {
-                    item.Selected = selectedRoleIds.Contains( item.Value );
+                    item.Selected = selectedRoleGuids.Contains( item.Value );
                 }
             }
         }
@@ -258,14 +270,20 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 GroupMemberService groupMemberService = new GroupMemberService( (RockContext)serviceInstance.Context );
-                int groupId = selectionValues[0].AsInteger() ?? 0;
+                int groupId = 0;
+                Guid groupGuid = selectionValues[0].AsGuid();
+                var group = new GroupService( (RockContext)serviceInstance.Context ).Get( groupGuid );
+                if ( group != null )
+                {
+                    groupId = group.Id;
+                }
 
                 var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.GroupId == groupId );
 
-                var groupRoleIds = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => int.Parse( n ) ).ToList();
-                if ( groupRoleIds.Count() > 0 )
+                var groupRoleGuids = selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( n => n.AsGuid() ).ToList();
+                if ( groupRoleGuids.Count() > 0 )
                 {
-                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleIds.Contains(xx.GroupRoleId) );
+                    groupMemberServiceQry = groupMemberServiceQry.Where( xx => groupRoleGuids.Contains( xx.GroupRole.Guid ) );
                 }
 
                 var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
