@@ -45,7 +45,7 @@ namespace Rock.Reporting.DataFilter
         /// <param name="entityField">The entity field.</param>
         protected void AddFieldTypeControls( Control parentControl, List<Control> controls, EntityField entityField )
         {
-            string controlIdPrefix = string.Format( "{0}_{1}", parentControl.ID, entityField.FieldKind == FieldKind.Attribute ? entityField.AttributeId.ToString() : entityField.Name );
+            string controlIdPrefix = string.Format( "{0}_{1}", parentControl.ID, entityField.FieldKind == FieldKind.Attribute ? entityField.AttributeGuid.Value.ToString("n") : entityField.Name );
             switch ( entityField.FilterFieldType )
             {
                 case SystemGuid.FieldType.DATE:
@@ -117,22 +117,22 @@ namespace Rock.Reporting.DataFilter
                                 cblMultiSelect.Items.Add( new ListItem( Enum.GetName( entityField.PropertyType, value ).SplitCase() ) );
                             }
                         }
-                        else if ( entityField.DefinedTypeId.HasValue )
+                        else if ( entityField.DefinedTypeGuid.HasValue )
                         {
                             // Defined Value Properties
-                            var definedType = DefinedTypeCache.Read( entityField.DefinedTypeId.Value );
+                            var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
                             if ( definedType != null )
                             {
                                 foreach ( var definedValue in definedType.DefinedValues )
                                 {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
+                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Name, definedValue.Guid.ToString() ) );
                                 }
                             }
                         }
                     }
                     else
                     {
-                        var attribute = AttributeCache.Read( entityField.AttributeId.Value );
+                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
@@ -166,7 +166,7 @@ namespace Rock.Reporting.DataFilter
                     }
                     else
                     {
-                        var attribute = AttributeCache.Read( entityField.AttributeId.Value );
+                        var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
@@ -228,14 +228,15 @@ namespace Rock.Reporting.DataFilter
                         var selectedValues = JsonConvert.DeserializeObject<List<string>>( values[1] );
                         var selectedTexts = new List<string>();
 
-                        if ( entityField.DefinedTypeId.HasValue )
+                        if ( entityField.DefinedTypeGuid.HasValue )
                         {
                             foreach ( string selectedValue in selectedValues )
                             {
-                                int valueId = int.MinValue;
-                                if ( int.TryParse( selectedValue, out valueId ) )
+                                Guid? definedValueGuid = selectedValue.AsGuidOrNull();
+
+                                if ( definedValueGuid.HasValue )
                                 {
-                                    var definedValue = DefinedValueCache.Read( valueId );
+                                    var definedValue = DefinedValueCache.Read( definedValueGuid.Value );
                                     if ( definedValue != null )
                                     {
                                         selectedTexts.Add( definedValue.Name );
@@ -593,7 +594,7 @@ namespace Rock.Reporting.DataFilter
 
             var service = new AttributeValueService( (RockContext)serviceInstance.Context );
             var attributeValues = service.Queryable().Where( v =>
-                v.AttributeId == property.AttributeId &&
+                v.Attribute.Guid == property.AttributeGuid &&
                 v.EntityId.HasValue &&
                 v.Value != string.Empty ).ToList();
 
