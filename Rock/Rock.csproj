@@ -153,6 +153,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
@@ -201,6 +202,7 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
     <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
@@ -581,6 +583,7 @@
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
