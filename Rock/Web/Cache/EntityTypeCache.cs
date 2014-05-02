@@ -249,8 +249,9 @@ namespace Rock.Web.Cache
         /// Reads the specified type.
         /// </summary>
         /// <param name="type">The type.</param>
+        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <returns></returns>
-        public static EntityTypeCache Read( Type type )
+        public static EntityTypeCache Read( Type type, bool createIfNotFound = true )
         {
             int? entityTypeId = null;
 
@@ -268,7 +269,7 @@ namespace Rock.Web.Cache
             }
 
             var entityTypeService = new EntityTypeService( new RockContext() );
-            var entityTypeModel = entityTypeService.Get( type, true, null );
+            var entityTypeModel = entityTypeService.Get( type, createIfNotFound, null );
             return Read( entityTypeModel );
         }
 

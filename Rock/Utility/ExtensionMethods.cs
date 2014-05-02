@@ -167,8 +167,15 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                return entityType.FriendlyName ?? SplitCase( type.Name );
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false);
+                if ( entityType != null && entityType.FriendlyName != null)
+                {
+                    return entityType.FriendlyName;
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
             else
             {
