@@ -29,7 +29,9 @@ namespace Rock.Reporting.Dashboard
     [TextField( "Title", "The title of the widget", false )]
     [TextField( "Subtitle", "The subtitle of the widget", false )]
     [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4" )]
-    [ContextAware()]
+    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure")]
+    [MetricEntityField("Metric", "Select the metric and the filter")]
+    [LinkedPage("Detail Page", "Select the page to navigate to when the chart is clicked")]
     public abstract class DashboardWidget : RockBlock
     {
         /// <summary>
@@ -72,6 +74,31 @@ namespace Rock.Reporting.Dashboard
             get
             {
                 return GetAttributeValue( "ColumnWidth" ).AsInteger( false );
+            }
+        }
+
+        /// <summary>
+        /// Gets the metric identifier.
+        /// </summary>
+        /// <value>
+        /// The metric identifier.
+        /// </value>
+        public int? MetricId
+        {
+            get
+            {
+                var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
+                if ( valueParts.Length > 1 )
+                {
+                    Guid metricGuid = valueParts[0].AsGuid();
+                    var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( metricGuid );
+                    if (metric != null)
+                    {
+                        return metric.Id;
+                    }
+                }
+
+                return null;
             }
         }
 

@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Reporting
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
 
-            // Setup EntityType UI controls
+            // Get EntityId from EntityType UI controls
             var metricEntityType = EntityTypeCache.Read( metricValue.Metric.EntityTypeId ?? 0 );
             Control entityTypeEditControl = phEntityTypeEntityIdValue.FindControl("entityTypeEditControl");
             if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null && metricEntityType.SingleValueFieldType.Field is IEntityFieldType )

@@ -272,6 +272,11 @@
                 <Rock:MergeFieldPicker ID="mfpExample" runat="server" Label="Rock:MergeFieldPicker" />
             </div>
 
+            <a id="MetricEntityPicker"></a>
+            <div runat="server" class="r-example">
+                <Rock:MetricEntityPicker ID="mepExample" runat="server" Label="Rock:MetricEntityPicker" />
+            </div>
+
             <h2 runat="server">BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <a id="BinaryFileTypePicker"></a>
@@ -299,7 +304,7 @@
 
             <a id="FileUploaderContentFileMode"></a>
             <div runat="server" class="r-example">
-                <Rock:FileUploader ID="fuprExampleContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles"  OnFileUploaded="fupContentFile_FileUploaded" />
+                <Rock:FileUploader ID="fuprExampleContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles" OnFileUploaded="fupContentFile_FileUploaded" />
                 <asp:Label ID="lblPhysicalFileName" runat="server" Text="Uploaded File: -" />
             </div>
 
@@ -320,12 +325,12 @@
             </p>
 
             <div runat="server" class="r-example">
-                <Rock:NotificationBox ID="nbExampleSuccess" runat="server" Title="Success" Text="This is a success message." NotificationBoxType="Success"/>
-                <Rock:NotificationBox ID="nbExampleInfo" runat="server" Title="Info" Text="This is an informational message." NotificationBoxType="Info"/>
-                <Rock:NotificationBox ID="nbExampleWarning" runat="server" Title="Warning" Text="This is a warning." NotificationBoxType="Warning"/>
-                <Rock:NotificationBox ID="nbExampleDanger" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger"/>
+                <Rock:NotificationBox ID="nbExampleSuccess" runat="server" Title="Success" Text="This is a success message." NotificationBoxType="Success" />
+                <Rock:NotificationBox ID="nbExampleInfo" runat="server" Title="Info" Text="This is an informational message." NotificationBoxType="Info" />
+                <Rock:NotificationBox ID="nbExampleWarning" runat="server" Title="Warning" Text="This is a warning." NotificationBoxType="Warning" />
+                <Rock:NotificationBox ID="nbExampleDanger" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger" />
                 <Rock:NotificationBox ID="nbExampleDismissable" runat="server" Title="Hey" Text="You can close this when you are done reading it if you want." NotificationBoxType="Warning" Dismissable="true" />
-                <Rock:NotificationBox ID="nbExampleDetails" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details"/>
+                <Rock:NotificationBox ID="nbExampleDetails" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details" />
             </div>
 
             <a id="Badge"></a>
@@ -429,7 +434,7 @@
             <a id="CodeEditor"></a>
             <h2 runat="server">Rock:CodeEditor</h2>
             <div runat="server" class="r-example">
-                <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300" >
+                <Rock:CodeEditor ID="ceScript" runat="server" EditorTheme="Rock" Label="Script" EditorMode="Html" EditorHeight="300">
 <h1>Hello!!!</h1> 
 <p>This is a great way to edit HTML! Reasons:</p>
 
