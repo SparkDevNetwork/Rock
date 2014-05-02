@@ -103,6 +103,46 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
+        /// Gets a value indicating whether to get the Entity from the Page context vs. the configured EntityId
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [get entity from context]; otherwise, <c>false</c>.
+        /// </value>
+        public bool GetEntityFromContext
+        {
+            get
+            {
+                var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
+                if ( valueParts.Length > 2 )
+                {
+                    return valueParts[2].AsBoolean();
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in it's own series
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [combine values]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CombineValues
+        {
+            get
+            {
+                var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
+                if ( valueParts.Length > 3 )
+                {
+                    return valueParts[3].AsBoolean();
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
