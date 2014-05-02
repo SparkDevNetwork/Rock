@@ -273,11 +273,20 @@ namespace Rock.Data
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public override object ToLiquid( bool debug = false )
+        public override object ToLiquid( bool debug )
+        {
+            return ToLiquid(debug, true);
+        }
+
+        public object ToLiquid( bool debug, bool reloadAttributes )
         {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
-            this.LoadAttributes();
+            if (reloadAttributes)
+            {
+                this.LoadAttributes();
+            }
+
             foreach ( var attribute in this.Attributes )
             {
                 if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )

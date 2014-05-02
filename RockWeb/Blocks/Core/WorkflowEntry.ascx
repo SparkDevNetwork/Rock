@@ -3,15 +3,21 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <p class="description"><asp:Literal ID="lheadingText" runat="server" /></p>
+        <Rock:NotificationBox ID="nbMessage" runat="server" />
 
-        <asp:PlaceHolder id="phAttributes" runat="server" />
+        <asp:Panel ID="pnlForm" runat="server">
 
-        <p class="description"><asp:Literal ID="lFootingText" runat="server" /></p>
+            <asp:Literal ID="lheadingText" runat="server" />
 
-        <div class="actions">
-            <asp:PlaceHolder ID="phActions" runat="server" />
-        </div>
+            <asp:PlaceHolder ID="phAttributes" runat="server" />
+            
+            <asp:Literal ID="lFootingText" runat="server" />
+
+            <div class="actions">
+                <asp:PlaceHolder ID="phActions" runat="server" />
+            </div>
+        
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
