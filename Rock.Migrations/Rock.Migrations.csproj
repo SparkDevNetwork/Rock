@@ -887,6 +887,10 @@
     <Compile Include="Migrations\201404292234090_WorkflowFormEntry.Designer.cs">
       <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201405031236527_PluginMigration.cs" />
+    <Compile Include="Migrations\201405031236527_PluginMigration.Designer.cs">
+      <DependentUpon>201405031236527_PluginMigration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1533,6 +1537,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201404292234090_WorkflowFormEntry.resx">
       <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201405031236527_PluginMigration.resx">
+      <DependentUpon>201405031236527_PluginMigration.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
