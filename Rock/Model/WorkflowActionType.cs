@@ -91,6 +91,9 @@ namespace Rock.Model
         [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
 
+        [DataMember]
+        public int? WorkflowFormId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -139,6 +142,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the workflow form.
+        /// </summary>
+        /// <value>
+        /// The workflow form.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowActionForm WorkflowForm { get; set; }
+
+        /// <summary>
         /// Gets the parent security authority for this ActionType.
         /// </summary>
         /// <value>
@@ -184,6 +196,7 @@ namespace Rock.Model
         public WorkflowActionTypeConfiguration()
         {
             this.HasRequired( m => m.ActivityType ).WithMany( m => m.ActionTypes ).HasForeignKey( m => m.ActivityTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( m => m.WorkflowForm ).WithMany().HasForeignKey( m => m.WorkflowFormId ).WillCascadeOnDelete( false );
         }
     }
 

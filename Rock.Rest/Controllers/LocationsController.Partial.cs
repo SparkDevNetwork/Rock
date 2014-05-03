@@ -115,7 +115,7 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
 
-            foreach ( var location in qry )
+            foreach ( var location in qry.OrderBy ( l => l.Name ) )
             {
                 if ( location.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {

@@ -1,12 +1,16 @@
 declare
-   @entityTypeIdMetricCategoryType int = (select id from EntityType where Name = 'Rock.Model.MetricCategory'),
-   @parentCategoryId int = null,
-   @categoryName nvarchar(max),
-   @iconCssClass nvarchar(max) = null,
-   @categoryId int = null,
-   @order int = 0,
-   @metricGuid uniqueidentifier = null,
-   @metricId int = null;
+    @entityTypeIdMetricCategoryType int = (select id from EntityType where Name = 'Rock.Model.MetricCategory'),
+    @parentCategoryId int = null,
+    @categoryName nvarchar(max),
+    @iconCssClass nvarchar(max) = null,
+    @categoryId int = null,
+    @order int = 0,
+    @metricGuid uniqueidentifier = null,
+    @metricId int = null,
+    @metricValueTypeMeasure int = 0,
+    @metricValueTypeGoal int = 1,
+    @entityTypeIdCampus int = (select id from EntityType where Name = 'Rock.Model.Campus'),
+    @entityTypeIdGroup int = (select id from EntityType where Name = 'Rock.Model.Group')
 begin
 
     delete from MetricValue   
@@ -34,9 +38,9 @@ begin
    -- example metric
    
    set @metricGuid = NEWID();
-   INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass],[IsCumulative],[Guid])
+   INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass],[IsCumulative],[Guid])
      VALUES 
-        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'fa fa-gift', 0, @metricGuid)
+        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'Weekend', 'Visitors', 'fa fa-gift', 0, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
 
@@ -51,47 +55,75 @@ begin
     -- example metric    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     set @metricGuid = NEWID();
-    INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass], [IsCumulative],[Guid])
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
      VALUES 
-        (0,'Free Lunches','Number of Free Lunches per day', 'fa fa-thumbs-up', 1, @metricGuid)
+        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-thumbs-up', 1, @entityTypeIdGroup, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
     
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
         values ( @metricId, @categoryId, 0, NEWID())
 
-INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [XValue], [YValue], [Order], [Guid])
+INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime], [XValue], [YValue], [Order], [Guid])
         values 
-( @metricId, 1, '12/11/2013', 500, 0, NEWID()),
-( @metricId, 1, '12/18/2013', 200, 0, NEWID()),
-( @metricId, 1, '12/25/2013', 0, 0, NEWID()),
-( @metricId, 1, '01/03/2013', 0, 0, NEWID()),
-( @metricId, 1, '01/10/2013', 999, 0, NEWID()),
-( @metricId, 1, '01/17/2013', 5000, 0, NEWID()),
-( @metricId, 1, '01/24/2013', 12, 0, NEWID()),
-( @metricId, 1, '02/01/2013', 45, 0, NEWID()),
-( @metricId, 1, '02/05/2013', 10, 0, NEWID()),
-( @metricId, 1, '02/10/2013', 200, 0, NEWID()),
-( @metricId, 1, '02/18/2013', 300, 0, NEWID()),
-( @metricId, 1, '03/01/2013', 400, 0, NEWID()),
-( @metricId, 1, '04/01/2013', 500, 0, NEWID()),
-( @metricId, 1, '05/01/2013', 600, 0, NEWID()),
-( @metricId, 1, '06/01/2013', 700, 0, NEWID()),
-( @metricId, 1, '07/01/2013', 300, 0, NEWID()),
-( @metricId, 1, '08/01/2013', 200, 0, NEWID()),
-( @metricId, 1, '09/01/2013', 100, 0, NEWID()),
-( @metricId, 1, '10/01/2013', 50, 0, NEWID()),
-( @metricId, 1, '10/02/2013', 1.9199065065406540, 0, NEWID()),
-( @metricId, 1, '11/01/2013', 9, 0, NEWID())
+( @metricId, @metricValueTypeMeasure, '03/01/2013', 0, 400, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2013', 0, 500, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2013', 0, 600, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2013', 0, 700, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2013', 0, 300, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2013', 0, 200, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2013', 0, 100, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2013', 0, 50, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/02/2013', 0, 1.9199065065406540, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2013', 0, 9, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2013', 0, 500, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '01/01/2014', 0, 150, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', 0, 2, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', 0, 613, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', 0, 13, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', 0, 245, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', 0, 197, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', 0, 42, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', 0, 71, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', 0, 49, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', 0, 68, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, 17, 0, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, -50, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '03/01/2013', 0, 100, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '04/01/2013', 0, 100, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '05/01/2013', 0, 110, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '06/01/2013', 0, 110, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '07/01/2013', 0, 120, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '08/01/2013', 0, 120, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '09/01/2013', 0, 130, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '10/01/2013', 0, 130, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '11/01/2013', 0, 140, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/01/2013', 0, 140, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '01/01/2014', 0, 150, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '02/01/2014', 0, 150, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '03/01/2014', 0, 160, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '04/01/2014', 0, 160, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '05/01/2014', 0, 175, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '06/01/2014', 0, 175, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '07/01/2014', 0, 190, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '08/01/2014', 0, 190, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '09/01/2014', 0, 205, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '10/01/2014', 0, 205, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '11/01/2014', 0, 225, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/01/2014', 0, 225, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '01/01/2015', 0, 245, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '02/01/2015', 0, 245, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '03/01/2015', 0, 270, 0, NEWID()),
+( @metricId, @metricValueTypeGoal, '04/01/2015', 0, 270, 0, NEWID())
 
 
 
 -- example metric    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     set @metricGuid = 'D4752628-DFC9-4681-ADB3-01936B8F38CA';
-    INSERT INTO [Metric]([IsSystem],[Title],[Description],[IconCssClass], [IsCumulative],[Guid])
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative],[EntityTypeId], [Guid])
      VALUES 
-        (0,'Adult Attendence','Number of adults in the weekend service', 'fa fa-thumbs-up', 1, @metricGuid)
+        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuid)
 
     set @metricId = (select Id from Metric where Guid = @metricGuid);
     

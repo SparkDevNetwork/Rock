@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfColumns" runat="server" />
-        <asp:HiddenField ID="hfDataTable" runat="server" />
+        <asp:HiddenField ID="hfRestUrlParams" runat="server" />
         <asp:HiddenField ID="hfOptions" runat="server" />
 
         <script type="text/javascript">
@@ -13,39 +13,49 @@
             google.load('visualization', '1.0', { 'packages': ['corechart'] });
 
             // Set a callback to run when the Google Visualization API is loaded.
-            google.setOnLoadCallback(drawChart);
+            google.setOnLoadCallback(function() {
 
-            function drawChart() {
+                var restUrl = '<%= ResolveUrl( "~/api/MetricValues/GetChartData/" ) %>';
 
-                // define chart
-                var columnsText = $('#<%=hfColumns.ClientID%>').val();
-                var columnsData = $.parseJSON(columnsText);
+                $.ajax({
+                    url: restUrl + $('#<%= hfRestUrlParams.ClientID%>').val(),
+                    dataType: 'json',
+                    contentType: 'application/json'
+                })
+                .done(function (chartDataJS) {
+                    // define chart
+                    var columnsText = $('#<%=hfColumns.ClientID%>').val();
+                    var columnsData = $.parseJSON(columnsText);
 
-                var dataTable = new google.visualization.DataTable(
-                    {
-                        cols: columnsData
+                    var dataTable = new google.visualization.DataTable(
+                        {
+                            cols: columnsData
+                        });
+
+                    // data for chart is in JS object literal notation, so we need to eval it first
+                    var chartDataArray = eval(chartDataJS);
+
+                    dataTable.addRows(chartDataArray);
+
+                    // options for chart
+                    var optionsText = $('#<%=hfOptions.ClientID%>').val();
+                    var options = $.parseJSON(optionsText);
+
+                    // create and draw chart
+                    var chartDiv = document.getElementById('<%=pnlLineChartHolder.ClientID%>');
+                    var chart = new google.visualization.LineChart(chartDiv);
+                    chart.draw(dataTable, options);
+
+                    $(window).smartresize(function () {
+                        {
+                            chart.draw(dataTable, options);
+                        }
                     });
-
-                // data for chart
-                var arrayText = $('#<%=hfDataTable.ClientID%>').val();
-                var arrayData = eval(arrayText);
-                dataTable.addRows(arrayData);
-
-                // options for chart
-                var optionsText = $('#<%=hfOptions.ClientID%>').val();
-                var options = $.parseJSON(optionsText);
-
-                // create and draw chart
-                var chartDiv = document.getElementById('<%=pnlLineChartHolder.ClientID%>');
-                var chart = new google.visualization.LineChart(chartDiv);
-                chart.draw(dataTable, options);
-
-                $(window).smartresize(function () {
-                    {
-                        chart.draw(dataTable, options);
-                    }
+                })
+                .fail(function (jqXHR, textStatus, errorThrown) {
+                    debugger
                 });
-            }
+            });
 
         </script>
 

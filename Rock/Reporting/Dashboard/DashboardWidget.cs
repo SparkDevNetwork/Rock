@@ -71,11 +71,36 @@ namespace Rock.Reporting.Dashboard
         {
             get
             {
-                return GetAttributeValue( "ColumnWidth" ).AsInteger(false);
+                return GetAttributeValue( "ColumnWidth" ).AsInteger( false );
             }
         }
-        
-        
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
+        {
+            List<string> widgetCssList = GetDivWidthCssClasses();
+            
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited(" ") );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+            
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel panel-dashboard" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            base.RenderControl( writer );
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
         /// </summary>
@@ -84,9 +109,38 @@ namespace Rock.Reporting.Dashboard
         {
             base.OnPreRender( e );
 
+            /*
+            List<string> widgetCssList = GetDivWidthCssClasses();
+
+            // find the Block Wrapper div that RockPage creates and add additional our special css classes to it 
+            var parent = this.Parent;
+            while ( parent != null )
+            {
+                if ( parent is HtmlGenericContainer )
+                {
+                    HtmlGenericContainer container = parent as HtmlGenericContainer;
+                    if ( container.ID == string.Format( "bid_{0}", this.BlockId ) )
+                    {
+                        foreach ( var widgetCss in widgetCssList )
+                        {
+                            container.AddCssClass( widgetCss );
+                        }
+
+                        break;
+                    }
+                }
+
+                parent = parent.Parent;
+            }
+            */
+        }
+
+        private List<string> GetDivWidthCssClasses()
+        {
             int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsInteger( false );
 
             // add additional css to the block wrapper (if mediumColumnWidth is specified)
+            List<string> widgetCssList = new List<string>();
             if ( mediumColumnWidth.HasValue )
             {
 
@@ -131,7 +185,7 @@ namespace Rock.Reporting.Dashboard
                         break;
                 }
 
-                List<string> widgetCssList = new List<string>();
+
                 widgetCssList.Add( string.Format( "col-md-{0}", mediumColumnWidth ) );
                 if ( xsmallColumnWidth.HasValue )
                 {
@@ -142,28 +196,8 @@ namespace Rock.Reporting.Dashboard
                 {
                     widgetCssList.Add( string.Format( "col-sm-{0}", smallColumnWidth ) );
                 }
-
-                // find the Block Wrapper div that RockPage creates and add additional our special css classes to it 
-                var parent = this.Parent;
-                while ( parent != null )
-                {
-                    if ( parent is HtmlGenericContainer )
-                    {
-                        HtmlGenericContainer container = parent as HtmlGenericContainer;
-                        if ( container.ID == string.Format( "bid_{0}", this.BlockId ) )
-                        {
-                            foreach ( var widgetCss in widgetCssList )
-                            {
-                                container.AddCssClass( widgetCss );
-                            }
-
-                            break;
-                        }
-                    }
-
-                    parent = parent.Parent;
-                }
             }
+            return widgetCssList;
         }
     }
 }

@@ -368,6 +368,14 @@ namespace Rock.Model
             
             // ignoring WorkflowAction,ModifiedByPersonAliasId 
             
+            // ignoring WorkflowActionForm,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionForm,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,ModifiedByPersonAliasId 
+            
             // ignoring WorkflowActionType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActionType,ModifiedByPersonAliasId 

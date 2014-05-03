@@ -875,9 +875,17 @@
     <Compile Include="Migrations\201404241327081_AddBusinesses.Designer.cs">
       <DependentUpon>201404241327081_AddBusinesses.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201404261506249_PluginMigration.cs" />
-    <Compile Include="Migrations\201404261506249_PluginMigration.Designer.cs">
-      <DependentUpon>201404261506249_PluginMigration.cs</DependentUpon>
+    <Compile Include="Migrations\201404281605232_CampusModelChanges.cs" />
+    <Compile Include="Migrations\201404281605232_CampusModelChanges.Designer.cs">
+      <DependentUpon>201404281605232_CampusModelChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404291730340_MoreCampusChanges.cs" />
+    <Compile Include="Migrations\201404291730340_MoreCampusChanges.Designer.cs">
+      <DependentUpon>201404291730340_MoreCampusChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201404292234090_WorkflowFormEntry.cs" />
+    <Compile Include="Migrations\201404292234090_WorkflowFormEntry.Designer.cs">
+      <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1517,8 +1525,14 @@
     <EmbeddedResource Include="Migrations\201404241327081_AddBusinesses.resx">
       <DependentUpon>201404241327081_AddBusinesses.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201404261506249_PluginMigration.resx">
-      <DependentUpon>201404261506249_PluginMigration.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201404281605232_CampusModelChanges.resx">
+      <DependentUpon>201404281605232_CampusModelChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404291730340_MoreCampusChanges.resx">
+      <DependentUpon>201404291730340_MoreCampusChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201404292234090_WorkflowFormEntry.resx">
+      <DependentUpon>201404292234090_WorkflowFormEntry.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

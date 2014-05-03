@@ -127,6 +127,28 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
+        /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
+        /// </summary>
+        /// <value>
+        /// The metric value javascript time stamp.
+        /// </value>
+        [DataMember]
+        public long MetricValueJavascriptTimeStamp
+        {
+            get
+            {
+                if ( this.MetricValueDateTime.HasValue )
+                {
+                    return this.MetricValueDateTime.Value.ToJavascriptMilliseconds();
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         public override Security.ISecured ParentAuthority
