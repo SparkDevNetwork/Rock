@@ -99,6 +99,7 @@ namespace Rock.Model
             target.Category = source.Category;
             target.Name = source.Name;
             target.Description = source.Description;
+            target.HelpText = source.HelpText;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
