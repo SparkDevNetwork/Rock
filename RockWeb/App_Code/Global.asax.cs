@@ -125,18 +125,18 @@ namespace RockWeb
                         }
 
                         // Migrate any plugins that have pending migrations
-                        List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Rock.Plugin.Migration ) ).Select( a => a.Value ).ToList();
-                        if ( migrationList.Any() )
-                        {
-                            Version rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
-                            foreach ( var migrationType in migrationList.OrderBy( m => m.Name ) )
-                            {
-                                if ( migrationType != typeof( Rock.Plugin.Migration ) )
-                                {
-                                    var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
-                                }
-                            }
-                        }
+                        //List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Rock.Plugin.Migration ) ).Select( a => a.Value ).ToList();
+                        //if ( migrationList.Any() )
+                        //{
+                        //    Version rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+                        //    foreach ( var migrationType in migrationList.OrderBy( m => m.Name ) )
+                        //    {
+                        //        if ( migrationType != typeof( Rock.Plugin.Migration ) )
+                        //        {
+                        //            var migration = Activator.CreateInstance( migrationType ) as Rock.Plugin.Migration;
+                        //        }
+                        //    }
+                        //}
                     }
                     catch ( Exception ex )
                     {

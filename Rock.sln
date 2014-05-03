@@ -38,6 +38,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 		SlnRelativePath = "RockWeb\"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Plugin", "Rock.Plugin\Rock.Plugin.csproj", "{A55AC55B-0855-437A-9DD5-3CE15EEC315B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,16 @@ Global
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|x86.ActiveCfg = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A55AC55B-0855-437A-9DD5-3CE15EEC315B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
