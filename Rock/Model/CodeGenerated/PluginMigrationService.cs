@@ -87,8 +87,8 @@ namespace Rock.Model
         /// <param name="source">The source.</param>
         public static void CopyPropertiesFrom( this PluginMigration target, PluginMigration source )
         {
-            target.PluginTypeName = source.PluginTypeName;
-            target.PluginVersion = source.PluginVersion;
+            target.PluginAssemblyName = source.PluginAssemblyName;
+            target.MigrationNumber = source.MigrationNumber;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -1037,7 +1037,7 @@ namespace Rock.Plugin
                     name,
                     description.Replace( "'", "''" ),
                     guid,
-                    (isSystem ? "1" : "0")
+                    ( isSystem ? "1" : "0" )
                     ) );
         }
 
@@ -1092,7 +1092,7 @@ namespace Rock.Plugin
                     name.Replace( "'", "''" ),
                     description.Replace( "'", "''" ),
                     guid,
-                    (isSystem ? "1" : "0")
+                    ( isSystem ? "1" : "0" )
                     ) );
         }
 

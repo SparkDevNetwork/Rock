@@ -19,18 +19,19 @@ using System;
 namespace Rock.Plugin
 {
     /// <summary>
-    /// Attribute for defining the plugin version and minimum rock version for a plugin's migration
+    /// Attribute for defining the a plugin migrations' number.  Migrations are execued in sequential order based on migration number
     /// </summary>
-    [AttributeUsage( AttributeTargets.Method, AllowMultiple=false)]
-    public class PluginVersion : System.Attribute
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = false )]
+    public class MigrationNumberAttribute : System.Attribute
     {
+
         /// <summary>
-        /// Gets or sets the plugin version for this migration (Migrations will executed in version order)
+        /// Gets or sets the number.
         /// </summary>
         /// <value>
-        /// The plugin version.
+        /// The number.
         /// </value>
-        public Version Version {get; set;}
+        public int Number { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum rock version for this migration 
@@ -38,18 +39,18 @@ namespace Rock.Plugin
         /// <value>
         /// The minimum rock version.
         /// </value>
-        public Version MinimumRockVersion { get; set; }
+        public string MinimumRockVersion { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PluginVersion"/> class.
+        /// Initializes a new instance of the <see cref="MigrationNumberAttribute"/> class.
         /// </summary>
-        /// <param name="version">The version.</param>
+        /// <param name="number">The number.</param>
         /// <param name="minimumRockVersion">The minimum rock version.</param>
-        public PluginVersion( string version, string minimumRockVersion )
+        public MigrationNumberAttribute( int number, string minimumRockVersion )
             : base()
         {
-            Version = new Version( version );
-            MinimumRockVersion = new Version( minimumRockVersion );
+            Number = number;
+            MinimumRockVersion = minimumRockVersion;
         }
     }
 }
