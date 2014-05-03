@@ -147,20 +147,6 @@ namespace Rock.Web.UI
             }
         }
 
-        public string ViewStateKey
-        {
-            get 
-            {
-                string viewStateKey = ViewState["ViewStateKey"] as string;
-                if (string.IsNullOrEmpty(viewStateKey))
-                {
-                    viewStateKey = Guid.NewGuid().ToString();
-                    ViewState["ViewStateKey"] = viewStateKey;
-                }
-                return viewStateKey;
-            }
-        }
-
         /// <summary>
         /// Gets a list of any context entities that the block requires.
         /// </summary>
