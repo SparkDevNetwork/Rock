@@ -895,10 +895,10 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                     {
-                        int? attributeId = reportField.Selection.AsInteger( false );
-                        if ( attributeId.HasValue )
+                        Guid? attributeGuid = reportField.Selection.AsGuidOrNull();
+                        if ( attributeGuid.HasValue )
                         {
-                            var attribute = AttributeCache.Read( attributeId.Value );
+                            var attribute = AttributeCache.Read( attributeGuid.Value );
                             selectedAttributes.Add( columnIndex, attribute );
 
                             BoundField boundField;
@@ -1127,7 +1127,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsInteger() ?? 0 );
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid());
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;
