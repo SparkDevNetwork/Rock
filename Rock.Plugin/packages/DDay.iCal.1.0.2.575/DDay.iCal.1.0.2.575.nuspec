@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>DDay.iCal</id>
+    <version>1.0.2.575</version>
+    <title>DDay.iCal</title>
+    <authors>Doug Day, DDay Software</authors>
+    <owners>Doug Day, DDay Software</owners>
+    <licenseUrl>http://dday-ical.svn.sourceforge.net/viewvc/dday-ical/DDay.iCal/trunk/License.txt?revision=469</licenseUrl>
+    <projectUrl>http://www.ddaysoftware.com/Pages/Projects/DDay.iCal/</projectUrl>
+    <iconUrl>http://www.ddaysoftware.com/images/logo_medium.gif</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>DDay.iCal is an iCal (RFC 5545) class library for .NET 2.0 and above, Silverlight. It aims at being as RFC 5545 compliant as possible, while targeting compatibility with popular calendaring applications, like Apple iCal, Outlook 2007, etc.</description>
+    <summary>DDay.iCal is an iCal (RFC 5545) class library for .NET 2.0 and above, Silverlight. It aims at being as RFC 5545 compliant as possible, while targeting compatibility with popular calendaring applicatio</summary>
+    <tags>iCal Calendar ics outlook events</tags>
+  </metadata>
+</package>
