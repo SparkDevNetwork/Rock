@@ -537,7 +537,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
-                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString("n") );
                     }
 
                     if ( entityField.IsPreviewable )
@@ -877,7 +877,7 @@ namespace RockWeb.Blocks.Reporting
                             selectedEntityFields.Add( columnIndex, entityField );
 
                             BoundField boundField;
-                            if ( entityField.DefinedTypeId.HasValue )
+                            if ( entityField.DefinedTypeGuid.HasValue )
                             {
                                 boundField = new DefinedValueField();
                             }
