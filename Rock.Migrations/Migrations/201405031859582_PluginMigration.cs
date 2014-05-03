@@ -34,8 +34,9 @@ namespace Rock.Migrations
                 c => new
                     {
                         Id = c.Int(nullable: false, identity: true),
-                        PluginTypeName = c.String(nullable: false, maxLength: 200),
-                        PluginVersion = c.String(nullable: false, maxLength: 50),
+                        PluginAssemblyName = c.String(nullable: false, maxLength: 512),
+                        MigrationNumber = c.Int(nullable: false),
+                        MigrationName = c.String(nullable: false, maxLength: 100),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
                         CreatedByPersonAliasId = c.Int(),

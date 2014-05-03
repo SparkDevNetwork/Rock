@@ -35,26 +35,36 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the name of the plugin type.
+        /// Gets or sets the name of the plugin assembly.
         /// </summary>
         /// <value>
-        /// The name of the plugin type.
+        /// The name of the plugin assembly.
         /// </value>
         [Required]
-        [MaxLength(200)]
+        [MaxLength(512)]
         [DataMember( IsRequired = true )]
-        public string PluginTypeName { get; set; }
+        public string PluginAssemblyName { get; set; }
 
         /// <summary>
-        /// Gets or sets the plugin version.
+        /// Gets or sets the migration number.
         /// </summary>
         /// <value>
-        /// The plugin version.
+        /// The migration number.
         /// </value>
         [Required]
-        [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
+        public int MigrationNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the migration number.
+        /// </summary>
+        /// <value>
+        /// The migration number.
+        /// </value>
+        [Required]
+        [MaxLength( 100 )]
         [DataMember]
-        public string PluginVersion { get; set; }
+        public string MigrationName { get; set; }
         
         #endregion
 
@@ -72,7 +82,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} ({1})", this.PluginTypeName, this.PluginVersion );
+            return string.Format( "{0} ({1})", this.PluginAssemblyName, this.MigrationNumber );
         }
 
         #endregion
