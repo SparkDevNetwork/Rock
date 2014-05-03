@@ -201,6 +201,8 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
     <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">

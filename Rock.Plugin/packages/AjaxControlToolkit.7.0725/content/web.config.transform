@@ -1,0 +1,10 @@
+﻿<?xml version="1.0"?>
+<configuration>
+  <system.web>
+    <pages>
+      <controls>
+        <add tagPrefix="ajaxToolkit" assembly="AjaxControlToolkit" namespace="AjaxControlToolkit" />
+      </controls>
+    </pages>
+  </system.web>
+</configuration>
