@@ -66,42 +66,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             if ( !Page.IsPostBack )
             {
                 // Options for Chart
-                var chartOptions = new ChartOptions();
+                var chartOptions = ChartOptions.Default;
                 chartOptions.vAxis.title = this.Title;
                 if ( !string.IsNullOrWhiteSpace( this.Subtitle ) )
                 {
                     chartOptions.vAxis.title += Environment.NewLine + this.Subtitle;
                 }
-
-                chartOptions.vAxis.minValue = 0;
-                chartOptions.vAxis.titleTextStyle = new
-                {
-                    color = "#515151",
-                    italic = false
-                };
-
-                chartOptions.colors = new string[] { "#8498ab", "#a4b4c4", "#b9c7d5", "#c6d2df", "#d8e1ea" };
-                chartOptions.hAxis = new
-                {
-                    textStyle = new
-                    {
-                        color = "#515151"
-                    },
-                    baselineColor = "#515151"
-                };
-
-                chartOptions.width = null;
-                chartOptions.height = null;
-                chartOptions.legend = new
-                {
-                    position = "bottom",
-                    textStyle = new
-                    {
-                        color = "#515151"
-                    }
-                };
-
-                chartOptions.backgroundColor = "transparent";
 
                 hfOptions.Value = ( chartOptions as object ).ToJson();
                 List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
@@ -112,19 +82,15 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 // Data for Chart
                 Guid attendanceMetricGuid = new Guid( "D4752628-DFC9-4681-ADB3-01936B8F38CA" );
-                var qry = new MetricValueService( new RockContext() ).Queryable().Where( w => w.MetricValueDateTime.HasValue && w.Metric.Guid == attendanceMetricGuid );
-                DateTime startDate = new DateTime( 2013, 1, 1 );
-                DateTime endDate = new DateTime( 2014, 1, 1 );
-                qry = qry.Where( a => a.MetricValueDateTime.Value >= startDate && a.MetricValueDateTime.Value < endDate );
-
-                var dataList = qry.ToList().Select( a => new object[]
-                    {
-                        a.MetricValueDateTime,
-                        a.YValue,
-                        HttpUtility.JavaScriptStringEncode(a.Note)
-                    } );
-
-                hfDataTable.Value = JsonConvert.SerializeObject( dataList, new JsonSerializerSettings { Converters = new JsonConverter[] { new ChartDateTimeJsonConverter() } } );
+                int metricId = new MetricService( new RockContext()).Get(attendanceMetricGuid).Id;
+                DateTime? startDate = new DateTime( 2013, 1, 1 );
+                DateTime? endDate = new DateTime( 2014, 1, 1 );
+                int? entityId = null;
+                hfRestUrlParams.Value = string.Format( "{0}?startDate={1}&endDate={2}", metricId, startDate ?? DateTime.MinValue, endDate ?? DateTime.MaxValue);
+                if (entityId.HasValue)
+                {
+                    hfRestUrlParams.Value += string.Format( "&entityId={0}", entityId );
+                }
             }
         }
 

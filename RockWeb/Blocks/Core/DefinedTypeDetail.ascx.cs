@@ -463,6 +463,16 @@ namespace RockWeb.Blocks.Core
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
 
+            edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
+                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
+                    !a.Guid.Equals(attributeGuid) )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
+
             edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
 
             this.HideSecondaryBlocks( true );

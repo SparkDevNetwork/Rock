@@ -541,7 +541,11 @@ namespace Rock.Web.Cache
                 if ( attributeModel != null )
                 {
                     attribute = new AttributeCache( attributeModel );
-                    cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, attribute, cachePolicy );
+                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
                     return attribute;
                 }
                 else
@@ -551,6 +555,41 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static AttributeCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var attributeService = new AttributeService( new RockContext() );
+                var attributeModel = attributeService.Get( guid );
+                if ( attributeModel != null )
+                {
+                    var attribute = new AttributeCache( attributeModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
+                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
+                    return attribute;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+        
         /// <summary>
         /// Adds Attribute model to cache, and returns cached object
         /// </summary>
@@ -570,7 +609,11 @@ namespace Rock.Web.Cache
             else
             {
                 attribute = new AttributeCache( attributeModel );
-                cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, attribute, cachePolicy );
+                cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
                 return attribute;
             }
         }
@@ -588,7 +631,10 @@ namespace Rock.Web.Cache
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+            var cachePolicy = new CacheItemPolicy();
+            cache.Set( cacheKey, attribute, cachePolicy );
+            cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
 
             return attribute;
         }

@@ -1212,6 +1212,10 @@ INSERT INTO [dbo].[Auth]
             Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
         }
 
+        /// <summary>
+        /// Deletes the security authentication for page.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
         public void DeleteSecurityAuthForPage( string pageGuid )
         {
             string sql = @"
@@ -1277,6 +1281,27 @@ INSERT INTO [dbo].[Auth]
                 ( allow ? "A" : "D" ) ) );
         }
 
+
+        /// <summary>
+        /// Deletes the security authentication for block.
+        /// </summary>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        public void DeleteSecurityAuthForBlock( string blockGuid )
+        {
+            string sql = @"
+DECLARE @blockId int
+SET @blockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.Block')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @blockId
+";
+            Sql( string.Format( sql, blockGuid ) );
+
+        }
         /// <summary>
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>

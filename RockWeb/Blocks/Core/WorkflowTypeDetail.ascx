@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="WorkflowTypeDetail.ascx.cs" Inherits="RockWeb.Blocks.Core.WorkflowTypeDetail" %>
 
+
+<script type="text/javascript">
+    function clearActiveDialog() {
+        $('#<%=hfActiveDialog.ClientID %>').val('');
+    }
+</script>
+
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
@@ -18,41 +25,51 @@
 
             <div id="pnlEditDetails" runat="server">
 
-                <fieldset>
-
+                <Rock:PanelWidget ID="pwDetails" runat="server" Title="Details" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                            
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
-
-                     <div class="row">
+                    <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
                             <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                         </div>
-                         <div class="col-md-6">
+                            <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)" />
-                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
-                            <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" Label="Order" Required="true" />
                         </div>
                     </div>
-                </fieldset>
+                </Rock:PanelWidget>
+
+                <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes" CssClass="attribute-panel">
+                    <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <asp:BoundField DataField="Name" HeaderText="Attribute" />
+                            <asp:BoundField DataField="Description" HeaderText="Description" />
+                            <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                            <Rock:EditField OnClick="gAttributes_Edit" />
+                            <Rock:DeleteField OnClick="gAttributes_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </Rock:PanelWidget>
 
                 <fieldset>
                     <legend>
-                        <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
+                        Activities
                         <span class="pull-right">
                             <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
                         </span>
@@ -88,16 +105,6 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <asp:Panel ID="pnlAttributeTypes" runat="server">
-                            <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
-                            <Rock:Grid ID="gWorkflowTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
-                                <Columns>
-                                    <asp:BoundField DataField="Name" HeaderText="Workflow Attributes" />
-                                    <Rock:EditField OnClick="gWorkflowTypeAttributes_Edit" />
-                                    <Rock:DeleteField OnClick="gWorkflowTypeAttributes_Delete" />
-                                </Columns>
-                            </Rock:Grid>
-                        </asp:Panel>
                     </div>
                 </div>
 
@@ -109,9 +116,14 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" ValidationGroup="Attribute" />
-        </asp:Panel>
+        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Attributes" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
+            <Content>
+                <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
+            </Content>
+        </Rock:ModalDialog>
+
         <script>
 
             function toggleReadOnlyActivitiesList() {
@@ -161,6 +173,25 @@
                         }
                     }
                 });
+
+                $('.workflow-formfield-list').sortable({
+                    helper: fixHelper,
+                    handle: '.workflow-formfield-reorder',
+                    containment: 'parent',
+                    tolerance: 'pointer',
+                    start: function (event, ui) {
+                        {
+                            var start_pos = ui.item.index();
+                            ui.item.data('start_pos', start_pos);
+                        }
+                    },
+                    update: function (event, ui) {
+                        {
+                            __doPostBack('<%=upDetail.ClientID %>', 're-order-formfield:' + ui.item.attr('data-key') + ';' + ui.item.index());
+                        }
+                    }
+                });
+
             });
         </script>
     </ContentTemplate>
