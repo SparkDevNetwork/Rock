@@ -13,7 +13,6 @@
 
                 <div class="row">
                     <div class="col-md-3">
-                        <!-- Add photo here -->
                         <fieldset>
                             <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
@@ -97,11 +96,6 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
                                 <legend>Contribution Info</legend>
                                 <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="13" /> 
                             </div>
@@ -133,7 +127,6 @@
                 </div>
             </fieldset>
 
-            <!-- this will be a grid labeled "Contacts". Which is really just a list of known relationships tied to the business. Just has to list the contact name. -->
             <br />
             <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" ShowConfirmDeleteDialog="false" >
                 <Columns>
@@ -144,7 +137,6 @@
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>
-                    <asp:HiddenField ID="hfContactId" runat="server" />
                     <asp:HiddenField ID="hfModalOpen" runat="server" />
                     <asp:ValidationSummary ID="valSummaryAddContact" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddContact"/>
                     <div class="row col-md-12">
