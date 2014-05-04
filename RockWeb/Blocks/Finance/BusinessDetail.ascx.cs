@@ -678,7 +678,7 @@ namespace RockWeb.Blocks.Finance
 
             // I want a list of people that are connected to this business/person by the business contact relationship
             List<GroupMember> contactList = new List<GroupMember>();
-            if ( business.Members != null )
+            if ( business.Members.Count > 0 )
             {
                 contactList = business.Members.Where( g => g.GroupRoleId == businessRoleId ).ToList();
                 List<Person> personList = new List<Person>();
