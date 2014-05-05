@@ -131,10 +131,10 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? groupLocationTypeValueId = selection.AsInteger( false );
+            Guid? groupLocationTypeValueGuid = selection.AsGuid();
 
             var groupLocationQuery = new GroupService( context ).Queryable()
-                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId).Select( gl => gl.Location).FirstOrDefault());
+                .Select( p => p.GroupLocations.Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid).Select( gl => gl.Location).FirstOrDefault());
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Group>( groupLocationQuery, entityIdProperty, "p" );
 
@@ -152,7 +152,7 @@ namespace Rock.Reporting.DataSelect.Group
             locationTypeList.Items.Clear();
             foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                locationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                locationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
             }
 
             locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
@@ -187,7 +187,7 @@ namespace Rock.Reporting.DataSelect.Group
                 RockDropDownList dropDownList = controls[0] as RockDropDownList;
                 if ( dropDownList != null )
                 {
-                    return dropDownList.SelectedValueAsId().ToString();
+                    return dropDownList.SelectedValue;
                 }
             }
 
