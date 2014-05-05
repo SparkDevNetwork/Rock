@@ -213,7 +213,6 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( System.Web.UI.Control parentControl, System.Web.UI.HtmlTextWriter writer, System.Web.UI.Control[] controls )
         {
-            // TODO: 
             base.RenderControls( parentControl, writer, controls );
         }
 
@@ -229,7 +228,9 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    return accountPicker.SelectedValues.ToList().AsDelimited( "," );
+                    var accountIds = accountPicker.SelectedValues.ToList().Select( a => a.AsInteger() ?? 0 ).ToList();
+                    var accountGuids = new FinancialAccountService(new RockContext()).GetByIds(accountIds).Select(a => a.Guid);
+                    return accountGuids.Select( a => a.ToString() ).ToList().AsDelimited( "," );
                 }
             }
 
@@ -248,11 +249,11 @@ namespace Rock.Reporting.DataSelect.Person
                 AccountPicker accountPicker = controls[0] as AccountPicker;
                 if ( accountPicker != null )
                 {
-                    string[] selectionAccountIdValues = selection.Split( ',' );
+                    string[] selectionAccountGuidValues = selection.Split( ',' );
                     var accountList = new List<FinancialAccount>();
-                    foreach (string accountId in selectionAccountIdValues)
+                    foreach ( string accountGuid in selectionAccountGuidValues )
                     {
-                        var account = new FinancialAccountService( new RockContext() ).Get( accountId.AsInteger() ?? 0 );
+                        var account = new FinancialAccountService( new RockContext() ).Get( accountGuid.AsGuid() );
                         if (account != null)
                         {
                             accountList.Add(account);
