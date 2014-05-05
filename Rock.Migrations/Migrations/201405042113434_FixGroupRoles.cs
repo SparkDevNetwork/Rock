@@ -30,6 +30,16 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+                DECLARE @PrincipalGroupTypeRoleId int
+                SET @PrincipalGroupTypeRoleId = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '27198949-FAD3-4BD6-820C-FEB98AA61E7D')
+                
+                DECLARE @BusinessContactGroupTypeRoleId int
+                SET @BusinessContactGroupTypeRoleId = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '102E6AF5-62C2-4767-B473-C9C228D75FB6')                
+
+                UPDATE [GroupMember] SET [GroupRoleId] = @BusinessContactGroupTypeRoleId WHERE [GroupRoleId] = @PrincipalGroupTypeRoleId
+                " );
+
+            Sql( @"
                 DELETE FROM [GroupTypeRole] 
                 WHERE [Guid] = '27198949-FAD3-4BD6-820C-FEB98AA61E7D'" );
 
@@ -170,6 +180,16 @@ namespace Rock.Migrations
                    ,0
                    ,0
                    ,'27198949-FAD3-4BD6-820C-FEB98AA61E7D')" );
+
+            Sql( @"
+                DECLARE @PrincipalGroupTypeRoleId int
+                SET @PrincipalGroupTypeRoleId = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '27198949-FAD3-4BD6-820C-FEB98AA61E7D')
+                
+                DECLARE @BusinessContactGroupTypeRoleId int
+                SET @BusinessContactGroupTypeRoleId = (SELECT [Id] FROM [GroupTypeRole] WHERE [Guid] = '102E6AF5-62C2-4767-B473-C9C228D75FB6')                
+
+                UPDATE [GroupMember] SET [GroupRoleId] = @PrincipalGroupTypeRoleId WHERE [GroupRoleId] = @BusinessContactGroupTypeRoleId
+                " );
         }
     }
 }
