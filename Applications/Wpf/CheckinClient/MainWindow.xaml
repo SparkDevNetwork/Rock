@@ -1,12 +1,7 @@
-﻿<Window x:Class="CheckinClient.MainWindow"
+﻿<NavigationWindow x:Class="CheckinClient.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525" WindowState="Maximized" WindowStyle="None">
-    <Grid x:Name="frmMain" Loaded="frmMain_Loaded">
-        <WebBrowser x:Name="wbMain" Source="http://ccv13-m003-pc:6229/checkin" />
-
-        <Popup x:Name="puOverlay" AllowsTransparency="True" PlacementTarget="{Binding ElementName=wbMain}" Opacity="0.5" Placement="Top" VerticalOffset="100">
-            <RepeatButton x:Name="btnClose" Interval="10" Delay="10" Width="100" Height="100" Click="btnClose_Click" Opacity="0.01"></RepeatButton>
-        </Popup>
-    </Grid>
-</Window>
+        Title="Rock Check-in Client" Height="350" Width="525" WindowState="Maximized" WindowStyle="None"
+        Source="StartupPage.xaml" 
+        ShowsNavigationUI="False">
+</NavigationWindow>
