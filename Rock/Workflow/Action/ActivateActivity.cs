@@ -33,6 +33,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
     [IntegerField( "Activity Type", "The activity type Id to activate" )]
+    [WorkflowActivityType( "Activity", "The activity type to activate" )]
     public class ActivateActivity : ActionComponent
     {
         /// <summary>
@@ -56,9 +57,9 @@ namespace Rock.Workflow.Action
             var workflow = action.Activity.Workflow;
 
             var activityType = workflow.WorkflowType.ActivityTypes
-                .Where( a => a.Id.ToString() == activityTypeId).FirstOrDefault();
+                .Where( a => a.Id.ToString() == activityTypeId ).FirstOrDefault();
 
-            if (activityType != null)
+            if ( activityType != null )
             {
                 WorkflowActivity.Activate( activityType, workflow );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
