@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace CheckinClient
 {
@@ -56,7 +56,7 @@ namespace CheckinClient
 
             closeClickBuffer++;
 
-            //btnClose.Opacity = closeClickBuffer / 300;
+            btnClose.Opacity = closeClickBuffer / 300;
 
             if ( closeClickBuffer > 300 )
                 Application.Current.Shutdown();
@@ -67,6 +67,7 @@ namespace CheckinClient
         {
             closeClickBuffer = 0;
             closeButtonRestartTimer.Stop();
+            btnClose.Opacity = .01;
         }
     }
 }
