@@ -895,6 +895,10 @@
     <Compile Include="Migrations\201405042113434_FixGroupRoles.Designer.cs">
       <DependentUpon>201405042113434_FixGroupRoles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201405051847116_AddServiceTimesToCampus.cs" />
+    <Compile Include="Migrations\201405051847116_AddServiceTimesToCampus.Designer.cs">
+      <DependentUpon>201405051847116_AddServiceTimesToCampus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration.cs" />
@@ -1547,6 +1551,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201405042113434_FixGroupRoles.resx">
       <DependentUpon>201405042113434_FixGroupRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201405051847116_AddServiceTimesToCampus.resx">
+      <DependentUpon>201405051847116_AddServiceTimesToCampus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
