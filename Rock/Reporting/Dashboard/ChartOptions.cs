@@ -26,6 +26,7 @@ namespace Rock.Reporting.Dashboard
 {
     /// <summary>
     /// Class that can be JSON'd and used for Google Charts (properties are case sensitive)
+    /// TODO: Convert to FLOT chart options
     /// </summary>
     public class ChartOptions
     {
