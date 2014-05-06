@@ -32,14 +32,32 @@ namespace Rock.Web.UI.Controls
     /// Workflow Action Form Editor
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionFormEditor runat=server></{0}:WorkflowActionFormEditor>" )]
-    public class WorkflowFormEditor : CompositeControl
+    public class WorkflowFormEditor : CompositeControl, IHasValidationGroup
     {
         private HiddenField _hfFormGuid;
-        private RockTextBox _tbHeaderText;
-        private RockTextBox _tbFooterText;
+        private CodeEditor _ceHeaderText;
+        private CodeEditor _ceFooterText;
         private RockTextBox _tbInactiveMessage;
         private RockControlWrapper _rcwActions;
         private KeyValueList _kvlActions;
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the form.
@@ -56,8 +74,8 @@ namespace Rock.Web.UI.Controls
                 form.Guid = _hfFormGuid.Value.AsGuid();
                 if ( form.Guid != Guid.Empty )
                 {
-                    form.Header = _tbHeaderText.Text;
-                    form.Footer = _tbFooterText.Text;
+                    form.Header = _ceHeaderText.Text;
+                    form.Footer = _ceFooterText.Text;
                     form.Actions = _kvlActions.Value;
                     form.InactiveMessage = _tbInactiveMessage.Text;
 
@@ -85,8 +103,8 @@ namespace Rock.Web.UI.Controls
                 if ( value != null )
                 {
                     _hfFormGuid.Value = value.Guid.ToString();
-                    _tbHeaderText.Text = value.Header;
-                    _tbFooterText.Text = value.Footer;
+                    _ceHeaderText.Text = value.Header;
+                    _ceFooterText.Text = value.Footer;
                     _kvlActions.Value = value.Actions;
                     _tbInactiveMessage.Text = value.InactiveMessage;
 
@@ -95,8 +113,8 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     _hfFormGuid.Value = string.Empty;
-                    _tbHeaderText.Text = string.Empty;
-                    _tbFooterText.Text = string.Empty;
+                    _ceHeaderText.Text = string.Empty;
+                    _ceFooterText.Text = string.Empty;
                     _kvlActions.Value = "Submit^Submit";
                     _tbInactiveMessage.Text = string.Empty;
                 }
@@ -189,21 +207,23 @@ namespace Rock.Web.UI.Controls
             _hfFormGuid.ID = this.ID + "_hfFormGuid";
             Controls.Add( _hfFormGuid );
 
-            _tbHeaderText = new RockTextBox();
-            _tbHeaderText.Label = "Form Header";
-            _tbHeaderText.Help = "Text to display to user above the form fields.";
-            _tbHeaderText.ID = this.ID + "_tbHeaderText";
-            _tbHeaderText.TextMode = TextBoxMode.MultiLine;
-            _tbHeaderText.Rows = 3;
-            Controls.Add( _tbHeaderText );
-            
-            _tbFooterText = new RockTextBox();
-            _tbFooterText.Label = "Form Footer";
-            _tbFooterText.Help = "Text to display to user below the form fields.";
-            _tbFooterText.ID = this.ID + "_tbFooterText";
-            _tbFooterText.TextMode = TextBoxMode.MultiLine;
-            _tbFooterText.Rows = 3;
-            Controls.Add( _tbFooterText );
+            _ceHeaderText = new CodeEditor();
+            _ceHeaderText.Label = "Form Header";
+            _ceHeaderText.Help = "Text to display to user above the form fields.";
+            _ceHeaderText.ID = this.ID + "_tbHeaderText";
+            _ceHeaderText.EditorMode = CodeEditorMode.Html;
+            _ceHeaderText.EditorTheme = CodeEditorTheme.Rock;
+            _ceHeaderText.EditorHeight = "100";
+            Controls.Add( _ceHeaderText );
+
+            _ceFooterText = new CodeEditor();
+            _ceFooterText.Label = "Form Footer";
+            _ceFooterText.Help = "Text to display to user below the form fields.";
+            _ceFooterText.ID = this.ID + "_tbFooterText";
+            _ceFooterText.EditorMode = CodeEditorMode.Html;
+            _ceFooterText.EditorTheme = CodeEditorTheme.Rock;
+            _ceFooterText.EditorHeight = "100";
+            Controls.Add( _ceFooterText );
 
             _rcwActions = new RockControlWrapper();
             _rcwActions.Label = "Action Buttons";
@@ -234,7 +254,8 @@ namespace Rock.Web.UI.Controls
         {
             if ( _hfFormGuid.Value.AsGuid() != Guid.Empty )
             {
-                _tbHeaderText.RenderControl( writer );
+                _ceHeaderText.ValidationGroup = ValidationGroup;
+                _ceHeaderText.RenderControl( writer );
 
                 // Attributes
                 if ( AttributeRows.Any() )
@@ -313,9 +334,14 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // Div.form-group
                 }
 
-                _tbFooterText.RenderControl( writer );
+                _ceFooterText.ValidationGroup = ValidationGroup;
+                _ceFooterText.RenderControl( writer );
+                _rcwActions.ValidationGroup = ValidationGroup;
                 _rcwActions.RenderControl( writer );
-                _tbInactiveMessage.RenderControl( writer );
+
+                // Don't render (not used)
+                //_tbInactiveMessage.ValidationGroup = ValidationGroup;
+                //_tbInactiveMessage.RenderControl( writer );
             }
         }
 
