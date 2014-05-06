@@ -201,6 +201,7 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
     <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
@@ -710,6 +711,7 @@
     <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />
+    <Compile Include="Attribute\WorkflowActivityTypeAttribute.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -1048,6 +1050,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
