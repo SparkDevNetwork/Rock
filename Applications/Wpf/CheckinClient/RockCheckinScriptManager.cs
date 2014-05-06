@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.Caching;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Newtonsoft.Json;
 
 namespace CheckinClient
 {
@@ -15,43 +21,142 @@ namespace CheckinClient
     public class RockCheckinScriptManager
     {
         Page browserPage;
+        ObjectCache cache;
+        bool warnedPrinterError = false;
 
         public RockCheckinScriptManager( Page p )
         {
             this.browserPage = (Page)p;
+            cache = MemoryCache.Default;
         }
 
         public void PrintLabels( string labelData )
         {
-            
-            
-            string s = @"CT~~CD,~CC^~CT~
-^XA~TA000~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^JUS^LRN^CI0^XZ
-^XA
-^MMT
-^PW812
-^LL0406
-^LS0
-^FT607,68^A0N,73,72^FB177,1,0,R^FH\^FDWWW^FS
-^FT6,122^A0N,39,38^FH\^FD2^FS
-^FT631,118^A0N,25,24^FH\^FD4^FS
-^FO12,161^GB40,42,42^FS
-^FT8,194^A0N,34,33^FB57,1,0,C^FR^FH\^FDAAA^FS
-^FT427,118^A0N,25,24^FH\^FD3^FS
-^FO12,264^GB40,42,42^FS
-^FT12,297^A0N,34,33^FB48,1,0,C^FR^FH\^FDLLL^FS
-^FB330,4,0,L^FT68,250^A0N,23,24^FH\^FD5^FS
-^FB330,4,0,L^FT68,354^A0N,23,24^FH\^FD7^FS
-^FT420,177^A0N,23,24^FH\^FDNotes:^FS
-^FO403,154^GB0,237,1^FS
-^FO422,386^GB361,0,1^FS
-^FO423,345^GB361,0,1^FS
-^FO421,304^GB361,0,1^FS
-^FO421,263^GB361,0,1^FS
-^FO421,227^GB361,0,1^FS
-^LRY^FO0,0^GB812,0,81^FS^LRN
-^PQ1,0,1,Y^XZ";
-            RawPrinterHelper.SendStringToPrinter( "ZDesigner GX420d (Copy 1)", s );
+            warnedPrinterError = false;
+
+            string labelContents = string.Empty;
+            var labels = JsonConvert.DeserializeObject<List<LabelItem>>( labelData );
+
+            foreach ( LabelItem label in labels )
+            {
+                // get label file
+                labelContents = GetLabelContents( label.LabelFile );   
+
+                // merge fields
+                labelContents = MergeLabelFields( labelContents, label.MergeFields );
+
+                // print label
+                PrintLabel( labelContents, label.PrinterAddress );
+            }
+
+            //RawPrinterHelper.SendStringToPrinter( "ZDesigner GX420d (Copy 1)", s );
         }
+
+        private string GetLabelContents( string labelFile )
+        {
+            string labelContents = string.Empty;
+
+            if ( cache.Contains( labelFile ) )
+            {
+                //get an item from the cache  
+                labelContents = cache.Get( labelFile ).ToString();
+            }
+            else
+            {
+                // get label from site
+                using ( WebClient client = new WebClient() )
+                {
+                    labelContents = client.DownloadString( labelFile );
+                }
+
+                int cacheDuration = 1440;
+
+                Int32.TryParse( ConfigurationManager.AppSettings["CacheLabelDuration"], out cacheDuration );
+
+                CacheItemPolicy cachePolicy = new CacheItemPolicy();
+                cachePolicy.AbsoluteExpiration = new DateTimeOffset( DateTime.Now.AddMilliseconds( cacheDuration ) );
+                //add an item to the cache   
+                cache.Add( labelFile, labelContents, cachePolicy );
+            }
+
+            return labelContents;
+        }
+
+        private string MergeLabelFields( string labelContents, Dictionary<string, string> mergeFields )
+        {
+            foreach ( var mergeField in mergeFields )
+            {
+                if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
+                {
+                    labelContents = Regex.Replace( labelContents, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                }
+                else
+                {
+                    // Remove the box preceding merge field
+                    labelContents = Regex.Replace( labelContents, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+                    // Remove the merge field
+                    labelContents = Regex.Replace( labelContents, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
+                }
+            }
+
+            return labelContents;
+        }
+
+        private void PrintLabel( string labelContents, string labelPrinterIp )
+        {
+            // if IP override
+            if ( ConfigurationManager.AppSettings["PrinterOverrideIp"] != string.Empty )
+            {
+                PrintViaIp( labelContents, ConfigurationManager.AppSettings["PrinterOverrideIp"] );
+            }
+            else if ( ConfigurationManager.AppSettings["PrinterOverrideLocal"] != string.Empty ) // if printer local
+            {  
+                RawPrinterHelper.SendStringToPrinter( ConfigurationManager.AppSettings["PrinterOverrideLocal"], labelContents );
+            }
+            else // else print to given IP
+            {
+                PrintViaIp( labelContents, labelPrinterIp );
+            }
+        }
+
+        private void PrintViaIp( string labelContents, string ipAddress )
+        {
+            if ( !warnedPrinterError )
+            {
+                Socket socket = null;
+                var printerIp = new IPEndPoint( IPAddress.Parse( ipAddress ), 9100 );
+
+                socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
+
+                if ( socket.Connected )
+                {
+                    var ns = new NetworkStream( socket );
+                    byte[] toSend = System.Text.Encoding.ASCII.GetBytes( labelContents );
+                    ns.Write( toSend, 0, toSend.Length );
+                }
+                else
+                {
+
+                    MessageBox.Show( String.Format( "Could not connect to the printer {0}.", ipAddress ), "Print Error", MessageBoxButton.OK, MessageBoxImage.Error );
+                    warnedPrinterError = true;
+                }
+
+                if ( socket != null && socket.Connected )
+                {
+                    socket.Shutdown( SocketShutdown.Both );
+                    socket.Close();
+                }
+            }
+        }
+    }
+
+    public class LabelItem
+    {
+        public int PrinterDeviceId { get; set; }
+        public string PrinterAddress { get; set; }
+        public string LabelFile { get; set; }
+        public Dictionary<string, string> MergeFields { get; set; }
     }
 }
