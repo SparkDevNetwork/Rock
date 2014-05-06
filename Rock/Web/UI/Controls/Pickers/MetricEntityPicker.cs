@@ -325,11 +325,20 @@ namespace Rock.Web.UI.Controls
 
             _phEntityTypeEntityIdValue = new PlaceHolder();
             _phEntityTypeEntityIdValue.ID = this.ID + "_phEntityTypeEntityIdValue";
+            _phEntityTypeEntityIdValue.EnableViewState = false;
             Controls.Add( _phEntityTypeEntityIdValue );
 
             LoadMetrics();
 
             // figure out which picker to render based on the Metric's Entity
+            UpdateEntityTypeControls();
+        }
+
+        /// <summary>
+        /// Updates the entity type controls.
+        /// </summary>
+        private void UpdateEntityTypeControls()
+        {
             var metricService = new MetricService( new RockContext() );
             var metric = metricService.Get( this.MetricId ?? 0 );
             _phEntityTypeEntityIdValue.Controls.Clear();
@@ -393,7 +402,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _ddlMetric_SelectedIndexChanged( object sender, EventArgs e )
         {
-            // intentionally blank, but we do need the postback so we can render the controls based on the new metric id
+            // figure out which picker to render based on the Metric's Entity
+            UpdateEntityTypeControls();
         }
 
         /// <summary>

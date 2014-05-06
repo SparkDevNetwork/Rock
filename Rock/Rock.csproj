@@ -569,7 +569,7 @@
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\ColumnChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\GoogleChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />

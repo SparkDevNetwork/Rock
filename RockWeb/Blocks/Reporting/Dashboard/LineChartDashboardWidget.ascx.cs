@@ -15,16 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using Newtonsoft.Json;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+using Rock.Attribute;
 using Rock.Reporting.Dashboard;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -32,29 +34,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Line Chart DashboardWidget" )]
+    [DisplayName( "Flot DashboardWidget2" )]
     [Category( "Dashboard" )]
-    [Description( "Line Chart dashboard widget for developers to use to start a new LineChartDashboardWidget block." )]
-    public partial class LineChartDashboardWidget : DashboardWidget
+    [Description( "DashboardWidget using flotcharts" )]
+    public partial class FlotDashboardWidget2 : DashboardWidget
     {
-        #region Base Control Methods
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
-
-            RockPage.AddScriptLink( "https://www.google.com/jsapi", false );
-            RockPage.AddScriptLink( "~/Scripts/jquery.smartresize.js" );
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -65,55 +49,18 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             if ( !Page.IsPostBack )
             {
-                // Options for Chart
-                var chartOptions = ChartOptions.Default;
-                chartOptions.vAxis.title = this.Title;
-                if ( !string.IsNullOrWhiteSpace( this.Subtitle ) )
+                lcExample.StartDate = new DateTime( 2013, 1, 1 );
+                lcExample.EndDate = new DateTime( 2014, 1, 1 );
+                lcExample.MetricValueType = null;
+                lcExample.MetricId = this.MetricId;
+                lcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
+                if (lcExample.EntityId == null && this.ContextEntity() != null)
                 {
-                    chartOptions.vAxis.title += Environment.NewLine + this.Subtitle;
+                    lcExample.EntityId = this.ContextEntity().Id;
                 }
 
-                hfOptions.Value = ( chartOptions as object ).ToJson();
-                List<ColumnDefinition> columnDefinitions = new List<ColumnDefinition>();
-                columnDefinitions.Add( new ColumnDefinition( "Date", ColumnDataType.date ) );
-                columnDefinitions.Add( new ColumnDefinition( "Attendance", ColumnDataType.number ) );
-                columnDefinitions.Add( new ChartTooltip() );
-                hfColumns.Value = columnDefinitions.ToJson();
-
-                // Data for Chart
-                Guid attendanceMetricGuid = new Guid( "D4752628-DFC9-4681-ADB3-01936B8F38CA" );
-                int metricId = new MetricService( new RockContext()).Get(attendanceMetricGuid).Id;
-                DateTime? startDate = new DateTime( 2013, 1, 1 );
-                DateTime? endDate = new DateTime( 2014, 1, 1 );
-                int? entityId = null;
-                hfRestUrlParams.Value = string.Format( "{0}?startDate={1}&endDate={2}", metricId, startDate ?? DateTime.MinValue, endDate ?? DateTime.MaxValue);
-                if (entityId.HasValue)
-                {
-                    hfRestUrlParams.Value += string.Format( "&entityId={0}", entityId );
-                }
+                nbMetricWarning.Visible = !this.MetricId.HasValue;
             }
         }
-
-        #endregion
-
-        #region Events
-
-        // handlers called by the controls on your block
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            //
-        }
-
-        #endregion
-
-        #region Methods
-
-        #endregion
     }
 }
