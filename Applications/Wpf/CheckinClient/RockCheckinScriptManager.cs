@@ -74,7 +74,7 @@ namespace CheckinClient
                 Int32.TryParse( ConfigurationManager.AppSettings["CacheLabelDuration"], out cacheDuration );
 
                 CacheItemPolicy cachePolicy = new CacheItemPolicy();
-                cachePolicy.AbsoluteExpiration = new DateTimeOffset( DateTime.Now.AddMilliseconds( cacheDuration ) );
+                cachePolicy.AbsoluteExpiration = new DateTimeOffset( DateTime.Now.AddSeconds( cacheDuration ) );
                 //add an item to the cache   
                 cache.Add( labelFile, labelContents, cachePolicy );
             }
