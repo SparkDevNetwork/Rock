@@ -14,7 +14,7 @@ var ZebraPrintPlugin = {
         if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
             Cordova.exec(success, fail, "ZebraPrint", "printTags", [tagJson]);
         } else {
-            window.external.PrintLabels("hi");
+            window.external.PrintLabels(tagJson);
         }
     }
 };
