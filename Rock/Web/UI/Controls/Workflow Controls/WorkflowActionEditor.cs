@@ -32,13 +32,14 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionEditor : CompositeControl
+    public class WorkflowActionEditor : CompositeControl, IHasValidationGroup
     {
+        private HiddenField _hfExpanded;
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
         private LinkButton _lbDeleteActionType;
 
-        private DataTextBox _tbActionTypeName;
+        private RockTextBox _tbActionTypeName;
         private RockDropDownList _ddlEntityType;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
@@ -46,13 +47,65 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder _phActionAttributes;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to force content visible.
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActionEditor"/> is expanded.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
         /// </value>
-        public bool ForceContentVisible { get; set; }
+        public bool Expanded
+        {
+            get
+            {
+                EnsureChildControls();
 
+                bool expanded = false;
+                if ( !bool.TryParse( _hfExpanded.Value, out expanded ) )
+                {
+                    expanded = false;
+                }
+
+                return expanded;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfExpanded.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the activity type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The activity type unique identifier.
+        /// </value>
+        public Guid ActionTypeGuid
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfActionTypeGuid.Value.AsGuid();
+            }
+        }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -65,6 +118,9 @@ namespace Rock.Web.UI.Controls
 // action animation
 $('.workflow-action > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
+
+    $expanded = $(this).children('input.filter-expanded');
+    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
     $('i.workflow-action-state', this).toggleClass('fa-chevron-down');
     $('i.workflow-action-state', this).toggleClass('fa-chevron-up');
@@ -83,8 +139,19 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 $('a.workflow-formfield-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
+
+$('.workflow-action > .panel-body').on('validation-error', function() {
+    var $header = $(this).siblings('header');
+    $(this).slideDown();
+
+    $expanded = $header.children('input.filter-expanded');
+    $expanded.val('True');
+
+    $('i.workflow-action-state', $header).removeClass('fa-chevron-down');
+    $('i.workflow-action-state', $header).addClass('fa-chevron-up');
+});
 ";
-            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActionTypeEditorScript", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "WorkflowActionTypeEditorScript", script, true );
         }
 
         /// <summary>
@@ -138,71 +205,68 @@ $('a.workflow-formfield-reorder').click(function (event) {
         }
 
         /// <summary>
-        /// Gets or sets the type of the workflow activity.
+        /// Gets the type of the workflow action.
         /// </summary>
-        /// <value>
-        /// The type of the workflow activity.
-        /// </value>
-        public WorkflowActionType WorkflowActionType
+        /// <returns></returns>
+        public WorkflowActionType GetWorkflowActionType( bool expandInvalid )
         {
-            get
+            EnsureChildControls();
+            WorkflowActionType result = new WorkflowActionType();
+            result.Guid = new Guid( _hfActionTypeGuid.Value );
+            result.Name = _tbActionTypeName.Text;
+            result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
+            result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
+            result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
+
+            var entityType = EntityTypeCache.Read( result.EntityTypeId );
+            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                EnsureChildControls();
-                WorkflowActionType result = new WorkflowActionType();
-                result.Guid = new Guid( _hfActionTypeGuid.Value );
-                result.Name = _tbActionTypeName.Text;
-                result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
-                result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
-                result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
-
-                var entityType = EntityTypeCache.Read( result.EntityTypeId );
-                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
-                {
-                    result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
-                }
-                else
-                {
-                    result.WorkflowForm = null;
-                }
-
-                result.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
-                return result;
+                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+            }
+            else
+            {
+                result.WorkflowForm = null;
             }
 
-            set
+            result.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
+
+            if (expandInvalid && !result.IsValid)
             {
-                EnsureChildControls();
-                _hfActionTypeGuid.Value = value.Guid.ToString();
-                _tbActionTypeName.Text = value.Name;
-                _ddlEntityType.SetValue( value.EntityTypeId );
-                _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
-
-                var entityType = EntityTypeCache.Read( value.EntityTypeId );
-                if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
-                {
-                    _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
-                    _cbIsActionCompletedOnSuccess.Checked = true;
-                    _cbIsActionCompletedOnSuccess.Enabled = false;
-                }
-                else
-                {
-                    _formEditor.Form = null;
-                    _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
-                    _cbIsActionCompletedOnSuccess.Enabled = true;
-                }
-
-                var action = EntityTypeCache.Read( value.EntityTypeId );
-                if ( action != null )
-                {
-                    var rockContext = new RockContext();
-                    Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), value.TypeId, "EntityTypeId", value.EntityTypeId.ToString(), rockContext );
-                    value.LoadAttributes( rockContext );
-                }
-
-                _phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, string.Empty, new List<string>() { "Active", "Order" } );
+                Expanded = true;
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Sets the type of the workflow action.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetWorkflowActionType(WorkflowActionType value)
+        {
+            EnsureChildControls();
+            _hfActionTypeGuid.Value = value.Guid.ToString();
+            _tbActionTypeName.Text = value.Name;
+            _ddlEntityType.SetValue( value.EntityTypeId );
+            _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+
+            var entityType = EntityTypeCache.Read( value.EntityTypeId );
+            if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
+            {
+                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                _cbIsActionCompletedOnSuccess.Checked = true;
+                _cbIsActionCompletedOnSuccess.Enabled = false;
+            }
+            else
+            {
+                _formEditor.Form = null;
+                _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
+                _cbIsActionCompletedOnSuccess.Enabled = true;
+            }
+
+            _phActionAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, ValidationGroup, new List<string>() { "Active", "Order" } );
         }
 
         /// <summary>
@@ -212,14 +276,22 @@ $('a.workflow-formfield-reorder').click(function (event) {
         {
             Controls.Clear();
 
+            _hfExpanded = new HiddenField();
+            Controls.Add( _hfExpanded );
+            _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.Value = "False";
+
             _hfActionTypeGuid = new HiddenField();
+            Controls.Add( _hfActionTypeGuid );
             _hfActionTypeGuid.ID = this.ID + "_hfActionTypeGuid";
 
             _lblActionTypeName = new Label();
+            Controls.Add( _lblActionTypeName );
             _lblActionTypeName.ClientIDMode = ClientIDMode.Static;
             _lblActionTypeName.ID = this.ID + "_lblActionTypeName";
 
             _lbDeleteActionType = new LinkButton();
+            Controls.Add( _lbDeleteActionType );
             _lbDeleteActionType.CausesValidation = false;
             _lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
             _lbDeleteActionType.CssClass = "btn btn-xs btn-danger js-action-delete";
@@ -229,11 +301,15 @@ $('a.workflow-formfield-reorder').click(function (event) {
             _lbDeleteActionType.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
 
-            _tbActionTypeName = new DataTextBox();
+            _tbActionTypeName = new RockTextBox();
+            Controls.Add( _tbActionTypeName );
             _tbActionTypeName.ID = this.ID + "_tbActionTypeName";
             _tbActionTypeName.Label = "Name";
+            _tbActionTypeName.Required = true;
+            _tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActionTypeName.ID );
 
             _ddlEntityType = new RockDropDownList();
+            Controls.Add( _ddlEntityType );
             _ddlEntityType.ID = this.ID + "_ddlEntityType";
             _ddlEntityType.Label = "Action Type";
 
@@ -268,32 +344,22 @@ $('a.workflow-formfield-reorder').click(function (event) {
                 }
             }
 
-            // set label when they exit the edit field
-            _tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActionTypeName.ID );
-            _tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
-            _tbActionTypeName.PropertyName = "Name";
-
             _cbIsActionCompletedOnSuccess = new RockCheckBox { Text = "Action is Completed on Success" };
+            Controls.Add( _cbIsActionCompletedOnSuccess );
             _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
             _cbIsActivityCompletedOnSuccess = new RockCheckBox { Text = "Activity is Completed on Success" };
+            Controls.Add( _cbIsActivityCompletedOnSuccess );
             _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
             _formEditor = new WorkflowFormEditor();
+            Controls.Add( _formEditor );
             _formEditor.ID = this.ID + "_formEditor";
 
             _phActionAttributes = new PlaceHolder();
+            Controls.Add( _phActionAttributes );
             _phActionAttributes.ID = this.ID + "_phActionAttributes";
 
-            Controls.Add( _hfActionTypeGuid );
-            Controls.Add( _lblActionTypeName );
-            Controls.Add( _tbActionTypeName );
-            Controls.Add( _ddlEntityType );
-            Controls.Add( _cbIsActionCompletedOnSuccess );
-            Controls.Add( _cbIsActivityCompletedOnSuccess );
-            Controls.Add( _formEditor );
-            Controls.Add( _phActionAttributes );
-            Controls.Add( _lbDeleteActionType );
         }
 
         /// <summary>
@@ -303,10 +369,19 @@ $('a.workflow-formfield-reorder').click(function (event) {
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            WorkflowActionType workflowActionType = WorkflowActionType;
+            var workflowActionType = GetWorkflowActionType( false );
             workflowActionType.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
-            WorkflowActionType = workflowActionType;
-            this.ForceContentVisible = true;
+
+            var action = EntityTypeCache.Read( workflowActionType.EntityTypeId );
+            if ( action != null )
+            {
+                var rockContext = new RockContext();
+                Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), workflowActionType.TypeId, "EntityTypeId", workflowActionType.EntityTypeId.ToString(), rockContext );
+                workflowActionType.LoadAttributes( rockContext );
+            }
+
+            SetWorkflowActionType( workflowActionType );
+            this.Expanded = true;
         }
 
         /// <summary>
@@ -322,6 +397,10 @@ $('a.workflow-formfield-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable panel-heading" );
             writer.RenderBeginTag( "header" );
 
+            // Hidden Field to track expansion
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
+            _hfExpanded.RenderControl( writer );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblActionTypeName.Text = _tbActionTypeName.Text;
@@ -332,7 +411,8 @@ $('a.workflow-formfield-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa {0}'></i></a>",
+                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
             if ( IsDeleteEnabled )
             {
@@ -351,16 +431,12 @@ $('a.workflow-formfield-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-
-            bool forceContentVisible = !WorkflowActionType.IsValid || ForceContentVisible;
-
-            if ( !forceContentVisible )
+            if ( !Expanded )
             {
                 // hide details if the name has already been filled in
                 writer.AddStyleAttribute( "display", "none" );
             }
-
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // action edit fields
@@ -369,18 +445,23 @@ $('a.workflow-formfield-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbActionTypeName.ValidationGroup = ValidationGroup;
             _tbActionTypeName.RenderControl( writer );
+            _ddlEntityType.ValidationGroup = ValidationGroup;
             _ddlEntityType.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbIsActionCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActionCompletedOnSuccess.RenderControl( writer );
+            _cbIsActivityCompletedOnSuccess.ValidationGroup = ValidationGroup;
             _cbIsActivityCompletedOnSuccess.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
 
+            _formEditor.ValidationGroup = ValidationGroup;
             _formEditor.RenderControl( writer );
 
             _phActionAttributes.RenderControl( writer );
