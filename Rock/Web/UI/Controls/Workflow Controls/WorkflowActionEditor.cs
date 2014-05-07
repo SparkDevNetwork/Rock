@@ -106,6 +106,16 @@ namespace Rock.Web.UI.Controls
                 return _hfActionTypeGuid.Value.AsGuid();
             }
         }
+
+        public WorkflowFormEditor FormEditor
+        {
+            get
+            {
+                EnsureChildControls();
+                return _formEditor;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -152,21 +162,6 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "WorkflowActionTypeEditorScript", script, true );
-        }
-
-        /// <summary>
-        /// Sets the workflow attributes.
-        /// </summary>
-        /// <value>
-        /// The workflow attributes.
-        /// </value>
-        public Dictionary<Guid, string> WorkflowAttributes
-        {
-            set
-            {
-                EnsureChildControls();
-                _formEditor.WorkflowAttributes = value;
-            }
         }
 
         /// <summary>
