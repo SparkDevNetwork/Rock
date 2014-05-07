@@ -44,7 +44,7 @@
 
                 <asp:ValidationSummary runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <fieldset>
-                    <asp:PlaceHolder ID="phProperties" runat="server"></asp:PlaceHolder>
+                    <asp:PlaceHolder ID="phProperties" runat="server" EnableViewState="false" ></asp:PlaceHolder>
                 </fieldset>
 
             </Content>

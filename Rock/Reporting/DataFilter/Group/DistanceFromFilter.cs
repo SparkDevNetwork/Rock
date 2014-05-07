@@ -110,11 +110,14 @@ function() {
 
             if ( selectionValues.Length >= 3 )
             {
-                int? locationId = selectionValues[1].AsInteger();
-                var location = new LocationService( new RockContext() ).Get( locationId ?? 0 );
-                double miles = selectionValues[2].AsDouble() ?? 0;
+                Guid? locationGuid = selectionValues[1].AsGuidOrNull();
+                if ( locationGuid.HasValue )
+                {
+                    var location = new LocationService( new RockContext() ).Get( locationGuid.Value );
+                    double miles = selectionValues[2].AsDouble() ?? 0;
 
-                result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
+                    result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
+                }
             }
 
             return result;
@@ -130,7 +133,7 @@ function() {
             groupLocationTypeList.Items.Clear();
             foreach ( var value in Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                groupLocationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                groupLocationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
             }
 
             groupLocationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
@@ -175,22 +178,22 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            int? groupLocationTypeId = null;
+            Guid? groupLocationTypeGuid = null;
+            Guid? groupLocationGuid = null;
             RockDropDownList dropDownList = controls[0] as RockDropDownList;
             if ( dropDownList != null )
             {
-                groupLocationTypeId = dropDownList.SelectedValueAsId();
+                groupLocationTypeGuid = dropDownList.SelectedValue.AsGuidOrNull();
             }
             
             var location = ( controls[1] as LocationPicker ).Location;
-            var value1 = string.Empty;
             if ( location != null )
             {
-                value1 = location.Id.ToString();
+                groupLocationGuid = location.Guid;
             }
 
             var value2 = ( controls[2] as NumberBox ).Text;
-            return groupLocationTypeId.ToString() + "|" + value1 + "|" + value2;
+            return groupLocationTypeGuid.ToString() + "|" + groupLocationGuid.ToString() + "|" + value2;
         }
 
         /// <summary>
@@ -205,10 +208,11 @@ function() {
             if ( selectionValues.Length >= 3 )
             {
                 var groupLocationType = controls[0] as RockDropDownList;
-                groupLocationType.SetValue( selectionValues[0] );
+                Guid? groupLocationTypeGuid = selectionValues[0].AsGuidOrNull();
+                groupLocationType.SetValue( groupLocationTypeGuid.ToString()  );
 
                 var locationPicker = controls[1] as LocationPicker;
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsInteger() ?? 0 );
+                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsGuid() );
                 locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 
@@ -230,9 +234,9 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                int? groupLocationTypeValueId = selectionValues[0].AsInteger( false );
+                Guid? groupLocationTypeValueGuid = selectionValues[0].AsGuidOrNull();
                 
-                Location location = new LocationService( (RockContext)serviceInstance.Context ).Get( selectionValues[1].AsInteger() ?? 0 );
+                Location location = new LocationService( (RockContext)serviceInstance.Context ).Get( selectionValues[1].AsGuid() );
 
                 if ( location == null )
                 {
@@ -247,7 +251,7 @@ function() {
 
                 var qry = groupService.Queryable()
                     .Where( p => p.GroupLocations
-                        .Where( l => l.GroupLocationTypeValueId == groupLocationTypeValueId )
+                        .Where( l => l.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
                         .Where( l => l.IsMappedLocation ).Any() );
 
                 // limit to distance LessThan specified distance (dbGeography uses meters for distance units)

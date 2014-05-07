@@ -392,8 +392,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var labelData = {0};
 
 		    function onDeviceReady() {{
-	
-			    //navigator.notification.alert('Oh boy! It's going to be a good day!, alertDismissed, 'Success', 'Continue');
 			    printLabels();
 		    }}
 		

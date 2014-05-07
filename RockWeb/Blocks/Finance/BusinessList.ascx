@@ -9,19 +9,12 @@
 
             <Rock:GridFilter ID="gfBusinessFilter" runat="server">
                 <Rock:RockTextBox ID="tbBusinessName" runat="server" Label="Business Name"></Rock:RockTextBox>  <!-- this should search by "contains" not necessarily an exact match -->
-                <Rock:PersonPicker ID="ppBusinessOwner" runat="server" Label="Owner" />
             </Rock:GridFilter>
 
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gBusinessList" runat="server" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" ShowConfirmDeleteDialog="false" OnRowSelected="gBusinessList_RowSelected">
                 <Columns>
                     <asp:BoundField DataField="FirstName" HeaderText="Business Name" SortExpression="FirstName" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Owner</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Label ID="lblOwner" runat="server" />
-                        </ItemTemplate>
-                    </asp:TemplateField>
                     <asp:TemplateField>
                         <HeaderTemplate>Contact</HeaderTemplate>
                         <ItemTemplate>
@@ -39,8 +32,6 @@
                     </asp:TemplateField>
                     <Rock:EditField OnClick="gBusinessList_Edit" />
                     <Rock:DeleteField OnClick="gBusinessList_Delete" />
-<%--<asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClientClick="Rock.dialogs.confirmDelete(event, 'schedule');" OnClick="btnDelete_Click" />--%>
-
                 </Columns>
             </Rock:Grid>
 

@@ -107,7 +107,7 @@ namespace Rock.Reporting.DataFilter.Person
             string[] options = selection.Split( '|' );
             if ( options.Length >= 4 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( int.Parse( options[0] ) );
+                var groupType = Rock.Web.Cache.GroupTypeCache.Read( options[0].AsGuid() );
 
                 ComparisonType comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
 
@@ -134,7 +134,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             foreach ( Rock.Model.GroupType groupType in new GroupTypeService( new RockContext() ).Queryable() )
             {
-                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+                ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString() ) );
             }
 
             var ddl = ComparisonControl( NumericFilterComparisonTypes );
@@ -225,11 +225,11 @@ namespace Rock.Reporting.DataFilter.Person
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            string groupTypeId = ( (DropDownList)controls[0] ).SelectedValue;
+            string groupTypeGuid = ( (DropDownList)controls[0] ).SelectedValue;
             string comparisonType = ( (DropDownList)controls[1] ).SelectedValue;
             string attended = ( (TextBox)controls[2] ).Text;
             string weeks = ( (TextBox)controls[3] ).Text;
-            return string.Format( "{0}|{1}|{2}|{3}", groupTypeId, comparisonType, attended, weeks );
+            return string.Format( "{0}|{1}|{2}|{3}", groupTypeGuid, comparisonType, attended, weeks );
         }
 
         /// <summary>
@@ -266,26 +266,13 @@ namespace Rock.Reporting.DataFilter.Person
                 return null;
             }
 
-            int attended = 0;
-            int weeks = 0;
-
-            int groupTypeId = 0;
-            if ( !int.TryParse( options[0], out groupTypeId ) )
-            {
-                groupTypeId = 0;
-            }
-
+            Guid groupTypeGuid = options[0].AsGuid();
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
+            int attended = options[2].AsInteger() ?? 0;
+            int weeks = options[3].AsInteger() ?? 0;
 
-            if ( !int.TryParse( options[2], out attended ) )
-            {
-                attended = 0;
-            }
-
-            if ( !int.TryParse( options[3], out weeks ) )
-            {
-                weeks = 0;
-            }
+            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+            int? groupTypeId = groupType != null ? groupType.Id : (int?)null;
 
             DateTime startDate = RockDateTime.Now.AddDays( 0 - ( 7 * weeks ) );
 

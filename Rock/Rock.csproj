@@ -153,6 +153,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\DaysOfWeekFieldAttribute.cs" />
@@ -201,8 +202,12 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
-    <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
-    <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
+    <Compile Include="Field\Types\MetricEntityFieldType.cs" />
+    <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
+    <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
+    <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -563,9 +568,9 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\ColumnChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\GoogleChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
@@ -581,6 +586,7 @@
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
@@ -678,6 +684,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -709,6 +716,7 @@
     <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />
+    <Compile Include="Attribute\WorkflowActivityTypeAttribute.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -1047,6 +1055,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

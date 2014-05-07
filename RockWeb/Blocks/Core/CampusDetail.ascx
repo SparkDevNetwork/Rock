@@ -35,6 +35,14 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="attributes">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
+                    </div>
+                </div>
+
             </fieldset>
 
             <div class="actions">

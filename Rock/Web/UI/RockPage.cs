@@ -753,7 +753,7 @@ namespace Rock.Web.UI
                                 {
                                     HtmlGenericControl div = new HtmlGenericControl( "div" );
                                     div.Attributes.Add( "class", "alert alert-danger" );
-                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1}", block.Name, ex.Message );
+                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1} <code>{2}</code>", block.Name, ex.Message, ex.StackTrace );
                                     control = div;
 
                                     if ( this.IsPostBack )

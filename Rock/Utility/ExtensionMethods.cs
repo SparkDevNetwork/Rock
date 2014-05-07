@@ -167,8 +167,15 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                return entityType.FriendlyName ?? SplitCase( type.Name );
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false);
+                if ( entityType != null && entityType.FriendlyName != null)
+                {
+                    return entityType.FriendlyName;
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
             else
             {
@@ -468,6 +475,16 @@ namespace Rock
         /// <returns></returns>
         public static Guid AsGuid( this string str )
         {
+            return str.AsGuidOrNull() ?? Guid.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to Guid.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static Guid? AsGuidOrNull( this string str )
+        {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
             {
@@ -475,7 +492,7 @@ namespace Rock
             }
             else
             {
-                return Guid.Empty;
+                return null;
             }
         }
 

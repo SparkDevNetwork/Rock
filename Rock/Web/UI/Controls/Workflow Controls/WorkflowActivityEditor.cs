@@ -27,8 +27,9 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
-    public class WorkflowActivityEditor : CompositeControl
+    public class WorkflowActivityEditor : CompositeControl, IHasValidationGroup
     {
+        private HiddenField _hfExpanded;
         private HiddenField _hfActivityTypeGuid;
         private Label _lblActivityTypeName;
         private Label _lblActivityTypeDescription;
@@ -36,19 +37,81 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbDeleteActivityType;
 
         private RockCheckBox _cbActivityTypeIsActive;
-        private DataTextBox _tbActivityTypeName;
-        private DataTextBox _tbActivityTypeDescription;
+        private RockTextBox _tbActivityTypeName;
+        private RockTextBox _tbActivityTypeDescription;
         private RockCheckBox _cbActivityTypeIsActivatedWithWorkflow;
 
         private LinkButton _lbAddActionType;
 
+        private PanelWidget _pwAttributes;
+        private Grid _gAttributes;
+
         /// <summary>
-        /// Gets or sets a value indicating whether to force content visible.
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActivityEditor"/> is expanded.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
         /// </value>
-        public bool ForceContentVisible { private get; set; }
+        public bool Expanded
+        {
+            get
+            {
+                EnsureChildControls();
+
+                bool expanded = false;
+                if ( !bool.TryParse( _hfExpanded.Value, out expanded ) )
+                {
+                    expanded = false;
+                }
+
+                return expanded;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfExpanded.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [attributes expanded].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes expanded]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AttributesExpanded
+        {
+            get
+            {
+                EnsureChildControls();
+                return _pwAttributes.Expanded;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _pwAttributes.Expanded = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the activity type unique identifier.
@@ -94,6 +157,9 @@ namespace Rock.Web.UI.Controls
 $('.workflow-activity > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
+    $expanded = $(this).children('input.filter-expanded');
+    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
+
     $('i.workflow-activity-state', this).toggleClass('fa-chevron-down');
     $('i.workflow-activity-state', this).toggleClass('fa-chevron-up');
 });
@@ -108,9 +174,21 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 
+$('.workflow-activity > .panel-body').on('validation-error', function() {
+    var $header = $(this).siblings('header');
+    $(this).slideDown();
+
+    $expanded = $header.children('input.filter-expanded');
+    $expanded.val('True');
+
+    $('i.workflow-activity-state', $header).removeClass('fa-chevron-down');
+    $('i.workflow-activity-state', $header).addClass('fa-chevron-up');
+
+    return false;
+});
 ";
 
-            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActivityTypeEditorScript", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "WorkflowActivityTypeEditorScript", script, true );
         }
 
         /// <summary>
@@ -134,12 +212,35 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Gets the expanded actions.
+        /// </summary>
+        /// <value>
+        /// The expanded actions.
+        /// </value>
+        public List<Guid> ExpandedActions
+        {
+            get
+            {
+                var result = new List<Guid>();
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+                {
+                    if (workflowActionTypeEditor.Expanded)
+                    {
+                        result.Add( workflowActionTypeEditor.ActionTypeGuid );
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the type of the workflow activity.
         /// </summary>
         /// <value>
         /// The type of the workflow activity.
         /// </value>
-        public WorkflowActivityType GetWorkflowActivityType()
+        public WorkflowActivityType GetWorkflowActivityType( bool expandInvalid )
         {
             EnsureChildControls();
             WorkflowActivityType result = new WorkflowActivityType();
@@ -152,9 +253,21 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             int order = 0;
             foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
             {
-                WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
+                bool wasExpanded = workflowActionTypeEditor.Expanded;
+                WorkflowActionType workflowActionType = workflowActionTypeEditor.GetWorkflowActionType( expandInvalid );
                 workflowActionType.Order = order++;
                 result.ActionTypes.Add( workflowActionType );
+
+                // If action was expanded because it's invalid, expand the activity also
+                if ( expandInvalid && !wasExpanded && workflowActionTypeEditor.Expanded )
+                {
+                    Expanded = true;
+                }
+            }
+
+            if (expandInvalid && !Expanded && !result.IsValid)
+            {
+                Expanded = true;
             }
 
             return result;
@@ -175,29 +288,50 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Binds the attributes grid.
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        public void BindAttributesGrid( List<Rock.Model.Attribute> attributes )
+        {
+            _gAttributes.DataSource = attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            _gAttributes.DataBind();
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             Controls.Clear();
 
+            _hfExpanded = new HiddenField();
+            Controls.Add( _hfExpanded );
+            _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.Value = "False";
+
             _hfActivityTypeGuid = new HiddenField();
+            Controls.Add( _hfActivityTypeGuid );
             _hfActivityTypeGuid.ID = this.ID + "_hfActivityTypeGuid";
 
             _lblActivityTypeName = new Label();
+            Controls.Add( _lblActivityTypeName );
             _lblActivityTypeName.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeName.ID = this.ID + "_lblActivityTypeName";
+            
             _lblActivityTypeDescription = new Label();
+            Controls.Add( _lblActivityTypeDescription );
             _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
             _lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
 
             _lblInactive = new Label();
+            Controls.Add( _lblInactive );
             _lblInactive.ClientIDMode = ClientIDMode.Static;
             _lblInactive.ID = this.ID + "_lblInactive";
             _lblInactive.CssClass = "label label-important pull-right";
             _lblInactive.Text = "Inactive";
 
             _lbDeleteActivityType = new LinkButton();
+            Controls.Add( _lbDeleteActivityType );
             _lbDeleteActivityType.CausesValidation = false;
             _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
             _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger js-activity-delete";
@@ -205,6 +339,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
+            Controls.Add( _cbActivityTypeIsActive );
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
@@ -220,46 +355,76 @@ javascript:
 
             _cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, _lblInactive.ID, this.ID + "_section" ) );
 
-            _tbActivityTypeName = new DataTextBox();
+            _tbActivityTypeName = new RockTextBox();
+            Controls.Add( _tbActivityTypeName );
             _tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
             _tbActivityTypeName.Label = "Name";
-
-            // set label when they exit the edit field
+            _tbActivityTypeName.Required = true;
             _tbActivityTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActivityTypeName.ID );
-            _tbActivityTypeName.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
-            _tbActivityTypeName.PropertyName = "Name";
 
-            _tbActivityTypeDescription = new DataTextBox();
+            _tbActivityTypeDescription = new RockTextBox();
+            Controls.Add( _tbActivityTypeDescription );
             _tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
             _tbActivityTypeDescription.Label = "Description";
             _tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
             _tbActivityTypeDescription.Rows = 2;
-
-            // set label when they exit the edit field
             _tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActivityTypeDescription.ID );
-            _tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
-            _tbActivityTypeDescription.PropertyName = "Description";
 
             _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
+            Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
             _lbAddActionType = new LinkButton();
+            Controls.Add( _lbAddActionType );
             _lbAddActionType.ID = this.ID + "_lbAddAction";
             _lbAddActionType.CssClass = "btn btn-xs btn-action";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
             _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> Add Action" } );
 
-            Controls.Add( _hfActivityTypeGuid );
-            Controls.Add( _lblActivityTypeName );
-            Controls.Add( _lblActivityTypeDescription );
-            Controls.Add( _lblInactive );
-            Controls.Add( _tbActivityTypeName );
-            Controls.Add( _tbActivityTypeDescription );
-            Controls.Add( _cbActivityTypeIsActive );
-            Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
-            Controls.Add( _lbDeleteActivityType );
-            Controls.Add( _lbAddActionType );
+            _pwAttributes = new PanelWidget();
+            Controls.Add( _pwAttributes );
+            _pwAttributes.ID = this.ID + "_pwAttributes";
+            _pwAttributes.Title = "Activity Attributes";
+            _pwAttributes.CssClass = "attribute-panel";
+
+            _gAttributes = new Grid();
+            _pwAttributes.Controls.Add( _gAttributes );
+            _gAttributes.AllowPaging = false;
+            _gAttributes.DisplayType = GridDisplayType.Light;
+            _gAttributes.RowItemText = "Activity Attribute";
+            _gAttributes.AddCssClass( "attribute-grid" );
+            _gAttributes.DataKeyNames = new string[] { "Guid" };
+            _gAttributes.Actions.ShowAdd = true;
+            _gAttributes.Actions.AddClick += gAttributes_Add;
+            _gAttributes.GridRebind += gAttributes_Rebind;
+            _gAttributes.GridReorder += gAttributes_Reorder;
+
+            var reorderField = new ReorderField();
+            _gAttributes.Columns.Add( reorderField );
+
+            var nameField = new BoundField();
+            nameField.DataField = "Name";
+            nameField.HeaderText = "Attribute";
+            _gAttributes.Columns.Add( nameField );
+
+            var descField = new BoundField();
+            descField.DataField = "Description";
+            descField.HeaderText = "Description";
+            _gAttributes.Columns.Add( descField );
+
+            var reqField = new BoolField();
+            reqField.DataField = "IsRequired";
+            reqField.HeaderText = "Required";
+            _gAttributes.Columns.Add( reqField );
+
+            var editField = new EditField();
+            editField.Click += gAttributes_Edit;
+            _gAttributes.Columns.Add( editField );
+
+            var delField = new DeleteField();
+            delField.Click += gAttributes_Delete;
+            _gAttributes.Columns.Add( delField );
         }
 
         /// <summary>
@@ -268,6 +433,18 @@ javascript:
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            if ( !Expanded )
+            {
+                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+                {
+                    if ( workflowActionTypeEditor.Expanded )
+                    {
+                        Expanded = true;
+                        break;
+                    }
+                }
+            } 
+            
             if ( _cbActivityTypeIsActive.Checked )
             {
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-widget workflow-activity");
@@ -283,6 +460,10 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
+
+            // Hidden Field to track expansion
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
+            _hfExpanded.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -304,7 +485,8 @@ javascript:
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.WriteLine( "<a class='btn btn-xs btn-link workflow-activity-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa {0}'></i></a>",
+                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
             if ( IsDeleteEnabled )
             {
@@ -325,28 +507,12 @@ javascript:
             // header div
             writer.RenderEndTag();
 
-            bool forceContentVisible = !GetWorkflowActivityType().IsValid || ForceContentVisible;
-
-            if ( !forceContentVisible )
-            {
-                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
-                {
-                    if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
-                    {
-                        forceContentVisible = true;
-                        break;
-                    }
-                }
-            }
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-
-            if ( !forceContentVisible )
+            if ( !Expanded )
             {
                 // hide details if the activity and actions are valid
                 writer.AddStyleAttribute( "display", "none" );
             }
-
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // activity edit fields
@@ -355,22 +521,28 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbActivityTypeName.ValidationGroup = ValidationGroup;
             _tbActivityTypeName.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-2" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbActivityTypeIsActive.ValidationGroup = ValidationGroup;
             _cbActivityTypeIsActive.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbActivityTypeIsActivatedWithWorkflow.ValidationGroup = ValidationGroup;
             _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
 
+            _tbActivityTypeDescription.ValidationGroup = ValidationGroup;
             _tbActivityTypeDescription.RenderControl( writer );
+
+            _pwAttributes.RenderControl( writer );
 
             // actions
             writer.RenderBeginTag( "fieldset" );
@@ -385,8 +557,9 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>().OrderBy( a => a.WorkflowActionType.Order ) )
+            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
             {
+                workflowActionTypeEditor.ValidationGroup = ValidationGroup;
                 workflowActionTypeEditor.RenderControl( writer );
             }
 
@@ -430,6 +603,77 @@ javascript:
         }
 
         /// <summary>
+        /// Handles the Rebind event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_Rebind( object sender, EventArgs e )
+        {
+            if ( RebindAttributeClick != null )
+            {
+                var eventArg = new WorkflowActivityTypeAttributeEventArg( ActivityTypeGuid );
+                RebindAttributeClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Add event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_Add( object sender, EventArgs e )
+        {
+            if ( AddAttributeClick != null )
+            {
+                var eventArg = new WorkflowActivityTypeAttributeEventArg( ActivityTypeGuid, Guid.Empty );
+                AddAttributeClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_Edit( object sender, RowEventArgs e )
+        {
+            if ( EditAttributeClick != null )
+            {
+                var eventArg = new WorkflowActivityTypeAttributeEventArg( ActivityTypeGuid, (Guid)e.RowKeyValue );
+                EditAttributeClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Reorder event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_Reorder( object sender, GridReorderEventArgs e )
+        {
+            if ( ReorderAttributeClick != null )
+            {
+                var eventArg = new WorkflowActivityTypeAttributeEventArg( ActivityTypeGuid, e.OldIndex, e.NewIndex );
+                ReorderAttributeClick( this, eventArg );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAttributes_Delete( object sender, RowEventArgs e )
+        {
+            if ( DeleteAttributeClick != null )
+            {
+                var eventArg = new WorkflowActivityTypeAttributeEventArg( ActivityTypeGuid, (Guid)e.RowKeyValue );
+                DeleteAttributeClick( this, eventArg );
+            }
+        }
+
+
+        /// <summary>
         /// Occurs when [delete activity type click].
         /// </summary>
         public event EventHandler DeleteActivityTypeClick;
@@ -438,5 +682,59 @@ javascript:
         /// Occurs when [add action type click].
         /// </summary>
         public event EventHandler AddActionTypeClick;
+
+        /// <summary>
+        /// Occurs when [add attribute click].
+        /// </summary>
+        public event EventHandler<WorkflowActivityTypeAttributeEventArg> RebindAttributeClick;
+
+        /// <summary>
+        /// Occurs when [add attribute click].
+        /// </summary>
+        public event EventHandler<WorkflowActivityTypeAttributeEventArg> AddAttributeClick;
+
+        /// <summary>
+        /// Occurs when [edit attribute click].
+        /// </summary>
+        public event EventHandler<WorkflowActivityTypeAttributeEventArg> EditAttributeClick;
+
+        /// <summary>
+        /// Occurs when [edit attribute click].
+        /// </summary>
+        public event EventHandler<WorkflowActivityTypeAttributeEventArg> ReorderAttributeClick;
+
+        /// <summary>
+        /// Occurs when [delete attribute click].
+        /// </summary>
+        public event EventHandler<WorkflowActivityTypeAttributeEventArg> DeleteAttributeClick;
+
+    }
+
+    public class WorkflowActivityTypeAttributeEventArg : EventArgs
+    {
+        public Guid ActivityTypeGuid { get; set; }
+        public Guid AttributeGuid { get; set; }
+        public int OldIndex { get; set; }
+        public int NewIndex { get; set; }
+
+        public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid )
+        {
+            ActivityTypeGuid = activityTypeGuid;
+        }
+
+        public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid, Guid attributeGuid )
+        {
+            ActivityTypeGuid = activityTypeGuid;
+            AttributeGuid = attributeGuid;
+        }
+
+        public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid, int oldIndex, int newIndex )
+        {
+            ActivityTypeGuid = activityTypeGuid;
+            OldIndex = oldIndex;
+            NewIndex = newIndex;
+        }
+
+
     }
 }

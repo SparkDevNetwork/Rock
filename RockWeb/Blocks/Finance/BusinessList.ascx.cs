@@ -88,20 +88,6 @@ namespace RockWeb.Blocks.Finance
             {
                 case "Business Name":
                     break;
-
-                case "Owner":
-                    int personId = 0;
-                    if ( int.TryParse( e.Value, out personId ) && personId != 0 )
-                    {
-                        var personService = new PersonService( new RockContext() );
-                        var person = personService.Get( personId );
-                        if ( person != null )
-                        {
-                            e.Value = person.FullName;
-                        }
-                    }
-
-                    break;
             }
         }
 
@@ -113,7 +99,6 @@ namespace RockWeb.Blocks.Finance
         private void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBusinessFilter.SaveUserPreference( "Business Name", tbBusinessName.Text );
-            gfBusinessFilter.SaveUserPreference( "Owner", ppBusinessOwner.PersonId.ToString() );
             BindGrid();
         }
 
@@ -155,23 +140,6 @@ namespace RockWeb.Blocks.Finance
                         r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
-
-                var groupMemberService = new GroupMemberService( rockContext );
-                var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
-                    .Where( g =>
-                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
-                        g.PersonId == business.Id )
-                    .FirstOrDefault();
-
-                if ( knownRelationshipBusinessGroupMember != null )
-                {
-                    var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
-                    if ( inverseGroupMember != null )
-                    {
-                        Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
-                        lblOwner.Text = inverseGroupMember.Person.FullName;
-                    }
-                }
 
                 var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
                 if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
@@ -280,18 +248,6 @@ namespace RockWeb.Blocks.Finance
 
             // Business Name Filter
             tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
-
-            // Owner Filter
-            int businessId = 0;
-            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out businessId ) )
-            {
-                var businessService = new PersonService( rockContext );
-                var business = businessService.Get( businessId );
-                if ( business != null )
-                {
-                    ppBusinessOwner.SetValue( business );
-                }
-            }
         }
 
         /// <summary>
@@ -315,25 +271,6 @@ namespace RockWeb.Blocks.Finance
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
                 queryable = queryable.Where( a => a.FirstName.Contains( businessName ) );
-            }
-
-            // Owner Filter
-            int ownerId = 0;
-            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
-            {
-                var members = queryable.SelectMany( a => a.Members ).ToList();
-                foreach ( var member in members )
-                {
-                    if ( member.GroupRoleId == businessRoleId )
-                    {
-                        var groupMemberService = new GroupMemberService( rockContext );
-                        var owner = groupMemberService.GetInverseRelationship( member, false, CurrentPersonAlias );
-                        if ( owner.PersonId != ownerId )
-                        {
-                            queryable = queryable.Where( a => a.Id != member.PersonId );
-                        }
-                    }
-                }
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;
