@@ -402,7 +402,7 @@ namespace RockWeb.Blocks.Core
                             {
                                 binaryFile = binaryFileService.Get( binaryFile.Id );
 
-                                if ( workflowType.IsPersisted )
+                                if ( workflow.IsPersisted || workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
                                     workflowService.Add( workflow );

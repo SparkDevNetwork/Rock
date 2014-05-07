@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Core
                 List<string> errorMessages;
                 if (_workflow.Process(out errorMessages))
                 {
-                    if (_workflowType.IsPersisted)
+                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                     {
                         if (_workflow.Id == 0)
                         {
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Core
                     if (_workflow.Process(out errorMessages))
                     {
                         // If the workflow type is persisted, save the workflow
-                        if (_workflowType.IsPersisted)
+                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                         {
                             _workflowService.Add(_workflow);
                             _rockContext.SaveChanges();

@@ -46,7 +46,7 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var workflow = action.Activity.Workflow;
-            //workflow.IsPersisted = true;
+            workflow.IsPersisted = true;
 
             action.AddLogEntry( "Updated workflow to be persisted!" );
             return false;
