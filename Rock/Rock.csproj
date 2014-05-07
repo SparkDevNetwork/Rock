@@ -205,8 +205,8 @@
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
-    <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
-    <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
+    <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
+    <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -567,7 +567,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\ColumnChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />

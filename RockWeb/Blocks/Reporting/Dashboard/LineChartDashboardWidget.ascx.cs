@@ -34,10 +34,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Flot DashboardWidget2" )]
+    [DisplayName( "Line Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class FlotDashboardWidget2 : DashboardWidget
+    public partial class LineChartDashboardWidget : DashboardWidget
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -51,13 +51,17 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             {
                 lcExample.StartDate = new DateTime( 2013, 1, 1 );
                 lcExample.EndDate = new DateTime( 2014, 1, 1 );
-                lcExample.MetricValueType = null;
+                lcExample.MetricValueType = this.MetricValueType;
                 lcExample.MetricId = this.MetricId;
                 lcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
                 if (lcExample.EntityId == null && this.ContextEntity() != null)
                 {
                     lcExample.EntityId = this.ContextEntity().Id;
                 }
+
+                lcExample.Title = this.Title;
+                lcExample.Subtitle = this.Subtitle;
+                lcExample.Options.SetTheme( new ChartTheme() );
 
                 nbMetricWarning.Visible = !this.MetricId.HasValue;
             }

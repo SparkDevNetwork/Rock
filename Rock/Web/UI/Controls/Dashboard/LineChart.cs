@@ -23,5 +23,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class LineChart : FlotChart
     {
+        public LineChart()
+        {
+            this.Options.series = new Reporting.Dashboard.SeriesOptions( false, true, false );
+        }
     }
 }

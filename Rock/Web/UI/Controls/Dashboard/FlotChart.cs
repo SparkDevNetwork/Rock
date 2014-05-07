@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
@@ -34,7 +35,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public FlotChart()
         {
-            Options = ChartOptions.Default;
+            Options = new FlotChartOptions();
+            this.Options.xaxis.mode = AxisMode.time;
+            this.Options.xaxis.timeformat = "%b %Y";
+            this.Options.grid.hoverable = true;
+            this.Options.grid.clickable = true;
+            this.Options.grid.margin = new MarginOptions { top = 0, right = 10, bottom = 0, left = 10 };
+            this.Options.grid.borderWidth = new BorderOptions  { top = 0, right = 0, bottom = 1, left = 1 };
         }
 
         #region Controls
@@ -42,9 +49,9 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfMetricId;
         private HiddenField _hfRestUrlParams;
         private HiddenField _hfXAxisLabel;
-        private Label _lblMetricTitle;
-        private Label _lblMetricSubtitle;
-        private Panel _pnlPlaceholder;
+        private Label _lblDashboardTitle;
+        private Label _lblDashboardSubtitle;
+        private Panel _pnlChartPlaceholder;
 
         #endregion
 
@@ -147,6 +154,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lblDashboardTitle.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lblDashboardTitle.Text = value;
+            }
+
+        }
+
+        /// <summary>
+        /// Gets or sets the subtitle.
+        /// </summary>
+        /// <value>
+        /// The subtitle.
+        /// </value>
+        public string Subtitle
+        {
+            get
+            {
+                EnsureChildControls();
+                return _lblDashboardSubtitle.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _lblDashboardSubtitle.Text = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the height of the chart.
         /// </summary>
         /// <value>
@@ -156,7 +204,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ChartHeight"] as Unit? ?? new Unit(170);
+                return ViewState["ChartHeight"] as Unit? ?? new Unit( 170 );
             }
 
             set
@@ -175,7 +223,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["ChartWidth"] as Unit? ?? new Unit("100%");
+                return ViewState["ChartWidth"] as Unit? ?? new Unit( "100%" );
             }
 
             set
@@ -191,7 +239,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The options.
         /// </value>
-        public ChartOptions Options { get; set; }
+        public FlotChartOptions Options { get; set; }
 
         /// <summary>
         /// Gets or sets the data source URL.
@@ -244,31 +292,12 @@ namespace Rock.Web.UI.Controls
         {
             var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
             this._hfXAxisLabel.Value = metric != null ? metric.XAxisLabel : "value";
-            this._lblMetricTitle.Text = metric != null ? metric.Title : string.Empty;
-            this._lblMetricSubtitle.Text = metric != null ? metric.Subtitle : string.Empty;
-
-            // setup ChartOptions (unless caller set them up manually)
-            if ( this.Options == null )
-            {
-                this.Options = ChartOptions.Default;
-
-                if ( metric != null )
-                {
-                    this.Options.vAxis.title = metric.Title;
-                    if ( !string.IsNullOrWhiteSpace( metric.Subtitle ) )
-                    {
-                        this.Options.vAxis.title += Environment.NewLine + metric.Subtitle;
-                    }
-                }
-            }
-
-            //_hfOptions.Value = this.Options.ToJson();
 
             // setup Rest URL parameters
             if ( this.MetricId.HasValue )
             {
                 _hfRestUrlParams.Value = string.Format( "{0}", this.MetricId );
-                
+
                 List<string> filterParams = new List<string>();
                 List<string> qryParams = new List<string>();
                 if ( this.StartDate.HasValue )
@@ -317,20 +346,12 @@ namespace Rock.Web.UI.Controls
 
                 // setup chartPoints objects
                 var chartMeasurePoints = {{
-                    color: '#8498ab',
-                    clickable: true,
-                    hoverable: true,
-                    shadowSize: 0,
                     label: $('#{2}').val(),
                     metricValues: chartData,
                     data: []
                 }}
 
                 var chartGoalPoints = {{
-                    color: 'red',
-                    clickable: true,
-                    hoverable: true,
-                    shadowSize: 0,
                     label: $('#{2}').val() + ' goal',
                     metricValues: chartData,
                     data: []
@@ -346,45 +367,7 @@ namespace Rock.Web.UI.Controls
                     }}
                 }}
 
-                var chartOptions = {{
-                    xaxis: {{
-                        mode: 'time',
-                        timeformat: '%b %Y'
-                    }},
-                    yaxis: {{
-
-                    }},
-                    series: {{
-                        bars: {{
-                            show: false,
-                            lineWidth: 5,
-                            fill: true,
-                            fillColor: '#d9edf7'
-                        }},
-                        lines: {{
-                            show: true
-                        }},
-                        points: {{
-                            show: false
-                        }}
-                    }},
-                    grid: {{
-                        hoverable: true,
-                        clickable: true,
-                        margin: {{
-                            top: 0,
-                            right: 10,
-                            bottom: 0,
-                            left: 50
-                        }},
-                        borderWidth: {{
-                            top: 0,
-                            right: 0,
-                            bottom: 1,
-                            left: 1
-                        }}
-                    }}
-                }}
+                var chartOptions = {4};
 
                 // plot the chart
                 var chartSeriesList = [];
@@ -405,6 +388,7 @@ namespace Rock.Web.UI.Controls
                 }}).appendTo('body');
 
                 $('#{3}').bind('plothover', function (event, pos, item) {{
+                    
                     if (item) {{
                         var tooltipText = item.series.metricValues[item.dataIndex].Note;
                         // if there isn't a note, just show the y value;
@@ -424,13 +408,22 @@ namespace Rock.Web.UI.Controls
             }});
 ";
 
+            string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    NullValueHandling = NullValueHandling.Ignore
+                } );
+            
+
             string restUrl = this.ResolveUrl( this.DataSourceUrl );
             string script = string.Format(
                 scriptFormat,
                 restUrl,
                 _hfRestUrlParams.ClientID,
                 _hfXAxisLabel.ClientID,
-                _pnlPlaceholder.ClientID );
+                _pnlChartPlaceholder.ClientID,
+                chartOptionsJson );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
@@ -446,23 +439,31 @@ namespace Rock.Web.UI.Controls
 
             _hfMetricId = new HiddenField();
             _hfMetricId.ID = string.Format( "hfMetricId_{0}", this.ID );
+            
             _hfXAxisLabel = new HiddenField();
             _hfXAxisLabel.ID = string.Format( "hfXAxisLabel_{0}", this.ID );
+            
             _hfRestUrlParams = new HiddenField();
             _hfRestUrlParams.ID = string.Format( "hfRestUrlParams_{0}", this.ID );
-            _lblMetricTitle = new Label();
-            _lblMetricTitle.ID = string.Format( "lblMetricTitle_{0}", this.ID );
-            _lblMetricSubtitle = new Label();
-            _lblMetricSubtitle.ID = string.Format( "lblMetricSubtitle_{0}", this.ID );
-            _pnlPlaceholder = new Panel();
-            _pnlPlaceholder.ID = string.Format( "pnlPlaceholder_{0}", this.ID );
+            
+            _lblDashboardTitle = new Label();
+            _lblDashboardTitle.CssClass = "dashboard-title";
+            _lblDashboardTitle.ID = string.Format( "lblDashboardTitle_{0}", this.ID );
+            
+            _lblDashboardSubtitle = new Label();
+            _lblDashboardSubtitle.CssClass = "dashboard-subtitle";
+            _lblDashboardSubtitle.ID = string.Format( "lblDashboardSubtitle_{0}", this.ID );
+            
+            _pnlChartPlaceholder = new Panel();
+            _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder";
+            _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
 
             Controls.Add( _hfMetricId );
             Controls.Add( _hfXAxisLabel );
             Controls.Add( _hfRestUrlParams );
-            Controls.Add( _lblMetricTitle );
-            Controls.Add( _lblMetricSubtitle );
-            Controls.Add( _pnlPlaceholder );
+            Controls.Add( _lblDashboardTitle );
+            Controls.Add( _lblDashboardSubtitle );
+            Controls.Add( _pnlChartPlaceholder );
         }
 
         /// <summary>
@@ -473,19 +474,19 @@ namespace Rock.Web.UI.Controls
         {
             RegisterJavaScript();
 
-            _pnlPlaceholder.Width = this.ChartWidth;
-            _pnlPlaceholder.Height = this.ChartHeight;
+            _pnlChartPlaceholder.Width = this.ChartWidth;
+            _pnlChartPlaceholder.Height = this.ChartHeight;
 
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", this.GetType().Name.SplitCase().ToLower().Replace(" ", "-" ));
+            writer.AddAttribute( "class", this.GetType().Name.SplitCase().ToLower().Replace( " ", "-" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfMetricId.RenderControl( writer );
             _hfRestUrlParams.RenderControl( writer );
             _hfXAxisLabel.RenderControl( writer );
-            _lblMetricTitle.RenderControl( writer );
-            _lblMetricSubtitle.RenderControl( writer );
-            _pnlPlaceholder.RenderControl( writer );
+            _lblDashboardTitle.RenderControl( writer );
+            _lblDashboardSubtitle.RenderControl( writer );
+            _pnlChartPlaceholder.RenderControl( writer );
 
             writer.RenderEndTag();
         }

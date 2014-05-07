@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -26,12 +28,12 @@ namespace Rock.Reporting.Dashboard
     /// <summary>
     /// 
     /// </summary>
-    [TextField( "Title", "The title of the widget", false )]
-    [TextField( "Subtitle", "The subtitle of the widget", false )]
-    [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4" )]
-    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure")]
-    [MetricEntityField("Metric", "Select the metric and the filter")]
-    [LinkedPage("Detail Page", "Select the page to navigate to when the chart is clicked")]
+    [TextField( "Title", "The title of the widget", false, Order = 0 )]
+    [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]
+    [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4", Order = 2 )]
+    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 3 )]
+    [MetricEntityField( "Metric", "Select the metric and the filter", Order = 4 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 5 )]
     public abstract class DashboardWidget : RockBlock
     {
         /// <summary>
@@ -92,7 +94,7 @@ namespace Rock.Reporting.Dashboard
                 {
                     Guid metricGuid = valueParts[0].AsGuid();
                     var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( metricGuid );
-                    if (metric != null)
+                    if ( metric != null )
                     {
                         return metric.Id;
                     }
@@ -143,16 +145,41 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
+        /// Gets the type of the metric value.
+        /// </summary>
+        /// <value>
+        /// The type of the metric value.
+        /// </value>
+        public MetricValueType? MetricValueType
+        {
+            get
+            {
+                string[] metricValueTypes = this.GetAttributeValue( "MetricValueTypes" ).SplitDelimitedValues();
+                var selected = metricValueTypes.Select( a => a.ConvertToEnum<MetricValueType>() ).ToArray();
+                if (selected.Length == 1)
+                {
+                    // if they picked one, return that one
+                    return selected[0];
+                }
+                else
+                {
+                    // if they picked both or neither, return null, which indicates to show both
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
         {
             List<string> widgetCssList = GetDivWidthCssClasses();
-            
-            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited(" ") );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited( " " ) );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
-            
+
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel panel-dashboard" );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
 
