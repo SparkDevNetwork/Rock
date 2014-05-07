@@ -219,7 +219,13 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
 
         // setup deviceready event to wait for cordova
-	    document.addEventListener('deviceready', onDeviceReady, false);
+	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {{
+            document.addEventListener('deviceready', onDeviceReady, false);
+        }} else {{
+            $( document ).ready(function() {{
+                onDeviceReady();
+            }});
+        }}
 
 	    // label data
         var labelData = {0};

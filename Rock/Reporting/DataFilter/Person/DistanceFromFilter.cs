@@ -110,8 +110,8 @@ function() {
 
             if ( selectionValues.Length >= 2 )
             {
-                int? locationId = selectionValues[0].AsInteger();
-                var location = new LocationService( new RockContext() ).Get( locationId ?? 0 );
+                Guid locationGuid = selectionValues[0].AsGuid();
+                var location = new LocationService( new RockContext() ).Get( locationGuid );
                 double miles = selectionValues[1].AsDouble() ?? 0;
 
                 result = string.Format( "Within {0} miles from location: {1}", miles, location != null ? location.ToString() : string.Empty );
@@ -166,7 +166,7 @@ function() {
             var value1 = string.Empty;
             if ( location != null )
             {
-                value1 = location.Id.ToString();
+                value1 = location.Guid.ToString();
             }
 
             var value2 = ( controls[1] as NumberBox ).Text;
@@ -185,7 +185,7 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 var locationPicker = controls[0] as LocationPicker;
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
+                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
                 locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
                 var numberBox = controls[1] as NumberBox;
@@ -208,7 +208,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                Location location = new LocationService( rockContext ).Get( selectionValues[0].AsInteger() ?? 0 );
+                Location location = new LocationService( rockContext ).Get( selectionValues[0].AsGuid() );
 
                 if ( location == null )
                 {

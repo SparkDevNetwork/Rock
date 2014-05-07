@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -36,8 +37,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person Bio" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
-
     [PersonBadgesField("Badges")]
+    [LinkedPage( "Business Detail Page" )]
     public partial class Bio : PersonBlock
     {
 
@@ -57,6 +58,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
+                // Record Type - this is always "business". it will never change.
+                if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
+                {
+                    var parms = new Dictionary<string, string>();
+                    parms.Add( "businessId", Person.Id.ToString() );
+                    NavigateToLinkedPage( "BusinessDetailPage", parms );
+                }
+
                 // Set the browser page title to include person's name
                 RockPage.BrowserTitle = Person.FullName;
 

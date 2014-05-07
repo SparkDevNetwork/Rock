@@ -21,21 +21,11 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class LineChart : GoogleChart
+    public class LineChart : FlotChart
     {
-        /// <summary>
-        /// Gets or sets the type of the chart.
-        /// </summary>
-        /// <value>
-        /// The type of the chart.
-        /// </value>
-        public override GoogleChartType? ChartType
+        public LineChart()
         {
-            get 
-            {
-                return GoogleChartType.LineChart; 
-            }
+            this.Options.series = new Reporting.Dashboard.SeriesOptions( false, true, false );
         }
     }
-
 }

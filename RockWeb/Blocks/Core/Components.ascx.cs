@@ -339,6 +339,7 @@ namespace RockWeb.Blocks.Core
         private void LoadEditControls(int serviceId, bool setValues)
         {
             Rock.Attribute.IHasAttributes component = _container.Dictionary[serviceId].Value;
+            phProperties.Controls.Clear();
             Rock.Attribute.Helper.AddEditControls( component, phProperties, setValues, string.Empty, new List<string>() { "Order" } );
         }
 

@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -29,14 +27,17 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
+
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Plugin;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -96,63 +97,11 @@ namespace RockWeb
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-                // Check if database should be auto-migrated for the core and plugins
-                bool autoMigrate = true;
-                if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
-                {
-                    autoMigrate = true;
-                }
-
-                RockContext rockContext;
-
-                if ( autoMigrate )
-                {
-                    try
-                    {
-
-                        Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
-
-                        // explictly check if the database exists, and force create it if doesn't exist
-                        rockContext = new RockContext();
-                        if ( !rockContext.Database.Exists() )
-                        {
-                            rockContext.Database.Initialize( true );
-                        }
-                        else
-                        {
-                            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                            migrator.Update();
-                        }
-
-                        // Migrate any plugins that have pending migrations
-                        List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
-
-                        foreach ( var configType in configurationTypeList )
-                        {
-                            if ( configType != typeof( Rock.Migrations.Configuration ) )
-                            {
-                                var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
-                                System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
-                                pluginMigrator.Update();
-                            }
-                        }
-
-                    }
-                    catch ( Exception ex )
-                    {
-                        // if migrations fail, log error and attempt to continue
-                        LogError( ex, null );
-                    }
-
-                }
-                else
-                {
-                    // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
-                    Database.SetInitializer<Rock.Data.RockContext>( null );
-                }
+                // Run any needed Rock and/or plugin migrations
+                MigrateDatabase();
 
                 // Get a db context
-                rockContext = new RockContext();
+                var rockContext = new RockContext();
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
 
@@ -499,6 +448,133 @@ namespace RockWeb
 
         #region Methods
 
+        /// <summary>
+        /// Migrates the database.
+        /// </summary>
+        public void MigrateDatabase()
+        {
+            // Check if database should be auto-migrated for the core and plugins
+            if ( ConfigurationManager.AppSettings["AutoMigrateDatabase"].AsBoolean( true ) )
+            {
+                try
+                {
+                    Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+
+                    var rockContext = new RockContext();
+
+                    // explictly check if the database exists, and force create it if doesn't exist
+                    if ( !rockContext.Database.Exists() )
+                    {
+                        // If database did not exist, initialize a database (which runs existing Rock migrations)
+                        rockContext.Database.Initialize( true );
+                    }
+                    else
+                    {
+                        // If database does exist, run any pending Rock migrations
+                        var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                        migrator.Update();
+                    }
+
+                    // Migrate any plugins that have pending migrations
+                    List<Type> migrationList = Rock.Reflection.FindTypes( typeof( Migration ) ).Select( a => a.Value ).ToList();
+
+                    // If any plugin migrations types were found
+                    if ( migrationList.Any() )
+                    {
+                        // Create EF service for plugin migrations
+                        var pluginMigrationService = new PluginMigrationService( rockContext );
+
+                        // Get the current rock version
+                        var rockVersion = new Version( Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
+
+                        // Create dictionary for holding migrations specific to an assembly
+                        var assemblies = new Dictionary<string, Dictionary<int, Type>>();
+
+                        // Iterate plugin migrations
+                        foreach ( var migrationType in migrationList )
+                        {
+                            // Get the MigrationNumberAttribute for the migration
+                            var migrationNumberAttr = System.Attribute.GetCustomAttribute( migrationType, typeof( MigrationNumberAttribute ) ) as MigrationNumberAttribute;
+                            if ( migrationNumberAttr != null )
+                            {
+                                // If the migration's minimum Rock version is less than or equal to the current rock version, add it to the list
+                                var minRockVersion = new Version( migrationNumberAttr.MinimumRockVersion );
+                                if ( minRockVersion.CompareTo( rockVersion ) <= 0 )
+                                {
+                                    string assemblyName = migrationType.Assembly.GetName().Name;
+                                    if ( !assemblies.ContainsKey( assemblyName ) )
+                                    {
+                                        assemblies.Add( assemblyName, new Dictionary<int, Type>() );
+                                    }
+                                    assemblies[assemblyName].Add( migrationNumberAttr.Number, migrationType );
+                                }
+                            }
+                        }
+
+                        // Iterate each assembly that contains plugin migrations
+                        foreach ( var assemblyMigrations in assemblies )
+                        {
+                            try
+                            {
+                                // Get the versions that have already been installed
+                                var installedVersions = pluginMigrationService.Queryable()
+                                    .Where( m => m.PluginAssemblyName == assemblyMigrations.Key )
+                                    .ToList();
+
+                                // Wrap the migrations for each assembly in a transaction so that if an error with one migration, none of the migrations are persisted
+                                RockTransactionScope.WrapTransaction( () =>
+                                {
+                                    // Iterate each migration in the assembly in MigrationNumber order 
+                                    foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )
+                                    {
+                                        // Check to make sure migration has not already been run
+                                        if ( !installedVersions.Any( v => v.MigrationNumber == migrationType.Key ) )
+                                        {
+                                            try
+                                            {
+                                                // Create an instance of the migration and run the up migration
+                                                var migration = Activator.CreateInstance( migrationType.Value ) as Rock.Plugin.Migration;
+                                                migration.Up();
+
+                                                // Save the plugin migration version so that it is not run again
+                                                var pluginMigration = new PluginMigration();
+                                                pluginMigration.PluginAssemblyName = assemblyMigrations.Key;
+                                                pluginMigration.MigrationNumber = migrationType.Key;
+                                                pluginMigration.MigrationName = migrationType.Value.Name;
+                                                pluginMigrationService.Add( pluginMigration );
+                                                rockContext.SaveChanges();
+                                            }
+                                            catch ( Exception ex )
+                                            {
+                                                throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
+                                                    assemblyMigrations.Key, migrationType.Value.Name ), ex );
+                                            }
+                                        }
+                                    }
+                                } );
+                            }
+                            catch ( Exception ex )
+                            {
+                                // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                LogError( ex, null );
+                            }
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // if migrations fail, log error and attempt to continue
+                    LogError( ex, null );
+                }
+
+            }
+            else
+            {
+                // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
+                Database.SetInitializer<Rock.Data.RockContext>( null );
+            }
+        }
+
         /// Formats the exception.
         /// </summary>
         /// <param name="ex">The ex.</param>
@@ -691,7 +767,7 @@ namespace RockWeb
             }
         }
 
-        private void Error66(Exception ex)
+        private void Error66( Exception ex )
         {
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
@@ -758,8 +834,8 @@ namespace RockWeb
 
                 Global.QueueInUse = false;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Logs the error to database
         /// </summary>
@@ -834,9 +910,9 @@ namespace RockWeb
                     }
                 }
             }
-            catch( Exception ex)
+            catch ( Exception ex )
             {
-                LogError(ex, null);
+                LogError( ex, null );
             }
         }
 
