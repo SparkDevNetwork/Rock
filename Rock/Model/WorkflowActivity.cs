@@ -210,6 +210,11 @@ namespace Rock.Model
 
             AddSystemLogEntry( "Processing Complete" );
 
+            if (!this.ActiveActions.Any())
+            {
+                MarkComplete();
+            }
+
             return errorMessages.Count == 0;
         }
 
