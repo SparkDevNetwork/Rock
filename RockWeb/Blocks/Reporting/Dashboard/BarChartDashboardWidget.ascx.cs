@@ -34,21 +34,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Flot DashboardWidget" )]
+    [DisplayName( "Bar Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class FlotDashboardWidget : DashboardWidget
+    public partial class BarChartDashboardWidget : DashboardWidget
     {
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            RockPage.AddScriptLink( "~/Scripts/flot/jquery.flot.js" );
-            RockPage.AddScriptLink( "~/Scripts/flot/jquery.flot.time.js" );
-            RockPage.AddScriptLink( "~/Scripts/flot/jquery.flot.resize.js" );
-        }
-        
-        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -59,26 +49,19 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             if ( !Page.IsPostBack )
             {
-                DateTime? startDate = new DateTime( 2013, 1, 1 );
-                DateTime? endDate = new DateTime( 2014, 1, 1 );
-                MetricValueType? metricValueType = MetricValueType.Measure;
-                if (metricValueType.HasValue)
+                bcExample.StartDate = new DateTime( 2013, 1, 1 );
+                bcExample.EndDate = new DateTime( 2014, 1, 1 );
+                bcExample.MetricValueType = this.MetricValueType;
+                bcExample.MetricId = this.MetricId;
+                bcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
+                if ( bcExample.EntityId == null && this.ContextEntity() != null )
                 {
-                    hfRestUrlParams.Value = string.Format( "{0}?metricValueType={1}&", this.MetricId, metricValueType.ConvertToString() );
-                }
-                else
-                {
-                    hfRestUrlParams.Value = string.Format( "{0}?", this.MetricId );
+                    bcExample.EntityId = this.ContextEntity().Id;
                 }
 
-                hfRestUrlParams.Value += string.Format( "$filter=MetricValueDateTime ge DateTime'{0}' and MetricValueDateTime lt DateTime'{1}'", ( startDate ?? DateTime.MinValue ).ToString( "o" ), ( endDate ?? DateTime.MaxValue ).ToString( "o" ) );
-
-                var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
-                if (metric != null)
-                {
-                    lblMetricTitle.Text = metric.Title;
-                    hfXAxisLabel.Value = metric.XAxisLabel;
-                }
+                bcExample.Title = this.Title;
+                bcExample.Subtitle = this.Subtitle;
+                bcExample.Options.SetTheme( new ChartTheme() );
 
                 nbMetricWarning.Visible = !this.MetricId.HasValue;
             }
