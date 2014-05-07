@@ -98,6 +98,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 return base.IsValid && _rangeValidator.IsValid;
             }
         }

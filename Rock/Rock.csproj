@@ -207,6 +207,7 @@
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
     <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
+    <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -683,6 +684,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -714,6 +716,7 @@
     <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />
+    <Compile Include="Attribute\WorkflowActivityTypeAttribute.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
     <Compile Include="Model\WorkflowTrigger.cs" />
@@ -1052,6 +1055,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
+    <Folder Include="Workflow\Attribute\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -27,14 +27,12 @@ using Rock.Model;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Activates a new activity for a given activity type
+    /// Changes an unpersisted workflow be persisted
     /// </summary>
-    [Description( "Activates a new activity for a given activity type" )]
+    [Description( "Changes an unpersisted workflow be persisted" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Activate Activity" )]
-    [IntegerField( "Activity Type", "The activity type Id to activate" )]
-    [WorkflowActivityType( "Activity", "The activity type to activate" )]
-    public class ActivateActivity : ActionComponent
+    [ExportMetadata( "ComponentName", "Persist Workflow" )]
+    public class PersistWorkflow : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -47,26 +45,10 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            string activityTypeId = GetAttributeValue( action, "ActivityType" );
-            if ( String.IsNullOrWhiteSpace( activityTypeId ) )
-            {
-                action.AddLogEntry( "Invalid Activity Type Property" );
-                return false;
-            }
-
             var workflow = action.Activity.Workflow;
+            //workflow.IsPersisted = true;
 
-            var activityType = workflow.WorkflowType.ActivityTypes
-                .Where( a => a.Id.ToString() == activityTypeId ).FirstOrDefault();
-
-            if ( activityType != null )
-            {
-                WorkflowActivity.Activate( activityType, workflow );
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
-                return true;
-            }
-
-            action.AddLogEntry( string.Format( "Could Not activate new '{0}' activity!", activityType.ToString() ) );
+            action.AddLogEntry( "Updated workflow to be persisted!" );
             return false;
         }
     }
