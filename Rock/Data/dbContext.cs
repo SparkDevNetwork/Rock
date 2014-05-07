@@ -274,7 +274,7 @@ namespace Rock.Data
                             }
                             else
                             {
-                                if ( workflowType.IsPersisted )
+                                if ( workflow.IsPersisted || workflowType.IsPersisted )
                                 {
                                     workflowService.Add( workflow );
                                     rockContext.SaveChanges();

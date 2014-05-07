@@ -215,6 +215,16 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is persisted.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is persisted; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual bool IsPersisted { get; set; }
+
         #endregion
 
         #region Public Methods

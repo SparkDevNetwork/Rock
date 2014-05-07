@@ -72,7 +72,7 @@ namespace Rock.Transactions
                     List<string> workflowErrors;
                     if ( workflow.Process( Entity, out workflowErrors ) )
                     {
-                        if ( workflowType.IsPersisted )
+                        if ( workflow.IsPersisted || workflowType.IsPersisted )
                         {
                             var workflowService = new Rock.Model.WorkflowService( rockContext );
                             workflowService.Add( workflow );
