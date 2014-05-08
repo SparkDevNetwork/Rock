@@ -145,5 +145,32 @@ namespace Rock.Workflow
 
             return string.Empty;
         }
+
+        /// <summary>
+        /// Gets a worklow attribute value.  Will check both the workflow and the activity for the selected attribute guid
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="guid">The attribute guid.</param>
+        /// <returns></returns>
+        protected string GetWorklowAttributeValue( WorkflowAction action, Guid guid )
+        {
+            var testAttribute = AttributeCache.Read( guid );
+            if ( testAttribute != null )
+            {
+                string testAttributeValue = string.Empty;
+                if ( testAttribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                {
+                    return action.Activity.Workflow.GetAttributeValue( testAttribute.Key );
+                }
+                else if ( testAttribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                {
+                    return action.Activity.GetAttributeValue( testAttribute.Key );
+                }
+            }
+
+            return null;
+        }
+
+
     }
 }

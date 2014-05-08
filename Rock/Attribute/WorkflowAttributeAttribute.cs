@@ -22,12 +22,12 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select an activity type from a workflow type.
+    /// Field Attribute to select a workflow attribute from a workflow type.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class WorkflowActivityTypeAttribute : FieldAttribute
+    public class WorkflowAttributeAttribute : FieldAttribute
     {
-        private const string WORKFLOW_TYPE_KEY = "Workflowtype";
+        private const string WORKFLOW_TYPE_KEY = "workflowtype";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActivityTypeAttribute" /> class.
@@ -40,8 +40,8 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
-        public WorkflowActivityTypeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string workflowTypeGuid = "" )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowActivityFieldType ).FullName )
+        public WorkflowAttributeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string workflowTypeGuid = "" )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowAttributeFieldType ).FullName )
         {
             if ( !string.IsNullOrWhiteSpace( workflowTypeGuid ) )
             {
