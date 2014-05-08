@@ -212,6 +212,8 @@
     <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
     <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
+    <Compile Include="Plugin\Migration.cs" />
+    <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
