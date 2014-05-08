@@ -14,12 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rock.Utility;
 
@@ -46,7 +41,89 @@ namespace Rock.Reporting.Dashboard
         /// <param name="chartTheme">The chart theme.</param>
         public void SetTheme( ChartTheme chartTheme )
         {
-            this.colors = chartTheme.SeriesColors.Select( a => System.Drawing.ColorTranslator.ToHtml( a ) ).ToArray();
+            if ( chartTheme.SeriesColors != null && chartTheme.SeriesColors.Count() > 0 )
+            {
+                this.colors = chartTheme.SeriesColors.ToArray();
+            }
+
+            this.grid.backgroundColor = chartTheme.GridBackgroundColorGradiant != null ? ToFlotColor( chartTheme.GridBackgroundColorGradiant ) : ToFlotColor( chartTheme.GridBackgroundColor );
+            this.grid.color = chartTheme.GridColorGradiant != null ? ToFlotColor( chartTheme.GridColorGradiant ) : ToFlotColor( chartTheme.GridColor );
+
+            if ( chartTheme.XAxis != null )
+            {
+                this.xaxis.color = chartTheme.XAxis.Color;
+                if ( chartTheme.XAxis.Font != null )
+                {
+                    this.xaxis.font.color = chartTheme.XAxis.Font.Color;
+                    this.xaxis.font.family = chartTheme.XAxis.Font.Family;
+                    this.xaxis.font.size = chartTheme.XAxis.Font.Size;
+                }
+            }
+
+            if ( chartTheme.YAxis != null )
+            {
+                if ( chartTheme.YAxis.Font != null )
+                {
+                    this.yaxis.font.color = chartTheme.YAxis.Font.Color;
+                    this.yaxis.font.family = chartTheme.YAxis.Font.Family;
+                    this.yaxis.font.size = chartTheme.YAxis.Font.Size;
+                }
+            }
+
+            if ( this.series.lines != null )
+            {
+                this.series.lines.fill = chartTheme.FillOpacity;
+                this.series.lines.fillColor = chartTheme.FillColor;
+            }
+
+            if ( this.series.bars != null )
+            {
+                this.series.bars.fill = chartTheme.FillOpacity;
+                this.series.bars.fillColor = chartTheme.FillColor;
+            }
+
+            if ( this.series.points != null )
+            {
+                this.series.points.fill = chartTheme.FillOpacity;
+                this.series.points.fillColor = chartTheme.FillColor;
+            }
+        }
+
+        /// <summary>
+        /// convert a theme color gradiant to flot color specification for a gradiant
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        private static dynamic ToFlotColor( string[] source )
+        {
+            dynamic dest = null;
+            if ( source != null && source.Count() > 0 )
+            {
+                if ( source.Count() > 1 )
+                {
+                    dest = new
+                    {
+                        colors = source
+                    };
+                }
+                else
+                {
+                    dest = source[0];
+                }
+            }
+
+            return dest;
+        }
+
+        /// <summary>
+        /// convert a theme color to flot color specification
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        private static dynamic ToFlotColor( string source)
+        {
+            dynamic dest = source;
+            return dest;
         }
 
         /// <summary>
@@ -56,7 +133,7 @@ namespace Rock.Reporting.Dashboard
         /// The xaxis.
         /// </value>
         public AxisOptions xaxis { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the yaxis.
         /// </summary>
@@ -228,7 +305,7 @@ namespace Rock.Reporting.Dashboard
         /// The style.
         /// </value>
         public string style { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the weight.
         /// </summary>
@@ -236,7 +313,7 @@ namespace Rock.Reporting.Dashboard
         /// The weight.
         /// </value>
         public string weight { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the family.
         /// </summary>
@@ -244,7 +321,7 @@ namespace Rock.Reporting.Dashboard
         /// The family.
         /// </value>
         public string family { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the variant.
         /// </summary>
@@ -252,7 +329,7 @@ namespace Rock.Reporting.Dashboard
         /// The variant.
         /// </value>
         public string variant { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the color.
         /// </summary>
@@ -355,12 +432,12 @@ namespace Rock.Reporting.Dashboard
         public int? lineWidth { get; set; }
 
         /// <summary>
-        /// Gets or sets the fill.
+        /// Gets or sets the fill opacity
         /// </summary>
         /// <value>
         /// The fill.
         /// </value>
-        public bool? fill { get; set; }
+        public double? fill { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the fill.
@@ -458,7 +535,7 @@ namespace Rock.Reporting.Dashboard
         /// <summary>
         /// Initializes a new instance of the <see cref="SeriesOptions"/> class.
         /// </summary>
-        public SeriesOptions( bool showBars, bool showLines, bool showPoints)
+        public SeriesOptions( bool showBars, bool showLines, bool showPoints )
         {
             if ( showBars )
             {
@@ -531,7 +608,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The color.
         /// </value>
-        public string color { get; set; }
+        public dynamic color { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the background.
@@ -539,7 +616,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The color of the background.
         /// </value>
-        public string backgroundColor { get; set; }
+        public dynamic backgroundColor { get; set; }
 
         /// <summary>
         /// Gets or sets the margin.

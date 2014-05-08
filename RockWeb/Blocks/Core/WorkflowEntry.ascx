@@ -7,6 +7,8 @@
 
         <asp:Panel ID="pnlForm" runat="server">
 
+            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
             <asp:Literal ID="lheadingText" runat="server" />
 
             <asp:PlaceHolder ID="phAttributes" runat="server" />

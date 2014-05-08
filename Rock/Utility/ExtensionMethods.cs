@@ -167,8 +167,8 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false);
-                if ( entityType != null && entityType.FriendlyName != null)
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false );
+                if ( entityType != null && entityType.FriendlyName != null )
                 {
                     return entityType.FriendlyName;
                 }
@@ -788,6 +788,80 @@ namespace Rock
             return !string.IsNullOrWhiteSpace( value ) ? value : nullValue;
         }
 
+        /// <summary>
+        /// Compares to.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="compareValue">The compare value.</param>
+        /// <param name="compareType">Type of the compare.</param>
+        /// <returns></returns>
+        public static bool CompareTo( this string value, string compareValue, ComparisonType compareType )
+        {
+            if ( compareType == ComparisonType.Contains )
+            {
+                return value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.DoesNotContain )
+            {
+                return !value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.EndsWith )
+            {
+                return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.EqualTo )
+            {
+                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.GreaterThan )
+            {
+                return value.CompareTo( compareValue ) > 0;
+            }
+
+            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) >= 0;
+            }
+
+            if ( compareType == ComparisonType.IsBlank )
+            {
+                return string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.IsNotBlank )
+            {
+                return !string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.LessThan )
+            {
+                return value.CompareTo( compareValue ) < 0;
+            }
+
+            if ( compareType == ComparisonType.LessThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) <= 0;
+            }
+
+            if ( compareType == ComparisonType.NotEqualTo )
+            {
+                return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.StartsWith )
+            {
+                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            return false;
+
+        }
+
+
         #endregion
 
         #region Int Extensions
@@ -1112,7 +1186,7 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static long ToJavascriptMilliseconds( this DateTime dateTime)
+        public static long ToJavascriptMilliseconds( this DateTime dateTime )
         {
             return (long)( dateTime - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }

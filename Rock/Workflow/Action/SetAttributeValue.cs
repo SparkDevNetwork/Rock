@@ -29,15 +29,15 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Activates a new activity for a given activity type
+    /// Sets an attribute's value to the selected value
     /// </summary>
-    [Description( "Activates a new activity instance and all of its actions." )]
+    [Description( "Sets an attribute's value to the selected value." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
-    [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
-    [BooleanField( "Complete Current Activity", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed)." )]
-    public class ActivateActivity : CompareAction
+    [WorkflowAttribute( "Attribute", "The attribute to set.", false, "", "", 0 )]
+    [TextField( "Value", "The value.", false, "", "", 1 )]
+    public class SetAttributeValue : CompareAction
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -50,28 +50,30 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
+            if (!guid.IsEmpty())
             {
-                action.AddLogEntry( "Invalid Activity Property" );
-                return false;
+                var attribute = AttributeCache.Read( guid );
+                if ( attribute != null )
+                {
+                    if ( TestCompare( action ) )
+                    {
+                        string value = GetAttributeValue( action, "Value" );
+
+                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                        {
+                            action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
+                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                        }
+                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                        {
+                            action.Activity.SetAttributeValue( attribute.Key, value );
+                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                        }
+                    }
+                }
             }
 
-            var workflow = action.Activity.Workflow;
-            var activityType = workflow.WorkflowType.ActivityTypes
-                .Where( a => a.Guid.Equals( guid ) ).FirstOrDefault();
-
-            if ( activityType == null )
-            {
-                action.AddLogEntry( "Invalid Activity Property" );
-                return false;
-            }
-
-            if ( TestCompare( action ) )
-            {
-                WorkflowActivity.Activate( activityType, workflow );
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
-            }
 
             return true;
         }

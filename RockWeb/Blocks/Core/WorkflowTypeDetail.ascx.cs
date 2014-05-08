@@ -1060,9 +1060,13 @@ namespace RockWeb.Blocks.Core
                 workflowType.ActivityTypes = ActivityTypesState;
                 System.Web.HttpContext.Current.Items["WorkflowType"] = workflowType;
 
+                var workflowAttributes = new Dictionary<Guid, string>();
+                AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
+                System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] = workflowAttributes;
+
                 foreach ( var workflowActivityType in ActivityTypesState.OrderBy( a => a.Order ) )
                 {
-                    BuildActivityControl( phActivities, setValues, workflowActivityType, activeActivityTypeGuid, activeActionTypeGuid );
+                    BuildActivityControl( phActivities, setValues, workflowActivityType, workflowAttributes, activeActivityTypeGuid, activeActionTypeGuid );
                 }
             }
         }
@@ -1074,7 +1078,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="activeActivityTypeGuid">The active activity type unique identifier.</param>
         /// <param name="activeWorkflowActionTypeGuid">The active workflow action type unique identifier.</param>
         /// <returns></returns>
-        private WorkflowActivityEditor BuildActivityControl( Control parentControl, bool setValues, WorkflowActivityType activityType, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
+        private WorkflowActivityEditor BuildActivityControl( Control parentControl, bool setValues, WorkflowActivityType activityType, 
+            Dictionary<Guid, string> workflowAttributes, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
         {
             var control = new WorkflowActivityEditor();
             parentControl.Controls.Add( control );
@@ -1095,7 +1100,7 @@ namespace RockWeb.Blocks.Core
             foreach ( WorkflowActionType actionType in activityType.ActionTypes.OrderBy( a => a.Order ) )
             {
                 var attributes = new Dictionary<Guid, string>();
-                AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => attributes.Add( a.Guid, a.Name ) );
+                workflowAttributes.ToList().ForEach( a => attributes.Add( a.Key, a.Value ) );
                 ActivityAttributesState[activityType.Guid].OrderBy( a => a.Order ).ToList().ForEach( a => attributes.Add( a.Guid, a.Name ) );
 
                 var activities = new Dictionary<string, string>();
