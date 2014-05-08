@@ -203,6 +203,8 @@
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Plugin\Migration.cs" />
+    <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Reporting\Dashboard\ChartDateTimeJsonConverter.cs" />
     <Compile Include="Reporting\Dashboard\ChartOptions.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
