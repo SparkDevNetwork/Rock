@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Reporting.Dashboard;
+using System.Drawing;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -61,7 +62,16 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
                 bcExample.Title = this.Title;
                 bcExample.Subtitle = this.Subtitle;
-                bcExample.Options.SetTheme( new ChartTheme() );
+
+                ChartTheme testTheme = new ChartTheme();
+                testTheme.SeriesColors = new string[] { 
+                    "#FF0000", 
+                    "#515151"
+                };
+                testTheme.GridBackgroundColor = "brown";
+                testTheme.GridColor = "purple";
+
+                bcExample.Options.SetTheme( testTheme );
 
                 nbMetricWarning.Visible = !this.MetricId.HasValue;
             }

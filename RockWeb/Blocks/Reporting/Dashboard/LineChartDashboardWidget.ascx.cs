@@ -16,17 +16,10 @@
 //
 using System;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Reporting.Dashboard;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -54,14 +47,28 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 lcExample.MetricValueType = this.MetricValueType;
                 lcExample.MetricId = this.MetricId;
                 lcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
-                if (lcExample.EntityId == null && this.ContextEntity() != null)
+                if ( lcExample.EntityId == null && this.ContextEntity() != null )
                 {
                     lcExample.EntityId = this.ContextEntity().Id;
                 }
 
                 lcExample.Title = this.Title;
                 lcExample.Subtitle = this.Subtitle;
-                lcExample.Options.SetTheme( new ChartTheme() );
+
+                ChartTheme testTheme = new ChartTheme();
+                testTheme.SeriesColors = new string[] { 
+                    "#FF0000",
+                    "#515151"
+                };
+
+                testTheme.GridBackgroundColorGradiant = new string[] { "#FFFFFF", "#EEEEEE" };
+                testTheme.GridColor = "#101010";
+                testTheme.XAxis = new AxisStyle { Color = "black", Font = new ThemeFont( "green", "consolas", 10 ) };
+                testTheme.YAxis = new AxisStyle { Color = "gray", Font = new ThemeFont( "olive", "consolas", 10 ) };
+                testTheme.FillOpacity = .1;
+                //testTheme.FillColor = "rgba(25, 125, 54, 0.25)";
+
+                lcExample.Options.SetTheme( testTheme );
 
                 nbMetricWarning.Visible = !this.MetricId.HasValue;
             }
