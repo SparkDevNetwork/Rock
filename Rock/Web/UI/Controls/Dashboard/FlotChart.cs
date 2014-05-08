@@ -52,6 +52,7 @@ namespace Rock.Web.UI.Controls
         private Label _lblDashboardTitle;
         private Label _lblDashboardSubtitle;
         private Panel _pnlChartPlaceholder;
+        private HelpBlock _hbDebug;
 
         #endregion
 
@@ -367,18 +368,19 @@ namespace Rock.Web.UI.Controls
                     }}
                 }}
 
-                var chartOptions = {4};
-
-                // plot the chart
+                // setup the series list (goal points first, if they exist)
                 var chartSeriesList = [];
+                if (chartGoalPoints.data.length) {{
+                    chartSeriesList.push(chartGoalPoints);
+                }}                
+
                 if (chartMeasurePoints.data.length) {{
                     chartSeriesList.push(chartMeasurePoints);
                 }}
 
-                if (chartGoalPoints.data.length) {{
-                    chartSeriesList.push(chartGoalPoints);
-                }}
+                var chartOptions = {4};                
 
+                // plot the chart
                 $.plot('#{3}', chartSeriesList, chartOptions);
 
                 // setup of bootstrap tooltip which we'll show on the plothover event
@@ -414,7 +416,8 @@ namespace Rock.Web.UI.Controls
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                     NullValueHandling = NullValueHandling.Ignore
                 } );
-            
+
+            _hbDebug.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
 
             string restUrl = this.ResolveUrl( this.DataSourceUrl );
             string script = string.Format(
@@ -458,12 +461,16 @@ namespace Rock.Web.UI.Controls
             _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder";
             _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
 
+            _hbDebug = new HelpBlock();
+            _hbDebug.ID = string.Format("hbDebug_{0}", this.ID);
+
             Controls.Add( _hfMetricId );
             Controls.Add( _hfXAxisLabel );
             Controls.Add( _hfRestUrlParams );
             Controls.Add( _lblDashboardTitle );
             Controls.Add( _lblDashboardSubtitle );
             Controls.Add( _pnlChartPlaceholder );
+            Controls.Add( _hbDebug );
         }
 
         /// <summary>
@@ -486,6 +493,7 @@ namespace Rock.Web.UI.Controls
             _hfXAxisLabel.RenderControl( writer );
             _lblDashboardTitle.RenderControl( writer );
             _lblDashboardSubtitle.RenderControl( writer );
+            _hbDebug.RenderControl( writer );
             _pnlChartPlaceholder.RenderControl( writer );
 
             writer.RenderEndTag();

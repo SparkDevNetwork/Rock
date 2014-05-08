@@ -96,7 +96,8 @@ namespace CheckinClient
                 btnToggle.Margin = new Thickness( 0, 12, 0, 0 );
                 btnToggle.Padding = new Thickness( 0, 12, 0, 8 );
                 btnToggle.FontSize = 18;
-
+                btnToggle.Style = this.FindResource( "toggleButtonStyle" ) as Style;
+                
                 if ( printer == localPrinterName )
                 {
                     btnToggle.IsChecked = true;

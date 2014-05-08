@@ -153,6 +153,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
@@ -182,6 +183,7 @@
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
+    <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
@@ -202,7 +204,9 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
+    <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
@@ -684,6 +688,8 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\CompareAction.cs" />
+    <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
     <Compile Include="Workflow\Action\UserForm.cs" />

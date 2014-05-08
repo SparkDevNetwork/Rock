@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,9 +31,9 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
     /// </summary>
     [Serializable]
-    public class WorkflowActivityFieldType : FieldType
+    public class WorkflowAttributeFieldType : FieldType
     {
-        private const string WORKFLOW_TYPE_KEY = "WorkflowType";
+        private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -49,21 +50,19 @@ namespace Rock.Field.Types
             Guid guid = value.AsGuid();
             if (!guid.IsEmpty())
             { 
-                var workflowType = GetContextWorkflowType();
-                if (workflowType != null)
+                var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
+                if ( workflowTypeAttributes != null && workflowTypeAttributes.ContainsKey(guid) )
                 {
-                    formattedValue = workflowType.ActivityTypes
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    formattedValue = workflowTypeAttributes[guid];
                 }
 
                 if (string.IsNullOrWhiteSpace(formattedValue))
                 {
-                    formattedValue = new WorkflowActivityTypeService(new RockContext()).Queryable()
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    var attributeCache = AttributeCache.Read( guid );
+                    if (attributeCache != null)
+                    {
+                        formattedValue = attributeCache.Name;
+                    }
                 }
             }
 
@@ -86,30 +85,12 @@ namespace Rock.Field.Types
             editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            IEnumerable<WorkflowActivityType> activityTypes = null;
-
-            var workflowType = GetContextWorkflowType();
-            if ( workflowType != null )
+            var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
+            if ( workflowTypeAttributes != null )
             {
-                activityTypes = workflowType.ActivityTypes;
-            }
-
-            if (activityTypes == null && configurationValues != null && configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) )
-            {
-                Guid workflowTypeGuid = configurationValues[WORKFLOW_TYPE_KEY].Value.AsGuid();
-                if ( !workflowTypeGuid.IsEmpty() )
+                foreach ( var attribute in workflowTypeAttributes )
                 {
-                    activityTypes = new WorkflowActivityTypeService( new RockContext() )
-                        .Queryable()
-                        .Where( t => t.WorkflowType.Guid.Equals( workflowTypeGuid ) );
-                }
-            }
-
-            if (activityTypes != null && activityTypes.Any() )
-            {
-                foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
-                {
-                    editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
                 }
             }
 
@@ -149,12 +130,12 @@ namespace Rock.Field.Types
             }
         }
 
-        private WorkflowType GetContextWorkflowType()
+        private Dictionary<Guid, string> GetContextWorkflowTypeAttributes()
         {
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
-                return httpContext.Items[WORKFLOW_TYPE_KEY] as WorkflowType;
+                return httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, string>;
             }
 
             return null;
