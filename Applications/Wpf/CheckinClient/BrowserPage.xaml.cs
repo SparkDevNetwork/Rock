@@ -58,10 +58,6 @@ namespace CheckinClient
             wbMain.AllowDrop = false;
             wbMain.Source = new Uri( ConfigurationManager.AppSettings["CheckinAddress"]);
 
-            // clear the browser's cache
-            //WebBrowserHelper.ClearCache();
-            //wbMain.Refresh( true );
-
             puOverlay.IsOpen = true;
         }
 
