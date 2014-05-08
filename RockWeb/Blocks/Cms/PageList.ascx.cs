@@ -128,16 +128,42 @@ namespace RockWeb.Blocks.Cms
 
             var rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
+            var pageViewService = new PageViewService(rockContext);
+            var siteService = new SiteService(rockContext);
 
             Rock.Model.Page page = pageService.Get( new Guid( e.RowKeyValue.ToString() ) );
             if ( page != null )
             {
                 string errorMessage;
-                canDelete = pageService.CanDelete( page, out errorMessage, includeSecondLvl: true );
-                if ( !canDelete )
+                if ( !pageService.CanDelete( page, out errorMessage, includeSecondLvl: true ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Alert );
                     return;
+                }
+
+                foreach (var site in siteService.Queryable())
+                {
+                    if (site.DefaultPageId == page.Id)
+                    {
+                        site.DefaultPageId = null;
+                        site.DefaultPageRouteId = null;
+                    }
+                    if (site.LoginPageId == page.Id)
+                    {
+                        site.LoginPageId = null;
+                        site.LoginPageRouteId = null;
+                    }
+                    if (site.RegistrationPageId == page.Id)
+                    {
+                        site.RegistrationPageId = null;
+                        site.RegistrationPageRouteId = null;
+                    }
+                }
+
+                foreach (var pageView in pageViewService.GetByPageId(page.Id))
+                {
+                    pageView.Page = null;
+                    pageView.PageId = null;
                 }
 
                 pageService.Delete( page );
