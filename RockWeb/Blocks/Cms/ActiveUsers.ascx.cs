@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( sbUsers.Length > 0 )
                 {
-                    lUsers.Text = String.Format( @"<ul class='fa-ul'>{0}</ul>", sbUsers.ToString() );
+                    lUsers.Text = String.Format( @"<ul class='activeusers fa-ul'>{0}</ul>", sbUsers.ToString() );
                 }
                 else
                 {
