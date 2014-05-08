@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -41,6 +42,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbActivityTypeDescription;
         private RockCheckBox _cbActivityTypeIsActivatedWithWorkflow;
 
+        private SecurityButton _sbSecurity;
         private LinkButton _lbAddActionType;
 
         private PanelWidget _pwAttributes;
@@ -374,6 +376,12 @@ javascript:
             Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
+            _sbSecurity = new SecurityButton();
+            Controls.Add( _sbSecurity );
+            _sbSecurity.ID = this.ID + "_sbSecurity";
+            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
+            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowActivityType ) ).Id;
+
             _lbAddActionType = new LinkButton();
             Controls.Add( _lbAddActionType );
             _lbAddActionType.ID = this.ID + "_lbAddAction";
@@ -552,6 +560,7 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             _lbAddActionType.RenderControl( writer );
+            _sbSecurity.RenderControl( writer );
             writer.RenderEndTag();
             writer.RenderEndTag();
 

@@ -369,6 +369,7 @@ namespace RockWeb.Blocks.Core
                     {
                         lb.Attributes.Add("data-activity", details[1]);
                     }
+                    lb.ValidationGroup = BlockValidationGroup;
                     phActions.Controls.Add(lb);
                 }
             }
