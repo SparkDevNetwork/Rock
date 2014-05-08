@@ -691,6 +691,7 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\CompareAction.cs" />
+    <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
@@ -880,7 +881,7 @@
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
-    <Compile Include="Workflow\Action\SendEmail.cs" />
+    <Compile Include="Workflow\Action\SendEmailTemplate.cs" />
     <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />

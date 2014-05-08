@@ -28,16 +28,12 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Sends email
     /// </summary>
-    [Description( "Sends an email.  The recipient can either be a person or email address determined by the 'To Attribute' value, or an email address entered in the 'To' field." )]
+    [Description( "Email the configured recipient the name of the thing being operated against." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata("ComponentName", "Send Email")]
-
-    [TextField("To", "The To address that email should be sent to.", false, "", "", 0)]
-    [WorkflowAttribute("To Attribute", "An attribute that contains the person or email address that email should be sent to.", false, "", "", 1)]
-    [TextField("From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 2)]
-    [TextField("Subject", "The subject that should be used when sending email.", true, "", "", 3)]
-    [CodeEditorField("Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4)]
-    public class SendEmail : CompareAction
+    [EmailTemplateField( "EmailTemplate", "The email template to send" )]
+    [TextField( "Recipient", "The email address to send to" )]
+    public class SendEmailTemplate : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -48,11 +44,22 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            if (TestCompare(action))
-            {
-                
+            errorMessages = new List<string>();
 
+            var recipientEmail = GetAttributeValue( action, "Recipient" );
+            var recipients = new Dictionary<string, Dictionary<string, object>>();
+            var mergeObjects = new Dictionary<string, object>();
+
+            if ( entity != null )
+            {
+                mergeObjects.Add( entity.GetType().Name, entity );
             }
+
+            recipients.Add( recipientEmail, mergeObjects );
+
+            Email.Send( GetAttributeValue( action, "EmailTemplate" ).AsGuid(), recipients );
+
+            action.AddLogEntry( string.Format( "Email sent to '{0}'", recipientEmail ) );
             
             return true;
         }
