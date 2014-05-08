@@ -34,6 +34,13 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "User Entry Form" )]
     public class UserEntryForm : ActionComponent
     {
+        /// <summary>
+        /// Executes the specified workflow.
+        /// </summary>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
         public override bool Execute( WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();

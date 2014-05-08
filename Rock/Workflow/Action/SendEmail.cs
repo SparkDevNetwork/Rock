@@ -48,6 +48,8 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
+            errorMessages = new List<string>();
+
             if (TestCompare(action))
             {
                 

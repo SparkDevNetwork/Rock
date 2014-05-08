@@ -68,6 +68,7 @@ namespace Rock.Attribute
         /// Initializes a new instance of the <see cref="InheritedAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
         /// <param name="description">The description.</param>
         /// <param name="url">The URL.</param>
         /// <param name="groupType">Type of the group.</param>

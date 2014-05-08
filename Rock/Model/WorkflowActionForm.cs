@@ -53,6 +53,12 @@ namespace Rock.Model
         [DataMember]
         public string Footer { get; set; }
 
+        /// <summary>
+        /// Gets or sets the inactive message.
+        /// </summary>
+        /// <value>
+        /// The inactive message.
+        /// </value>
         [DataMember]
         public string InactiveMessage { get; set; }
 
@@ -71,6 +77,12 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the form attributes.
+        /// </summary>
+        /// <value>
+        /// The form attributes.
+        /// </value>
         [DataMember]
         public virtual ICollection<WorkflowActionFormAttribute> FormAttributes
         {

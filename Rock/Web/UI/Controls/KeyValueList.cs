@@ -227,7 +227,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="values">The values.</param>
         private void RegisterClientScript()
         {
             string script = @"
