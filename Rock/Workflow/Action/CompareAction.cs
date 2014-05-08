@@ -38,11 +38,9 @@ namespace Rock.Workflow.Action
     public abstract class CompareAction : ActionComponent
     {
         /// <summary>
-        /// Executes the specified workflow.
+        /// Compares test value to compare values and returns true if they match comparison
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         protected bool TestCompare( WorkflowAction action )
         {

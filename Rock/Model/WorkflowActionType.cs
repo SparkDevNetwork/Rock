@@ -91,6 +91,12 @@ namespace Rock.Model
         [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
 
+        /// <summary>
+        /// Gets or sets the workflow form identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow form identifier.
+        /// </value>
         [DataMember]
         public int? WorkflowFormId { get; set; }
 

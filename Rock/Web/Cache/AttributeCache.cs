@@ -306,6 +306,7 @@ namespace Rock.Web.Cache
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
+        /// <param name="required">The required.</param>
         public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null)
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );

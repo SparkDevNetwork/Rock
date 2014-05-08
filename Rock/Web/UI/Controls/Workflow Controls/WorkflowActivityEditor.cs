@@ -719,24 +719,69 @@ javascript:
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class WorkflowActivityTypeAttributeEventArg : EventArgs
     {
+        /// <summary>
+        /// Gets or sets the activity type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The activity type unique identifier.
+        /// </value>
         public Guid ActivityTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute unique identifier.
+        /// </summary>
+        /// <value>
+        /// The attribute unique identifier.
+        /// </value>
         public Guid AttributeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the old index.
+        /// </summary>
+        /// <value>
+        /// The old index.
+        /// </value>
         public int OldIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new index.
+        /// </summary>
+        /// <value>
+        /// The new index.
+        /// </value>
         public int NewIndex { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeAttributeEventArg"/> class.
+        /// </summary>
+        /// <param name="activityTypeGuid">The activity type unique identifier.</param>
         public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid )
         {
             ActivityTypeGuid = activityTypeGuid;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeAttributeEventArg"/> class.
+        /// </summary>
+        /// <param name="activityTypeGuid">The activity type unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
         public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid, Guid attributeGuid )
         {
             ActivityTypeGuid = activityTypeGuid;
             AttributeGuid = attributeGuid;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowActivityTypeAttributeEventArg"/> class.
+        /// </summary>
+        /// <param name="activityTypeGuid">The activity type unique identifier.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
         public WorkflowActivityTypeAttributeEventArg( Guid activityTypeGuid, int oldIndex, int newIndex )
         {
             ActivityTypeGuid = activityTypeGuid;

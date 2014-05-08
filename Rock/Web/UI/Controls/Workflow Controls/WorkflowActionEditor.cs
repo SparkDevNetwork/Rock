@@ -107,6 +107,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the form editor.
+        /// </summary>
+        /// <value>
+        /// The form editor.
+        /// </value>
         public WorkflowFormEditor FormEditor
         {
             get

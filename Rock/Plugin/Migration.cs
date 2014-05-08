@@ -485,6 +485,8 @@ namespace Rock.Plugin
         /// <param name="zone">The zone.</param>
         /// <param name="preHtml">The pre HTML.</param>
         /// <param name="postHtml">The post HTML.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void AddBlock( string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, string preHtml, string postHtml, int order, string guid )
         {
             var sb = new StringBuilder();
@@ -1201,6 +1203,10 @@ INSERT INTO [dbo].[Auth]
             Sql( string.Format( sql, entityTypeName, action, groupGuid, authGuid ) );
         }
 
+        /// <summary>
+        /// Deletes the security authentication for page.
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
         public void DeleteSecurityAuthForPage( string pageGuid )
         {
             string sql = @"
@@ -1222,7 +1228,9 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="order">The order.</param>
         /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
@@ -1269,8 +1277,10 @@ INSERT INTO [dbo].[Auth]
         /// <summary>
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        /// <param name="order">The order.</param>
         /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
