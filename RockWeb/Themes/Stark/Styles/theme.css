@@ -1482,10 +1482,10 @@ ul.rocklist .rocklist-item.selected {
 .image-editor-photo .options a:first-child {
   margin-left: 0;
 }
-.recent i {
+.activeusers .recent i {
   color: #5cb85c;
 }
-.not-recent i {
+.activeusers .not-recent i {
   color: #f0ad4e;
 }
 .nav-paging .btn-prev {
@@ -2755,6 +2755,13 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-family header {
   font-size: 16px;
   margin-bottom: 7.5px;
+}
+.personprofilebar-family .person-image {
+  -webkit-filter: grayscale(100%);
+  transition: .5s;
+}
+.personprofilebar-family .person-image:hover {
+  -webkit-filter: grayscale(0%);
 }
 .personprofilebar-family .addresses ul {
   list-style: none;
