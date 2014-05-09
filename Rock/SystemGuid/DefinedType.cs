@@ -179,5 +179,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
 
+        /// <summary>
+        /// Guid for the types of chart themes
+        /// </summary>
+        public const string CHART_THEMES = "FC684FD7-FE68-493F-AF38-1656FBF67E6B";
+
     }
 }

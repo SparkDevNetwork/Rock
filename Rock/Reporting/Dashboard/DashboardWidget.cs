@@ -31,11 +31,49 @@ namespace Rock.Reporting.Dashboard
     [TextField( "Title", "The title of the widget", false, Order = 0 )]
     [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]
     [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4", Order = 2 )]
-    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 3 )]
-    [MetricEntityField( "Metric", "Select the metric and the filter", Order = 4 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 5 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_THEMES, "Chart Theme", Order = 3 )]
+    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
+    [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 6 )]
     public abstract class DashboardWidget : RockBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            this.BlockUpdated += Block_BlockUpdated;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            LoadChart();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            LoadChart();
+        }
+
+        /// <summary>
+        /// Loads the chart.
+        /// </summary>
+        public abstract void LoadChart();
+        
         /// <summary>
         /// Gets the Title attribute value
         /// </summary>
@@ -156,7 +194,7 @@ namespace Rock.Reporting.Dashboard
             {
                 string[] metricValueTypes = this.GetAttributeValue( "MetricValueTypes" ).SplitDelimitedValues();
                 var selected = metricValueTypes.Select( a => a.ConvertToEnum<MetricValueType>() ).ToArray();
-                if (selected.Length == 1)
+                if ( selected.Length == 1 )
                 {
                     // if they picked one, return that one
                     return selected[0];
@@ -166,6 +204,32 @@ namespace Rock.Reporting.Dashboard
                     // if they picked both or neither, return null, which indicates to show both
                     return null;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the chart theme.
+        /// </summary>
+        /// <value>
+        /// The chart theme.
+        /// </value>
+        public ChartTheme ChartTheme
+        {
+            get
+            {
+                Guid? chartThemeDefinedValueGuid = this.GetAttributeValue( "ChartTheme" ).AsGuidOrNull();
+                if ( chartThemeDefinedValueGuid.HasValue )
+                {
+                    var rockContext = new Rock.Data.RockContext();
+                    var definedValue = new DefinedValueService( rockContext ).Get( chartThemeDefinedValueGuid.Value );
+                    if ( definedValue != null )
+                    {
+                        definedValue.LoadAttributes( rockContext );
+                        return ChartTheme.CreateFromJson( definedValue.GetAttributeValue( "ChartTheme" ) );
+                    }
+                }
+
+                return new ChartTheme();
             }
         }
 
@@ -180,7 +244,7 @@ namespace Rock.Reporting.Dashboard
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited( " " ) );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel panel-dashboard" );
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-dashboard" );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
 
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );
@@ -237,7 +301,6 @@ namespace Rock.Reporting.Dashboard
             List<string> widgetCssList = new List<string>();
             if ( mediumColumnWidth.HasValue )
             {
-
                 // Table to use to derive col-xs and col-sm from the selected medium width
                 /*
                 XS	SM	MD
@@ -279,7 +342,6 @@ namespace Rock.Reporting.Dashboard
                         break;
                 }
 
-
                 widgetCssList.Add( string.Format( "col-md-{0}", mediumColumnWidth ) );
                 if ( xsmallColumnWidth.HasValue )
                 {
@@ -291,6 +353,7 @@ namespace Rock.Reporting.Dashboard
                     widgetCssList.Add( string.Format( "col-sm-{0}", smallColumnWidth ) );
                 }
             }
+
             return widgetCssList;
         }
     }

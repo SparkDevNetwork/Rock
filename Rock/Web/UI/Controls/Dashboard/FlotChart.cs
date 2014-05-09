@@ -19,14 +19,14 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.Dashboard;
+using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Abstract class for much of the Flot Charts Logic
+    /// Subset of the spec at https://github.com/flot/flot/blob/master/API.md
     /// </summary>
     public abstract class FlotChart : CompositeControl
     {
@@ -35,13 +35,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public FlotChart()
         {
-            Options = new FlotChartOptions();
-            this.Options.xaxis.mode = AxisMode.time;
-            this.Options.xaxis.timeformat = "%b %Y";
-            this.Options.grid.hoverable = true;
-            this.Options.grid.clickable = true;
-            this.Options.grid.margin = new MarginOptions { top = 0, right = 10, bottom = 0, left = 10 };
-            this.Options.grid.borderWidth = new BorderOptions  { top = 0, right = 0, bottom = 1, left = 1 };
+            Options = new ChartOptions();
+            this.Options.xaxis = new AxisOptions { mode = AxisMode.time, timeformat = "%b %e,<br />%Y" };
+            this.Options.grid = new GridOptions { hoverable = true, clickable = true };
         }
 
         #region Controls
@@ -167,12 +163,12 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _lblDashboardTitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
                 _lblDashboardTitle.Text = value;
             }
-
         }
 
         /// <summary>
@@ -188,6 +184,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _lblDashboardSubtitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -240,7 +237,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The options.
         /// </value>
-        public FlotChartOptions Options { get; set; }
+        public ChartOptions Options { get; set; }
 
         /// <summary>
         /// Gets or sets the data source URL.
@@ -259,6 +256,25 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["DataSourceUrl"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show tooltip].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show tooltip]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTooltip
+        {
+            get
+            {
+                return ViewState["ShowTooltip"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowTooltip"] = value;
             }
         }
 
@@ -383,26 +399,7 @@ namespace Rock.Web.UI.Controls
                 // plot the chart
                 $.plot('#{3}', chartSeriesList, chartOptions);
 
-                // setup of bootstrap tooltip which we'll show on the plothover event
-                $(""<div id='tooltip_{3}' class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>"").css({{
-                    position: 'absolute',
-                    display: 'none',
-                }}).appendTo('body');
-
-                $('#{3}').bind('plothover', function (event, pos, item) {{
-                    
-                    if (item) {{
-                        var tooltipText = item.series.metricValues[item.dataIndex].Note;
-                        // if there isn't a note, just show the y value;
-                        tooltipText = tooltipText || item.datapoint[1];
-                        $('#tooltip_{3}').find('.tooltip-inner').html(tooltipText);
-                        $('#tooltip_{3}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
-                        $('#tooltip_{3}').show();
-                    }}
-                    else {{
-                        $('#tooltip_{3}').hide();
-                    }}
-                }});
+                {5}
                 
             }})
             .fail(function (jqXHR, textStatus, errorThrown) {{
@@ -410,23 +407,48 @@ namespace Rock.Web.UI.Controls
             }});
 ";
 
-            string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented,
-                new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    NullValueHandling = NullValueHandling.Ignore
-                } );
+            string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
 
             _hbDebug.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
 
             string restUrl = this.ResolveUrl( this.DataSourceUrl );
+
+            string tooltipScript = null;
+            if ( ShowTooltip )
+            {
+                string tooltipScriptFormat = @"
+                // setup of bootstrap tooltip which we'll show on the plothover event
+                $(""<div id='tooltip_{0}' class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>"").css({{
+                    position: 'absolute',
+                    display: 'none',
+                }}).appendTo('body');
+
+                $('#{0}').bind('plothover', function (event, pos, item) {{
+                    
+                    if (item) {{
+                        var tooltipText = item.series.metricValues[item.dataIndex].Note;
+                        // if there isn't a note, just show the y value;
+                        tooltipText = tooltipText || item.datapoint[1];
+                        $('#tooltip_{0}').find('.tooltip-inner').html(tooltipText);
+                        $('#tooltip_{0}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
+                        $('#tooltip_{0}').show();
+                    }}
+                    else {{
+                        $('#tooltip_{0}').hide();
+                    }}
+                }});";
+
+                tooltipScript = string.Format( tooltipScriptFormat, _pnlChartPlaceholder.ClientID );
+            }
+
             string script = string.Format(
                 scriptFormat,
                 restUrl,
                 _hfRestUrlParams.ClientID,
                 _hfXAxisLabel.ClientID,
                 _pnlChartPlaceholder.ClientID,
-                chartOptionsJson );
+                chartOptionsJson,
+                tooltipScript );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
@@ -442,27 +464,27 @@ namespace Rock.Web.UI.Controls
 
             _hfMetricId = new HiddenField();
             _hfMetricId.ID = string.Format( "hfMetricId_{0}", this.ID );
-            
+
             _hfXAxisLabel = new HiddenField();
             _hfXAxisLabel.ID = string.Format( "hfXAxisLabel_{0}", this.ID );
-            
+
             _hfRestUrlParams = new HiddenField();
             _hfRestUrlParams.ID = string.Format( "hfRestUrlParams_{0}", this.ID );
-            
+
             _lblDashboardTitle = new Label();
             _lblDashboardTitle.CssClass = "dashboard-title";
             _lblDashboardTitle.ID = string.Format( "lblDashboardTitle_{0}", this.ID );
-            
+
             _lblDashboardSubtitle = new Label();
             _lblDashboardSubtitle.CssClass = "dashboard-subtitle";
             _lblDashboardSubtitle.ID = string.Format( "lblDashboardSubtitle_{0}", this.ID );
-            
+
             _pnlChartPlaceholder = new Panel();
             _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder";
             _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
 
             _hbDebug = new HelpBlock();
-            _hbDebug.ID = string.Format("hbDebug_{0}", this.ID);
+            _hbDebug.ID = string.Format( "hbDebug_{0}", this.ID );
 
             Controls.Add( _hfMetricId );
             Controls.Add( _hfXAxisLabel );
