@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             bcExample.Title = this.Title;
             bcExample.Subtitle = this.Subtitle;
 
-            bcExample.Options.SetTheme( this.ChartTheme );
+            bcExample.Options.SetChartStyle( this.ChartStyle );
 
             nbMetricWarning.Visible = !this.MetricId.HasValue;
         }
