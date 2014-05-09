@@ -27,8 +27,21 @@
 	    <div class="col-sm-4">
             <div class="photo">
                 <asp:PlaceHolder ID="phImage" runat="server" />
+                <div class="following-status following"><i class="fa fa-star"></i></div>
             </div>
+            <ul class="social-icons list-unstyled margin-t-sm">
+                <li class="icon icon-facebook"><a href="http://www.facebook.com/teddecker" target="_blank"><i class="fa fa-fw fa-facebook"></i></a></li>
+                <li class="icon icon-twitter"><a href="http://www.twitter.com/teddecker" target="_blank"><i class="fa fa-fw fa-twitter"></i></a></li>
+                <li class="icon icon-instagram"><a href="http://www.instagram.com/teddecker" target="_blank"><i class="fa fa-fw fa-instagram"></i></a></li>
+            </ul>
         </div>
+
+        <script>
+            // !!! REMOVE ME BEFORE FLIGHT !!!
+            $('.following-status').click(function () {
+                $(this).toggleClass('following')
+            });
+        </script>
 
         <div class="col-sm-8">
             <div class="row">

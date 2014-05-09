@@ -2524,6 +2524,38 @@ table.attribute-grid tr th:nth-child(3) {
   display: table;
   max-width: 200px;
   margin: 0 auto;
+  position: relative;
+}
+.personprofilebar-bio .photo .following-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  z-index: 9000;
+  border-top: 70px solid #428bca;
+  border-left: 70px solid transparent;
+  transition: 1s;
+  opacity: .4;
+}
+.personprofilebar-bio .photo .following-status i {
+  position: absolute;
+  top: -60px;
+  right: 10px;
+  color: #fff;
+  font-size: 24px;
+  transition: 1s;
+  opacity: 0;
+}
+.personprofilebar-bio .photo .following-status.following {
+  opacity: 1;
+}
+.personprofilebar-bio .photo .following-status.following i {
+  opacity: 1;
+}
+.personprofilebar-bio .photo a.fluidbox-opened + .following-status {
+  opacity: 0 !important;
 }
 .personprofilebar-bio .photo img {
   width: 100%;
@@ -2536,6 +2568,37 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
   cursor: -webkit-zoom-out;
   cursor: -moz-zoom-out;
+}
+.personprofilebar-bio .social-icons .icon {
+  float: left;
+  background-color: #428bca;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.personprofilebar-bio .social-icons .icon a {
+  color: #ecf0f3;
+}
+.personprofilebar-bio .social-icons .icon a:hover {
+  opacity: .6;
+}
+.personprofilebar-bio .social-icons .icon i {
+  margin: 4px;
+}
+.personprofilebar-bio .social-icons .icon.icon-facebook {
+  background-color: #44619d;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-twitter {
+  background-color: #55acee;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-instagram {
+  background-color: #39688f;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon:first-child {
+  margin-left: 0;
 }
 .personprofilebar-bio .taglist {
   margin-top: 7.5px;
