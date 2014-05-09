@@ -26,78 +26,78 @@ namespace Rock.Reporting.Dashboard.Flot
     public class ChartOptions
     {
         /// <summary>
-        /// Sets the theme.
+        /// Sets the chart style.
         /// </summary>
-        /// <param name="chartTheme">The chart theme.</param>
-        public void SetTheme( ChartTheme chartTheme )
+        /// <param name="chartStyle">The chart style.</param>
+        public void SetChartStyle( ChartStyle chartStyle )
         {
-            if ( chartTheme.SeriesColors != null && chartTheme.SeriesColors.Count() > 0 )
+            if ( chartStyle.SeriesColors != null && chartStyle.SeriesColors.Count() > 0 )
             {
-                this.colors = chartTheme.SeriesColors.ToArray();
+                this.colors = chartStyle.SeriesColors.ToArray();
             }
 
-            if ( chartTheme.Grid != null )
+            if ( chartStyle.Grid != null )
             {
                 this.grid = this.grid ?? new GridOptions();
-                this.grid.backgroundColor = chartTheme.Grid.BackgroundColorGradient != null ? ToFlotColorGradient( chartTheme.Grid.BackgroundColorGradient ) : chartTheme.Grid.BackgroundColor;
-                this.grid.color = chartTheme.Grid.ColorGradient != null ? ToFlotColorGradient( chartTheme.Grid.ColorGradient ) : chartTheme.Grid.Color;
-                this.grid.borderWidth = chartTheme.Grid.BorderWidth;
-                this.grid.borderColor = chartTheme.Grid.BorderColor;
+                this.grid.backgroundColor = chartStyle.Grid.BackgroundColorGradient != null ? ToFlotColorGradient( chartStyle.Grid.BackgroundColorGradient ) : chartStyle.Grid.BackgroundColor;
+                this.grid.color = chartStyle.Grid.ColorGradient != null ? ToFlotColorGradient( chartStyle.Grid.ColorGradient ) : chartStyle.Grid.Color;
+                this.grid.borderWidth = chartStyle.Grid.BorderWidth;
+                this.grid.borderColor = chartStyle.Grid.BorderColor;
             }
 
             this.xaxis = this.xaxis ?? new AxisOptions();
-            SetFlotAxisTheme( chartTheme.XAxis, this.xaxis );
+            SetFlotAxisStyle( chartStyle.XAxis, this.xaxis );
             this.yaxis = this.yaxis ?? new AxisOptions();
-            SetFlotAxisTheme( chartTheme.YAxis, this.yaxis );
+            SetFlotAxisStyle( chartStyle.YAxis, this.yaxis );
 
-            SetFlotLinesPointsBarsTheme( chartTheme, this.series.lines );
-            SetFlotLinesPointsBarsTheme( chartTheme, this.series.bars );
-            SetFlotLinesPointsBarsTheme( chartTheme, this.series.points );
+            SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );
+            SetFlotLinesPointsBarsStyle( chartStyle, this.series.bars );
+            SetFlotLinesPointsBarsStyle( chartStyle, this.series.points );
 
-            if ( chartTheme.Legend != null )
+            if ( chartStyle.Legend != null )
             {
                 this.legend = new Legend();
-                this.legend.backgroundColor = chartTheme.Legend.BackgroundColor;
-                this.legend.backgroundOpacity = chartTheme.Legend.BackgroundOpacity;
-                this.legend.labelBoxBorderColor = chartTheme.Legend.LabelBoxBorderColor;
+                this.legend.backgroundColor = chartStyle.Legend.BackgroundColor;
+                this.legend.backgroundOpacity = chartStyle.Legend.BackgroundOpacity;
+                this.legend.labelBoxBorderColor = chartStyle.Legend.LabelBoxBorderColor;
             }
         }
 
         /// <summary>
-        /// Sets the flot lines points bars theme.
+        /// Sets the flot lines points bars style.
         /// </summary>
-        /// <param name="chartTheme">The chart theme.</param>
+        /// <param name="chartStyle">The chart style.</param>
         /// <param name="linesPointsBars">The lines points bars.</param>
-        private void SetFlotLinesPointsBarsTheme( ChartTheme chartTheme, LinesPointsBars linesPointsBars )
+        private void SetFlotLinesPointsBarsStyle( ChartStyle chartStyle, LinesPointsBars linesPointsBars )
         {
             if ( linesPointsBars != null )
             {
-                linesPointsBars.fill = chartTheme.FillOpacity;
-                linesPointsBars.fillColor = chartTheme.FillColor;
+                linesPointsBars.fill = chartStyle.FillOpacity;
+                linesPointsBars.fillColor = chartStyle.FillColor;
             }
         }
 
         /// <summary>
-        /// Sets the flot axis theme.
+        /// Sets the flot axis style.
         /// </summary>
-        /// <param name="themeAxis">The theme axis.</param>
+        /// <param name="styleAxis">The style axis.</param>
         /// <param name="flotAxis">The flot axis.</param>
-        private void SetFlotAxisTheme( AxisTheme themeAxis, AxisOptions flotAxis )
+        private void SetFlotAxisStyle( AxisStyle styleAxis, AxisOptions flotAxis )
         {
-            if ( themeAxis != null )
+            if ( styleAxis != null )
             {
-                flotAxis.color = themeAxis.Color;
-                if ( themeAxis.Font != null )
+                flotAxis.color = styleAxis.Color;
+                if ( styleAxis.Font != null )
                 {
-                    flotAxis.font.color = themeAxis.Font.Color;
-                    flotAxis.font.family = themeAxis.Font.Family;
-                    flotAxis.font.size = themeAxis.Font.Size;
+                    flotAxis.font.color = styleAxis.Font.Color;
+                    flotAxis.font.family = styleAxis.Font.Family;
+                    flotAxis.font.size = styleAxis.Font.Size;
                 }
             }
         }
 
         /// <summary>
-        /// convert a theme color gradient to flot color specification for a gradient
+        /// convert a style color gradient to flot color specification for a gradient
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>

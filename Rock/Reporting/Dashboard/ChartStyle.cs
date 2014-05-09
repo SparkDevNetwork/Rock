@@ -20,20 +20,20 @@ using Newtonsoft.Json;
 namespace Rock.Reporting.Dashboard
 {
     /// <summary>
-    /// Chart Theme class.  All values are optional.  The chart will decide the style if a value is not specified
+    /// Chart Style class.  All values are optional.  The chart will decide the style if a value is not specified
     /// Color values can be any html color specification
     /// Gradients can be 2 or more html colors that will result in a vertical gradient (limited to vertical because that's what works in IE)
     /// </summary>
-    public class ChartTheme
+    public class ChartStyle
     {
         /// <summary>
         /// Creates from json.
         /// </summary>
         /// <param name="json">The json.</param>
         /// <returns></returns>
-        public static ChartTheme CreateFromJson(string json)
+        public static ChartStyle CreateFromJson(string json)
         {
-            return JsonConvert.DeserializeObject( json, typeof( ChartTheme ) ) as ChartTheme;
+            return JsonConvert.DeserializeObject( json, typeof( ChartStyle ) ) as ChartStyle;
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The grid.
         /// </value>
-        public GridTheme Grid { get; set; }
+        public GridStyle Grid { get; set; }
         
         /// <summary>
         /// Gets or sets the x axis color and font 
@@ -66,7 +66,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The x axis.
         /// </value>
-        public AxisTheme XAxis { get; set; }
+        public AxisStyle XAxis { get; set; }
 
         /// <summary>
         /// Gets or sets the y axis color and font
@@ -74,7 +74,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The y axis.
         /// </value>
-        public AxisTheme YAxis { get; set; }
+        public AxisStyle YAxis { get; set; }
 
         /// <summary>
         /// Gets or sets the fill opacity.
@@ -100,11 +100,11 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The legend.
         /// </value>
-        public LegendTheme Legend { get; set; }
+        public LegendStyle Legend { get; set; }
 
     }
 
-    public class GridTheme
+    public class GridStyle
     {
         /// <summary>
         /// Gets or sets the grid color gradient.
@@ -161,7 +161,7 @@ namespace Rock.Reporting.Dashboard
     /// <summary>
     /// 
     /// </summary>
-    public class LegendTheme
+    public class LegendStyle
     {
         /// <summary>
         /// Gets or sets the color of the background.
@@ -191,7 +191,7 @@ namespace Rock.Reporting.Dashboard
     /// <summary>
     /// 
     /// </summary>
-    public class AxisTheme
+    public class AxisStyle
     {
         /// <summary>
         /// Gets or sets the color.
@@ -207,13 +207,13 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The font.
         /// </value>
-        public FontTheme Font { get; set; }
+        public FontStyle Font { get; set; }
     }
 
     /// <summary>
     /// 
     /// </summary>
-    public class FontTheme
+    public class FontStyle
     {
         /// <summary>
         /// Gets or sets the size.

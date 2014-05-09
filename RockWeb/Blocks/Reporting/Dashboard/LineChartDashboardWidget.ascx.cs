@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             lcExample.ShowTooltip = true;
 
-            lcExample.Options.SetTheme( this.ChartTheme );
+            lcExample.Options.SetChartStyle( this.ChartStyle );
 
             nbMetricWarning.Visible = !this.MetricId.HasValue;
         }

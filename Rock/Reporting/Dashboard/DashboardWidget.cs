@@ -31,7 +31,7 @@ namespace Rock.Reporting.Dashboard
     [TextField( "Title", "The title of the widget", false, Order = 0 )]
     [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]
     [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4", Order = 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_THEMES, "Chart Theme", Order = 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
     [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 6 )]
@@ -208,28 +208,28 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
-        /// Gets the chart theme.
+        /// Gets the chart style.
         /// </summary>
         /// <value>
-        /// The chart theme.
+        /// The chart style.
         /// </value>
-        public ChartTheme ChartTheme
+        public ChartStyle ChartStyle
         {
             get
             {
-                Guid? chartThemeDefinedValueGuid = this.GetAttributeValue( "ChartTheme" ).AsGuidOrNull();
-                if ( chartThemeDefinedValueGuid.HasValue )
+                Guid? chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
+                if ( chartStyleDefinedValueGuid.HasValue )
                 {
                     var rockContext = new Rock.Data.RockContext();
-                    var definedValue = new DefinedValueService( rockContext ).Get( chartThemeDefinedValueGuid.Value );
+                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
                     if ( definedValue != null )
                     {
                         definedValue.LoadAttributes( rockContext );
-                        return ChartTheme.CreateFromJson( definedValue.GetAttributeValue( "ChartTheme" ) );
+                        return ChartStyle.CreateFromJson( definedValue.GetAttributeValue( "ChartStyle" ) );
                     }
                 }
 
-                return new ChartTheme();
+                return new ChartStyle();
             }
         }
 
