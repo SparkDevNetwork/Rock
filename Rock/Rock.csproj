@@ -210,7 +210,7 @@
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
-    <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
+    <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />

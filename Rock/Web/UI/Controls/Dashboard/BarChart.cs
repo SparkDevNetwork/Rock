@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {
@@ -25,7 +26,7 @@ namespace Rock.Web.UI.Controls
     {
         public BarChart()
         {
-            this.Options.series = new Reporting.Dashboard.SeriesOptions( true, false, false );
+            this.Options.series = new SeriesOptions( true, false, false );
             double oneDay = new TimeSpan( 1, 0, 0, 0 ).TotalMilliseconds;
             this.BarWidth = oneDay;
         }

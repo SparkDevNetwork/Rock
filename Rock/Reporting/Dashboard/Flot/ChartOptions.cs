@@ -18,23 +18,13 @@ using System.Linq;
 using Newtonsoft.Json;
 using Rock.Utility;
 
-namespace Rock.Reporting.Dashboard
+namespace Rock.Reporting.Dashboard.Flot
 {
     /// <summary>
     /// Class that can be JSON'd and used for Flot Charts (properties are case sensitive)
     /// </summary>
-    public class FlotChartOptions
+    public class ChartOptions
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FlotChartOptions"/> class.
-        /// </summary>
-        public FlotChartOptions()
-        {
-            xaxis = new AxisOptions { mode = AxisMode.time };
-            yaxis = new AxisOptions();
-            grid = new GridOptions();
-        }
-
         /// <summary>
         /// Sets the theme.
         /// </summary>
@@ -46,55 +36,72 @@ namespace Rock.Reporting.Dashboard
                 this.colors = chartTheme.SeriesColors.ToArray();
             }
 
-            this.grid.backgroundColor = chartTheme.GridBackgroundColorGradiant != null ? ToFlotColor( chartTheme.GridBackgroundColorGradiant ) : ToFlotColor( chartTheme.GridBackgroundColor );
-            this.grid.color = chartTheme.GridColorGradiant != null ? ToFlotColor( chartTheme.GridColorGradiant ) : ToFlotColor( chartTheme.GridColor );
-
-            if ( chartTheme.XAxis != null )
+            if ( chartTheme.Grid != null )
             {
-                this.xaxis.color = chartTheme.XAxis.Color;
-                if ( chartTheme.XAxis.Font != null )
-                {
-                    this.xaxis.font.color = chartTheme.XAxis.Font.Color;
-                    this.xaxis.font.family = chartTheme.XAxis.Font.Family;
-                    this.xaxis.font.size = chartTheme.XAxis.Font.Size;
-                }
+                this.grid = this.grid ?? new GridOptions();
+                this.grid.backgroundColor = chartTheme.Grid.BackgroundColorGradient != null ? ToFlotColorGradient( chartTheme.Grid.BackgroundColorGradient ) : chartTheme.Grid.BackgroundColor;
+                this.grid.color = chartTheme.Grid.ColorGradient != null ? ToFlotColorGradient( chartTheme.Grid.ColorGradient ) : chartTheme.Grid.Color;
+                this.grid.borderWidth = chartTheme.Grid.BorderWidth;
+                this.grid.borderColor = chartTheme.Grid.BorderColor;
             }
 
-            if ( chartTheme.YAxis != null )
-            {
-                if ( chartTheme.YAxis.Font != null )
-                {
-                    this.yaxis.font.color = chartTheme.YAxis.Font.Color;
-                    this.yaxis.font.family = chartTheme.YAxis.Font.Family;
-                    this.yaxis.font.size = chartTheme.YAxis.Font.Size;
-                }
-            }
+            this.xaxis = this.xaxis ?? new AxisOptions();
+            SetFlotAxisTheme( chartTheme.XAxis, this.xaxis );
+            this.yaxis = this.yaxis ?? new AxisOptions();
+            SetFlotAxisTheme( chartTheme.YAxis, this.yaxis );
 
-            if ( this.series.lines != null )
-            {
-                this.series.lines.fill = chartTheme.FillOpacity;
-                this.series.lines.fillColor = chartTheme.FillColor;
-            }
+            SetFlotLinesPointsBarsTheme( chartTheme, this.series.lines );
+            SetFlotLinesPointsBarsTheme( chartTheme, this.series.bars );
+            SetFlotLinesPointsBarsTheme( chartTheme, this.series.points );
 
-            if ( this.series.bars != null )
+            if ( chartTheme.Legend != null )
             {
-                this.series.bars.fill = chartTheme.FillOpacity;
-                this.series.bars.fillColor = chartTheme.FillColor;
-            }
-
-            if ( this.series.points != null )
-            {
-                this.series.points.fill = chartTheme.FillOpacity;
-                this.series.points.fillColor = chartTheme.FillColor;
+                this.legend = new Legend();
+                this.legend.backgroundColor = chartTheme.Legend.BackgroundColor;
+                this.legend.backgroundOpacity = chartTheme.Legend.BackgroundOpacity;
+                this.legend.labelBoxBorderColor = chartTheme.Legend.LabelBoxBorderColor;
             }
         }
 
         /// <summary>
-        /// convert a theme color gradiant to flot color specification for a gradiant
+        /// Sets the flot lines points bars theme.
+        /// </summary>
+        /// <param name="chartTheme">The chart theme.</param>
+        /// <param name="linesPointsBars">The lines points bars.</param>
+        private void SetFlotLinesPointsBarsTheme( ChartTheme chartTheme, LinesPointsBars linesPointsBars )
+        {
+            if ( linesPointsBars != null )
+            {
+                linesPointsBars.fill = chartTheme.FillOpacity;
+                linesPointsBars.fillColor = chartTheme.FillColor;
+            }
+        }
+
+        /// <summary>
+        /// Sets the flot axis theme.
+        /// </summary>
+        /// <param name="themeAxis">The theme axis.</param>
+        /// <param name="flotAxis">The flot axis.</param>
+        private void SetFlotAxisTheme( AxisTheme themeAxis, AxisOptions flotAxis )
+        {
+            if ( themeAxis != null )
+            {
+                flotAxis.color = themeAxis.Color;
+                if ( themeAxis.Font != null )
+                {
+                    flotAxis.font.color = themeAxis.Font.Color;
+                    flotAxis.font.family = themeAxis.Font.Family;
+                    flotAxis.font.size = themeAxis.Font.Size;
+                }
+            }
+        }
+
+        /// <summary>
+        /// convert a theme color gradient to flot color specification for a gradient
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        private static dynamic ToFlotColor( string[] source )
+        private static dynamic ToFlotColorGradient( string[] source )
         {
             dynamic dest = null;
             if ( source != null && source.Count() > 0 )
@@ -112,17 +119,6 @@ namespace Rock.Reporting.Dashboard
                 }
             }
 
-            return dest;
-        }
-
-        /// <summary>
-        /// convert a theme color to flot color specification
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <returns></returns>
-        private static dynamic ToFlotColor( string source)
-        {
-            dynamic dest = source;
             return dest;
         }
 
@@ -167,6 +163,14 @@ namespace Rock.Reporting.Dashboard
         /// The colors.
         /// </value>
         public string[] colors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the legend.
+        /// </summary>
+        /// <value>
+        /// The legend.
+        /// </value>
+        public Legend legend { get; set; }
     }
 
     /// <summary>
@@ -180,7 +184,6 @@ namespace Rock.Reporting.Dashboard
         public AxisOptions()
         {
             font = new ChartFont();
-            font.size = 11;
         }
 
         /// <summary>
@@ -245,7 +248,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The minimum.
         /// </value>
-        public decimal? min { get; set; }
+        public double? min { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum.
@@ -253,7 +256,36 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The maximum.
         /// </value>
-        public decimal? max { get; set; }
+        public double? max { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ticks.
+        /// null or double (number of ticks) or double[] (specific ticks)
+        /// </summary>
+        /// <value>
+        /// The ticks.
+        /// </value>
+        public dynamic ticks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the size of the tick.
+        /// null or double (number of ticks) or double[] (specific tickSize per tick)
+        /// for time mode, "tickSize" and "minTickSize" are in the form "[value, unit]" where unit is one of "second", "minute", "hour", "day", "month" and "year". ex: [3, "month"]
+        /// </summary>
+        /// <value>
+        /// The size of the tick.
+        /// </value>
+        public dynamic tickSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum size of the tick.
+        /// null or double (number of ticks) or double[] (specific minTickSize per tick).
+        /// for time mode, "tickSize" and "minTickSize" are in the form "[value, unit]" where unit is one of "second", "minute", "hour", "day", "month" and "year". ex: [3, "month"]
+        /// </summary>
+        /// <value>
+        /// The minimum size of the tick.
+        /// </value>
+        public dynamic minTickSize { get; set; }
     }
 
     /// <summary>
@@ -399,7 +431,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The background opacity.
         /// </value>
-        public decimal? backgroundOpacity { get; set; }
+        public double? backgroundOpacity { get; set; }
 
         /// <summary>
         /// Gets or sets the container.
@@ -448,6 +480,9 @@ namespace Rock.Reporting.Dashboard
         public string fillColor { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class Lines : LinesPointsBars
     {
         /// <summary>
@@ -516,7 +551,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The radius.
         /// </value>
-        public decimal? radius { get; set; }
+        public double? radius { get; set; }
 
         /// <summary>
         /// Gets or sets the symbol.
@@ -620,11 +655,12 @@ namespace Rock.Reporting.Dashboard
 
         /// <summary>
         /// Gets or sets the margin.
+        /// Can be set to Null, a number, or a { top, right, bottom, left } object;
         /// </summary>
         /// <value>
         /// The margin.
         /// </value>
-        public MarginOptions margin { get; set; }
+        public dynamic margin { get; set; }
 
         /// <summary>
         /// Gets or sets the label margin.
@@ -632,7 +668,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The label margin.
         /// </value>
-        public decimal? labelMargin { get; set; }
+        public double? labelMargin { get; set; }
 
         /// <summary>
         /// Gets or sets the axis margin.
@@ -640,23 +676,25 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The axis margin.
         /// </value>
-        public decimal? axisMargin { get; set; }
+        public double? axisMargin { get; set; }
 
         /// <summary>
         /// Gets or sets the width of the border.
+        /// Can be set to Null, a number, or a { top, right, bottom, left } object;
         /// </summary>
         /// <value>
         /// The width of the border.
         /// </value>
-        public BorderOptions borderWidth { get; set; }
+        public dynamic borderWidth { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the border.
+        /// Can be set to Null, a htmlColor string, or a { top, right, bottom, left } object;
         /// </summary>
         /// <value>
         /// The color of the border.
         /// </value>
-        public BorderColorOptions borderColor { get; set; }
+        public dynamic borderColor { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum border margin.
@@ -664,7 +702,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The minimum border margin.
         /// </value>
-        public decimal? minBorderMargin { get; set; }
+        public double? minBorderMargin { get; set; }
 
         /// <summary>
         /// Gets or sets the clickable.
@@ -696,92 +734,6 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The mouse active radius.
         /// </value>
-        public decimal? mouseActiveRadius { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class MarginOptions
-    {
-        /// <summary>
-        /// Gets or sets the top.
-        /// </summary>
-        /// <value>
-        /// The top.
-        /// </value>
-        public int? top { get; set; }
-
-        /// <summary>
-        /// Gets or sets the left.
-        /// </summary>
-        /// <value>
-        /// The left.
-        /// </value>
-        public int? left { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bottom.
-        /// </summary>
-        /// <value>
-        /// The bottom.
-        /// </value>
-        public int? bottom { get; set; }
-
-        /// <summary>
-        /// Gets or sets the right.
-        /// </summary>
-        /// <value>
-        /// The right.
-        /// </value>
-        public int? right { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class BorderOptions : MarginOptions
-    {
-
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class BorderColorOptions
-    {
-        /// <summary>
-        /// Gets or sets the top.
-        /// </summary>
-        /// <value>
-        /// The top.
-        /// </value>
-        public string top { get; set; }
-
-        /// <summary>
-        /// Gets or sets the left.
-        /// </summary>
-        /// <value>
-        /// The left.
-        /// </value>
-        public string left { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bottom.
-        /// </summary>
-        /// <value>
-        /// The bottom.
-        /// </value>
-        public string bottom { get; set; }
-
-        /// <summary>
-        /// Gets or sets the right.
-        /// </summary>
-        /// <value>
-        /// The right.
-        /// </value>
-        public string right { get; set; }
+        public double? mouseActiveRadius { get; set; }
     }
 }
-
-
