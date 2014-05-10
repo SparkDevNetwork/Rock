@@ -27,31 +27,32 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Line Chart" )]
+    [DisplayName( "Pie Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class LineChartDashboardWidget : DashboardWidget
+    public partial class PieChartDashboardWidget : DashboardWidget
     {
         /// <summary>
         /// Loads the chart.
         /// </summary>
         public override void LoadChart()
         {
-            lcExample.StartDate = new DateTime( 2013, 1, 1 );
-            lcExample.EndDate = new DateTime( 2014, 1, 1 );
-            lcExample.MetricValueType = this.MetricValueType;
-            lcExample.MetricId = this.MetricId;
-            lcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
-            if ( lcExample.EntityId == null && this.ContextEntity() != null )
+            //pcExample.StartDate = new DateTime( 2013, 1, 1 );
+            //pcExample.EndDate = new DateTime( 2014, 1, 1 );
+            pcExample.MetricValueType = this.MetricValueType;
+            pcExample.MetricId = this.MetricId;
+            pcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
+            if ( pcExample.EntityId == null && this.ContextEntity() != null )
             {
-                lcExample.EntityId = this.ContextEntity().Id;
+                pcExample.EntityId = this.ContextEntity().Id;
             }
 
-            lcExample.Title = this.Title;
-            lcExample.Subtitle = this.Subtitle;
+            pcExample.Title = this.Title;
+            pcExample.Subtitle = this.Subtitle;
 
-            lcExample.ShowTooltip = true;
-            lcExample.Options.SetChartStyle( this.ChartStyle );
+            pcExample.ShowTooltip = false;
+            //pcExample.ShowDebug = true;
+            pcExample.Options.SetChartStyle( this.ChartStyle );
 
             string debug = this.ChartStyle.ToJson( false );
             

@@ -50,6 +50,13 @@ namespace Rock.Reporting.Dashboard.Flot
             this.yaxis = this.yaxis ?? new AxisOptions();
             SetFlotAxisStyle( chartStyle.YAxis, this.yaxis );
 
+            this.yaxis.tickFormatter = @"
+function (val, axis) {
+  // show commas 
+  // from http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+  return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}".Trim();
+
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.bars );
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.points );
@@ -60,6 +67,56 @@ namespace Rock.Reporting.Dashboard.Flot
                 this.legend.backgroundColor = chartStyle.Legend.BackgroundColor;
                 this.legend.backgroundOpacity = chartStyle.Legend.BackgroundOpacity;
                 this.legend.labelBoxBorderColor = chartStyle.Legend.LabelBoxBorderColor;
+            }
+
+            if ( chartStyle.Title != null || chartStyle.Subtitle != null )
+            {
+                this.customSettings = new CustomSettings();
+
+                // copy Title styles to Flot custom settings
+                if ( chartStyle.Title != null )
+                {
+                    if ( chartStyle.Title.Font != null )
+                    {
+                        this.customSettings.titleFont = new ChartFont();
+                        this.customSettings.titleFont.color = chartStyle.Title.Font.Color;
+                        this.customSettings.titleFont.family = chartStyle.Title.Font.Family;
+                        this.customSettings.titleFont.size = chartStyle.Title.Font.Size;
+                    }
+
+                    if ( chartStyle.Title.Align != null )
+                    {
+                        this.customSettings.titleAlign = chartStyle.Title.Align;
+                    }
+                }
+
+                // copy SubTitle styles to Flot custom settings
+                if ( chartStyle.Subtitle != null )
+                {
+                    if ( chartStyle.Subtitle.Font != null )
+                    {
+                        this.customSettings.subtitleFont = new ChartFont();
+                        this.customSettings.subtitleFont.color = chartStyle.Subtitle.Font.Color;
+                        this.customSettings.subtitleFont.family = chartStyle.Subtitle.Font.Family;
+                        this.customSettings.subtitleFont.size = chartStyle.Subtitle.Font.Size;
+                    }
+
+                    if ( chartStyle.Subtitle.Align != null )
+                    {
+                        this.customSettings.subtitleAlign = chartStyle.Subtitle.Align;
+                    }
+                }
+            }
+
+            if ( chartStyle.PieLabels != null )
+            {
+                this.series.pie = this.series.pie ?? new Pie();
+                this.series.pie.label = new PieLabel();
+                this.series.pie.label.background = new
+                {
+                    color = chartStyle.PieLabels.BackgroundColor,
+                    opacity = chartStyle.PieLabels.BackgroundOpacity
+                };
             }
         }
 
@@ -87,6 +144,7 @@ namespace Rock.Reporting.Dashboard.Flot
             if ( styleAxis != null )
             {
                 flotAxis.color = styleAxis.Color;
+                flotAxis.timeformat = styleAxis.DateTimeFormat;
                 if ( styleAxis.Font != null )
                 {
                     flotAxis.font.color = styleAxis.Font.Color;
@@ -171,6 +229,14 @@ namespace Rock.Reporting.Dashboard.Flot
         /// The legend.
         /// </value>
         public Legend legend { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom settings.
+        /// </summary>
+        /// <value>
+        /// The custom settings.
+        /// </value>
+        public CustomSettings customSettings { get; set; }
     }
 
     /// <summary>
@@ -233,6 +299,31 @@ namespace Rock.Reporting.Dashboard.Flot
         /// The color of the tick.
         /// </value>
         public string tickColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tick formatter which can be null or a custom javascipt function.
+        /// Example: tickFormatter = function (val, axis) {
+        ///    if (val > 1000000)
+        ///        return (val / 1000000).toFixed(axis.tickDecimals) + " MB";
+        ///    else if (val > 1000)
+        ///        return (val / 1000).toFixed(axis.tickDecimals) + " kB";
+        ///    else
+        ///        return val.toFixed(axis.tickDecimals) + " B";
+        /// }
+        /// </summary>
+        /// <value>
+        /// The tick formatter.
+        /// </value>
+        [JsonConverter( typeof( StringAsLiteralJavascriptJsonConverter ) )]
+        public string tickFormatter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the tick decimals.
+        /// </summary>
+        /// <value>
+        /// The tick decimals.
+        /// </value>
+        public int? tickDecimals { get; set; }
 
         /// <summary>
         /// Gets or sets the font.
@@ -565,6 +656,73 @@ namespace Rock.Reporting.Dashboard.Flot
     /// <summary>
     /// 
     /// </summary>
+    public class Pie
+    {
+        /// <summary>
+        /// Gets or sets the show.
+        /// </summary>
+        /// <value>
+        /// The show.
+        /// </value>
+        public bool? show { get; set; }
+
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>
+        /// The label.
+        /// </value>
+        public PieLabel label { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PieLabel
+    {
+        /// <summary>
+        /// Gets or sets the show.
+        /// </summary>
+        /// <value>
+        /// The show.
+        /// </value>
+        public bool? show { get; set; }
+
+        /// <summary>
+        /// Sets the radius at which to place the labels. If value is between 0 and 1 (inclusive) then it will use that as a percentage of the available space (size of the container), otherwise it will use the value as a direct pixel length
+        /// </summary>
+        /// <value>
+        /// The radius.
+        /// </value>
+        public double? radius { get; set; }
+
+        /// <summary>
+        /// Gets or sets the threshold.
+        /// Hides the labels of any pie slice that is smaller than the specified percentage (ranging from 0 to 1) i.e. a value of '0.03' will hide all slices 3% or less of the total.
+        /// </summary>
+        /// <value>
+        /// The threshold.
+        /// </value>
+        public double? threshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background.
+        /// color is color of the positioned labels. If null, the plugin will automatically use the color of the slice.
+        /// specify background as object 
+        /// {
+        ///     color: "#515151",
+        ///     opacity: .5
+        /// }
+        /// </summary>
+        /// <value>
+        /// The background.
+        /// </value>
+        public dynamic background { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class SeriesOptions
     {
         /// <summary>
@@ -614,6 +772,14 @@ namespace Rock.Reporting.Dashboard.Flot
         /// The points.
         /// </value>
         public Points points { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie.
+        /// </summary>
+        /// <value>
+        /// The pie.
+        /// </value>
+        public Pie pie { get; set; }
     }
 
     /// <summary>
@@ -735,5 +901,43 @@ namespace Rock.Reporting.Dashboard.Flot
         /// The mouse active radius.
         /// </value>
         public double? mouseActiveRadius { get; set; }
+    }
+
+    /// <summary>
+    /// Settings that aren't part of the Font spec
+    /// </summary>
+    public class CustomSettings
+    {
+        /// <summary>
+        /// Gets or sets the title font.
+        /// </summary>
+        /// <value>
+        /// The title font.
+        /// </value>
+        public ChartFont titleFont { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title align.
+        /// </summary>
+        /// <value>
+        /// The title align.
+        /// </value>
+        public string titleAlign { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle font.
+        /// </summary>
+        /// <value>
+        /// The subtitle font.
+        /// </value>
+        public ChartFont subtitleFont { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle align.
+        /// </summary>
+        /// <value>
+        /// The subtitle align.
+        /// </value>
+        public string subtitleAlign { get; set; }
     }
 }

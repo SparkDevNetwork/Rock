@@ -16,6 +16,7 @@
 //
 using System;
 using Newtonsoft.Json;
+using Rock.Utility;
 
 namespace Rock.Reporting.Dashboard
 {
@@ -31,7 +32,7 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         /// <param name="json">The json.</param>
         /// <returns></returns>
-        public static ChartStyle CreateFromJson(string json)
+        public static ChartStyle CreateFromJson( string json )
         {
             return JsonConvert.DeserializeObject( json, typeof( ChartStyle ) ) as ChartStyle;
         }
@@ -59,7 +60,7 @@ namespace Rock.Reporting.Dashboard
         /// The grid.
         /// </value>
         public GridStyle Grid { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the x axis color and font 
         /// </summary>
@@ -102,8 +103,86 @@ namespace Rock.Reporting.Dashboard
         /// </value>
         public LegendStyle Legend { get; set; }
 
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public TitleStyle Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subtitle.
+        /// </summary>
+        /// <value>
+        /// The subtitle.
+        /// </value>
+        public TitleStyle Subtitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets the pie labels.
+        /// </summary>
+        /// <value>
+        /// The pie labels.
+        /// </value>
+        public PieLabelsStyle PieLabels { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.ToJson( true );
+        }
+
+        /// <summary>
+        /// To the json.
+        /// </summary>
+        /// <param name="ignoreNulls">if set to <c>true</c> [ignore nulls].</param>
+        /// <returns></returns>
+        public string ToJson( bool ignoreNulls )
+        {
+            if ( ignoreNulls )
+            {
+                return JsonConvert.SerializeObject( this, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
+            }
+            else
+            {
+                return this.ToJson();
+            }
+        }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PieLabelsStyle
+    {
+        /// <summary>
+        /// Gets or sets the fill opacity.
+        /// If BackgroundColor is NULL, this will determine the opacity of the label backgroundcolor determined by the chart
+        /// </summary>
+        /// <value>
+        /// The fill opacity.
+        /// </value>
+        public double? BackgroundOpacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the fill.
+        /// Leave null and set BackgroundOpacity to have the chart automatically choose the color of the label
+        /// </summary>
+        /// <value>
+        /// The color of the fill.
+        /// </value>
+        public string BackgroundColor { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     public class GridStyle
     {
         /// <summary>
@@ -155,7 +234,6 @@ namespace Rock.Reporting.Dashboard
         /// The color of the border.
         /// </value>
         public dynamic BorderColor { get; set; }
-
     }
 
     /// <summary>
@@ -208,6 +286,15 @@ namespace Rock.Reporting.Dashboard
         /// The font.
         /// </value>
         public FontStyle Font { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time format on axis that have date/time data
+        /// To specify a Flot timeFormat, see https://github.com/flot/flot/blob/master/API.md#time-series-data
+        /// </summary>
+        /// <value>
+        /// The date time format.
+        /// </value>
+        public string DateTimeFormat { get; set; }
     }
 
     /// <summary>
@@ -238,5 +325,27 @@ namespace Rock.Reporting.Dashboard
         /// The color.
         /// </value>
         public string Color { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class TitleStyle
+    {
+        /// <summary>
+        /// Gets or sets the font.
+        /// </summary>
+        /// <value>
+        /// The font.
+        /// </value>
+        public FontStyle Font { get; set; }
+
+        /// <summary>
+        /// Gets or sets the align.
+        /// </summary>
+        /// <value>
+        /// The align.
+        /// </value>
+        public string Align { get; set; }
     }
 }
