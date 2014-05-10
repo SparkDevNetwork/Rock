@@ -72,5 +72,13 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Attributes
+
+        /// <summary>
+        /// The person attributes Social guid
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
+
+        #endregion
     }
 }
