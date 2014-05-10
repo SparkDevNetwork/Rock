@@ -58,6 +58,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
+                var rockContext = new RockContext();
+
                 // Record Type - this is always "business". it will never change.
                 if ( Person.RecordTypeValueId == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id )
                 {
@@ -88,6 +90,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 else
                 {
                     phImage.Controls.Add( imgTag );
+                }
+
+                var socialCategoryGuid = Rock.SystemGuid.Category.PERSON_ATTRIBUTES_SOCIAL.AsGuid();
+                if ( !socialCategoryGuid.IsEmpty() )
+                {
+                    var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid ) );
+                    var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Values = v.Value } );
+
+                    rptSocial.DataSource = result
+                        .Where( r =>
+                            r.Values.Count > 0 &&
+                            r.Values[0].Value != string.Empty )
+                        .OrderBy( r => r.Attribute.Order )
+                        .Select( r => new
+                        {
+                            url = r.Values[0].Value,
+                            name = r.Attribute.Name,
+                            icon = r.Attribute.IconCssClass
+                        })
+                        .ToList();
+                    rptSocial.DataBind();
+                }
+
+                if ( Person.PhoneNumbers != null )
+                {
+                    rptPhones.DataSource = Person.PhoneNumbers.ToList();
+                    rptPhones.DataBind();
                 }
 
                 if ( Person.BirthDate.HasValue )
@@ -181,7 +210,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // Every person should have an alias record with same id.  If it's missing, create it
                 if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                 {
-                    var rockContext = new RockContext();
                     var personService = new PersonService( rockContext );
                     var person = personService.Get( Person.Id );
                     if ( person != null )

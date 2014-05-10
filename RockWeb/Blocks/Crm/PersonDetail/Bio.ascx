@@ -30,9 +30,11 @@
                 <div class="following-status following"><i class="fa fa-star"></i></div>
             </div>
             <ul class="social-icons list-unstyled margin-t-sm">
-                <li class="icon icon-facebook"><a href="http://www.facebook.com/teddecker" target="_blank"><i class="fa fa-fw fa-facebook"></i></a></li>
-                <li class="icon icon-twitter"><a href="http://www.twitter.com/teddecker" target="_blank"><i class="fa fa-fw fa-twitter"></i></a></li>
-                <li class="icon icon-instagram"><a href="http://www.instagram.com/teddecker" target="_blank"><i class="fa fa-fw fa-instagram"></i></a></li>
+                <asp:Repeater ID="rptSocial" runat="server">
+                    <ItemTemplate>
+                        <li class='icon icon-<%# Eval("name") %>'><a href='<%# Eval("url") %>' target="_blank"><i class ='<%# Eval("icon") %>'></i></a></li>
+                    </ItemTemplate>
+                </asp:Repeater>
             </ul>
         </div>
 

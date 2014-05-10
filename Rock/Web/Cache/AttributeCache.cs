@@ -162,6 +162,15 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is grid column.
         /// </summary>
         /// <value>
@@ -282,6 +291,7 @@ namespace Rock.Web.Cache
             this.Name = attribute.Name;
             this.Description = attribute.Description;
             this.Order = attribute.Order;
+            this.IconCssClass = attribute.IconCssClass;
             this.IsGridColumn = attribute.IsGridColumn;
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
