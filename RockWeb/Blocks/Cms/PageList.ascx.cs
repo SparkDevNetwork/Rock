@@ -124,8 +124,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPages_Delete( object sender, RowEventArgs e )
         {
-            bool canDelete = false;
-
             var rockContext = new RockContext();
             PageService pageService = new PageService( rockContext );
             var pageViewService = new PageViewService(rockContext);
