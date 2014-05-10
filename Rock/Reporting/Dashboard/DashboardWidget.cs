@@ -37,6 +37,9 @@ namespace Rock.Reporting.Dashboard
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 6 )]
     public abstract class DashboardWidget : RockBlock
     {
+        private string _widgetErrorMessage { get; set; }
+        private string _widgetErrorDetails { get; set; }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -224,8 +227,16 @@ namespace Rock.Reporting.Dashboard
                     var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
                     if ( definedValue != null )
                     {
-                        definedValue.LoadAttributes( rockContext );
-                        return ChartStyle.CreateFromJson( definedValue.GetAttributeValue( "ChartStyle" ) );
+                        try
+                        {
+                            definedValue.LoadAttributes( rockContext );
+                            return ChartStyle.CreateFromJson( definedValue.GetAttributeValue( "ChartStyle" ) );
+                        }
+                        catch ( Exception ex )
+                        {
+                            _widgetErrorMessage = "Error loading Chart Style: " + definedValue.Name;
+                            _widgetErrorDetails = ex.Message;
+                        }
                     }
                 }
 
@@ -249,6 +260,12 @@ namespace Rock.Reporting.Dashboard
 
             writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            if ( !string.IsNullOrWhiteSpace( _widgetErrorMessage ) )
+            {
+                var errorBox = new NotificationBox { ID = "nbWidgetError", NotificationBoxType = NotificationBoxType.Danger, Text = _widgetErrorMessage , Title = "Error", Dismissable=true, Details = _widgetErrorDetails };
+                errorBox.RenderControl( writer );
+            }
 
             base.RenderControl( writer );
 

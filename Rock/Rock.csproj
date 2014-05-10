@@ -342,6 +342,7 @@
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Utility\DoubleMetaphone.cs" />
+    <Compile Include="Utility\StringAsLiteralJavascriptJsonConverter.cs" />
     <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
@@ -575,6 +576,7 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
