@@ -26,8 +26,8 @@
     <div class="row">
 	    <div class="col-sm-4">
             <div class="photo">
-                <asp:PlaceHolder ID="phImage" runat="server" />
-                <div class="following-status following"><i class="fa fa-star"></i></div>
+                <asp:Literal ID="lImage" runat="server" />
+                <asp:Panel ID="pnlFollow" runat="server" CssClass="following-status"><i class="fa fa-star"></i></asp:Panel>
             </div>
             <ul class="social-icons list-unstyled margin-t-sm">
                 <asp:Repeater ID="rptSocial" runat="server">
@@ -38,12 +38,7 @@
             </ul>
         </div>
 
-        <script>
-            // !!! REMOVE ME BEFORE FLIGHT !!!
-            $('.following-status').click(function () {
-                $(this).toggleClass('following')
-            });
-        </script>
+
 
         <div class="col-sm-8">
             <div class="row">
