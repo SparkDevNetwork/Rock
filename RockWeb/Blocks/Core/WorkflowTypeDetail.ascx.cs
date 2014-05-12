@@ -705,6 +705,28 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Handles the ChangeActionTypeClick event of the workflowActionTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void workflowActionTypeEditor_ChangeActionTypeClick( object sender, EventArgs e )
+        {
+            ParseControls();
+
+            var workflowActionTypeEditor = sender as WorkflowActionEditor;
+            if ( workflowActionTypeEditor != null )
+            {
+                var workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityEditor;
+                var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
+                var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
+                if ( actionType != null )
+                {
+                    BuildControls( true, actionType.Guid, actionType.Guid );
+                }
+            }
+        }
+
         #endregion
 
         #region Activity Attribute Events
@@ -1147,6 +1169,7 @@ namespace RockWeb.Blocks.Core
 
             control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
+            control.ChangeActionTypeClick += workflowActionTypeEditor_ChangeActionTypeClick;
 
             control.WorkflowActivities = activities;
 
