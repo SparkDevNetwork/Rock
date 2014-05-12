@@ -446,6 +446,14 @@
         margin-bottom: @spacing-sm-px;
     }
     
+    .person-image {
+        -webkit-filter: grayscale(100%);
+        transition: .5s;
+
+        &:hover {
+            -webkit-filter: grayscale(0%);
+        }
+    }
 
     .addresses ul {
         list-style: none;
