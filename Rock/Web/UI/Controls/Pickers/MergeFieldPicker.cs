@@ -48,8 +48,10 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
-            this.CssClass += " picker-mergefield picker-novalue";
+            if ( !Page.IsPostBack )
+            {
+                this.CssClass += " picker-mergefield picker-novalue";
+            }
         }
         
         /// <summary>
@@ -253,6 +255,16 @@ namespace Rock.Web.UI.Controls
 
             return string.Empty;
 
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            ItemRestUrlExtraParams = "/" + MergeFields.AsDelimited( "," );
+            base.RenderControl( writer );
         }
     }
 }
