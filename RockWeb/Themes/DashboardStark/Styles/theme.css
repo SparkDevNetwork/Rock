@@ -2528,7 +2528,7 @@ table.attribute-grid tr th:nth-child(3) {
   cursor: pointer;
   width: 40px;
   height: 40px;
-  z-index: 9000;
+  z-index: 500;
   border-top: 70px solid #428bca;
   border-left: 70px solid transparent;
   transition: 1s;
@@ -2816,10 +2816,16 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-family .person-image {
   -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+  filter: grayscale(100%);
+  filter: url(desaturate.svg#greyscale);
   transition: .5s;
 }
 .personprofilebar-family .person-image:hover {
   -webkit-filter: grayscale(0%);
+  -moz-filter: grayscale(0%);
+  filter: grayscale(0%);
 }
 .personprofilebar-family .addresses ul {
   list-style: none;
