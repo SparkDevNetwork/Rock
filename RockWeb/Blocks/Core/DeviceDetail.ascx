@@ -37,7 +37,7 @@
                                 Help="What is the IP Address of this device?" />
                             <asp:CustomValidator ID="cvIpAddress" runat="server" ControlToValidate="tbIpAddress" Display="None"
                                 OnServerValidate="cvIpAddress_ServerValidate" ErrorMessage="IP address must be unique to the device type."  />
-                            <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true"
+                            <Rock:DataDropDownList ID="ddlDeviceType" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="DeviceTypeValueId" Required="true" Label="Device Type"
                                 Help="What type of device is this?" AutoPostBack="true" OnSelectedIndexChanged="ddlDeviceType_SelectedIndexChanged" />
 
                             <Rock:GeoPicker ID="geopPoint" runat="server" Required="false" Label="Point" DrawingMode="Point" />
