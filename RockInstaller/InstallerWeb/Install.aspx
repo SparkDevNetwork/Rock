@@ -356,7 +356,7 @@
     void DownloadNext_Click(Object sender, EventArgs e)
     {
     	try {
-            Response.Redirect( configureUrl, false );
+            Response.Redirect( "Configure.aspx" );
     	}
     	catch (Exception ex) {
     		ProcessPageException(ex.Message);
