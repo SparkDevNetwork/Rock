@@ -1482,10 +1482,10 @@ ul.rocklist .rocklist-item.selected {
 .image-editor-photo .options a:first-child {
   margin-left: 0;
 }
-.recent i {
+.activeusers .recent i {
   color: #5cb85c;
 }
-.not-recent i {
+.activeusers .not-recent i {
   color: #f0ad4e;
 }
 .nav-paging .btn-prev {
@@ -3598,6 +3598,8 @@ small {
   width: 60%;
   float: left;
   padding-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .btn.aspNetDisabled {
   cursor: not-allowed;
