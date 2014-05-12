@@ -203,6 +203,7 @@
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
+    <Compile Include="Data\IChartData.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
