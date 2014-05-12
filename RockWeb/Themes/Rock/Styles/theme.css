@@ -2528,8 +2528,8 @@ table.attribute-grid tr th:nth-child(3) {
   cursor: pointer;
   width: 40px;
   height: 40px;
-  z-index: 9000;
-  border-top: 70px solid #8498ab;
+  z-index: 500;
+  border-top: 70px solid #3482b9;
   border-left: 70px solid transparent;
   transition: 1s;
   opacity: .4;
@@ -2566,13 +2566,13 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-bio .social-icons .icon {
   float: left;
-  background-color: #8498ab;
+  background-color: #a1a1a1;
   margin: 0 2px;
   border-radius: 4px;
   font-size: 16px;
 }
 .personprofilebar-bio .social-icons .icon a {
-  color: #ecf0f3;
+  color: #ffffff;
 }
 .personprofilebar-bio .social-icons .icon a:hover {
   opacity: .6;
@@ -2816,10 +2816,16 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-family .person-image {
   -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+  filter: grayscale(100%);
+  filter: url(desaturate.svg#greyscale);
   transition: .5s;
 }
 .personprofilebar-family .person-image:hover {
   -webkit-filter: grayscale(0%);
+  -moz-filter: grayscale(0%);
+  filter: grayscale(0%);
 }
 .personprofilebar-family .addresses ul {
   list-style: none;
@@ -4416,6 +4422,9 @@ a:hover i.fs {
   background-color: #3a3a3a;
   border-top: 1px solid #000;
   color: #bbbbbb;
+}
+.page-footer a {
+  color: #717171;
 }
 #splash {
   background: none;

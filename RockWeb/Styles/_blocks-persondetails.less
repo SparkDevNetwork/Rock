@@ -71,8 +71,8 @@
             cursor: pointer;
             width: 40px;
             height: 40px;
-            z-index: 9000;
-            border-top: 70px solid @accent-bold-color;
+            z-index: 500;
+            border-top: 70px solid @link-color;
             border-left: 70px solid transparent;
             transition: 1s;
             opacity: .4;
@@ -448,10 +448,16 @@
     
     .person-image {
         -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        filter: gray;
+        filter: grayscale(100%);
+        filter: url(../../Assets/Images/(desaturate.svg#grayscale);
         transition: .5s;
 
         &:hover {
             -webkit-filter: grayscale(0%);
+            -moz-filter: grayscale(0%);
+            filter: grayscale(0%);
         }
     }
 
