@@ -353,7 +353,7 @@
     }
     
     
-    void DownloadNext_Click(Object sender, EventArgs e)
+   /*void DownloadNext_Click(Object sender, EventArgs e)
     {
     	try {
             Response.Redirect( "Configure.aspx" );
@@ -362,7 +362,7 @@
     		ProcessPageException(ex.Message);
             lDownloadDetails.Text += "Exception on redirect";
     	}
-    }
+    }*/
 	
     // NOTE: Private helper methods are at the bottom of the file
 	
@@ -501,8 +501,9 @@
 
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
-							<div class="btn-list clearfix">		
-								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" ></asp:LinkButton> 
+							<div class="btn-list clearfix">
+                                <a href="#" id="btnDownloadNext" class="btn btn-primary pull-right">Next <i class='fa fa-chevron-right'></i></a>		
+								<!--<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" ></asp:LinkButton> -->
 							</div>
 						</asp:Panel>
 
@@ -547,13 +548,17 @@
               $("#content-box").fadeIn(1000);
 
               $('body').on('click', '#show-password', function (e) {
-
                   field = $('#txtPassword');
                   if (field.attr('type') == "text") { new_type = "password"; } else { new_type = "text"; }
                   new_field = field.clone();
                   new_field.attr("id", field.attr('id'));
                   new_field.attr("type", new_type);
                   field.replaceWith(new_field);
+              });
+
+              $('body').on('click', '#btnDownloadNext', function (e) {
+                  $('#updateProgress').show();
+                  window.location.href = 'Configure.aspx';
               });
           });
 
