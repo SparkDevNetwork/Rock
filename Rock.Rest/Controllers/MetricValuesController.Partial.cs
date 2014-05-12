@@ -16,12 +16,16 @@
 //
 using System;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.OData.Query;
 using System.Web.Routing;
 using Newtonsoft.Json;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -53,6 +57,15 @@ namespace Rock.Rest.Controllers
                     controller = "MetricValues",
                     action = "GetByMetricId"
                 } );
+
+            routes.MapHttpRoute(
+                name: "MetricValuesGetSeriesName",
+                routeTemplate: "api/MetricValues/GetSeriesName/{metricId}/{seriesId}",
+                defaults: new
+                {
+                    controller = "MetricValues",
+                    action = "GetSeriesName"
+                } );
         }
 
         /// <summary>
@@ -72,6 +85,37 @@ namespace Rock.Rest.Controllers
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the name of the series.
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="seriesId">The series identifier.</param>
+        /// <returns></returns>
+        public string GetSeriesName( int metricId, int seriesId )
+        {
+            var rockContext = new RockContext();
+            var metric = new MetricService( rockContext ).Get( metricId );
+            if (metric != null)
+            {
+                var entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                if ( entityTypeCache != null )
+                {
+                    Type[] modelType = { entityTypeCache.GetEntityType() };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                    var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof(int) } );
+                    var result = getMethod.Invoke( serviceInstance, new object[] { seriesId } );
+                    if (result != null)
+                    {
+                        return result.ToString();
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
