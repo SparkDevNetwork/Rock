@@ -18,23 +18,49 @@
 
 <script language="CS" runat="server">
   
+    const string baseStorageUrl = "http://storage.rockrms.com/install/";
+
+    bool IsBeta = false;
+    string installFile = "rock-install-latest.zip";
+    string welcomeImage = "welcome.jpg";
+    string rockLogoIco = "rock-chms.ico";
+    string rockStyles = "install.css";
+
     void Page_Load( object sender, EventArgs e )
     {
         // set timeout to 15 mins
         Server.ScriptTimeout = 900;
 
+        if ( Request["Mode"] != null && Request["Mode"] == "beta" )
+        {
+            IsBeta = true;
+            installFile = baseStorageUrl + "beta/" + installFile;
+            welcomeImage = baseStorageUrl + "beta/" + welcomeImage;
+            rockLogoIco = baseStorageUrl + "beta/" + rockLogoIco;
+            rockStyles = baseStorageUrl + "beta/" + rockStyles;
+        }
+        else
+        {
+            installFile = baseStorageUrl + installFile;
+            welcomeImage = baseStorageUrl + welcomeImage;
+            rockLogoIco = baseStorageUrl + rockLogoIco;
+            rockStyles = baseStorageUrl + rockStyles;
+        }
+        
     }
     
     void AdminNext_Click(Object sender, EventArgs e)
     {
     	// update the admin password
-    	var service = new Rock.Model.UserLoginService();
-		var user = service.GetByUserName( "Admin" );
+        var rockContext = new Rock.Data.RockContext();
+        UserLoginService userService = new UserLoginService( rockContext );
+
+        var user = userService.GetByUserName( "Admin" );
 		if ( user != null )
 		{
 		    user.UserName = txtAdminUsername.Text.Trim();
-		    service.ChangePassword( user, txtAdminPassword.Text.Trim() );
-		    service.Save( user, null );
+            userService.SetPassword( user, txtAdminPassword.Text.Trim() );
+            //rockContext.SaveChanges();
 		}
 		
 		pAdminAccount.Visible = false;
@@ -61,8 +87,8 @@
         
         // save addresses
         var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
-        globalAttributesCache.SetValue("InternalApplicationRoot", internalAddress, null, true);
-        globalAttributesCache.SetValue("PublicApplicationRoot", publicAddress, null, true);
+        globalAttributesCache.SetValue("InternalApplicationRoot", internalAddress, true);
+        globalAttributesCache.SetValue("PublicApplicationRoot", publicAddress, true);
 
         // set timezone value
         Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
@@ -73,7 +99,8 @@
         txtOrgWebsite.Text = publicAddress.TrimEnd('/');
         
         // set the site domains with the addresses above
-        SiteService siteService = new SiteService();
+        var rockContext = new Rock.Data.RockContext();
+        SiteService siteService = new SiteService( rockContext );
         Site internalSite = siteService.Get(new Guid("C2D29296-6A87-47A9-A753-EE4E9159C4C4"));
         
         SiteDomain internalDomain = new SiteDomain();
@@ -81,7 +108,6 @@
         internalDomain.IsSystem = false;
 
         internalSite.SiteDomains.Add(internalDomain);
-        siteService.Save(internalSite, null);
 
         Site externalSite = siteService.Get(new Guid("F3F82256-2D66-432B-9D67-3552CD2F4C2B"));
 
@@ -90,8 +116,8 @@
         externalDomain.IsSystem = false;
 
         externalSite.SiteDomains.Add(externalDomain);
-
-        siteService.Save(externalSite, null);
+        
+        rockContext.SaveChanges();
         
         
         pHosting.Visible = false;
@@ -108,12 +134,13 @@
     {
     	// save org settings
     	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
-        globalAttributesCache.SetValue( "OrganizationName", txtOrgName.Text, null, true );
-    	globalAttributesCache.SetValue("OrganizationName", txtOrgName.Text, null, true);
-    	globalAttributesCache.SetValue("OrganizationEmail", txtOrgEmail.Text, null, true);
-    	globalAttributesCache.SetValue("OrganizationPhone", txtOrgPhone.Text, null, true);
-        globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text.Replace("http://", "").Replace("https://", ""), null, true);
-    	
+        globalAttributesCache.SetValue( "OrganizationName", txtOrgName.Text, true );
+    	globalAttributesCache.SetValue("OrganizationName", txtOrgName.Text, true);
+    	globalAttributesCache.SetValue("OrganizationEmail", txtOrgEmail.Text, true);
+    	globalAttributesCache.SetValue("OrganizationPhone", txtOrgPhone.Text, true);
+        globalAttributesCache.SetValue("OrganizationWebsite", txtOrgWebsite.Text.Replace("http://", "").Replace("https://", ""), true);
+        globalAttributesCache.SetValue("SafeSenderDomains", InstallUtilities.GetDomainFromEmail( txtOrgEmail.Text ), true );
+        
     	pOrganization.Visible = false;
     	pEmailSettings.Visible = true;
     }
@@ -126,67 +153,66 @@
     
     void EmailNext_Click(Object sender, EventArgs e)
     {
-        using (new Rock.Data.UnitOfWorkScope())
+
+        // save email settings
+        var rockContext = new Rock.Data.RockContext();
+
+        AttributeService attribService = new AttributeService( rockContext );
+        Rock.Model.Attribute aSmtpServer = attribService.Get(new Guid("6CFFDF99-E93A-49B8-B440-0EF93878A51F"));
+        Rock.Model.Attribute aSmtpPort = attribService.Get(new Guid("C6B13F15-9D6F-45B2-BDB9-E77D29A32EBF"));
+        Rock.Model.Attribute aSmtpSsl = attribService.Get(new Guid("B3B2308B-6CD2-4853-8220-C80D861F5D3C"));
+        Rock.Model.Attribute aSmtpUsername = attribService.Get(new Guid("2CE8D3AC-F851-462C-93D5-DB82F48DDBFD"));
+        Rock.Model.Attribute aSmtpPassword = attribService.Get(new Guid("D3641DA0-9E50-4C98-A994-978AF308E745"));
+
+        AttributeValueService attribValueService = new AttributeValueService( rockContext );
+
+        // server
+        AttributeValue vSmtpServer = new AttributeValue();
+        vSmtpServer.Attribute = aSmtpServer;
+        vSmtpServer.EntityId = 0;
+        vSmtpServer.Value = txtEmailServer.Text.Trim();
+        attribValueService.Add(vSmtpServer);
+
+        // port
+        AttributeValue vSmtpPort = new AttributeValue();
+        vSmtpPort.EntityId = 0;
+        vSmtpPort.Attribute = aSmtpPort;
+        vSmtpPort.Value = txtEmailServerPort.Text.Trim();
+        attribValueService.Add(vSmtpPort);
+
+
+        // ssl
+        AttributeValue vSmtpSsl = new AttributeValue();
+        vSmtpSsl.EntityId = 0;
+        vSmtpSsl.Attribute = aSmtpSsl;
+        vSmtpSsl.Value = cbEmailUseSsl.Checked.ToString();
+        attribValueService.Add(vSmtpSsl);
+
+        // username
+        if (txtEmailUsername.Text.Trim().Length > 0)
         {
-            // save email settings
-            AttributeService attribService = new AttributeService();
-            Rock.Model.Attribute aSmtpServer = attribService.Get(new Guid("6CFFDF99-E93A-49B8-B440-0EF93878A51F"));
-            Rock.Model.Attribute aSmtpPort = attribService.Get(new Guid("C6B13F15-9D6F-45B2-BDB9-E77D29A32EBF"));
-            Rock.Model.Attribute aSmtpSsl = attribService.Get(new Guid("B3B2308B-6CD2-4853-8220-C80D861F5D3C"));
-            Rock.Model.Attribute aSmtpUsername = attribService.Get(new Guid("2CE8D3AC-F851-462C-93D5-DB82F48DDBFD"));
-            Rock.Model.Attribute aSmtpPassword = attribService.Get(new Guid("D3641DA0-9E50-4C98-A994-978AF308E745"));
-
-            AttributeValueService attribValueService = new AttributeValueService();
-
-            // server
-            AttributeValue vSmtpServer = new AttributeValue();
-            vSmtpServer.Attribute = aSmtpServer;
-            vSmtpServer.EntityId = 0;
-            vSmtpServer.Value = txtEmailServer.Text.Trim();
-            attribValueService.Add(vSmtpServer, null);
-            attribValueService.Save(vSmtpServer, null);
-
-            // port
-            AttributeValue vSmtpPort = new AttributeValue();
-            vSmtpPort.EntityId = 0;
-            vSmtpPort.Attribute = aSmtpPort;
-            vSmtpPort.Value = txtEmailServerPort.Text.Trim();
-            attribValueService.Add(vSmtpPort, null);
-            attribValueService.Save(vSmtpPort, null);
-
-            // ssl
-            AttributeValue vSmtpSsl = new AttributeValue();
-            vSmtpSsl.EntityId = 0;
-            vSmtpSsl.Attribute = aSmtpSsl;
-            vSmtpSsl.Value = cbEmailUseSsl.Checked.ToString();
-            attribValueService.Add(vSmtpSsl, null);
-            attribValueService.Save(vSmtpSsl, null);
-
-            // username
-            if (txtEmailUsername.Text.Trim().Length > 0)
-            {
-                AttributeValue vSmtpUsername = new AttributeValue();
-                vSmtpUsername.EntityId = 0;
-                vSmtpUsername.Attribute = aSmtpUsername;
-                vSmtpUsername.Value = txtEmailUsername.Text.Trim();
-                attribValueService.Add(vSmtpUsername, null);
-                attribValueService.Save(vSmtpUsername, null);
-            }
-
-            // password
-            if (txtEmailPassword.Text.Trim().Length > 0)
-            {
-                AttributeValue vSmtpPassword = new AttributeValue();
-                vSmtpPassword.EntityId = 0;
-                vSmtpPassword.Attribute = aSmtpPassword;
-                vSmtpPassword.Value = txtEmailPassword.Text.Trim();
-                attribValueService.Add(vSmtpPassword, null);
-                attribValueService.Save(vSmtpPassword, null);
-            }
+            AttributeValue vSmtpUsername = new AttributeValue();
+            vSmtpUsername.EntityId = 0;
+            vSmtpUsername.Attribute = aSmtpUsername;
+            vSmtpUsername.Value = txtEmailUsername.Text.Trim();
+            attribValueService.Add(vSmtpUsername);
         }
+
+        // password
+        if (txtEmailPassword.Text.Trim().Length > 0)
+        {
+            AttributeValue vSmtpPassword = new AttributeValue();
+            vSmtpPassword.EntityId = 0;
+            vSmtpPassword.Attribute = aSmtpPassword;
+            vSmtpPassword.Value = txtEmailPassword.Text.Trim();
+            attribValueService.Add(vSmtpPassword);
+        }
+
+        rockContext.SaveChanges();
+            
         
     	var globalAttributesCache = Rock.Web.Cache.GlobalAttributesCache.Read();
-    	globalAttributesCache.SetValue("EmailExceptionsList", txtEmailExceptions.Text, null, true);
+    	globalAttributesCache.SetValue("EmailExceptionsList", txtEmailExceptions.Text, true);
     		
     	
     	pEmailSettings.Visible = false;
@@ -211,12 +237,12 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
 		
-		<link href="<%=InstallSetting.RockLogoIco %>" rel="shortcut icon">
-		<link href="<%=InstallSetting.RockLogoIco %>" type="image/ico" rel="icon">
+		<link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
 	</head>
 	<body>
