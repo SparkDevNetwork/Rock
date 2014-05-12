@@ -12,7 +12,16 @@
 
 
 <script language="CS" runat="server">
-	
+
+    const string baseStorageUrl = "http://storage.rockrms.com/install/";	
+
+    bool IsBeta = false;
+    string installFile = "rock-install-latest.zip";
+    string welcomeImage = "welcome.jpg";
+    string rockLogoIco = "rock-chms.ico";
+    string rockStyles = "install.css";
+
+    string configureUrl = "Configure.aspx";
 
 	//
 	// page events
@@ -20,7 +29,25 @@
 	
 	private void Page_Init(object sender, System.EventArgs e)
 	{
-    	this.EnableViewState = true;
+        if ( Request["Mode"] != null && Request["Mode"] == "beta" )
+        {
+            IsBeta = true;
+            installFile = baseStorageUrl + "beta/" + installFile;
+            welcomeImage = baseStorageUrl + "beta/" + welcomeImage;
+            rockLogoIco = baseStorageUrl + "beta/" + rockLogoIco;
+            rockStyles = baseStorageUrl + "beta/" + rockStyles;
+
+            configureUrl = configureUrl + "?Mode=beta";
+        }
+        else
+        {
+            installFile = baseStorageUrl + installFile;
+            welcomeImage = baseStorageUrl + welcomeImage;
+            rockLogoIco = baseStorageUrl + rockLogoIco;
+            rockStyles = baseStorageUrl + rockStyles;
+        }
+        
+        this.EnableViewState = true;
 
         // check that an error has not occurred on Rock startup
         string exceptionLog = Server.MapPath( "~/App_Data/Logs/RockExceptions.csv" );
@@ -74,7 +101,14 @@
 
     void EnvCheckRetry_Click( Object sender, EventArgs e )
     {
-        Response.Redirect( "Start.aspx" );
+        if ( IsBeta )
+        {
+            Response.Redirect( "Start.aspx?Mode=beta", false );
+        }
+        else
+        {
+            Response.Redirect( "Start.aspx", false );
+        }
     }
     
 	void DbConfigNext_Click(Object sender, EventArgs e)
@@ -245,12 +279,8 @@
             // download install file
             bool downloadSuccessful = false;
             string checkMessages = string.Empty;
-            downloadSuccessful = DownloadFile( InstallSetting.RockInstallFile, Server.MapPath( "." ) + @"\RockInstall.zip", out checkMessages );
 
-            // change active panels
-            pTestEnv.Visible = false;
-            pDownloadZip.Visible = true;
-            pWelcome.Visible = false;
+            downloadSuccessful = DownloadFile( installFile, Server.MapPath( "." ) + @"\RockInstall.zip", out checkMessages );           
 
             if ( downloadSuccessful )
             {
@@ -285,6 +315,11 @@
 
                 lDownloadTitle.Text = "Download Successful";
                 lDownloadDetails.Text = "<p>The Rock RMS has been downloaded and installed on your web server.  The next step is to setup and configure the database.</p><div class='alert alert-info'><strong>Letting You Know:</strong> We'll be loading a new page as the database is created. This could take a couple of minutes also. Good things come to those who wait.</div>";
+
+                // change active panels
+                pTestEnv.Visible = false;
+                pDownloadZip.Visible = true;
+                pWelcome.Visible = false;
             }
             else
             {
@@ -321,7 +356,7 @@
     void DownloadNext_Click(Object sender, EventArgs e)
     {
     	try {
-            Response.Redirect("Configure.aspx");
+            Response.Redirect( configureUrl, false );
     	}
     	catch (Exception ex) {
     		ProcessPageException(ex.Message);
@@ -340,12 +375,12 @@
 		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
-        <link rel="stylesheet" href="<%=InstallSetting.RockStyles %>">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
         		
-		<link href="<%=InstallSetting.RockLogoIco %>" rel="shortcut icon">
-		<link href="<%=InstallSetting.RockLogoIco %>" type="image/ico" rel="icon">
+		<link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 		
 	</head>
 	<body>
@@ -377,7 +412,7 @@
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
 							
-                            <img src="<%=InstallSetting.RockWelcomeImg %>"  />
+                            <img src="<%=welcomeImage %>"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
                             <asp:Literal ID="lSslWarning" runat="server">
@@ -467,15 +502,16 @@
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
 							<div class="btn-list clearfix">		
-								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" OnClick="DownloadNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='fa fa-chevron-right'></i>"  CssClass="btn btn-primary pull-right" ></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 
+                        <asp:Literal ID="lDebug" runat="server"></asp:Literal>
 						
 					</div>
 				</div>
 
-                <asp:Literal ID="lDebug" runat="server"></asp:Literal>
+                
 			</ContentTemplate>
 		</asp:UpdatePanel>
 		</form>
