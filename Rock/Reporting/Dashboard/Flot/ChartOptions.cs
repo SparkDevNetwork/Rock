@@ -69,44 +69,45 @@ function (val, axis) {
                 this.legend.labelBoxBorderColor = chartStyle.Legend.LabelBoxBorderColor;
             }
 
-            if ( chartStyle.Title != null || chartStyle.Subtitle != null )
+            this.customSettings = this.customSettings ?? new CustomSettings();
+
+            // copy Title styles to Flot custom settings
+            if ( chartStyle.Title != null )
             {
-                this.customSettings = new CustomSettings();
-
-                // copy Title styles to Flot custom settings
-                if ( chartStyle.Title != null )
+                if ( chartStyle.Title.Font != null )
                 {
-                    if ( chartStyle.Title.Font != null )
-                    {
-                        this.customSettings.titleFont = new ChartFont();
-                        this.customSettings.titleFont.color = chartStyle.Title.Font.Color;
-                        this.customSettings.titleFont.family = chartStyle.Title.Font.Family;
-                        this.customSettings.titleFont.size = chartStyle.Title.Font.Size;
-                    }
-
-                    if ( chartStyle.Title.Align != null )
-                    {
-                        this.customSettings.titleAlign = chartStyle.Title.Align;
-                    }
+                    this.customSettings.titleFont = new ChartFont();
+                    this.customSettings.titleFont.color = chartStyle.Title.Font.Color;
+                    this.customSettings.titleFont.family = chartStyle.Title.Font.Family;
+                    this.customSettings.titleFont.size = chartStyle.Title.Font.Size;
                 }
 
-                // copy SubTitle styles to Flot custom settings
-                if ( chartStyle.Subtitle != null )
+                if ( chartStyle.Title.Align != null )
                 {
-                    if ( chartStyle.Subtitle.Font != null )
-                    {
-                        this.customSettings.subtitleFont = new ChartFont();
-                        this.customSettings.subtitleFont.color = chartStyle.Subtitle.Font.Color;
-                        this.customSettings.subtitleFont.family = chartStyle.Subtitle.Font.Family;
-                        this.customSettings.subtitleFont.size = chartStyle.Subtitle.Font.Size;
-                    }
-
-                    if ( chartStyle.Subtitle.Align != null )
-                    {
-                        this.customSettings.subtitleAlign = chartStyle.Subtitle.Align;
-                    }
+                    this.customSettings.titleAlign = chartStyle.Title.Align;
                 }
             }
+
+            // copy SubTitle styles to Flot custom settings
+            if ( chartStyle.Subtitle != null )
+            {
+                if ( chartStyle.Subtitle.Font != null )
+                {
+                    this.customSettings.subtitleFont = new ChartFont();
+                    this.customSettings.subtitleFont.color = chartStyle.Subtitle.Font.Color;
+                    this.customSettings.subtitleFont.family = chartStyle.Subtitle.Font.Family;
+                    this.customSettings.subtitleFont.size = chartStyle.Subtitle.Font.Size;
+                }
+
+                if ( chartStyle.Subtitle.Align != null )
+                {
+                    this.customSettings.subtitleAlign = chartStyle.Subtitle.Align;
+                }
+            }
+
+            // copy Goal Series Color to Flot custom settings
+            this.customSettings.goalSeriesColor = chartStyle.GoalSeriesColor;
+
 
             if ( chartStyle.PieLabels != null )
             {
@@ -939,5 +940,13 @@ function (val, axis) {
         /// The subtitle align.
         /// </value>
         public string subtitleAlign { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the goal series.
+        /// </summary>
+        /// <value>
+        /// The color of the goal series.
+        /// </value>
+        public string goalSeriesColor { get; set; }
     }
 }
