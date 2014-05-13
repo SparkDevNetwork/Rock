@@ -508,6 +508,7 @@ namespace Rock.Web.Cache
 
             if ( groupType != null )
             {
+                groupType.CopyFromModel( groupTypeModel );
                 return groupType;
             }
             else

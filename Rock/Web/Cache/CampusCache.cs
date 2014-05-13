@@ -202,6 +202,7 @@ namespace Rock.Web.Cache
 
             if ( campus != null )
             {
+                campus.CopyFromModel( campusModel );
                 return campus;
             }
             else

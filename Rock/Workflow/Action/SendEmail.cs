@@ -38,7 +38,7 @@ namespace Rock.Workflow.Action
     [TextField( "To", "The To address that email should be sent to.", false, "", "", 0 )]
     [WorkflowAttribute( "To Attribute", "An attribute that contains the person or email address that email should be sent to.", false, "", "", 1 )]
     [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 2 )]
-    [TextField( "Subject", "The subject that should be used when sending email.", true, "", "", 3 )]
+    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 3 )]
     [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
     public class SendEmail : CompareAction
     {
