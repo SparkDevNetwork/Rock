@@ -243,6 +243,7 @@ namespace Rock.Web.Cache
 
             if ( personBadge != null )
             {
+                personBadge.CopyFromModel( personBadgeModel );
                 return personBadge;
             }
             else

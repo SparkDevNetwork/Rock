@@ -152,6 +152,7 @@ namespace Rock.Attribute
                 attribute.EntityTypeQualifierColumn = entityQualifierColumn;
                 attribute.EntityTypeQualifierValue = entityQualifierValue;
                 attribute.Key = property.Key;
+                attribute.IconCssClass = string.Empty;
                 attribute.IsGridColumn = false;
             }
             else

@@ -298,6 +298,62 @@ namespace Rock.Communication.Transport
             }
         }
 
+        /// <summary>
+        /// Sends the specified channel data to the specified list of recipients.
+        /// </summary>
+        /// <param name="channelData">The channel data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
+        {
+            var globalAttributes = GlobalAttributesCache.Read();
+
+            string from = string.Empty;
+            if (!channelData.TryGetValue("From", out from))
+            {
+                from = globalAttributes.GetValue("OrganizationEmail");
+            }
+
+            if (!string.IsNullOrWhiteSpace(from))
+            {
+                MailMessage message = new MailMessage();
+                message.From = new MailAddress(from);
+                message.IsBodyHtml = true;
+                message.Priority = MailPriority.Normal;
+
+                var smtpClient = GetSmtpClient();
+
+                string subject = string.Empty;
+                channelData.TryGetValue("Subject", out subject);
+
+                string body = string.Empty;
+                channelData.TryGetValue("Body", out body);
+
+                message.To.Clear();
+                recipients.ForEach(r => message.To.Add(r));
+
+                if (!string.IsNullOrWhiteSpace(themeRoot))
+                {
+                    subject = subject.Replace("~~/", themeRoot);
+                    body = body.Replace("~~/", themeRoot);
+                }
+
+                if (!string.IsNullOrWhiteSpace(appRoot))
+                {
+                    subject = subject.Replace("~/", appRoot);
+                    body = body.Replace("~/", appRoot);
+                    body = body.Replace(@" src=""/", @" src=""" + appRoot);
+                    body = body.Replace(@" href=""/", @" href=""" + appRoot);
+                }
+
+                message.Subject = subject;
+                message.Body = body;
+
+                smtpClient.Send(message);
+            }
+        }
+
         private SmtpClient GetSmtpClient()
         {
             // Create SMTP Client

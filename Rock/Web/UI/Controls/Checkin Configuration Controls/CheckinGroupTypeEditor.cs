@@ -573,7 +573,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // grouptype edit fields
@@ -584,7 +584,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _phGroupTypeAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Check-in Labels grid

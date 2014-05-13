@@ -16,17 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.Dashboard;
+using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Abstract class for much of the Flot Charts Logic
+    /// Subset of the spec at https://github.com/flot/flot/blob/master/API.md
     /// </summary>
     public abstract class FlotChart : CompositeControl
     {
@@ -35,24 +36,25 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public FlotChart()
         {
-            Options = new FlotChartOptions();
-            this.Options.xaxis.mode = AxisMode.time;
-            this.Options.xaxis.timeformat = "%b %Y";
-            this.Options.grid.hoverable = true;
-            this.Options.grid.clickable = true;
-            this.Options.grid.margin = new MarginOptions { top = 0, right = 10, bottom = 0, left = 10 };
-            this.Options.grid.borderWidth = new BorderOptions  { top = 0, right = 0, bottom = 1, left = 1 };
+            Options = new ChartOptions();
+
+            // set default options, but ChartStyle or child class can override some of it
+            this.Options.xaxis = new AxisOptions { mode = AxisMode.time };
+            this.Options.grid = new GridOptions { hoverable = true, clickable = true };
         }
 
         #region Controls
 
         private HiddenField _hfMetricId;
-        private HiddenField _hfRestUrlParams;
-        private HiddenField _hfXAxisLabel;
+        private HiddenFieldWithClass _hfRestUrl;
+        private HiddenFieldWithClass _hfRestUrlParams;
+        private HiddenFieldWithClass _hfSeriesNameUrl;
+        private HiddenFieldWithClass _hfXAxisLabel;
+        private HiddenFieldWithClass _hfYAxisLabel;
         private Label _lblDashboardTitle;
         private Label _lblDashboardSubtitle;
         private Panel _pnlChartPlaceholder;
-        private HelpBlock _hbDebug;
+        private HelpBlock _hbChartOptions;
 
         #endregion
 
@@ -167,12 +169,12 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _lblDashboardTitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
                 _lblDashboardTitle.Text = value;
             }
-
         }
 
         /// <summary>
@@ -188,10 +190,53 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _lblDashboardSubtitle.Text;
             }
+
             set
             {
                 EnsureChildControls();
                 _lblDashboardSubtitle.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the x axis label.
+        /// </summary>
+        /// <value>
+        /// The x axis label.
+        /// </value>
+        public string XAxisLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfXAxisLabel.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfXAxisLabel.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the y axis label.
+        /// </summary>
+        /// <value>
+        /// The y axis label.
+        /// </value>
+        public string YAxisLabel
+        {
+            get
+            {
+                EnsureChildControls();
+                return _hfYAxisLabel.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfYAxisLabel.Value = value;
             }
         }
 
@@ -240,7 +285,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The options.
         /// </value>
-        public FlotChartOptions Options { get; set; }
+        public ChartOptions Options { get; set; }
 
         /// <summary>
         /// Gets or sets the data source URL.
@@ -263,6 +308,98 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the series name URL.
+        /// </summary>
+        /// <value>
+        /// The series name URL.
+        /// </value>
+        public string SeriesNameUrl
+        {
+            get
+            {
+                return ViewState["SeriesNameUrl"] as string ?? "~/api/MetricValues/GetSeriesName/";
+            }
+
+            set
+            {
+                ViewState["SeriesNameUrl"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show tooltip].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show tooltip]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowTooltip
+        {
+            get
+            {
+                return ViewState["ShowTooltip"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowTooltip"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show debug].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show debug]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDebug
+        {
+            get
+            {
+                return ViewState["ShowDebug"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["ShowDebug"] = value;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class ChartClickArgs: EventArgs
+        {
+            /// <summary>
+            /// Gets or sets the date time value.
+            /// </summary>
+            /// <value>
+            /// The date time value.
+            /// </value>
+            public DateTime DateTimeValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the y value.
+            /// </summary>
+            /// <value>
+            /// The y value.
+            /// </value>
+            public decimal? YValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the series identifier.
+            /// </summary>
+            /// <value>
+            /// The series identifier.
+            /// </value>
+            public string SeriesId { get; set; }
+        }
+
+        /// <summary>
+        /// Occurs when [chart click].
+        /// </summary>
+        public event EventHandler<ChartClickArgs> ChartClick;
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -273,6 +410,7 @@ namespace Rock.Web.UI.Controls
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.time.js" );
             RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.resize.js" );
+            RockPage.AddScriptLink( this.Page, "~/Scripts/flot/jquery.flot.pie.js" );
 
             EnsureChildControls();
         }
@@ -284,6 +422,46 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if (this.Page.IsPostBack)
+            {
+                EnsureChildControls();
+                if ( this.Page.Request.Params["__EVENTTARGET"] == _pnlChartPlaceholder.UniqueID )
+                {
+                    HandleChartClick();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the chart click.
+        /// </summary>
+        private void HandleChartClick()
+        {
+            var eventArgs = this.Page.Request.Params["__EVENTARGUMENT"].Split( ';' );
+            ChartClickArgs chartClickArgs = new ChartClickArgs();
+            foreach ( var parts in eventArgs )
+            {
+                var param = parts.Split( '=' );
+                if ( param[0] == "DateStamp" )
+                {
+                    long dateStamp = long.Parse( param[1] );
+                    chartClickArgs.DateTimeValue = new DateTime( 1970, 1, 1 ).AddMilliseconds( dateStamp );
+                }
+                else if ( param[0] == "YValue" )
+                {
+                    chartClickArgs.YValue = param[1].AsInteger() ?? 0;
+                }
+                else if ( param[0] == "SeriesId" )
+                {
+                    chartClickArgs.SeriesId = param[1];
+                }
+            }
+
+            if ( ChartClick != null )
+            {
+                ChartClick( this, chartClickArgs );
+            }
         }
 
         /// <summary>
@@ -292,7 +470,17 @@ namespace Rock.Web.UI.Controls
         protected virtual void RegisterJavaScript()
         {
             var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
-            this._hfXAxisLabel.Value = metric != null ? metric.XAxisLabel : "value";
+            if ( string.IsNullOrWhiteSpace( this.XAxisLabel ) && metric != null )
+            {
+                // if XAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.XAxisLabel
+                this.XAxisLabel = metric.XAxisLabel;
+            }
+
+            if ( string.IsNullOrWhiteSpace( this.YAxisLabel ) && metric != null )
+            {
+                // if YAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.YAxisLabel
+                this.YAxisLabel = metric.YAxisLabel;
+            }
 
             // setup Rest URL parameters
             if ( this.MetricId.HasValue )
@@ -336,99 +524,229 @@ namespace Rock.Web.UI.Controls
 
             string scriptFormat =
 @"
-            var restUrl_{3} = '{0}' + $('#{1}').val();
+            var restUrl_{0} = $('#{0} .js-rest-url').val() + $('#{0} .js-rest-url-params').val();
 
             $.ajax({{
-                url: restUrl_{3},
+                url: restUrl_{0},
                 dataType: 'json',
                 contentType: 'application/json'
             }})
             .done( function (chartData) {{
 
-                // setup chartPoints objects
-                var chartMeasurePoints = {{
-                    label: $('#{2}').val(),
-                    metricValues: chartData,
-                    data: []
-                }}
+                var chartOptions = {1}; 
+";
 
-                var chartGoalPoints = {{
-                    label: $('#{2}').val() + ' goal',
-                    metricValues: chartData,
-                    data: []
-                }}
-
-                // populate the chartMeasurePoints data array with data from the REST result
-                for (var i = 0; i < chartData.length; i++) {{
-                    if (chartData[i].MetricValueType == 0) {{
-                        chartMeasurePoints.data.push([chartData[i].MetricValueJavascriptTimeStamp, chartData[i].YValue]);
+            if ( this.GetType() == typeof( PieChart ) )
+            {
+                scriptFormat += @"
+                    var pieData = [];
+                    // populate the chartMeasurePoints data array with data from the REST result for pie data
+                    for (var i = 0; i < chartData.length; i++) {{
+                       pieData.push( {{
+                            label: chartData[i].Note,
+                            data: chartData[i].YValue,
+                            chartData: [chartData[i]]
+                       }});
                     }}
-                    if (chartData[i].MetricValueType == 1) {{
-                        chartGoalPoints.data.push([chartData[i].MetricValueJavascriptTimeStamp, chartData[i].YValue]);
+
+                    if (pieData.length > 0) {{
+                        // plot the pie chart
+                        $.plot('#{0} .js-chart-placeholder', pieData, chartOptions);    
                     }}
-                }}
+                    else {{
+                        $('#{0} .js-chart-placeholder').html('<div class=""alert alert-info"">No Data Found</div>');
+                    }}
+";
+            }
+            else
+            {
+                scriptFormat += @"
+                    var chartSeriesLookup = {{}};
+                    var chartSeriesList = [];
 
-                // setup the series list (goal points first, if they exist)
-                var chartSeriesList = [];
-                if (chartGoalPoints.data.length) {{
-                    chartSeriesList.push(chartGoalPoints);
-                }}                
+                    var chartGoalPoints = {{
+                        label: $('#{0} .js-xaxis-value').val() + ' goal',
+                        chartData: chartData,
+                        data: []
+                    }}
 
-                if (chartMeasurePoints.data.length) {{
-                    chartSeriesList.push(chartMeasurePoints);
-                }}
+                    if (chartOptions.customSettings) {{ 
+                        chartGoalPoints.color = chartOptions.customSettings.goalSeriesColor;
+                    }}
 
-                var chartOptions = {4};                
+                    // populate the chartMeasurePoints data array with data from the REST result
+                    for (var i = 0; i < chartData.length; i++) {{
+                        if (chartData[i].MetricValueType && chartData[i].MetricValueType == 1) {{
+                            // if the chartdata is marked as a Metric Goal Value Type, populate the chartGoalPoints
+                            chartGoalPoints.data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        }}
+                        else
+                        {{
+                            if (!chartSeriesLookup[chartData[i].SeriesId]) {{
+                                
+                                var seriesName = chartData[i].SeriesId;
+                                var getSeriesUrl = $('#{0} .js-seriesname-url').val();
+                                if (getSeriesUrl) {{
+                                    $.ajax({{
+                                        url: getSeriesUrl + chartData[i].SeriesId,
+                                        async: false
+                                    }})
+                                    .done( function (data) {{
+                                       seriesName = data; 
+                                    }})
+                                    .fail(function (jqXHR, textStatus, errorThrown) {{
+                                        //debugger
+                                    }});
+                                }}
 
-                // plot the chart
-                $.plot('#{3}', chartSeriesList, chartOptions);
+                                seriesName = seriesName || $('#{0} .js-xaxis-value').val();
 
+                                chartSeriesLookup[chartData[i].SeriesId] = {{
+                                    label: seriesName,
+                                    chartData: chartData,
+                                    data: []
+                                    }};
+                            }}
+                            
+                            chartSeriesLookup[chartData[i].SeriesId].data.push([chartData[i].DateTimeStamp, chartData[i].YValue ]);
+                        }}
+                    }}
+
+                    // setup the series list (goal points last, if they exist)
+                    for (var seriesId in chartSeriesLookup) {{
+                        var chartMeasurePoints = chartSeriesLookup[seriesId];
+                        if (chartMeasurePoints.data.length) {{
+                            chartSeriesList.push(chartMeasurePoints);
+                        }}    
+                    }}
+
+                    if (chartGoalPoints.data.length) {{
+                        chartSeriesList.push(chartGoalPoints);
+                    }}
+
+                    // plot the chart
+                    $.plot('#{0} .js-chart-placeholder', chartSeriesList, chartOptions);
+";
+            }
+
+            scriptFormat += @"
+                    // plothover script (tooltip script) 
+                    {2}
+
+                    // plotclick script
+                    {3}
+            }})
+            .fail(function (jqXHR, textStatus, errorThrown) {{
+                //debugger
+            }});
+";
+
+            string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented, new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, NullValueHandling = NullValueHandling.Ignore } );
+
+            _hbChartOptions.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
+
+            string restUrl = this.ResolveUrl( this.DataSourceUrl );
+            _hfRestUrl.Value = restUrl;
+            
+            string getSeriesNameUrl = null;
+            if (!string.IsNullOrWhiteSpace(this.SeriesNameUrl))
+            {
+                getSeriesNameUrl = this.ResolveUrl(this.SeriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/");
+            }
+            
+            _hfSeriesNameUrl.Value = getSeriesNameUrl;
+
+            string tooltipScript = GetToolTipScript();
+            string chartClickScript = GetChartClickScript();
+
+            string script = string.Format(
+                scriptFormat,
+                this.ClientID,      // {0}
+                chartOptionsJson,   // {1}
+                tooltipScript,      // {2}
+                chartClickScript ); // {3}
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Gets the chart click script.
+        /// </summary>
+        /// <returns></returns>
+        private string GetChartClickScript()
+        {
+            string chartClickScript = null;
+            if ( ChartClick != null )
+            {
+                string chartClickScriptFormat = @"
+                $('#{0}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
+                    
+                    if (item) {{
+                        debugger
+                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId);
+                    }}
+                    else
+                    {{
+                        // no point was clicked
+                    }}
+                }});
+";
+
+                chartClickScript = string.Format( chartClickScriptFormat, this.ClientID, _pnlChartPlaceholder.UniqueID );
+            }
+            return chartClickScript;
+        }
+
+        /// <summary>
+        /// Gets the tool tip script.
+        /// </summary>
+        /// <returns></returns>
+        private string GetToolTipScript()
+        {
+            string tooltipScript = null;
+            if ( ShowTooltip )
+            {
+                string tooltipScriptFormat = @"
                 // setup of bootstrap tooltip which we'll show on the plothover event
-                $(""<div id='tooltip_{3}' class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>"").css({{
+                $(""<div id='tooltip_{0}' class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>"").css({{
                     position: 'absolute',
                     display: 'none',
                 }}).appendTo('body');
 
-                $('#{3}').bind('plothover', function (event, pos, item) {{
+                $('#{0}').bind('plothover', function (event, pos, item) {{
                     
                     if (item) {{
-                        var tooltipText = item.series.metricValues[item.dataIndex].Note;
-                        // if there isn't a note, just show the y value;
-                        tooltipText = tooltipText || item.datapoint[1];
-                        $('#tooltip_{3}').find('.tooltip-inner').html(tooltipText);
-                        $('#tooltip_{3}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
-                        $('#tooltip_{3}').show();
+                        var yaxisLabel = $('#{0}').find('.js-yaxis-value').val();
+                        var tooltipText = '';
+
+                        if (yaxisLabel) {{
+                            tooltipText += yaxisLabel + '<br />';
+                        }}
+
+                        tooltipText += new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+
+                        if (item.series.label) {{
+                            tooltipText += '<br />' + item.series.label;
+                        }}
+
+                        if (item.series.chartData[item.dataIndex].MetricValueType) {{
+                            // if it's a goal measure...
+                            tooltipText += ' goal';
+                        }}
+
+                        tooltipText += ': ' + item.series.chartData[item.dataIndex].YValue;                
+                        $('#tooltip_{0}').find('.tooltip-inner').html(tooltipText);
+                        $('#tooltip_{0}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
+                        $('#tooltip_{0}').show();
                     }}
                     else {{
-                        $('#tooltip_{3}').hide();
+                        $('#tooltip_{0}').hide();
                     }}
-                }});
-                
-            }})
-            .fail(function (jqXHR, textStatus, errorThrown) {{
-                debugger
-            }});
-";
+                }});";
 
-            string chartOptionsJson = JsonConvert.SerializeObject( this.Options, Formatting.Indented,
-                new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    NullValueHandling = NullValueHandling.Ignore
-                } );
-
-            _hbDebug.Text = "<div style='white-space: pre; max-height: 120px; overflow-y:scroll' Font-Names='Consolas' Font-Size='8'><br />" + chartOptionsJson + "</div>";
-
-            string restUrl = this.ResolveUrl( this.DataSourceUrl );
-            string script = string.Format(
-                scriptFormat,
-                restUrl,
-                _hfRestUrlParams.ClientID,
-                _hfXAxisLabel.ClientID,
-                _pnlChartPlaceholder.ClientID,
-                chartOptionsJson );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
+                tooltipScript = string.Format( tooltipScriptFormat, this.ClientID );
+            }
+            return tooltipScript;
         }
 
         /// <summary>
@@ -442,35 +760,52 @@ namespace Rock.Web.UI.Controls
 
             _hfMetricId = new HiddenField();
             _hfMetricId.ID = string.Format( "hfMetricId_{0}", this.ID );
-            
-            _hfXAxisLabel = new HiddenField();
+
+            _hfXAxisLabel = new HiddenFieldWithClass();
             _hfXAxisLabel.ID = string.Format( "hfXAxisLabel_{0}", this.ID );
-            
-            _hfRestUrlParams = new HiddenField();
+            _hfXAxisLabel.CssClass = "js-xaxis-value";
+
+            _hfYAxisLabel = new HiddenFieldWithClass();
+            _hfYAxisLabel.ID = string.Format( "hfYAxisLabel_{0}", this.ID );
+            _hfYAxisLabel.CssClass = "js-yaxis-value";
+
+            _hfRestUrlParams = new HiddenFieldWithClass();
             _hfRestUrlParams.ID = string.Format( "hfRestUrlParams_{0}", this.ID );
-            
+            _hfRestUrlParams.CssClass = "js-rest-url-params";
+
+            _hfRestUrl = new HiddenFieldWithClass();
+            _hfRestUrl.ID = string.Format( "hfRestUrl_{0}", this.ID );
+            _hfRestUrl.CssClass = "js-rest-url";
+
+            _hfSeriesNameUrl = new HiddenFieldWithClass();
+            _hfSeriesNameUrl.ID = string.Format( "hfSeriesNameUrl_{0}", this.ID );
+            _hfSeriesNameUrl.CssClass = "js-seriesname-url";
+
             _lblDashboardTitle = new Label();
             _lblDashboardTitle.CssClass = "dashboard-title";
             _lblDashboardTitle.ID = string.Format( "lblDashboardTitle_{0}", this.ID );
-            
+
             _lblDashboardSubtitle = new Label();
             _lblDashboardSubtitle.CssClass = "dashboard-subtitle";
             _lblDashboardSubtitle.ID = string.Format( "lblDashboardSubtitle_{0}", this.ID );
-            
+
             _pnlChartPlaceholder = new Panel();
-            _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder";
+            _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder js-chart-placeholder";
             _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
 
-            _hbDebug = new HelpBlock();
-            _hbDebug.ID = string.Format("hbDebug_{0}", this.ID);
+            _hbChartOptions = new HelpBlock();
+            _hbChartOptions.ID = string.Format( "hbChartOptions_{0}", this.ID );
 
             Controls.Add( _hfMetricId );
             Controls.Add( _hfXAxisLabel );
+            Controls.Add( _hfYAxisLabel );
             Controls.Add( _hfRestUrlParams );
+            Controls.Add( _hfRestUrl );
+            Controls.Add( _hfSeriesNameUrl );
             Controls.Add( _lblDashboardTitle );
             Controls.Add( _lblDashboardSubtitle );
             Controls.Add( _pnlChartPlaceholder );
-            Controls.Add( _hbDebug );
+            Controls.Add( _hbChartOptions );
         }
 
         /// <summary>
@@ -490,10 +825,72 @@ namespace Rock.Web.UI.Controls
 
             _hfMetricId.RenderControl( writer );
             _hfRestUrlParams.RenderControl( writer );
+            _hfRestUrl.RenderControl( writer );
+            _hfSeriesNameUrl.RenderControl( writer );
             _hfXAxisLabel.RenderControl( writer );
+            _hfYAxisLabel.RenderControl( writer );
+
+            writer.AddAttribute( "class", "dashboard-title" );
+            if ( this.Options.customSettings != null && this.Options.customSettings.titleAlign != null )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.titleAlign );
+            }
+
+            if ( this.Options.customSettings != null && this.Options.customSettings.titleFont != null )
+            {
+                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.color ) )
+                {
+                    _lblDashboardTitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.titleFont.color );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.family ) )
+                {
+                    _lblDashboardTitle.Font.Name = this.Options.customSettings.titleFont.family;
+                }
+
+                if ( this.Options.customSettings.titleFont.size.HasValue )
+                {
+                    _lblDashboardTitle.Font.Size = new FontUnit( this.Options.customSettings.titleFont.size.Value );
+                }
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblDashboardTitle.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "dashboard-subtitle" );
+            if ( this.Options.customSettings != null && this.Options.customSettings.subtitleAlign != null )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.subtitleAlign );
+            }
+
+            if ( this.Options.customSettings != null && this.Options.customSettings.subtitleFont != null )
+            {
+                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.color ) )
+                {
+                    _lblDashboardSubtitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.subtitleFont.color );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.family ) )
+                {
+                    _lblDashboardSubtitle.Font.Name = this.Options.customSettings.subtitleFont.family;
+                }
+
+                if ( this.Options.customSettings.subtitleFont.size.HasValue )
+                {
+                    _lblDashboardSubtitle.Font.Size = new FontUnit( this.Options.customSettings.subtitleFont.size.Value );
+                }
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblDashboardSubtitle.RenderControl( writer );
-            _hbDebug.RenderControl( writer );
+            writer.RenderEndTag();
+
+            if ( this.ShowDebug )
+            {
+                _hbChartOptions.RenderControl( writer );
+            }
+
             _pnlChartPlaceholder.RenderControl( writer );
 
             writer.RenderEndTag();

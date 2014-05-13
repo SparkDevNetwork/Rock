@@ -203,15 +203,18 @@
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
+    <Compile Include="Data\IChartData.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
-    <Compile Include="Reporting\Dashboard\ChartTheme.cs" />
-    <Compile Include="Reporting\Dashboard\FlotChartOptions.cs" />
+    <Compile Include="Reporting\Dashboard\ChartStyle.cs" />
+    <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
+    <Compile Include="Plugin\Migration.cs" />
+    <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -340,6 +343,7 @@
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Utility\DoubleMetaphone.cs" />
+    <Compile Include="Utility\StringAsLiteralJavascriptJsonConverter.cs" />
     <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\RockDateTime.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
@@ -573,6 +577,7 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Dashboard\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
@@ -584,6 +589,7 @@
     <Compile Include="Web\UI\Controls\Grid\SelectField.cs" />
     <Compile Include="Web\UI\Controls\Grid\RockBoundField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
+    <Compile Include="Web\UI\Controls\HiddenFieldWithClass.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
@@ -689,6 +695,7 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\CompareAction.cs" />
+    <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\WriteToLog.cs" />
@@ -878,7 +885,7 @@
     <Compile Include="Jobs\ProcessWorkflows.cs" />
     <Compile Include="Workflow\Action\CompleteWorkflow.cs" />
     <Compile Include="Workflow\Action\ActivateActivity.cs" />
-    <Compile Include="Workflow\Action\SendEmail.cs" />
+    <Compile Include="Workflow\Action\SendEmailTemplate.cs" />
     <Compile Include="Workflow\Action\SetStatus.cs" />
     <Compile Include="Model\WorkflowService.Partial.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />

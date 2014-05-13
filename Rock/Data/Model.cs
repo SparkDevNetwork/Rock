@@ -278,6 +278,12 @@ namespace Rock.Data
             return ToLiquid(debug, true);
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <param name="reloadAttributes">if set to <c>true</c> [reload attributes].</param>
+        /// <returns></returns>
         public object ToLiquid( bool debug, bool reloadAttributes )
         {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
