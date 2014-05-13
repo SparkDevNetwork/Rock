@@ -70,17 +70,18 @@ namespace Rock.Rest.Controllers
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
                 YValue = c.ExceptionCount,
-                SeriesId = "ExceptionCounts"
+                SeriesId = "Total Exceptions"
             } );
 
             var uniqueCountsQry = exceptionList.Select( c => new ExceptionChartData
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
-                YValue = c.ExceptionCount,
-                SeriesId = "UniqueExceptionCounts"
+                YValue = c.UniqueExceptionCount,
+                SeriesId = "Unique Exceptions"
             } );
 
-            return allCountsQry.Union( uniqueCountsQry );
+            var result = allCountsQry.Union( uniqueCountsQry );
+            return result;
         }
 
         /// <summary>

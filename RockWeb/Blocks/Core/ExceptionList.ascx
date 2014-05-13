@@ -9,31 +9,32 @@
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlExceptionGroups" runat="server" Visible="true">
-            
+
             <div class="banner">
                 <h1>
-                    <span class="first-word">Exception </span>  Types</h1>
+                    <span class="first-word">Exception </span>Types</h1>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-9">
-                    <p>The list below displays all of the types of errors that have occurred in the system in order by the last time it occurred. Counts are shown
+                    <p>
+                        The list below displays all of the types of errors that have occurred in the system in order by the last time it occurred. Counts are shown
                         of how many times each exception has occurred.
                     </p>
                 </div>
-                
+
                 <div class="col-md-3">
-                    <p class="clearfix"><asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
+                    <p class="clearfix">
+                        <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm pull-right" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                         <i class="fa fa-repeat"></i> Clear All Exceptions
-                    </asp:LinkButton></p>
+                        </asp:LinkButton>
+                    </p>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-12">
-                    <asp:Panel ID="pnlExceptionChart" runat="server">
-                        <div id="exception-chart" style="width: 100%; height: 300px;"></div>
-                    </asp:Panel>
+                    <Rock:LineChart ID="lcExceptions" runat="server" DataSourceUrl="~/api/ExceptionLogs/GetChartData" SeriesNameUrl="" Title="Exception Count" ChartHeight="280px" />
                 </div>
             </div>
 
@@ -55,9 +56,6 @@
                     <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                 </Columns>
             </Rock:Grid>
-
-            
-            <asp:Literal ID="lGraphScript" runat="server" />
 
         </asp:Panel>
 
