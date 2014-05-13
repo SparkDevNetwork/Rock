@@ -296,12 +296,15 @@ namespace RockWeb.Blocks.Core
         private bool VerifyUniqueIpAddress()
         {
             bool isValid = true;
+            int currentDeviceId = int.Parse( hfDeviceId.Value );
             int? deviceTypeId = ddlDeviceType.SelectedValueAsInt().Value;
             if ( !string.IsNullOrWhiteSpace( tbIpAddress.Text ) && deviceTypeId != null )
             {
                 var rockContext = new RockContext();
                 bool ipExists = new DeviceService( rockContext ).Queryable()
-                    .Any( d => d.IPAddress.Equals( tbIpAddress.Text ) && d.DeviceTypeValueId == deviceTypeId );
+                    .Any( d => d.IPAddress.Equals( tbIpAddress.Text ) 
+                        && d.DeviceTypeValueId == deviceTypeId
+                        && d.Id != currentDeviceId );
                 isValid = !ipExists;
             }
 
