@@ -60,7 +60,7 @@
 		{
 		    user.UserName = txtAdminUsername.Text.Trim();
             userService.SetPassword( user, txtAdminPassword.Text.Trim() );
-            //rockContext.SaveChanges();
+            rockContext.SaveChanges();
 		}
 		
 		pAdminAccount.Visible = false;

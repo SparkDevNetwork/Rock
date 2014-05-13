@@ -342,6 +342,14 @@
             checksFailed = true;
             errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that the filesystem is not empty. You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.</a></li>";
         }
+
+        // check that sql server spatial files don't exist
+        sqlSpatialFiles = Server.MapPath( "." ) + @"\SqlServerTypes\x64\SqlServerSpatial110.dll";
+        if ( File.Exists( sqlSpatialFiles ) )
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that the filesystem is not empty. You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.</a></li>";
+        }
         
 		return checksFailed;
 	}
