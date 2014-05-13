@@ -351,18 +351,6 @@
             txtPassword.Text = Session["dbPassword"].ToString();
         }
     }
-    
-    
-   /*void DownloadNext_Click(Object sender, EventArgs e)
-    {
-    	try {
-            Response.Redirect( "Configure.aspx" );
-    	}
-    	catch (Exception ex) {
-    		ProcessPageException(ex.Message);
-            lDownloadDetails.Text += "Exception on redirect";
-    	}
-    }*/
 	
     // NOTE: Private helper methods are at the bottom of the file
 	
@@ -558,7 +546,7 @@
 
               $('body').on('click', '#btnDownloadNext', function (e) {
                   $('#updateProgress').show();
-                  window.location.href = 'Configure.aspx';
+                  window.location.href = '<%=configureUrl %>';
               });
           });
 
