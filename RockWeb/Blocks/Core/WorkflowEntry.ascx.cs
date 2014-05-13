@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Core
         private WorkflowType _workflowType = null;
         private WorkflowActionType _actionType = null;
         private Workflow _workflow = null;
+        private WorkflowActivity _activity = null;
         private WorkflowAction _action = null;
 
         #endregion
@@ -149,6 +150,7 @@ namespace RockWeb.Blocks.Core
 
                 _action.MarkComplete();
                 _action.FormAction = lb.Text;
+                _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
 
                 Guid activityTypeGuid = lb.Attributes["data-activity"].AsGuid();
                 if (!activityTypeGuid.IsEmpty())
@@ -161,7 +163,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 List<string> errorMessages;
-                if (_workflow.Process(out errorMessages))
+                if (_workflow.Process( _rockContext, out errorMessages))
                 {
                     if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                     {
@@ -169,13 +171,20 @@ namespace RockWeb.Blocks.Core
                         {
                             _workflowService.Add(_workflow);
                         }
-                        _rockContext.SaveChanges();
+
+                        RockTransactionScope.WrapTransaction( () =>
+                        {
+                            _rockContext.SaveChanges();
+                            _workflow.SaveAttributeValues( _rockContext );
+                        } );
+
                         WorkflowId = _workflow.Id;
                     }
 
                     ActionTypeId = null;
                     _action = null;
                     _actionType = null;
+                    _activity = null;
 
                     if (HydrateObjects())
                     {
@@ -255,13 +264,19 @@ namespace RockWeb.Blocks.Core
                     _workflow = Rock.Model.Workflow.Activate(_workflowType, "Workflow");
 
                     List<string> errorMessages;
-                    if (_workflow.Process(out errorMessages))
+                    if (_workflow.Process( _rockContext, out errorMessages))
                     {
                         // If the workflow type is persisted, save the workflow
                         if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                         {
                             _workflowService.Add(_workflow);
-                            _rockContext.SaveChanges();
+
+                            RockTransactionScope.WrapTransaction( () =>
+                            {
+                                _rockContext.SaveChanges();
+                                _workflow.SaveAttributeValues( _rockContext );
+                            } );
+
                             WorkflowId = _workflow.Id;
                         }
                     }
@@ -276,7 +291,11 @@ namespace RockWeb.Blocks.Core
                             _action = activity.Actions.Where(a => a.ActionTypeId == ActionTypeId.Value).FirstOrDefault();
                             if (_action != null)
                             {
+                                _activity = activity;
+                                _activity.LoadAttributes();
+
                                 _actionType = _action.ActionType;
+                                ActionTypeId = _actionType.Id;
                                 return true;
                             }
                         }
@@ -289,6 +308,9 @@ namespace RockWeb.Blocks.Core
                         {
                             if (action.ActionType.WorkflowForm != null && action.ActionType.WorkflowForm.IsAuthorized(Authorization.VIEW, CurrentPerson))
                             {
+                                _activity = activity;
+                                _activity.LoadAttributes();
+
                                 _action = action;
                                 _actionType = _action.ActionType;
                                 ActionTypeId = _actionType.Id;
@@ -322,7 +344,11 @@ namespace RockWeb.Blocks.Core
 
             if (setValues)
             {
-                var mergeFields = (Dictionary<string, object>)_workflow.ToLiquid(false, false);
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
+                mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
+                mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+
                 lheadingText.Text = form.Header.ResolveMergeFields(mergeFields);
                 lFootingText.Text = form.Footer.ResolveMergeFields(mergeFields);
             }
@@ -378,18 +404,34 @@ namespace RockWeb.Blocks.Core
 
         private void GetFormValues()
         {
-            var form = _actionType.WorkflowForm;
-
-            var values = new Dictionary<int, string>();
-            int i = 0;
-            foreach (var formAttribute in form.FormAttributes.OrderBy(a => a.Order))
+            if ( _workflow != null && _actionType != null )
             {
-                if (formAttribute.IsVisible && !formAttribute.IsReadOnly)
+                var form = _actionType.WorkflowForm;
+
+                var values = new Dictionary<int, string>();
+                int i = 0;
+                foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
                 {
-                    var attribute = AttributeCache.Read(formAttribute.AttributeId);
-                    if (attribute != null)
+                    if ( formAttribute.IsVisible && !formAttribute.IsReadOnly )
                     {
-                        _workflow.SetAttributeValue(attribute.Key, attribute.FieldType.Field.GetEditValue(attribute.GetControl(phAttributes.Controls[i++]), attribute.QualifierValues));
+                        var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                        if ( attribute != null )
+                        {
+                            IHasAttributes item = null;
+                            if ( attribute.EntityTypeId == _workflow.TypeId )
+                            {
+                                item = _workflow;
+                            }
+                            else if ( attribute.EntityTypeId == _activity.TypeId )
+                            {
+                                item = _activity;
+                            }
+
+                            if (item != null)
+                            {
+                                item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( phAttributes.Controls[i++] ), attribute.QualifierValues ) );
+                            }
+                        }
                     }
                 }
             }

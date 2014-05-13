@@ -42,23 +42,25 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
             Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            if ( guid.IsEmpty() )
             {
                 action.AddLogEntry( "Invalid Activity Property" );
                 return false;
             }
 
             var workflow = action.Activity.Workflow;
-            var activityType = workflow.WorkflowType.ActivityTypes
+
+            var activityType = new WorkflowActivityTypeService( rockContext ).Queryable()
                 .Where( a => a.Guid.Equals( guid ) ).FirstOrDefault();
 
             if ( activityType == null )
