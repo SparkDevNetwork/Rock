@@ -5,12 +5,19 @@ declare
     @iconCssClass nvarchar(max) = null,
     @categoryId int = null,
     @order int = 0,
-    @metricGuid uniqueidentifier = null,
+    --@metricGuid uniqueidentifier = null,
     @metricId int = null,
     @metricValueTypeMeasure int = 0,
     @metricValueTypeGoal int = 1,
     @entityTypeIdCampus int = (select id from EntityType where Name = 'Rock.Model.Campus'),
-    @entityTypeIdGroup int = (select id from EntityType where Name = 'Rock.Model.Group')
+    @entityTypeIdGroup int = (select id from EntityType where Name = 'Rock.Model.Group'),
+    @campusIdMain int,
+    @campusIdEast int,
+    @campusIdWest int,
+    @metricGuidFirstTimeVisitors uniqueidentifier = '41C1D067-0F4A-4D33-84A3-A8144D8F5418',
+    @metricGuidFreeLunches uniqueidentifier = '5C52B8D2-C94F-43F3-AF22-28A0A1D3C791',
+    @metricGuidAttendance uniqueidentifier = 'D4752628-DFC9-4681-ADB3-01936B8F38CA',
+    @metricGuidCats uniqueidentifier = 'AAA21D1C-3F58-494D-B039-236E21C99595'
 begin
 
     delete from MetricValue   
@@ -18,6 +25,17 @@ begin
     delete from MetricCategory
     delete from Category where EntityTypeId in (@entityTypeIdMetricCategoryType)  
 
+    if not exists (select * from Campus where Guid = '69EB5895-F1E7-4D73-ABBD-63DDDEC75582') begin
+        insert into [Campus] ([Name], [IsSystem], [Guid]) values ('East', 0, '69EB5895-F1E7-4D73-ABBD-63DDDEC75582');
+    end;
+
+    if not exists (select * from Campus where Guid = 'B188D509-FAF6-4388-ADB8-478926427F8A') begin    
+        insert into [Campus] ([Name], [IsSystem], [Guid]) values ('West', 0, 'B188D509-FAF6-4388-ADB8-478926427F8A');
+    end;
+
+    select @campusIdMain = id from [Campus] where [Guid]  = '76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8';
+    select @campusIdEast = id from [Campus] where [Guid]  = '69EB5895-F1E7-4D73-ABBD-63DDDEC75582';
+    select @campusIdWest = id from [Campus] where [Guid]  = 'B188D509-FAF6-4388-ADB8-478926427F8A';
 
    -- root cats
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconCssClass],[Order])
@@ -35,14 +53,12 @@ begin
       (0,@parentCategoryId,@entityTypeIdMetricCategoryType,null,null,'Jr. High',NEWID(),'fa fa-question-circle',0) 
 
 
-   -- example metric
-   
-   set @metricGuid = NEWID();
+   -- example metric: First Time Visitors
    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass],[IsCumulative],[Guid])
      VALUES 
-        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'Weekend', 'Visitors', 'fa fa-gift', 0, @metricGuid)
+        (0,'First Time Visitors Per Week','First Time Visitors counts broken down into weeks', 'Weekend', 'Visitors', 'fa fa-gift', 0, @metricGuidFirstTimeVisitors)
 
-    set @metricId = (select Id from Metric where Guid = @metricGuid);
+    set @metricId = (select Id from Metric where Guid = @metricGuidFirstTimeVisitors);
 
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
@@ -52,14 +68,13 @@ begin
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
       values ( @metricId, @categoryId, 0, NEWID())
 
-    -- example metric    
+    -- example metric: Free Lunches    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
-    set @metricGuid = NEWID();
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
      VALUES 
-        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-thumbs-up', 1, @entityTypeIdGroup, @metricGuid)
+        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-thumbs-up', 1, @entityTypeIdGroup, @metricGuidFreeLunches)
 
-    set @metricId = (select Id from Metric where Guid = @metricGuid);
+    set @metricId = (select Id from Metric where Guid = @metricGuidFreeLunches);
     
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
         values ( @metricId, @categoryId, 0, NEWID())
@@ -117,15 +132,120 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime],
 ( @metricId, @metricValueTypeGoal, '04/01/2015', 0, 270, 0, NEWID())
 
 
-
--- example metric    
+-- example metric: Cat Owners Per Week
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
-    set @metricGuid = 'D4752628-DFC9-4681-ADB3-01936B8F38CA';
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
+     VALUES 
+        (0,'Cat Owners','Number of cat owners that showed up for church', 'Week', 'Cat Owners', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuidCats)
+
+    set @metricId = (select Id from Metric where Guid = @metricGuidCats);
+    
+    insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
+        values ( @metricId, @categoryId, 0, NEWID())
+
+INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime], [XValue], [YValue], [Order], [EntityId], [Guid])
+        values 
+( @metricId, @metricValueTypeMeasure, '03/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/02/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2013', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '01/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/02/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2013', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '01/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/02/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2013', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '01/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', 0, floor(rand() * 1000), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeGoal, '03/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '04/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '05/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '06/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '07/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '08/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '09/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '10/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '10/02/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '11/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/01/2013', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '01/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '02/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '03/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '04/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '05/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '06/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '07/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '08/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '09/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '10/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '11/01/2014', 0, floor(rand() * 1000), 0, null, NEWID()),
+( @metricId, @metricValueTypeGoal, '11/01/2014', 0, floor(rand() * 1000), 0, null, NEWID())
+
+
+-- example metric : Adult Attendence    
+    set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative],[EntityTypeId], [Guid])
      VALUES 
-        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuid)
+        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuidAttendance)
 
-    set @metricId = (select Id from Metric where Guid = @metricGuid);
+    set @metricId = (select Id from Metric where Guid = @metricGuidAttendance);
     
     insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
         values ( @metricId, @categoryId, 0, NEWID())

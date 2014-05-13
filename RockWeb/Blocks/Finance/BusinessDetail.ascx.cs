@@ -596,8 +596,13 @@ namespace RockWeb.Blocks.Finance
                 .Add( "Zip Code", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip )
                 .Html;
 
+            string phoneNumber = string.Empty;
+            if ( business.PhoneNumbers.Count > 0 )
+            {
+                phoneNumber = business.PhoneNumbers.FirstOrDefault().ToString();
+            }
             lDetailsRight.Text = new DescriptionList()
-                .Add( "Phone Number", business.PhoneNumbers.FirstOrDefault().ToString() )
+                .Add( "Phone Number", phoneNumber )
                 .Add( "Email Address", business.Email )
                 .Add( "Giving Group", business.GivingGroup.Name )
                 .Add( "Record Status", business.RecordStatusValue )
@@ -621,9 +626,18 @@ namespace RockWeb.Blocks.Finance
                 tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
                 ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
                 tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
-                pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
-                cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
-                cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
+                if ( business.PhoneNumbers.Count > 0 )
+                {
+                    pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
+                    cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
+                    cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
+                }
+                else
+                {
+                    pnbPhone.Text = string.Empty;
+                    cbSms.Checked = false;
+                    cbUnlisted.Checked = false;
+                }
                 tbEmail.Text = business.Email;
                 rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();

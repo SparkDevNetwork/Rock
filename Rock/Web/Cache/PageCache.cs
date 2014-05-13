@@ -864,6 +864,7 @@ namespace Rock.Web.Cache
 
             if ( page != null )
             {
+                page.CopyFromModel( pageModel );
                 return page;
             }
             else

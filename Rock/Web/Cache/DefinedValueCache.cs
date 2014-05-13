@@ -265,6 +265,7 @@ namespace Rock.Web.Cache
 
             if ( definedValue != null )
             {
+                definedValue.CopyFromModel( definedValueModel );
                 return definedValue;
             }
             else

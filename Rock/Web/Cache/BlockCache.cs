@@ -347,6 +347,7 @@ namespace Rock.Web.Cache
 
             if ( block != null )
             {
+                block.CopyFromModel( blockModel );
                 return block;
             }
             else

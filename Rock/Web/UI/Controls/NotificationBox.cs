@@ -104,6 +104,7 @@ namespace Rock.Web.UI.Controls
                 if ( showMessage )
                 {
                     writer.AddAttribute( "class", "alert alert-" + alertType );
+                    writer.AddAttribute( "id", this.ClientID );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                     if ( this.Dismissable )
@@ -131,14 +132,14 @@ namespace Rock.Web.UI.Controls
                     {
                         string detailsFormat = @"
 <small>
-    <a data-toggle='collapse' data-parent='#accordion' href='#error-details'>Show Details</a>
+    <a data-toggle='collapse' data-parent='#{1}' href='#error-details_{1}'>Show Details</a>
 </small>
-<div id='error-details' class='collapse'>
+<div id='error-details_{1}' class='collapse'>
         <p class='margin-t-sm'>
         {0}
     </p>
 </div>";
-                        writer.Write( detailsFormat, this.Details );
+                        writer.Write( detailsFormat, this.Details, this.ClientID );
                     }
 
                     writer.RenderEndTag();

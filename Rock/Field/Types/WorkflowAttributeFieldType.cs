@@ -80,9 +80,8 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ListControl editControl;
+            var editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
 
-            editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
             var workflowTypeAttributes = GetContextWorkflowTypeAttributes();

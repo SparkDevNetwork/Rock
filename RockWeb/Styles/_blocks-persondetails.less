@@ -62,6 +62,43 @@
         display: table;
         max-width: 200px;
         margin: 0 auto;
+        position: relative;
+
+        .following-status {
+            position: absolute;
+            top: 0;
+            right: 0;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            z-index: 500;
+            border-top: 70px solid @link-color;
+            border-left: 70px solid transparent;
+            transition: 1s;
+            opacity: .4;
+
+            i {
+                position: absolute;
+                top: -60px;
+                right: 10px;
+                color: #fff;
+                font-size: 24px;
+                transition: 1s;
+                opacity: 0;
+            }
+
+            &.following {
+                opacity: 1;
+
+                i {
+                    opacity: 1;
+                }
+            }
+        }
+
+        a.fluidbox-opened + .following-status { // hide the following fold if the photo is zoomed
+            opacity: 0 !important;
+        }
 
         img {
             width: 100%;
@@ -76,6 +113,47 @@
         .fluidbox-opened .fluidbox-ghost {
             cursor: -webkit-zoom-out;
             cursor: -moz-zoom-out;
+        }
+    }
+
+    .social-icons {
+        .icon {
+            float: left;
+            background-color: @accent-bold-color;
+            margin: 0 2px;
+            border-radius: @border-radius-base;
+            font-size: 16px;
+
+            a {
+                color: @accent-bold-text-color;
+
+                &:hover {
+                    opacity: .6;
+                }
+            }
+
+            i {
+                margin: 4px;
+            }
+
+            &.icon-facebook {
+                background-color: #44619d;
+                color: #fff;
+            }
+
+            &.icon-twitter {
+                background-color: #55acee;
+                color: #fff;
+            }
+
+            &.icon-instagram {
+                background-color: #39688f;
+                color: #fff;
+            }
+        }
+
+        .icon:first-child {
+            margin-left: 0;
         }
     }
 
@@ -368,6 +446,20 @@
         margin-bottom: @spacing-sm-px;
     }
     
+    .person-image {
+        -webkit-filter: grayscale(100%);
+        -moz-filter: grayscale(100%);
+        filter: gray;
+        filter: grayscale(100%);
+        filter: url(../../Assets/Images/(desaturate.svg#grayscale);
+        transition: .5s;
+
+        &:hover {
+            -webkit-filter: grayscale(0%);
+            -moz-filter: grayscale(0%);
+            filter: grayscale(0%);
+        }
+    }
 
     .addresses ul {
         list-style: none;

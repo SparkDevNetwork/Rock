@@ -141,13 +141,16 @@ namespace RockWeb.Blocks.Finance
                     .Select( r => r.Id )
                     .FirstOrDefault();
 
-                var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
-                if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
+                if ( business.PhoneNumbers.Count > 0 )
                 {
-                    Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
-                    if ( lblPhoneNumber != null )
+                    var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
+                    if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
                     {
-                        lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
+                        Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
+                        if ( lblPhoneNumber != null )
+                        {
+                            lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
+                        }
                     }
                 }
 
@@ -179,7 +182,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.State ) || !string.IsNullOrWhiteSpace( location.Zip ) )
+                if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.Zip ) )
                 {
                     Label lblCityStateZip = e.Row.FindControl( "lblCityStateZip" ) as Label;
                     if ( lblCityStateZip != null )

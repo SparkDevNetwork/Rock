@@ -275,6 +275,7 @@ namespace Rock.Web.Cache
 
             if ( RestAction != null )
             {
+                RestAction.CopyFromModel( RestActionModel );
                 return RestAction;
             }
             else

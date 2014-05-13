@@ -41,40 +41,26 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     public partial class BarChartDashboardWidget : DashboardWidget
     {
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// Loads the chart.
         /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        public override void LoadChart()
         {
-            base.OnLoad( e );
-
-            if ( !Page.IsPostBack )
+            bcExample.StartDate = new DateTime( 2013, 1, 1 );
+            bcExample.EndDate = new DateTime( 2014, 1, 1 );
+            bcExample.MetricValueType = this.MetricValueType;
+            bcExample.MetricId = this.MetricId;
+            bcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
+            if ( bcExample.EntityId == null && this.ContextEntity() != null )
             {
-                bcExample.StartDate = new DateTime( 2013, 1, 1 );
-                bcExample.EndDate = new DateTime( 2014, 1, 1 );
-                bcExample.MetricValueType = this.MetricValueType;
-                bcExample.MetricId = this.MetricId;
-                bcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
-                if ( bcExample.EntityId == null && this.ContextEntity() != null )
-                {
-                    bcExample.EntityId = this.ContextEntity().Id;
-                }
-
-                bcExample.Title = this.Title;
-                bcExample.Subtitle = this.Subtitle;
-
-                ChartTheme testTheme = new ChartTheme();
-                testTheme.SeriesColors = new string[] { 
-                    "#FF0000", 
-                    "#515151"
-                };
-                testTheme.GridBackgroundColor = "brown";
-                testTheme.GridColor = "purple";
-
-                bcExample.Options.SetTheme( testTheme );
-
-                nbMetricWarning.Visible = !this.MetricId.HasValue;
+                bcExample.EntityId = this.ContextEntity().Id;
             }
+
+            bcExample.Title = this.Title;
+            bcExample.Subtitle = this.Subtitle;
+
+            bcExample.Options.SetChartStyle( this.ChartStyle );
+
+            nbMetricWarning.Visible = !this.MetricId.HasValue;
         }
     }
 }
