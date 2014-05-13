@@ -29,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>, IOrdered
+    public partial class MetricValue : Model<MetricValue>, IOrdered, IChartData
     {
         #region Entity Properties
 
@@ -133,7 +133,7 @@ namespace Rock.Model
         /// The metric value javascript time stamp.
         /// </value>
         [DataMember]
-        public long MetricValueJavascriptTimeStamp
+        public long DateTimeStamp
         {
             get
             {
@@ -145,6 +145,21 @@ namespace Rock.Model
                 {
                     return 0;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the series identifier.
+        /// </summary>
+        /// <value>
+        /// The series identifier.
+        /// </value>
+        [DataMember]
+        public string SeriesId
+        {
+            get
+            {
+                return string.Format( "{0}", this.EntityId ?? 0 );
             }
         }
 
