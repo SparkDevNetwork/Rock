@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class PeopleController : IHasCustomRoutes
     {
@@ -55,6 +55,24 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
+                name: "PeopleSearchByEmail",
+                routeTemplate: "api/People/SearchByEmail",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "SearchByEmail"
+                } );
+
+            routes.MapHttpRoute(
+                name: "PeopleSearchByPhoneNumber",
+                routeTemplate: "api/People/SearchByPhoneNumber",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "SearchByPhoneNumber"
+                } );
+
+            routes.MapHttpRoute(
                 name: "PeopleGetByUserName",
                 routeTemplate: "api/People/GetByUserName/{username}",
                 defaults: new
@@ -80,7 +98,6 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "GetPopupHtml"
                 } );
-
         }
 
         /// <summary>
@@ -130,14 +147,182 @@ namespace Rock.Rest.Controllers
 	</div>
 </div>
 ";
+            return GetPersonSearchDetails( rockContext, sortedPersonList, itemDetailFormat, reversed, includeHtml );
+        }
 
+        /// <summary>
+        /// Searches the person entit(ies) by email.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public IQueryable<PersonSearchResult> SearchByEmail( string email, bool includeHtml = false )
+        {
+            int count = 20;
+            var rockContext = new Rock.Data.RockContext();
+            List<Person> personList = new PersonService( rockContext )
+                .GetByEmail( email, true ).Take( count ).ToList();
+
+            string itemDetailFormat = @"
+<div class='picker-select-item-details clearfix' style='display: none;'>
+	{0}
+	<div class='contents'>
+        {1}
+	</div>
+</div>
+";
+            return GetPersonSearchDetails( rockContext, personList, itemDetailFormat, false, includeHtml );
+        }
+
+        /// <summary>
+        /// Searches the person entit(ies) by phone number.
+        /// </summary>
+        /// <param name="number">The phone number.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public IQueryable<PersonSearchResult> SearchByPhoneNumber( string number, bool includeHtml = false )
+        {
+            int count = 20;
+            var rockContext = new Rock.Data.RockContext();
+            List<int> matchingPersonIds = new PhoneNumberService( rockContext )
+                .GetPersonIdsByNumber( number ).Take( count ).ToList();
+
+            List<Person> personList = new PersonService( rockContext ).GetByIds( matchingPersonIds ).ToList();
+            string itemDetailFormat = @"
+<div class='picker-select-item-details clearfix' style='display: none;'>
+	{0}
+	<div class='contents'>
+        {1}
+	</div>
+</div>
+";
+            return GetPersonSearchDetails( rockContext, personList, itemDetailFormat, false, includeHtml );
+        }
+
+        /// <summary>
+        /// Gets the name of the by user.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public Person GetByUserName( string username )
+        {
+            int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                .Where( u => u.UserName.Equals( username ) )
+                .Select( a => a.PersonId )
+                .FirstOrDefault();
+
+            if ( personId != null )
+            {
+                return this.Get( personId.Value );
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        /// <summary>
+        /// Gets the Person by person alias identifier.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public Person GetByPersonAliasId( int personAliasId )
+        {
+            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
+                .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
+            if ( personId != null )
+            {
+                return this.Get( personId.Value );
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        /// <summary>
+        /// Gets the popup html for the selected person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpGet]
+        public PersonSearchResult GetPopupHtml( int personId )
+        {
+            var result = new PersonSearchResult();
+            result.Id = personId;
+            result.PickerItemDetailsHtml = "No Details Available";
+
+            var html = new StringBuilder();
+
+            // Create new service (need ProxyServiceEnabled)
+            var rockContext = new Rock.Data.RockContext();
+            var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                .Where( p => p.Id == personId )
+                .FirstOrDefault();
+
+            if ( person != null )
+            {
+                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                    Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
+                    person.FullName,
+                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
+
+                var spouse = person.GetSpouse();
+                if ( spouse != null )
+                {
+                    html.AppendFormat( "<strong>Spouse</strong> {0}",
+                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                }
+
+                int? age = person.Age;
+                if ( age.HasValue )
+                {
+                    html.AppendFormat( "<br/><strong>Age</strong> {0}", age );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                {
+                    html.AppendFormat( "<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email );
+                }
+
+                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
+                {
+                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.ToString() );
+                }
+
+                // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
+
+                result.PickerItemDetailsHtml = html.ToString();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the person search details.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="personList">The person list.</param>
+        /// <param name="itemDetailFormat">The item detail format.</param>
+        /// <param name="reversed">if set to <c>true</c> [reversed].</param>
+        /// <param name="includeHtml">if set to <c>true</c> [include HTML].</param>
+        /// <returns></returns>
+        private IQueryable<PersonSearchResult> GetPersonSearchDetails( Rock.Data.RockContext rockContext, List<Person> personList, string itemDetailFormat, bool reversed = false, bool includeHtml = false )
+        {
             Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
 
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
 
             List<PersonSearchResult> searchResult = new List<PersonSearchResult>();
-            foreach ( var person in sortedPersonList )
+            foreach ( var person in personList )
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
@@ -237,112 +422,10 @@ namespace Rock.Rest.Controllers
 
             return searchResult.AsQueryable();
         }
-
-        /// <summary>
-        /// Gets the name of the by user.
-        /// </summary>
-        /// <param name="username">The username.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        public Person GetByUserName( string username )
-        {
-            int? personId = new UserLoginService( ( Rock.Data.RockContext )Service.Context ).Queryable()
-                .Where( u => u.UserName.Equals( username ) )
-                .Select( a => a.PersonId )
-                .FirstOrDefault();
-
-            if ( personId != null )
-            {
-                return this.Get( personId.Value );
-            }
-
-            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
-        }
-
-        /// <summary>
-        /// Gets the Person by person alias identifier.
-        /// </summary>
-        /// <param name="personAliasId">The person alias identifier.</param>
-        /// <returns></returns>
-        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
-        [Authenticate, Secured]
-        [HttpGet]
-        public Person GetByPersonAliasId( int personAliasId )
-        {
-            int? personId = new PersonAliasService( (Rock.Data.RockContext)Service.Context ).Queryable()
-                .Where( u => u.Id.Equals( personAliasId ) ).Select( a => a.PersonId ).FirstOrDefault();
-            if ( personId != null )
-            {
-                return this.Get( personId.Value );
-            }
-
-            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
-        }
-
-        /// <summary>
-        /// Gets the popup html for the selected person
-        /// </summary>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        [Authenticate, Secured]
-        [HttpGet]
-        public PersonSearchResult GetPopupHtml( int personId )
-        {
-            var result = new PersonSearchResult();
-            result.Id = personId;
-            result.PickerItemDetailsHtml = "No Details Available";
-
-            var html = new StringBuilder();
-
-            // Create new service (need ProxyServiceEnabled)
-            var rockContext = new Rock.Data.RockContext();
-            var person = new PersonService(rockContext).Queryable("ConnectionStatusValue, PhoneNumbers")
-                .Where(p => p.Id == personId)
-                .FirstOrDefault();
-
-            if ( person != null )
-            {
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
-                    person.FullName,
-                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
-
-                var spouse = person.GetSpouse();
-                if ( spouse != null )
-                {
-                    html.AppendFormat( "<strong>Spouse</strong> {0}",
-                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
-                }
-
-                int? age = person.Age;
-                if ( age.HasValue )
-                {
-                    html.AppendFormat( "<br/><strong>Age</strong> {0}", age );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( person.Email ) )
-                {
-                    html.AppendFormat( "<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email );
-                }
-
-                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false ).OrderBy( n => n.NumberTypeValue.Order ) )
-                {
-                    html.AppendFormat( "<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.ToString() );
-                }
-
-                // TODO: Should also show area: <br /><strong>Area</strong> WestwingS
-
-                result.PickerItemDetailsHtml = html.ToString();
-            }
-
-            return result;
-        }
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonSearchResult
     {
