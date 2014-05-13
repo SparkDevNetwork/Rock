@@ -293,13 +293,16 @@ namespace Rock.Data
                 this.LoadAttributes();
             }
 
-            foreach ( var attribute in this.Attributes )
+            if ( this.Attributes != null )
             {
-                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                foreach ( var attribute in this.Attributes )
                 {
-                    string value = GetAttributeValue( attribute.Key );
-                    dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                    dictionary.Add( attribute.Key + "_unformatted", value );
+                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                    {
+                        string value = GetAttributeValue( attribute.Key );
+                        dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( attribute.Key + "_unformatted", value );
+                    }
                 }
             }
 
