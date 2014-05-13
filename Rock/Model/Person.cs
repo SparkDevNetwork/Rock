@@ -589,7 +589,14 @@ namespace Rock.Model
         {
             get 
             {
-                return Person.GetPhotoUrl( this.PhotoId, this.Gender, this.RecordTypeValue.Guid );
+                if ( this.RecordTypeValue != null )
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Gender, this.RecordTypeValue.Guid );
+                }
+                else
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Gender );
+                }
             }
             private set { }
         }
