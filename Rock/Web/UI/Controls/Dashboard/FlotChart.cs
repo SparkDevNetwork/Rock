@@ -363,6 +363,41 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public class ChartClickArgs: EventArgs
+        {
+            /// <summary>
+            /// Gets or sets the date time value.
+            /// </summary>
+            /// <value>
+            /// The date time value.
+            /// </value>
+            public DateTime DateTimeValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the y value.
+            /// </summary>
+            /// <value>
+            /// The y value.
+            /// </value>
+            public decimal? YValue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the series identifier.
+            /// </summary>
+            /// <value>
+            /// The series identifier.
+            /// </value>
+            public string SeriesId { get; set; }
+        }
+
+        /// <summary>
+        /// Occurs when [chart click].
+        /// </summary>
+        public event EventHandler<ChartClickArgs> ChartClick;
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -385,6 +420,46 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if (this.Page.IsPostBack)
+            {
+                EnsureChildControls();
+                if ( this.Page.Request.Params["__EVENTTARGET"] == _pnlChartPlaceholder.UniqueID )
+                {
+                    HandleChartClick();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the chart click.
+        /// </summary>
+        private void HandleChartClick()
+        {
+            var eventArgs = this.Page.Request.Params["__EVENTARGUMENT"].Split( ';' );
+            ChartClickArgs chartClickArgs = new ChartClickArgs();
+            foreach ( var parts in eventArgs )
+            {
+                var param = parts.Split( '=' );
+                if ( param[0] == "DateStamp" )
+                {
+                    long dateStamp = long.Parse( param[1] );
+                    chartClickArgs.DateTimeValue = new DateTime( 1970, 1, 1 ).AddMilliseconds( dateStamp );
+                }
+                else if ( param[0] == "YValue" )
+                {
+                    chartClickArgs.YValue = param[1].AsInteger() ?? 0;
+                }
+                else if ( param[0] == "SeriesId" )
+                {
+                    chartClickArgs.SeriesId = param[1];
+                }
+            }
+
+            if ( ChartClick != null )
+            {
+                ChartClick( this, chartClickArgs );
+            }
         }
 
         /// <summary>
@@ -549,7 +624,11 @@ namespace Rock.Web.UI.Controls
             }
 
             scriptFormat += @"
+                    // plothover script (tooltip script) 
                     {5}
+
+                    // plotclick script
+                    {7}
             }})
             .fail(function (jqXHR, textStatus, errorThrown) {{
                 //debugger
@@ -581,11 +660,19 @@ namespace Rock.Web.UI.Controls
                     
                     if (item) {{
                         var yaxisLabel = $('#{1}').val();
-                        var tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                        var tooltipText = '';
+
+                        if (yaxisLabel) {{
+                            tooltipText += yaxisLabel + '<br />';
+                        }}
+
+                        tooltipText += new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+
                         if (item.series.label) {{
                             tooltipText += '<br />' + item.series.label;
                         }}
-                        tooltipText += '<br />' + yaxisLabel + ': ' + item.series.chartData[item.dataIndex].YValue;                
+
+                        tooltipText += ':&nbsp;' + item.series.chartData[item.dataIndex].YValue;                
                         $('#tooltip_{0}').find('.tooltip-inner').html(tooltipText);
                         $('#tooltip_{0}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
                         $('#tooltip_{0}').show();
@@ -598,6 +685,26 @@ namespace Rock.Web.UI.Controls
                 tooltipScript = string.Format( tooltipScriptFormat, _pnlChartPlaceholder.ClientID, _hfYAxisLabel.ClientID );
             }
 
+            string chartClickScript = null;
+            if ( ChartClick != null )
+            {
+                string chartClickScriptFormat = @"
+                $('#{0}').bind('plotclick', function (event, pos, item) {{
+                    
+                    if (item) {{
+                        debugger
+                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId);
+                    }}
+                    else
+                    {{
+                        // no point was clicked
+                    }}
+                }});
+";
+
+                chartClickScript = string.Format( chartClickScriptFormat, _pnlChartPlaceholder.ClientID, _pnlChartPlaceholder.UniqueID );
+            }
+
             string script = string.Format(
                 scriptFormat,
                 restUrl,
@@ -606,7 +713,8 @@ namespace Rock.Web.UI.Controls
                 _pnlChartPlaceholder.ClientID,
                 chartOptionsJson,
                 tooltipScript,
-                getSeriesNameUrl);
+                getSeriesNameUrl,
+                chartClickScript);
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
