@@ -722,6 +722,14 @@ namespace RockWeb.Blocks.Core
                 var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
                 if ( actionType != null )
                 {
+                    var action = EntityTypeCache.Read( actionType.EntityTypeId );
+                    if ( action != null )
+                    {
+                        var rockContext = new RockContext();
+                        Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), actionType.TypeId, "EntityTypeId", actionType.EntityTypeId.ToString(), rockContext );
+                        actionType.LoadAttributes( rockContext );
+                    }
+
                     BuildControls( true, actionType.Guid, actionType.Guid );
                 }
             }

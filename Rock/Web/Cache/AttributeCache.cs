@@ -247,8 +247,21 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
-        private List<int> categoryIds = null;
 
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds
+        {
+            get { return categoryIds; }
+            set { categoryIds = value; }
+        }
+
+        private List<int> categoryIds = null;
 
         #endregion
 
@@ -615,6 +628,7 @@ namespace Rock.Web.Cache
 
             if ( attribute != null )
             {
+                attribute.CopyFromModel( attributeModel );
                 return attribute;
             }
             else

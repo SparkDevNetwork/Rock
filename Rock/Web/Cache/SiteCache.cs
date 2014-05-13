@@ -511,6 +511,7 @@ namespace Rock.Web.Cache
 
             if ( site != null )
             {
+                site.CopyFromModel( siteModel );
                 return site;
             }
             else
