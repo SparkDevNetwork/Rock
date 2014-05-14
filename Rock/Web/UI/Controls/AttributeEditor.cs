@@ -18,7 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -39,6 +42,7 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
+        private HtmlInputHidden _hfExistingKeyNames;
         private Literal _lAttributeActionTitle;
         private ValidationSummary _validationSummary;
 
@@ -48,6 +52,7 @@ namespace Rock.Web.UI.Controls
         private CategoryPicker _cpCategories;
         private RockTextBox _tbKey;
         private CustomValidator _cvKey;
+        private RockTextBox _tbIconCssClass;
         private RockCheckBox _cbRequired;
         private RockCheckBox _cbShowInGrid;
 
@@ -212,6 +217,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbKey.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbIconCssClass.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbIconCssClass.Text = value;
             }
         }
 
@@ -391,7 +416,25 @@ namespace Rock.Web.UI.Controls
                 ViewState["ReservedKeyNames"] = value; 
             }
         }
-        
+
+        /// <summary>
+        /// Gets or sets the object property names.
+        /// </summary>
+        /// <value>
+        /// The object property names.
+        /// </value>
+        private List<string> ObjectPropertyNames
+        {
+            get
+            {
+                return ViewState["ObjectPropertyNames"] as List<string> ?? new List<string>();
+            }
+            set
+            {
+                ViewState["ObjectPropertyNames"] = value;
+            }
+        }
+
         #endregion
 
         #region Overridden Control Methods
@@ -423,6 +466,11 @@ namespace Rock.Web.UI.Controls
             if ( !_controlsLoaded )
             {
                 Controls.Clear();
+
+                _hfExistingKeyNames = new HtmlInputHidden();
+                _hfExistingKeyNames.AddCssClass( "js-existing-key-names" );
+                _hfExistingKeyNames.ID = this.ID + "_hfExistingKeyNames";
+                Controls.Add( _hfExistingKeyNames );
 
                 _lAttributeActionTitle = new Literal();
                 _lAttributeActionTitle.ID = "lAttributeActionTitle";
@@ -470,6 +518,11 @@ namespace Rock.Web.UI.Controls
                 _cvKey.CssClass = "validation-error help-inline";
                 _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value.";
                 Controls.Add( _cvKey );
+
+                _tbIconCssClass = new RockTextBox();
+                _tbIconCssClass.ID = "_tbIconCssClass";
+                _tbIconCssClass.Label = "Icon CSS Class";
+                Controls.Add( _tbIconCssClass );
 
                 _cbRequired = new RockCheckBox();
                 _cbRequired.ID ="cbRequired";
@@ -575,6 +628,7 @@ namespace Rock.Web.UI.Controls
             _cpCategories.ValidationGroup = validationGroup;
             _tbKey.ValidationGroup = validationGroup;
             _cvKey.ValidationGroup = validationGroup;
+            _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
             _ddlFieldType.ValidationGroup = validationGroup;
@@ -607,6 +661,12 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
             _lAttributeActionTitle.RenderControl( writer );
             writer.RenderEndTag();
+
+            var existingKeyNames = new List<string>();
+            ReservedKeyNames.ForEach( n => existingKeyNames.Add(n));
+            ObjectPropertyNames.ForEach( n => existingKeyNames.Add(n));
+            _hfExistingKeyNames.Value = existingKeyNames.ToJson();
+            _hfExistingKeyNames.RenderControl( writer );
 
             _validationSummary.RenderControl( writer );
 
@@ -642,6 +702,7 @@ namespace Rock.Web.UI.Controls
             _cpCategories.RenderControl( writer );
             _tbKey.RenderControl( writer );
             _cvKey.RenderControl( writer );
+            _tbIconCssClass.RenderControl( writer );
             _cbRequired.RenderControl( writer );
             _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
@@ -696,7 +757,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            args.IsValid = !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
+            args.IsValid = 
+                !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase ) &&
+                !ObjectPropertyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
         }
 
         /// <summary>
@@ -753,6 +816,7 @@ namespace Rock.Web.UI.Controls
                 this.AttributeGuid = attribute.Guid;
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
+                this.IconCssClass = attribute.IconCssClass;
                 this.CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
                 this.Description = attribute.Description;
                 this.FieldTypeId = attribute.FieldTypeId;
@@ -776,10 +840,10 @@ namespace Rock.Web.UI.Controls
             {
                 this.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( objectType ).Id;
 
-                ReservedKeyNames = new List<string>();
+                ObjectPropertyNames = new List<string>();
                 foreach ( var propInfo in objectType.GetProperties() )
                 {
-                    ReservedKeyNames.Add( propInfo.Name );
+                    ObjectPropertyNames.Add( propInfo.Name );
                 }
             }
 
@@ -797,6 +861,7 @@ namespace Rock.Web.UI.Controls
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
                 attribute.Key = this.Key;
+                attribute.IconCssClass = this.IconCssClass;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
                 attribute.IsMultiValue = false;
@@ -884,34 +949,36 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterClientScript()
         {
-            string script = string.Format( @"
+            string script = @"
+    function populateAttributeKey(nameControlId, keyControlId ) {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        var keyControl = $('#' + keyControlId);
+        var keyValue = keyControl.val();
 
-var reservedKeyNames = {0};
+        var reservedKeyJson = keyControl.closest('fieldset').find('.js-existing-key-names').val();
+        var reservedKeyNames = eval('(' + reservedKeyJson + ')');
 
-function populateAttributeKey(nameControlId, keyControlId ) {{
-    // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
-    var keyControl = $('#' + keyControlId);
-    var keyValue = keyControl.val();
-    if (keyValue == '') {{
+        if (keyValue == '') {
 
-        keyValue = $('#' + nameControlId).val().replace(/\s+/g, '');
-        var newKeyValue = keyValue;
+            keyValue = $('#' + nameControlId).val().replace(/\s+/g, '');
+            var newKeyValue = keyValue;
         
-        var i = 1;
-        while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {{
-            newKeyValue = keyValue + i++;
-        }}
+            var i = 1;
+            while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {
+                newKeyValue = keyValue + i++;
+            }
             
-        keyControl.val(newKeyValue);
-    }}
-}}
+            keyControl.val(newKeyValue);
+        }
+    }
 
-function validateKey(sender, args) {{
-    args.IsValid = ( $.inArray( $('#{1}').val(), reservedKeyNames ) < 0 );
-}}
-",
-                ReservedKeyNames.ToJson(), _tbKey.ClientID );
-
+    function validateKey(sender, args) {
+        var keyControl = $('#' + sender.controltovalidate);
+        var reservedKeyJson = keyControl.closest('fieldset').find('.js-existing-key-names').val();
+        var reservedKeyNames = eval('(' + reservedKeyJson + ')');
+        args.IsValid = ( $.inArray( keyControl.val(), reservedKeyNames ) < 0 );
+    }
+";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "AttributeEditor", script, true );
         }
 

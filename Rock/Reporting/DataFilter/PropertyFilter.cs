@@ -347,9 +347,10 @@ namespace Rock.Reporting.DataFilter
 
                                 return comparison;
                             }
-                            else if ( entityField.DefinedTypeId.HasValue )
+                            else if ( entityField.DefinedTypeGuid.HasValue )
                             {
-                                List<int> selectedIds = selectedValues.Select( v => int.Parse( v ) ).ToList();
+                                List<Guid> selectedValueGuids = selectedValues.Select( v => v.AsGuid() ).ToList();
+                                List<int> selectedIds = new DefinedValueService( serviceInstance.Context as RockContext ).GetByGuids( selectedValueGuids ).Select( a => a.Id ).ToList();
                                 ConstantExpression constantExpression = Expression.Constant( selectedIds, typeof( List<int> ) );
 
                                 if ( entityField.PropertyType == typeof( int? ) )

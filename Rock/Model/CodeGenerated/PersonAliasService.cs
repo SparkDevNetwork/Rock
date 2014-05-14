@@ -250,9 +250,9 @@ namespace Rock.Model
             
             // ignoring Metric,CreatedByPersonAliasId 
             
-            // ignoring Metric,ModifiedByPersonAliasId 
+            // ignoring Metric,MetricChampionPersonAliasId 
             
-            // ignoring Metric,StewardPersonAliasId 
+            // ignoring Metric,ModifiedByPersonAliasId 
             
             // ignoring MetricValue,CreatedByPersonAliasId 
             
@@ -299,6 +299,10 @@ namespace Rock.Model
             // ignoring PhoneNumber,CreatedByPersonAliasId 
             
             // ignoring PhoneNumber,ModifiedByPersonAliasId 
+            
+            // ignoring PluginMigration,CreatedByPersonAliasId 
+            
+            // ignoring PluginMigration,ModifiedByPersonAliasId 
             
             // ignoring PrayerRequest,CreatedByPersonAliasId 
             
@@ -363,6 +367,14 @@ namespace Rock.Model
             // ignoring WorkflowAction,CreatedByPersonAliasId 
             
             // ignoring WorkflowAction,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActionForm,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionForm,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,ModifiedByPersonAliasId 
             
             // ignoring WorkflowActionType,CreatedByPersonAliasId 
             

@@ -67,6 +67,7 @@ namespace RockWeb.Blocks.Administration
                     rGrid.DataKeyNames = new string[] { "id" };
                     rGrid.Actions.ShowAdd = true;
                     rGrid.Actions.AddClick += rGrid_GridAdd;
+                    rGrid.Actions.ShowExcelExport = false;
                     rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
                     rGrid.GridRebind += new GridRebindEventHandler( rGrid_GridRebind );
                 }
@@ -123,6 +124,7 @@ namespace RockWeb.Blocks.Administration
         {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
+            var pageViewService = new PageViewService( rockContext );
             var siteService = new SiteService( rockContext );
 
             var page = pageService.Get( (int)rGrid.DataKeys[e.RowIndex]["id"] );
@@ -131,7 +133,6 @@ namespace RockWeb.Blocks.Administration
                 string errorMessage = string.Empty;
                 if ( !pageService.CanDelete( page, out errorMessage ) )
                 {
-                    //errorMessage = "The page is the parent page of another page.";
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Alert );
                     return;
                 }
@@ -153,6 +154,12 @@ namespace RockWeb.Blocks.Administration
                         site.RegistrationPageId = null;
                         site.RegistrationPageRouteId = null;
                     }
+                }
+
+                foreach( var pageView in pageViewService.GetByPageId(page.Id))
+                {
+                    pageView.Page = null;
+                    pageView.PageId = null;
                 }
 
                 pageService.Delete( page );

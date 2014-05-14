@@ -17,20 +17,26 @@
 	//
 	
 	//
-	// some constants
+	// some global variables
 	//
-    const string dotNetVersionRequired = "4.5";
-    const string internetCheckSite = "https://rockrms.blob.core.windows.net/install/html-alive.txt";
-    const string rockZipAssemblyFile = "http://storage.rockrms.com/install/Ionic.Zip.dll";
-    const string rockInstallFile = "http://storage.rockrms.com/install/Install.aspx";
-    const string rockConfigureFile = "http://storage.rockrms.com/install/Configure.aspx";
-    const string rockUtilitiesAssembly = "http://storage.rockrms.com/install/Rock.Install.Utilities.dll";
-    const string rockInitalWebConfig = "http://storage.rockrms.com/install/web.config";
-    const string rockInstalledFile = @"\bin\Rock.dll";
 
-    const string rockLogoIco = "http://storage.rockrms.com/install/rock-chms.ico";
-    const string rockStyles = "http://storage.rockrms.com/install/install.css";
-        
+    const string baseStorageUrl = "http://storage.rockrms.com/install/";
+    
+    string dotNetVersionRequired = "4.5";
+    string internetCheckSite = "https://rockrms.blob.core.windows.net/install/html-alive.txt";
+    
+    string rockZipAssemblyFile = "Ionic.Zip.dll";
+    string rockInstallFile = "Install.aspx";
+    string rockConfigureFile = "Configure.aspx";
+    string rockUtilitiesAssembly = "Rock.Install.Utilities.dll";
+    string rockInitalWebConfig = "web.config";
+    
+    string rockInstalledFile = @"\bin\Rock.dll";
+
+    string rockLogoIco = "rock-chms.ico";
+    string rockStyles = "install.css";
+
+    public string redirectPage = "Install.aspx";    
         
 	//
 	// page events
@@ -40,6 +46,32 @@
 	{
 		// first disable the no ASP.Net message
         lNoScripting.Visible = false;
+        
+        // set the full location of the download files depending on mode
+        if ( Request["Mode"] != null && Request["Mode"] == "beta" )
+        {
+            rockZipAssemblyFile = baseStorageUrl + "beta/" + rockZipAssemblyFile;
+            rockInstallFile = baseStorageUrl + "beta/" + rockInstallFile;
+            rockConfigureFile = baseStorageUrl + "beta/" + rockConfigureFile;
+            rockUtilitiesAssembly = baseStorageUrl + "beta/" + rockUtilitiesAssembly;
+            rockInitalWebConfig = baseStorageUrl + "beta/" + rockInitalWebConfig;
+
+            rockLogoIco = baseStorageUrl + "beta/" + rockLogoIco;
+            rockStyles = baseStorageUrl + "beta/" + rockStyles;
+
+            redirectPage = redirectPage + "?Mode=beta";
+        }
+        else
+        {
+            rockZipAssemblyFile = baseStorageUrl + rockZipAssemblyFile;
+            rockInstallFile = baseStorageUrl + rockInstallFile;
+            rockConfigureFile = baseStorageUrl + rockConfigureFile;
+            rockUtilitiesAssembly = baseStorageUrl + rockUtilitiesAssembly;
+            rockInitalWebConfig = baseStorageUrl + rockInitalWebConfig;
+
+            rockLogoIco = baseStorageUrl + rockLogoIco;
+            rockStyles = baseStorageUrl + rockStyles;
+        }
         
         // set location of the bin directory
 		string binDirectoryLocation = Server.MapPath(".") + @"\bin";
@@ -120,7 +152,7 @@
             }
 					
 			// proceed with the install by downloading the installer files
-            lRedirect.Visible = true;
+            pnlRedirect.Visible = true;
 		}
 		
 	}
@@ -167,7 +199,7 @@
 
                         </asp:Literal>
 
-                        <asp:Literal runat="server" ID="lRedirect" Visible="false">    
+                        <asp:Panel runat="server" ID="pnlRedirect" Visible="false">    
                             <div id="divNoJavascript" class="alert alert-danger">
                                 <p>
                                     <strong>JavaScript Required</strong> To enable a robust installation experience we require JavaScript to be enabled.
@@ -181,11 +213,11 @@
                             <script>
                                 $( document ).ready(function() {
                                     $('#content-box').hide();
-                                    window.location = "Install.aspx";
+                                    window.location = "<%=redirectPage%>";
                                 });
                             </script>
 
-                        </asp:Literal>
+                        </asp:Panel>
 
 					</div>
 				</div>
@@ -301,6 +333,22 @@
         {
             checksFailed = true;
             errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that Rock is already installed in this directory. You must remove this version of Rock before proceeding.</a></li>";
+        }
+
+        // check that sql server spatial files don't exist
+        string sqlSpatialFiles = Server.MapPath( "." ) + @"\SqlServerTypes\x86\SqlServerSpatial110.dll";
+        if ( File.Exists( sqlSpatialFiles ) )
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that the filesystem is not empty. You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.</a></li>";
+        }
+
+        // check that sql server spatial files don't exist
+        sqlSpatialFiles = Server.MapPath( "." ) + @"\SqlServerTypes\x64\SqlServerSpatial110.dll";
+        if ( File.Exists( sqlSpatialFiles ) )
+        {
+            checksFailed = true;
+            errorDetails += "<li><i class='fa fa-exclamation-triangle fail'></i> It appears that the filesystem is not empty. You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.</a></li>";
         }
         
 		return checksFailed;

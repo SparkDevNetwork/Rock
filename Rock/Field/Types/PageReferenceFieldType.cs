@@ -70,7 +70,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Reads new values entered by the user for the field
+        /// Reads new values entered by the user for the field.  Returns with Page.Guid,PageRoute.Guid or just Page.Guid 
         /// </summary>
         /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
         /// <param name="configurationValues">The configuration values.</param>
@@ -108,7 +108,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value ( as either Page.Guid,PageRoute.Guid or just Page.Guid if not specific to a route )
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues">The configuration values.</param>

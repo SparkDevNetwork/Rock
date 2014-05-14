@@ -121,7 +121,7 @@
 
         .person-image {
             float: left;
-            border:3px solid @accent-bold-color;
+            border:1px solid @accent-semibold-color;
             float:left;
             margin-right: 7.5px;
             display: inline-block;
@@ -294,9 +294,7 @@ ul.rocktree ul {
     }
 
     .treeview-scroll {
-        background-color: @body-bg;
-        border-radius: @border-radius-base;
-        border: 1px solid @accent-color;
+        
     }
 }
 
@@ -386,7 +384,7 @@ ul.rocktree ul {
             border: 1px solid #bbb;
             float: left;
             margin: 0 1.25% @spacing-md-px;
-            width: 45%;
+            width: 47.5%;
             overflow: hidden;
             color: @pagelist-text-color;
             text-align: center;
@@ -507,6 +505,20 @@ div.tagsinput
         text-decoration: none;
         border-bottom-right-radius: @tag-border-radius;
         border-top-right-radius: @tag-border-radius;
+
+        span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+            display: block;
+            float: left;
+        }
+
+        a {
+            float: left;
+            display: block;
+        }
 
         small {
             font-size: 11px;
@@ -1424,7 +1436,7 @@ ul.groupmembers {
         min-width: 130px;
 
         .person-image {
-            border: 3px solid @accent-bold-color;
+            border: 1px solid @accent-semibold-color;
             float: left;
             margin-right: 7.5px;
             display: inline-block;
@@ -1634,15 +1646,17 @@ ul.rocklist {
 // 25. Active Users
 // -------------------------
 
-.recent {
-    i {
-        color: @brand-success;
+.activeusers {
+    .recent {
+        i {
+            color: @brand-success;
+        }
     }
-}
 
-.not-recent {
-    i {
-        color: @brand-warning;
+    .not-recent {
+        i {
+            color: @brand-warning;
+        }
     }
 }
 

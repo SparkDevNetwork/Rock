@@ -34,6 +34,7 @@ namespace Rock.Jobs
     /// </summary>
     [IntegerField( "Delay Period", "The number of minutes to wait before sending any new communication (If the communication block's 'Send When Approved' option is turned on, then a delay should be used here to prevent a send overlap).", false, 30, "", 0 )]
     [IntegerField( "Expiration Period", "The number of days after a communication was created or scheduled to be sent when it should no longer be sent.", false, 3, "", 1 )]
+    [DisallowConcurrentExecution]
     public class SendCommunications : IJob
     {
         /// <summary>

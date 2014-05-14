@@ -45,6 +45,35 @@ namespace Rock.Services.NuGet
                                        pathResolver: packagePathResolver,
                                        localRepository: new LocalPackageRepository( packagePathResolver, fileSystem ),
                                        project: new WebProjectSystem( siteRoot ) );
+
+            // Add event for reference files added (See note below)
+            _projectManager.PackageReferenceAdded += ProjectManager_PackageReferenceAdded;
+        }
+
+        /// <summary>
+        /// NOTE ***************************************************************************
+        /// This event handler is needed because the current version of NuGet.Core has a bug 
+        /// when calling WebProjectSsyte.AddReferences() method. It is passing a null stream 
+        /// object resulting in zero byte bin files getting written.
+        /// 
+        /// SEE: 
+        ///     http://nuget.codeplex.com/discussions/253750
+        ///     http://nuget.codeplex.com/discussions/479191
+        ///     http://nuget.codeplex.com/workitem/4029
+        /// ********************************************************************************
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PackageOperationEventArgs"/> instance containing the event data.</param>
+        void ProjectManager_PackageReferenceAdded( object sender, PackageOperationEventArgs e )
+        {
+            foreach ( var assemblyReference in e.Package.AssemblyReferences )
+            {
+                string referencePath = Path.Combine( ( (ProjectManager)_projectManager ).PathResolver.GetInstallPath( e.Package ), assemblyReference.Path );
+                string relativeReferencePath = PathUtility.GetRelativePath( _projectManager.Project.Root, referencePath );
+                string fileName = Path.GetFileName( relativeReferencePath );
+                string fullPath = _projectManager.Project.GetFullPath( Path.Combine( "bin", fileName ) );
+                _projectManager.Project.AddFile( fullPath, assemblyReference.GetStream() );
+            }
         }
 
         /// <summary>

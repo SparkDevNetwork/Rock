@@ -20,7 +20,7 @@
                 <fieldset>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" Required="true" />
                         </div>
                     </div>
 

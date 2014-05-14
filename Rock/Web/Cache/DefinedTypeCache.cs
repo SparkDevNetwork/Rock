@@ -289,6 +289,7 @@ namespace Rock.Web.Cache
 
             if ( definedType != null )
             {
+                definedType.CopyFromModel( definedTypeModel );
                 return definedType;
             }
             else

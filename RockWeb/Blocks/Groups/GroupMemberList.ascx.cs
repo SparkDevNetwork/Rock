@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Groups
             int groupId = GetAttributeValue( "Group" ).AsInteger() ?? 0;
             if ( groupId == 0 )
             {
-                groupId = PageParameter( "groupId" ).AsInteger() ?? 0;
+                groupId = PageParameter( "GroupId" ).AsInteger() ?? 0;
                 if ( groupId != 0 )
                 {
                     string key = string.Format( "Group:{0}", groupId );
@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                        //gGroupMembers.Caption = string.Format( "{0}_{1}_{2}", _group.Name, _group.GroupType.GroupTerm, _group.GroupType.GroupMemberTerm.Pluralize() );
 
                         // make sure they have Auth to the block AND Edit to the Group
                         bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
@@ -207,7 +208,7 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", _group.Id );
+            NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
         }
 
         /// <summary>
@@ -217,7 +218,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
         }
 
         /// <summary>

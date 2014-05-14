@@ -41,7 +41,7 @@ namespace Rock.Web
         {
             if ( HttpRuntime.Cache[rootRelativePath] == null )
             {
-                string absolute = HostingEnvironment.MapPath( "~" + rootRelativePath );
+                string absolute = HostingEnvironment.MapPath( rootRelativePath );
                 DateTime date = File.GetLastWriteTime( absolute );
 
                 string result = rootRelativePath + "?v=" + date.Ticks;

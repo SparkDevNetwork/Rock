@@ -246,6 +246,7 @@ namespace Rock.Web.Cache
 
             if ( Layout != null )
             {
+                Layout.CopyFromModel( LayoutModel );
                 return Layout;
             }
             else

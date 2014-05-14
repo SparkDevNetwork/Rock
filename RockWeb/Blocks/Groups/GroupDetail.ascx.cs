@@ -184,18 +184,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupId" );
-                string parentGroupId = PageParameter( "parentGroupId" );
+                string itemId = PageParameter( "GroupId" );
+                string parentGroupId = PageParameter( "ParentGroupId" );
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentGroupId ) )
                     {
-                        ShowDetail( "groupId", int.Parse( itemId ) );
+                        ShowDetail( "GroupId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "groupId", int.Parse( itemId ), int.Parse( parentGroupId ) );
+                        ShowDetail( "GroupId", int.Parse( itemId ), int.Parse( parentGroupId ) );
                     }
                 }
                 else
@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupId = PageParameter( pageReference, "groupId" ).AsInteger();
+            int? groupId = PageParameter( pageReference, "GroupId" ).AsInteger();
             if ( groupId != null )
             {
                 Group group = new GroupService( new RockContext() ).Get( groupId.Value );
@@ -342,7 +342,7 @@ namespace RockWeb.Blocks.Groups
             var qryParams = new Dictionary<string, string>();
             if ( parentGroupId != null )
             {
-                qryParams["groupId"] = parentGroupId.ToString();
+                qryParams["GroupId"] = parentGroupId.ToString();
             }
 
             NavigateToPage( RockPage.Guid, qryParams );
@@ -446,6 +446,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupService.Add( group );
                 }
+                rockContext.SaveChanges();
 
                 group.SaveAttributeValues( rockContext );
 
@@ -494,7 +495,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["groupId"] = group.Id.ToString();
+            qryParams["GroupId"] = group.Id.ToString();
 
             NavigateToPage( RockPage.Guid, qryParams );
         }
@@ -508,17 +509,12 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                int? parentGroupId = PageParameter( "ParentGroupId" ).AsInteger( false );
+                if ( parentGroupId.HasValue )
                 {
-                    // Cancelling on Add.  Return to tree view with parent category selected
+                    // Cancelling on Add, and we know the parentGroupID, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-
-                    string parentGroupId = PageParameter( "parentGroupId" );
-                    if ( !string.IsNullOrWhiteSpace( parentGroupId ) )
-                    {
-                        qryParams["groupId"] = parentGroupId;
-                    }
-
+                    qryParams["GroupId"] = parentGroupId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -668,7 +664,7 @@ namespace RockWeb.Blocks.Groups
         {
             pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "groupId" ) )
+            if ( !itemKey.Equals( "GroupId" ) )
             {
                 return;
             }
@@ -830,7 +826,7 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            GroupLocationsState = new ViewStateList<GroupLocation>();
+            var groupLocations = new List<GroupLocation>();
             foreach ( var groupLocation in group.GroupLocations )
             {
                 var groupLocationState = new GroupLocation();
@@ -846,9 +842,10 @@ namespace RockWeb.Blocks.Groups
                     groupLocationState.GroupLocationTypeValue = new DefinedValue();
                     groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
                 }
-
-                GroupLocationsState.Add( groupLocationState );
+                groupLocations.Add( groupLocationState );
             }
+            GroupLocationsState = new ViewStateList<GroupLocation>();
+            GroupLocationsState.AddAll( groupLocations );
 
             ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, true );
 
@@ -1190,6 +1187,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         GroupMemberAttributesInheritedState.Add( new InheritedAttribute(
                             attribute.Name,
+                            attribute.Key,
                             attribute.Description,
                             Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
                             inheritedGroupType.Name ) );
@@ -1551,6 +1549,11 @@ namespace RockWeb.Blocks.Groups
                 attribute = GroupMemberAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
                 edtGroupMemberAttributes.ActionTitle = ActionTitle.Edit( "attribute for group members of " + tbName.Text );
             }
+
+            var reservedKeyNames = new List<string>();
+            GroupMemberAttributesInheritedState.Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            GroupMemberAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtGroupMemberAttributes.ReservedKeyNames = reservedKeyNames.ToList();
 
             edtGroupMemberAttributes.SetAttributeProperties( attribute, typeof( GroupMember ) );
 

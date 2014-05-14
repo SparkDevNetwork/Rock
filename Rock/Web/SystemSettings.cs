@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -56,7 +57,7 @@ namespace Rock.Web
         public static Guid GetRockInstanceId()
         {
             var settings = SystemSettings.Read();
-            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( "RockInstanceId", StringComparison.OrdinalIgnoreCase ) );
+            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( SystemSettingKeys.ROCK_INSTANCE_ID, StringComparison.OrdinalIgnoreCase ) );
             if ( attributeCache != null )
             {
                 return attributeCache.Guid;

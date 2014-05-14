@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -50,7 +51,7 @@ namespace RockWeb.Blocks.Utility
         #endregion
 
         #region Base Control Methods
-        
+
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
@@ -76,7 +77,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( !Page.IsPostBack )
             {
-                // added for your convience
+                // added for your convenience
             }
         }
 
@@ -91,16 +92,16 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            
+
         }
 
         #endregion
 
         #region Methods
 
-       // helper functional methods (like BindGrid(), etc.)
+        // helper functional methods (like BindGrid(), etc.)
 
         #endregion
     }

@@ -29,28 +29,37 @@ public partial class Http404Error : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        // Check to see if exception should be logged
-        if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+        try
         {
-            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0}", Request.Url.AbsoluteUri ) ), Context );
-        }
+            // Check to see if exception should be logged
+            if ( Convert.ToBoolean( GlobalAttributesCache.Read().GetValue( "Log404AsException" ) ) )
+            {
+                ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0}", Request.Url.AbsoluteUri ) ), Context );
+            }
 
-        // If this is an API call, set status code and exit
-        if (Request.Url.Query.Contains(Request.Url.Authority + ResolveUrl("~/api/")))
-        {
-            Response.StatusCode = 404;
-            Response.Flush();
-            Response.End();
-            return;
-        }
+            // If this is an API call, set status code and exit
+            if (Request.Url.Query.Contains(Request.Url.Authority + ResolveUrl("~/api/")))
+            {
+                Response.StatusCode = 404;
+                Response.Flush();
+                Response.End();
+                return;
+            }
 
-        // try to get site's 404 page
-        SiteCache site = SiteCache.GetSiteByDomain(Request.Url.Host);
-        if ( site != null && site.PageNotFoundPageId.HasValue )
-        {
-            site.RedirectToPageNotFoundPage();
+        
+            // try to get site's 404 page
+            SiteCache site = SiteCache.GetSiteByDomain(Request.Url.Host);
+            if ( site != null && site.PageNotFoundPageId.HasValue )
+            {
+                site.RedirectToPageNotFoundPage();
+            }
+            else
+            {
+                Response.StatusCode = 404;
+                logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
+            }
         }
-        else
+        catch 
         {
             Response.StatusCode = 404;
             logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );

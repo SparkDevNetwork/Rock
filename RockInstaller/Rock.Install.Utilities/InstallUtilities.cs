@@ -40,5 +40,19 @@ namespace Rock.Install.Utilities
             return uri.Host; 
         }
 
+        // gets the domain from an email address
+        public static string GetDomainFromEmail( string emailAddress )
+        {
+            string[] emailParts = emailAddress.Split('@');
+            if ( emailParts.Count() == 2 )
+            {
+                return emailParts[1];
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
     }
 }

@@ -183,12 +183,6 @@ namespace Rock.Data
                             model.ModifiedByPersonAliasId = personAliasId;
                         }
 
-                        if ( model is Person )
-                        {
-                            var person = model as Person;
-                            var transaction = new Rock.Transactions.SaveMetaphoneTransaction( person );
-                            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
-                        }
                     }
                 }
                 else if (entry.State == EntityState.Deleted)
@@ -273,14 +267,14 @@ namespace Rock.Data
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
                             List<string> workflowErrors;
-                            if ( !workflow.Process( entity, out workflowErrors ) )
+                            if ( !workflow.Process( rockContext, entity, out workflowErrors ) )
                             {
                                 SaveErrorMessages.AddRange( workflowErrors );
                                 return false;
                             }
                             else
                             {
-                                if ( workflowType.IsPersisted )
+                                if ( workflow.IsPersisted || workflowType.IsPersisted )
                                 {
                                     workflowService.Add( workflow );
                                     rockContext.SaveChanges();
