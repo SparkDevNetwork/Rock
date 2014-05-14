@@ -406,6 +406,7 @@ namespace Rock.Web.Cache
 
             if ( entityType != null )
             {
+                entityType.CopyFromModel( entityTypeModel );
                 return entityType;
             }
             else

@@ -589,7 +589,14 @@ namespace Rock.Model
         {
             get 
             {
-                return Person.GetPhotoUrl( this.PhotoId, this.Gender );
+                if ( this.RecordTypeValue != null )
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Gender, this.RecordTypeValue.Guid );
+                }
+                else
+                {
+                    return Person.GetPhotoUrl( this.PhotoId, this.Gender );
+                }
             }
             private set { }
         }
@@ -1087,7 +1094,20 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
-        public static string GetPhotoUrl(int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null)
+        public static string GetPhotoUrl( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null )
+        {
+            return GetPhotoUrl( photoId, gender, null, maxWidth, maxHeight );
+        }
+
+        /// <summary>
+        /// Returns a URL for the person's photo.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        public static string GetPhotoUrl( int? photoId, Gender gender, Guid? RecordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
             if ( photoId.HasValue )
             {
@@ -1106,7 +1126,11 @@ namespace Rock.Model
             }
             else
             {
-                if ( gender == Model.Gender.Female )
+                if ( RecordTypeValueGuid.HasValue && RecordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    return VirtualPathUtility.ToAbsolute( "~/Assets/Images/business-no-photo.svg?" );
+                }
+                else if ( gender == Model.Gender.Female )
                 {
                     return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-female.svg?" );
                 }

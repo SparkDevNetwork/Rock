@@ -1188,7 +1188,7 @@ namespace Rock
         /// <returns></returns>
         public static long ToJavascriptMilliseconds( this DateTime dateTime )
         {
-            return (long)( dateTime - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+            return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }
 
         #endregion
@@ -1321,11 +1321,14 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\b" + className + "\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
             if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+            {
+                css += " " + className;
+            }
+            webControl.CssClass = css.Trim();
         }
 
         /// <summary>
@@ -1335,11 +1338,15 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + @"\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
-            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+            while ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+            { 
+                css = Regex.Replace( css, match, " ", RegexOptions.IgnoreCase );
+            }
+
+            webControl.CssClass = css.Trim();
         }
 
         #endregion

@@ -54,6 +54,7 @@ namespace Rock.Web.Cache
         /// <value>
         ///   <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
@@ -62,6 +63,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent category id.
         /// </value>
+        [DataMember]
         public int? ParentCategoryId { get; set; }
 
         /// <summary>
@@ -79,6 +81,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type qualifier column.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
@@ -87,6 +90,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The entity type qualifier value.
         /// </value>
+        [DataMember]
         public string EntityTypeQualifierValue { get; set; }
 
         /// <summary>
@@ -95,6 +99,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The name.
         /// </value>
+        [DataMember]
         public string Name { get; set; }
 
         /// <summary>
@@ -103,6 +108,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The description.
         /// </value>
+        [DataMember]
         public string Description { get; set; }
 
         /// <summary>
@@ -111,6 +117,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; set; }
 
         /// <summary>
@@ -119,6 +126,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The icon CSS class.
         /// </value>
+        [DataMember]
         public string IconCssClass { get; set; }
 
         /// <summary>
@@ -148,6 +156,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The categories.
         /// </value>
+        [DataMember]
         public List<CategoryCache> Categories
         {
             get
@@ -314,6 +323,7 @@ namespace Rock.Web.Cache
 
             if ( category != null )
             {
+                category.CopyFromModel( categoryModel );
                 return category;
             }
             else

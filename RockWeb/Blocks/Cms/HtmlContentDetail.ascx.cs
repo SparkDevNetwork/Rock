@@ -152,6 +152,16 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
             htmlEditor.MergeFields.Add( "Rock.Model.Person" );
+            htmlEditor.MergeFields.Add( "Date" );
+            htmlEditor.MergeFields.Add( "Time" );
+            htmlEditor.MergeFields.Add( "DayOfWeek" );
+
+            ceHtml.MergeFields.Clear();
+            ceHtml.MergeFields.Add( "GlobalAttribute" );
+            ceHtml.MergeFields.Add( "Rock.Model.Person" );
+            ceHtml.MergeFields.Add( "Date" );
+            ceHtml.MergeFields.Add( "Time" );
+            ceHtml.MergeFields.Add( "DayOfWeek" );
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
@@ -531,6 +541,9 @@ namespace RockWeb.Blocks.Cms
                     if (CurrentPerson != null)
                     {
                         mergeFields.Add( "Person", CurrentPerson );
+                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
+                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
+                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                     }
 
                     html = content.Content.ResolveMergeFields( mergeFields );

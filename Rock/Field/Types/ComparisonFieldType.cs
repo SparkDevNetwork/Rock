@@ -55,7 +55,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var ddl = new RockDropDownList();
+            var ddl = new RockDropDownList { ID = id };
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
             {
                 ddl.Items.Add( new ListItem( comparisonType.ConvertToString(), comparisonType.ConvertToInt().ToString() ) );

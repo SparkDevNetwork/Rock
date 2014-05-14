@@ -330,6 +330,7 @@
           <Value>is</Value>
           <Value>to</Value>
           <Value>cc</Value>
+          <Value>hb</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>

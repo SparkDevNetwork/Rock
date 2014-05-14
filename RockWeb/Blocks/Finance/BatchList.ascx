@@ -15,7 +15,7 @@
             </Rock:GridFilter>
 
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit">
+            <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                     <asp:TemplateField HeaderText="Date">
@@ -39,7 +39,7 @@
                             <asp:Literal ID="TransactionCount" runat="server" />
                         </ItemTemplate>
                     </asp:TemplateField>
-                    <asp:BoundField DataField="Campus" HeaderText="Campus" />
+                    <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus"  />
                     <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
                     <asp:TemplateField HeaderText="Messages">
                         <ItemTemplate>

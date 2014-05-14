@@ -107,6 +107,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the form editor.
+        /// </summary>
+        /// <value>
+        /// The form editor.
+        /// </value>
         public WorkflowFormEditor FormEditor
         {
             get
@@ -139,6 +145,7 @@ $('.workflow-action > header').click(function () {
 // fix so that the Remove button will fire its event, but not the parent event 
 $('.workflow-action a.js-action-delete').click(function (event) {
     event.stopImmediatePropagation();
+    return Rock.dialogs.confirmDelete(event, 'Action Type', 'This will also delete all the actions of this type from any existing persisted workflows!');
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 
@@ -367,16 +374,13 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var workflowActionType = GetWorkflowActionType( false );
             workflowActionType.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
 
-            var action = EntityTypeCache.Read( workflowActionType.EntityTypeId );
-            if ( action != null )
+            _hfActionTypeGuid.Value = workflowActionType.Guid.ToString();
+
+            if ( ChangeActionTypeClick != null )
             {
-                var rockContext = new RockContext();
-                Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), workflowActionType.TypeId, "EntityTypeId", workflowActionType.EntityTypeId.ToString(), rockContext );
-                workflowActionType.LoadAttributes( rockContext );
+                ChangeActionTypeClick( this, e );
             }
 
-            SetWorkflowActionType( workflowActionType );
-            this.Expanded = true;
         }
 
         /// <summary>
@@ -485,5 +489,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// Occurs when [delete action type click].
         /// </summary>
         public event EventHandler DeleteActionTypeClick;
+
+        /// <summary>
+        /// Occurs when [change action type click].
+        /// </summary>
+        public event EventHandler ChangeActionTypeClick;
+
     }
 }

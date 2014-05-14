@@ -162,6 +162,15 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is grid column.
         /// </summary>
         /// <value>
@@ -238,8 +247,21 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
-        private List<int> categoryIds = null;
 
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds
+        {
+            get { return categoryIds; }
+            set { categoryIds = value; }
+        }
+
+        private List<int> categoryIds = null;
 
         #endregion
 
@@ -282,6 +304,7 @@ namespace Rock.Web.Cache
             this.Name = attribute.Name;
             this.Description = attribute.Description;
             this.Order = attribute.Order;
+            this.IconCssClass = attribute.IconCssClass;
             this.IsGridColumn = attribute.IsGridColumn;
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
@@ -306,6 +329,7 @@ namespace Rock.Web.Cache
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
+        /// <param name="required">The required.</param>
         public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null)
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
@@ -604,6 +628,7 @@ namespace Rock.Web.Cache
 
             if ( attribute != null )
             {
+                attribute.CopyFromModel( attributeModel );
                 return attribute;
             }
             else

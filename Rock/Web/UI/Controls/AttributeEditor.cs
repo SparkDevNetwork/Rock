@@ -52,6 +52,7 @@ namespace Rock.Web.UI.Controls
         private CategoryPicker _cpCategories;
         private RockTextBox _tbKey;
         private CustomValidator _cvKey;
+        private RockTextBox _tbIconCssClass;
         private RockCheckBox _cbRequired;
         private RockCheckBox _cbShowInGrid;
 
@@ -216,6 +217,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _tbKey.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbIconCssClass.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _tbIconCssClass.Text = value;
             }
         }
 
@@ -498,6 +519,11 @@ namespace Rock.Web.UI.Controls
                 _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value.";
                 Controls.Add( _cvKey );
 
+                _tbIconCssClass = new RockTextBox();
+                _tbIconCssClass.ID = "_tbIconCssClass";
+                _tbIconCssClass.Label = "Icon CSS Class";
+                Controls.Add( _tbIconCssClass );
+
                 _cbRequired = new RockCheckBox();
                 _cbRequired.ID ="cbRequired";
                 _cbRequired.Label = "Required";
@@ -602,6 +628,7 @@ namespace Rock.Web.UI.Controls
             _cpCategories.ValidationGroup = validationGroup;
             _tbKey.ValidationGroup = validationGroup;
             _cvKey.ValidationGroup = validationGroup;
+            _tbIconCssClass.ValidationGroup = validationGroup;
             _cbRequired.ValidationGroup = validationGroup;
             _cbShowInGrid.ValidationGroup = validationGroup;
             _ddlFieldType.ValidationGroup = validationGroup;
@@ -675,6 +702,7 @@ namespace Rock.Web.UI.Controls
             _cpCategories.RenderControl( writer );
             _tbKey.RenderControl( writer );
             _cvKey.RenderControl( writer );
+            _tbIconCssClass.RenderControl( writer );
             _cbRequired.RenderControl( writer );
             _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
@@ -788,6 +816,7 @@ namespace Rock.Web.UI.Controls
                 this.AttributeGuid = attribute.Guid;
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
+                this.IconCssClass = attribute.IconCssClass;
                 this.CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
                 this.Description = attribute.Description;
                 this.FieldTypeId = attribute.FieldTypeId;
@@ -832,6 +861,7 @@ namespace Rock.Web.UI.Controls
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
                 attribute.Key = this.Key;
+                attribute.IconCssClass = this.IconCssClass;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
                 attribute.IsMultiValue = false;
