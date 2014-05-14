@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -70,6 +71,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary>
+        /// If ActionType is a UserEntryForm Gets or sets the form action.
+        /// </summary>
+        /// <value>
+        /// The form action.
+        /// </value>
+        [MaxLength( 20 )]
+        [DataMember]
+        public string FormAction { get; set; }
 
         #endregion
 
@@ -130,11 +141,14 @@ namespace Rock.Model
         /// <summary>
         /// Processes this WorkflowAction.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that the WorkflowAction is operating against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain any error messages that occur while processing the WorkflowAction.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the process completed successfully; otherwise <c>false</c>.</returns>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that occur while processing the WorkflowAction.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the process completed successfully; otherwise <c>false</c>.
+        /// </returns>
         /// <exception cref="System.SystemException"></exception>
-        internal virtual bool Process( Object entity, out List<string> errorMessages )
+        internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -146,7 +160,7 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            bool success = workflowAction.Execute( this, entity, out errorMessages );
+            bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
 
             AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 

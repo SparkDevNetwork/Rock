@@ -29,6 +29,19 @@ namespace Rock.Communication
     /// </summary>
     public abstract class TransportComponent : Component
     {
+        /// <summary>
+        /// Gets a value indicating whether transport has ability to track recipients opening the communication.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if transport can track opens; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool CanTrackOpens
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Sends the specified communication.
@@ -45,6 +58,14 @@ namespace Rock.Communication
         /// <param name="themeRoot">The theme root.</param>
         public abstract void Send( SystemEmail template, Dictionary<string, Dictionary<string, object>> recipients, string appRoot, string themeRoot );
 
+        /// <summary>
+        /// Sends the specified channel data to the specified list of recipients.
+        /// </summary>
+        /// <param name="channelData">The channel data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        public abstract void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot);
     }
    
 }

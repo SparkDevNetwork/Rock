@@ -65,21 +65,21 @@ namespace RockWeb.Blocks.Finance
 
     [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
+Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 13 )]
 
     [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
+By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
+update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]
 
     [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
-achieve our mission.  We are so grateful for your commitment. 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 15 )]
 
@@ -905,7 +905,7 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         // Create Family
-                        var familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false  );
+                        var familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false );
                         if ( familyGroup != null )
                         {
                             GroupService.AddNewFamilyAddress(
@@ -1417,7 +1417,9 @@ achieve our mission.  We are so grateful for your commitment.
                             }
 
                             batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
+                            batch.ControlAmount = 0;
                             batchService.Add( batch );
+                            rockContext.SaveChanges();
 
                             batch = batchService.Get( batch.Id );
                         }
@@ -1427,7 +1429,6 @@ achieve our mission.  We are so grateful for your commitment.
                         var transactionService = new FinancialTransactionService( rockContext );
                         transaction.BatchId = batch.Id;
                         transactionService.Add( transaction );
-
                         rockContext.SaveChanges();
 
                         TransactionCode = transaction.TransactionCode;
@@ -1444,7 +1445,7 @@ achieve our mission.  We are so grateful for your commitment.
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
 
-                // If there was a transaction code returned and this was not already created from a previous saved account, 
+                // If there was a transaction code returned and this was not already created from a previous saved account,
                 // show the option to save the account.
                 if ( !( paymentInfo is ReferencePaymentInfo ) && !string.IsNullOrWhiteSpace( TransactionCode ) )
                 {
@@ -1525,11 +1526,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             string scriptFormat = @"
     Sys.Application.add_load(function () {{
-
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);   
-                 
+            var totalAmt = Number(0);
+
             $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
@@ -1553,7 +1553,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $when = $(this).parents('div.form-group:first').next(); 
+            var $when = $(this).parents('div.form-group:first').next();
             if ($(this).attr('data-id') == '{2}') {{
                 $when.find('label:first').html('When');
             }} else {{
@@ -1563,7 +1563,7 @@ achieve our mission.  We are so grateful for your commitment.
                 var $dateInput = $when.find('input');
                 var dt = new Date(Date.parse($dateInput.val()));
                 var curr = new Date();
-                if ( (dt-curr) <= 0 ) {{ 
+                if ( (dt-curr) <= 0 ) {{
                     curr.setDate(curr.getDate() + 1);
                     var dd = curr.getDate();
                     var mm = curr.getMonth()+1;
@@ -1572,10 +1572,9 @@ achieve our mission.  We are so grateful for your commitment.
                     $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
                 }}
             }};
-            
         }});
 
-        // Save the state of the selected payment type pill to a hidden field so that state can 
+        // Save the state of the selected payment type pill to a hidden field so that state can
         // be preserved through postback
         $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
             var tabHref = $(e.target).attr(""href"");
@@ -1592,14 +1591,14 @@ achieve our mission.  We are so grateful for your commitment.
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
             var $content = $(this).parents('div.form-group:first').next('.radio-content')
-            var radioDisplay = $content.css('display');            
+            var radioDisplay = $content.css('display');
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();
             }}
             else if ($(this).val() != 0 && radioDisplay != 'none') {{
                 $content.slideToggle();
             }}
-        }});      
+        }});
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
@@ -1614,7 +1613,6 @@ achieve our mission.  We are so grateful for your commitment.
 				return false;
 			}});
         }});
- 
     }});
 
 ";
@@ -1627,7 +1625,7 @@ achieve our mission.  We are so grateful for your commitment.
         #region Helper Classes
 
         /// <summary>
-        /// Lightweight object for each contribution item 
+        /// Lightweight object for each contribution item
         /// </summary>
         [Serializable]
         protected class AccountItem

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Core
             <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
         </div>
     {% endif %}
-")]
+" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
 
     public partial class LocationDetail : RockBlock, IDetailBlock
@@ -68,6 +68,13 @@ namespace RockWeb.Blocks.Core
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Location ) ).Id;
+
+            ddlPrinter.Items.Clear();
+            ddlPrinter.DataSource = new DeviceService( new RockContext() )
+                .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
+                .ToList();
+            ddlPrinter.DataBind();
+            ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
         }
 
         /// <summary>
@@ -192,7 +199,7 @@ namespace RockWeb.Blocks.Core
             location.Name = tbName.Text;
             location.IsActive = cbIsActive.Checked;
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
-            if ( gpParentLocation != null )
+            if ( gpParentLocation != null && gpParentLocation.Location != null )
             {
                 location.ParentLocationId = gpParentLocation.Location.Id;
             }
@@ -200,6 +207,8 @@ namespace RockWeb.Blocks.Core
             {
                 location.ParentLocationId = null;
             }
+
+            location.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
 
             var addrLocation = locapAddress.Location;
             if ( addrLocation != null )
@@ -263,17 +272,12 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfLocationId.Value.Equals( "0" ) )
             {
-                if ( RockPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
+                int? parentLocationId = PageParameter( "ParentLocationId" ).AsInteger( false );
+                if ( parentLocationId.HasValue )
                 {
-                    // Cancelling on Add.  Return to tree view with parent category selected
+                    // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-
-                    string parentLocationId = PageParameter( "ParentLocationId" );
-                    if ( !string.IsNullOrWhiteSpace( parentLocationId ) )
-                    {
-                        qryParams["LocationId"] = parentLocationId;
-                    }
-
+                    qryParams["LocationId"] = parentLocationId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -299,10 +303,10 @@ namespace RockWeb.Blocks.Core
         protected void btnStandardize_Click( object sender, EventArgs e )
         {
             int locationId = int.Parse( hfLocationId.Value );
-            
+
             var rockContext = new RockContext();
             var service = new LocationService( rockContext );
-            var location = service.Get(locationId );
+            var location = service.Get( locationId );
 
             service.Verify( location, true );
 
@@ -311,7 +315,9 @@ namespace RockWeb.Blocks.Core
             locapAddress.SetValue( location );
             geopPoint.SetValue( location.GeoPoint );
 
-            lStandardizationUpdate.Text = String.Format("<div class='alert alert-info'>Address standardization result was '{0}' and geocoding result was '{1}'.</div>", location.StandardizeAttemptedResult, location.GeocodeAttemptedResult);
+            lStandardizationUpdate.Text = String.Format( "<div class='alert alert-info'>Standardization Result: {0}<br/>Geocoding Result: {1}</div>",
+                location.StandardizeAttemptedResult.IfEmpty( "No Result" ),
+                location.GeocodeAttemptedResult.IfEmpty( "No Result" ) );
         }
 
         /// <summary>
@@ -445,6 +451,7 @@ namespace RockWeb.Blocks.Core
             tbName.Text = location.Name;
             cbIsActive.Checked = location.IsActive;
             locapAddress.SetValue( location );
+            ddlPrinter.SetValue( location.PrinterDeviceId );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
 
@@ -477,7 +484,7 @@ namespace RockWeb.Blocks.Core
             BuildAttributeEdits( location, true );
         }
 
-        private void BuildAttributeEdits(Location location, bool setValues)
+        private void BuildAttributeEdits( Location location, bool setValues )
         {
             Rock.Attribute.Helper.AddEditControls( location, phAttributeEdits, setValues );
         }
@@ -525,6 +532,11 @@ namespace RockWeb.Blocks.Core
                 descriptionList.Add( "Parent Location", location.ParentLocation.Name );
             }
 
+            if ( location.PrinterDevice != null)
+            {
+                descriptionList.Add( "Printer", location.PrinterDevice.Name );
+            }
+
             lblMainDetails.Text = descriptionList.Html;
 
             location.LoadAttributes();
@@ -532,6 +544,7 @@ namespace RockWeb.Blocks.Core
 
             // Get all the location locations and location all those that have a geo-location into either points or polygons
             var dict = new Dictionary<string, object>();
+
             if ( location.GeoPoint != null )
             {
                 var pointsDict = new Dictionary<string, object>();
@@ -543,7 +556,7 @@ namespace RockWeb.Blocks.Core
             if ( location.GeoFence != null )
             {
                 var polygonDict = new Dictionary<string, object>();
-                polygonDict.Add( "polygon_wkt", location.GeoFence.AsText());
+                polygonDict.Add( "polygon_wkt", location.GeoFence.AsText() );
                 polygonDict.Add( "google_encoded_polygon", location.EncodeGooglePolygon() );
                 dict.Add( "polygon", polygonDict );
             }
@@ -570,5 +583,5 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-}
+    }
 }

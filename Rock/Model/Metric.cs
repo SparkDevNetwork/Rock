@@ -139,13 +139,13 @@ namespace Rock.Model
         public string YAxisLabel { get; set; }
 
         /// <summary>
-        /// Gets or sets the steward person alias identifier.
+        /// Gets or sets the metric champion person alias identifier.
         /// </summary>
         /// <value>
-        /// The steward person alias identifier.
+        /// The metric champion person alias identifier.
         /// </value>
         [DataMember]
-        public int? StewardPersonAliasId { get; set; }
+        public int? MetricChampionPersonAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the admin person alias identifier.
@@ -173,6 +173,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
+        [DataMember]
+        public int? EntityTypeId { get; set; }
 
         #endregion
 
@@ -204,12 +213,12 @@ namespace Rock.Model
         public virtual DataView DataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the steward person alias.
+        /// Gets or sets the metric champion person alias.
         /// </summary>
         /// <value>
-        /// The steward person alias.
+        /// The metric champion person alias.
         /// </value>
-        public virtual PersonAlias StewardPersonAlias { get; set; }
+        public virtual PersonAlias MetricChampionPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the admin person alias.
@@ -240,6 +249,15 @@ namespace Rock.Model
             set { _metricCategories = value; }
         }
         private ICollection<MetricCategory> _metricCategories;
+
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        [DataMember]
+        public virtual Model.EntityType EntityType { get; set; }
 
         #endregion
 
@@ -274,8 +292,10 @@ namespace Rock.Model
             this.HasOptional( p => p.SourceValueType ).WithMany().HasForeignKey( p => p.SourceValueTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.DataView ).WithMany().HasForeignKey( p => p.DataViewId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.CreatedByPersonAlias ).WithMany().HasForeignKey( p => p.CreatedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.MetricChampionPersonAlias ).WithMany().HasForeignKey( p => p.MetricChampionPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AdminPersonAlias ).WithMany().HasForeignKey( p => p.AdminPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

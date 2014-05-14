@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "reportId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Reporting
                     var qryParams = new Dictionary<string, string>();
                     if ( categoryId != null )
                     {
-                        qryParams["categoryId"] = categoryId.ToString();
+                        qryParams["CategoryId"] = categoryId.ToString();
                     }
 
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -422,16 +422,19 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( hfReportId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to tree view with parent category selected
-                var qryParams = new Dictionary<string, string>();
-
-                string parentCategoryId = PageParameter( "parentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                if ( parentCategoryId.HasValue )
                 {
-                    qryParams["CategoryId"] = parentCategoryId;
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
-
-                NavigateToPage( RockPage.Guid, qryParams );
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
             }
             else
             {
@@ -534,7 +537,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
-                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString("n") );
                     }
 
                     if ( entityField.IsPreviewable )
@@ -874,7 +877,7 @@ namespace RockWeb.Blocks.Reporting
                             selectedEntityFields.Add( columnIndex, entityField );
 
                             BoundField boundField;
-                            if ( entityField.DefinedTypeId.HasValue )
+                            if ( entityField.DefinedTypeGuid.HasValue )
                             {
                                 boundField = new DefinedValueField();
                             }
@@ -892,10 +895,10 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                     {
-                        int? attributeId = reportField.Selection.AsInteger( false );
-                        if ( attributeId.HasValue )
+                        Guid? attributeGuid = reportField.Selection.AsGuidOrNull();
+                        if ( attributeGuid.HasValue )
                         {
-                            var attribute = AttributeCache.Read( attributeId.Value );
+                            var attribute = AttributeCache.Read( attributeGuid.Value );
                             selectedAttributes.Add( columnIndex, attribute );
 
                             BoundField boundField;
@@ -949,6 +952,7 @@ namespace RockWeb.Blocks.Reporting
 
                 try
                 {
+                    //gReport.Caption = report.Name;
                     gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
                     gReport.DataBind();
                 }
@@ -1123,7 +1127,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsInteger() ?? 0 );
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid());
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;

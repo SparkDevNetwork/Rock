@@ -99,6 +99,7 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+            target.WorkflowFormId = source.WorkflowFormId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

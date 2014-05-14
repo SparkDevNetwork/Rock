@@ -131,7 +131,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? groupLocationTypeValueId = selection.AsInteger( false );
+            Guid? groupLocationTypeValueGuid = selection.AsGuidOrNull();
 
             Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
             int familyGroupTypeId = new GroupTypeService( context ).Get( familyGuid ).Id;
@@ -144,7 +144,7 @@ namespace Rock.Reporting.DataSelect.Person
                     groupMemberQuery
                     .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
                     .SelectMany( m => m.Group.GroupLocations )
-                    .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId )
+                    .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
                     .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
                     .FirstOrDefault() );
 
@@ -164,7 +164,7 @@ namespace Rock.Reporting.DataSelect.Person
             locationTypeList.Items.Clear();
             foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                locationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                locationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
             }
 
             locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
@@ -199,7 +199,7 @@ namespace Rock.Reporting.DataSelect.Person
                 RockDropDownList dropDownList = controls[0] as RockDropDownList;
                 if ( dropDownList != null )
                 {
-                    return dropDownList.SelectedValueAsId().ToString();
+                    return dropDownList.SelectedValue;
                 }
             }
 

@@ -32,6 +32,7 @@ namespace Rock.Jobs
     /// Job to run quick SQL queries on a schedule
     /// </summary>
     [CodeEditorField( "SQL Query", "SQL query to run", CodeEditorMode.Sql, CodeEditorTheme.Rock, 200, true, "", "General", 0, "SQLQuery" )]
+    [DisallowConcurrentExecution]
     public class RunSQL : IJob
     {
         /// <summary> 

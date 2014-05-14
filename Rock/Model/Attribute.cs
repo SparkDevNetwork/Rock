@@ -170,6 +170,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
         #endregion
 
         #region Virtual Properties

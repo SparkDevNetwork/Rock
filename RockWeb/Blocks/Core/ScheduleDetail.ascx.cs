@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "scheduleId" );
-                string parentCategoryId = PageParameter( "parentCategoryId" );
+                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
@@ -156,15 +156,19 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfScheduleId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add.  Return to tree view with parent category selected
-                var qryParams = new Dictionary<string, string>();
-
-                string parentCategoryId = PageParameter( "parentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                if ( parentCategoryId.HasValue )
                 {
-                    qryParams["CategoryId"] = parentCategoryId;
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    var qryParams = new Dictionary<string, string>();
+                    qryParams["CategoryId"] = parentCategoryId.ToString();
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
-                NavigateToPage( RockPage.Guid, qryParams );
+                else
+                {
+                    // Cancelling on Add.  Return to Grid
+                    NavigateToParentPage();
+                }
             }
             else
             {
@@ -246,19 +250,12 @@ namespace RockWeb.Blocks.Core
 
             if ( calendarEvent.DTStart != null )
             {
-                List<Occurrence> nextOccurrences = calendar.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
+                List<Occurrence> nextOccurrences = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( 26 ).ToList();
 
                 string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
                 foreach ( var occurrence in nextOccurrences )
                 {
-                    if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
-                    {
-                        listHtml += string.Format( "<li>{0} - {1} to {2} ( {3} hours) </li>", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                    }
-                    else
-                    {
-                        listHtml += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                    }
+                    listHtml += "<li>" + GetOccurrenceText( occurrence ) + "</li>";
                 }
 
                 listHtml += string.Format( "<li>{0}</li>", "..." );
@@ -266,6 +263,32 @@ namespace RockWeb.Blocks.Core
 
                 hbSchedulePreview.Text += listHtml;
             }
+        }
+
+        /// <summary>
+        /// Gets the occurrence text.
+        /// </summary>
+        /// <param name="occurrence">The occurrence.</param>
+        /// <returns></returns>
+        private static string GetOccurrenceText( Occurrence occurrence )
+        {
+            string occurrenceText = string.Empty;
+            if ( occurrence.Period.Duration <= new TimeSpan( 0, 0, 1 ) )
+            {
+                // no or very short duration. Probably a schedule for starting something that doesn't care about duration, like Metrics
+                occurrenceText = string.Format( "{0}", occurrence.Period.StartTime.Value.ToString( "g" ) );
+            }
+            else if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+            {
+                // same day for start and end time
+                occurrenceText = string.Format( "{0} - {1} to {2} ( {3} hours) ", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+            }
+            else
+            {
+                // spans over midnight
+                occurrenceText = string.Format( "{0} to {1} ( {2} hours) ", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+            }
+            return occurrenceText;
         }
 
         /// <summary>
@@ -390,19 +413,10 @@ namespace RockWeb.Blocks.Core
             {
                 if ( calendarEvent.DTStart != null )
                 {
-                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now.Date, RockDateTime.Now.Date.AddYears( 1 ) );
+                    var occurrences = calendarEvent.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) );
                     if ( occurrences.Any() )
                     {
-                        var occurrence = occurrences[0];
-
-                        if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
-                        {
-                            occurrenceText += string.Format( "{0} - {1} to {2} ( {3} hours)", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                        }
-                        else
-                        {
-                            occurrenceText += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                        }
+                        occurrenceText = GetOccurrenceText( occurrences[0] );
                     }
                 }
             }

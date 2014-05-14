@@ -110,6 +110,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_PREVIOUS_SPOUSE = "60C6142E-8E00-4678-BC2F-983BB7BDE80B";
 
+        /// <summary>
+        /// Role to identify contacts related to a business.
+        /// </summary>
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT = "102E6AF5-62C2-4767-B473-C9C228D75FB6";
+
+        /// <summary>
+        /// A role to identify the business a person owns.
+        /// </summary>
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS = "7FC58BB2-7C1E-4C5C-B2B3-4738258A0BE0";
+
         #endregion
 
         #region Implied Relationships

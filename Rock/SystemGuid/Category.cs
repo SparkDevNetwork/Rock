@@ -65,7 +65,20 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_SERVICE_TIMES = "4FECC91B-83F9-4269-AE03-A006F401C47E";
 
+        /// <summary>
+        /// Gets the Metrics schedule category guid
+        /// </summary>
+        public const string SCHEDULE_METRICS = "5A794741-5444-43F0-90D7-48E47276D426";
+
         #endregion
 
+        #region Person Attributes
+
+        /// <summary>
+        /// The person attributes Social guid
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
+
+        #endregion
     }
 }

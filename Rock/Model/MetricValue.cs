@@ -29,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>, IOrdered
+    public partial class MetricValue : Model<MetricValue>, IOrdered, IChartData
     {
         #region Entity Properties
 
@@ -96,29 +96,23 @@ namespace Rock.Model
         /// <value>
         /// The metric value date time.
         /// </value>
+        [Index]
         [DataMember]
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the entity identifier.
         /// </summary>
         /// <value>
-        /// The campus identifier.
+        /// The entity identifier.
         /// </value>
+        [Index]
         [DataMember]
-        public int? CampusId { get; set; }
+        public int? EntityId { get; set; }
 
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the campus.
-        /// </summary>
-        /// <value>
-        /// The campus.
-        /// </value>
-        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the metric.
@@ -131,6 +125,43 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
+        /// </summary>
+        /// <value>
+        /// The metric value javascript time stamp.
+        /// </value>
+        [DataMember]
+        public long DateTimeStamp
+        {
+            get
+            {
+                if ( this.MetricValueDateTime.HasValue )
+                {
+                    return this.MetricValueDateTime.Value.ToJavascriptMilliseconds();
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the series identifier.
+        /// </summary>
+        /// <value>
+        /// The series identifier.
+        /// </value>
+        [DataMember]
+        public string SeriesId
+        {
+            get
+            {
+                return string.Format( "{0}", this.EntityId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.
@@ -167,7 +198,6 @@ namespace Rock.Model
         public MetricValueConfiguration()
         {
             this.HasRequired( p => p.Metric ).WithMany( p => p.MetricValues ).HasForeignKey( p => p.MetricId ).WillCascadeOnDelete( true );
-            this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
         }
     }
 

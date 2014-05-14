@@ -15,21 +15,21 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
-using Rock.Model;
-using System.Text;
 using Rock.Data;
-using System.Collections;
+using Rock.Model;
 
 namespace Rock
 {
@@ -53,7 +53,6 @@ namespace Rock
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 } );
         }
-
 
         /// <summary>
         /// Gets the property value.
@@ -107,7 +106,7 @@ namespace Rock
         /// <returns></returns>
         public static object LiquidizeChildren( this object liquidObject )
         {
-            if ( liquidObject is string)
+            if ( liquidObject is string )
             {
                 return liquidObject;
             }
@@ -129,7 +128,7 @@ namespace Rock
                 return result;
             }
 
-            if (liquidObject is IEnumerable)
+            if ( liquidObject is IEnumerable )
             {
                 var result = new List<object>();
 
@@ -139,7 +138,6 @@ namespace Rock
                 }
 
                 return result;
-
             }
 
             return liquidObject;
@@ -169,8 +167,15 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                return entityType.FriendlyName ?? SplitCase( type.Name );
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false );
+                if ( entityType != null && entityType.FriendlyName != null )
+                {
+                    return entityType.FriendlyName;
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
             else
             {
@@ -187,14 +192,14 @@ namespace Rock
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
-        public static string RemoveSpecialCharacters(this string str)
+        public static string RemoveSpecialCharacters( this string str )
         {
             StringBuilder sb = new StringBuilder();
-            foreach (char c in str)
+            foreach ( char c in str )
             {
-                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_')
+                if ( ( c >= '0' && c <= '9' ) || ( c >= 'A' && c <= 'Z' ) || ( c >= 'a' && c <= 'z' ) || c == '.' || c == '_' )
                 {
-                    sb.Append(c);
+                    sb.Append( c );
                 }
             }
             return sb.ToString();
@@ -267,7 +272,7 @@ namespace Rock
 
         /// <summary>
         /// Replaces every instance of oldValue with newValue.  Will continue to replace
-        /// values after each replace until the oldValue does not exist.  
+        /// values after each replace until the oldValue does not exist.
         /// </summary>
         /// <param name="str">The source string.</param>
         /// <param name="oldValue">The value to replace.</param>
@@ -286,8 +291,8 @@ namespace Rock
             }
 
             return newstr;
-
         }
+
         /// <summary>
         /// Adds escape character for quotes in a string
         /// </summary>
@@ -307,7 +312,7 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="QuoteChar">The quote character.</param>
         /// <returns></returns>
-        public static string Quoted( this string str, string QuoteChar = "'")
+        public static string Quoted( this string str, string QuoteChar = "'" )
         {
             var result = QuoteChar + str.EscapeQuotes() + QuoteChar;
             return result;
@@ -367,8 +372,10 @@ namespace Rock
                 case "Campus":
                 case "campus":
                     return str + "es";
+
                 case "CAMPUS":
                     return str + "ES";
+
                 default:
                     var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
                     return pluralizationService.Pluralize( str );
@@ -468,6 +475,16 @@ namespace Rock
         /// <returns></returns>
         public static Guid AsGuid( this string str )
         {
+            return str.AsGuidOrNull() ?? Guid.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to Guid.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static Guid? AsGuidOrNull( this string str )
+        {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
             {
@@ -475,7 +492,7 @@ namespace Rock
             }
             else
             {
-                return Guid.Empty;
+                return null;
             }
         }
 
@@ -484,7 +501,7 @@ namespace Rock
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        public static bool IsEmpty( this Guid guid)
+        public static bool IsEmpty( this Guid guid )
         {
             return guid.Equals( Guid.Empty );
         }
@@ -578,7 +595,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static TimeSpan? AsTimeSpan( this string str)
+        public static TimeSpan? AsTimeSpan( this string str )
         {
             TimeSpan value;
             if ( TimeSpan.TryParse( str, out value ) )
@@ -592,7 +609,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Use DotLiquid to resolve any merge codes within the content using the values 
+        /// Use DotLiquid to resolve any merge codes within the content using the values
         /// in the mergeObjects.
         /// </summary>
         /// <param name="content">The content.</param>
@@ -652,7 +669,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string EncodeHtml(this string str)
+        public static string EncodeHtml( this string str )
         {
             return System.Web.HttpUtility.HtmlEncode( str );
         }
@@ -663,14 +680,14 @@ namespace Rock
         /// <param name="html">The HTML.</param>
         /// <param name="strict">if set to <c>true</c> [strict].</param>
         /// <returns></returns>
-        public static string SanitizeHtml(this string html, bool strict = true)
+        public static string SanitizeHtml( this string html, bool strict = true )
         {
             if ( strict )
             {
                 var allowedElements = new Dictionary<string, string[]>();
                 var allowedAttributes = new Dictionary<string, string[]>();
                 return new AjaxControlToolkit.Sanitizer.HtmlAgilityPackSanitizerProvider().GetSafeHtmlFragment( html, allowedElements, allowedAttributes );
-            } 
+            }
             else
             {
                 return Rock.Web.Utilities.HtmlSanitizer.SanitizeHtml( html );
@@ -706,7 +723,7 @@ namespace Rock
         /// <returns>true if valid email, false otherwise</returns>
         public static bool IsValidEmail( this string email )
         {
-            return Regex.IsMatch( email, @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" );
+            return Regex.IsMatch( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
         }
 
         /// <summary>
@@ -745,9 +762,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string EnsureTrailingBackslash( this string value)
+        public static string EnsureTrailingBackslash( this string value )
         {
-            return value.TrimEnd(new char[] { '\\','/' }) + "\\";
+            return value.TrimEnd( new char[] { '\\', '/' } ) + "\\";
         }
 
         /// <summary>
@@ -759,6 +776,91 @@ namespace Rock
         {
             return value.TrimEnd( new char[] { '\\', '/' } ) + "/";
         }
+
+        /// <summary>
+        /// Evaluates string and if null or empty returns nullValue instead
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="nullValue">The null value.</param>
+        /// <returns></returns>
+        public static string IfEmpty( this string value, string nullValue )
+        {
+            return !string.IsNullOrWhiteSpace( value ) ? value : nullValue;
+        }
+
+        /// <summary>
+        /// Compares to.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="compareValue">The compare value.</param>
+        /// <param name="compareType">Type of the compare.</param>
+        /// <returns></returns>
+        public static bool CompareTo( this string value, string compareValue, ComparisonType compareType )
+        {
+            if ( compareType == ComparisonType.Contains )
+            {
+                return value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.DoesNotContain )
+            {
+                return !value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.EndsWith )
+            {
+                return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.EqualTo )
+            {
+                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.GreaterThan )
+            {
+                return value.CompareTo( compareValue ) > 0;
+            }
+
+            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) >= 0;
+            }
+
+            if ( compareType == ComparisonType.IsBlank )
+            {
+                return string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.IsNotBlank )
+            {
+                return !string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.LessThan )
+            {
+                return value.CompareTo( compareValue ) < 0;
+            }
+
+            if ( compareType == ComparisonType.LessThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) <= 0;
+            }
+
+            if ( compareType == ComparisonType.NotEqualTo )
+            {
+                return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.StartsWith )
+            {
+                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            return false;
+
+        }
+
 
         #endregion
 
@@ -820,7 +922,7 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        [Obsolete("Use AsBoolean() instead")]
+        [Obsolete( "Use AsBoolean() instead" )]
         public static bool FromTrueFalse( this string value )
         {
             return value.Equals( "True" );
@@ -925,7 +1027,6 @@ namespace Rock
                 // Less than one second
                 if ( timeSpan.TotalSeconds <= 1 )
                     duration = string.Format( "1{0}", condensed ? "sec" : " Second" );
-
                 else if ( timeSpan.TotalSeconds < 60 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalSeconds ), condensed ? "sec" : " Seconds" );
                 else if ( timeSpan.TotalMinutes < 2 )
@@ -955,7 +1056,6 @@ namespace Rock
             }
 
             return duration + ( condensed ? "" : direction );
-
         }
 
         /// <summary>
@@ -967,7 +1067,7 @@ namespace Rock
         /// <returns></returns>
         public static string ToRelativeDateString( this DateTime? dateTime, int? maxDays = null )
         {
-            if (dateTime.HasValue)
+            if ( dateTime.HasValue )
             {
                 return dateTime.Value.ToRelativeDateString( maxDays );
             }
@@ -979,7 +1079,7 @@ namespace Rock
 
         /// <summary>
         /// Returns a string in relative format (x seconds ago, x minutes ago, about an hour ago, in x seconds,
-        /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February 
+        /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
         /// 13 at 11:28am or November 5, 2011 at 1:57pm)
         /// </summary>
         /// <param name="dateTime">the datetime to convert to relative time.</param>
@@ -992,9 +1092,9 @@ namespace Rock
                 DateTime now = RockDateTime.Now;
 
                 string nowText = "just now";
-                string format = "{0} ago";;
+                string format = "{0} ago"; ;
                 TimeSpan timeSpan = now - dateTime;
-                if ( dateTime > now)
+                if ( dateTime > now )
                 {
                     nowText = "now";
                     format = "in {0}";
@@ -1028,7 +1128,7 @@ namespace Rock
                 }
                 else if ( minutes < 1.0 )
                 {
-                    return string.Format( format, Math.Floor( seconds ) + " seconds");
+                    return string.Format( format, Math.Floor( seconds ) + " seconds" );
                 }
                 else if ( Math.Floor( minutes ) == 1 )
                 {
@@ -1036,7 +1136,7 @@ namespace Rock
                 }
                 else if ( hours < 1.0 )
                 {
-                    return string.Format( format, Math.Floor( minutes ) + " minutes");
+                    return string.Format( format, Math.Floor( minutes ) + " minutes" );
                 }
                 else if ( Math.Floor( hours ) == 1 )
                 {
@@ -1080,6 +1180,17 @@ namespace Rock
             }
             return "";
         }
+
+        /// <summary>
+        /// Converts the date to an Epoch of milliseconds since 1970/1/1
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static long ToJavascriptMilliseconds( this DateTime dateTime )
+        {
+            return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+        }
+
         #endregion
 
         #region TimeSpan Extensions
@@ -1210,11 +1321,14 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\b" + className + "\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
             if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+            {
+                css += " " + className;
+            }
+            webControl.CssClass = css.Trim();
         }
 
         /// <summary>
@@ -1224,11 +1338,15 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + @"\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
-            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+            while ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+            { 
+                css = Regex.Replace( css, match, " ", RegexOptions.IgnoreCase );
+            }
+
+            webControl.CssClass = css.Trim();
         }
 
         #endregion
@@ -1389,7 +1507,6 @@ namespace Rock
             {
                 listControl.Items.Insert( 0, new ListItem() );
             }
-
         }
 
         /// <summary>
@@ -1620,7 +1737,7 @@ namespace Rock
             return ApplyOrder<T>( source, property, "ThenByDescending" );
         }
 
-        static IOrderedQueryable<T> ApplyOrder<T>( IQueryable<T> source, string property, string methodName )
+        private static IOrderedQueryable<T> ApplyOrder<T>( IQueryable<T> source, string property, string methodName )
         {
             string[] props = property.Split( '.' );
             Type type = typeof( T );
@@ -1664,7 +1781,7 @@ namespace Rock
                 string column = columns[columnIndex].Trim();
 
                 var direction = sortProperty.Direction;
-                if (column.ToLower().EndsWith(" desc"))
+                if ( column.ToLower().EndsWith( " desc" ) )
                 {
                     column = column.Left( column.Length - 5 );
                     direction = sortProperty.Direction == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
@@ -1728,7 +1845,7 @@ namespace Rock
         /// </summary>
         /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
-        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null)
+        public static void SaveAttributeValues( this Rock.Attribute.IHasAttributes entity, RockContext rockContext = null )
         {
             Rock.Attribute.Helper.SaveAttributeValues( entity, rockContext );
         }
@@ -1823,7 +1940,6 @@ namespace Rock
             {
                 list.Remove( item );
             }
-
         }
 
         #endregion
@@ -1878,9 +1994,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void Update(this Dictionary<string, object> dictionary, string key, object value)
+        public static void Update( this Dictionary<string, object> dictionary, string key, object value )
         {
-            if (dictionary != null)
+            if ( dictionary != null )
             {
                 if ( dictionary.ContainsKey( key ) )
                 {
@@ -1898,7 +2014,7 @@ namespace Rock
         /// </summary>
         /// <param name="mergeFields">The merge fields.</param>
         /// <returns></returns>
-        public static string LiquidHelpText(this Dictionary<string, object> mergeFields)
+        public static string LiquidHelpText( this Dictionary<string, object> mergeFields )
         {
             return mergeFields.LiquidizeChildren().ToJson();
         }

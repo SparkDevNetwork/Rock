@@ -100,6 +100,15 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the help text for the defined type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String" /> representing the help text.
+        /// </value>
+        [DataMember]
+        public string HelpText { get; set; }
+
         #endregion 
 
         #region Virtual Properties
