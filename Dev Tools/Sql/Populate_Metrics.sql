@@ -5,7 +5,6 @@ declare
     @iconCssClass nvarchar(max) = null,
     @categoryId int = null,
     @order int = 0,
-    --@metricGuid uniqueidentifier = null,
     @metricId int = null,
     @metricValueTypeMeasure int = 0,
     @metricValueTypeGoal int = 1,
