@@ -52,6 +52,7 @@ namespace RockWeb.Blocks.Core
         private WorkflowType _workflowType = null;
         private WorkflowActionType _actionType = null;
         private Workflow _workflow = null;
+        private WorkflowActivity _activity = null;
         private WorkflowAction _action = null;
 
         #endregion
@@ -149,6 +150,7 @@ namespace RockWeb.Blocks.Core
 
                 _action.MarkComplete();
                 _action.FormAction = lb.Text;
+                _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
 
                 Guid activityTypeGuid = lb.Attributes["data-activity"].AsGuid();
                 if (!activityTypeGuid.IsEmpty())
@@ -161,7 +163,7 @@ namespace RockWeb.Blocks.Core
                 }
 
                 List<string> errorMessages;
-                if (_workflow.Process(out errorMessages))
+                if (_workflow.Process( _rockContext, out errorMessages))
                 {
                     if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                     {
@@ -169,13 +171,20 @@ namespace RockWeb.Blocks.Core
                         {
                             _workflowService.Add(_workflow);
                         }
-                        _rockContext.SaveChanges();
+
+                        RockTransactionScope.WrapTransaction( () =>
+                        {
+                            _rockContext.SaveChanges();
+                            _workflow.SaveAttributeValues( _rockContext );
+                        } );
+
                         WorkflowId = _workflow.Id;
                     }
 
                     ActionTypeId = null;
                     _action = null;
                     _actionType = null;
+                    _activity = null;
 
                     if (HydrateObjects())
                     {
@@ -200,119 +209,136 @@ namespace RockWeb.Blocks.Core
         private bool HydrateObjects()
         {
             _rockContext = new RockContext();
-            _workflowService = new WorkflowService(_rockContext);
-            _workflowTypeService = new WorkflowTypeService(_rockContext);
+            _workflowService = new WorkflowService( _rockContext );
+            _workflowTypeService = new WorkflowTypeService( _rockContext );
 
             // Get the workflow type id (initial page request)
-            if (!WorkflowTypeId.HasValue)
+            if ( !WorkflowTypeId.HasValue )
             {
                 // Get workflow type set by attribute value
-                Guid workflowTypeguid = GetAttributeValue("WorkflowType").AsGuid();
-                if (!workflowTypeguid.IsEmpty())
+                Guid workflowTypeguid = GetAttributeValue( "WorkflowType" ).AsGuid();
+                if ( !workflowTypeguid.IsEmpty() )
                 {
-                    _workflowType = _workflowTypeService.Get(workflowTypeguid);
+                    _workflowType = _workflowTypeService.Get( workflowTypeguid );
                 }
 
                 // If an attribute value was not provided, check for query/route value
-                if (_workflowType != null)
+                if ( _workflowType != null )
                 {
                     WorkflowTypeId = _workflowType.Id;
                 }
                 else
                 {
-                    WorkflowTypeId = PageParameter("WorkflowTypeId").AsInteger(false);
+                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger( false );
                 }
             }
 
             // Get the workflow type 
-            if (_workflowType == null && WorkflowTypeId.HasValue)
+            if ( _workflowType == null && WorkflowTypeId.HasValue )
             {
-                _workflowType = _workflowTypeService.Get(WorkflowTypeId.Value);
+                _workflowType = _workflowTypeService.Get( WorkflowTypeId.Value );
             }
 
-            if (_workflowType != null)
+            if ( _workflowType == null )
             {
-                // If operating against an existing workflow, get the workflow and load attributes
-                if (!WorkflowId.HasValue)
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly." );
+                return false;
+            }
+
+            if ( !_workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                ShowMessage( NotificationBoxType.Warning, "Sorry", "You are not authorized to view this type of workflow." );
+                return false;
+            }
+
+            // If operating against an existing workflow, get the workflow and load attributes
+            if ( !WorkflowId.HasValue )
+            {
+                WorkflowId = PageParameter( "WorkflowId" ).AsInteger( false );
+            }
+
+            if ( WorkflowId.HasValue )
+            {
+                _workflow = _workflowService.Queryable()
+                    .Where( w => w.Id == WorkflowId.Value && w.WorkflowTypeId == _workflowType.Id )
+                    .FirstOrDefault();
+                if ( _workflow != null )
                 {
-                    WorkflowId = PageParameter("WorkflowId").AsInteger(false);
+                    _workflow.LoadAttributes();
                 }
+            }
 
-                if (WorkflowId.HasValue)
+            // If an existing workflow was not specified, activate a new instance of workflow and start processing
+            if ( _workflow == null )
+            {
+                _workflow = Rock.Model.Workflow.Activate( _workflowType, "Workflow" );
+
+                List<string> errorMessages;
+                if ( _workflow.Process( _rockContext, out errorMessages ) )
                 {
-                    _workflow = _workflowService.Queryable()
-                        .Where(w => w.Id == WorkflowId.Value && w.WorkflowTypeId == _workflowType.Id)
-                        .FirstOrDefault();
-                    if (_workflow != null)
+                    // If the workflow type is persisted, save the workflow
+                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
                     {
-                        _workflow.LoadAttributes();
-                    }
-                }
+                        _workflowService.Add( _workflow );
 
-                // If an existing workflow was not specified, activate a new instance of workflow and start processing
-                if (_workflow == null)
-                {
-                    _workflow = Rock.Model.Workflow.Activate(_workflowType, "Workflow");
-
-                    List<string> errorMessages;
-                    if (_workflow.Process(out errorMessages))
-                    {
-                        // If the workflow type is persisted, save the workflow
-                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
+                        RockTransactionScope.WrapTransaction( () =>
                         {
-                            _workflowService.Add(_workflow);
                             _rockContext.SaveChanges();
-                            WorkflowId = _workflow.Id;
-                        }
-                    }
-                }
+                            _workflow.SaveAttributeValues( _rockContext );
+                        } );
 
-                if (_workflow != null)
-                {
-                    if (ActionTypeId.HasValue)
-                    {
-                        foreach (var activity in _workflow.Activities)
-                        {
-                            _action = activity.Actions.Where(a => a.ActionTypeId == ActionTypeId.Value).FirstOrDefault();
-                            if (_action != null)
-                            {
-                                _actionType = _action.ActionType;
-                                return true;
-                            }
-                        }
+                        WorkflowId = _workflow.Id;
                     }
-
-                    // Find first active action form
-                    foreach (var activity in _workflow.ActiveActivities)
-                    {
-                        foreach (var action in activity.ActiveActions)
-                        {
-                            if (action.ActionType.WorkflowForm != null && action.ActionType.WorkflowForm.IsAuthorized(Authorization.VIEW, CurrentPerson))
-                            {
-                                _action = action;
-                                _actionType = _action.ActionType;
-                                ActionTypeId = _actionType.Id;
-                                return true;
-                            }
-                        }
-                    }
-
-                    if (_actionType == null)
-                    {
-                        ShowMessage(NotificationBoxType.Warning, string.Empty, "No entry required.");
-                    }
-                }
-                else
-                {
-                    ShowMessage(NotificationBoxType.Danger, "Workflow Activation Error", "Workflow could not be activated.");
                 }
             }
-            else
+
+            if ( _workflow == null )
             {
-                ShowMessage(NotificationBoxType.Danger, "Configuration Error", "Workflow type was not configured or specified correctly.");
+                ShowMessage( NotificationBoxType.Danger, "Workflow Activation Error", "Workflow could not be activated." );
+                return false;
             }
 
+            if ( ActionTypeId.HasValue )
+            {
+                foreach ( var activity in _workflow.Activities )
+                {
+                    _action = activity.Actions.Where( a => a.ActionTypeId == ActionTypeId.Value ).FirstOrDefault();
+                    if ( _action != null )
+                    {
+                        _activity = activity;
+                        _activity.LoadAttributes();
+
+                        _actionType = _action.ActionType;
+                        ActionTypeId = _actionType.Id;
+                        return true;
+                    }
+                }
+            }
+
+            // Find first active action form
+            foreach ( var activity in _workflow.ActiveActivities )
+            {
+                if ( activity.ActivityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    foreach ( var action in activity.ActiveActions )
+                    {
+                        if ( action.ActionType.WorkflowForm != null && action.ActionType.WorkflowForm.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        {
+                            _activity = activity;
+                            _activity.LoadAttributes();
+
+                            _action = action;
+                            _actionType = _action.ActionType;
+                            ActionTypeId = _actionType.Id;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
             return false;
+
         }
 
 
@@ -322,7 +348,11 @@ namespace RockWeb.Blocks.Core
 
             if (setValues)
             {
-                var mergeFields = (Dictionary<string, object>)_workflow.ToLiquid(false, false);
+                var mergeFields = new Dictionary<string, object>();
+                mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
+                mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
+                mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+
                 lheadingText.Text = form.Header.ResolveMergeFields(mergeFields);
                 lFootingText.Text = form.Footer.ResolveMergeFields(mergeFields);
             }
@@ -378,18 +408,34 @@ namespace RockWeb.Blocks.Core
 
         private void GetFormValues()
         {
-            var form = _actionType.WorkflowForm;
-
-            var values = new Dictionary<int, string>();
-            int i = 0;
-            foreach (var formAttribute in form.FormAttributes.OrderBy(a => a.Order))
+            if ( _workflow != null && _actionType != null )
             {
-                if (formAttribute.IsVisible && !formAttribute.IsReadOnly)
+                var form = _actionType.WorkflowForm;
+
+                var values = new Dictionary<int, string>();
+                int i = 0;
+                foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
                 {
-                    var attribute = AttributeCache.Read(formAttribute.AttributeId);
-                    if (attribute != null)
+                    if ( formAttribute.IsVisible && !formAttribute.IsReadOnly )
                     {
-                        _workflow.SetAttributeValue(attribute.Key, attribute.FieldType.Field.GetEditValue(attribute.GetControl(phAttributes.Controls[i++]), attribute.QualifierValues));
+                        var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                        if ( attribute != null )
+                        {
+                            IHasAttributes item = null;
+                            if ( attribute.EntityTypeId == _workflow.TypeId )
+                            {
+                                item = _workflow;
+                            }
+                            else if ( attribute.EntityTypeId == _activity.TypeId )
+                            {
+                                item = _activity;
+                            }
+
+                            if (item != null)
+                            {
+                                item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( phAttributes.Controls[i++] ), attribute.QualifierValues ) );
+                            }
+                        }
                     }
                 }
             }

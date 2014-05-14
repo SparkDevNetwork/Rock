@@ -171,11 +171,15 @@ namespace Rock.Model
         /// <summary>
         /// Processes this WorkflowAction
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain any error messages that are 
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that are
         /// returned while processing this WorkflowActivity</param>
-        /// <returns>A <see cref="System.Boolean"/> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.</returns>
-        internal virtual bool Process( Object entity, out List<string> errorMessages )
+        /// <returns>
+        /// A <see cref="System.Boolean" /> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
+        /// </returns>
+        internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -186,7 +190,7 @@ namespace Rock.Model
             foreach ( var action in this.ActiveActions )
             {
                 List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( entity, out actionErrorMessages );
+                bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
                 errorMessages.AddRange( actionErrorMessages );
 
                 // If action was not successful, exit

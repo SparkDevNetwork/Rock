@@ -278,6 +278,12 @@ namespace Rock.Data
             return ToLiquid(debug, true);
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <param name="reloadAttributes">if set to <c>true</c> [reload attributes].</param>
+        /// <returns></returns>
         public object ToLiquid( bool debug, bool reloadAttributes )
         {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
@@ -287,13 +293,16 @@ namespace Rock.Data
                 this.LoadAttributes();
             }
 
-            foreach ( var attribute in this.Attributes )
+            if ( this.Attributes != null )
             {
-                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                foreach ( var attribute in this.Attributes )
                 {
-                    string value = GetAttributeValue( attribute.Key );
-                    dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                    dictionary.Add( attribute.Key + "_unformatted", value );
+                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                    {
+                        string value = GetAttributeValue( attribute.Key );
+                        dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( attribute.Key + "_unformatted", value );
+                    }
                 }
             }
 

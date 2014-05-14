@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -53,6 +53,12 @@ namespace Rock.Model
         [DataMember]
         public string Footer { get; set; }
 
+        /// <summary>
+        /// Gets or sets the inactive message.
+        /// </summary>
+        /// <value>
+        /// The inactive message.
+        /// </value>
         [DataMember]
         public string InactiveMessage { get; set; }
 
@@ -71,6 +77,12 @@ namespace Rock.Model
 
         #region Virtual Properties
 
+        /// <summary>
+        /// Gets or sets the form attributes.
+        /// </summary>
+        /// <value>
+        /// The form attributes.
+        /// </value>
         [DataMember]
         public virtual ICollection<WorkflowActionFormAttribute> FormAttributes
         {

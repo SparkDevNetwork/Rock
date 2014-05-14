@@ -56,7 +56,15 @@ namespace Rock.Model
             workflow.IsProcessing = true;
             this.Context.SaveChanges();
 
-            workflow.Process(out errorMessages); 
+            workflow.LoadAttributes( (RockContext)this.Context );
+
+            workflow.Process( (RockContext)this.Context, out errorMessages);
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                this.Context.SaveChanges();
+                workflow.SaveAttributeValues( (RockContext)this.Context );
+            } );
 
             workflow.IsProcessing = false;
             this.Context.SaveChanges();

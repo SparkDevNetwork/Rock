@@ -294,14 +294,20 @@ namespace Rock.Rest.Controllers
             result.PickerItemDetailsHtml = "No Details Available";
 
             var html = new StringBuilder();
-            var person = Service.Get( personId );
+
+            // Create new service (need ProxyServiceEnabled)
+            var rockContext = new Rock.Data.RockContext();
+            var person = new PersonService(rockContext).Queryable("ConnectionStatusValue, PhoneNumbers")
+                .Where(p => p.Id == personId)
+                .FirstOrDefault();
+
             if ( person != null )
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                     Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
                     person.FullName,
-                    person.ConnectionStatusValueId.HasValue ? person.ConnectionStatusValue.Name : string.Empty );
+                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
 
                 var spouse = person.GetSpouse();
                 if ( spouse != null )

@@ -266,6 +266,7 @@ namespace Rock.Web.Cache
 
             if ( fieldType != null )
             {
+                fieldType.CopyFromModel( fieldTypeModel );
                 return fieldType;
             }
             else

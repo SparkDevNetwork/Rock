@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {
@@ -25,7 +26,7 @@ namespace Rock.Web.UI.Controls
     {
         public LineChart()
         {
-            this.Options.series = new Reporting.Dashboard.SeriesOptions( false, true, false );
+            this.Options.series = new SeriesOptions( false, true, false );
         }
     }
 }

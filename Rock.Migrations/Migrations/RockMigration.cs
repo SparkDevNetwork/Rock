@@ -578,6 +578,66 @@ namespace Rock.Migrations
 
         #endregion
 
+        #region Category Methods
+
+        /// <summary>
+        /// Updates the category.
+        /// </summary>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @EntityTypeId int
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Category] 
+                    WHERE [Guid] = '{4}' )
+                BEGIN
+                    UPDATE [Category] SET
+                        [EntityTypeId] = @EntityTypeId,
+                        [Name] = '{1}',
+                        [IconCssClass] = '{2}',
+                        [Description] = '{3}'
+                    WHERE [Guid] = '{4}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid] )
+                    VALUES( 1,@EntityTypeId,'{1}','{2}','{3}',0,'{4}' )  
+                END
+",
+                    entityTypeGuid,
+                    name,
+                    iconCssClass,
+                    description.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+        /// <summary>
+        /// Deletes the category.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        public void DeleteCategory( string guid )
+        {
+            Sql( string.Format( @"
+                
+                DELETE [Category] 
+                WHERE [Guid] = '{0}'
+",
+                    guid )
+            );
+        }
+
+        #endregion
+
         #region Attribute Methods
 
         /// <summary>
@@ -1487,7 +1547,105 @@ INSERT INTO [dbo].[Auth]
         }
         #endregion
 
-        #region PersonBadge 
+
+        #region PersonAttribute
+
+        /// <summary>
+        /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="blockTypeGuid"></param>
+        /// <param name="fieldTypeGuid"></param>
+        /// <param name="name"></param>
+        /// <param name="key"></param>
+        /// <param name="category"></param>
+        /// <param name="description"></param>
+        /// <param name="order"></param>
+        /// <param name="defaultValue"></param>
+        /// <param name="guid"></param>
+        public void UpdatePersonAttribute( string fieldTypeGuid, string categoryGuid, string name, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
+        {
+
+            Sql( string.Format( @"
+                
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{0}')
+
+                DECLARE @EntityTypeId int                
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = ''
+                    AND [EntityTypeQualifierValue] = ''
+                    AND [Key] = '{1}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{2}',
+                        [IconCssClass] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = ''
+                    AND [EntityTypeQualifierValue] = ''
+                    AND [Key] = '{1}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[IconCssClass],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'','',
+                        '{1}','{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')  
+                END
+",
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    iconCssClass,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+
+
+            Sql( string.Format( @"
+                
+                DECLARE @AttributeId int                
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+
+                DECLARE @CategoryId int
+                SET @CategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{1}')
+
+                IF NOT EXISTS (
+                    SELECT *
+                    FROM [AttributeCategory] 
+                    WHERE [AttributeId] = @AttributeId
+                    AND [CategoryId] = CategoryId )
+                BEGIN
+                    INSERT INTO [AttributeCategory] ( [AttributeId], [CategoryId] )
+                    VALUES( @AttributeId, @CategoryId )  
+                END
+",
+                    guid,
+                    categoryGuid )
+            );
+
+        }
+
+        #endregion
+
+        #region PersonBadge
 
         /// <summary>
         /// Updates the PersonBadge by Guid (if it exists); otherwise it inserts a new record.

@@ -15,58 +15,49 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Composition;
-using System.Linq;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
     /// <summary>
     /// Activates a new activity for a given activity type
     /// </summary>
-    [WorkflowAttribute( "Test Attribute", "An optional attribute to test the value of before activating the activity.", false, "", "Compare", 0 )]
-    [TextField( "Compare Text", "An optional value to compare the Test Attribute with before activating activity.", false, "", "Compare", 1 )]
-    [WorkflowAttribute( "Compare Attribute", "An optional attribute to compare the Test Attribute with before activating activity.", false, "", "Compare", 2 )]
+    [WorkflowAttribute( "Test Attribute", "An optional attribute to test the value of before performing action.", false, "", "Compare", 0 )]
+    [TextField( "Compare Text", "An optional value to compare the Test Attribute with before performing action.", false, "", "Compare", 1 )]
+    [WorkflowAttribute( "Compare Attribute", "An optional attribute to compare the Test Attribute with before performing action.", false, "", "Compare", 2 )]
     [ComparisonField( "Compare Type", "Type of comparison to perform between Test Attribute and Compare Text or Compare Attribute.", false, "", "Compare", 3 )]
     public abstract class CompareAction : ActionComponent
     {
         /// <summary>
-        /// Executes the specified workflow.
+        /// Compares test value to compare values and returns true if they match comparison
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         protected bool TestCompare( WorkflowAction action )
         {
-            Guid guid = GetAttributeValue( action, "TestAttribute").AsGuid();
+            Guid guid = GetAttributeValue( action, "TestAttribute" ).AsGuid();
             if ( guid.IsEmpty() )
             {
                 return true;
             }
 
             string testValue = GetWorklowAttributeValue( action, guid );
-            if (testValue != null)
+            if ( testValue != null )
             {
-                var compare = GetAttributeValue(action, "CompareType");
-                if (string.IsNullOrWhiteSpace(compare))
+                var compare = GetAttributeValue( action, "CompareType" );
+                if ( string.IsNullOrWhiteSpace( compare ) )
                 {
                     var compareType = compare.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
                     var compareValue = GetAttributeValue( action, "CompareText" );
-                    if (testValue.CompareTo( compareValue, compareType ))
+                    if ( testValue.CompareTo( compareValue, compareType ) )
                     {
                         return true;
                     }
 
-                    guid = GetAttributeValue(action, "CompareAttribute").AsGuid();
+                    guid = GetAttributeValue( action, "CompareAttribute" ).AsGuid();
                     compareValue = GetWorklowAttributeValue( action, guid );
                     return testValue.CompareTo( compareValue, compareType );
                 }

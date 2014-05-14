@@ -145,5 +145,18 @@ namespace Rock.Communication.Transport
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Sends the specified channel data to the specified list of recipients.
+        /// </summary>
+        /// <param name="channelData">The channel data.</param>
+        /// <param name="recipients">The recipients.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

@@ -139,7 +139,8 @@ namespace Rock.CheckIn
             int workflowTypeId = 0;
             if ( Int32.TryParse( GetAttributeValue( "WorkflowTypeId" ), out workflowTypeId ) )
             {
-                var workflowTypeService = new WorkflowTypeService( new RockContext() );
+                var rockContext = new RockContext();
+                var workflowTypeService = new WorkflowTypeService( rockContext );
                 var workflowType = workflowTypeService.Get( workflowTypeId );
                 if ( workflowType != null )
                 {
@@ -152,7 +153,7 @@ namespace Rock.CheckIn
                     if ( activityType != null )
                     {
                         WorkflowActivity.Activate( activityType, CurrentWorkflow );
-                        if ( CurrentWorkflow.Process( CurrentCheckInState, out errorMessages ) )
+                        if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
                         {
                             return true;
                         }
