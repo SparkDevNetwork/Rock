@@ -247,6 +247,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         {
             EnsureChildControls();
             WorkflowActivityType result = new WorkflowActivityType();
+            result.Id = _sbSecurity.EntityId;
             result.Guid = new Guid( _hfActivityTypeGuid.Value );
             result.Name = _tbActivityTypeName.Text;
             result.Description = _tbActivityTypeDescription.Text;
@@ -284,6 +285,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         {
             EnsureChildControls();
             _hfActivityTypeGuid.Value = value.Guid.ToString();
+            _sbSecurity.EntityId = value.Id;
             _tbActivityTypeName.Text = value.Name;
             _tbActivityTypeDescription.Text = value.Description;
             _cbActivityTypeIsActive.Checked = value.IsActive ?? false;
@@ -341,6 +343,12 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
 
+            _sbSecurity = new SecurityButton();
+            Controls.Add( _sbSecurity );
+            _sbSecurity.ID = this.ID + "_sbSecurity";
+            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
+            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowActivityType ) ).Id;
+
             _cbActivityTypeIsActive = new RockCheckBox { Text = "Active" };
             Controls.Add( _cbActivityTypeIsActive );
             _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
@@ -376,12 +384,6 @@ javascript:
             _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
             Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
-
-            _sbSecurity = new SecurityButton();
-            Controls.Add( _sbSecurity );
-            _sbSecurity.ID = this.ID + "_sbSecurity";
-            _sbSecurity.Attributes["class"] = "btn btn-security btn-xs security pull-right";
-            _sbSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowActivityType ) ).Id;
 
             _lbAddActionType = new LinkButton();
             Controls.Add( _lbAddActionType );
@@ -542,6 +544,13 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( _sbSecurity.EntityId > 0 )
+            {
+                _sbSecurity.Title = _tbActivityTypeName.Text;
+                _sbSecurity.RenderControl( writer );
+            }
+            
             _cbActivityTypeIsActivatedWithWorkflow.ValidationGroup = ValidationGroup;
             _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
@@ -561,7 +570,6 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             _lbAddActionType.RenderControl( writer );
-            _sbSecurity.RenderControl( writer );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
