@@ -272,7 +272,11 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _entityTypeEditControl.Visible = !value;
+                if ( _entityTypeEditControl != null )
+                {
+                    _entityTypeEditControl.Visible = !value;
+                }
+                
                 _rblSelectOrContext.SelectedValue = value ? "1" : "0";
             }
         }
