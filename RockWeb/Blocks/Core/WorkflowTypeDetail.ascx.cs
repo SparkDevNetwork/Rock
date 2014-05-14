@@ -127,6 +127,9 @@ namespace RockWeb.Blocks.Core
             gAttributes.Actions.AddClick += gAttributes_Add;
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
         }
 
         /// <summary>
@@ -216,6 +219,36 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() ?? 0 );
             ShowEditDetails( workflowType, rockContext );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            var service = new WorkflowTypeService( rockContext );
+            var workflowType = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
+
+            if ( workflowType != null )
+            {
+                if ( !workflowType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this workflow type.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( workflowType );
+
+                rockContext.SaveChanges();
+            }
+
+            // reload page
+            var qryParams = new Dictionary<string, string>();
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -887,11 +920,16 @@ namespace RockWeb.Blocks.Core
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnSecurity.Visible = false;
                 ShowReadonlyDetails( workflowType );
             }
             else
             {
                 btnEdit.Visible = true;
+
+                btnSecurity.Title = workflowType.Name;
+                btnSecurity.EntityId = workflowType.Id;
+
                 if ( workflowType.Id > 0 )
                 {
                     ShowReadonlyDetails( workflowType );
@@ -1112,10 +1150,10 @@ namespace RockWeb.Blocks.Core
             Dictionary<Guid, string> workflowAttributes, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
         {
             var control = new WorkflowActivityEditor();
+            control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
 
-            control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             control.DeleteActivityTypeClick += workflowActivityTypeEditor_DeleteActivityClick;
             control.AddActionTypeClick += workflowActivityTypeEditor_AddActionTypeClick;
             control.RebindAttributeClick += control_RebindAttributeClick;
@@ -1172,10 +1210,10 @@ namespace RockWeb.Blocks.Core
                 bool showInvalid = false )
         {
             var control = new WorkflowActionEditor();
+            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
 
-            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             control.ChangeActionTypeClick += workflowActionTypeEditor_ChangeActionTypeClick;
 
