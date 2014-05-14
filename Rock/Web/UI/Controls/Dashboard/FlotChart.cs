@@ -157,6 +157,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in it's own series
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [combine values]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CombineValues
+        {
+            get
+            {
+                return ViewState["CombineValues"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["CombineValues"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the title.
         /// </summary>
         /// <value>
@@ -367,7 +386,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// 
         /// </summary>
-        public class ChartClickArgs: EventArgs
+        public class ChartClickArgs : EventArgs
         {
             /// <summary>
             /// Gets or sets the date time value.
@@ -423,7 +442,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
-            if (this.Page.IsPostBack)
+            if ( this.Page.IsPostBack )
             {
                 EnsureChildControls();
                 if ( this.Page.Request.Params["__EVENTTARGET"] == _pnlChartPlaceholder.UniqueID )
@@ -534,107 +553,32 @@ namespace Rock.Web.UI.Controls
             .done( function (chartData) {{
 
                 var chartOptions = {1}; 
+                var plotSelector = '#{0} .js-chart-placeholder';
+                var xaxisLabelText = $('#{0} .js-xaxis-value').val();
+                var getSeriesUrl = $('#{0} .js-seriesname-url').val();
+                var combineValues = {4};
 ";
 
             if ( this.GetType() == typeof( PieChart ) )
             {
                 scriptFormat += @"
-                    var pieData = [];
-                    // populate the chartMeasurePoints data array with data from the REST result for pie data
-                    for (var i = 0; i < chartData.length; i++) {{
-                       pieData.push( {{
-                            label: chartData[i].Note,
-                            data: chartData[i].YValue,
-                            chartData: [chartData[i]]
-                       }});
-                    }}
-
-                    if (pieData.length > 0) {{
-                        // plot the pie chart
-                        $.plot('#{0} .js-chart-placeholder', pieData, chartOptions);    
-                    }}
-                    else {{
-                        $('#{0} .js-chart-placeholder').html('<div class=""alert alert-info"">No Data Found</div>');
-                    }}
+                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
+                
 ";
             }
             else
             {
                 scriptFormat += @"
-                    var chartSeriesLookup = {{}};
-                    var chartSeriesList = [];
-
-                    var chartGoalPoints = {{
-                        label: $('#{0} .js-xaxis-value').val() + ' goal',
-                        chartData: chartData,
-                        data: []
-                    }}
-
-                    if (chartOptions.customSettings) {{ 
-                        chartGoalPoints.color = chartOptions.customSettings.goalSeriesColor;
-                    }}
-
-                    // populate the chartMeasurePoints data array with data from the REST result
-                    for (var i = 0; i < chartData.length; i++) {{
-                        if (chartData[i].MetricValueType && chartData[i].MetricValueType == 1) {{
-                            // if the chartdata is marked as a Metric Goal Value Type, populate the chartGoalPoints
-                            chartGoalPoints.data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
-                        }}
-                        else
-                        {{
-                            if (!chartSeriesLookup[chartData[i].SeriesId]) {{
-                                
-                                var seriesName = chartData[i].SeriesId;
-                                var getSeriesUrl = $('#{0} .js-seriesname-url').val();
-                                if (getSeriesUrl) {{
-                                    $.ajax({{
-                                        url: getSeriesUrl + chartData[i].SeriesId,
-                                        async: false
-                                    }})
-                                    .done( function (data) {{
-                                       seriesName = data; 
-                                    }})
-                                    .fail(function (jqXHR, textStatus, errorThrown) {{
-                                        //debugger
-                                    }});
-                                }}
-
-                                seriesName = seriesName || $('#{0} .js-xaxis-value').val();
-
-                                chartSeriesLookup[chartData[i].SeriesId] = {{
-                                    label: seriesName,
-                                    chartData: chartData,
-                                    data: []
-                                    }};
-                            }}
-                            
-                            chartSeriesLookup[chartData[i].SeriesId].data.push([chartData[i].DateTimeStamp, chartData[i].YValue ]);
-                        }}
-                    }}
-
-                    // setup the series list (goal points last, if they exist)
-                    for (var seriesId in chartSeriesLookup) {{
-                        var chartMeasurePoints = chartSeriesLookup[seriesId];
-                        if (chartMeasurePoints.data.length) {{
-                            chartSeriesList.push(chartMeasurePoints);
-                        }}    
-                    }}
-
-                    if (chartGoalPoints.data.length) {{
-                        chartSeriesList.push(chartGoalPoints);
-                    }}
-
-                    // plot the chart
-                    $.plot('#{0} .js-chart-placeholder', chartSeriesList, chartOptions);
+                Rock.controls.charts.plotChartData(chartData, chartOptions, plotSelector, xaxisLabelText, getSeriesUrl, combineValues);
 ";
             }
 
             scriptFormat += @"
-                    // plothover script (tooltip script) 
-                    {2}
+                // plothover script (tooltip script) 
+                {2}
 
-                    // plotclick script
-                    {3}
+                // plotclick script
+                {3}
             }})
             .fail(function (jqXHR, textStatus, errorThrown) {{
                 //debugger
@@ -647,16 +591,16 @@ namespace Rock.Web.UI.Controls
 
             string restUrl = this.ResolveUrl( this.DataSourceUrl );
             _hfRestUrl.Value = restUrl;
-            
+
             string getSeriesNameUrl = null;
-            if (!string.IsNullOrWhiteSpace(this.SeriesNameUrl))
+            if ( !string.IsNullOrWhiteSpace( this.SeriesNameUrl ) )
             {
-                getSeriesNameUrl = this.ResolveUrl(this.SeriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/");
+                getSeriesNameUrl = this.ResolveUrl( this.SeriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
             }
-            
+
             _hfSeriesNameUrl.Value = getSeriesNameUrl;
 
-            string tooltipScript = GetToolTipScript();
+            string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}')", this.ClientID ) : null;
             string chartClickScript = GetChartClickScript();
 
             string script = string.Format(
@@ -664,7 +608,8 @@ namespace Rock.Web.UI.Controls
                 this.ClientID,      // {0}
                 chartOptionsJson,   // {1}
                 tooltipScript,      // {2}
-                chartClickScript ); // {3}
+                chartClickScript,   // {3}
+                this.CombineValues.ToTrueFalse().ToLower() );  // {4}
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "flot-chart-script_" + this.ClientID, script, true );
         }
@@ -694,59 +639,8 @@ namespace Rock.Web.UI.Controls
 
                 chartClickScript = string.Format( chartClickScriptFormat, this.ClientID, _pnlChartPlaceholder.UniqueID );
             }
+
             return chartClickScript;
-        }
-
-        /// <summary>
-        /// Gets the tool tip script.
-        /// </summary>
-        /// <returns></returns>
-        private string GetToolTipScript()
-        {
-            string tooltipScript = null;
-            if ( ShowTooltip )
-            {
-                string tooltipScriptFormat = @"
-                // setup of bootstrap tooltip which we'll show on the plothover event
-                $(""<div id='tooltip_{0}' class='tooltip right'><div class='tooltip-inner'></div><div class='tooltip-arrow'></div></div>"").css({{
-                    position: 'absolute',
-                    display: 'none',
-                }}).appendTo('body');
-
-                $('#{0}').bind('plothover', function (event, pos, item) {{
-                    
-                    if (item) {{
-                        var yaxisLabel = $('#{0}').find('.js-yaxis-value').val();
-                        var tooltipText = '';
-
-                        if (yaxisLabel) {{
-                            tooltipText += yaxisLabel + '<br />';
-                        }}
-
-                        tooltipText += new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
-
-                        if (item.series.label) {{
-                            tooltipText += '<br />' + item.series.label;
-                        }}
-
-                        if (item.series.chartData[item.dataIndex].MetricValueType) {{
-                            // if it's a goal measure...
-                            tooltipText += ' goal';
-                        }}
-
-                        tooltipText += ': ' + item.series.chartData[item.dataIndex].YValue;                
-                        $('#tooltip_{0}').find('.tooltip-inner').html(tooltipText);
-                        $('#tooltip_{0}').css({{ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 }});
-                        $('#tooltip_{0}').show();
-                    }}
-                    else {{
-                        $('#tooltip_{0}').hide();
-                    }}
-                }});";
-
-                tooltipScript = string.Format( tooltipScriptFormat, this.ClientID );
-            }
-            return tooltipScript;
         }
 
         /// <summary>

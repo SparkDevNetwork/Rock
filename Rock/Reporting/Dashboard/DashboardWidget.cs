@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,7 +40,7 @@ namespace Rock.Reporting.Dashboard
     {
         private string _widgetErrorMessage { get; set; }
         private string _widgetErrorDetails { get; set; }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -76,7 +77,7 @@ namespace Rock.Reporting.Dashboard
         /// Loads the chart.
         /// </summary>
         public abstract void LoadChart();
-        
+
         /// <summary>
         /// Gets the Title attribute value
         /// </summary>
@@ -151,7 +152,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// <c>true</c> if [get entity from context]; otherwise, <c>false</c>.
         /// </value>
-        public bool GetEntityFromContext
+        private bool GetEntityFromContext
         {
             get
             {
@@ -162,6 +163,58 @@ namespace Rock.Reporting.Dashboard
                 }
 
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the entity identifier either from a specific selection, PageContext, or null, depending on the Metric/Entity selection
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
+        public int? EntityId
+        {
+            get
+            {
+                int? result = null;
+                if ( GetEntityFromContext )
+                {
+                    if ( this.ContextEntity() != null )
+                    {
+                        result = this.ContextEntity().Id;
+                    }
+
+                    if ( !result.HasValue )
+                    {
+                        // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
+                        if ( this.MetricId.HasValue )
+                        {
+                            // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
+                            var entityParamName = "EntityId";
+                            var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
+                            if ( metric != null )
+                            {
+                                var entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                                if ( entityTypeCache != null )
+                                {
+                                    entityParamName = entityTypeCache.Name + "Id";
+                                }
+                            }
+
+                            result = this.PageParameter( entityParamName ).AsInteger();
+                        }
+                    }
+                }
+                else
+                {
+                    var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
+                    if ( valueParts.Length > 1 )
+                    {
+                        result = valueParts[1].AsInteger();
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -263,7 +316,7 @@ namespace Rock.Reporting.Dashboard
 
             if ( !string.IsNullOrWhiteSpace( _widgetErrorMessage ) )
             {
-                var errorBox = new NotificationBox { ID = "nbWidgetError", NotificationBoxType = NotificationBoxType.Danger, Text = _widgetErrorMessage , Title = "Error", Dismissable=true, Details = _widgetErrorDetails };
+                var errorBox = new NotificationBox { ID = "nbWidgetError", NotificationBoxType = NotificationBoxType.Danger, Text = _widgetErrorMessage, Title = "Error", Dismissable = true, Details = _widgetErrorDetails };
                 errorBox.RenderControl( writer );
             }
 
