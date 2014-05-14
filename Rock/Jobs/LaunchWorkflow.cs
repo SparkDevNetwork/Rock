@@ -17,9 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
+
 using Quartz;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 
@@ -65,7 +68,7 @@ namespace Rock.Jobs
             Guid workflowTypeGuid = Guid.NewGuid();
             if ( Guid.TryParse( workflowName, out workflowTypeGuid ) )
             {
-                var rockContext = new Rock.Data.RockContext();
+                var rockContext = new RockContext();
                 var workflowTypeService = new WorkflowTypeService(rockContext);
                 var workflowType = workflowTypeService.Get( workflowTypeGuid );
                 if ( workflowType != null )
@@ -73,12 +76,20 @@ namespace Rock.Jobs
                     var workflow = Rock.Model.Workflow.Activate( workflowType, workflowName );
 
                     List<string> workflowErrors;
-                    if ( workflow.Process( out workflowErrors ) )
+                    if ( workflow.Process( rockContext, out workflowErrors ) )
                     {
                         if ( workflow.IsPersisted || workflowType.IsPersisted )
                         {
                             var workflowService = new Rock.Model.WorkflowService(rockContext);
                             workflowService.Add( workflow );
+
+                            RockTransactionScope.WrapTransaction( () =>
+                            {
+                                rockContext.SaveChanges();
+                                workflow.SaveAttributeValues( rockContext );
+                            } );
+
+
                             rockContext.SaveChanges();
                         }
                     }

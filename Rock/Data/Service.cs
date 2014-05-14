@@ -298,6 +298,19 @@ namespace Rock.Data
 
         #endregion
 
+        #region Attach
+
+        /// <summary>
+        /// Attaches the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public virtual void Attach( T item)
+        {
+            _objectSet.Attach( item );
+        }
+
+        #endregion
+
         #region Add
 
         /// <summary>

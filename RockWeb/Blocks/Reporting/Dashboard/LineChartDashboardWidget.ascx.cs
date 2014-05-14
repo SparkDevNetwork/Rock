@@ -41,16 +41,13 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             lcExample.EndDate = new DateTime( 2014, 1, 1 );
             lcExample.MetricValueType = this.MetricValueType;
             lcExample.MetricId = this.MetricId;
-            lcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
-            if ( lcExample.EntityId == null && this.ContextEntity() != null )
-            {
-                lcExample.EntityId = this.ContextEntity().Id;
-            }
-
+            lcExample.EntityId = this.EntityId;
             lcExample.Title = this.Title;
             lcExample.Subtitle = this.Subtitle;
+            lcExample.CombineValues = this.CombineValues;
 
             lcExample.ShowTooltip = true;
+            
             lcExample.Options.SetChartStyle( this.ChartStyle );
 
             string debug = this.ChartStyle.ToJson( false );

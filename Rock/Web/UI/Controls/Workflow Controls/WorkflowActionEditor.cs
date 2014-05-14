@@ -145,6 +145,7 @@ $('.workflow-action > header').click(function () {
 // fix so that the Remove button will fire its event, but not the parent event 
 $('.workflow-action a.js-action-delete').click(function (event) {
     event.stopImmediatePropagation();
+    return Rock.dialogs.confirmDelete(event, 'Action Type', 'This will also delete all the actions of this type from any existing persisted workflows!');
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event 

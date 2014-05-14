@@ -57,11 +57,12 @@ namespace Rock.Workflow
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The workflow action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( WorkflowAction action, Object entity, out List<string> errorMessages );
+        public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
 
         /// <summary>
         /// Loads the attributes.

@@ -232,27 +232,35 @@ namespace Rock.Model
         /// <summary>
         /// Processes this Workflow instance.
         /// </summary>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.</returns>
-        public virtual bool Process( out List<string> errorMessages)
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.
+        /// </returns>
+        public virtual bool Process( RockContext rockContext, out List<string> errorMessages)
         {
-            bool result = Process( null, out errorMessages );
+            bool result = Process( rockContext, null, out errorMessages );
             return result;
         }
 
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain and any error messages that occur
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> that will contain and any error messages that occur
         /// while the Workflow is being processed.</param>
-        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the workflow processed sucessfully.</returns>
-        public virtual bool Process( Object entity, out List<string> errorMessages )
+        /// <returns>
+        /// A <see cref="System.Boolean" /> that is <c>true</c> if the workflow processed sucessfully.
+        /// </returns>
+        public virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
             DateTime processStartTime = RockDateTime.Now;
 
-            while ( ProcessActivity( processStartTime, entity, out errorMessages )
+            while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
                 && errorMessages.Count == 0 ) { }
 
             this.LastProcessedDateTime = RockDateTime.Now;
@@ -307,12 +315,16 @@ namespace Rock.Model
         /// <summary>
         /// Processes the activity.
         /// </summary>
-        /// <param name="processStartTime">A <see cref="System.DateTime"/> that represents the process start time.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="processStartTime">A <see cref="System.DateTime" /> that represents the process start time.</param>
         /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> containing error messages for any 
-        ///  errors that occurred while the activity was being processed..</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the activity processed successfully; otherwise <c>false</c>.</returns>
-        private bool ProcessActivity( DateTime processStartTime, Object entity, out List<string> errorMessages )
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> containing error messages for any
+        /// errors that occurred while the activity was being processed..</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the activity processed successfully; otherwise <c>false</c>.
+        /// </returns>
+        private bool ProcessActivity( RockContext rockContext, DateTime processStartTime, Object entity, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {
@@ -321,7 +333,7 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        return activity.Process( entity, out errorMessages );
+                        return activity.Process( rockContext, entity, out errorMessages );
                     }
                 }
             }
