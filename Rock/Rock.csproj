@@ -210,6 +210,8 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
+    <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Reporting\Dashboard\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
