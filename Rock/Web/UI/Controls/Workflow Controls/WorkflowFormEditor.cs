@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         private CodeEditor _ceFooterText;
         private RockTextBox _tbInactiveMessage;
         private RockControlWrapper _rcwActions;
-        private KeyValueList _kvlActions;
+        private WorkflowFormActionList _falActions;
 
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
                 {
                     form.Header = _ceHeaderText.Text;
                     form.Footer = _ceFooterText.Text;
-                    form.Actions = _kvlActions.Value;
+                    form.Actions = _falActions.Value;
                     form.InactiveMessage = _tbInactiveMessage.Text;
 
                     foreach ( var row in AttributeRows )
@@ -106,7 +106,7 @@ namespace Rock.Web.UI.Controls
                     _hfFormGuid.Value = value.Guid.ToString();
                     _ceHeaderText.Text = value.Header;
                     _ceFooterText.Text = value.Footer;
-                    _kvlActions.Value = value.Actions;
+                    _falActions.Value = value.Actions;
                     _tbInactiveMessage.Text = value.InactiveMessage;
 
                     // Remove any existing rows (shouldn't be any)
@@ -132,7 +132,7 @@ namespace Rock.Web.UI.Controls
                     _hfFormGuid.Value = string.Empty;
                     _ceHeaderText.Text = string.Empty;
                     _ceFooterText.Text = string.Empty;
-                    _kvlActions.Value = "Submit^Submit";
+                    _falActions.Value = "Submit^Submit^Your information has been submitted succesfully.";
                     _tbInactiveMessage.Text = string.Empty;
                 }
             }
@@ -149,13 +149,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _kvlActions.CustomValues;
+                return _falActions.Activities;
             }
 
             set
             {
                 EnsureChildControls();
-                _kvlActions.CustomValues = value;
+                _falActions.Activities = value;
             }
         }
 
@@ -222,11 +222,9 @@ namespace Rock.Web.UI.Controls
             _rcwActions.ID = this.ID + "_rcwActions";
             Controls.Add( _rcwActions );
 
-            _kvlActions = new KeyValueList();
-            _kvlActions.ID = this.ID + "_kvlActions";
-            _kvlActions.KeyPrompt = "Button Text";
-            _kvlActions.ValuePrompt = "Action Value";
-            _rcwActions.Controls.Add( _kvlActions );
+            _falActions = new WorkflowFormActionList();
+            _falActions.ID = this.ID + "_falActions";
+            _rcwActions.Controls.Add( _falActions );
 
             _tbInactiveMessage = new RockTextBox();
             _tbInactiveMessage.Label = "Inactive Message";

@@ -59,18 +59,36 @@ namespace RockWeb.Blocks.Core
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the workflow type identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
         public int? WorkflowTypeId
         {
             get { return ViewState["WorkflowTypeId"] as int?; }
             set { ViewState["WorkflowTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the workflow identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow identifier.
+        /// </value>
         public int? WorkflowId
         {
             get { return ViewState["WorkflowId"] as int?; }
             set { ViewState["WorkflowId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the action type identifier.
+        /// </summary>
+        /// <value>
+        /// The action type identifier.
+        /// </value>
         public int? ActionTypeId
         {
             get { return ViewState["ActionTypeId"] as int?; }
@@ -96,6 +114,10 @@ namespace RockWeb.Blocks.Core
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState(object savedState)
         {
             base.LoadViewState(savedState);
@@ -120,7 +142,8 @@ namespace RockWeb.Blocks.Core
             {
                 if (HydrateObjects())
                 {
-                    BuildForm(true);
+                    BuildForm( true );
+                    ProcessActionRequest();
                 }
             }
         }
@@ -141,65 +164,16 @@ namespace RockWeb.Blocks.Core
 
         }
 
-        void lbAction_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the Click event of the lbAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbAction_Click( object sender, EventArgs e )
         {
-            var lb = sender as LinkButton;
-            if (lb != null && _workflow != null && _actionType != null && _action != null)
-            {
-                GetFormValues();
-
-                _action.MarkComplete();
-                _action.FormAction = lb.Text;
-                _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
-
-                Guid activityTypeGuid = lb.Attributes["data-activity"].AsGuid();
-                if (!activityTypeGuid.IsEmpty())
-                {
-                    var activityType = _workflowType.ActivityTypes.Where(a => a.Guid.Equals(activityTypeGuid)).FirstOrDefault();
-                    if (activityType != null)
-                    {
-                        WorkflowActivity.Activate(activityType, _workflow);
-                    }
-                }
-
-                List<string> errorMessages;
-                if (_workflow.Process( _rockContext, out errorMessages))
-                {
-                    if ( _workflow.IsPersisted || _workflowType.IsPersisted )
-                    {
-                        if (_workflow.Id == 0)
-                        {
-                            _workflowService.Add(_workflow);
-                        }
-
-                        RockTransactionScope.WrapTransaction( () =>
-                        {
-                            _rockContext.SaveChanges();
-                            _workflow.SaveAttributeValues( _rockContext );
-                        } );
-
-                        WorkflowId = _workflow.Id;
-                    }
-
-                    ActionTypeId = null;
-                    _action = null;
-                    _actionType = null;
-                    _activity = null;
-
-                    if (HydrateObjects())
-                    {
-                        BuildForm(true);
-                    }
-                }
-                else
-                {
-                    nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                    nbMessage.Title = "Workflow Processing Error(s):";
-                    nbMessage.Text = errorMessages.AsDelimited("<br/>");
-                    nbMessage.Visible = true;
-                }
-
-            }
+            GetFormValues();
+            
+            CompleteFormAction( sender as LinkButton );
         }
 
         #endregion
@@ -255,17 +229,35 @@ namespace RockWeb.Blocks.Core
             if ( !WorkflowId.HasValue )
             {
                 WorkflowId = PageParameter( "WorkflowId" ).AsInteger( false );
+                if ( !WorkflowId.HasValue )
+                {
+                    Guid guid = PageParameter( "WorkflowGuid" ).AsGuid();
+                    if ( !guid.IsEmpty() )
+                    {
+                        _workflow = _workflowService.Queryable()
+                            .Where( w => w.Guid.Equals( guid ) && w.WorkflowTypeId == _workflowType.Id )
+                            .FirstOrDefault();
+                        if ( _workflow != null )
+                        {
+                            WorkflowId = _workflow.Id;
+                        }
+                    }
+                }
             }
 
             if ( WorkflowId.HasValue )
             {
-                _workflow = _workflowService.Queryable()
-                    .Where( w => w.Id == WorkflowId.Value && w.WorkflowTypeId == _workflowType.Id )
-                    .FirstOrDefault();
+                if (_workflow == null)
+                {
+                    _workflow = _workflowService.Queryable()
+                        .Where( w => w.Id == WorkflowId.Value && w.WorkflowTypeId == _workflowType.Id )
+                        .FirstOrDefault();
+                }
                 if ( _workflow != null )
                 {
                     _workflow.LoadAttributes();
                 }
+
             }
 
             // If an existing workflow was not specified, activate a new instance of workflow and start processing
@@ -341,6 +333,20 @@ namespace RockWeb.Blocks.Core
 
         }
 
+        private void ProcessActionRequest()
+        {
+            string action = PageParameter( "action" );
+            if (!string.IsNullOrWhiteSpace(action))
+            {
+                foreach( var linkButton in phActions.Controls.OfType<LinkButton>())
+                {
+                    if (linkButton.Text.Equals(action, StringComparison.OrdinalIgnoreCase))
+                    {
+                        CompleteFormAction( linkButton );
+                    }
+                }
+            }
+        }
 
         private void BuildForm(bool setValues)
         {
@@ -395,7 +401,7 @@ namespace RockWeb.Blocks.Core
                     lb.Text = details[0];
                     lb.Click += lbAction_Click;
                     lb.CssClass = "btn btn-primary";
-                    if (details.Length == 2)
+                    if (details.Length >= 2)
                     {
                         lb.Attributes.Add("data-activity", details[1]);
                     }
@@ -436,6 +442,95 @@ namespace RockWeb.Blocks.Core
                                 item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( phAttributes.Controls[i++] ), attribute.QualifierValues ) );
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        private void CompleteFormAction( LinkButton linkButton )
+        {
+            if ( linkButton != null )
+            {
+                string formAction = linkButton.Text;
+                Guid activityTypeGuid = linkButton.Attributes["data-activity"].AsGuid();
+
+                if ( !string.IsNullOrWhiteSpace( formAction ) &&
+                    _workflow != null &&
+                    _actionType != null &&
+                    _activity != null &&
+                    _action != null )
+                {
+                    _action.MarkComplete();
+                    _action.FormAction = formAction;
+                    _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
+
+                    // save current activity form's actions (to formulate response if needed).
+                    string currentActions = _actionType.WorkflowForm != null ? _actionType.WorkflowForm.Actions : string.Empty;
+                    var mergeFields = new Dictionary<string, object>();
+                    mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
+                    mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
+                    mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+
+                    if ( !activityTypeGuid.IsEmpty() )
+                    {
+                        var activityType = _workflowType.ActivityTypes.Where( a => a.Guid.Equals( activityTypeGuid ) ).FirstOrDefault();
+                        if ( activityType != null )
+                        {
+                            WorkflowActivity.Activate( activityType, _workflow );
+                        }
+                    }
+
+                    List<string> errorMessages;
+                    if ( _workflow.Process( _rockContext, out errorMessages ) )
+                    {
+                        if ( _workflow.IsPersisted || _workflowType.IsPersisted )
+                        {
+                            if ( _workflow.Id == 0 )
+                            {
+                                _workflowService.Add( _workflow );
+                            }
+
+                            RockTransactionScope.WrapTransaction( () =>
+                            {
+                                _rockContext.SaveChanges();
+                                _workflow.SaveAttributeValues( _rockContext );
+                            } );
+
+                            WorkflowId = _workflow.Id;
+                        }
+
+                        ActionTypeId = null;
+                        _action = null;
+                        _actionType = null;
+                        _activity = null;
+
+                        if ( HydrateObjects() )
+                        {
+                            BuildForm( true );
+                        }
+                        else
+                        {
+                            string response = "Your information has been submitted succesfully.";
+
+                            foreach ( var action in currentActions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
+                            {
+                                var details = action.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                if ( details.Length >= 3 )
+                                {
+                                    if ( details[0] == formAction && !string.IsNullOrWhiteSpace( details[2] ) )
+                                    {
+                                        response = details[2].ResolveMergeFields( mergeFields );
+                                        break;
+                                    }
+                                }
+                            }
+
+                            ShowMessage( NotificationBoxType.Success, string.Empty, response );
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", errorMessages.AsDelimited( "<br/>" ) );
                     }
                 }
             }

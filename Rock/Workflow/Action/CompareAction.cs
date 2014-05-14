@@ -25,9 +25,9 @@ namespace Rock.Workflow.Action
     /// Activates a new activity for a given activity type
     /// </summary>
     [WorkflowAttribute( "Test Attribute", "An optional attribute to test the value of before performing action.", false, "", "Compare", 0 )]
-    [TextField( "Compare Text", "An optional value to compare the Test Attribute with before performing action.", false, "", "Compare", 1 )]
-    [WorkflowAttribute( "Compare Attribute", "An optional attribute to compare the Test Attribute with before performing action.", false, "", "Compare", 2 )]
-    [ComparisonField( "Compare Type", "Type of comparison to perform between Test Attribute and Compare Text or Compare Attribute.", false, "", "Compare", 3 )]
+    [ComparisonField( "Compare Type", "Type of comparison to perform between Test Attribute and Compare Text or Compare Attribute.", false, "", "Compare", 1 )]
+    [TextField( "Compare Text", "An optional value to compare the Test Attribute with before performing action.", false, "", "Compare", 2 )]
+    [WorkflowAttribute( "Compare Attribute", "An optional attribute to compare the Test Attribute with before performing action.", false, "", "Compare", 3 )]
     public abstract class CompareAction : ActionComponent
     {
         /// <summary>
