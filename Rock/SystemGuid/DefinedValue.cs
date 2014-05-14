@@ -307,6 +307,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PERSON_RECORD_TYPE_BUSINESS = "BF64ADD3-E70A-44CE-9C4B-E76BBED37550";
 
+        /// <summary>
+        /// Rest User Record Type
+        /// </summary>
+        public const string PERSON_RECORD_TYPE_RESTUSER = "E2261A84-831D-4234-9BE0-4D628BBE751E";
+
         #endregion
 
         #region Person Connection Status
