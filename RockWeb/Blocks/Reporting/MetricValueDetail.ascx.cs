@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Reporting
 
             metricValue.MetricValueType = ddlMetricValueType.SelectedValueAsEnum<MetricValueType>();
             metricValue.XValue = tbXValue.Text;
-            metricValue.YValue = tbYValue.Text.AsDecimal( false );
+            metricValue.YValue = tbYValue.Text.AsDecimalOrNull();
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
 

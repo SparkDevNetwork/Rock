@@ -508,25 +508,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to decimal.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static decimal AsDecimal( this string str )
+        {
+            return str.AsDecimalOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to decimal.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        public static decimal? AsDecimalOrNull( this string str)
         {
-            if ( string.IsNullOrWhiteSpace( str ) )
-            {
-                if ( emptyStringAsZero )
-                {
-                    return 0;
-                }
-                else 
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
@@ -545,25 +542,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to double.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static double AsDouble( this string str )
+        {
+            return str.AsDoubleOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to double.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static double? AsDouble( this string str, bool emptyStringAsZero = true )
+        public static double? AsDoubleOrNull( this string str)
         {
-            if ( string.IsNullOrWhiteSpace( str ) )
-            {
-                if ( emptyStringAsZero )
-                {
-                    return 0;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)

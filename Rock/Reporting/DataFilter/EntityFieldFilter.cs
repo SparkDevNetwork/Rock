@@ -683,7 +683,7 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            double numericValue = values[1].AsDouble( false ) ?? int.MinValue;
+                            double numericValue = values[1].AsDoubleOrNull() ?? int.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
