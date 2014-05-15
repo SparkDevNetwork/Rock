@@ -449,9 +449,13 @@ namespace Rock
         /// <returns></returns>
         public static int? AsInteger( this string str, bool emptyStringAsZero = true )
         {
-            if ( !emptyStringAsZero )
+            if ( string.IsNullOrWhiteSpace( str ) )
             {
-                if ( string.IsNullOrWhiteSpace( str ) )
+                if ( emptyStringAsZero )
+                {
+                    return 0;
+                }
+                else
                 {
                     return null;
                 }
