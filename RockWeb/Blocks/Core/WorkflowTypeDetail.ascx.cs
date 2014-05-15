@@ -285,6 +285,7 @@ namespace RockWeb.Blocks.Core
             workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsInteger();
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
+            workflowType.IconCssClass = tbIconCssClass.Text;
 
             if ( !Page.IsValid || !workflowType.IsValid )
             {
@@ -884,7 +885,13 @@ namespace RockWeb.Blocks.Core
 
             if ( workflowTypeId.Value.Equals( 0 ) )
             {
-                workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
+                workflowType = new WorkflowType();
+                workflowType.Id = 0;
+                workflowType.IsActive = true;
+                workflowType.IsPersisted = true;
+                workflowType.IsSystem = false;
+                workflowType.CategoryId = parentCategoryId;
+                workflowType.IconCssClass = "fa fa-list-ol";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
                 workflowType.WorkTerm = "Work";            
             }
@@ -980,6 +987,7 @@ namespace RockWeb.Blocks.Core
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+            tbIconCssClass.Text = workflowType.IconCssClass;
 
             var attributeService = new AttributeService( rockContext );
             AttributesState = attributeService
