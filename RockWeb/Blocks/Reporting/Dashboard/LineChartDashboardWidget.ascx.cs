@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         public override void LoadChart()
         {
             lcExample.StartDate = new DateTime( 2013, 1, 1 );
-            lcExample.EndDate = new DateTime( 2014, 1, 1 );
+            lcExample.EndDate = new DateTime( 2015, 1, 1 );
             lcExample.MetricValueType = this.MetricValueType;
             lcExample.MetricId = this.MetricId;
             lcExample.EntityId = this.EntityId;

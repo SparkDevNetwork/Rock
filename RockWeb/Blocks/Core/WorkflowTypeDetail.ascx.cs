@@ -691,6 +691,7 @@ namespace RockWeb.Blocks.Core
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 var actionType = new WorkflowActionType();
                 actionType.Guid = Guid.NewGuid();
+                actionType.IsActionCompletedOnSuccess = true;
                 actionType.Order = activityType.ActionTypes.Any() ? activityType.ActionTypes.Max( a => a.Order ) + 1 : 0;
                 activityType.ActionTypes.Add( actionType );
 
@@ -885,6 +886,7 @@ namespace RockWeb.Blocks.Core
             {
                 workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
+                workflowType.WorkTerm = "Work";            
             }
             else
             {
@@ -948,10 +950,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="rockContext">The rock context.</param>
         private void ShowEditDetails( WorkflowType workflowType, RockContext rockContext )
         {
+            ExpandedActivities = new List<Guid>();
+            ExpandedActivityAttributes = new List<Guid>();
+            ExpandedActions = new List<Guid>();
+
             if ( workflowType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName ).FormatAsHtmlTitle();
+                foreach( var activity in workflowType.ActivityTypes)
+                {
+                    ExpandedActivities.Add( activity.Guid );
+                }
                 hlInactive.Visible = false;
+            }
+            else
+            {
+                pwDetails.Expanded = false;
             }
 
             SetEditMode( true );
@@ -1004,10 +1018,6 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-
-            ExpandedActivities = new List<Guid>();
-            ExpandedActivityAttributes = new List<Guid>();
-            ExpandedActions = new List<Guid>();
 
             BuildControls( true );
         }
@@ -1129,8 +1139,19 @@ namespace RockWeb.Blocks.Core
                 System.Web.HttpContext.Current.Items["WorkflowType"] = workflowType;
 
                 var workflowAttributes = new Dictionary<Guid, string>();
+
+
                 AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
                 System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] = workflowAttributes;
+
+                if ( workflowAttributes.Any() )
+                {
+                    wpAttributes.Title = string.Format( "Attributes ({0})", workflowAttributes.Count.ToString( "N0" ) );
+                }
+                else
+                {
+                    wpAttributes.Title = "Attributes";
+                }
 
                 foreach ( var workflowActivityType in ActivityTypesState.OrderBy( a => a.Order ) )
                 {
