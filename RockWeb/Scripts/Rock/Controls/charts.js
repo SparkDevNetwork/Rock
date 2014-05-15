@@ -4,6 +4,10 @@
 
     Rock.controls.charts = (function () {
         var exports = {
+
+            ///
+            /// handles putting chartData into a Line/Bar/Points chart
+            ///
             plotChartData: function (chartData, chartOptions, plotSelector, xaxisLabelText, getSeriesUrl, combineValues) {
 
                 var chartSeriesLookup = {};
@@ -11,7 +15,7 @@
 
                 var chartGoalPoints = {
                     label: xaxisLabelText + ' goal',
-                    chartData: chartData,
+                    chartData: [],
                     data: []
                 }
 
@@ -24,6 +28,7 @@
                     if (chartData[i].MetricValueType && chartData[i].MetricValueType == 1) {
                         // if the chartdata is marked as a Metric Goal Value Type, populate the chartGoalPoints
                         chartGoalPoints.data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        chartGoalPoints.chartData.push(chartData[i]);
                     }
                     else {
                         if (!chartSeriesLookup[chartData[i].SeriesId]) {
@@ -37,28 +42,25 @@
                                 })
                                 .done(function (data) {
                                     seriesName = data;
-                                })
-                                .fail(function (jqXHR, textStatus, errorThrown) {
-                                    //debugger
                                 });
                             }
 
-                            seriesName = seriesName || xaxisLabelText;
+                            seriesName = seriesName || xaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
 
                             chartSeriesLookup[chartData[i].SeriesId] = {
                                 label: seriesName,
-                                chartData: chartData,
+                                chartData: [],
                                 data: []
                             };
                         }
 
                         chartSeriesLookup[chartData[i].SeriesId].data.push([chartData[i].DateTimeStamp, chartData[i].YValue]);
+                        chartSeriesLookup[chartData[i].SeriesId].chartData.push(chartData[i]);
                     }
                 }
 
                 // setup the series list (goal points last, if they exist)
                 for (var seriesId in chartSeriesLookup) {
-
                     var chartMeasurePoints = chartSeriesLookup[seriesId];
                     if (chartMeasurePoints.data.length) {
                         chartSeriesList.push(chartMeasurePoints);
@@ -66,32 +68,46 @@
                 }
 
                 if (combineValues && chartSeriesList.length != 1) {
+
                     var combinedDataLookup = {};
+                    var chartMeasurePoints = null;
+
                     for (var chartMeasurePointsId in chartSeriesList) {
-                        var chartMeasurePoints = chartSeriesList[chartMeasurePointsId];
+
+                        chartMeasurePoints = chartSeriesList[chartMeasurePointsId];
+
                         $.each(chartMeasurePoints.data, function (indexInArray, dataPair) {
-                            var combinedDataPair = combinedDataLookup[dataPair[0]];
-                            if (combinedDataPair) {
-                                combinedDataPair[1] += dataPair[1];
+                            var dateTimeIndex = dataPair[0];
+                            var combinedItem = combinedDataLookup[dateTimeIndex];
+                            if (combinedItem) {
+                                // sum the YValue of the .data
+                                combinedItem.chartData.YValue += chartMeasurePoints.chartData[indexInArray].YValue;
+                                combinedItem.data[1] += dataPair[1];
                             }
                             else {
-                                combinedDataPair = dataPair;
-                                combinedDataLookup[dataPair[0]] = combinedDataPair;
+                                combinedDataLookup[dateTimeIndex] = {
+                                    chartData: chartMeasurePoints.chartData[indexInArray],
+                                    data: dataPair
+                                };
                             }
                         });
+                    }
+
+                    var combinedData = [];
+                    var combinedChartData = [];
+
+                    for (var dataLookupId in combinedDataLookup) {
+                        combinedData.push(combinedDataLookup[dataLookupId].data);
+                        combinedChartData.push(combinedDataLookup[dataLookupId].chartData);
                     }
 
                     chartSeriesList = [];
                     var chartCombinedMeasurePoints = {
                         label: xaxisLabelText + ' combined',
-                        chartData: chartData,
-                        data: []
+                        chartData: combinedChartData,
+                        data: combinedData
                     };
 
-                    for (var dataPairId in combinedDataLookup) {
-                        var dataPair = combinedDataLookup[dataPairId];
-                        chartCombinedMeasurePoints.data.push(dataPair);
-                    }
 
                     chartSeriesList.push(chartCombinedMeasurePoints);
                 }
@@ -109,14 +125,56 @@
                 }
             },
 
-            plotPieChartData: function (chartData, chartOptions, plotSelector) {
+            ///
+            /// handles putting chart data into a piechart
+            ///
+            plotPieChartData: function (chartData, chartOptions, plotSelector, combineValues) {
+                var workingChartData = null;
                 var pieData = [];
+                if (combineValues) {
+                    var combinedChartDataLookup = {};
+
+                    $.each(chartData, function (indexInArray, chartDataRow) {
+                        var combinedDataIndex = chartDataRow.XValue + '|' + chartDataRow.DateTimeStamp;
+                        var combinedChartDataRow = combinedChartDataLookup[combinedDataIndex];
+                        if (combinedChartDataRow) {
+
+                            // inc YValue for combined row
+                            combinedChartDataRow.YValue += chartDataRow.YValue;
+
+                            // take first non-null Note for the combined data row
+                            combinedChartDataRow.Note = combinedChartDataRow.Note || chartDataRow.Note;
+                        }
+                        else {
+                            combinedChartDataRow = chartDataRow;
+                            combinedChartDataLookup[combinedDataIndex] = combinedChartDataRow;
+                        }
+                    });
+
+                    var combinedChartData = [];
+
+                    for (var lookupId in combinedChartDataLookup) {
+                        var combinedChartDataItem = combinedChartDataLookup[lookupId];
+                        combinedChartData.push(combinedChartDataItem);
+                    }
+
+                    workingChartData = combinedChartData;
+                }
+                else {
+                    workingChartData = chartData;
+                }
+
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
-                for (var i = 0; i < chartData.length; i++) {
+                for (var i = 0; i < workingChartData.length; i++) {
+                    var pieSeriesLabel = workingChartData[i].Note || workingChartData[i].XValue;
+                    if (!pieSeriesLabel || pieSeriesLabel == "0") {
+                        pieSeriesLabel = new Date(workingChartData[i].DateTimeStamp).toLocaleDateString();
+                    }
+
                     pieData.push({
-                        label: chartData[i].Note,
-                        data: chartData[i].YValue,
-                        chartData: [chartData[i]]
+                        label: pieSeriesLabel,
+                        data: workingChartData[i].YValue,
+                        chartData: [workingChartData[i]]
                     });
                 }
 
@@ -129,6 +187,9 @@
                 }
             },
 
+            ///
+            /// attaches a bootstrap style tooltip to the 'plothover' of a chart
+            ///
             bindTooltip: function (plotContainerId) {
                 // setup of bootstrap tooltip which we'll show on the plothover event
                 var toolTipId = 'tooltip_' + plotContainerId;
@@ -164,7 +225,8 @@
 
                         tooltipText += ': ' + item.series.chartData[item.dataIndex].YValue;
                         $toolTip.find('.tooltip-inner').html(tooltipText);
-                        $toolTip.css({ top: item.pageY + 5, left: item.pageX + 5, opacity: 1 });
+                        var tipTop = pos.pageY - ($toolTip.height() / 2);
+                        $toolTip.css({ top: tipTop, left: pos.pageX + 5, opacity: 1 });
                         $toolTip.show();
                     }
                     else {
