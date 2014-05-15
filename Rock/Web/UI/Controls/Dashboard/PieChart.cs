@@ -32,6 +32,8 @@ namespace Rock.Web.UI.Controls
             this.Options.series = new SeriesOptions( false, false, false );
             this.Options.series.pie = new Pie { show = true };
             this.Options.series.pie.label = new PieLabel { show = true };
+            this.Options.legend = this.Options.legend ?? new Legend();
+            this.Options.legend.show = false;
         }
     }
 }
