@@ -518,9 +518,13 @@ namespace Rock
         /// <returns></returns>
         public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
         {
-            if ( !emptyStringAsZero )
+            if ( string.IsNullOrWhiteSpace( str ) )
             {
-                if ( string.IsNullOrWhiteSpace( str ) )
+                if ( emptyStringAsZero )
+                {
+                    return 0;
+                }
+                else 
                 {
                     return null;
                 }
@@ -551,9 +555,13 @@ namespace Rock
         /// <returns></returns>
         public static double? AsDouble( this string str, bool emptyStringAsZero = true )
         {
-            if ( !emptyStringAsZero )
+            if ( string.IsNullOrWhiteSpace( str ) )
             {
-                if ( string.IsNullOrWhiteSpace( str ) )
+                if ( emptyStringAsZero )
+                {
+                    return 0;
+                }
+                else
                 {
                     return null;
                 }
