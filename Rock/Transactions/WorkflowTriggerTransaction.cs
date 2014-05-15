@@ -70,7 +70,7 @@ namespace Rock.Transactions
                     var workflow = Rock.Model.Workflow.Activate( workflowType, Trigger.WorkflowName );
 
                     List<string> workflowErrors;
-                    if ( workflow.Process( Entity, out workflowErrors ) )
+                    if ( workflow.Process( rockContext, Entity, out workflowErrors ) )
                     {
                         if ( workflow.IsPersisted || workflowType.IsPersisted )
                         {

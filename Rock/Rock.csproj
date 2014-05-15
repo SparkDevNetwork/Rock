@@ -210,6 +210,8 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
+    <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
     <Compile Include="Reporting\Dashboard\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
@@ -666,6 +668,7 @@
     <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormActionList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormAttributeRow.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormEditor.cs">
@@ -694,6 +697,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
     <Compile Include="Workflow\Action\CompareAction.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />

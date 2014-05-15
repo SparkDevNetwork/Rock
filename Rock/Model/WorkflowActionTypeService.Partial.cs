@@ -15,25 +15,27 @@
 // </copyright>
 //
 using System;
-using Rock.Reporting.Dashboard.Flot;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Compilation;
 
-namespace Rock.Web.UI.Controls
+using Rock.Data;
+
+namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Service/Data access class for <see cref="Rock.Model.WorkflowActionType"/> entity objects
     /// </summary>
-    public class PieChart : FlotChart
+    public partial class WorkflowActionTypeService 
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PieChart"/> class.
-        /// </summary>
-        public PieChart()
+        public override bool Delete( WorkflowActionType item )
         {
-            this.Options.series = new SeriesOptions( false, false, false );
-            this.Options.series.pie = new Pie { show = true };
-            this.Options.series.pie.label = new PieLabel { show = true };
-            this.Options.legend = this.Options.legend ?? new Legend();
-            this.Options.legend.show = false;
+            var actionService = new WorkflowActionService( (RockContext)this.Context );
+            foreach ( var action in actionService.Queryable().Where( a => a.ActionTypeId == item.Id ) )
+            {
+                actionService.Delete( action );
+            } 
+            return base.Delete( item );
         }
     }
 }
