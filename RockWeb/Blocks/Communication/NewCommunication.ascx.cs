@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communication == null )
                 {
                     // If not, check page parameter for existing communiciaton
-                    int? communicationId = PageParameter( "CommunicationId" ).AsInteger( false );
+                    int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
                         communication = new CommunicationService( new RockContext() ).Get( communicationId.Value );
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Communication
 
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int? templateId = ddlTemplate.SelectedValue.AsInteger( false );
+            int? templateId = ddlTemplate.SelectedValue.AsIntegerOrNull();
             if ( templateId.HasValue )
             {
                 GetTemplateData( templateId.Value );
@@ -513,7 +513,7 @@ namespace RockWeb.Blocks.Communication
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
-                int? personId = PageParameter( "Person" ).AsInteger( false );
+                int? personId = PageParameter( "Person" ).AsIntegerOrNull();
                 if ( personId.HasValue )
                 {
                     communication.IsBulkCommunication = false;

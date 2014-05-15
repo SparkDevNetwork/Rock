@@ -464,7 +464,7 @@ namespace RockWeb.Blocks.Groups
             {
                 if ( li.Selected )
                 {
-                    locationSelectionMode = locationSelectionMode | (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                    locationSelectionMode = locationSelectionMode | (GroupLocationPickerMode)li.Value.AsInteger();
                 }
             }
 
@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.Groups
             cblLocationSelectionModes.Enabled = true;
             foreach ( ListItem li in cblLocationSelectionModes.Items )
             {
-                GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger().Value;
+                GroupLocationPickerMode mode = (GroupLocationPickerMode)li.Value.AsInteger();
                 li.Selected = ( groupType.LocationSelectionMode & mode ) == mode;
             }
 

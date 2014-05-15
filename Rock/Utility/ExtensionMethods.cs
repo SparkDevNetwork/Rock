@@ -442,25 +442,22 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to integer.  Returns null if unsuccessful.
+        /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
+        public static int AsInteger( this string str)
         {
-            if ( string.IsNullOrWhiteSpace( str ) )
-            {
-                if ( emptyStringAsZero )
-                {
-                    return 0;
-                }
-                else
-                {
-                    return null;
-                }
-            }
+            return str.AsIntegerOrNull() ?? 0;
+        }
 
+        /// <summary>
+        /// Attempts to convert string to an integer.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static int? AsIntegerOrNull( this string str)
+        {
             int value;
             if ( int.TryParse( str, out value ) )
             {

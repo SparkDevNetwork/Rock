@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger( false );
+                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
                 }
             }
 
@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Core
             // If operating against an existing workflow, get the workflow and load attributes
             if ( !WorkflowId.HasValue )
             {
-                WorkflowId = PageParameter( "WorkflowId" ).AsInteger( false );
+                WorkflowId = PageParameter( "WorkflowId" ).AsIntegerOrNull();
                 if ( !WorkflowId.HasValue )
                 {
                     Guid guid = PageParameter( "WorkflowGuid" ).AsGuid();

@@ -253,7 +253,7 @@ namespace Rock.Reporting.DataFilter
                     }
                     else if ( entityField.FilterFieldType == SystemGuid.FieldType.DAY_OF_WEEK )
                     {
-                        DayOfWeek dayOfWeek = (DayOfWeek)( values[1].AsInteger() ?? 0 );
+                        DayOfWeek dayOfWeek = (DayOfWeek)( values[1].AsInteger() );
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, dayOfWeek.ConvertToString() );
                     }
