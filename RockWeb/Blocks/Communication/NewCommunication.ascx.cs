@@ -303,56 +303,52 @@ namespace RockWeb.Blocks.Communication
                         string textClass = string.Empty;
                         string textTooltip = string.Empty;
 
-                        if ( string.IsNullOrWhiteSpace( recipient.Email ) )
-                        {
-                            textClass = "text-danger";
-                            textTooltip = "No Email." + recipient.EmailNote;
-                        }
 
-                        else
+                        if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
                         {
-                            if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
+                            if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                             {
-                                if ( !recipient.IsEmailActive )
+                                textClass = "text-danger";
+                                textTooltip = "No Email." + recipient.EmailNote;
+                            }
+                            else if ( !recipient.IsEmailActive )
+                            {
+                                // if email is not active, show reason why as tooltip
+                                textClass = "text-danger";
+                                textTooltip = "Email is Inactive. " + recipient.EmailNote;
+                            }
+                            else
+                            {
+                                // Email is active
+                                if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
                                 {
-                                    // if email is not active, show reason why as tooltip
-                                    textClass = "text-danger";
-                                    textTooltip = "Email is Inactive. " + recipient.EmailNote;
-                                }
-                                else
-                                {
-                                    // Email is active
-                                    if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
+                                    textTooltip = Recipient.PreferenceMessage( recipient );
+
+                                    if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                     {
-                                        textTooltip = Recipient.PreferenceMessage( recipient );
-
-                                        if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
+                                        textClass = "js-no-bulk-email";
+                                        var channelData = ChannelData;
+                                        if ( cbBulk.Checked )
                                         {
-                                            textClass = "js-no-bulk-email";
-                                            var channelData = ChannelData;
-                                            if ( cbBulk.Checked )
-                                            {
-                                                // This is a bulk email and user does not want bulk emails
-                                                textClass += " text-danger";
-                                            }
+                                            // This is a bulk email and user does not want bulk emails
+                                            textClass += " text-danger";
                                         }
-                                        else
-                                        {
-                                            // Email preference is 'Do Not Email'
-                                            textClass = "text-danger";
-                                        }
-
+                                    }
+                                    else
+                                    {
+                                        // Email preference is 'Do Not Email'
+                                        textClass = "text-danger";
                                     }
                                 }
                             }
-                            else if (ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
+                        }
+                        else if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
+                        {
+                            if ( !recipient.HasSmsNumber )
                             {
-                                if (!recipient.HasSmsNumber)
-                                {
-                                    // No SMS Number
-                                    textClass = "text-danger";
-                                    textTooltip = "No phone number with SMS enabled.";
-                                }
+                                // No SMS Number
+                                textClass = "text-danger";
+                                textTooltip = "No phone number with SMS enabled.";
                             }
                         }
 
