@@ -55,21 +55,21 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
-                name: "PeopleSearchByEmail",
-                routeTemplate: "api/People/SearchByEmail",
+                name: "PeopleGetByEmail",
+                routeTemplate: "api/People/GetByEmail/{email}",
                 defaults: new
                 {
                     controller = "People",
-                    action = "SearchByEmail"
+                    action = "GetByEmail"
                 } );
 
             routes.MapHttpRoute(
-                name: "PeopleSearchByPhoneNumber",
-                routeTemplate: "api/People/SearchByPhoneNumber",
+                name: "PeopleGetByPhoneNumber",
+                routeTemplate: "api/People/GetByPhoneNumber/{number}",
                 defaults: new
                 {
                     controller = "People",
-                    action = "SearchByPhoneNumber"
+                    action = "GetByPhoneNumber"
                 } );
 
             routes.MapHttpRoute(
@@ -158,22 +158,14 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<PersonSearchResult> SearchByEmail( string email, bool includeHtml = false )
+        public IQueryable<PersonSearchResult> GetByEmail( string email )
         {
             int count = 20;
             var rockContext = new Rock.Data.RockContext();
             List<Person> personList = new PersonService( rockContext )
                 .GetByEmail( email, true ).Take( count ).ToList();
 
-            string itemDetailFormat = @"
-<div class='picker-select-item-details clearfix' style='display: none;'>
-	{0}
-	<div class='contents'>
-        {1}
-	</div>
-</div>
-";
-            return GetPersonSearchDetails( rockContext, personList, itemDetailFormat, false, includeHtml );
+            return GetPersonSearchDetails( rockContext, personList, string.Empty );
         }
 
         /// <summary>
@@ -184,7 +176,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
-        public IQueryable<PersonSearchResult> SearchByPhoneNumber( string number, bool includeHtml = false )
+        public IQueryable<PersonSearchResult> GetByPhoneNumber( string number )
         {
             int count = 20;
             var rockContext = new Rock.Data.RockContext();
@@ -192,15 +184,8 @@ namespace Rock.Rest.Controllers
                 .GetPersonIdsByNumber( number ).Take( count ).ToList();
 
             List<Person> personList = new PersonService( rockContext ).GetByIds( matchingPersonIds ).ToList();
-            string itemDetailFormat = @"
-<div class='picker-select-item-details clearfix' style='display: none;'>
-	{0}
-	<div class='contents'>
-        {1}
-	</div>
-</div>
-";
-            return GetPersonSearchDetails( rockContext, personList, itemDetailFormat, false, includeHtml );
+
+            return GetPersonSearchDetails( rockContext, personList, string.Empty );
         }
 
         /// <summary>
