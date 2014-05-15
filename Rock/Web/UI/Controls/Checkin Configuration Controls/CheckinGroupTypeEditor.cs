@@ -577,8 +577,8 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // grouptype edit fields
-            _ddlGroupTypeInheritFrom.RenderControl( writer );
             _tbGroupTypeName.RenderControl( writer );
+            _ddlGroupTypeInheritFrom.RenderControl( writer );
 
             // attributes 
             _phGroupTypeAttributes.RenderControl( writer );
