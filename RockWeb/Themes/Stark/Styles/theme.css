@@ -1964,6 +1964,9 @@ a.aspNetDisabled {
 .form-group .checkbox:last-child {
   margin-bottom: 30px;
 }
+.form-group > .form-group {
+  margin-top: 12px;
+}
 .form-horizontal .form-group {
   margin-right: 0;
 }
@@ -2819,7 +2822,7 @@ table.attribute-grid tr th:nth-child(3) {
   -moz-filter: grayscale(100%);
   filter: gray;
   filter: grayscale(100%);
-  filter: url(desaturate.svg#greyscale);
+  filter: url('../../Assets/Images/(desaturate.svg#grayscale');
   transition: .5s;
 }
 .personprofilebar-family .person-image:hover {

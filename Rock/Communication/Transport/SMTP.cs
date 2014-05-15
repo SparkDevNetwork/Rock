@@ -310,9 +310,10 @@ namespace Rock.Communication.Transport
             var globalAttributes = GlobalAttributesCache.Read();
 
             string from = string.Empty;
-            if (!channelData.TryGetValue("From", out from))
+            channelData.TryGetValue( "From", out from );
+            if ( string.IsNullOrWhiteSpace( from ) )
             {
-                from = globalAttributes.GetValue("OrganizationEmail");
+                from = globalAttributes.GetValue( "OrganizationEmail" );
             }
 
             if (!string.IsNullOrWhiteSpace(from))

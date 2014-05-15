@@ -36,29 +36,31 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
     [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
-    [BooleanField( "Complete Current Activity", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed)." )]
+    [BooleanField( "Stop Further Actions", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed for this activity).", false, "", 1, "CompleteActivity" )]
     public class ActivateActivity : CompareAction
     {
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
             Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            if ( guid.IsEmpty() )
             {
                 action.AddLogEntry( "Invalid Activity Property" );
                 return false;
             }
 
             var workflow = action.Activity.Workflow;
-            var activityType = workflow.WorkflowType.ActivityTypes
+
+            var activityType = new WorkflowActivityTypeService( rockContext ).Queryable()
                 .Where( a => a.Guid.Equals( guid ) ).FirstOrDefault();
 
             if ( activityType == null )
@@ -71,6 +73,11 @@ namespace Rock.Workflow.Action
             {
                 WorkflowActivity.Activate( activityType, workflow );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+
+                if ( GetAttributeValue( action, "CompleteActivity" ).AsBoolean() )
+                {
+                    action.Activity.MarkComplete();
+                }
             }
 
             return true;

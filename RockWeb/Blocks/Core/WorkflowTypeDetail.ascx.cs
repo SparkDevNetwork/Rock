@@ -127,6 +127,9 @@ namespace RockWeb.Blocks.Core
             gAttributes.Actions.AddClick += gAttributes_Add;
             gAttributes.GridRebind += gAttributes_GridRebind;
             gAttributes.GridReorder += gAttributes_GridReorder;
+
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
+            btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
         }
 
         /// <summary>
@@ -219,6 +222,36 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            var service = new WorkflowTypeService( rockContext );
+            var workflowType = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
+
+            if ( workflowType != null )
+            {
+                if ( !workflowType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdDeleteWarning.Show( "You are not authorized to delete this workflow type.", ModalAlertType.Information );
+                    return;
+                }
+
+                service.Delete( workflowType );
+
+                rockContext.SaveChanges();
+            }
+
+            // reload page
+            var qryParams = new Dictionary<string, string>();
+            NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -252,6 +285,7 @@ namespace RockWeb.Blocks.Core
             workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsInteger();
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
+            workflowType.IconCssClass = tbIconCssClass.Text;
 
             if ( !Page.IsValid || !workflowType.IsValid )
             {
@@ -658,6 +692,7 @@ namespace RockWeb.Blocks.Core
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 var actionType = new WorkflowActionType();
                 actionType.Guid = Guid.NewGuid();
+                actionType.IsActionCompletedOnSuccess = true;
                 actionType.Order = activityType.ActionTypes.Any() ? activityType.ActionTypes.Max( a => a.Order ) + 1 : 0;
                 activityType.ActionTypes.Add( actionType );
 
@@ -850,8 +885,15 @@ namespace RockWeb.Blocks.Core
 
             if ( workflowTypeId.Value.Equals( 0 ) )
             {
-                workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
+                workflowType = new WorkflowType();
+                workflowType.Id = 0;
+                workflowType.IsActive = true;
+                workflowType.IsPersisted = true;
+                workflowType.IsSystem = false;
+                workflowType.CategoryId = parentCategoryId;
+                workflowType.IconCssClass = "fa fa-list-ol";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
+                workflowType.WorkTerm = "Work";            
             }
             else
             {
@@ -887,11 +929,16 @@ namespace RockWeb.Blocks.Core
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnSecurity.Visible = false;
                 ShowReadonlyDetails( workflowType );
             }
             else
             {
                 btnEdit.Visible = true;
+
+                btnSecurity.Title = workflowType.Name;
+                btnSecurity.EntityId = workflowType.Id;
+
                 if ( workflowType.Id > 0 )
                 {
                     ShowReadonlyDetails( workflowType );
@@ -910,10 +957,22 @@ namespace RockWeb.Blocks.Core
         /// <param name="rockContext">The rock context.</param>
         private void ShowEditDetails( WorkflowType workflowType, RockContext rockContext )
         {
+            ExpandedActivities = new List<Guid>();
+            ExpandedActivityAttributes = new List<Guid>();
+            ExpandedActions = new List<Guid>();
+
             if ( workflowType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName ).FormatAsHtmlTitle();
+                foreach( var activity in workflowType.ActivityTypes)
+                {
+                    ExpandedActivities.Add( activity.Guid );
+                }
                 hlInactive.Visible = false;
+            }
+            else
+            {
+                pwDetails.Expanded = false;
             }
 
             SetEditMode( true );
@@ -928,6 +987,7 @@ namespace RockWeb.Blocks.Core
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+            tbIconCssClass.Text = workflowType.IconCssClass;
 
             var attributeService = new AttributeService( rockContext );
             AttributesState = attributeService
@@ -966,10 +1026,6 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-
-            ExpandedActivities = new List<Guid>();
-            ExpandedActivityAttributes = new List<Guid>();
-            ExpandedActions = new List<Guid>();
 
             BuildControls( true );
         }
@@ -1091,8 +1147,19 @@ namespace RockWeb.Blocks.Core
                 System.Web.HttpContext.Current.Items["WorkflowType"] = workflowType;
 
                 var workflowAttributes = new Dictionary<Guid, string>();
+
+
                 AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
                 System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] = workflowAttributes;
+
+                if ( workflowAttributes.Any() )
+                {
+                    wpAttributes.Title = string.Format( "Attributes ({0})", workflowAttributes.Count.ToString( "N0" ) );
+                }
+                else
+                {
+                    wpAttributes.Title = "Attributes";
+                }
 
                 foreach ( var workflowActivityType in ActivityTypesState.OrderBy( a => a.Order ) )
                 {
@@ -1112,10 +1179,10 @@ namespace RockWeb.Blocks.Core
             Dictionary<Guid, string> workflowAttributes, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
         {
             var control = new WorkflowActivityEditor();
+            control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
 
-            control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             control.DeleteActivityTypeClick += workflowActivityTypeEditor_DeleteActivityClick;
             control.AddActionTypeClick += workflowActivityTypeEditor_AddActionTypeClick;
             control.RebindAttributeClick += control_RebindAttributeClick;
@@ -1172,10 +1239,10 @@ namespace RockWeb.Blocks.Core
                 bool showInvalid = false )
         {
             var control = new WorkflowActionEditor();
+            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
 
-            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             control.ChangeActionTypeClick += workflowActionTypeEditor_ChangeActionTypeClick;
 

@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -38,12 +39,13 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The workflow action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )

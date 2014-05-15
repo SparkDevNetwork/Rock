@@ -45,11 +45,12 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -104,9 +105,9 @@ namespace Rock.Workflow.Action
                 if ( recipients.Any() )
                 {
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Action", action );
-                    mergeFields.Add( "Activity", action.Activity );
-                    mergeFields.Add( "Workflow", action.Activity.Workflow );
+                    mergeFields.Add( "Action", action.ToLiquid( false, false ) );
+                    mergeFields.Add( "Activity", action.Activity.ToLiquid( false, false ) );
+                    mergeFields.Add( "Workflow", action.Activity.Workflow.ToLiquid( false, false ) );
 
                     var channelData = new Dictionary<string, string>();
                     channelData.Add( "From", GetAttributeValue( action, "From" ) );

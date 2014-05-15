@@ -303,29 +303,35 @@ namespace RockWeb.Blocks.Finance
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
                 // GroupLocation & Location
-                var groupLocationService = new GroupLocationService( rockContext );
-                var groupLocation = businessGroup.GroupLocations.FirstOrDefault();
-                if ( groupLocation == null )
+                if ( !String.IsNullOrWhiteSpace( tbStreet1.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbStreet2.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbCity.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbZipCode.Text.Trim() ) )
                 {
-                    groupLocation = new GroupLocation();
-                    businessGroup.GroupLocations.Add( groupLocation );
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    var groupLocation = businessGroup.GroupLocations.FirstOrDefault();
+                    if ( groupLocation == null )
+                    {
+                        groupLocation = new GroupLocation();
+                        businessGroup.GroupLocations.Add( groupLocation );
+                    }
+
+                    groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+                    var locationService = new LocationService( rockContext );
+                    var location = groupLocation.Location;
+                    if ( location == null )
+                    {
+                        location = new Location();
+                        groupLocation.Location = location;
+                    }
+
+                    location.Street1 = tbStreet1.Text.Trim();
+                    location.Street2 = tbStreet2.Text.Trim();
+                    location.City = tbCity.Text.Trim();
+                    location.State = ddlState.SelectedValue;
+                    location.Zip = tbZipCode.Text.Trim();
                 }
-
-                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
-
-                var locationService = new LocationService( rockContext );
-                var location = groupLocation.Location;
-                if ( location == null )
-                {
-                    location = new Location();
-                    groupLocation.Location = location;
-                }
-
-                location.Street1 = tbStreet1.Text.Trim();
-                location.Street2 = tbStreet2.Text.Trim();
-                location.City = tbCity.Text.Trim();
-                location.State = ddlState.SelectedValue;
-                location.Zip = tbZipCode.Text.Trim();
 
                 rockContext.SaveChanges();
 
@@ -587,13 +593,26 @@ namespace RockWeb.Blocks.Finance
             hfBusinessId.SetValue( business.Id );
             lTitle.Text = "View Business".FormatAsHtmlTitle();
 
+            string street1 = string.Empty;
+            string street2 = string.Empty;
+            string city = string.Empty;
+            string state = string.Empty;
+            string zip = string.Empty;
+            if ( business.GivingGroup.GroupLocations.Count > 0 )
+            {
+                street1 = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
+                street2 = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
+                city = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
+                state = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
+                zip = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+            }
             lDetailsLeft.Text = new DescriptionList()
                 .Add( "Business Name", business.FirstName )
-                .Add( "Address Line 1", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1 )
-                .Add( "Address Line 2", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2 )
-                .Add( "City", business.GivingGroup.GroupLocations.FirstOrDefault().Location.City )
-                .Add( "State", business.GivingGroup.GroupLocations.FirstOrDefault().Location.State )
-                .Add( "Zip Code", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip )
+                .Add( "Address Line 1", street1 )
+                .Add( "Address Line 2", street2 )
+                .Add( "City", city )
+                .Add( "State", state )
+                .Add( "Zip Code", zip )
                 .Html;
 
             string phoneNumber = string.Empty;
@@ -621,11 +640,22 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
                 tbBusinessName.Text = business.FirstName;
-                tbStreet1.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
-                tbStreet2.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
-                tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
-                ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
-                tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+                if ( business.GivingGroup.GroupLocations.Count > 0 )
+                {
+                    tbStreet1.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
+                    tbStreet2.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
+                    tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
+                    ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
+                    tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+                }
+                else
+                {
+                    tbStreet1.Text = string.Empty;
+                    tbStreet2.Text = string.Empty;
+                    tbCity.Text = string.Empty;
+                    ddlState.SelectedIndex = 0;
+                    tbZipCode.Text = string.Empty;
+                }
                 if ( business.PhoneNumbers.Count > 0 )
                 {
                     pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
