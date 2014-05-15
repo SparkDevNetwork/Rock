@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.CheckIn
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
-            int scheduleCategoryId = rFilter.GetUserPreference( "Category" ).AsInteger() ?? Rock.Constants.All.Id;
+            int scheduleCategoryId = rFilter.GetUserPreference( "Category" ).AsIntegerOrNull() ?? Rock.Constants.All.Id;
             if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
@@ -153,16 +153,16 @@ namespace RockWeb.Blocks.CheckIn
             ddlGroupType.SetValue( rFilter.GetUserPreference( "Group Type" ) );
 
             // hide the GroupType filter if this page has a groupTypeId parameter
-            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
+            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
             if ( groupTypeIdPageParam.HasValue )
             {
                 ddlGroupType.Visible = false;
             }
 
-            var filterCategory = new CategoryService( rockContext ).Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
+            var filterCategory = new CategoryService( rockContext ).Get( rFilter.GetUserPreference( "Category" ).AsInteger() );
             pCategory.SetValue( filterCategory );
 
-            pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsInteger( false ) );
+            pkrParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ).AsIntegerOrNull() );
         }
 
         #endregion
@@ -190,12 +190,12 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The e.</param>
         private void rFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
-            int itemId = e.Value.AsInteger() ?? 0;
+            int itemId = e.Value.AsInteger();
             switch ( e.Key )
             {
                 case "Group Type":
 
-                    int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
+                    int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
 
                     //// we only use the GroupType from the filter in cases where there isn't a PageParam of groupTypeId
                     // but just in case the filter wants to display the GroupName, override the itemId with the groupTypeId PageParam
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.CheckIn
             int groupTypeId;
 
             // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
-            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
+            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsIntegerOrNull();
             if ( groupTypeIdPageParam.HasValue )
             {
                 groupTypeId = groupTypeIdPageParam ?? Rock.Constants.All.Id;

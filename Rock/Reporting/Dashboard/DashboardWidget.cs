@@ -117,7 +117,7 @@ namespace Rock.Reporting.Dashboard
         {
             get
             {
-                return GetAttributeValue( "ColumnWidth" ).AsInteger( false );
+                return GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
             }
         }
 
@@ -201,7 +201,7 @@ namespace Rock.Reporting.Dashboard
                                 }
                             }
 
-                            result = this.PageParameter( entityParamName ).AsInteger();
+                            result = this.PageParameter( entityParamName ).AsIntegerOrNull();
                         }
                     }
                 }
@@ -210,7 +210,7 @@ namespace Rock.Reporting.Dashboard
                     var valueParts = GetAttributeValue( "Metric" ).Split( '|' );
                     if ( valueParts.Length > 1 )
                     {
-                        result = valueParts[1].AsInteger();
+                        result = valueParts[1].AsIntegerOrNull();
                     }
                 }
 
@@ -365,7 +365,7 @@ namespace Rock.Reporting.Dashboard
 
         private List<string> GetDivWidthCssClasses()
         {
-            int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsInteger( false );
+            int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
 
             // add additional css to the block wrapper (if mediumColumnWidth is specified)
             List<string> widgetCssList = new List<string>();

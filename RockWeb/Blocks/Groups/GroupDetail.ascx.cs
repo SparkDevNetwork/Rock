@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowEditDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
+            ShowEditDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
         }
 
         /// <summary>
@@ -509,7 +509,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                int? parentGroupId = PageParameter( "ParentGroupId" ).AsInteger( false );
+                int? parentGroupId = PageParameter( "ParentGroupId" ).AsIntegerOrNull();
                 if ( parentGroupId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentGroupID, so we are probably in treeview mode, so navigate to the current page
@@ -526,7 +526,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
+                ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
             }
         }
 
@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ?? 0 ) );
+            ShowReadonlyDetails( GetGroup( hfGroupId.Value.AsInteger() ) );
         }
 
         #endregion

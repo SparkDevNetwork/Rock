@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
                 Group group = RockPage.GetSharedItem( key ) as Group;
                 if ( group == null )
                 {
-                    int id = _groupId.AsInteger() ?? 0;
+                    int id = _groupId.AsInteger();
                     group = new GroupService( new RockContext() ).Queryable( "GroupType" )
                         .Where( g => g.Id == id )
                         .FirstOrDefault();

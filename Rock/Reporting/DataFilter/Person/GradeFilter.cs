@@ -169,7 +169,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
             nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
@@ -232,7 +232,7 @@ namespace Rock.Reporting.DataFilter.Person
             int currentYear = RockDateTime.Now.Year;
             var values = selection.Split( '|' );
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-            int? gradeValue = values[1].AsInteger( false );
+            int? gradeValue = values[1].AsIntegerOrNull();
             var personGradeQuery = new PersonService( (RockContext)serviceInstance.Context ).Queryable();
 
             if ( gradeTransitionDate.HasValue )

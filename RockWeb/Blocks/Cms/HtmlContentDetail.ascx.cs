@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Cms
                 htmlContent.IsApproved = ( hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
                 if ( htmlContent.IsApproved )
                 {
-                    int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
+                    int? personId = hfApprovalStatusPersonId.Value.AsIntegerOrNull();
                     if (!personId.HasValue)
                     {
                         // if it wasn't approved, but the current user can approve, make the current user the approver
@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Cms
                 html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
                 // cache content
-                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger() ?? 0;
+                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
                     AddCacheItem( entityValue, html, cacheDuration );

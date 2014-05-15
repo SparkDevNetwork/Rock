@@ -132,7 +132,7 @@ namespace Rock.Field.Types
                             picker.MetricId = metric.Id;
                             if ( valueParts.Length > 3 )
                             {
-                                picker.EntityId = valueParts[1].AsInteger( false );
+                                picker.EntityId = valueParts[1].AsIntegerOrNull();
                                 picker.GetEntityFromContext = valueParts[2].AsBoolean(false);
                                 picker.CombineValues = valueParts[3].AsBoolean( false );
                             }

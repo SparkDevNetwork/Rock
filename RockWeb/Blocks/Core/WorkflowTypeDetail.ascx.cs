@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Core
                         if ( values.Count() == 2 )
                         {
                             Guid guid = values[0].AsGuid();
-                            int newIndex = values[1].AsInteger() ?? 0;
+                            int newIndex = values[1].AsInteger();
 
                             switch ( nameValue[0] )
                             {
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Core
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() ?? 0 );
+            var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
             ShowEditDetails( workflowType, rockContext );
         }
 
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Core
 
             WorkflowType workflowType = null;
 
-            int? workflowTypeId = hfWorkflowTypeId.Value.AsInteger( false );
+            int? workflowTypeId = hfWorkflowTypeId.Value.AsIntegerOrNull();
             if ( workflowTypeId.HasValue )
             {
                 workflowType = service.Get( workflowTypeId.Value );
@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfWorkflowTypeId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -870,8 +870,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowDetail()
         {
-            int? workflowTypeId = PageParameter( "workflowTypeId" ).AsInteger( false );
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+            int? workflowTypeId = PageParameter( "workflowTypeId" ).AsIntegerOrNull();
+            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
 
             if ( !workflowTypeId.HasValue )
             {

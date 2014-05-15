@@ -43,7 +43,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var campus = new CampusService( new RockContext() ).Get( value.AsInteger() ?? 0 );
+                var campus = new CampusService( new RockContext() ).Get( value.AsInteger() );
                 if ( campus != null )
                 {
                     formattedValue = campus.Name;
@@ -136,7 +136,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsInteger(false);
+            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
         }
 
         /// <summary>

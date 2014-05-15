@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindFilter()
         {
-            int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            int siteId = PageParameter( "siteId" ).AsInteger();
             if ( siteId == 0 )
             {
                 // quit if the siteId can't be determined
@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Cms
         protected void BindPagesGrid()
         {
             pnlPages.Visible = false;
-            int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            int siteId = PageParameter( "siteId" ).AsInteger();
             if ( siteId == 0 )
             {
                 // quit if the siteId can't be determined

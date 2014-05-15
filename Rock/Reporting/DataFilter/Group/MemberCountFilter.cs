@@ -133,7 +133,7 @@ function () {
             if ( values.Length == 4 )
             {
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                int? memberCountValue = values[1].AsInteger( false );
+                int? memberCountValue = values[1].AsIntegerOrNull();
                 bool? isLeader = values[2].AsBooleanOrNull();
                 GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
 
@@ -238,7 +238,7 @@ function () {
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() ?? 0 );
+            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
             nbValue.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             // Comparison Value
@@ -292,7 +292,7 @@ function () {
 
             if ( values.Length >= 4 )
             {
-                ComparisonType comparisonType = (ComparisonType)( values[0].AsInteger() ?? 0 );
+                ComparisonType comparisonType = (ComparisonType)( values[0].AsInteger() );
                 ddlCompare.SelectedValue = comparisonType.ConvertToInt().ToString();
                 nbValue.Text = values[1];
                 ddlLeader.SelectedValue = values[2];
@@ -313,7 +313,7 @@ function () {
             var values = selection.Split( '|' );
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-            int? memberCountValue = values[1].AsInteger( false );
+            int? memberCountValue = values[1].AsIntegerOrNull();
             GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
             bool? isLeader = values[2].AsBooleanOrNull();
 

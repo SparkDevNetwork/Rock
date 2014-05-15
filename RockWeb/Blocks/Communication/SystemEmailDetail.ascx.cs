@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                ShowEdit(PageParameter("EmailId").AsInteger() ?? 0);
+                ShowEdit(PageParameter("EmailId").AsInteger());
             }
         }
 
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Communication
             
             string pageTitle = "New System Email";
 
-            int? emailId = PageParameter( "EmailId" ).AsInteger( false );
+            int? emailId = PageParameter( "EmailId" ).AsIntegerOrNull();
             if ( emailId.HasValue )
             {
                 SystemEmail email = new SystemEmailService( new RockContext() ).Get( emailId.Value );
