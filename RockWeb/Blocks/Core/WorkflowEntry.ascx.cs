@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Core
                 var details = action.Split(new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries);
                 if (details.Length >= 1)
                 {
-                    LinkButton lb = new LinkButton();
+                    var lb = new BootstrapButton();
                     lb.Text = details[0];
                     lb.Click += lbAction_Click;
                     lb.CssClass = "btn btn-primary";
