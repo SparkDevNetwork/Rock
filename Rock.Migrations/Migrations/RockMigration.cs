@@ -1461,6 +1461,75 @@ INSERT INTO [dbo].[Auth]
         }
 
         /// <summary>
+        /// Deletes the security authentication for groupType.
+        /// </summary>
+        /// <param name="groupTypeGuid">The groupType unique identifier.</param>
+        public void DeleteSecurityAuthForGroupType( string groupTypeGuid )
+        {
+            string sql = @"
+DECLARE @groupTypeId int
+SET @groupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = 'Rock.Model.GroupType')
+
+DELETE [dbo].[Auth] 
+WHERE [EntityTypeId] = @EntityTypeId
+    AND [EntityId] = @groupTypeId
+";
+            Sql( string.Format( sql, groupTypeGuid ) );
+
+        }
+        /// <summary>
+        /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
+        /// </summary>
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForGroupType( string groupTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            string entityTypeName = "Rock.Model.GroupType";
+            EnsureEntityTypeExists( entityTypeName );
+
+            string sql = @"
+DECLARE @groupId int
+SET @groupId = (SELECT [Id] FROM [Group] WHERE [Guid] = '{0}')
+
+DECLARE @entityTypeId int
+SET @entityTypeId = (SELECT [Id] FROM [EntityType] WHERE [name] = '{1}')
+
+DECLARE @groupTypeId int
+SET @groupTypeId = (SELECT [Id] FROM [GroupType] WHERE [Guid] = '{2}')
+
+INSERT INTO [dbo].[Auth]
+           ([EntityTypeId]
+           ,[EntityId]
+           ,[Order]
+           ,[Action]
+           ,[AllowOrDeny]
+           ,[SpecialRole]
+           ,[PersonId]
+           ,[GroupId]
+           ,[Guid])
+     VALUES
+           (@entityTypeId
+           ,@groupTypeId
+           ,{6}
+           ,'{3}'
+           ,'{7}'
+           ,{4}
+           ,null
+           ,@groupId
+           ,'{5}')
+";
+            Sql( string.Format( sql, groupGuid ?? Guid.Empty.ToString(), entityTypeName, groupTypeGuid, action, specialRole.ConvertToInt(), authGuid, order,
+                ( allow ? "A" : "D" ) ) );
+        }
+
+
+        /// <summary>
         /// Deletes the security auth record.
         /// </summary>
         /// <param name="guid">The GUID.</param>
