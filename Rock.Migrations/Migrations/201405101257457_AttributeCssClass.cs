@@ -1539,7 +1539,7 @@ namespace Rock.Migrations
 	    ,0
 	    ,N'Parse'
 	    ,NULL
-	    ,1
+	    ,0
 	    ,0
 	    ,'C93EEC26-4BE3-4EB5-92D4-5C30EEF069D9'
 	    )
