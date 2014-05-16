@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Reporting
             MetricService metricService = new MetricService( rockContext );
             MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
 
-            int metricId = hfMetricId.Value.AsIntegerOrNull() ?? 0;
+            int metricId = hfMetricId.Value.AsInteger();
 
             if ( metricId == 0 )
             {
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Reporting
             qryParams["MetricId"] = metric.Id.ToString();
             if ( hfMetricCategoryId.ValueAsInt() == 0 )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger();
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
             }

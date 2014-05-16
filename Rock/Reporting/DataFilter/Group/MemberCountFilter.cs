@@ -135,7 +135,7 @@ function () {
                 ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
                 int? memberCountValue = values[1].AsIntegerOrNull();
                 bool? isLeader = values[2].AsBooleanOrNull();
-                GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
+                GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsIntegerOrNull();
 
                 result = "Number of";
 
@@ -314,7 +314,7 @@ function () {
 
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? memberCountValue = values[1].AsIntegerOrNull();
-            GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsInteger();
+            GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[3].AsIntegerOrNull();
             bool? isLeader = values[2].AsBooleanOrNull();
 
             var memberCountQuery = new GroupService( (RockContext)serviceInstance.Context ).Queryable();

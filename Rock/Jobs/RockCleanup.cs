@@ -155,7 +155,7 @@ namespace Rock.Jobs
             rockContext.SaveChanges();
 
             // Add any missing metaphones
-            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 0;
+            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger();
             if ( namesToProcess > 0 )
             {
                 var firstNameQry = personService.Queryable().Select( p => p.FirstName );

@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Finance
             int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? int.Parse( hfIdTransValue.Value ) : 0;
 
             // null if not associated with a batch
-            int? batchId = hfBatchId.Value.AsInteger();
+            int? batchId = hfBatchId.Value.AsIntegerOrNull();
 
             if ( financialTransactionId == 0 )
             {

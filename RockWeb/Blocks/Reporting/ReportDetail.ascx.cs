@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
-                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
+                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsIntegerOrNull();
 
                     string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
                     DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );

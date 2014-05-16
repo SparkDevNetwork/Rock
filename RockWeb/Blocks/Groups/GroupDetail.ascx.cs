@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupId = PageParameter( pageReference, "GroupId" ).AsInteger();
+            int? groupId = PageParameter( pageReference, "GroupId" ).AsIntegerOrNull();
             if ( groupId != null )
             {
                 Group group = new GroupService( new RockContext() ).Get( groupId.Value );
