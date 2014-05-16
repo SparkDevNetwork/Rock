@@ -57,7 +57,7 @@ namespace Rock.Field.Types
                         {
                             if ( valueParts.Length > 1 )
                             {
-                                formattedValue = string.Format( "{0} - EntityId:{1}", metric.Title, valueParts[1].AsInteger() );
+                                formattedValue = string.Format( "{0} - EntityId:{1}", metric.Title, valueParts[1].AsIntegerOrNull() );
                             }
                         }
                     }

@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupTypeId = PageParameter( pageReference, "groupTypeId" ).AsInteger();
+            int? groupTypeId = PageParameter( pageReference, "groupTypeId" ).AsIntegerOrNull();
             if ( groupTypeId != null )
             {
                 GroupType groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId.Value );

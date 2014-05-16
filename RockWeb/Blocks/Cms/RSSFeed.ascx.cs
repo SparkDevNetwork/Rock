@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.Cms
                 if ( feedDictionary != null )
                 {
 
-                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsIntegerOrNull() ?? 0;
+                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger();
                     int currentPage = 0;
                     string baseUrl = new PageReference( RockPage.PageId ).BuildUrl();
 

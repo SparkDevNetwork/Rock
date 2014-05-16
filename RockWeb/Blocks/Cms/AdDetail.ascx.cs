@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                int? adId = PageParameter( "Ad" ).AsInteger();
+                int? adId = PageParameter( "Ad" ).AsIntegerOrNull();
                 if ( adId.HasValue )
                 {
                     MarketingCampaignAd ad = new MarketingCampaignAdService( new RockContext() ).Get( adId.Value );

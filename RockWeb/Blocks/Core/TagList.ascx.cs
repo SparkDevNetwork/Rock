@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "tagId", "0" );
-            parms.Add( "entityTypeId", rFilter.GetUserPreference( "EntityType" ).AsInteger().ToString() );
+            parms.Add( "entityTypeId", rFilter.GetUserPreference( "EntityType" ).AsIntegerOrNull().ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
