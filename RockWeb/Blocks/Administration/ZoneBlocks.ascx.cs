@@ -454,7 +454,16 @@ namespace RockWeb.Blocks.Administration
         private void LoadBlockTypes()
         {
             // Add any unregistered blocks
-            BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+            try
+            {
+                BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+            }
+            catch (Exception ex)
+            {
+                nbMessage.Text = "Error registering one or more block types";
+                nbMessage.Details = ex.Message + "<code>" + ex.StackTrace + "</code>";
+                nbMessage.Visible = true;
+            }
 
             // Load the block types
             Rock.Model.BlockTypeService blockTypeService = new Rock.Model.BlockTypeService( new RockContext() );
