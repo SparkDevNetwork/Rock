@@ -196,7 +196,7 @@ namespace RockWeb.Blocks.Core
             //divHeading.AddCssClass( "panel-heading" );
             divPanel.Controls.Add( divHeading );
 
-            var headingTitle = new HtmlGenericControl( "h1" );
+            var headingTitle = new HtmlGenericControl( "h3" );
             //headingTitle.AddCssClass( "panel-title" );
             divHeading.Controls.Add( headingTitle );
 
