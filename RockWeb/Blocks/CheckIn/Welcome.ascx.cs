@@ -178,53 +178,6 @@ if ($ActiveWhen.text() != '')
             {
                 pnlActive.Visible = true;
             }
-
-            List<int> locations = new List<int>();
-
-            foreach ( var groupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )
-            {
-                foreach ( var location in groupType.KioskGroups.SelectMany( g => g.KioskLocations ).Distinct() )
-                {
-                    if ( !locations.Contains( location.Location.Id ) )
-                    {
-                        locations.Add( location.Location.Id );
-                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );
-
-                        if ( locationAttendance != null )
-                        {
-                            var lUl = new HtmlGenericControl( "ul" );
-                            lUl.AddCssClass( "checkin-count-locations" );
-                            phCounts.Controls.Add( lUl );
-
-                            var lLi = new HtmlGenericControl( "li" );
-                            lUl.Controls.Add( lLi );
-                            lLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", locationAttendance.LocationName, locationAttendance.CurrentCount );
-
-                            foreach ( var groupAttendance in locationAttendance.Groups )
-                            {
-                                var gUl = new HtmlGenericControl( "ul" );
-                                gUl.AddCssClass( "checkin-count-groups" );
-                                lLi.Controls.Add( gUl );
-
-                                var gLi = new HtmlGenericControl( "li" );
-                                gUl.Controls.Add( gLi );
-                                gLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", groupAttendance.GroupName, groupAttendance.CurrentCount );
-
-                                foreach ( var scheduleAttendance in groupAttendance.Schedules )
-                                {
-                                    var sUl = new HtmlGenericControl( "ul" );
-                                    sUl.AddCssClass( "checkin-count-schedules" );
-                                    gLi.Controls.Add( sUl );
-
-                                    var sLi = new HtmlGenericControl( "li" );
-                                    sUl.Controls.Add( sLi );
-                                    sLi.InnerHtml = string.Format( "{0}: <strong>{1}</strong>", scheduleAttendance.ScheduleName, scheduleAttendance.CurrentCount );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
