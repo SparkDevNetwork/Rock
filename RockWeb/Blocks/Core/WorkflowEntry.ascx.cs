@@ -256,6 +256,10 @@ namespace RockWeb.Blocks.Core
                 if ( _workflow != null )
                 {
                     _workflow.LoadAttributes();
+                    foreach(var activity in _workflow.Activities)
+                    {
+                        activity.LoadAttributes();
+                    }
                 }
 
             }
@@ -292,14 +296,12 @@ namespace RockWeb.Blocks.Core
 
             if ( ActionTypeId.HasValue )
             {
-                foreach ( var activity in _workflow.Activities )
+                foreach ( var activity in _workflow.ActiveActivities )
                 {
                     _action = activity.Actions.Where( a => a.ActionTypeId == ActionTypeId.Value ).FirstOrDefault();
                     if ( _action != null )
                     {
                         _activity = activity;
-                        _activity.LoadAttributes();
-
                         _actionType = _action.ActionType;
                         ActionTypeId = _actionType.Id;
                         return true;
@@ -407,6 +409,8 @@ namespace RockWeb.Blocks.Core
                     }
                     lb.ValidationGroup = BlockValidationGroup;
                     phActions.Controls.Add(lb);
+
+                    phActions.Controls.Add( new LiteralControl( " " ) );
                 }
             }
 
@@ -494,6 +498,10 @@ namespace RockWeb.Blocks.Core
                             {
                                 _rockContext.SaveChanges();
                                 _workflow.SaveAttributeValues( _rockContext );
+                                foreach(var activity in _workflow.Activities)
+                                {
+                                    activity.SaveAttributeValues();
+                                }
                             } );
 
                             WorkflowId = _workflow.Id;

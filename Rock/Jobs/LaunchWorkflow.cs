@@ -89,7 +89,6 @@ namespace Rock.Jobs
                                 workflow.SaveAttributeValues( rockContext );
                             } );
 
-
                             rockContext.SaveChanges();
                         }
                     }
