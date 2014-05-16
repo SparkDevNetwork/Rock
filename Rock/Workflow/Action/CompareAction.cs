@@ -47,7 +47,7 @@ namespace Rock.Workflow.Action
             if ( testValue != null )
             {
                 var compare = GetAttributeValue( action, "CompareType" );
-                if ( string.IsNullOrWhiteSpace( compare ) )
+                if ( !string.IsNullOrWhiteSpace( compare ) )
                 {
                     var compareType = compare.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
