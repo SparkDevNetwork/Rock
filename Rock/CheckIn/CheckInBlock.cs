@@ -155,6 +155,9 @@ namespace Rock.CheckIn
                         WorkflowActivity.Activate( activityType, CurrentWorkflow );
                         if ( CurrentWorkflow.Process( rockContext, CurrentCheckInState, out errorMessages ) )
                         {
+                            // Keep workflow active for continued processing
+                            CurrentWorkflow.CompletedDateTime = null;
+
                             return true;
                         }
                     }
