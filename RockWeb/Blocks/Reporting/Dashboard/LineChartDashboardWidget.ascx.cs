@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Line Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class LineChartDashboardWidget : DashboardWidget
+    public partial class LineChartDashboardWidget : ChartDashboardWidget
     {
         /// <summary>
         /// Loads the chart.
