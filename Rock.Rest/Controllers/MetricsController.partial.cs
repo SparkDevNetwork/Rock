@@ -76,41 +76,49 @@ namespace Rock.Rest.Controllers
                 var metrics = metricService.GetByGuids( metricGuids );
                 List<object> metricsData = new List<object>();
                 DateTime firstDayOfYear = new DateTime( RockDateTime.Now.Year, 1, 1 );
-                DateTime endDate = RockDateTime.Now;
-                DateTime fullYearEndDate = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
+                DateTime currentDateTime = RockDateTime.Now;
+                DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
 
                 foreach ( var metric in metrics )
                 {
                     var metricYTDData = JsonConvert.DeserializeObject( metric.ToJson(), typeof( MetricYTDData ) ) as MetricYTDData;
-                    var qry = metricValueService.Queryable()
+                    var qryMeasureValues = metricValueService.Queryable()
                         .Where( a => a.MetricId == metricYTDData.Id )
-                        .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < endDate )
+                        .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < currentDateTime )
                         .Where( a => a.MetricValueType == MetricValueType.Measure );
 
-                    var valuesMeasuresQry = qry.Where( a => a.MetricValueType == MetricValueType.Measure );
-
-                    var valuesYTDGoalQry = qry.Where( a => a.MetricValueType == MetricValueType.Goal );
-
-                    var valuesEndYearGoalQry = metricValueService.Queryable()
-                        .Where( a => a.MetricId == metricYTDData.Id )
-                        .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < fullYearEndDate )
-                        .Where( a => a.MetricValueType == MetricValueType.Goal );
-
-                    var lastMetricValue = valuesMeasuresQry.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
+                    var lastMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     if ( lastMetricValue != null )
                     {
                         metricYTDData.LastValue = lastMetricValue.YValue;
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
                     }
 
-                    metricYTDData.CumulativeValue = valuesMeasuresQry.Sum( a => a.YValue );
+                    metricYTDData.CumulativeValue = qryMeasureValues.Sum( a => a.YValue );
 
-                    // first try to get Goal up to the current date
-                    metricYTDData.GoalValue = valuesYTDGoalQry.Sum( a => a.YValue );
-                    if ( metricYTDData.GoalValue == null )
+                    // figure out goal as of current date time by figuring out the slope of the goal
+                    var qryGoalValuesCurrentYear = metricValueService.Queryable()
+                        .Where( a => a.MetricId == metricYTDData.Id )
+                        .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < firstDayOfNextYear )
+                        .Where( a => a.MetricValueType == MetricValueType.Goal );
+
+                    MetricValue goalLineStartPoint = qryGoalValuesCurrentYear.Where( a => a.MetricValueDateTime <= currentDateTime ).OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
+                    MetricValue goalLineEndPoint = qryGoalValuesCurrentYear.Where( a => a.MetricValueDateTime >= currentDateTime ).FirstOrDefault();
+                    if ( goalLineStartPoint != null && goalLineEndPoint != null )
                     {
-                        // if there isn't a YTD Goal, get the EndOfYear goal
-                        metricYTDData.GoalValue = valuesEndYearGoalQry.Sum( a => a.YValue );
+                        var changeInX = goalLineEndPoint.DateTimeStamp - goalLineStartPoint.DateTimeStamp;
+                        var changeInY = goalLineEndPoint.YValue - goalLineStartPoint.YValue;
+                        if ( changeInX != 0 )
+                        {
+                            var slope = changeInY / changeInX;
+                            var goalValue = ( ( slope * ( currentDateTime.ToJavascriptMilliseconds() - goalLineStartPoint.DateTimeStamp ) ) + goalLineStartPoint.YValue ).Value;
+                            metricYTDData.GoalValue = Math.Round( goalValue, 2 );
+                        }
+                    }
+                    else
+                    {
+                        var singleGoal = goalLineStartPoint ?? goalLineEndPoint;
+                        metricYTDData.GoalValue = singleGoal != null ? singleGoal.YValue : (decimal?)null;
                     }
 
                     metricsData.Add( metricYTDData.ToLiquid() );
@@ -124,7 +132,7 @@ namespace Rock.Rest.Controllers
                 // show liquid help
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format( 
+                    string debugInfo = string.Format(
                         @"<small><a data-toggle='collapse' data-parent='#accordion' href='#liquid-metric-debug'><i class='fa fa-eye'></i></a></small>
                             <pre id='liquid-metric-debug' class='collapse well liquid-metric-debug'>
                                 {0}
@@ -137,10 +145,10 @@ namespace Rock.Rest.Controllers
                 return resultHtml;
             }
 
-            return string.Format( 
+            return string.Format(
                 @"<div class='alert alert-danger'> 
                     unable to find block_id: {1}
-                </div>", 
+                </div>",
                 blockId );
         }
     }
