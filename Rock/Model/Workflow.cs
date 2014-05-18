@@ -168,7 +168,7 @@ namespace Rock.Model
             get
             {
                 return this.Activities
-                    .Where( a => a.IsActive && !a.CompletedDateTime.HasValue )
+                    .Where( a => a.IsActive )
                     .OrderBy( a => a.ActivityType.Order );
             }
         }

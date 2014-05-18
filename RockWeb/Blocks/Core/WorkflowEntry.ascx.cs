@@ -148,6 +148,7 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+
         #endregion
 
         #region Events
@@ -302,6 +303,8 @@ namespace RockWeb.Blocks.Core
                     if ( _action != null )
                     {
                         _activity = activity;
+                        _activity.LoadAttributes();
+
                         _actionType = _action.ActionType;
                         ActionTypeId = _actionType.Id;
                         return true;
@@ -357,9 +360,9 @@ namespace RockWeb.Blocks.Core
             if (setValues)
             {
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
-                mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
-                mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
 
                 lheadingText.Text = form.Header.ResolveMergeFields(mergeFields);
                 lFootingText.Text = form.Footer.ResolveMergeFields(mergeFields);
@@ -400,6 +403,7 @@ namespace RockWeb.Blocks.Core
                 if (details.Length >= 1)
                 {
                     var lb = new BootstrapButton();
+                    lb.ID = "lb" + details[0];
                     lb.Text = details[0];
                     lb.Click += lbAction_Click;
                     lb.CssClass = "btn btn-primary";
@@ -471,9 +475,9 @@ namespace RockWeb.Blocks.Core
                     // save current activity form's actions (to formulate response if needed).
                     string currentActions = _actionType.WorkflowForm != null ? _actionType.WorkflowForm.Actions : string.Empty;
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
-                    mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
-                    mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
 
                     if ( !activityTypeGuid.IsEmpty() )
                     {
