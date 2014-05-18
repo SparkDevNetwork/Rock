@@ -383,7 +383,7 @@ namespace RockWeb.Blocks.Core
                     // Save ActivityType Attributes
                     if ( ActivityAttributesState.ContainsKey( workflowActivityType.Guid ) )
                     {
-                        SaveAttributes( new WorkflowActivity().TypeId, "WorkflowActivityTypeId", workflowActivityType.Id.ToString(), ActivityAttributesState[workflowActivityType.Guid], rockContext );
+                        SaveAttributes( new WorkflowActivity().TypeId, "ActivityTypeId", workflowActivityType.Id.ToString(), ActivityAttributesState[workflowActivityType.Guid], rockContext );
                     }
 
                     int workflowActionTypeOrder = 0;
@@ -428,7 +428,7 @@ namespace RockWeb.Blocks.Core
                                 .ToList();
 
                             foreach ( var formAttribute in workflowActionType.WorkflowForm.FormAttributes
-                                .Where( a => !editorGuids.Contains( a.Attribute.Guid ) ) )
+                                .Where( a => !editorGuids.Contains( a.Attribute.Guid ) ).ToList() )
                             {
                                 workflowFormAttributeService.Delete( formAttribute );
                             }
@@ -1008,7 +1008,7 @@ namespace RockWeb.Blocks.Core
                 var activityTypeAttributes = attributeService
                     .GetByEntityTypeId( new WorkflowActivity().TypeId ).AsQueryable()
                     .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "WorkflowActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( activityType.Id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
