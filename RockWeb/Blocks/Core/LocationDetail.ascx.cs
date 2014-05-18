@@ -272,7 +272,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfLocationId.Value.Equals( "0" ) )
             {
-                int? parentLocationId = PageParameter( "ParentLocationId" ).AsInteger( false );
+                int? parentLocationId = PageParameter( "ParentLocationId" ).AsIntegerOrNull();
                 if ( parentLocationId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to the current page
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlLocationType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var location = new LocationService( new RockContext() ).Get( hfLocationId.Value.AsInteger() ?? 0 );
+            var location = new LocationService( new RockContext() ).Get( hfLocationId.Value.AsInteger() );
             if ( location == null )
             {
                 location = new Location();

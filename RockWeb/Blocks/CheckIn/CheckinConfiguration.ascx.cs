@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.CheckIn
                 foreach ( string key in labelAttributeKeys )
                 {
                     var attributeValue = groupType.GetAttributeValue( key );
-                    int binaryFileId = attributeValue.AsInteger() ?? 0;
+                    int binaryFileId = attributeValue.AsInteger();
                     var binaryFile = binaryFileService.Get( binaryFileId );
                     if ( binaryFile != null )
                     {
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCheckinArea_Click( object sender, EventArgs e )
         {
-            int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger() ?? 0;
+            int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger();
             GroupType parentGroupType = new GroupTypeService( new RockContext() ).Get( parentGroupTypeId );
 
             // CheckinArea is GroupType entity

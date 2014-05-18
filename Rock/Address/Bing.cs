@@ -67,14 +67,14 @@ namespace Rock.Address
 
                 if (txnDate.Equals(RockDateTime.Today))
                 {
-                    dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsInteger();
+                    dailyTxnCount = Rock.Web.SystemSettings.GetValue( DAILY_TXN_COUNT ).AsIntegerOrNull();
                 }
                 else
                 {
                     Rock.Web.SystemSettings.SetValue( TXN_DATE, RockDateTime.Today.ToShortDateString() );
                 }
 
-                int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsInteger();
+                int? maxTxnCount = GetAttributeValue( "DailyTransactionLimit" ).AsIntegerOrNull();
 
                 if ( !maxTxnCount.HasValue || maxTxnCount.Value == 0 || dailyTxnCount < maxTxnCount.Value )
                 {

@@ -13,11 +13,14 @@ declare
     @campusIdMain int,
     @campusIdEast int,
     @campusIdWest int,
+    @campusIdSouth int,
+    @campusIdNorth int,
     @metricGuidFirstTimeVisitors uniqueidentifier = '41C1D067-0F4A-4D33-84A3-A8144D8F5418',
     @metricGuidFreeLunches uniqueidentifier = '5C52B8D2-C94F-43F3-AF22-28A0A1D3C791',
     @metricGuidAttendance uniqueidentifier = 'D4752628-DFC9-4681-ADB3-01936B8F38CA',
     @metricGuidCats uniqueidentifier = 'AAA21D1C-3F58-494D-B039-236E21C99595',
-    @metricGuidFavoriteSnack uniqueidentifier = '99A19BBC-7E93-4951-93E6-AEF2B2681625'
+    @metricGuidFavoriteSnack uniqueidentifier = '99A19BBC-7E93-4951-93E6-AEF2B2681625',
+    @metricGuidBaptisms uniqueidentifier = '4F4EB433-78AF-41A7-A2CA-36035DBA2181'
 begin
 
     delete from MetricValue   
@@ -33,9 +36,19 @@ begin
         insert into [Campus] ([Name], [IsSystem], [Guid]) values ('West', 0, 'B188D509-FAF6-4388-ADB8-478926427F8A');
     end;
 
+    if not exists (select * from Campus where Guid = 'E792E936-839E-42E0-AC4E-756431B636FB') begin
+        insert into [Campus] ([Name], [IsSystem], [Guid]) values ('North', 0, 'E792E936-839E-42E0-AC4E-756431B636FB');
+    end;
+
+    if not exists (select * from Campus where Guid = 'BA600E4C-5C1E-49BD-969D-76C5BC579E1C') begin    
+        insert into [Campus] ([Name], [IsSystem], [Guid]) values ('South', 0, 'BA600E4C-5C1E-49BD-969D-76C5BC579E1C');
+    end;
+
     select @campusIdMain = id from [Campus] where [Guid]  = '76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8';
     select @campusIdEast = id from [Campus] where [Guid]  = '69EB5895-F1E7-4D73-ABBD-63DDDEC75582';
     select @campusIdWest = id from [Campus] where [Guid]  = 'B188D509-FAF6-4388-ADB8-478926427F8A';
+    select @campusIdNorth = id from [Campus] where [Guid]  = 'E792E936-839E-42E0-AC4E-756431B636FB';
+    select @campusIdSouth = id from [Campus] where [Guid]  = 'BA600E4C-5C1E-49BD-969D-76C5BC579E1C';
 
    -- root cats
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconCssClass],[Order])
@@ -72,7 +85,7 @@ begin
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
      VALUES 
-        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-thumbs-up', 1, @entityTypeIdGroup, @metricGuidFreeLunches)
+        (0,'Free Lunches','Number of Free Lunches per day', 'Week', 'Meals Served', 'fa fa-star', 0, @entityTypeIdGroup, @metricGuidFreeLunches)
 
     set @metricId = (select Id from Metric where Guid = @metricGuidFreeLunches);
     
@@ -136,7 +149,7 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime],
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
      VALUES 
-        (0,'Cat Owners','Number of cat owners that showed up for church', 'Week', 'Cat Owners', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuidCats)
+        (0,'Cat Owners','Number of cat owners that showed up for church', 'Week', 'Cat Owners', 'fa fa-heart', 0, @entityTypeIdCampus, @metricGuidCats)
 
     set @metricId = (select Id from Metric where Guid = @metricGuidCats);
     
@@ -242,7 +255,7 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime],
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
      VALUES 
-        (0,'Favorite Snack','Favorite snack among men between the ages of 21.2 and 23.7', 'Week', 'Snack', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuidFavoriteSnack)
+        (0,'Favorite Snack','Favorite snack among men between the ages of 21.2 and 23.7', 'Week', 'Snack', 'fa fa-cutlery', 0, @entityTypeIdCampus, @metricGuidFavoriteSnack)
 
     set @metricId = (select Id from Metric where Guid = @metricGuidFavoriteSnack);
     
@@ -262,12 +275,66 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime],
 ( @metricId, @metricValueTypeMeasure, '03/01/2013', 'BBQ Ribs', floor(rand() * 1000), 0, @campusIdWest, NEWID()),
 ( @metricId, @metricValueTypeMeasure, '03/01/2013', 'Kitten', floor(rand() * 1000), 0, @campusIdWest, NEWID())
 
+-- example metric: Baptisms (for Liquid)
+    set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
+    INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative], [EntityTypeId],[Guid])
+     VALUES 
+        (0,'Baptisms','Baptisms per week', 'Week', 'Baptisms', 'fa fa-cloud-upload', 1, @entityTypeIdCampus, @metricGuidBaptisms)
+
+    set @metricId = (select Id from Metric where Guid = @metricGuidBaptisms);
+    
+    insert into [MetricCategory] ([MetricId], [CategoryId], [Order], [Guid])
+        values ( @metricId, @categoryId, 0, NEWID())
+
+INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [MetricValueDateTime], [XValue], [YValue], [Order], [EntityId], [Guid])
+        values 
+( @metricId, @metricValueTypeMeasure, '01/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2014', '0', floor(rand() * 100), 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeGoal, '01/31/2014', '0', 400, 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/31/2014', '0', 600, 0, @campusIdMain, NEWID()),
+( @metricId, @metricValueTypeMeasure, '01/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2014', '0', floor(rand() * 100), 0, @campusIdWest, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/31/2014', '0', 600, 0, @campusIdWest, NEWID()),
+
+( @metricId, @metricValueTypeMeasure, '01/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '02/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '03/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '04/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '05/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '06/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '07/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '08/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '09/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '10/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '11/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeMeasure, '12/01/2014', '0', floor(rand() * 100), 0, @campusIdEast, NEWID()),
+( @metricId, @metricValueTypeGoal, '12/31/2014', '0', 600, 0, @campusIdEast, NEWID())
 
 -- example metric : Adult Attendence    
     set @categoryId = (select id from Category where Name = 'Person Metrics' and EntityTypeId = @entityTypeIdMetricCategoryType )    
     INSERT INTO [Metric]([IsSystem],[Title],[Description],[XAxisLabel],[YAxisLabel],[IconCssClass], [IsCumulative],[EntityTypeId], [Guid])
      VALUES 
-        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-thumbs-up', 1, @entityTypeIdCampus, @metricGuidAttendance)
+        (0,'Adult Attendence','Number of adults in the weekend service', 'Week Date', 'Adults', 'fa fa-users', 1, @entityTypeIdCampus, @metricGuidAttendance)
 
     set @metricId = (select Id from Metric where Guid = @metricGuidAttendance);
     
@@ -1900,4 +1967,10 @@ INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [XValue], [YValue], [O
     VALUES (@metricId, 0, '0',872,0,'','May  4 2014 12:00AM','438CC55D-208D-4D80-A8E6-28F6B16D3273',325)
 INSERT INTO [MetricValue] ([MetricId], [MetricValueType], [XValue], [YValue], [Order], [Note], [MetricValueDateTime], [Guid], [EntityId])
     VALUES (@metricId, 0, '0',753,0,'','May 11 2014 12:00AM','C0304747-88B2-4E81-8040-A21766549B09',325)
+
+update MetricValue set EntityId = @campusIdMain where EntityId = 158 and MetricId = @metricId;
+update MetricValue set EntityId = @campusIdNorth where EntityId = 249 and MetricId = @metricId;
+update MetricValue set EntityId = @campusIdSouth where EntityId = 286 and MetricId = @metricId;
+update MetricValue set EntityId = @campusIdEast where EntityId = 313 and MetricId = @metricId;
+update MetricValue set EntityId = @campusIdWest where EntityId = 325 and MetricId = @metricId;
 end

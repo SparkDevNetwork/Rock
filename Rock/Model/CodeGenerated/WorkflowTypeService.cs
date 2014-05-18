@@ -97,6 +97,7 @@ namespace Rock.Model
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
             target.IsPersisted = source.IsPersisted;
             target.LoggingLevel = source.LoggingLevel;
+            target.IconCssClass = source.IconCssClass;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -268,8 +268,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             Guid groupTypeGuid = options[0].AsGuid();
             ComparisonType comparisonType = options[1].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            int attended = options[2].AsInteger() ?? 0;
-            int weeks = options[3].AsInteger() ?? 0;
+            int attended = options[2].AsInteger();
+            int weeks = options[3].AsInteger();
 
             var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
             int? groupTypeId = groupType != null ? groupType.Id : (int?)null;

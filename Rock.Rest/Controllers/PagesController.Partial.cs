@@ -65,7 +65,7 @@ namespace Rock.Rest.Controllers
                 qry = Get().Where( a => a.ParentPageId == id );
             }
 
-            List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger() ?? 0).ToList();
+            List<int> hidePageIdList = ( hidePageIds ?? string.Empty ).Split( ',' ).Select( s => s.AsInteger()).ToList();
 
             List<Page> pageList = qry.Where( a => !hidePageIdList.Contains(a.Id) ).OrderBy( a => a.Order ).ThenBy( a => a.InternalName ).ToList();
             List<TreeViewItem> pageItemList = new List<TreeViewItem>();

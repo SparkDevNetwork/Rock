@@ -232,7 +232,7 @@ function() {
 
             if ( selectionValues.Length >= 2 )
             {
-                int tagType = selectionValues[0].AsInteger() ?? 0;
+                int tagType = selectionValues[0].AsInteger();
                 Guid selectedTagGuid = selectionValues[1].AsGuid();
 
                 ( controls[0] as RadioButtonList ).SelectedValue = tagType.ToString();

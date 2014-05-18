@@ -148,6 +148,7 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+
         #endregion
 
         #region Events
@@ -203,7 +204,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger( false );
+                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
                 }
             }
 
@@ -228,7 +229,7 @@ namespace RockWeb.Blocks.Core
             // If operating against an existing workflow, get the workflow and load attributes
             if ( !WorkflowId.HasValue )
             {
-                WorkflowId = PageParameter( "WorkflowId" ).AsInteger( false );
+                WorkflowId = PageParameter( "WorkflowId" ).AsIntegerOrNull();
                 if ( !WorkflowId.HasValue )
                 {
                     Guid guid = PageParameter( "WorkflowGuid" ).AsGuid();
@@ -256,6 +257,10 @@ namespace RockWeb.Blocks.Core
                 if ( _workflow != null )
                 {
                     _workflow.LoadAttributes();
+                    foreach(var activity in _workflow.Activities)
+                    {
+                        activity.LoadAttributes();
+                    }
                 }
 
             }
@@ -292,7 +297,7 @@ namespace RockWeb.Blocks.Core
 
             if ( ActionTypeId.HasValue )
             {
-                foreach ( var activity in _workflow.Activities )
+                foreach ( var activity in _workflow.ActiveActivities )
                 {
                     _action = activity.Actions.Where( a => a.ActionTypeId == ActionTypeId.Value ).FirstOrDefault();
                     if ( _action != null )
@@ -355,9 +360,9 @@ namespace RockWeb.Blocks.Core
             if (setValues)
             {
                 var mergeFields = new Dictionary<string, object>();
-                mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
-                mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
-                mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+                mergeFields.Add( "Action", _action );
+                mergeFields.Add( "Activity", _activity );
+                mergeFields.Add( "Workflow", _workflow );
 
                 lheadingText.Text = form.Header.ResolveMergeFields(mergeFields);
                 lFootingText.Text = form.Footer.ResolveMergeFields(mergeFields);
@@ -397,7 +402,8 @@ namespace RockWeb.Blocks.Core
                 var details = action.Split(new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries);
                 if (details.Length >= 1)
                 {
-                    LinkButton lb = new LinkButton();
+                    var lb = new BootstrapButton();
+                    lb.ID = "lb" + details[0];
                     lb.Text = details[0];
                     lb.Click += lbAction_Click;
                     lb.CssClass = "btn btn-primary";
@@ -407,6 +413,8 @@ namespace RockWeb.Blocks.Core
                     }
                     lb.ValidationGroup = BlockValidationGroup;
                     phActions.Controls.Add(lb);
+
+                    phActions.Controls.Add( new LiteralControl( " " ) );
                 }
             }
 
@@ -467,9 +475,9 @@ namespace RockWeb.Blocks.Core
                     // save current activity form's actions (to formulate response if needed).
                     string currentActions = _actionType.WorkflowForm != null ? _actionType.WorkflowForm.Actions : string.Empty;
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Action", _action.ToLiquid( false, false ) );
-                    mergeFields.Add( "Activity", _activity.ToLiquid( false, false ) );
-                    mergeFields.Add( "Workflow", _workflow.ToLiquid( false, false ) );
+                    mergeFields.Add( "Action", _action );
+                    mergeFields.Add( "Activity", _activity );
+                    mergeFields.Add( "Workflow", _workflow );
 
                     if ( !activityTypeGuid.IsEmpty() )
                     {
@@ -494,6 +502,10 @@ namespace RockWeb.Blocks.Core
                             {
                                 _rockContext.SaveChanges();
                                 _workflow.SaveAttributeValues( _rockContext );
+                                foreach(var activity in _workflow.Activities)
+                                {
+                                    activity.SaveAttributeValues();
+                                }
                             } );
 
                             WorkflowId = _workflow.Id;

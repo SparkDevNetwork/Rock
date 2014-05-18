@@ -532,7 +532,7 @@ achieve our mission.  We are so grateful for your commitment.
         /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
         protected void page_PageNavigate( object sender, HistoryEventArgs e )
         {
-            int pageId = e.State["GivingDetail"].AsInteger() ?? 0;
+            int pageId = e.State["GivingDetail"].AsInteger();
             if ( pageId > 0 )
             {
                 SetPage( pageId );
@@ -547,7 +547,7 @@ achieve our mission.  We are so grateful for your commitment.
         protected void btnPrev_Click( object sender, EventArgs e )
         {
             // Previous should only be enabled on the confirmation page (2)
-            switch ( hfCurrentPage.Value.AsInteger() ?? 0 )
+            switch ( hfCurrentPage.Value.AsInteger() )
             {
                 case 2:
                     SetPage( 1 );
@@ -564,7 +564,7 @@ achieve our mission.  We are so grateful for your commitment.
         {
             string errorMessage = string.Empty;
 
-            switch ( hfCurrentPage.Value.AsInteger() ?? 0 )
+            switch ( hfCurrentPage.Value.AsInteger() )
             {
                 case 1:
 

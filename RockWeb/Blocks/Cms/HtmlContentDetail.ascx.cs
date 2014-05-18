@@ -226,7 +226,6 @@ namespace RockWeb.Blocks.Cms
             bool supportVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
             bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
 
-
             var rockContext = new RockContext();
             HtmlContentService htmlContentService = new HtmlContentService( rockContext );
 
@@ -294,24 +293,24 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // if this block requires Approval, mark it as approved if the ApprovalStatus is still approved, or if the current user can approve
-                htmlContent.IsApproved = ( hfApprovalStatus.Value.AsBoolean() ) || currentUserCanApprove;
-                if ( htmlContent.IsApproved )
+                // since this content requires Approval, mark it as approved ONLY if the current user can approve
+                // and they set the hfApprovalStatus flag to true.
+                if ( currentUserCanApprove && hfApprovalStatus.Value.AsBoolean() )
                 {
-                    int? personId = hfApprovalStatusPersonId.Value.AsInteger( false );
-                    if (!personId.HasValue)
+                    htmlContent.IsApproved = true;
+                    htmlContent.ApprovedByPersonId = this.CurrentPersonId;
+                    htmlContent.ApprovedDateTime = RockDateTime.Now;
+                }
+                else
+                {
+                    // if the content has changed
+                    if ( htmlContent.Content != newContent )
                     {
-                        // if it wasn't approved, but the current user can approve, make the current user the approver
-                        if ( currentUserCanApprove )
-                        {
-                            personId = this.CurrentPersonId;
-                        }
-                    }
-
-                    if ( personId.HasValue )
-                    {
-                        htmlContent.ApprovedByPersonId = personId;
-                        htmlContent.ApprovedDateTime = RockDateTime.Now;
+                        // it might also be nice here to tell the user what's happening so they
+                        // don't freak out when their content vanishes (current behavior).
+                        htmlContent.IsApproved = false;
+                        // htmlContent.ApprovedByPersonId is the former person who approved it
+                        // htmlContent.ApprovedDateTime is the previous date it was approved
                     }
                 }
             }
@@ -559,7 +558,7 @@ namespace RockWeb.Blocks.Cms
                 html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
                 // cache content
-                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger() ?? 0;
+                int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
                 if ( cacheDuration > 0 )
                 {
                     AddCacheItem( entityValue, html, cacheDuration );

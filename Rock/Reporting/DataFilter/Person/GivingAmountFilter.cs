@@ -114,7 +114,7 @@ function() {
             if ( selectionValues.Length >= 4 )
             {
                 ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-                decimal amount = selectionValues[1].AsDecimal() ?? 0.00M;
+                decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
                 DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
                 DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 
@@ -233,7 +233,7 @@ function() {
             }
 
             ComparisonType comparisonType = selectionValues[0].ConvertToEnum<ComparisonType>( ComparisonType.GreaterThanOrEqualTo );
-            decimal amount = selectionValues[1].AsDecimal() ?? 0.00M;
+            decimal amount = selectionValues[1].AsDecimalOrNull() ?? 0.00M;
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
 

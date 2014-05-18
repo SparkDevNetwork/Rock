@@ -207,7 +207,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    return _hfPersonId.Value.AsInteger( false );
+                    return _hfPersonId.Value.AsIntegerOrNull();
                 }
             }
 

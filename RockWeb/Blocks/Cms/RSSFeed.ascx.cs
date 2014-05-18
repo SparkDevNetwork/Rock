@@ -189,12 +189,12 @@ namespace RockWeb.Blocks.Cms
             try
             {
 
-                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, GetAttributeValue( "DetailPage" ), (int)GetAttributeValue( "CacheDuration" ).AsInteger(true), ref messages, ref isError );
+                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, GetAttributeValue( "DetailPage" ), GetAttributeValue( "CacheDuration" ).AsInteger(), ref messages, ref isError );
 
                 if ( feedDictionary != null )
                 {
 
-                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger( true ) ?? 0;
+                    int articlesPerPage = GetAttributeValue( "Resultsperpage" ).AsInteger();
                     int currentPage = 0;
                     string baseUrl = new PageReference( RockPage.PageId ).BuildUrl();
 
