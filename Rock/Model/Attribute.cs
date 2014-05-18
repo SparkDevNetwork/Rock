@@ -248,7 +248,7 @@ namespace Rock.Model
 
                 if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
                 {
-                    int? binaryFileId = DefaultValue.AsInteger();
+                    int? binaryFileId = DefaultValue.AsIntegerOrNull();
                     if ( binaryFileId.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );

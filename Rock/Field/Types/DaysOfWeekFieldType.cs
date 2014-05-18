@@ -42,7 +42,7 @@ namespace Rock.Field.Types
 
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ?? 0 ) ).ToList();
+                List<DayOfWeek> daysOfWeek = value.Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
                 List<string> dayNames = daysOfWeek.Select( a => a.ConvertToString() ).ToList();
                 return dayNames.AsDelimited( "," );
             }
@@ -91,7 +91,7 @@ namespace Rock.Field.Types
             var daysOfWeekPicker = control as DaysOfWeekPicker;
             if (daysOfWeekPicker != null)
             {
-                daysOfWeekPicker.SelectedDaysOfWeek = (value ?? string.Empty).Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ?? 0 ) ).ToList();
+                daysOfWeekPicker.SelectedDaysOfWeek = (value ?? string.Empty).Split( ',' ).Select( a => (DayOfWeek)( a.AsInteger() ) ).ToList();
             }
         }
     }

@@ -86,7 +86,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfOrder.Value.AsInteger() ?? 0;
+                return _hfOrder.Value.AsInteger();
             }
             set
             {

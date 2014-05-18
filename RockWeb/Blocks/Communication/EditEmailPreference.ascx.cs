@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Communication
                     if (rblEmailPreference.SelectedValue == "3")
                     {
                         person.RecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
-                        person.RecordStatusReasonValueId = ddlInactiveReason.SelectedValue.AsInteger().Value;
+                        person.RecordStatusReasonValueId = ddlInactiveReason.SelectedValue.AsInteger();
                         person.ReviewReasonValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_REVIEW_REASON_SELF_INACTIVATED ).Id;
                         if ( string.IsNullOrWhiteSpace( person.ReviewReasonNote ) )
                         {

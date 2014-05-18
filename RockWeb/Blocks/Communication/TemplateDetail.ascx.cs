@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Communication
 
             string pageTitle = "New Template";
 
-            int? templateId = PageParameter( "TemplateId" ).AsInteger( false );
+            int? templateId = PageParameter( "TemplateId" ).AsIntegerOrNull();
             if ( templateId.HasValue )
             {
                 var template = new CommunicationTemplateService( new RockContext() ).Get( templateId.Value );

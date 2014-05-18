@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Pie Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class PieChartDashboardWidget : DashboardWidget
+    public partial class PieChartDashboardWidget : ChartDashboardWidget
     {
         /// <summary>
         /// Loads the chart.

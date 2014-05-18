@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Bar Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class BarChartDashboardWidget : DashboardWidget
+    public partial class BarChartDashboardWidget : ChartDashboardWidget
     {
         /// <summary>
         /// Loads the chart.

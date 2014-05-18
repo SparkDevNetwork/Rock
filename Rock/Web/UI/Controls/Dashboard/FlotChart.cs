@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfMetricId.Value.AsInteger( false );
+                return _hfMetricId.Value.AsIntegerOrNull();
             }
 
             set
@@ -469,7 +469,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else if ( param[0] == "YValue" )
                 {
-                    chartClickArgs.YValue = param[1].AsInteger() ?? 0;
+                    chartClickArgs.YValue = param[1].AsInteger();
                 }
                 else if ( param[0] == "SeriesId" )
                 {

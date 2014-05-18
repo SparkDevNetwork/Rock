@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Core
                         if ( values.Count() == 2 )
                         {
                             Guid guid = values[0].AsGuid();
-                            int newIndex = values[1].AsInteger() ?? 0;
+                            int newIndex = values[1].AsInteger();
 
                             switch ( nameValue[0] )
                             {
@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Core
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() ?? 0 );
+            var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
             ShowEditDetails( workflowType, rockContext );
         }
 
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Core
 
             WorkflowType workflowType = null;
 
-            int? workflowTypeId = hfWorkflowTypeId.Value.AsInteger( false );
+            int? workflowTypeId = hfWorkflowTypeId.Value.AsIntegerOrNull();
             if ( workflowTypeId.HasValue )
             {
                 workflowType = service.Get( workflowTypeId.Value );
@@ -282,9 +282,10 @@ namespace RockWeb.Blocks.Core
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
             workflowType.Order = 0;
             workflowType.WorkTerm = tbWorkTerm.Text;
-            workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsInteger();
+            workflowType.ProcessingIntervalSeconds = tbProcessingInterval.Text.AsIntegerOrNull();
             workflowType.IsPersisted = cbIsPersisted.Checked;
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
+            workflowType.IconCssClass = tbIconCssClass.Text;
 
             if ( !Page.IsValid || !workflowType.IsValid )
             {
@@ -382,7 +383,7 @@ namespace RockWeb.Blocks.Core
                     // Save ActivityType Attributes
                     if ( ActivityAttributesState.ContainsKey( workflowActivityType.Guid ) )
                     {
-                        SaveAttributes( new WorkflowActivity().TypeId, "WorkflowActivityTypeId", workflowActivityType.Id.ToString(), ActivityAttributesState[workflowActivityType.Guid], rockContext );
+                        SaveAttributes( new WorkflowActivity().TypeId, "ActivityTypeId", workflowActivityType.Id.ToString(), ActivityAttributesState[workflowActivityType.Guid], rockContext );
                     }
 
                     int workflowActionTypeOrder = 0;
@@ -427,7 +428,7 @@ namespace RockWeb.Blocks.Core
                                 .ToList();
 
                             foreach ( var formAttribute in workflowActionType.WorkflowForm.FormAttributes
-                                .Where( a => !editorGuids.Contains( a.Attribute.Guid ) ) )
+                                .Where( a => !editorGuids.Contains( a.Attribute.Guid ) ).ToList() )
                             {
                                 workflowFormAttributeService.Delete( formAttribute );
                             }
@@ -485,7 +486,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfWorkflowTypeId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -869,8 +870,8 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowDetail()
         {
-            int? workflowTypeId = PageParameter( "workflowTypeId" ).AsInteger( false );
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+            int? workflowTypeId = PageParameter( "workflowTypeId" ).AsIntegerOrNull();
+            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
 
             if ( !workflowTypeId.HasValue )
             {
@@ -884,7 +885,13 @@ namespace RockWeb.Blocks.Core
 
             if ( workflowTypeId.Value.Equals( 0 ) )
             {
-                workflowType = new WorkflowType { Id = 0, IsActive = true, IsPersisted = true, IsSystem = false, CategoryId = parentCategoryId };
+                workflowType = new WorkflowType();
+                workflowType.Id = 0;
+                workflowType.IsActive = true;
+                workflowType.IsPersisted = true;
+                workflowType.IsSystem = false;
+                workflowType.CategoryId = parentCategoryId;
+                workflowType.IconCssClass = "fa fa-list-ol";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Guid = Guid.NewGuid(), IsActive = true } );
                 workflowType.WorkTerm = "Work";            
             }
@@ -980,6 +987,7 @@ namespace RockWeb.Blocks.Core
             tbProcessingInterval.Text = workflowType.ProcessingIntervalSeconds != null ? workflowType.ProcessingIntervalSeconds.ToString() : string.Empty;
             cbIsPersisted.Checked = workflowType.IsPersisted;
             ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+            tbIconCssClass.Text = workflowType.IconCssClass;
 
             var attributeService = new AttributeService( rockContext );
             AttributesState = attributeService
@@ -1000,7 +1008,7 @@ namespace RockWeb.Blocks.Core
                 var activityTypeAttributes = attributeService
                     .GetByEntityTypeId( new WorkflowActivity().TypeId ).AsQueryable()
                     .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "WorkflowActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( activityType.Id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )

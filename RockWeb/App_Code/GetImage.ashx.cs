@@ -126,7 +126,7 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessBinaryFileRequest( HttpContext context )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger() ?? 0;
+            int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
 
             if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )

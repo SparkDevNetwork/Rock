@@ -36,11 +36,17 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the workflows." )]
 
-    [LinkedPage("Detail Page")]
-    [ContextAware( typeof( WorkflowType ) )]
+    [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]
+    [LinkedPage( "Detail Page", "Page used to display details about a workflow." )]
     public partial class WorkflowList : RockBlock
     {
-        #region Control Methods
+        #region Fields
+
+        private WorkflowType _workflowType = null;
+
+        #endregion
+
+        #region Base Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -50,16 +56,55 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            gWorkflows.DataKeyNames = new string[] { "id" };
-            gWorkflows.Actions.ShowAdd = true;
-            gWorkflows.Actions.AddClick += gWorkflows_Add;
-            gWorkflows.GridRebind += gWorkflows_GridRebind;
+            if ( _workflowType != null )
+            {
+                // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+                this.BlockUpdated += Block_BlockUpdated;
+                this.AddConfigurationUpdateTrigger( upnlSettings );
 
-            // Block Security and special attributes (RockPage takes care of View)
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gWorkflows.Actions.ShowAdd = canAddEditDelete;
-            gWorkflows.IsDeleteEnabled = canAddEditDelete;
+                gWorkflows.DataKeyNames = new string[] { "id" };
+                gWorkflows.Actions.ShowAdd = true;
+                gWorkflows.Actions.AddClick += gWorkflows_Add;
+                gWorkflows.GridRebind += gWorkflows_GridRebind;
+                gWorkflows.RowDataBound += gWorkflows_RowDataBound;
+
+                // Block Security and special attributes (RockPage takes care of View)
+                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+                gWorkflows.Actions.ShowAdd = canAddEditDelete;
+                gWorkflows.IsDeleteEnabled = canAddEditDelete;
+
+                AddAttributeColumns();
+
+                var dateField = new DateTimeField();
+                gWorkflows.Columns.Add( dateField );
+                dateField.DataField = "CreatedDateTime";
+                dateField.SortExpression = "CreatedDateTime";
+                dateField.HeaderText = "Created";
+                dateField.FormatAsElapsedTime = true;
+
+                var formField = new EditField();
+                gWorkflows.Columns.Add( formField );
+                formField.IconCssClass = "fa fa-edit";
+                formField.Click += formField_Click;
+
+                var deleteField = new DeleteField();
+                gWorkflows.Columns.Add( deleteField );
+                deleteField.Click += gWorkflows_Delete;
+
+                if ( !string.IsNullOrWhiteSpace( _workflowType.WorkTerm ) )
+                {
+                    gWorkflows.RowItemText = _workflowType.WorkTerm;
+                    lGridTitle.Text = _workflowType.WorkTerm.Pluralize();
+                }
+
+                RockPage.PageTitle = _workflowType.Name;
+            }
+            else
+            {
+                pnlWorkflowList.Visible = false;
+            }
         }
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -75,10 +120,42 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            var workflowTypeId = PageParameter( "WorkflowTypeId" ).AsInteger();
+            _workflowType = new WorkflowTypeService( new RockContext() ).Get( workflowTypeId );
+            if ( _workflowType != null )
+            {
+                breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
+            }
+
+            return breadCrumbs;
+        }
+
         #endregion
 
-        #region Grid Events
+        #region Events
 
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+        }
+        
         /// <summary>
         /// Handles the Add event of the gWorkflows control.
         /// </summary>
@@ -135,9 +212,95 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gWorkflows_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                Literal lActivities = e.Row.FindControl( "lActivities" ) as Literal;
+                if ( lActivities != null )
+                {
+                    var workflow = e.Row.DataItem as Workflow;
+                    if ( workflow != null )
+                    {
+                        string activities = string.Empty;
+                        workflow.ActiveActivities.ToList().ForEach( a => activities += a.ActivityType.Name + "<br/>" );
+                        lActivities.Text = activities;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the formField control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        void formField_Click( object sender, RowEventArgs e )
+        {
+            var workflow = new WorkflowService( new RockContext() ).Get( e.RowKeyId );
+            if ( workflow != null )
+            {
+                var qryParam = new Dictionary<string, string>();
+                qryParam.Add( "WorkflowTypeId", workflow.WorkflowTypeId.ToString() );
+                qryParam.Add( "WorkflowId", workflow.Id.ToString() );
+                NavigateToLinkedPage( "EntryPage", qryParam );
+            }
+        }
+        
         #endregion
 
-        #region Internal Methods
+        #region Methods
+
+        /// <summary>
+        /// Binds the defined values grid.
+        /// </summary>
+        protected void AddAttributeColumns()
+        {
+            // Remove attribute columns
+            foreach ( var column in gWorkflows.Columns.OfType<AttributeField>().ToList() )
+            {
+                gWorkflows.Columns.Remove( column );
+            }
+
+            if ( _workflowType != null )
+            {
+                // Add attribute columns
+                int entityTypeId = new Workflow().TypeId;
+                string qualifier = _workflowType.Id.ToString();
+                foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+                    .Where( a =>
+                        a.EntityTypeId == entityTypeId &&
+                        a.IsGridColumn &&
+                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifier ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name ) )
+                {
+                    string dataFieldExpression = attribute.Key;
+                    bool columnExists = gWorkflows.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = dataFieldExpression;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.SortExpression = string.Empty;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Read( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gWorkflows.Columns.Add( boundField );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Binds the grid.
@@ -145,84 +308,18 @@ namespace RockWeb.Blocks.Core
         private void BindGrid()
         {
             var rockContext = new RockContext();
+            var workflowService = new WorkflowService( rockContext );
+            var qry = workflowService.Queryable( "Activities" )
+                .Where( a => a.WorkflowTypeId.Equals( _workflowType.Id ) );
 
-            WorkflowService workflowService = new WorkflowService( rockContext );
-            SortProperty sortProperty = gWorkflows.SortProperty;
-
-            var qry = workflowService.Queryable();
-
-            WorkflowType workflowType = this.ContextEntity<WorkflowType>();
-
-            if ( workflowType == null )
-            {
-                pnlWorkflowList.Visible = false;
-                return;
-            }
-
-            // if there are no records, and this isn't a persisted workflow type, hide the panel
-            if ( qry.Count() == 0 && !workflowType.IsPersisted )
-            {
-                pnlWorkflowList.Visible = false;
-                return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(workflowType.WorkTerm))
-            {
-                gWorkflows.RowItemText = workflowType.WorkTerm;
-                lGridTitle.Text = workflowType.WorkTerm.Pluralize();
-            }
-
-            AttributeService attributeService = new AttributeService( rockContext );
-
-            // add attributes with IsGridColumn to grid
-            string qualifierValue = workflowType.Id.ToString();
-            var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            qryWorkflowTypeAttributes = qryWorkflowTypeAttributes.Where( a => a.IsGridColumn );
-
-            List<Attribute> gridItems = qryWorkflowTypeAttributes.ToList();
-
-            foreach ( var item in gWorkflows.Columns.OfType<AttributeField>().ToList() )
-            {
-                gWorkflows.Columns.Remove( item );
-            }
-
-            foreach ( var item in gridItems.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
-            {
-                string dataFieldExpression = item.Key;
-                bool columnExists = gWorkflows.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                if ( !columnExists )
-                {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = dataFieldExpression;
-                    boundField.HeaderText = item.Name;
-                    boundField.SortExpression = string.Empty;
-                    
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Read( item.Id );
-                    if ( attributeCache != null )
-                    {
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                    }
-
-                    int insertPos = gWorkflows.Columns.IndexOf( gWorkflows.Columns.OfType<DeleteField>().First() );
-                    gWorkflows.Columns.Insert( insertPos, boundField );
-                }
-            }
-
-
-            pnlWorkflowList.Visible = true;
-
-            qry = qry.Where( a => a.WorkflowTypeId.Equals( workflowType.Id ) );
-
+            var sortProperty = gWorkflows.SortProperty;
             if ( sortProperty != null )
             {
                 gWorkflows.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gWorkflows.DataSource = qry.OrderBy( s => s.Name ).ToList();
+                gWorkflows.DataSource = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
             }
 
             gWorkflows.DataBind();

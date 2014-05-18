@@ -223,7 +223,18 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
-        public virtual bool IsPersisted { get; set; }
+        public virtual bool IsPersisted 
+        {
+            get
+            {
+                return _isPersisted || Id > 0;
+            }
+            set
+            {
+                _isPersisted = value;
+            }
+        }
+        private bool _isPersisted = false;
 
         #endregion
 
@@ -256,7 +267,7 @@ namespace Rock.Model
         /// </returns>
         public virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddSystemLogEntry( "Workflow Processing..." );
 
             DateTime processStartTime = RockDateTime.Now;
 
@@ -265,7 +276,7 @@ namespace Rock.Model
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
-            AddSystemLogEntry( "Processing Complete" );
+            AddSystemLogEntry( "Workflow Processing Complete" );
 
             if ( !this.HasActiveActivities )
             {
@@ -370,6 +381,7 @@ namespace Rock.Model
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = new Workflow();
+            workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
             workflow.Name = name ?? workflowType.Name;
             workflow.Status = "Activated";

@@ -571,7 +571,7 @@ END:VCALENDAR
         /// <returns></returns>
         private int TextBoxToPositiveInteger( TextBox textBox, int minValue = 1 )
         {
-            int result = textBox.Text.AsInteger() ?? minValue;
+            int result = textBox.Text.AsIntegerOrNull() ?? minValue;
             if ( result < minValue )
             {
                 result = minValue;
@@ -721,8 +721,8 @@ END:VCALENDAR
                         else if ( _radMonthlyNth.Checked )
                         {
                             WeekDay monthWeekDay = new WeekDay();
-                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsInteger() ?? 1;
-                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsInteger() ?? 1 );
+                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsIntegerOrNull() ?? 1;
+                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsIntegerOrNull() ?? 1 );
                             rruleMonthly.ByDay.Add( monthWeekDay );
                         }
 

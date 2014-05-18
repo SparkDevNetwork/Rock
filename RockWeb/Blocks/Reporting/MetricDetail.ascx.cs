@@ -75,10 +75,10 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 // in case called normally
-                int? metricId = PageParameter( "MetricId" ).AsInteger( false );
+                int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
 
                 // in case called from CategoryTreeView
-                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsInteger( false );
+                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
                 MetricCategory metricCategory = null;
                 if ( metricCategoryId.HasValue )
                 {
@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                 }
 
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
 
                 if ( metricId.HasValue )
                 {
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Reporting
             MetricService metricService = new MetricService( rockContext );
             MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
 
-            int metricId = hfMetricId.Value.AsInteger( false ) ?? 0;
+            int metricId = hfMetricId.Value.AsInteger();
 
             if ( metricId == 0 )
             {
@@ -284,7 +284,7 @@ namespace RockWeb.Blocks.Reporting
             qryParams["MetricId"] = metric.Id.ToString();
             if ( hfMetricCategoryId.ValueAsInt() == 0 )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger();
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 int? metricCategoryId = new MetricCategoryService( new RockContext() ).Queryable().Where( a => a.MetricId == metric.Id && a.CategoryId == parentCategoryId ).Select( a => a.Id ).FirstOrDefault();
                 hfMetricCategoryId.Value = metricCategoryId.ToString();
             }
@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( hfMetricId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -321,7 +321,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 // Cancelling on Edit.  Return to Details
                 MetricService metricService = new MetricService( new RockContext() );
-                Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
+                Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
                 ShowReadonlyDetails( metric );
             }
         }
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Reporting
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             MetricService metricService = new MetricService( new RockContext() );
-            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
+            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
             ShowEditDetails( metric );
         }
 
@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.Reporting
         {
             var rockContext = new RockContext();
             MetricService metricService = new MetricService( rockContext );
-            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() ?? 0 );
+            Metric metric = metricService.Get( hfMetricId.Value.AsInteger() );
 
             // intentionally get metricCategory with new RockContext() so we don't confuse SaveChanges()
             int? parentCategoryId = null;
