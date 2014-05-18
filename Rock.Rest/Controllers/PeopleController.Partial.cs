@@ -252,7 +252,6 @@ namespace Rock.Rest.Controllers
             }
 
             return searchResult.AsQueryable();
-            //return GetPersonSearchDetails( rockContext, sortedPersonList, itemDetailFormat, reversed, includeHtml );
         }
 
         /// <summary>
