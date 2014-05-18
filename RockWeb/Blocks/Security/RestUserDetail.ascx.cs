@@ -21,15 +21,17 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "Rest Key Detail" )]
+    [DisplayName( "Rest User Detail" )]
     [Category( "Security" )]
-    [Description( "Displays the details of the given REST API Key." )]
-    public partial class RestKeyDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    [Description( "Displays the details of the given REST API User." )]
+    public partial class RestUserDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
 
@@ -48,7 +50,7 @@ namespace RockWeb.Blocks.Security
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    //ShowDetail( "restUserId", int.Parse( itemId ) );
+                    ShowDetail( "restUserId", int.Parse( itemId ) );
                 }
                 else
                 {
@@ -67,7 +69,7 @@ namespace RockWeb.Blocks.Security
 
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
-
+            lTitle.Text = ActionTitle.Edit( "Rest User" ).FormatAsHtmlTitle();
         }
 
         #endregion Internal Methods

@@ -31,11 +31,11 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "Rest Key List" )]
+    [DisplayName( "Rest User List" )]
     [Category( "Security" )]
-    [Description( "Lists all the REST API Keys" )]
+    [Description( "Lists all the REST API Users" )]
     [LinkedPage( "Detail Page" )]
-    public partial class RestKeyList : Rock.Web.UI.RockBlock
+    public partial class RestUserList : Rock.Web.UI.RockBlock
     {
         #region Control Methods
 
@@ -49,11 +49,11 @@ namespace RockWeb.Blocks.Security
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gRestKeyList.DataKeyNames = new string[] { "id" };
-            gRestKeyList.Actions.ShowAdd = canEdit;
-            gRestKeyList.Actions.AddClick += gRestKeyList_AddClick;
-            gRestKeyList.GridRebind += gRestKeyList_GridRebind;
-            gRestKeyList.IsDeleteEnabled = canEdit;
+            gRestUserList.DataKeyNames = new string[] { "id" };
+            gRestUserList.Actions.ShowAdd = canEdit;
+            gRestUserList.Actions.AddClick += gRestUserList_AddClick;
+            gRestUserList.GridRebind += gRestUserList_GridRebind;
+            gRestUserList.IsDeleteEnabled = canEdit;
         }
 
         /// <summary>
@@ -74,29 +74,29 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
-        void gRestKeyList_AddClick( object sender, EventArgs e )
+        void gRestUserList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "restUserId", "0" );
             NavigateToLinkedPage( "DetailPage", parms );            
         }
 
-        void gRestKeyList_GridRebind( object sender, EventArgs e )
+        void gRestUserList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        protected void gRestKeyList_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gRestUserList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
 
         }
 
-        protected void gRestKeyList_RowSelected( object sender, RowEventArgs e )
+        protected void gRestUserList_RowSelected( object sender, RowEventArgs e )
         {
 
         }
 
-        protected void gRestKeyList_Delete( object sender, RowEventArgs e )
+        protected void gRestUserList_Delete( object sender, RowEventArgs e )
         {
 
         }
@@ -120,17 +120,17 @@ namespace RockWeb.Blocks.Security
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == restUserRecordTypeId && q.RecordStatusValueId == activeRecordStatusValueId );
 
-            SortProperty sortProperty = gRestKeyList.SortProperty;
+            SortProperty sortProperty = gRestUserList.SortProperty;
             if ( sortProperty != null )
             {
-                gRestKeyList.DataSource = queryable.Sort( sortProperty ).ToList();
+                gRestUserList.DataSource = queryable.Sort( sortProperty ).ToList();
             }
             else
             {
-                gRestKeyList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
+                gRestUserList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
             }
 
-            gRestKeyList.DataBind();
+            gRestUserList.DataBind();
         }
 
         #endregion Internal Methods
