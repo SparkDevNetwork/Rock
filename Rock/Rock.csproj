@@ -153,7 +153,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
-    <Compile Include="Attribute\MetricsFieldAttribute.cs" />
+    <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
@@ -208,7 +208,7 @@
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
-    <Compile Include="Field\Types\MetricsFieldType.cs" />
+    <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
@@ -603,7 +603,7 @@
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\MetricsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MetricCategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />

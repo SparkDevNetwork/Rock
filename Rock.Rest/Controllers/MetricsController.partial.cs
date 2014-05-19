@@ -60,26 +60,28 @@ namespace Rock.Rest.Controllers
 
                 string displayText = block.GetAttributeValue( "DisplayText" );
 
-                List<Guid> metricGuids = block.GetAttributeValue( "Metrics" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                List<Guid> metricCategoryGuids = block.GetAttributeValue( "MetricCategories" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
 
-                if ( metricGuids.Count() == 0 )
+                RockContext rockContext = new RockContext();
+                MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
+                var metricCategories = metricCategoryService.GetByGuids( metricCategoryGuids );
+                List<object> metricsData = new List<object>();
+
+                if ( metricCategories.Count() == 0 )
                 {
                     return @"<div class='alert alert-warning'> 
 								Please select a metric in the block settings.
 							</div>";
                 }
 
-                RockContext rockContext = new RockContext();
-                MetricService metricService = new MetricService( rockContext );
+                
                 MetricValueService metricValueService = new MetricValueService( rockContext );
-
-                var metrics = metricService.GetByGuids( metricGuids );
-                List<object> metricsData = new List<object>();
+                
                 DateTime firstDayOfYear = new DateTime( RockDateTime.Now.Year, 1, 1 );
                 DateTime currentDateTime = RockDateTime.Now;
                 DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
 
-                foreach ( var metric in metrics )
+                foreach ( var metric in metricCategories.Select(a => a.Metric).Distinct() )
                 {
                     var metricYTDData = JsonConvert.DeserializeObject( metric.ToJson(), typeof( MetricYTDData ) ) as MetricYTDData;
                     var qryMeasureValues = metricValueService.Queryable()
