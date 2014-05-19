@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel;
+using System.Web.UI;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
@@ -28,8 +29,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Liquid Dashboard Widget" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget from Liquid using YTD metric values" )]
-
-    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 3, DefaultValue =
+    [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 3 )]
+    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 4, DefaultValue =
 @"
 {% for metric in Metrics %}
     <h1>{{ metric.Title }}</h1>
@@ -40,7 +41,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     </div>
 {% endfor %}
 " )]
-    [MetricsField( "Metrics", "Select the metric(s) to be made available to liquid", Order = 4 )]
+    
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 5 )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {

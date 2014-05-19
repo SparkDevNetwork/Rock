@@ -23,12 +23,13 @@ namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select 0 or more Metrics
+    /// Technically, in order to support putting a metric in multiple categories, you are selecting a MetricCategory, then getting the MetricCategory.Metric
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class MetricsFieldAttribute : FieldAttribute
+    public class MetricCategoriesFieldAttribute : FieldAttribute
     {
-        public MetricsFieldAttribute( string name = "Metrics", string description = "", bool required = true, string defaultMetricsGuids = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultMetricsGuids, category, order, key, typeof( Rock.Field.Types.MetricsFieldType ).FullName )
+        public MetricCategoriesFieldAttribute( string name = "Metrics", string description = "", bool required = true, string defaultMetricsGuids = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultMetricsGuids, category, order, key, typeof( Rock.Field.Types.MetricCategoriesFieldType ).FullName )
         {
         }
     }
