@@ -1,3 +1,6 @@
 *.pdb
+/com.CcvOnline.Authentication.dll
+/com.CcvOnline.CommandCenter.dll
+/com.CcvOnline.Residency.dll
 /com.CcvOnline.SampleProject.dll
 /com.CcvOnline.dll
