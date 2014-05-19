@@ -1,30 +1,15 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
 
-using com.ccvonline.CommandCenter.Model;
+using com.CcvOnline.CommandCenter.Model;
+
 using Rock.Rest;
 using Rock.Rest.Filters;
 
-namespace Rock.Com.CCVOnline.Rest.Service
+namespace com.CcvOnline.CommandCenter.Rest
 {
     /// <summary>
     /// Recordings REST API
@@ -35,7 +20,7 @@ namespace Rock.Com.CCVOnline.Rest.Service
         /// <summary>
         /// Initializes a new instance of the <see cref="RecordingsController" /> class.
         /// </summary>
-        public RecordingsController() : base( new RecordingService() ) { }
+        public RecordingsController() : base( new RecordingService( new Data.CommandCenterContext() ) ) { }
 
         /// <summary>
         /// Adds the routes.
@@ -44,7 +29,7 @@ namespace Rock.Com.CCVOnline.Rest.Service
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "com.ccvonline.CommandCenter.Recording",
+                name: "com.CcvOnline.CommandCenter.Recording",
                 routeTemplate: "api/Recordings/{action}/{campusId}/{label}/{app}/{stream}/{recording}",
                 defaults: new
                 {
@@ -52,7 +37,7 @@ namespace Rock.Com.CCVOnline.Rest.Service
                 } );
 
             routes.MapHttpRoute(
-                name: "com.ccvonline.CommandCenter.RecordingDate",
+                name: "com.CcvOnline.CommandCenter.RecordingDate",
                 routeTemplate: "api/Recordings/dates/{qualifier}",
                 defaults: new
                 {
@@ -75,18 +60,13 @@ namespace Rock.Com.CCVOnline.Rest.Service
         [Authenticate]
         public Recording Start( int campusId, string label, string app, string stream, string recording )
         {
-            var user = this.CurrentUser();
-            if ( user != null )
-            {
-                var RecordingService = new RecordingService();
-                var Recording = RecordingService.StartRecording( campusId, label, app, stream, recording, user.PersonId );
+            var RecordingService = new RecordingService( new Data.CommandCenterContext() );
+            var Recording = RecordingService.StartRecording( campusId, label, app, stream, recording );
 
-                if ( Recording != null )
-                    return Recording;
-                else
-                    throw new HttpResponseException( HttpStatusCode.BadRequest );
-            }
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            if ( Recording != null )
+                return Recording;
+            else
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
 
         /// <summary>
@@ -103,18 +83,13 @@ namespace Rock.Com.CCVOnline.Rest.Service
         [Authenticate]
         public Recording Stop( int campusId, string label, string app, string stream, string recording )
         {
-            var user = this.CurrentUser();
-            if ( user != null )
-            {
-                var RecordingService = new RecordingService();
-                var Recording = RecordingService.StopRecording( campusId, label, app, stream, recording, user.PersonId );
+            var RecordingService = new RecordingService( new Data.CommandCenterContext() );
+            var Recording = RecordingService.StopRecording( campusId, label, app, stream, recording );
 
-                if ( Recording != null )
-                    return Recording;
-                else
-                    throw new HttpResponseException( HttpStatusCode.BadRequest );
-            }
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            if ( Recording != null )
+                return Recording;
+            else
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
         }
 
         /// <summary>
@@ -127,23 +102,16 @@ namespace Rock.Com.CCVOnline.Rest.Service
         [Authenticate]
         public IEnumerable<DateTime> Dates( string qualifier )
         {
-            var user = this.CurrentUser();
-            if ( user != null )
-            {
-                var RecordingService = new RecordingService();
-                var dates = RecordingService.Queryable()
-                    .Where( r => r.StartTime.HasValue )
-                    .OrderByDescending( r => r.StartTime.Value )
-                    .Select( r => r.StartTime.Value )
-                    .ToList();
+            var dates = Service.Queryable()
+                .Where( r => r.StartTime.HasValue )
+                .OrderByDescending( r => r.StartTime.Value )
+                .Select( r => r.StartTime.Value )
+                .ToList();
 
-                if ( string.Equals( qualifier, "distinct", StringComparison.CurrentCultureIgnoreCase ) )
-                    return dates.Select( d => d.Date ).Distinct();
-                else
-                    return dates;
-            }
-
-            throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            if ( string.Equals( qualifier, "distinct", StringComparison.CurrentCultureIgnoreCase ) )
+                return dates.Select( d => d.Date ).Distinct();
+            else
+                return dates;
         }
 
     }

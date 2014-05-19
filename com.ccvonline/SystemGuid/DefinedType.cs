@@ -3,7 +3,7 @@ using System;
 namespace com.CcvOnline.SystemGuid
 {
     /// <summary>
-    /// System Defined Types
+    /// System Defined Types used specifically by the com.CcvOnline.* Plugins
     /// </summary>
     public static class DefinedType
     {

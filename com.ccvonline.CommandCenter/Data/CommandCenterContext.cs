@@ -1,36 +1,29 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 
-using com.ccvonline.CommandCenter.Model;
+using com.CcvOnline.CommandCenter.Model;
 
-namespace com.ccvonline.CommandCenter.Data
+namespace com.CcvOnline.CommandCenter.Data
 {
     /// <summary>
     /// 
     /// </summary>
-    public partial class CommandCenterContext : DbContext
+    public partial class CommandCenterContext : Rock.Data.DbContext
     {
+        
+        #region Models
+
+        /// <summary>
+        /// Gets or sets the commandCenter competencies.
+        /// </summary>
+        /// <value>
+        /// The commandCenter competencies.
+        /// </value>
+        public DbSet<Recording> Recordings { get; set; }
+
+        #endregion        
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandCenterContext"/> class.
         /// </summary>
@@ -57,22 +50,9 @@ namespace com.ccvonline.CommandCenter.Data
         /// </remarks>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
-            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
-            // Model Configurations
-            modelBuilder.Configurations.Add( new RecordingConfiguration() );
+            Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
+            modelBuilder.Configurations.AddFromAssembly( System.Reflection.Assembly.GetExecutingAssembly() );
         }
-        
-        #region Models
 
-        /// <summary>
-        /// Gets or sets the commandCenter competencies.
-        /// </summary>
-        /// <value>
-        /// The commandCenter competencies.
-        /// </value>
-        public DbSet<Recording> Recordings { get; set; }
-
-        #endregion
     }
 }
