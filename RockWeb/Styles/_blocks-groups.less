@@ -1,0 +1,46 @@
+﻿/*
+    Used to manage styles for specific blocks.
+
+    1. Group Viewer - styles for the group viewer block.
+
+*/
+
+// 1. Group Viewer
+// -------------------------
+.group-location-map {
+
+    float: right;
+
+    img {
+        border: 1px solid @accent-semibold-color;
+    }
+}
+
+@media (max-width: @screen-md-min) {
+
+    .group-location-map {
+        float: left;
+    }
+}
+
+// 2. Group Type Details
+// -------------------------
+
+// Fixed column widths for attribute grids in the Group Type Detail block. Used to align columns with the grid below it.
+section.group-type-attribute-panel label {
+    padding-left: 46px;
+}
+table.inherited-attribute-grid tr td:first-child {
+    padding-left: 46px;
+    width: 141px;
+}
+table.attribute-grid tr th:first-child {
+    width: 31px;
+}
+table.attribute-grid tr th:nth-child(2) {
+    width: 100px;
+}
+table.inherited-attribute-grid tr td:nth-child(2),
+table.attribute-grid tr th:nth-child(3) {
+    width: 550px;
+}

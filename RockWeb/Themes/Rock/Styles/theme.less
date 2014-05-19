@@ -1,0 +1,510 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_print.less";
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Page Header
+    4. Footer
+    5. Layout Specific Styles
+    6. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+// set window background
+html
+{
+    background-color: #3a3a3a;  
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+}
+
+main {
+    display:block;
+}
+
+h1 {
+	font-size: 28px;
+}
+
+h1, h2, h3 {
+	letter-spacing: -0.03em;
+    margin: 0 0 @spacing-sm-px; // added 1/22 in working with bio bar
+}
+
+h2, h3, h4
+{
+    font-weight: @font-weight-semibold;
+}
+
+// get rid of dotted box around anchors with focus
+a {
+   outline: 0;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:hover i.fs
+{
+    text-decoration: none;
+}
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+// get rid of the icon bootstrap adds to the h4's on alerts
+.alert h4:before {
+    content: '';
+}
+
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013 BS3
+}
+
+.nav-pills > .active > a,
+.nav-pills > .active > a:hover
+{
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+}
+
+.nav-pills > li > a
+{
+    color: @text-color;
+}
+
+.nav-pills > li > a:hover
+{
+    background-color: @accent-color;
+}
+
+.btn-xs
+{
+    padding: 0 6px;
+}
+
+.label,
+.badge {
+    font-weight: @font-weight-light;
+}
+
+.control-label {
+    .alert { // set the font weight of the help text in the control label
+        font-weight: normal;
+    }
+}
+
+// augment the grid striping when on a panel
+.panel-default {
+    .table-striped > tbody > tr:nth-child(odd) > td {
+        background-color: lighten(@accent-light-color, 4%);
+    }
+}
+
+
+// 3. Page Header
+// -------------------------
+
+#jPanelMenu-menu {
+    width: 265px !important;
+}
+
+// brand bar
+.pageheader {
+    background: none;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
+    color: @header-text-color;
+    margin-bottom: @spacing-md-px;
+    text-align: center;
+
+    a {
+        color: @header-text-color;
+
+        &:hover,
+        &:active,
+        &:focus {
+            color: darken(@header-text-color, 10%);
+        }
+    }
+
+    #zone-login {
+        margin-top: 12px;
+        margin-left: 10px;
+        float: right;
+    }
+
+    .smartsearch {
+        margin: 0 auto 20px;
+        text-align: left;
+    }
+
+    .loginstatus {
+        display: none;
+    }
+
+    .navbar-brand {
+        float: none;
+        display: block;
+
+        .brandbar-logo {
+	        width: 110px;
+            height: 41px;
+        }
+    }
+
+    .navbar-toggle {
+        color: @header-text-color;
+        border-color: @header-text-color;
+        position: absolute;
+        left: 0;
+        margin: 8px 0 0 12px;
+        
+        &:focus {outline:0;}
+    }
+     
+}
+
+
+// page nav
+.pagenav {
+    border-top: 1px solid lighten(@header-bg, 10%);
+    border-bottom: 1px solid darken(@header-bg, 10%);
+    background: @header-bg;
+    max-height: inherit; // override bootstraps max-height 340px
+    padding: 24px 0 0 0;
+    text-align: left;
+
+    .navbar-nav {
+        margin: 0;
+    }
+
+    .nav {
+        width: 100%;
+
+        > li {
+            height: auto;
+            width: 100%;
+            float: left;
+
+            &:last-child:after { // add the final shadow to the last nav element
+                content: " ";
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+            }
+
+            > a {
+                padding: 14px 0;
+                font-size: 14px;
+                color: @header-text-color;
+                position: relative;
+                height: 100%;
+                line-height: 1em;
+
+                .fa.fa-caret-down {
+                    display: none;
+                }
+
+                i.fa {
+                    display: block;
+                    margin: 4px 12px 0 0;
+                    font-size: 18px;
+                    float: left;
+                }
+                // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
+                div {
+                    height: 26px;
+                    line-height: 20px;
+                }
+
+                span {
+                    display: inline-block;
+                    vertical-align: middle;
+                    line-height: 11px;
+                }
+            }
+
+            .dropdown-menu {
+                margin-left: 8px;
+
+                > li {
+                    
+                    &.dropdown-header {
+                        padding-left: 0;
+                    }
+
+                    a {
+                        color: @header-text-color;
+                        padding-left: 0;
+
+                        &:hover {
+                            background-color: inherit;
+                        }
+                    }
+
+                    &.divider {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+
+
+    .dropdown-menu {
+        left: -2px;
+        width: 240px;
+    }
+}
+
+// page title
+.pagetitle {
+	background-color: @pagetitle-bg;
+	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
+	background-image: none;
+    filter: initial;
+    color: @text-color;
+
+    h1 {
+        margin: 12px 0 0 0;
+        float: left;
+    }
+
+    .page-icon
+    {
+        font-size: 36px;
+        margin-right: 12px;
+        float: left;
+    }
+}
+
+
+// 4. Footer
+// -------------------------
+
+
+.page-footer {
+    margin-top: 24px;
+	padding-top: 24px;
+	min-height: 120px;
+	background-color: @footer-bg;
+	border-top: 1px solid #000;
+	color: @footer-text-color;
+}
+
+
+// 5. Layout Specific Styles
+// -------------------------
+// splash screen
+#splash {
+    background: none;
+
+    .pageheader-logo {
+        height: 45px;
+        width: 127.57px;
+        margin-top: 45px;
+        margin-bottom: 6px;
+    }
+
+    #content {
+        margin-bottom: 60px;
+
+        #content-box {
+            background-color: @body-bg;
+            overflow: hidden;
+            padding: 15px;
+
+            .form-actions {
+                margin: 0 -15px -15px -15px;
+            }
+        }
+    }
+} 
+
+// 6. Responsive Overrides 
+// -------------------------
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+
+    .pageheader {
+        .smartsearch {
+            margin: 20px auto;
+            float: right;
+        }
+
+        .loginstatus {
+            display: block;
+        }
+    }
+
+    .pagenav { // change menu to show as boxes
+        padding-top: 0;
+
+        .nav {
+            border-left: 1px solid lighten(@header-bg, 10%);
+
+            & > li {
+                width: 12.5%;
+                height: 67px;
+                border-left: 1px solid darken(@header-bg, 10%);
+                border-right: 1px solid lighten(@header-bg, 10%);
+
+                > a {
+                    text-align: center;
+                    padding: 4px 15px;
+                    min-height: 67px;
+                    font-size: 11px;
+
+                    i.fa {
+                        margin: 6px auto 0;
+                        float: none;
+                    }
+
+                    .fa.fa-caret-down {
+                        display: block;
+                        margin-bottom: 6px;
+                        position: absolute;
+                        bottom: 0;
+                        left: 48%;
+                    }
+                }
+
+                .dropdown-menu {
+                    margin-left: 0;
+
+                    > li {
+                        
+                        &.dropdown-header {
+                            padding-left: 20px;
+                        }
+                        
+                        > a {
+                            color: @text-color;
+                            padding-left: 20px;
+
+                            &:hover {
+                                background-color: @accent-light-color;
+                            }
+                        }
+
+                        &:last-child:after {
+                            border-right: 1px solid darken(@header-bg, 10%);
+                        }
+
+                        &.divider {
+                            display: inherit;
+                        }
+
+                            &.divider:last-child { // remove last divider out of the menu
+                                display: none;
+                            }
+                    }
+                }
+            }
+        }
+    }
+
+    #splash {
+        
+        .pageheader-logo {
+            margin-top: 0;
+        }
+        
+        #content {
+            width: 700px;
+            margin: 5% auto 0;
+
+            #content-box {
+                border-radius: @border-radius-base;
+            }
+        }
+    }
+}
+
+// Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+    
+    .pagenav {
+        .nav {
+            .dropdown-menu > li {
+                
+            }
+        }
+    }
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+
+    .container { // allow the rock screen to grow wide
+        width: 90%;
+    }
+}
+
+
+
+

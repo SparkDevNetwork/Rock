@@ -1,0 +1,54 @@
+﻿/*
+    Used to manage styles for specific blocks.
+
+    1. Communication Blocks - styles for the communication blocks
+
+*/
+
+// 1. Communication Blocks
+// -------------------------
+
+.recipients {
+
+    .recipient {
+        float: left;
+        width: 100%;
+
+        &.failed {
+            color: @brand-danger;
+        }
+
+        &.opened {
+            color: @brand-success;
+        }
+    }
+}
+
+iframe.email-body {
+    width: 100%;
+    border: 1px solid @accent-semibold-color;
+    background-color: #fff;
+    height: 300px;
+}
+
+@media (min-width: @screen-sm-min) { // tablet portrait and larger
+    .recipients {
+        .recipient {
+            width: 50%;
+        }
+    }
+}
+
+// Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+    .recipients {
+        .recipient {
+            width: 25%;
+        }
+    }
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+
+}

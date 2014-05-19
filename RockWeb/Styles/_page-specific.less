@@ -1,0 +1,52 @@
+﻿/*
+    Used to manage styles for specific blocks.
+
+    1. Error Page - styles for the error page.
+
+*/
+
+
+// 1. Error Page
+// -------------------------
+
+.error-wrap {
+    text-align: center;
+    max-width: 450px;
+    margin: 0 auto;
+
+    h1 {
+        font-size: 45px;
+    }
+
+    .error-icon {
+        font-size: 256px;
+        line-height: 256px;
+        margin: @spacing-md-px;
+        opacity: 0.7;
+
+        &.info {
+            color: @brand-info;
+        }
+
+        &.warning {
+            color: @brand-warning;
+        }
+
+        &.danger {
+            color: @brand-danger;
+        }
+    }
+}
+
+// 2. Blank Page
+// -------------------------
+
+.rock-blank {
+    background-color: @body-bg;
+
+    main.container {
+        margin: 0;
+        padding: 12px;
+    }
+
+}
