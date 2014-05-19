@@ -48,8 +48,9 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 3600, "", 4 )]
     [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 5 )]
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
-    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 7 )]
-    [BooleanField( "Support Versions", "Support content versioning?", false, "", 8 )]
+    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
+    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
+
     public partial class HtmlContentDetail : RockBlock
     {
         #region Base Control Methods
@@ -191,7 +192,7 @@ namespace RockWeb.Blocks.Cms
                 ceHtml.EditorHeight = "280";
                 htmlEditor.Height = 280;
             }
-            else if (supportsVersioning)
+            else if ( supportsVersioning )
             {
                 ceHtml.EditorHeight = "350";
                 htmlEditor.Height = 350;
@@ -212,6 +213,14 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
+            bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
+            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+            if ( requireApproval && ! supportsVersioning )
+            {
+                SetAttributeValue( "SupportVersions", "true" );
+                SaveAttributeValues();
+            }
+
             FlushCacheItem( EntityValue() );
             ShowView();
         }
@@ -306,11 +315,8 @@ namespace RockWeb.Blocks.Cms
                     // if the content has changed
                     if ( htmlContent.Content != newContent )
                     {
-                        // it might also be nice here to tell the user what's happening so they
-                        // don't freak out when their content vanishes (current behavior).
+                        lPreHtml.Text += "<div class='alert alert-info'>Your changes will not be visible until they are reviewed and approved.</div>";
                         htmlContent.IsApproved = false;
-                        // htmlContent.ApprovedByPersonId is the former person who approved it
-                        // htmlContent.ApprovedDateTime is the previous date it was approved
                     }
                 }
             }
