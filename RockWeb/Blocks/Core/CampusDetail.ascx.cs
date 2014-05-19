@@ -131,8 +131,11 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            rockContext.SaveChanges();
-            campus.SaveAttributeValues( rockContext );
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                campus.SaveAttributeValues( rockContext );
+            } );
 
             Rock.Web.Cache.CampusCache.Flush( campus.Id );
 
