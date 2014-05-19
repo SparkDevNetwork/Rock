@@ -33,9 +33,9 @@ namespace Rock.Migrations
             Sql( @"UPDATE [WorkflowType] SET [IconCssClass] = 'fa fa-list-ol'" );
 
             // Grant Staff and Staff-Like roles edit access to the Known Relationships group type
-            DeleteSecurityAuthForGroupType("E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF");
-            AddSecurityAuthForGroupType( "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF", 0, "Edit", true, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "C463D46C-DE81-4B78-828F-D219198DCB94" );
-            AddSecurityAuthForGroupType( "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF", 1, "Edit", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "2F714BE7-FC9C-4DE6-9F3B-C5616F77ED71" );
+            RockMigrationHelper.DeleteSecurityAuthForGroupType("E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF");
+            RockMigrationHelper.AddSecurityAuthForGroupType( "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF", 0, "Edit", true, "2C112948-FF4C-46E7-981A-0257681EADF4", Model.SpecialRole.None, "C463D46C-DE81-4B78-828F-D219198DCB94" );
+            RockMigrationHelper.AddSecurityAuthForGroupType( "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF", 1, "Edit", true, "300BA2C8-49A3-44BA-A82A-82E3FD8C3745", Model.SpecialRole.None, "2F714BE7-FC9C-4DE6-9F3B-C5616F77ED71" );
 
             Sql( @"
     IF OBJECT_ID('[dbo].[ufnUtility_GetPersonIdFromPersonAlias]', 'FN') IS NOT NULL
