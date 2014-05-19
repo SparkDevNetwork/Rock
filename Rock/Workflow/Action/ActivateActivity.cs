@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
     [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
-    [BooleanField( "Complete Current Activity", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed)." )]
+    [BooleanField( "Stop Further Actions", "Indicates if current activity should be marked complete if selected activity was successfully activated (so no more actions are processed for this activity).", false, "", 1, "CompleteActivity" )]
     public class ActivateActivity : CompareAction
     {
         /// <summary>
@@ -73,6 +73,11 @@ namespace Rock.Workflow.Action
             {
                 WorkflowActivity.Activate( activityType, workflow );
                 action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+
+                if ( GetAttributeValue( action, "CompleteActivity" ).AsBoolean() )
+                {
+                    action.Activity.MarkComplete();
+                }
             }
 
             return true;

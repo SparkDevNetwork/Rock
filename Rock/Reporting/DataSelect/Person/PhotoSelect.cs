@@ -139,8 +139,8 @@ namespace Rock.Reporting.DataSelect.Person
             int? height = 50;
             if (selectionValues.Count() == 2)
             {
-                width = selectionValues[0].AsInteger(false) ?? width;
-                height = selectionValues[1].AsInteger(false) ?? height;
+                width = selectionValues[0].AsIntegerOrNull() ?? width;
+                height = selectionValues[1].AsIntegerOrNull() ?? height;
             }
 
             string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
@@ -231,8 +231,8 @@ namespace Rock.Reporting.DataSelect.Person
                 {
                     NumberBox widthBox = controls[0] as NumberBox;
                     NumberBox heightBox = controls[1] as NumberBox;
-                    widthBox.Text = selectionValues[0].AsInteger( false ).ToString();
-                    heightBox.Text = selectionValues[1].AsInteger( false ).ToString();
+                    widthBox.Text = selectionValues[0].AsIntegerOrNull().ToString();
+                    heightBox.Text = selectionValues[1].AsIntegerOrNull().ToString();
                 }
             }
         }

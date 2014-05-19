@@ -63,7 +63,7 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // delete accounts that have not been confirmed in X hours
-            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsInteger( false );
+            int? userExpireHours = dataMap.GetString( "HoursKeepUnconfirmedAccounts" ).AsIntegerOrNull();
             if ( userExpireHours.HasValue )
             {
                 DateTime userAccountExpireDate = RockDateTime.Now.Add( new TimeSpan( userExpireHours.Value * -1, 0, 0 ) );
@@ -79,7 +79,7 @@ namespace Rock.Jobs
             }
 
             // purge exception log
-            int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsInteger( false );
+            int? exceptionExpireDays = dataMap.GetString( "DaysKeepExceptions" ).AsIntegerOrNull();
             if ( exceptionExpireDays.HasValue )
             {
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
@@ -95,7 +95,7 @@ namespace Rock.Jobs
             }
 
             // purge audit log
-            int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsInteger( false );
+            int? auditExpireDays = dataMap.GetString( "AuditLogExpirationDays" ).AsIntegerOrNull();
             if ( auditExpireDays.HasValue )
             {
                 DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
@@ -112,7 +112,7 @@ namespace Rock.Jobs
 
             // get the attributes
             string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
-            int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsInteger( false );
+            int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsIntegerOrNull();
             if ( cacheExpirationDays.HasValue )
             {
                 DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays.Value * -1, 0, 0, 0 ) );
@@ -155,7 +155,7 @@ namespace Rock.Jobs
             rockContext.SaveChanges();
 
             // Add any missing metaphones
-            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger( false ) ?? 0;
+            int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsInteger();
             if ( namesToProcess > 0 )
             {
                 var firstNameQry = personService.Queryable().Select( p => p.FirstName );

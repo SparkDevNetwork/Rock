@@ -422,7 +422,7 @@ namespace Rock.Web.UI.Controls
 ";
 
             string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
 

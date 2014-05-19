@@ -298,6 +298,15 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         /// <param name="attributes">The attributes.</param>
         public void BindAttributesGrid( List<Rock.Model.Attribute> attributes )
         {
+            if ( attributes.Any() )
+            {
+                _pwAttributes.Title = string.Format( "Attributes ({0})", attributes.Count.ToString( "N0" ) );
+            }
+            else
+            {
+                _pwAttributes.Title = "Attributes";
+            } 
+            
             _gAttributes.DataSource = attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             _gAttributes.DataBind();
         }

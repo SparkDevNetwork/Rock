@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Pie Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class PieChartDashboardWidget : DashboardWidget
+    public partial class PieChartDashboardWidget : ChartDashboardWidget
     {
         /// <summary>
         /// Loads the chart.
@@ -41,16 +41,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             //pcExample.EndDate = new DateTime( 2014, 1, 1 );
             pcExample.MetricValueType = this.MetricValueType;
             pcExample.MetricId = this.MetricId;
-            pcExample.EntityId = this.PageParameter( "EntityId" ).AsInteger();
-            if ( pcExample.EntityId == null && this.ContextEntity() != null )
-            {
-                pcExample.EntityId = this.ContextEntity().Id;
-            }
-
+            pcExample.EntityId = this.EntityId;
             pcExample.Title = this.Title;
             pcExample.Subtitle = this.Subtitle;
+            pcExample.CombineValues = this.CombineValues;
 
-            pcExample.ShowTooltip = false;
+            pcExample.ShowTooltip = true;
             //pcExample.ShowDebug = true;
             pcExample.Options.SetChartStyle( this.ChartStyle );
 

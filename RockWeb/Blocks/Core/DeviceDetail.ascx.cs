@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Core
         private void SetPrinterSettingsVisibility()
         {
             var checkinKioskDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
-            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsInteger() == checkinKioskDeviceTypeId );
+            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
         }
 
         #endregion

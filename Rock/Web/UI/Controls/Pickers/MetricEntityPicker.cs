@@ -266,7 +266,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _rblSelectOrContext.SelectedValue.AsInteger() == 1;
+                return _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 1;
             }
 
             set
@@ -401,7 +401,7 @@ namespace Rock.Web.UI.Controls
 
             if ( _entityTypeEditControl != null )
             {
-                _entityTypeEditControl.Visible = _rblSelectOrContext.SelectedValue.AsInteger() == 0;
+                _entityTypeEditControl.Visible = _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 0;
                 rockControlWrapper.Controls.Add( _entityTypeEditControl );
             }
 

@@ -41,15 +41,6 @@ namespace Rock.Rest.Controllers
         public void AddRoutes( RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "MetricValuesGetChartData",
-                routeTemplate: "api/MetricValues/GetChartData/{metricId}",
-                defaults: new
-                {
-                    controller = "MetricValues",
-                    action = "GetChartData"
-                } );
-
-            routes.MapHttpRoute(
                 name: "MetricValuesGetByMetricId",
                 routeTemplate: "api/MetricValues/GetByMetricId/{metricId}",
                 defaults: new

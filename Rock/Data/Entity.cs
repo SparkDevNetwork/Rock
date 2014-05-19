@@ -317,6 +317,12 @@ namespace Rock.Data
                     propInfo.GetCustomAttributes( typeof( System.Runtime.Serialization.DataMemberAttribute ) ).Count() > 0 )
                 {
                     object propValue = propInfo.GetValue( this, null );
+
+                    if (propValue is Guid)
+                    {
+                        propValue = ( (Guid)propValue ).ToString();
+                    }
+
                     if ( debug && propValue is DotLiquid.ILiquidizable )
                     {
                         dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );

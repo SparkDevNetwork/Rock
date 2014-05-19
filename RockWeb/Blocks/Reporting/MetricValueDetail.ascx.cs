@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Reporting
             if ( Page.IsPostBack )
             {
                 // create dynamic controls
-                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() ?? 0 );
+                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() );
                 if ( fieldType != null )
                 {
                     var entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
@@ -65,13 +65,13 @@ namespace RockWeb.Blocks.Reporting
 
             if ( !Page.IsPostBack )
             {
-                int? itemId = PageParameter( "MetricValueId" ).AsInteger( false );
+                int? itemId = PageParameter( "MetricValueId" ).AsIntegerOrNull();
 
                 // in case called with MetricId as the parent id parameter
-                int? metricId = PageParameter( "MetricId" ).AsInteger( false );
+                int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
 
                 // in case called with MetricCategoryId as the parent id parameter
-                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsInteger( false );
+                int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
                 MetricCategory metricCategory = null;
                 if ( metricCategoryId.HasValue )
                 {
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Reporting
 
             metricValue.MetricValueType = ddlMetricValueType.SelectedValueAsEnum<MetricValueType>();
             metricValue.XValue = tbXValue.Text;
-            metricValue.YValue = tbYValue.Text.AsDecimal( false );
+            metricValue.YValue = tbYValue.Text.AsDecimalOrNull();
             metricValue.Note = tbNote.Text;
             metricValue.MetricValueDateTime = dtpMetricValueDateTime.SelectedDateTimeIsBlank ? null : dtpMetricValueDateTime.SelectedDateTime;
 
@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Reporting
             if ( metricEntityType != null && metricEntityType.SingleValueFieldType != null )
             {
                 hfSingleValueFieldTypeId.Value = metricEntityType.SingleValueFieldType.Id.ToString();
-                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() ?? 0 );
+                FieldTypeCache fieldType = FieldTypeCache.Read( hfSingleValueFieldTypeId.Value.AsInteger() );
                 entityTypeEditControl = fieldType.Field.EditControl( new Dictionary<string, Rock.Field.ConfigurationValue>(), "entityTypeEditControl" );
 
                 if ( entityTypeEditControl is IRockControl )

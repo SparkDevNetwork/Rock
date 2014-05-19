@@ -132,7 +132,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            int? phoneNumberTypeValidId = selection.AsInteger( false );
+            int? phoneNumberTypeValidId = selection.AsIntegerOrNull();
             if (!phoneNumberTypeValidId.HasValue)
             {
                 phoneNumberTypeValidId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;

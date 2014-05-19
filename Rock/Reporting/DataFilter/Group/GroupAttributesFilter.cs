@@ -163,7 +163,7 @@ namespace Rock.Reporting.DataFilter.Group
             pnlGroupAttributeFilterControls.Controls.Add( groupTypePicker );
 
             // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
-            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsInteger();
+            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
             groupTypePicker.SelectedGroupTypeId = groupTypeId;
             groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
 

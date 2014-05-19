@@ -186,7 +186,7 @@ You can view an online version of this email here:
             var attachments = new Dictionary<int, string>();
 
             var fileIds = new List<int>();
-            value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add( v.AsInteger() ?? 0 ) );
+            value.SplitDelimitedValues().ToList().ForEach( v => fileIds.Add( v.AsInteger() ) );
 
             new BinaryFileService( new RockContext() ).Queryable()
                 .Where( f => fileIds.Contains( f.Id ) )

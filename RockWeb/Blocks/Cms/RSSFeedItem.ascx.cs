@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Cms
 
             try
             {
-                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, RockPage.Guid.ToString(), (int)GetAttributeValue( "CacheDuration" ).AsInteger( true ), ref messages, ref isError );
+                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, RockPage.Guid.ToString(), GetAttributeValue( "CacheDuration" ).AsInteger(), ref messages, ref isError );
 
                 if ( feedDictionary != null && feedDictionary.Count > 0 )
                 {

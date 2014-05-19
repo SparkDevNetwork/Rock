@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Line Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class LineChartDashboardWidget : DashboardWidget
+    public partial class LineChartDashboardWidget : ChartDashboardWidget
     {
         /// <summary>
         /// Loads the chart.
@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         public override void LoadChart()
         {
             lcExample.StartDate = new DateTime( 2013, 1, 1 );
-            lcExample.EndDate = new DateTime( 2014, 1, 1 );
+            lcExample.EndDate = new DateTime( 2015, 1, 1 );
             lcExample.MetricValueType = this.MetricValueType;
             lcExample.MetricId = this.MetricId;
             lcExample.EntityId = this.EntityId;

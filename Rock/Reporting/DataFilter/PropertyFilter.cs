@@ -306,7 +306,7 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                        int intValue = values[1].AsInteger( false ) ?? int.MinValue;
+                        int intValue = values[1].AsIntegerOrNull() ?? int.MinValue;
                         ConstantExpression constantExpression = Expression.Constant( intValue );
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )

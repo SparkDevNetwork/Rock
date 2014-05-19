@@ -74,7 +74,7 @@ namespace Rock.Workflow.Action
                         string toValue = GetWorklowAttributeValue( action, guid );
                         if ( !string.IsNullOrWhiteSpace( toValue ) )
                         {
-                            switch ( attribute.FieldType.Name )
+                            switch ( attribute.FieldType.Class )
                             {
                                 case "Rock.Field.Types.TextFieldType":
                                     {
@@ -87,7 +87,7 @@ namespace Rock.Workflow.Action
                                         if ( !personAliasGuid.IsEmpty() )
                                         {
                                             to = new PersonAliasService( new RockContext() ).Queryable()
-                                                .Where( a => a.Guid.Equals( guid ) )
+                                                .Where( a => a.Guid.Equals( personAliasGuid ) )
                                                 .Select( a => a.Person.Email )
                                                 .FirstOrDefault();
                                             if ( !string.IsNullOrWhiteSpace( to ) )
@@ -105,9 +105,9 @@ namespace Rock.Workflow.Action
                 if ( recipients.Any() )
                 {
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Action", action.ToLiquid( false, false ) );
-                    mergeFields.Add( "Activity", action.Activity.ToLiquid( false, false ) );
-                    mergeFields.Add( "Workflow", action.Activity.Workflow.ToLiquid( false, false ) );
+                    mergeFields.Add( "Action", action );
+                    mergeFields.Add( "Activity", action.Activity );
+                    mergeFields.Add( "Workflow", action.Activity.Workflow );
 
                     var channelData = new Dictionary<string, string>();
                     channelData.Add( "From", GetAttributeValue( action, "From" ) );

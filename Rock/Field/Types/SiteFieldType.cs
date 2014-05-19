@@ -107,7 +107,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsInteger( false );
+            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
         }
 
         /// <summary>

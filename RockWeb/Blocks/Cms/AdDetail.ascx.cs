@@ -37,11 +37,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Ad Detail")]
     [Category("CMS")]
     [Description("Displays the details of an ad for public consuption.")]
-    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
-<h1>{{ MarketingCampaign.Title }}</h1><br/><br/>
-{{ SummaryText }}<br/><br/>
-{{ DetailHtml }}
-" )]
+    [CodeEditorField( "Layout", "The layout of the Ad details", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"{% include 'AdDetail' %}" )]
     public partial class AdDetail : Rock.Web.UI.RockBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -50,7 +46,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                int? adId = PageParameter( "Ad" ).AsInteger();
+                int? adId = PageParameter( "Ad" ).AsIntegerOrNull();
                 if ( adId.HasValue )
                 {
                     MarketingCampaignAd ad = new MarketingCampaignAdService( new RockContext() ).Get( adId.Value );
