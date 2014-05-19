@@ -220,7 +220,7 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var guid = Guid.Empty;
-                var id = picker.ItemId.AsInteger();
+                var id = picker.ItemId.AsIntegerOrNull();
                 var category = CategoryCache.Read( id ?? 0 );
 
                 if ( category != null )

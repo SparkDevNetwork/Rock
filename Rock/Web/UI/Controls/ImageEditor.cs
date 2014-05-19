@@ -495,7 +495,7 @@ namespace Rock.Web.UI.Controls
                 return bitmapContent;
             }
 
-            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal().Value ).ToArray();
+            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal() ).ToArray();
             int x = photoCoords[0];
             int y = photoCoords[1];
             int width = photoCoords[2];

@@ -14,3 +14,6 @@ Jump over to our [Rock website](http://www.rockrms.com/) to find out more. Keep 
 * [Following us on Twitter](http://www.twitter.com/therockrms)
 * [Liking us on Facebook](http://www.facebook.com/therockrms)
 * [Subscribing to our newsletter](http://www.rockrms.com/Rock/Subscribe)
+
+## License
+Rock released under the [Apache 2.0 license](http://www.apache.org/licenses/LICENSE-2.0.html).

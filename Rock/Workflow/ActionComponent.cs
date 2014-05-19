@@ -172,6 +172,28 @@ namespace Rock.Workflow
             return null;
         }
 
+        /// <summary>
+        /// Sets the workflow attribute value.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="value">The value.</param>
+        protected void SetWorkflowAttributeValue( WorkflowAction action, Guid guid, string value )
+        {
+            var testAttribute = AttributeCache.Read( guid );
+            if ( testAttribute != null )
+            {
+                string testAttributeValue = string.Empty;
+                if ( testAttribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
+                {
+                    action.Activity.Workflow.SetAttributeValue( testAttribute.Key, value );
+                }
+                else if ( testAttribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                {
+                    action.Activity.SetAttributeValue( testAttribute.Key, value );
+                }
+            }
+        }
 
     }
 }

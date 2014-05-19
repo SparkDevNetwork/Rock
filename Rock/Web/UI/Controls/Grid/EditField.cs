@@ -28,6 +28,30 @@ namespace Rock.Web.UI.Controls
     public class EditField : TemplateField, INotRowSelectedField
     {
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        public string IconCssClass
+        {
+            get
+            {
+                string iconCssClass = ViewState["IconCssClass"] as string;
+                if (string.IsNullOrWhiteSpace(iconCssClass))
+                {
+                    iconCssClass = "fa fa-pencil";
+                    ViewState["IconCssClass"] = iconCssClass;
+                }
+                return iconCssClass;
+            }
+            set
+            {
+                ViewState["IconCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EditField" /> class.
         /// </summary>
         public EditField()
@@ -36,7 +60,6 @@ namespace Rock.Web.UI.Controls
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             this.HeaderStyle.CssClass = "grid-columncommand";
             this.ItemStyle.CssClass = "grid-columncommand";
-
         }
 
         /// <summary>
@@ -113,7 +136,7 @@ namespace Rock.Web.UI.Controls
                 lbEdit.ToolTip = "Edit";
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                buttonIcon.Attributes.Add("class", "fa fa-pencil");
+                buttonIcon.Attributes.Add("class", editField.IconCssClass);
                 lbEdit.Controls.Add( buttonIcon );
 
                 lbEdit.Click += lbEdit_Click;

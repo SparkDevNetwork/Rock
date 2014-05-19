@@ -275,20 +275,11 @@ namespace Rock.Data
         /// </returns>
         public override object ToLiquid( bool debug )
         {
-            return ToLiquid(debug, true);
-        }
-
-        /// <summary>
-        /// To the liquid.
-        /// </summary>
-        /// <param name="debug">if set to <c>true</c> [debug].</param>
-        /// <param name="reloadAttributes">if set to <c>true</c> [reload attributes].</param>
-        /// <returns></returns>
-        public object ToLiquid( bool debug, bool reloadAttributes )
-        {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
-            if (reloadAttributes)
+            // Should only load attributes if they've never been loaded since some entities may have attribute 
+            // values needed in liquid merge that have not yet been saved.
+            if (this.Attributes == null)
             {
                 this.LoadAttributes();
             }

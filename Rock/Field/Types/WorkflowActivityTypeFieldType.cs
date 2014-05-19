@@ -109,7 +109,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
                 {
-                    editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString() ) );
                 }
             }
 

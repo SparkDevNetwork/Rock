@@ -144,7 +144,7 @@ namespace Rock.Model
             get
             {
                 return this.Actions
-                    .Where( a => a.IsActive )
+                    .Where( a => a.IsActive && !a.CompletedDateTime.HasValue )
                     .OrderBy( a => a.ActionType.Order );
             }
         }
@@ -230,7 +230,8 @@ namespace Rock.Model
         {
             if ( this.Workflow != null )
             {
-                this.Workflow.AddLogEntry( string.Format( "'{0}' Activity: {1}", this.ToString(), logEntry ) );
+                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ) );
             }
         }
 
@@ -251,7 +252,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActivityType.ToStringSafe(), this.Id );
+            return this.ActivityType.ToStringSafe();
         }
 
         #endregion

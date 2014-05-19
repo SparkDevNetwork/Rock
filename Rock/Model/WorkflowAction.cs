@@ -189,7 +189,11 @@ namespace Rock.Model
             if ( this.Activity != null &&
                 this.Activity.Workflow != null )
             {
-                this.Activity.Workflow.AddLogEntry( string.Format( "'{0}' Action: {1}", this.ToString(), logEntry ) );
+                string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
+                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+
+                this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
+                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ) );
             }
         }
 
@@ -210,7 +214,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActionType.ToStringSafe(), this.Id );
+            return this.ActionType.ToStringSafe();
         }
 
         #endregion

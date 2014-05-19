@@ -442,21 +442,22 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to integer.  Returns null if unsuccessful.
+        /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
+        public static int AsInteger( this string str)
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
+            return str.AsIntegerOrNull() ?? 0;
+        }
 
+        /// <summary>
+        /// Attempts to convert string to an integer.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static int? AsIntegerOrNull( this string str)
+        {
             int value;
             if ( int.TryParse( str, out value ) )
             {
@@ -507,21 +508,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to decimal.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static decimal AsDecimal( this string str )
+        {
+            return str.AsDecimalOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to decimal.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        public static decimal? AsDecimalOrNull( this string str)
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
@@ -540,21 +542,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to double.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static double AsDouble( this string str )
+        {
+            return str.AsDoubleOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to double.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static double? AsDouble( this string str, bool emptyStringAsZero = true )
+        public static double? AsDoubleOrNull( this string str)
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
@@ -624,6 +627,11 @@ namespace Rock
             if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
                 return content;
 
+            //// NOTE: This means that template filters will also use CSharpNamingConvention
+            //// For example the dotliquid documentation says to do this for formatting dates: 
+            //// {{ some_date_value | date:"MMM dd, yyyy" }}
+            //// However, if CSharpNamingConvention is enabled, it needs to be: 
+            //// {{ some_date_value | Date:"MMM dd, yyyy" }}
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
             Template template = Template.Parse( content );
 

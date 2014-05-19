@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class PeopleController : IHasCustomRoutes
     {
@@ -55,6 +55,24 @@ namespace Rock.Rest.Controllers
                 } );
 
             routes.MapHttpRoute(
+                name: "PeopleGetByEmail",
+                routeTemplate: "api/People/GetByEmail/{email}",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetByEmail"
+                } );
+
+            routes.MapHttpRoute(
+                name: "PeopleGetByPhoneNumber",
+                routeTemplate: "api/People/GetByPhoneNumber/{number}",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetByPhoneNumber"
+                } );
+
+            routes.MapHttpRoute(
                 name: "PeopleGetByUserName",
                 routeTemplate: "api/People/GetByUserName/{username}",
                 defaults: new
@@ -80,7 +98,6 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "GetPopupHtml"
                 } );
-
         }
 
         /// <summary>
@@ -130,7 +147,6 @@ namespace Rock.Rest.Controllers
 	</div>
 </div>
 ";
-
             Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
 
             // figure out Family, Address, Spouse
@@ -239,6 +255,34 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Searches the person entit(ies) by email.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public IQueryable<Person> GetByEmail( string email )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService( rockContext ).GetByEmail( email, true );
+        }
+
+        /// <summary>
+        /// Searches the person entit(ies) by phone number.
+        /// </summary>
+        /// <param name="number">The phone number.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        public IQueryable<Person> GetByPhoneNumber( string number )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            return new PersonService( rockContext ).GetByPhonePartial( number, true );
+        }
+
+        /// <summary>
         /// Gets the name of the by user.
         /// </summary>
         /// <param name="username">The username.</param>
@@ -247,7 +291,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         public Person GetByUserName( string username )
         {
-            int? personId = new UserLoginService( ( Rock.Data.RockContext )Service.Context ).Queryable()
+            int? personId = new UserLoginService( (Rock.Data.RockContext)Service.Context ).Queryable()
                 .Where( u => u.UserName.Equals( username ) )
                 .Select( a => a.PersonId )
                 .FirstOrDefault();
@@ -297,8 +341,8 @@ namespace Rock.Rest.Controllers
 
             // Create new service (need ProxyServiceEnabled)
             var rockContext = new Rock.Data.RockContext();
-            var person = new PersonService(rockContext).Queryable("ConnectionStatusValue, PhoneNumbers")
-                .Where(p => p.Id == personId)
+            var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                .Where( p => p.Id == personId )
                 .FirstOrDefault();
 
             if ( person != null )
@@ -342,7 +386,7 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class PersonSearchResult
     {

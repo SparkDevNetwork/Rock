@@ -143,10 +143,10 @@ namespace RockWeb.Blocks.Reporting
             var qry = metricValueService.Queryable();
 
             // in case called normally
-            int? metricId = PageParameter( "MetricId" ).AsInteger( false );
+            int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
 
             // in case called from CategoryTreeView
-            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsInteger( false );
+            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
             MetricCategory metricCategory = null;
             if ( metricCategoryId.HasValue )
             {

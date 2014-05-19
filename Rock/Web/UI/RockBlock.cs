@@ -304,14 +304,30 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Flushes an object from the cache
+        /// Flushes an object from the cache.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the the key name for the item that will be flushed. This value 
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
         /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
+        }
+
+        /// <summary>
+        /// Flushes a block from all places in the cache (layouts, pages, etc.).
+        /// NOTE: Retrieving an enumerator for a MemoryCache instance is a resource-intensive and blocking operation. 
+        /// Therefore, it should not be used in production applications (if possible).
+        /// </summary>
+        /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
+        protected virtual void FlushSharedBlock( int blockId )
+        {
+            MemoryCache cache = MemoryCache.Default;
+            string blockKey = string.Format( ":RockBlock:{0}:", blockId );
+            foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
+            {
+                cache.Remove( keyValuePair.Key);
+            }
         }
 
         /// <summary>

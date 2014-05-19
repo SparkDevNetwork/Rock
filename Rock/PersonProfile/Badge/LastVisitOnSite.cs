@@ -51,7 +51,7 @@ namespace Rock.PersonProfile.Badge
         /// <param name="writer">The writer.</param>
         public override void Render( PersonBadgeCache badge, System.Web.UI.HtmlTextWriter writer )
         {
-            int? siteId = GetAttributeValue( badge, "Site" ).AsInteger( false );
+            int? siteId = GetAttributeValue( badge, "Site" ).AsIntegerOrNull();
             if ( siteId.HasValue )
             {
                 var site = Rock.Web.Cache.SiteCache.Read( siteId.Value );
