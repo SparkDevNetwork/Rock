@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,30 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.Migrations
+namespace Rock.Data
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
-    ///
+    /// Represents a class for migrations
     /// </summary>
-    public partial class AddPageTitleColumnToPageViews : Rock.Migrations.RockMigration4
+    public interface IMigration
     {
         /// <summary>
-        /// Operations to be performed during the upgrade process.
+        /// Method to run a SQL statement.
         /// </summary>
-        public override void Up()
-        {
-            AddColumn("dbo.PageView", "PageTitle", c => c.String(maxLength: 500));
-        }
-        
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()
-        {
-            DropColumn("dbo.PageView", "PageTitle");
-        }
+        /// <param name="sql">The SQL statement.</param>
+        void Sql( string sql );
     }
 }

@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddSPForNullingPageViewPageIds : Rock.Migrations.RockMigration
+    public partial class AddSPForNullingPageViewPageIds : Rock.Migrations.RockMigration4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

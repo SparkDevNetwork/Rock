@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class NewPersonAndRecipientFields : Rock.Migrations.RockMigration
+    public partial class NewPersonAndRecipientFields : Rock.Migrations.RockMigration4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
