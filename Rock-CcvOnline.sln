@@ -1,11 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(1)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "http://localhost:50345", "{22348267-9BDF-4B5E-BB6E-37B5FA770224}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
 		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.CcvOnline.SampleProject.dll;{83775A9E-0455-4801-B1EF-DC70D786D09B}|com.CcvOnline.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
