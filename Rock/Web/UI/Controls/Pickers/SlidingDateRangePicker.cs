@@ -20,6 +20,7 @@ using System.Linq;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -223,7 +224,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            // "0" = Last, "1" = Current
+            // "-1" = All, "0" = Last, "1" = Current
             _nbNumber.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
             _ddlTimeUnitTypeSingular.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "1" ) ? string.Empty : "none";
             _ddlTimeUnitTypePlural.Style[HtmlTextWriterStyle.Display] = ( _ddlLastCurrent.SelectedValue == "0" ) ? string.Empty : "none";
@@ -246,6 +247,7 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
             _ddlLastCurrent.Items.Clear();
+            _ddlLastCurrent.Items.Add( new ListItem( string.Empty, LastCurrentType.All.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( LastCurrentType.Last.ConvertToString(), LastCurrentType.Last.ConvertToInt().ToString() ) );
             _ddlLastCurrent.Items.Add( new ListItem( LastCurrentType.Current.ConvertToString(), LastCurrentType.Current.ConvertToInt().ToString() ) );
 
@@ -266,8 +268,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum LastCurrentType
         {
-            Last,
-            Current
+            All = -1,
+            Last = 0,
+            Current = 1
         }
 
         /// <summary>
@@ -275,11 +278,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum TimeUnitType
         {
-            Hour,
-            Day,
-            Week,
-            Month,
-            Year
+            Hour = 0,
+            Day = 1,
+            Week = 2,
+            Month = 3,
+            Year = 4
         }
 
         /// <summary>
@@ -331,11 +334,17 @@ namespace Rock.Web.UI.Controls
                         $('#{0}').siblings('.js-time-units-singular').show();
                         $('#{0}').siblings('.js-time-units-plural').hide();
                     }}
-                    else {{
+                    else if ($('#{0}').val() == '0') {{
                         // last x ...
                         $('#{0}').siblings('.js-number').show();    
                         $('#{0}').siblings('.js-time-units-singular').hide();
                         $('#{0}').siblings('.js-time-units-plural').show();
+                    }}
+                    else {{
+                        // all    
+                        $('#{0}').siblings('.js-number').hide();
+                        $('#{0}').siblings('.js-time-units-singular').hide();
+                        $('#{0}').siblings('.js-time-units-plural').hide();
                     }}
                 }});
 ";
@@ -413,6 +422,155 @@ namespace Rock.Web.UI.Controls
                 _ddlTimeUnitTypePlural.SelectedValue = value.ConvertToInt().ToString();
                 _ddlTimeUnitTypeSingular.SelectedValue = value.ConvertToInt().ToString();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the LastOrCurrent, NumberOfTimeUnits, and TimeUnit values by specifying pipe-delimited values
+        /// </summary>
+        /// <value>
+        /// The delimited values.
+        /// </value>
+        public string DelimitedValues
+        {
+            get
+            {
+                return string.Format( "{0}|{1}|{2}", this.LastOrCurrent, this.NumberOfTimeUnits, this.TimeUnit );
+            }
+
+            set
+            {
+                string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+                if ( splitValues.Length == 3 )
+                {
+                    this.LastOrCurrent = splitValues[0].ConvertToEnum<LastCurrentType>();
+                    this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                    this.TimeUnit = splitValues[2].ConvertToEnum<TimeUnitType>();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Formats the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatDelimitedValues( string value )
+        {
+            string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+            string result = string.Empty;
+            if ( splitValues.Length == 3 )
+            {
+                var lastOrCurrent = splitValues[0].ConvertToEnum<LastCurrentType>();
+                var numberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                var timeUnit = splitValues[2].ConvertToEnum<TimeUnitType>();
+                if ( lastOrCurrent == LastCurrentType.Current )
+                {
+                    return string.Format( "{0} {1}", lastOrCurrent.ConvertToString(), timeUnit.ConvertToString() );
+                }
+                else
+                {
+                    return string.Format( "{0} {1} {2}", lastOrCurrent.ConvertToString(), numberOfTimeUnits, timeUnit.ConvertToString() );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the date range from delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static DateRange CalculateDateRangeFromDelimitedValues( string value )
+        {
+            string[] splitValues = ( value ?? "1||4" ).Split( '|' );
+            DateRange result = new DateRange();
+            if ( splitValues.Length == 3 )
+            {
+                var lastOrCurrent = splitValues[0].ConvertToEnum<LastCurrentType>();
+                var numberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                var timeUnit = splitValues[2].ConvertToEnum<TimeUnitType>();
+                DateTime currentDateTime = RockDateTime.Now;
+                if ( lastOrCurrent == LastCurrentType.Current )
+                {
+                    switch ( timeUnit )
+                    {
+                        case TimeUnitType.Hour:
+                            result.Start = new DateTime( currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, currentDateTime.Hour, 0, 0 );
+                            result.End = result.Start.Value.AddHours( 1 );
+                            break;
+
+                        case TimeUnitType.Day:
+                            result.Start = currentDateTime.Date;
+                            result.End = result.Start.Value.AddDays( 1 );
+                            break;
+
+                        case TimeUnitType.Week:
+
+                            // from http://stackoverflow.com/a/38064/1755417
+                            int diff = currentDateTime.DayOfWeek - DayOfWeek.Sunday;
+                            if ( diff > 0 )
+                            {
+                                diff += 7;
+                            }
+
+                            result.Start = currentDateTime.AddDays( -1 * diff ).Date;
+                            result.End = result.Start.Value.AddDays( 7 );
+                            break;
+
+                        case TimeUnitType.Month:
+                            result.Start = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 );
+                            result.End = result.Start.Value.AddMonths( 1 );
+                            break;
+
+                        case TimeUnitType.Year:
+                            result.Start = new DateTime( currentDateTime.Year, 1, 1 );
+                            result.End = new DateTime( currentDateTime.Year + 1, 1, 1 );
+                            break;
+                    }
+                }
+                else if ( lastOrCurrent == LastCurrentType.Last )
+                {
+                    // Last X Days/Hours, 
+                    int addCount = numberOfTimeUnits;
+                    switch ( timeUnit )
+                    {
+                        case TimeUnitType.Hour:
+                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, currentDateTime.Day, currentDateTime.Hour, 0, 0 ).AddHours( 1 );
+                            result.Start = result.End.Value.AddHours( -addCount );
+                            break;
+
+                        case TimeUnitType.Day:
+                            result.End = currentDateTime.Date.AddDays( 1 );
+                            result.Start = result.End.Value.AddDays( -addCount );
+                            break;
+
+                        case TimeUnitType.Week:
+                            // from http://stackoverflow.com/a/38064/1755417
+                            int diff = currentDateTime.DayOfWeek - DayOfWeek.Sunday;
+                            if ( diff < 0 )
+                            {
+                                diff += 7;
+                            }
+
+                            result.End = currentDateTime.AddDays( -1 * diff ).Date.AddDays( 7 );
+                            result.Start = result.End.Value.AddDays( -addCount * 7 );
+                            break;
+
+                        case TimeUnitType.Month:
+                            result.End = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( 1 );
+                            result.Start = result.End.Value.AddMonths( -addCount );
+                            break;
+
+                        case TimeUnitType.Year:
+                            result.End = new DateTime( currentDateTime.Year, 1, 1 ).AddYears( 1 );
+                            result.Start = result.End.Value.AddYears( -addCount );
+                            break;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

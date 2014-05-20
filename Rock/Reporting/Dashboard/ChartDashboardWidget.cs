@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -32,7 +33,8 @@ namespace Rock.Reporting.Dashboard
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
     [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 6 )]
+    [SlidingDateRangeField( "Date Range", Key="SlidingDateRange", DefaultValue = "1||4", Order = 6 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
     public abstract class ChartDashboardWidget : DashboardWidget
     {
         /// <summary>
@@ -234,7 +236,7 @@ namespace Rock.Reporting.Dashboard
                         try
                         {
                             definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.GetAttributeValue( "ChartStyle" ) );
+                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
                         }
                         catch ( Exception ex )
                         {
@@ -245,6 +247,20 @@ namespace Rock.Reporting.Dashboard
                 }
 
                 return new ChartStyle();
+            }
+        }
+
+        /// <summary>
+        /// Gets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "1||4" );
             }
         }
     }
