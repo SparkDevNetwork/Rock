@@ -26,8 +26,7 @@ namespace Rock.Workflow.Action
     /// </summary>
     [WorkflowAttribute( "Test Attribute", "An optional attribute to test the value of before performing action.", false, "", "Compare", 0 )]
     [ComparisonField( "Compare Type", "Type of comparison to perform between Test Attribute and Compare Text or Compare Attribute.", false, "", "Compare", 1 )]
-    [TextField( "Compare Text", "An optional value to compare the Test Attribute with before performing action.", false, "", "Compare", 2 )]
-    [WorkflowAttribute( "Compare Attribute", "An optional attribute to compare the Test Attribute with before performing action.", false, "", "Compare", 3 )]
+    [WorkflowTextOrAttribute( "Compare With Text", "Attribute Value", "An optional text value or attribute to compare the Test Attribute with before performing action.", false, "", "Compare", 2, "CompareTo" )]
     public abstract class CompareAction : ActionComponent
     {
         /// <summary>
@@ -51,15 +50,17 @@ namespace Rock.Workflow.Action
                 {
                     var compareType = compare.ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
 
-                    var compareValue = GetAttributeValue( action, "CompareText" );
-                    if ( testValue.CompareTo( compareValue, compareType ) )
+                    var compareValue = GetAttributeValue( action, "CompareTo" );
+                    guid = compareValue.AsGuid();
+                    if ( guid.IsEmpty() )
                     {
-                        return true;
+                        return testValue.CompareTo( compareValue, compareType );
                     }
-
-                    guid = GetAttributeValue( action, "CompareAttribute" ).AsGuid();
-                    compareValue = GetWorklowAttributeValue( action, guid );
-                    return testValue.CompareTo( compareValue, compareType );
+                    else
+                    {
+                        compareValue = GetWorklowAttributeValue( action, guid );
+                        return testValue.CompareTo( compareValue, compareType );
+                    }
                 }
             }
 

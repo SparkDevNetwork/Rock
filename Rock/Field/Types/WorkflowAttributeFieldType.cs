@@ -28,7 +28,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of Defined Values for a specific Defined Type
+    /// Field Type used to display a dropdown list of attributes for a specific workflow Type
     /// </summary>
     [Serializable]
     public class WorkflowAttributeFieldType : FieldType
