@@ -47,11 +47,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             lcExample.CombineValues = this.CombineValues;
 
             lcExample.ShowTooltip = true;
-            
+
             lcExample.Options.SetChartStyle( this.ChartStyle );
 
             string debug = this.ChartStyle.ToJson( false );
-            
+
             nbMetricWarning.Visible = !this.MetricId.HasValue;
         }
     }

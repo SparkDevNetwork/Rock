@@ -14,10 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
+using System.Web.UI;
+using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -28,21 +32,74 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Liquid Dashboard Widget" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget from Liquid using YTD metric values" )]
-
-    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 3, DefaultValue =
+    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", Order=3)]
+    [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4)]
+    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 5, DefaultValue =
 @"
 {% for metric in Metrics %}
     <h1>{{ metric.Title }}</h1>
     <h4>{{ metric.Subtitle }}</h4>
     <p>{{ metric.Description }}</p>
-    <div>    
-    <i class='{{ metric.IconCssClass }}'></i>
+    <div class='row'>    
+        <div class='col-md-6'>
+            {{ metric.LastValueDate | Date: 'MMM' }}
+              <span style='font-size:40px'>{{ metric.LastValue }}</span>
+            <p>YTD {{ metric.CumulativeValue }} GOAL {{ metric.GoalValue }}</p>
+        </div>
+        <div class='col-md-6'>
+            <i class='{{ metric.IconCssClass }} fa-5x'></i>
+        </div>
     </div>
 {% endfor %}
 " )]
-    [MetricsField( "Metrics", "Select the metric(s) to be made available to liquid", Order = 4 )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 5 )]
+    
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 6 )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {
+        public string RestUrl
+        {
+            get
+            {
+                string result = ResolveUrl( "~/api/Metrics/GetHtmlForBlock/" ) + this.BlockId.ToString();
+                string[] entityValues = (GetAttributeValue( "Entity" ) ?? "").Split( '|' );
+                if ( entityValues.Length == 2 )
+                {
+                    var entityType = EntityTypeCache .Read(entityValues[0].AsGuid());
+                    if (entityType != null)
+                    {
+                        result += string.Format("?entityTypeId={0}", entityType.Id);
+                        int? entityId = entityValues[1].AsIntegerOrNull();
+                        if ( entityId.HasValue )
+                        {
+                            result += string.Format( "&entityId={0}", entityId );
+                        }
+                    }
+                }
+                else
+                {
+                    if ( this.ContextEntity() != null )
+                    {
+                        var entityType = EntityTypeCache.Read( this.ContextEntity().GetType(), false );
+                        if ( entityType != null )
+                        {
+                            result += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
+        
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( System.EventArgs e )
+        {
+            base.OnLoad( e );
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
+        }
     }
 }

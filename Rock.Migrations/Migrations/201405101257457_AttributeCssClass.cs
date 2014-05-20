@@ -31,16 +31,16 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.Attribute", "IconCssClass", c => c.String());
 
-            UpdateEntityType("Rock.Model.Person", "72657ED8-D16E-492E-AC12-144C5E7567E7", true, true);
-            UpdateCategory( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Social Media",  "fa fa-users", "A person's social media identifiers", "DD8F467D-B83C-444F-B04C-C681167046A1");
-            UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Facebook", "Facebook", "fa fa-fw fa-facebook", "Link to person's Facebook profile page", 0, "", "2B8A03D3-B7DC-4DA3-A31E-826D655435D5" );
-            UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Twitter", "Twitter", "fa fa-fw fa-twitter", "Link to person's Twitter page", 1, "", "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F" );
-            UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Instagram", "Instagram", "fa fa-fw fa-instagram", "Link to person's Instagram page", 2, "", "8796567C-4047-43C1-AF32-2FDBE030BEAC" );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.Person", "72657ED8-D16E-492E-AC12-144C5E7567E7", true, true );
+            RockMigrationHelper.UpdateCategory( "72657ED8-D16E-492E-AC12-144C5E7567E7", "Social Media", "fa fa-users", "A person's social media identifiers", "DD8F467D-B83C-444F-B04C-C681167046A1" );
+            RockMigrationHelper.UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Facebook", "Facebook", "fa fa-fw fa-facebook", "Link to person's Facebook profile page", 0, "", "2B8A03D3-B7DC-4DA3-A31E-826D655435D5" );
+            RockMigrationHelper.UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Twitter", "Twitter", "fa fa-fw fa-twitter", "Link to person's Twitter page", 1, "", "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F" );
+            RockMigrationHelper.UpdatePersonAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "DD8F467D-B83C-444F-B04C-C681167046A1", "Instagram", "Instagram", "fa fa-fw fa-instagram", "Link to person's Instagram page", 2, "", "8796567C-4047-43C1-AF32-2FDBE030BEAC" );
 
             // Add Block to Page: Extended Attributes, Site: Rock RMS
-            AddBlock( "1C737278-4CBA-404B-B6B3-E3F0E05AB5FE", "", "D70A59DC-16BE-43BE-9880-59598FA7A94C", "Attribute Values", "SectionB1", "", "", 1, "DCA9E640-B5EA-4C73-90BC-4A91330528D5" );
+            RockMigrationHelper.AddBlock( "1C737278-4CBA-404B-B6B3-E3F0E05AB5FE", "", "D70A59DC-16BE-43BE-9880-59598FA7A94C", "Attribute Values", "SectionB1", "", "", 1, "DCA9E640-B5EA-4C73-90BC-4A91330528D5" );
             // Attrib Value for Block:Attribute Values, Attribute:Category Page: Extended Attributes, Site: Rock RMS
-            AddBlockAttributeValue( "DCA9E640-B5EA-4C73-90BC-4A91330528D5", "EC43CF32-3BDF-4544-8B6A-CE9208DD7C81", @"DD8F467D-B83C-444F-B04C-C681167046A1" );
+            RockMigrationHelper.AddBlockAttributeValue( "DCA9E640-B5EA-4C73-90BC-4A91330528D5", "EC43CF32-3BDF-4544-8B6A-CE9208DD7C81", @"DD8F467D-B83C-444F-B04C-C681167046A1" );
 
             Sql( @"
     UPDATE [Attribute] SET 
@@ -1660,11 +1660,11 @@ namespace Rock.Migrations
     DELETE [DataViewFilter] WHERE [Guid] = 'f1544655-2443-4b42-a750-d609aeddaac8'
 " );
 
-            DeleteBlock( "DCA9E640-B5EA-4C73-90BC-4A91330528D5" );
-            DeleteAttribute( "8796567C-4047-43C1-AF32-2FDBE030BEAC" );
-            DeleteAttribute( "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F" );
-            DeleteAttribute( "2B8A03D3-B7DC-4DA3-A31E-826D655435D5" );
-            DeleteCategory( "DD8F467D-B83C-444F-B04C-C681167046A1" );
+            RockMigrationHelper.DeleteBlock( "DCA9E640-B5EA-4C73-90BC-4A91330528D5" );
+            RockMigrationHelper.DeleteAttribute( "8796567C-4047-43C1-AF32-2FDBE030BEAC" );
+            RockMigrationHelper.DeleteAttribute( "12E9C8A7-03E4-472D-9E20-9EC8F3453B2F" );
+            RockMigrationHelper.DeleteAttribute( "2B8A03D3-B7DC-4DA3-A31E-826D655435D5" );
+            RockMigrationHelper.DeleteCategory( "DD8F467D-B83C-444F-B04C-C681167046A1" );
 
             DropColumn( "dbo.Attribute", "IconCssClass" );
         }

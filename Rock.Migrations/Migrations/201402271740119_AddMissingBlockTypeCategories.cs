@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddMissingBlockTypeCategories : Rock.Migrations.RockMigration
+    public partial class AddMissingBlockTypeCategories : Rock.Migrations.RockMigration4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
