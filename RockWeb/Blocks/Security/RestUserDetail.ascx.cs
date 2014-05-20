@@ -63,6 +63,23 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            // Save the user
+            NavigateToParentPage();
+        }
+
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            NavigateToParentPage();
+        }
+
+        protected void lbGenerate_Click( object sender, EventArgs e )
+        {
+            // Generate a unique 12 digit api key
+            
+        }
+
         #endregion Events
 
         #region Internal Methods
@@ -73,17 +90,5 @@ namespace RockWeb.Blocks.Security
         }
 
         #endregion Internal Methods
-        protected void lbSave_Click( object sender, EventArgs e )
-        {
-
-        }
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-
-        }
-        protected void lbGenerate_Click( object sender, EventArgs e )
-        {
-
-        }
-}
+    }
 }
