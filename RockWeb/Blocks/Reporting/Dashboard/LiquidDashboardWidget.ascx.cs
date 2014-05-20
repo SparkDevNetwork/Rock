@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -56,6 +54,12 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 7 )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {
+        /// <summary>
+        /// Gets the rest URL.
+        /// </summary>
+        /// <value>
+        /// The rest URL.
+        /// </value>
         public string RestUrl
         {
             get

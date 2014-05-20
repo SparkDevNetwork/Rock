@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Web.UI;
-
-using Rock;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
 
@@ -46,12 +43,31 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             lcExample.Subtitle = this.Subtitle;
             lcExample.CombineValues = this.CombineValues;
             lcExample.ShowTooltip = true;
+            lcExample.ChartClick += lcExample_ChartClick;
 
             lcExample.Options.SetChartStyle( this.ChartStyle );
 
             string debug = this.ChartStyle.ToJson( false );
 
             nbMetricWarning.Visible = !this.MetricId.HasValue;
+        }
+
+        /// <summary>
+        /// Lcs the example_ chart click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        public void lcExample_ChartClick( object sender, Rock.Web.UI.Controls.FlotChart.ChartClickArgs e )
+        {
+            if (this.DetailPageGuid.HasValue)
+            {
+                Dictionary<string, string> qryString = new Dictionary<string,string>();
+                qryString.Add( "MetricId", this.MetricId.ToString() );
+                qryString.Add( "SeriesId", e.SeriesId );
+                qryString.Add( "YValue", e.YValue.ToString() );
+                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString("o") );
+                NavigateToPage( this.DetailPageGuid.Value, qryString );
+            }
         }
     }
 }
