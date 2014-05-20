@@ -46,7 +46,8 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var message = GetAttributeValue( action, "Message" );
+            var message = GetAttributeValue( action, "Message" ).ResolveMergeFields( GetMergeFields( action ) );
+
             action.Activity.Workflow.AddLogEntry( message );
 
             return true;
