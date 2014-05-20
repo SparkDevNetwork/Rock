@@ -16,7 +16,7 @@
                             <div class="col-sm-6">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" />
+                                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" />
                                     </div>
                                 </div>
                             </div>
@@ -33,7 +33,7 @@
                         <Rock:RockTextBox ID="tbKey" runat="server" Label="Key" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary" OnClick="lbGenerate_Click"  />
+                        <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary" OnClick="lbGenerate_Click" />
                     </div>
                 </div>
                 <div class="actions">
