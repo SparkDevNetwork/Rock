@@ -22,17 +22,18 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a dropdown list of activity types for a specific workflow type
+    /// Field Type used to display a textbox and a dropdown list of attributes for a specific workflow Type
     /// </summary>
     [Serializable]
-    public class WorkflowActivityFieldType : FieldType
+    public class WorkflowTextOrAttributeFieldType : FieldType
     {
-        private const string WORKFLOW_TYPE_KEY = "WorkflowType";
+        private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -44,26 +45,24 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
+            string formattedValue = value;
 
             Guid guid = value.AsGuid();
             if (!guid.IsEmpty())
             { 
-                var workflowType = GetContextWorkflowType();
-                if (workflowType != null)
+                var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
+                if ( workflowTypeAttributes != null && workflowTypeAttributes.ContainsKey(guid) )
                 {
-                    formattedValue = workflowType.ActivityTypes
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    formattedValue = workflowTypeAttributes[guid];
                 }
 
                 if (string.IsNullOrWhiteSpace(formattedValue))
                 {
-                    formattedValue = new WorkflowActivityTypeService(new RockContext()).Queryable()
-                        .Where( a => a.Guid.Equals( guid ) )
-                        .Select( a => a.Name )
-                        .FirstOrDefault();
+                    var attributeCache = AttributeCache.Read( guid );
+                    if (attributeCache != null)
+                    {
+                        formattedValue = attributeCache.Name;
+                    }
                 }
             }
 
@@ -81,35 +80,16 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ListControl editControl;
+            var editControl = new Rock.Web.UI.Controls.RockTextOrDropDownList { ID = id };
 
-            editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id };
-            editControl.Items.Add( new ListItem() );
+            editControl.DropDownList.Items.Add( new ListItem() );
 
-            IEnumerable<WorkflowActivityType> activityTypes = null;
-
-            var workflowType = GetContextWorkflowType();
-            if ( workflowType != null )
+            var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
+            if ( workflowTypeAttributes != null )
             {
-                activityTypes = workflowType.ActivityTypes;
-            }
-
-            if (activityTypes == null && configurationValues != null && configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) )
-            {
-                Guid workflowTypeGuid = configurationValues[WORKFLOW_TYPE_KEY].Value.AsGuid();
-                if ( !workflowTypeGuid.IsEmpty() )
+                foreach ( var attribute in workflowTypeAttributes )
                 {
-                    activityTypes = new WorkflowActivityTypeService( new RockContext() )
-                        .Queryable()
-                        .Where( t => t.WorkflowType.Guid.Equals( workflowTypeGuid ) );
-                }
-            }
-
-            if (activityTypes != null && activityTypes.Any() )
-            {
-                foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
-                {
-                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString() ) );
+                    editControl.DropDownList.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
                 }
             }
 
@@ -124,9 +104,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( control != null && control is RockDropDownList )
+            if ( control != null && control is RockTextOrDropDownList )
             {
-                return ( (RockDropDownList)control ).SelectedValue;
+                return ( (RockTextOrDropDownList)control ).SelectedValue;
             }
 
             return string.Empty;
@@ -142,19 +122,19 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                if ( control != null && control is RockDropDownList )
+                if ( control != null && control is RockTextOrDropDownList )
                 {
-                    ( (RockDropDownList)control ).SetValue( value );
+                    ( (RockTextOrDropDownList)control ).SelectedValue = value;
                 }
             }
         }
 
-        private WorkflowType GetContextWorkflowType()
+        private Dictionary<Guid, string> GetContextWorkflowTypeAttributes()
         {
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
-                return httpContext.Items[WORKFLOW_TYPE_KEY] as WorkflowType;
+                return httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, string>;
             }
 
             return null;
