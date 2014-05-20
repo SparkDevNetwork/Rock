@@ -393,6 +393,17 @@ javascript:
             _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Text = "Activated with Workflow" };
             Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
             _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
+            checkboxScriptFormat = @"
+javascript: 
+    if ($(this).is(':checked')) {{ 
+        $('#{0}').addClass('activated-with-workflow'); 
+    }} 
+    else {{ 
+        $('#{0}').removeClass('activated-with-workflow'); 
+    }}
+";
+            _cbActivityTypeIsActivatedWithWorkflow.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, this.ID + "_section" ) );
+
 
             _lbAddActionType = new LinkButton();
             Controls.Add( _lbAddActionType );
@@ -463,16 +474,11 @@ javascript:
                         break;
                     }
                 }
-            } 
-            
-            if ( _cbActivityTypeIsActive.Checked )
-            {
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-widget workflow-activity");
             }
-            else
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel workflow-activity workflow-activity-inactive" );
-            }
+
+            string inactiveCss = _cbActivityTypeIsActive.Checked ? string.Empty : " workflow-activity-inactive";
+            string activatedWithWorkflowCss = _cbActivityTypeIsActivatedWithWorkflow.Checked ? " activated-with-workflow" : string.Empty;
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget workflow-activity" + inactiveCss + activatedWithWorkflowCss );
 
             writer.AddAttribute( "data-key", _hfActivityTypeGuid.Value );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
