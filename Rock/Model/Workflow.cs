@@ -305,6 +305,7 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
+            Status = "Completed";
             AddSystemLogEntry( "Completed" );
         }
 
@@ -384,7 +385,7 @@ namespace Rock.Model
             workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
             workflow.Name = name ?? workflowType.Name;
-            workflow.Status = "Activated";
+            workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;
             workflow.LoadAttributes();

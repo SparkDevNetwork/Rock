@@ -29,8 +29,24 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class WorkflowFormActionList : HiddenField
+    public class WorkflowFormActionList : CompositeControl
     {
+
+        #region Controls
+
+        private HiddenField _hfValue;
+        private List<RockTextBox> _actionControls;
+        private List<RockTextBox> _cssClassControls;
+        private List<RockDropDownList> _activityControls;
+        private List<RockTextBox> _responseControls;
+
+        #endregion
+
+        public WorkflowFormActionList()
+        {
+            _hfValue = new HiddenField();
+        }
+
         /// <summary>
         /// Gets or sets the available activities
         /// </summary>
@@ -43,6 +59,85 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Activities"] = value; }
         }
 
+        public string Value
+        {
+            get
+            {
+                return _hfValue.Value;
+            }
+            set
+            {
+                _hfValue.Value = value;
+                RecreateChildControls();
+            }
+        }
+
+        protected override void CreateChildControls()
+        {
+            Controls.Clear();
+
+            _hfValue.ID = this.ID + "_hfValue";
+            Controls.Add( _hfValue );
+
+            _actionControls = new List<RockTextBox>();
+            _cssClassControls = new List<RockTextBox>();
+            _activityControls = new List<RockDropDownList>();
+            _responseControls = new List<RockTextBox>();
+
+            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            for ( int i = 0; i < nameValues.Length; i++ )
+            {
+                string[] nameValueResponse = nameValues[i].Split( new char[] { '^' } );
+
+                var tbAction = new RockTextBox();
+                tbAction.ID = this.ID + "_tbAction" + i.ToString();
+                Controls.Add( tbAction );
+                tbAction.Placeholder = "Action";
+                tbAction.AddCssClass( "form-action-key" );
+                tbAction.AddCssClass( "form-control" );
+                tbAction.AddCssClass( "js-form-action-input" );
+                tbAction.Text = nameValueResponse.Length > 0 ? nameValueResponse[0] : string.Empty;
+                _actionControls.Add( tbAction );
+
+                var tbCssClass = new RockTextBox();
+                tbCssClass.ID = this.ID + "_tbCssClass" + i.ToString();
+                Controls.Add( tbCssClass );
+                tbCssClass.Placeholder = "btn btn-primary";
+                tbCssClass.AddCssClass( "form-action-css" );
+                tbCssClass.AddCssClass( "form-control" );
+                tbCssClass.AddCssClass( "js-form-action-input" );
+                tbCssClass.Text = nameValueResponse.Length > 1 ? nameValueResponse[1] : string.Empty;
+                _cssClassControls.Add( tbCssClass );
+
+                var ddlActivity = new RockDropDownList();
+                ddlActivity.ID = this.ID + "_ddlActivity" + i.ToString();
+                Controls.Add( ddlActivity );
+                ddlActivity.AddCssClass( "form-action-value" );
+                ddlActivity.AddCssClass( "form-control" );
+                ddlActivity.AddCssClass( "js-form-action-input" );
+                ddlActivity.DataTextField = "Value";
+                ddlActivity.DataValueField = "Key";
+                ddlActivity.DataSource = Activities;
+                ddlActivity.DataBind();
+                ddlActivity.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+                foreach(ListItem li in ddlActivity.Items)
+                {
+                    li.Selected = nameValueResponse.Length > 2 && li.Value == nameValueResponse[2];
+                }
+                _activityControls.Add( ddlActivity );
+
+                var tbResponse = new RockTextBox();
+                tbResponse.ID = this.ID + "_tbResponse" + i.ToString();
+                Controls.Add( tbResponse );
+                tbResponse.Placeholder = "Response Text";
+                tbResponse.AddCssClass( "form-action-response" );
+                tbResponse.AddCssClass( "form-control" );
+                tbResponse.AddCssClass( "js-form-action-input" );
+                tbResponse.Text = nameValueResponse.Length > 3 ? nameValueResponse[3] : string.Empty;
+                _responseControls.Add( tbResponse );
+            }
+
+        }
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -52,18 +147,19 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            base.RenderControl( writer );
+            _hfValue.RenderControl( writer );
 
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""row"">" );
             valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-key form-control js-form-action-input"" type=""text"" placeholder=""Action""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-css form-control js-form-action-input"" type=""text"" placeholder=""CSS Class""></input></div>" );
             valueHtml.Append( @"<div class=""col-sm-3""><select class=""form-action-value form-control js-form-action-input""><option value=""""></option>" );
             foreach ( var activity in Activities )
             {
                 valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", activity.Key, activity.Value );
             }
             valueHtml.Append( @"</select></div>" );
-            valueHtml.Append( @"<div class=""col-sm-6""><input class=""form-action-response form-control js-form-action-input"" type=""text"" placeholder=""Response""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-4""><input class=""form-action-response form-control js-form-action-input"" type=""text"" placeholder=""Response Text""></input></div>" );
             valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-sm btn-danger form-action-remove""><i class=""fa fa-minus-circle""></i></a></div></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
@@ -71,56 +167,85 @@ namespace Rock.Web.UI.Controls
             hfValueHtml.Value = valueHtml.ToString();
             hfValueHtml.RenderControl( writer );
 
+            // Write Header row
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Write Action
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "Action" );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // Write Css
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "CSS Class" );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // Write Activity Value
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "Activate Activity" );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // Write Response
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Label );
+            writer.Write( "Response Text" );
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // Write Remove Button
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();  // Div
+
+            writer.RenderEndTag();  // Div.row
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-rows" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.WriteLine();
 
-            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-            foreach ( string nameValue in nameValues )
+            for (int i = 0; i < _actionControls.Count; i++)
             {
-                string[] nameValueResponse = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Write Name
+                // Write Action
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-key form-control js-form-action-input" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Value, nameValueResponse.Length >= 1 ? nameValueResponse[0] : string.Empty );
-                writer.AddAttribute( "placeholder", "Action" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                writer.RenderEndTag();  // Input
-                writer.RenderEndTag();  // Div
+                _actionControls[i].RenderControl( writer );
+                writer.RenderEndTag();  
 
-                // Write Value
+                // Write Css
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cssClassControls[i].RenderControl( writer );
+                writer.RenderEndTag();  
+
+                // Write Activity Value
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                DropDownList ddl = new DropDownList();
-                ddl.AddCssClass( "form-action-value form-control js-form-action-input" );
-                ddl.DataTextField = "Value";
-                ddl.DataValueField = "Key";
-                ddl.DataSource = Activities;
-                ddl.DataBind();
-                ddl.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                if ( nameValueResponse.Length >= 2 )
-                {
-                    ddl.SelectedValue = nameValueResponse[1];
-                }
-                ddl.RenderControl( writer );
-                writer.RenderEndTag();  // Div
+                _activityControls[i].RenderControl( writer );
+                writer.RenderEndTag();  
 
                 // Write Response
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-6" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-response form-control js-form-action-input" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
-                writer.AddAttribute( HtmlTextWriterAttribute.Value, nameValueResponse.Length >= 3 ? nameValueResponse[2] : string.Empty );
-                writer.AddAttribute( "placeholder", "Response" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                writer.RenderEndTag();  // Input
-                writer.RenderEndTag();  // Div
+                _responseControls[i].RenderControl( writer );
+                writer.RenderEndTag();  
 
                 // Write Remove Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
@@ -135,7 +260,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // Div
 
                 writer.RenderEndTag();  // Div.row
-
             }
 
             writer.RenderEndTag();      // Div.form-action-rows
@@ -166,8 +290,10 @@ namespace Rock.Web.UI.Controls
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
-        $actionList.children('div.form-action-rows:first').children('div.row').each(function( index ) {
-            newValue += $(this).find('.form-action-key:first').val() + '^' + 
+        $actionList.find('div.form-action-rows:first').children('div.row').each(function( index ) {
+            newValue += 
+                $(this).find('.form-action-key:first').val() + '^' + 
+                $(this).find('.form-action-css:first').val() + '^' + 
                 $(this).find('.form-action-value:first').val() + '^' + 
                 $(this).find('.form-action-response:first').val() + '|'
         });
@@ -177,7 +303,7 @@ namespace Rock.Web.UI.Controls
     $('a.form-action-add').click(function (e) {
         e.preventDefault();
         var $actionList = $(this).closest('.form-action-list');
-        $actionList.find('.form-action-rows:first').append($actionList.find('.js-value-html').val());
+        $actionList.find('div.form-action-rows:first').append($actionList.find('.js-value-html').val());
     });
 
     $(document).on('click', 'a.form-action-remove', function (e) {

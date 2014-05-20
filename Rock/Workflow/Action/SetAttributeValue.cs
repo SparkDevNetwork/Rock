@@ -35,8 +35,8 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
 
-    [WorkflowAttribute( "Attribute", "The attribute to set.", false, "", "", 0 )]
-    [TextField( "Value", "The value.", false, "", "", 1 )]
+    [WorkflowAttribute( "Attribute", "The attribute to set the value of.", false, "", "", 0 )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from", false, "", "", 1, "Value" )]
     public class SetAttributeValue : CompareAction
     {
         /// <summary>
@@ -60,6 +60,15 @@ namespace Rock.Workflow.Action
                     if ( TestCompare( action ) )
                     {
                         string value = GetAttributeValue( action, "Value" );
+                        guid = value.AsGuid();
+                        if ( guid.IsEmpty() )
+                        {
+                            value = value.ResolveMergeFields( GetMergeFields( action ) );
+                        }
+                        else
+                        {
+                            value = GetWorklowAttributeValue( action, guid );
+                        }
 
                         if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
                         {
