@@ -33,19 +33,19 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Success")]
-    [Category("Check-in")]
-    [Description("Displays the details of a successful checkin.")]
-    [LinkedPage("Person Select Page")]
+    [DisplayName( "Success" )]
+    [Category( "Check-in" )]
+    [Description( "Displays the details of a successful checkin." )]
+    [LinkedPage( "Person Select Page" )]
     public partial class Success : CheckInBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
+            base.OnInit( e );
 
             RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/cordova-2.4.0.js", false );
             RockPage.AddScriptLink( this.Page, "~/Scripts/CheckinClient/ZebraPrint.js", false );
@@ -67,101 +67,112 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
+                    try
                     {
-                        lbAnother.Visible = family.People.Count > 1;
-
-                        foreach ( var person in family.People.Where( p => p.Selected ) )
+                        // Print the labels
+                        foreach ( var family in CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ) )
                         {
-                            foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                            lbAnother.Visible = family.People.Count > 1;
+
+                            foreach ( var person in family.People.Where( p => p.Selected ) )
                             {
-                                foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
+                                foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                                 {
-                                    foreach ( var location in group.Locations.Where( l => l.Selected ) )
+                                    foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
                                     {
-                                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
+                                        foreach ( var location in group.Locations.Where( l => l.Selected ) )
                                         {
-                                            var li = new HtmlGenericControl( "li" );
-                                            li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
-                                                person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
-
-                                            phResults.Controls.Add( li );
-                                        }
-                                    }
-                                }
-
-                                var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
-                                if ( printFromClient.Any() )
-                                {
-                                    var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
-                                    printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
-                                    AddLabelScript( printFromClient.ToJson() );
-                                }
-
-                                var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
-                                if ( printFromServer.Any() )
-                                {
-                                    Socket socket = null;
-                                    string currentIp = string.Empty;
-
-                                    foreach ( var label in printFromServer )
-                                    {
-                                        var labelCache = KioskLabel.Read( label.FileId );
-                                        if ( labelCache != null )
-                                        {
-                                            if ( label.PrinterAddress != currentIp )
+                                            foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                                             {
-                                                if ( socket != null && socket.Connected )
-                                                {
-                                                    socket.Shutdown( SocketShutdown.Both );
-                                                    socket.Close();
-                                                }
+                                                var li = new HtmlGenericControl( "li" );
+                                                li.InnerText = string.Format( "{0} was checked into {1} for {2} at {3}",
+                                                    person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
 
-                                                currentIp = label.PrinterAddress;
-                                                var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
-
-                                                socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                                                IAsyncResult result = socket.BeginConnect( printerIp, null, null );
-                                                bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
-                                            }
-
-                                            string printContent = labelCache.FileContent;
-                                            foreach ( var mergeField in label.MergeFields )
-                                            {
-                                                if (!string.IsNullOrWhiteSpace(mergeField.Value))
-                                                {
-                                                    printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
-                                                }
-                                                else
-                                                {
-                                                    // Remove the box preceding merge field
-                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
-                                                    // Remove the merge field
-                                                    printContent = Regex.Replace( printContent, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
-                                                }
-                                            }
-
-                                            if ( socket.Connected )
-                                            {
-                                                var ns = new NetworkStream( socket );
-                                                byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
-                                                ns.Write( toSend, 0, toSend.Length );
-                                            }
-                                            else
-                                            {
-                                                phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                                phResults.Controls.Add( li );
                                             }
                                         }
                                     }
 
-                                    if ( socket != null && socket.Connected )
+                                    var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client );
+                                    if ( printFromClient.Any() )
                                     {
-                                        socket.Shutdown( SocketShutdown.Both );
-                                        socket.Close();
+                                        var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                                        printFromClient.ToList().ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+                                        AddLabelScript( printFromClient.ToJson() );
+                                    }
+
+                                    var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
+                                    if ( printFromServer.Any() )
+                                    {
+                                        Socket socket = null;
+                                        string currentIp = string.Empty;
+
+                                        foreach ( var label in printFromServer )
+                                        {
+                                            var labelCache = KioskLabel.Read( label.FileId );
+                                            if ( labelCache != null )
+                                            {
+                                                if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
+                                                {
+                                                    if ( label.PrinterAddress != currentIp )
+                                                    {
+                                                        if ( socket != null && socket.Connected )
+                                                        {
+                                                            socket.Shutdown( SocketShutdown.Both );
+                                                            socket.Close();
+                                                        }
+
+                                                        currentIp = label.PrinterAddress;
+                                                        var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+
+                                                        socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                                                        IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                                        bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
+                                                    }
+
+                                                    string printContent = labelCache.FileContent;
+                                                    foreach ( var mergeField in label.MergeFields )
+                                                    {
+                                                        if ( !string.IsNullOrWhiteSpace( mergeField.Value ) )
+                                                        {
+                                                            printContent = Regex.Replace( printContent, string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ), mergeField.Value );
+                                                        }
+                                                        else
+                                                        {
+                                                            // Remove the box preceding merge field
+                                                            printContent = Regex.Replace( printContent, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+                                                            // Remove the merge field
+                                                            printContent = Regex.Replace( printContent, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
+                                                        }
+                                                    }
+
+                                                    if ( socket.Connected )
+                                                    {
+                                                        var ns = new NetworkStream( socket );
+                                                        byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                                        ns.Write( toSend, 0, toSend.Length );
+                                                    }
+                                                    else
+                                                    {
+                                                        phResults.Controls.Add( new LiteralControl( "<br/>NOTE: Could not connect to printer!" ) );
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if ( socket != null && socket.Connected )
+                                        {
+                                            socket.Shutdown( SocketShutdown.Both );
+                                            socket.Close();
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                    catch ( Exception ex )
+                    {
+                        LogException( ex );
                     }
                 }
             }
