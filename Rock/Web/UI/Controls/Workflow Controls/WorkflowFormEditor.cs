@@ -38,7 +38,6 @@ namespace Rock.Web.UI.Controls
         private CodeEditor _ceHeaderText;
         private CodeEditor _ceFooterText;
         private RockTextBox _tbInactiveMessage;
-        private RockControlWrapper _rcwActions;
         private WorkflowFormActionList _falActions;
 
 
@@ -204,7 +203,7 @@ namespace Rock.Web.UI.Controls
             _ceHeaderText.ID = this.ID + "_tbHeaderText";
             _ceHeaderText.EditorMode = CodeEditorMode.Html;
             _ceHeaderText.EditorTheme = CodeEditorTheme.Rock;
-            _ceHeaderText.EditorHeight = "100";
+            _ceHeaderText.EditorHeight = "200";
             Controls.Add( _ceHeaderText );
 
             _ceFooterText = new CodeEditor();
@@ -213,18 +212,12 @@ namespace Rock.Web.UI.Controls
             _ceFooterText.ID = this.ID + "_tbFooterText";
             _ceFooterText.EditorMode = CodeEditorMode.Html;
             _ceFooterText.EditorTheme = CodeEditorTheme.Rock;
-            _ceFooterText.EditorHeight = "100";
+            _ceFooterText.EditorHeight = "200";
             Controls.Add( _ceFooterText );
-
-            _rcwActions = new RockControlWrapper();
-            _rcwActions.Label = "Action Buttons";
-            _rcwActions.Help = "The Action button text and the action value to save when user clicks the action.";
-            _rcwActions.ID = this.ID + "_rcwActions";
-            Controls.Add( _rcwActions );
 
             _falActions = new WorkflowFormActionList();
             _falActions.ID = this.ID + "_falActions";
-            _rcwActions.Controls.Add( _falActions );
+            Controls.Add( _falActions );
 
             _tbInactiveMessage = new RockTextBox();
             _tbInactiveMessage.Label = "Inactive Message";
@@ -325,8 +318,7 @@ namespace Rock.Web.UI.Controls
 
                 _ceFooterText.ValidationGroup = ValidationGroup;
                 _ceFooterText.RenderControl( writer );
-                _rcwActions.ValidationGroup = ValidationGroup;
-                _rcwActions.RenderControl( writer );
+                _falActions.RenderControl( writer );
 
                 // Don't render (not used)
                 //_tbInactiveMessage.ValidationGroup = ValidationGroup;

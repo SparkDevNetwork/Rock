@@ -45,7 +45,9 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
-            string status = GetAttributeValue( action, "Status" );
+
+            string status = GetAttributeValue( action, "Status" ).ResolveMergeFields( GetMergeFields( action ) );
+
             action.Activity.Workflow.Status = status;
             action.AddLogEntry( string.Format( "Set Status to '{0}'", status ) );
 

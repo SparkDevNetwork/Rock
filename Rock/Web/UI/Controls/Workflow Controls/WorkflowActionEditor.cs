@@ -223,7 +223,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^^^" };
             }
             else
             {
@@ -256,7 +256,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^^^" };
                 _cbIsActionCompletedOnSuccess.Checked = true;
                 _cbIsActionCompletedOnSuccess.Enabled = false;
             }

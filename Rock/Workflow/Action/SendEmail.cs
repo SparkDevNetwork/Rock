@@ -104,10 +104,7 @@ namespace Rock.Workflow.Action
 
                 if ( recipients.Any() )
                 {
-                    var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Action", action );
-                    mergeFields.Add( "Activity", action.Activity );
-                    mergeFields.Add( "Workflow", action.Activity.Workflow );
+                    var mergeFields = GetMergeFields( action );
 
                     var channelData = new Dictionary<string, string>();
                     channelData.Add( "From", GetAttributeValue( action, "From" ) );
