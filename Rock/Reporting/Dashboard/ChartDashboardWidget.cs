@@ -172,6 +172,20 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
+        /// Gets the detail page.
+        /// </summary>
+        /// <value>
+        /// The detail page.
+        /// </value>
+        public Guid? DetailPageGuid
+        {
+            get
+            {
+                return (GetAttributeValue( "DetailPage" ) ?? string.Empty).AsGuidOrNull();
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in it's own series
         /// </summary>
         /// <value>
