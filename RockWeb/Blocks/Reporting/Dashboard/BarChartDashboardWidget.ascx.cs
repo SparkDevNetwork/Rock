@@ -45,16 +45,14 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public override void LoadChart()
         {
-            bcExample.StartDate = new DateTime( 2013, 1, 1 );
-            bcExample.EndDate = new DateTime( 2014, 1, 1 );
+            bcExample.StartDate = this.DateRange.Start;
+            bcExample.EndDate = this.DateRange.End;
             bcExample.MetricValueType = this.MetricValueType;
             bcExample.MetricId = this.MetricId;
             bcExample.EntityId = this.EntityId;
-
             bcExample.Title = this.Title;
             bcExample.Subtitle = this.Subtitle;
             bcExample.CombineValues = this.CombineValues;
-
             bcExample.ShowTooltip = false;
 
             bcExample.Options.SetChartStyle( this.ChartStyle );
