@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class SchedContributions : Rock.Migrations.RockMigration
+    public partial class SchedContributions : Rock.Migrations.RockMigration4
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

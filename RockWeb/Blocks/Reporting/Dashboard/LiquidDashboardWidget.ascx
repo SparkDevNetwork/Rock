@@ -2,19 +2,27 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <div class="dashboard-title">
+            <asp:Literal runat="server" ID="lDashboardTitle" />
+        </div>
+        <div class="dashboard-subtitle">
+            <asp:Literal runat="server" ID="lDashboardSubtitle" />
+        </div>
         <asp:Panel ID="phHtml" runat="server" />
 
         <script type="text/javascript">
-            $.ajax({
-                url: '<%=ResolveUrl("~/api/Metrics/GetHtml/") + this.BlockId.ToString() %>',
-                dataType: 'json',
-                contentType: 'application/json'
-            })
-            .done(function (resultHtml) {
-                $('#<%=phHtml.ClientID%>').html(resultHtml);
-            }).
-            fail( function (a,b,c) {
-                debugger
+            Sys.Application.add_load(function () {
+                $.ajax({
+                    url: '<%=this.RestUrl %>',
+                    dataType: 'json',
+                    contentType: 'application/json'
+                })
+                .done(function (resultHtml) {
+                    $('#<%=phHtml.ClientID%>').html(resultHtml);
+                }).
+                fail(function (a, b, c) {
+                    debugger
+                });
             });
 
         </script>

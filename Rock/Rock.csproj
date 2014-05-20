@@ -66,8 +66,9 @@
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
-    <Reference Include="ImageResizer">
-      <HintPath>..\packages\ImageResizer.3.4.2\lib\ImageResizer.dll</HintPath>
+    <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ImageResizer.3.4.3\lib\ImageResizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Data.Edm, Version=5.6.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -90,8 +91,9 @@
     <Reference Include="Microsoft.WindowsAzure.Storage">
       <HintPath>..\packages\WindowsAzure.Storage.3.1.0.1\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core, Version=2.8.50320.36, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -153,7 +155,8 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
-    <Compile Include="Attribute\MetricsFieldAttribute.cs" />
+    <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\MetricEntityFieldAttribute.cs" />
     <Compile Include="Attribute\AccountsFieldAttribute.cs" />
@@ -195,7 +198,7 @@
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
-    <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\EntityFieldAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
@@ -205,8 +208,11 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\IChartData.cs" />
+    <Compile Include="Data\IMigration.cs" />
+    <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
-    <Compile Include="Field\Types\MetricsFieldType.cs" />
+    <Compile Include="Field\Types\EntityFieldType.cs" />
+    <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
     <Compile Include="Field\Types\ComparisonFieldType.cs" />
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
@@ -601,11 +607,13 @@
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\MetricsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MetricCategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DayOfWeekPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DaysOfWeekPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MetricEntityPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\RemoteAuthsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\SlidingDateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\YearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
     <Compile Include="Web\UI\Controls\PanelWidget.cs" />

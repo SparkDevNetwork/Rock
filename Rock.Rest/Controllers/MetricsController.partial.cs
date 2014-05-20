@@ -38,7 +38,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "MetricsGetHtmlByBlockId",
-                routeTemplate: "api/Metrics/GetHtml/{blockId}",
+                routeTemplate: "api/Metrics/GetHtmlForBlock/{blockId}",
                 defaults: new
                 {
                     controller = "Metrics",
@@ -50,8 +50,10 @@ namespace Rock.Rest.Controllers
         /// Gets the HTML for block.
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
-        public string GetHtmlForBlock( int blockId )
+        public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
             Block block = new BlockService( new RockContext() ).Get( blockId );
             if ( block != null )
@@ -60,32 +62,42 @@ namespace Rock.Rest.Controllers
 
                 string displayText = block.GetAttributeValue( "DisplayText" );
 
-                List<Guid> metricGuids = block.GetAttributeValue( "Metrics" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                List<Guid> metricCategoryGuids = block.GetAttributeValue( "MetricCategories" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
 
-                if ( metricGuids.Count() == 0 )
+                RockContext rockContext = new RockContext();
+                MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
+                var metricCategories = metricCategoryService.GetByGuids( metricCategoryGuids );
+                List<object> metricsData = new List<object>();
+
+                if ( metricCategories.Count() == 0 )
                 {
                     return @"<div class='alert alert-warning'> 
 								Please select a metric in the block settings.
 							</div>";
                 }
-
-                RockContext rockContext = new RockContext();
-                MetricService metricService = new MetricService( rockContext );
+                
                 MetricValueService metricValueService = new MetricValueService( rockContext );
-
-                var metrics = metricService.GetByGuids( metricGuids );
-                List<object> metricsData = new List<object>();
+                
                 DateTime firstDayOfYear = new DateTime( RockDateTime.Now.Year, 1, 1 );
                 DateTime currentDateTime = RockDateTime.Now;
                 DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
 
-                foreach ( var metric in metrics )
+                foreach ( var metric in metricCategories.Select(a => a.Metric).Distinct() )
                 {
                     var metricYTDData = JsonConvert.DeserializeObject( metric.ToJson(), typeof( MetricYTDData ) ) as MetricYTDData;
                     var qryMeasureValues = metricValueService.Queryable()
                         .Where( a => a.MetricId == metricYTDData.Id )
                         .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < currentDateTime )
                         .Where( a => a.MetricValueType == MetricValueType.Measure );
+
+                    // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId )
+                    {
+                        if ( entityId.HasValue )
+                        {
+                            qryMeasureValues = qryMeasureValues.Where( a => a.EntityId == entityId );
+                        }
+                    }
 
                     var lastMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     if ( lastMetricValue != null )
@@ -101,6 +113,15 @@ namespace Rock.Rest.Controllers
                         .Where( a => a.MetricId == metricYTDData.Id )
                         .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < firstDayOfNextYear )
                         .Where( a => a.MetricValueType == MetricValueType.Goal );
+
+                    // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId )
+                    {
+                        if ( entityId.HasValue )
+                        {
+                            qryGoalValuesCurrentYear = qryGoalValuesCurrentYear.Where( a => a.EntityId == entityId );
+                        }
+                    }
 
                     MetricValue goalLineStartPoint = qryGoalValuesCurrentYear.Where( a => a.MetricValueDateTime <= currentDateTime ).OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     MetricValue goalLineEndPoint = qryGoalValuesCurrentYear.Where( a => a.MetricValueDateTime >= currentDateTime ).FirstOrDefault();

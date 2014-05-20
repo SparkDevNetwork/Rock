@@ -51,7 +51,7 @@ namespace Rock.Rest.Controllers
                     entityqualifiervalue = RouteParameter.Optional
                 } );
         }
-        
+
         /// <summary>
         /// Gets the children.
         /// </summary>
@@ -61,9 +61,10 @@ namespace Rock.Rest.Controllers
         /// <param name="entityQualifier">The entity qualifier.</param>
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
+        /// <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
         /// <returns></returns>
         [Authenticate, Secured]
-        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true )
+        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems = false, int entityTypeId = 0, string entityQualifier = null, string entityQualifierValue = null, bool showUnnamedEntityItems = true, bool showCategoriesThatHaveNoChildren = true )
         {
             Person currentPerson = GetPerson();
 
@@ -132,7 +133,7 @@ namespace Rock.Rest.Controllers
                             categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
-                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue("IconCssClass") as string ?? "fa fa-list-ol";
+                            categoryItem.IconCssClass = categorizedItem.GetPropertyValue( "IconCssClass" ) as string ?? "fa fa-list-ol";
                             categoryItem.IconSmallUrl = string.Empty;
                             categoryItemList.Add( categoryItem );
                         }
@@ -175,6 +176,11 @@ namespace Rock.Rest.Controllers
                         }
                     }
                 }
+            }
+
+            if ( !showCategoriesThatHaveNoChildren )
+            {
+                categoryItemList = categoryItemList.Where( a => !a.IsCategory || ( a.IsCategory && a.HasChildren ) ).ToList();
             }
 
             return categoryItemList.AsQueryable();
