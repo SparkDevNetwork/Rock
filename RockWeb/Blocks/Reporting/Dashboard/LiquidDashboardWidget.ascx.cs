@@ -30,7 +30,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Liquid Dashboard Widget" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget from Liquid using YTD metric values" )]
-    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", Order = 3 )]
+    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", "Either select a specific {0} or leave {0} blank to get it from the page context.", Order = 3 )]
     [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4 )]
     [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
 @"
