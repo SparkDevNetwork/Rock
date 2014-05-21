@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfValue;
         private List<RockTextBox> _actionControls;
-        private List<RockTextBox> _cssClassControls;
+        private List<RockDropDownList> _cssClassControls;
         private List<RockDropDownList> _activityControls;
         private List<RockTextBox> _responseControls;
 
@@ -80,7 +80,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfValue );
 
             _actionControls = new List<RockTextBox>();
-            _cssClassControls = new List<RockTextBox>();
+            _cssClassControls = new List<RockDropDownList>();
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
 
@@ -99,15 +99,20 @@ namespace Rock.Web.UI.Controls
                 tbAction.Text = nameValueResponse.Length > 0 ? nameValueResponse[0] : string.Empty;
                 _actionControls.Add( tbAction );
 
-                var tbCssClass = new RockTextBox();
-                tbCssClass.ID = this.ID + "_tbCssClass" + i.ToString();
-                Controls.Add( tbCssClass );
-                tbCssClass.Placeholder = "btn btn-primary";
-                tbCssClass.AddCssClass( "form-action-css" );
-                tbCssClass.AddCssClass( "form-control" );
-                tbCssClass.AddCssClass( "js-form-action-input" );
-                tbCssClass.Text = nameValueResponse.Length > 1 ? nameValueResponse[1] : string.Empty;
-                _cssClassControls.Add( tbCssClass );
+                var ddlCssClass = new RockDropDownList();
+                ddlCssClass.ID = this.ID + "_ddlCssClass" + i.ToString();
+                Controls.Add( ddlCssClass );
+                ddlCssClass.AddCssClass( "form-action-css" );
+                ddlCssClass.AddCssClass( "form-control" );
+                ddlCssClass.AddCssClass( "js-form-action-input" );
+                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.CSS_CLASSES.AsGuid() );
+                foreach( var definedValue in definedType.DefinedValues )
+                {
+                    var li = new ListItem( definedValue.Name, definedValue.GetAttributeValue( "CSSClass" ) );
+                    li.Selected = nameValueResponse.Length > 1 && li.Value == nameValueResponse[1];
+                    ddlCssClass.Items.Add( li );
+                }
+                _cssClassControls.Add( ddlCssClass );
 
                 var ddlActivity = new RockDropDownList();
                 ddlActivity.ID = this.ID + "_ddlActivity" + i.ToString();
