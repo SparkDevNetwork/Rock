@@ -175,10 +175,7 @@ span.data-view-filter-label {
 /*********************************************************************************************/
 
 /* Style the inactive and activated with workflow activity headers differently */
-div.workflow-activity-list > section.activated-with-workflow > .panel-heading {
-    background-color: #BCF5A9;
-    border-color: #BCF5A9;
-}
+
 div.workflow-activity-list > section.workflow-activity-inactive > .panel-heading {
     color: #A4A4A4;
     background-color: #E6E6E6;
