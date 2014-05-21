@@ -88,17 +88,48 @@ namespace RockWeb.Blocks.Security
 
         protected void gRestUserList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var rockContext = new RockContext();
+                var restUser = e.Row.DataItem as Person;
+                var noteService = new NoteService( rockContext );
+                var description = noteService.Queryable().Where( a => a.EntityId == restUser.Id ).FirstOrDefault();
+                Label lblDescription = e.Row.FindControl( "lblDescription" ) as Label;
+                if ( description != null )
+                {
+                    lblDescription.Text = description.Text;
+                }
 
+                var userLoginService = new UserLoginService( rockContext );
+                var userLogin = userLoginService.Queryable().Where( a => a.PersonId == restUser.Id ).FirstOrDefault();
+                Label lblKey = e.Row.FindControl( "lblKey" ) as Label;
+                if ( userLogin != null )
+                {
+                    lblKey.Text = userLogin.ApiKey;
+                }
+            }
         }
 
         protected void gRestUserList_RowSelected( object sender, RowEventArgs e )
         {
-
+            var parms = new Dictionary<string, string>();
+            var restUserId = (int)e.RowKeyValue;
+            parms.Add( "restUserId", restUserId.ToString() );
+            NavigateToLinkedPage( "DetailPage", parms );
         }
 
         protected void gRestUserList_Delete( object sender, RowEventArgs e )
         {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+            var restUser = personService.Get( e.RowKeyId );
+            if ( restUser != null )
+            {
+                restUser.RecordStatusValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                rockContext.SaveChanges();
+            }
 
+            BindGrid();            
         }
 
         #endregion Events

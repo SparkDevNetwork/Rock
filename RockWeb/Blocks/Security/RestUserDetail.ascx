@@ -7,6 +7,9 @@
             <div class="banner"><h1><asp:Literal ID="lTitle" runat="server" /></h1></div>
 
             <div id="pnlEditDetails" runat="server">
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <asp:HiddenField ID="hfRestUserId" runat="server" />
+                <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
                 <div class="row">
                     <div class="col-md-12">
                         <div class="row">
