@@ -751,10 +751,12 @@ namespace Rock.Web.UI
                                 }
                                 catch ( Exception ex )
                                 {
-                                    HtmlGenericControl div = new HtmlGenericControl( "div" );
-                                    div.Attributes.Add( "class", "alert alert-danger" );
-                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1} <code>{2}</code>", block.Name, ex.Message, ex.StackTrace );
-                                    control = div;
+                                    NotificationBox nbBlockLoad = new NotificationBox();
+                                    nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
+                                    nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name);
+                                    nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );
+                                    nbBlockLoad.Dismissable = true;
+                                    control = nbBlockLoad;
 
                                     if ( this.IsPostBack )
                                     {
