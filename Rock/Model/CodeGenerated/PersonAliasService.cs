@@ -90,6 +90,8 @@ namespace Rock.Model
             
             // ignoring Campus,CreatedByPersonAliasId 
             
+            // ignoring Campus,LeaderPersonAliasId 
+            
             // ignoring Campus,ModifiedByPersonAliasId 
             
             // ignoring Category,CreatedByPersonAliasId 

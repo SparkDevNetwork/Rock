@@ -22,6 +22,7 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {

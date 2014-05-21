@@ -1576,6 +1576,23 @@ namespace Rock
             return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as unique identifier.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public static Guid? SelectedValueAsGuid( this ListControl listControl )
+        {
+            if ( string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return listControl.SelectedValue.AsGuid();
+            }
+        }
+
         #endregion
 
         #region Enum Extensions

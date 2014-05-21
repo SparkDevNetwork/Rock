@@ -20,8 +20,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -160,26 +160,93 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
-
-            AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
-
-            if ( success )
+            if ( TestCriteria() )
             {
-                if ( this.ActionType.IsActionCompletedOnSuccess )
+                bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
+
+                AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
+
+                if ( success )
                 {
-                    this.MarkComplete();
+                    if ( this.ActionType.IsActionCompletedOnSuccess )
+                    {
+                        this.MarkComplete();
+                    }
+
+                    if ( this.ActionType.IsActivityCompletedOnSuccess )
+                    {
+                        this.Activity.MarkComplete();
+                    }
                 }
 
-                if ( this.ActionType.IsActivityCompletedOnSuccess )
+                return success;
+            }
+            else
+            {
+                errorMessages = new List<string>();
+
+                AddSystemLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Tests the criteria.
+        /// </summary>
+        /// <returns></returns>
+        private bool TestCriteria()
+        {
+            bool result = true;
+
+            if ( ActionType != null &&
+                ActionType.CriteriaAttributeGuid.HasValue )
+            {
+                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value );
+                if ( !string.IsNullOrWhiteSpace( criteria ) )
                 {
-                    this.Activity.MarkComplete();
+                    result = false;
+
+                    Guid guid = ActionType.CriteriaValue.AsGuid();
+                    if ( guid.IsEmpty() )
+                    {
+                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                    }
+                    else
+                    {
+                        string value = GetWorklowAttributeValue( guid );
+                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
+                    }
+
                 }
             }
 
-            return success;
+            return result;
         }
 
+        /// <summary>
+        /// Gets a worklow attribute value.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public string GetWorklowAttributeValue( Guid guid )
+        {
+            var attribute = AttributeCache.Read( guid );
+            if ( attribute != null && Activity != null )
+            {
+                if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                {
+                    return Activity.Workflow.GetAttributeValue( attribute.Key );
+                }
+                else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                {
+                    return Activity.GetAttributeValue( attribute.Key );
+                }
+            }
+
+            return null;
+        }
+        
         /// <summary>
         /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
         /// </summary>

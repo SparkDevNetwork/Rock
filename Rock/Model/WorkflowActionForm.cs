@@ -68,7 +68,7 @@ namespace Rock.Model
         /// <value>
         /// The actions.
         /// </value>
-        [MaxLength( 300 )]
+        [MaxLength( 2000 )]
         [DataMember]
         public string Actions { get; set; }
 
