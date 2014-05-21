@@ -2381,6 +2381,10 @@ dl dd {
   color: inherit;
   text-decoration: none;
 }
+.workflow-activity.activated-with-workflow > .panel-heading {
+  background-color: #dff0d8;
+  color: #468847;
+}
 /*
     Used to manage styles for specific blocks.
 
