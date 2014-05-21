@@ -1,6 +1,6 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RestUserDetail.ascx.cs" Inherits="RockWeb.Blocks.Security.RestUserDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RestKeyDetail.ascx.cs" Inherits="RockWeb.Blocks.Security.RestKeyDetail" %>
 
-<asp:UpdatePanel ID="upnlRestUsers" runat="server">
+<asp:UpdatePanel ID="upnlRestKeys" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
 
@@ -33,7 +33,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbKey" runat="server" Label="Key" />
+                        <Rock:RockTextBox ID="tbKey" runat="server" Label="Key" MaxLength="12" Help="Add a 12 digit API key for this user." />
                     </div>
                     <div class="col-md-6">
                         <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary" OnClick="lbGenerate_Click" />

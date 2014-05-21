@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -31,11 +30,11 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "Rest User List" )]
+    [DisplayName( "Rest Key List" )]
     [Category( "Security" )]
-    [Description( "Lists all the REST API Users" )]
+    [Description( "Lists all the REST API Keys" )]
     [LinkedPage( "Detail Page" )]
-    public partial class RestUserList : Rock.Web.UI.RockBlock
+    public partial class RestKeyList : Rock.Web.UI.RockBlock
     {
         #region Control Methods
 
@@ -49,11 +48,11 @@ namespace RockWeb.Blocks.Security
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            gRestUserList.DataKeyNames = new string[] { "id" };
-            gRestUserList.Actions.ShowAdd = canEdit;
-            gRestUserList.Actions.AddClick += gRestUserList_AddClick;
-            gRestUserList.GridRebind += gRestUserList_GridRebind;
-            gRestUserList.IsDeleteEnabled = canEdit;
+            gRestKeyList.DataKeyNames = new string[] { "id" };
+            gRestKeyList.Actions.ShowAdd = canEdit;
+            gRestKeyList.Actions.AddClick += gRestKeyList_AddClick;
+            gRestKeyList.GridRebind += gRestKeyList_GridRebind;
+            gRestKeyList.IsDeleteEnabled = canEdit;
         }
 
         /// <summary>
@@ -74,19 +73,34 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
-        void gRestUserList_AddClick( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the AddClick event of the gRestKeyList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gRestKeyList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "restUserId", "0" );
-            NavigateToLinkedPage( "DetailPage", parms );            
+            NavigateToLinkedPage( "DetailPage", parms );
         }
 
-        void gRestUserList_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gRestKeyList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gRestKeyList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
 
-        protected void gRestUserList_RowDataBound( object sender, GridViewRowEventArgs e )
+        /// <summary>
+        /// Handles the RowDataBound event of the gRestKeyList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gRestKeyList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -110,7 +124,12 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        protected void gRestUserList_RowSelected( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the RowSelected event of the gRestKeyList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRestKeyList_RowSelected( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
             var restUserId = (int)e.RowKeyValue;
@@ -118,7 +137,12 @@ namespace RockWeb.Blocks.Security
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
-        protected void gRestUserList_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Delete event of the gRestKeyList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRestKeyList_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
@@ -129,39 +153,35 @@ namespace RockWeb.Blocks.Security
                 rockContext.SaveChanges();
             }
 
-            BindGrid();            
+            BindGrid();
         }
 
         #endregion Events
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
-            // The "Name" is the Person LastName
-            // The "Description" is a SystemNote
-            // The "Key" is the UserLogin ApiKey
-            // var attributes = Person.Attributes.Where( p => p.Value.Categories.Select( c => c.Guid ).Contains( socialCategoryGuid ) );
-            // var result = attributes.Join( Person.AttributeValues, a => a.Key, v => v.Key, ( a, v ) => new { Attribute = a.Value, Values = v.Value } );
-
-            // get people that have a record type of "rest user"
             var rockContext = new RockContext();
             var restUserRecordTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
             var activeRecordStatusValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             var queryable = new PersonService( rockContext ).Queryable()
                 .Where( q => q.RecordTypeValueId == restUserRecordTypeId && q.RecordStatusValueId == activeRecordStatusValueId );
 
-            SortProperty sortProperty = gRestUserList.SortProperty;
+            SortProperty sortProperty = gRestKeyList.SortProperty;
             if ( sortProperty != null )
             {
-                gRestUserList.DataSource = queryable.Sort( sortProperty ).ToList();
+                gRestKeyList.DataSource = queryable.Sort( sortProperty ).ToList();
             }
             else
             {
-                gRestUserList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
+                gRestKeyList.DataSource = queryable.OrderBy( q => q.LastName ).ToList();
             }
 
-            gRestUserList.DataBind();
+            gRestKeyList.DataBind();
         }
 
         #endregion Internal Methods
