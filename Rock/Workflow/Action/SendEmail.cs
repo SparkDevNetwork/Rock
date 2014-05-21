@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action
     [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 2 )]
     [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 3 )]
     [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
-    public class SendEmail : CompareAction
+    public class SendEmail : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -54,74 +54,71 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            if ( TestCompare( action ) )
+            var recipients = new List<string>();
+
+            string to = GetAttributeValue( action, "To" );
+            if ( !string.IsNullOrWhiteSpace( to ) )
             {
-                var recipients = new List<string>();
+                recipients.Add( to );
+            }
 
-                string to = GetAttributeValue( action, "To" );
-                if ( !string.IsNullOrWhiteSpace( to ) )
+            // Get the To attribute email value
+            Guid guid = GetAttributeValue( action, "ToAttribute" ).AsGuid();
+            if ( !guid.IsEmpty() )
+            {
+                var attribute = AttributeCache.Read( guid );
+                if ( attribute != null )
                 {
-                    recipients.Add( to );
-                }
-
-                // Get the To attribute email value
-                Guid guid = GetAttributeValue( action, "ToAttribute" ).AsGuid();
-                if ( !guid.IsEmpty() )
-                {
-                    var attribute = AttributeCache.Read( guid );
-                    if ( attribute != null )
+                    string toValue = action.GetWorklowAttributeValue( guid );
+                    if ( !string.IsNullOrWhiteSpace( toValue ) )
                     {
-                        string toValue = GetWorklowAttributeValue( action, guid );
-                        if ( !string.IsNullOrWhiteSpace( toValue ) )
+                        switch ( attribute.FieldType.Class )
                         {
-                            switch ( attribute.FieldType.Class )
-                            {
-                                case "Rock.Field.Types.TextFieldType":
+                            case "Rock.Field.Types.TextFieldType":
+                                {
+                                    recipients.Add( toValue );
+                                    break;
+                                }
+                            case "Rock.Field.Types.PersonFieldType":
+                                {
+                                    Guid personAliasGuid = toValue.AsGuid();
+                                    if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        recipients.Add( toValue );
-                                        break;
-                                    }
-                                case "Rock.Field.Types.PersonFieldType":
-                                    {
-                                        Guid personAliasGuid = toValue.AsGuid();
-                                        if ( !personAliasGuid.IsEmpty() )
+                                        to = new PersonAliasService( new RockContext() ).Queryable()
+                                            .Where( a => a.Guid.Equals( personAliasGuid ) )
+                                            .Select( a => a.Person.Email )
+                                            .FirstOrDefault();
+                                        if ( !string.IsNullOrWhiteSpace( to ) )
                                         {
-                                            to = new PersonAliasService( new RockContext() ).Queryable()
-                                                .Where( a => a.Guid.Equals( personAliasGuid ) )
-                                                .Select( a => a.Person.Email )
-                                                .FirstOrDefault();
-                                            if ( !string.IsNullOrWhiteSpace( to ) )
-                                            {
-                                                recipients.Add( to );
-                                            }
+                                            recipients.Add( to );
                                         }
-                                        break;
                                     }
-                            }
+                                    break;
+                                }
                         }
                     }
                 }
+            }
 
-                if ( recipients.Any() )
+            if ( recipients.Any() )
+            {
+                var mergeFields = GetMergeFields( action );
+
+                var channelData = new Dictionary<string, string>();
+                channelData.Add( "From", GetAttributeValue( action, "From" ) );
+                channelData.Add( "Subject", GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields ) );
+                channelData.Add( "Body", GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields ) );
+
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
+                if ( channelEntity != null )
                 {
-                    var mergeFields = GetMergeFields( action );
-
-                    var channelData = new Dictionary<string, string>();
-                    channelData.Add( "From", GetAttributeValue( action, "From" ) );
-                    channelData.Add( "Subject", GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields ) );
-                    channelData.Add( "Body", GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields ) );
-
-                    var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
-                    if ( channelEntity != null )
+                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
+                    if ( channel != null && channel.IsActive )
                     {
-                        var channel = ChannelContainer.GetComponent( channelEntity.Name );
-                        if ( channel != null && channel.IsActive )
+                        var transport = channel.Transport;
+                        if ( transport != null && transport.IsActive )
                         {
-                            var transport = channel.Transport;
-                            if ( transport != null && transport.IsActive )
-                            {
-                                transport.Send( channelData, recipients, string.Empty, string.Empty );
-                            }
+                            transport.Send( channelData, recipients, string.Empty, string.Empty );
                         }
                     }
                 }
