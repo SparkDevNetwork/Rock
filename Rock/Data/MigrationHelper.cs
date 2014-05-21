@@ -966,6 +966,33 @@ namespace Rock.Data
                     ) );
         }
 
+        /// <summary>
+        /// Adds the attribute qualifier.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddAttributeQualifier( string attributeGuid, string key, string value, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+
+                IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{3}')
+                    INSERT INTO [AttributeQualifier] (
+                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
+                    VALUES(
+                        1,@AttributeId,'{1}','{2}','{3}')
+",
+                    attributeGuid, // {0}
+                    key, // {1}
+                    value, // {2}
+                    guid ) // {3}
+            );
+        }
+
         #endregion
 
         #region Block Attribute Value Methods
@@ -1041,7 +1068,8 @@ namespace Rock.Data
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddDefinedType( string category, string name, string description, string guid )
+        /// <param name="helpText">The help text.</param>
+        public void AddDefinedType( string category, string name, string description, string guid, string helpText = null )
         {
             Migration.Sql( string.Format( @"
                 
@@ -1053,17 +1081,18 @@ namespace Rock.Data
 
                 INSERT INTO [DefinedType] (
                     [IsSystem],[FieldTypeId],[Order],
-                    [Category],[Name],[Description],
+                    [Category],[Name],[Description],[HelpText],
                     [Guid])
                 VALUES(
                     1,@FieldTypeId,@Order,
-                    '{0}','{1}','{2}',
+                    '{0}','{1}','{2}','{4}',
                     '{3}')
 ",
                     category,
                     name,
                     description.Replace( "'", "''" ),
-                    guid
+                    guid,
+                    helpText ?? string.Empty
                     ) );
         }
 
@@ -1078,6 +1107,59 @@ namespace Rock.Data
 ",
                     guid
                     ) );
+        }
+
+        /// <summary>
+        /// Adds the defined type attribute.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddDefinedTypeAttribute( string definedTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                DECLARE @EntityTypeId int                
+                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.DefinedValue')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute] 
+                WHERE [EntityTypeId] = @EntityTypeId
+                AND [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                AND [Key] = '{2}'
+
+                INSERT INTO [Attribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
+                    '{2}','{3}','{4}',
+                    {5},0,'{6}',0,0,
+                    '{7}')
+",
+                    definedTypeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
         }
 
         #endregion
@@ -1185,6 +1267,43 @@ namespace Rock.Data
 ",
                     guid
                     ) );
+        }
+
+        /// <summary>
+        /// Adds the defined value attribute value.
+        /// </summary>
+        /// <param name="definedValueGuid">The defined value unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddDefinedValueAttributeValue( string definedValueGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedValueId int
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @DefinedValueId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@DefinedValueId,
+                    0,'{2}',
+                    NEWID())
+",
+                    definedValueGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
         }
 
         #endregion

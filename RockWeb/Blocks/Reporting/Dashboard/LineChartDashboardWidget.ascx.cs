@@ -43,7 +43,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             lcExample.Subtitle = this.Subtitle;
             lcExample.CombineValues = this.CombineValues;
             lcExample.ShowTooltip = true;
-            lcExample.ChartClick += lcExample_ChartClick;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                lcExample.ChartClick += lcExample_ChartClick;
+            }
 
             lcExample.Options.SetChartStyle( this.ChartStyle );
 
