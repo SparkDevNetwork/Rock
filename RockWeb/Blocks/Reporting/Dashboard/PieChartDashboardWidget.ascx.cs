@@ -37,20 +37,17 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public override void LoadChart()
         {
-            //pcExample.StartDate = new DateTime( 2013, 1, 1 );
-            //pcExample.EndDate = new DateTime( 2014, 1, 1 );
+            pcExample.StartDate = this.DateRange.Start;
+            pcExample.EndDate = this.DateRange.End;
             pcExample.MetricValueType = this.MetricValueType;
             pcExample.MetricId = this.MetricId;
             pcExample.EntityId = this.EntityId;
             pcExample.Title = this.Title;
             pcExample.Subtitle = this.Subtitle;
             pcExample.CombineValues = this.CombineValues;
-
             pcExample.ShowTooltip = true;
-            //pcExample.ShowDebug = true;
-            pcExample.Options.SetChartStyle( this.ChartStyle );
 
-            string debug = this.ChartStyle.ToJson( false );
+            pcExample.Options.SetChartStyle( this.ChartStyle );
             
             nbMetricWarning.Visible = !this.MetricId.HasValue;
         }

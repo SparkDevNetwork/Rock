@@ -359,7 +359,7 @@ namespace RockWeb.Blocks.Core
 
             if (setValues)
             {
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null ); 
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
@@ -399,17 +399,17 @@ namespace RockWeb.Blocks.Core
             phActions.Controls.Clear();
             foreach (var action in form.Actions.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                var details = action.Split(new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries);
-                if (details.Length >= 1)
+                var details = action.Split(new char[] { '^' });
+                if (details.Length > 0)
                 {
                     var lb = new BootstrapButton();
                     lb.ID = "lb" + details[0];
                     lb.Text = details[0];
                     lb.Click += lbAction_Click;
-                    lb.CssClass = "btn btn-primary";
-                    if (details.Length >= 2)
+                    lb.CssClass = details.Length > 1 && !string.IsNullOrWhiteSpace(details[1]) ? details[1] : "btn btn-primary";
+                    if (details.Length > 2)
                     {
-                        lb.Attributes.Add("data-activity", details[1]);
+                        lb.Attributes.Add("data-activity", details[2]);
                     }
                     lb.ValidationGroup = BlockValidationGroup;
                     phActions.Controls.Add(lb);
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Core
 
                     // save current activity form's actions (to formulate response if needed).
                     string currentActions = _actionType.WorkflowForm != null ? _actionType.WorkflowForm.Actions : string.Empty;
-                    var mergeFields = new Dictionary<string, object>();
+                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                     mergeFields.Add( "Action", _action );
                     mergeFields.Add( "Activity", _activity );
                     mergeFields.Add( "Workflow", _workflow );
@@ -526,12 +526,12 @@ namespace RockWeb.Blocks.Core
 
                             foreach ( var action in currentActions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                var details = action.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                                if ( details.Length >= 3 )
+                                var details = action.Split( new char[] { '^' } );
+                                if ( details.Length > 3 )
                                 {
-                                    if ( details[0] == formAction && !string.IsNullOrWhiteSpace( details[2] ) )
+                                    if ( details[0] == formAction && !string.IsNullOrWhiteSpace( details[3] ) )
                                     {
-                                        response = details[2].ResolveMergeFields( mergeFields );
+                                        response = details[3].ResolveMergeFields( mergeFields );
                                         break;
                                     }
                                 }

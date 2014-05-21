@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System.Collections.Generic;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +15,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Reporting.Dashboard;
-using System.Drawing;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -45,21 +35,38 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public override void LoadChart()
         {
-            bcExample.StartDate = new DateTime( 2013, 1, 1 );
-            bcExample.EndDate = new DateTime( 2014, 1, 1 );
+            bcExample.StartDate = this.DateRange.Start;
+            bcExample.EndDate = this.DateRange.End;
             bcExample.MetricValueType = this.MetricValueType;
             bcExample.MetricId = this.MetricId;
             bcExample.EntityId = this.EntityId;
-
             bcExample.Title = this.Title;
             bcExample.Subtitle = this.Subtitle;
             bcExample.CombineValues = this.CombineValues;
-
             bcExample.ShowTooltip = false;
+            bcExample.ChartClick += bcExample_ChartClick;
 
             bcExample.Options.SetChartStyle( this.ChartStyle );
 
             nbMetricWarning.Visible = !this.MetricId.HasValue;
+        }
+
+        /// <summary>
+        /// Bcs the example_ chart click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        public void bcExample_ChartClick( object sender, FlotChart.ChartClickArgs e )
+        {
+            if ( this.DetailPageGuid.HasValue )
+            {
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString.Add( "MetricId", this.MetricId.ToString() );
+                qryString.Add( "SeriesId", e.SeriesId );
+                qryString.Add( "YValue", e.YValue.ToString() );
+                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString( "o" ) );
+                NavigateToPage( this.DetailPageGuid.Value, qryString );
+            }
         }
     }
 }

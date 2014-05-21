@@ -14,9 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -32,9 +30,9 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Liquid Dashboard Widget" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget from Liquid using YTD metric values" )]
-    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", Order=3)]
-    [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4)]
-    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 5, DefaultValue =
+    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", Order = 3 )]
+    [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4 )]
+    [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
 @"
 {% for metric in Metrics %}
     <h1>{{ metric.Title }}</h1>
@@ -52,22 +50,28 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     </div>
 {% endfor %}
 " )]
-    
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 6 )]
+
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 7 )]
     public partial class LiquidDashboardWidget : DashboardWidget
     {
+        /// <summary>
+        /// Gets the rest URL.
+        /// </summary>
+        /// <value>
+        /// The rest URL.
+        /// </value>
         public string RestUrl
         {
             get
             {
                 string result = ResolveUrl( "~/api/Metrics/GetHtmlForBlock/" ) + this.BlockId.ToString();
-                string[] entityValues = (GetAttributeValue( "Entity" ) ?? "").Split( '|' );
+                string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
                 if ( entityValues.Length == 2 )
                 {
-                    var entityType = EntityTypeCache .Read(entityValues[0].AsGuid());
-                    if (entityType != null)
+                    var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                    if ( entityType != null )
                     {
-                        result += string.Format("?entityTypeId={0}", entityType.Id);
+                        result += string.Format( "?entityTypeId={0}", entityType.Id );
                         int? entityId = entityValues[1].AsIntegerOrNull();
                         if ( entityId.HasValue )
                         {
@@ -90,7 +94,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 return result;
             }
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
