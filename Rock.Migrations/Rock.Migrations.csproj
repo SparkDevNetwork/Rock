@@ -921,6 +921,10 @@
     <Compile Include="Migrations\201405202224203_ChartStyles.Designer.cs">
       <DependentUpon>201405202224203_ChartStyles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201405212008196_AddRestKeyAdmin.cs" />
+    <Compile Include="Migrations\201405212008196_AddRestKeyAdmin.Designer.cs">
+      <DependentUpon>201405212008196_AddRestKeyAdmin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1592,6 +1596,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201405202224203_ChartStyles.resx">
       <DependentUpon>201405202224203_ChartStyles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201405212008196_AddRestKeyAdmin.resx">
+      <DependentUpon>201405212008196_AddRestKeyAdmin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
