@@ -44,7 +44,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             bcExample.Subtitle = this.Subtitle;
             bcExample.CombineValues = this.CombineValues;
             bcExample.ShowTooltip = false;
-            bcExample.ChartClick += bcExample_ChartClick;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                bcExample.ChartClick += bcExample_ChartClick;
+            }
 
             bcExample.Options.SetChartStyle( this.ChartStyle );
 
