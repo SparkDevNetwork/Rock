@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
+using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -31,10 +30,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "Rest User Detail" )]
+    [DisplayName( "Rest Key Detail" )]
     [Category( "Security" )]
-    [Description( "Displays the details of the given REST API User." )]
-    public partial class RestUserDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    [Description( "Displays the details of the given REST API Key." )]
+    public partial class RestKeyDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
 
@@ -55,10 +54,6 @@ namespace RockWeb.Blocks.Security
                 {
                     ShowDetail( "restUserId", int.Parse( itemId ) );
                 }
-                else
-                {
-                    //pnlDetails.Visible = false;
-                }
             }
         }
 
@@ -66,9 +61,23 @@ namespace RockWeb.Blocks.Security
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+            if ( userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).Count() != 0 )
+            {
+                // this key already exists in the database. Show the error and get out of here.
+                nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
@@ -114,9 +123,9 @@ namespace RockWeb.Blocks.Security
 
                 // the description gets saved as a system note for the person
                 var entityTypeService = new EntityTypeService( rockContext );
-                var entityType = entityTypeService.Get("Rock.Model.Person");
+                var entityType = entityTypeService.Get( "Rock.Model.Person" );
                 var noteTypeService = new NoteTypeService( rockContext );
-                var noteType = noteTypeService.Get(entityType.Id, "Timeline");
+                var noteType = noteTypeService.Get( entityType.Id, "Timeline" );
                 var noteService = new NoteService( rockContext );
                 var note = noteService.Get( noteType.Id, restUser.Id ).FirstOrDefault();
                 if ( note == null )
@@ -132,7 +141,6 @@ namespace RockWeb.Blocks.Security
 
                 // the key gets saved in the api key field of a user login (which you have to create if needed)
                 entityType = entityTypeService.Get( "Rock.Security.Authentication.Database" );
-                var userLoginService = new UserLoginService( rockContext );
                 var userLogin = userLoginService.GetByPersonId( restUser.Id ).FirstOrDefault();
                 if ( userLogin == null )
                 {
@@ -153,21 +161,70 @@ namespace RockWeb.Blocks.Security
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbGenerate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbGenerate_Click( object sender, EventArgs e )
         {
             // Generate a unique random 12 digit api key
-            var randomNumber = new Random();
+            var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+            var key = string.Empty;
+            var isGoodKey = false;
+            while ( isGoodKey == false )
+            {
+                key = GenerateKey();
+                var userLogins = userLoginService.Queryable().Where( a => a.ApiKey == key );
+                if ( userLogins.Count() == 0 )
+                {
+                    // no other user login has this key.
+                    isGoodKey = true;
+                }
+            }
+
+            tbKey.Text = key;
         }
 
         #endregion Events
 
         #region Internal Methods
 
+        /// <summary>
+        /// Generates the key.
+        /// </summary>
+        /// <returns></returns>
+        private string GenerateKey()
+        {
+            StringBuilder sb = new StringBuilder();
+            Random rnd = new Random();
+            char[] codeCharacters = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+            int poolSize = codeCharacters.Length;
+
+            for ( int i = 0; i < 12; i++ )
+            {
+                sb.Append( codeCharacters[rnd.Next( poolSize )] );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             var rockContext = new RockContext();
@@ -197,7 +254,7 @@ namespace RockWeb.Blocks.Security
             }
 
             hfRestUserId.Value = restUser.Id.ToString();
-            lTitle.Text = ActionTitle.Edit( "Rest User" ).FormatAsHtmlTitle();
+            lTitle.Text = ActionTitle.Edit( "Rest Key" ).FormatAsHtmlTitle();
             if ( restUser.Id > 0 )
             {
                 tbName.Text = restUser.LastName;
@@ -221,7 +278,6 @@ namespace RockWeb.Blocks.Security
                 {
                     tbKey.Text = userLogin.ApiKey;
                 }
-
             }
         }
 
