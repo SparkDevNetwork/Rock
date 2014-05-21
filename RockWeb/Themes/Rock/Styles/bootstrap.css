@@ -6,8 +6,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../../../Assets/Fonts/fontawesome-webfont.eot?v=4.1.0');
-  src: url('../../../Assets/Fonts/fontawesome-webfont.eot?#iefix&v=4.1.0') format('embedded-opentype'), url('../../../Assets/Fonts/fontawesome-webfont.woff?v=4.1.0') format('woff'), url('../../../Assets/Fonts/fontawesome-webfont.ttf?v=4.1.0') format('truetype'), url('../../../Assets/Fonts/fontawesome-webfont.svg?v=4.1.0#fontawesomeregular') format('svg');
+  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?v=4.1.0');
+  src: url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.eot?#iefix&v=4.1.0') format('embedded-opentype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.woff?v=4.1.0') format('woff'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.ttf?v=4.1.0') format('truetype'), url('../../../Assets/Fonts/FontAwesome/fontawesome-webfont.svg?v=4.1.0#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
