@@ -157,6 +157,14 @@ $('.workflow-action a.js-workflow-action-criteria').click(function (event) {
     $(this).closest('.workflow-action').find('div.conditional-run-criteria').slideToggle();
 });
 
+$(document).on('focusout', '.js-conditional-run-criteria', function (e) {
+    if ( $(this).val() == '' ) {
+        $(this).closest('.workflow-action').find('a.js-workflow-action-criteria').removeClass('criteria-exists');
+    } else {
+        $(this).closest('.workflow-action').find('a.js-workflow-action-criteria').addClass('criteria-exists');
+    }
+});
+
 // fix so that the Reorder button will fire its event, but not the parent event 
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
@@ -338,6 +346,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaAttribute = new RockDropDownList();
             Controls.Add( _ddlCriteriaAttribute );
             _ddlCriteriaAttribute.ID = this.ID + "_ddlCriteriaAttribute";
+            _ddlCriteriaAttribute.CssClass = "js-conditional-run-criteria";
             _ddlCriteriaAttribute.Label = "Conditional Run Criteria";
             _ddlCriteriaAttribute.Help = "Optional criteria to prevent action from running.  If the criteria is not met, the action will be skipped when this activity is processed.";
 
@@ -459,7 +468,8 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-xs btn-link js-workflow-action-criteria'><i class='fa fa-filter'></i></a>" );
+            string criteriaExistsClass = _ddlCriteriaAttribute.SelectedValueAsGuid().HasValue ? " criteria-exists" : string.Empty;
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link js-workflow-action-criteria{0}'><i class='fa fa-filter'></i></a>", criteriaExistsClass ) );
             writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa {0}'></i></a>",
                 Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
