@@ -718,7 +718,6 @@
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
-    <Compile Include="Workflow\Action\CompareAction.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
