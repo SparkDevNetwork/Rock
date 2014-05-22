@@ -2571,12 +2571,15 @@ table.attribute-grid tr th:nth-child(3) {
   cursor: -webkit-zoom-out;
   cursor: -moz-zoom-out;
 }
+.personprofilebar-bio .social-icons {
+  text-align: center;
+}
 .personprofilebar-bio .social-icons .icon {
-  float: left;
   background-color: #428bca;
   margin: 0 2px;
   border-radius: 4px;
   font-size: 16px;
+  display: inline-block;
 }
 .personprofilebar-bio .social-icons .icon a {
   color: #ecf0f3;
@@ -2940,6 +2943,12 @@ span.field-value {
 @media (min-width: 992px) {
   .personprofilebar-bio .personcontact {
     margin-top: 0;
+  }
+  .personprofilebar-bio .social-icons {
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons .icon {
+    float: left;
   }
 }
 /* Large devices (large desktops, 1200px and up) */
