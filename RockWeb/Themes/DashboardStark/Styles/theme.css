@@ -2679,6 +2679,7 @@ table.attribute-grid tr th:nth-child(3) {
   table-layout: fixed;
   height: 40px;
   margin: 0 auto;
+  width: 220px;
 }
 .badge-attendance ul.badge-attendance-chart li {
   position: relative;
