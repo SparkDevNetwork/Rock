@@ -29,7 +29,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) GroupType
+    /// Field Type to select a single (or null) group role filtered by a selected group type
     /// </summary>
     public class GroupRoleFieldType : FieldType, IEntityFieldType
     {
