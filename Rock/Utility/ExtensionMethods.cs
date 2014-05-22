@@ -2045,5 +2045,29 @@ namespace Rock
         }
 
         #endregion
+
+        #region Dictionary<TKey, TValue> extension methods
+
+        /// <summary>
+        /// Adds or Replaces an item in a Dictionary
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if ( !dictionary.ContainsKey( key ) )
+            {
+                dictionary.Add( key, value );
+            }
+            else
+            {
+                dictionary[key] = value;
+            }
+        }
+
+        #endregion
     }
 }
