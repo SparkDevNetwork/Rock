@@ -1155,7 +1155,7 @@ namespace RockWeb.Blocks.Core
 
                 if ( workflowAttributes.Any() )
                 {
-                    wpAttributes.Title = string.Format( "Attributes ({0})", workflowAttributes.Count.ToString( "N0" ) );
+                    wpAttributes.Title = string.Format( "Attributes <small>Count: {0}</small>", workflowAttributes.Count.ToString( "N0" ) );
                 }
                 else
                 {

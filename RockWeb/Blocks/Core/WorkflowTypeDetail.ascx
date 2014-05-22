@@ -68,17 +68,20 @@
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <fieldset>
-                    <legend>
-                        Activities
-                        <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
-                        </span>
-                    </legend>
-                    <div class="workflow-activity-list">
-                        <asp:PlaceHolder ID="phActivities" runat="server" />
-                    </div>
-                </fieldset>
+                <div class="workflow-section-activities">
+
+                    <fieldset>
+                        <legend>
+                            Activities
+                            <span class="pull-right">
+                                <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Activity</asp:LinkButton>
+                            </span>
+                        </legend>
+                        <div class="workflow-activity-list">
+                            <asp:PlaceHolder ID="phActivities" runat="server" />
+                        </div>
+                    </fieldset>
+                </div>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

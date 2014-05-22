@@ -263,7 +263,7 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
                 _hfTitle.RenderControl( writer );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-description js-header-title" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title" );
                 if ( Expanded )
                 {
                     // if the panel is expanded and there are special HeaderControls to show instead of the Title, hide the title (and the header controls will be shown instead)

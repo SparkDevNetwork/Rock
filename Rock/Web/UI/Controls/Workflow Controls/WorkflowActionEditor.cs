@@ -459,7 +459,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left workflow-action-name" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblActionTypeName.Text = _tbActionTypeName.Text;
             _lblActionTypeName.RenderControl( writer );

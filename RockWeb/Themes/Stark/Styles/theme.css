@@ -1949,7 +1949,7 @@ td.grid-col-actions {
     3. Input Sizing
     4. Control Specific Styles
     5. Validation
-
+    6. Custom Controls
 */
 .form-actions {
   padding: 12px 16px;
@@ -2076,6 +2076,9 @@ dl dd {
   color: #d9534f;
   font-weight: 300;
   float: left;
+}
+.btn-controlaligned {
+  margin-top: 24px;
 }
 /*
     Used to manage styles related to Rock's dashboard
@@ -2388,6 +2391,9 @@ dl dd {
   float: left;
   margin-top: 5px;
 }
+.workflow-section-activities {
+  margin-top: 64px;
+}
 .workflow-activities-readonly-header {
   color: #515151;
   left: auto;
@@ -2404,10 +2410,31 @@ dl dd {
   background-color: #dff0d8;
   color: #468847;
 }
+.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
+  color: #468847;
+}
 .workflow-activity .panel-title:before {
   content: "\f1b3";
   font-family: FontAwesome;
   font-weight: normal;
+}
+.workflow-action .workflow-action-name:before {
+  content: "\f1b2";
+  font-family: FontAwesome;
+  font-weight: normal;
+}
+.workflow-action .criteria-exists {
+  background-color: #bbbbbb;
+  color: #333333;
+}
+.workflow-action .conditional-run-criteria {
+  margin-top: -15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  background-color: #dfdfdf;
+}
+.workflow-action .form-action-rows .row {
+  margin-bottom: 12px;
 }
 /*
     Used to manage styles for specific blocks.
