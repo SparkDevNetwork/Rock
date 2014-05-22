@@ -55,6 +55,24 @@ namespace Rock.Model
         public int ActivityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the assigned person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned group identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was activated.
         /// </summary>
         /// <value>
@@ -101,6 +119,22 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned person alias.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias.
+        /// </value>
+        public virtual PersonAlias AssignedPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group.
+        /// </summary>
+        /// <value>
+        /// The assigned group.
+        /// </value>
+        public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this WorkflowActivity instance is active.
@@ -166,7 +200,6 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
-
 
         /// <summary>
         /// Processes this WorkflowAction
@@ -320,8 +353,10 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( m => m.Workflow ).WithMany( m => m.Activities).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( m => m.ActivityType ).WithMany().HasForeignKey( m => m.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
         }
     }
 
