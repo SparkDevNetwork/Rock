@@ -613,24 +613,56 @@ namespace Rock.Web.UI
                     ModelContext = new Dictionary<string, Data.KeyEntity>();
                     try
                     {
+                        // first search cookies, but pageContext can replace it
+                        if ( Request.Cookies["Rock:context"] != null )
+                        {
+                            for ( int valueIndex = 0; valueIndex < Request.Cookies["Rock:context"].Values.Count; valueIndex++ )
+                            {
+                                string cookieValue = Request.Cookies["Rock:context"].Values[valueIndex];
+                                if ( !string.IsNullOrWhiteSpace(cookieValue) )
+                                {
+                                    try
+                                    {
+                                        string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                                        string[] parts = contextItem.Split( '|' );
+                                        if ( parts.Length == 2 )
+                                        {
+                                            ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // intentionally ignore exception in case cookie is corrupt
+                                    }
+                                }
+                            }
+                        }
+
                         foreach ( var pageContext in _pageCache.PageContexts )
                         {
-                            int contextId = 0;
-                            if ( Int32.TryParse( PageParameter( pageContext.Value ), out contextId ) )
-                                ModelContext.Add( pageContext.Key, new Data.KeyEntity( contextId ) );
+                            int? contextId = PageParameter( pageContext.Value ).AsIntegerOrNull();
+                            if ( contextId.HasValue )
+                            {
+                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
+                            }
                         }
 
                         char[] delim = new char[1] { ',' };
-                        foreach ( string param in PageParameter( "context" ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
+                        foreach ( string param in PageParameter( "context", true ).Split( delim, StringSplitOptions.RemoveEmptyEntries ) )
                         {
                             string contextItem = Rock.Security.Encryption.DecryptString( param );
                             string[] parts = contextItem.Split( '|' );
                             if ( parts.Length == 2 )
-                                ModelContext.Add( parts[0], new Data.KeyEntity( parts[1] ) );
+                            {
+                                ModelContext.AddOrReplace( parts[0], new Data.KeyEntity( parts[1] ) );
+                            }
                         }
 
                     }
-                    catch { }
+                    catch 
+                    {
+                        // intentionally ignore exception
+                    }
 
                     // set viewstate on/off
                     this.EnableViewState = _pageCache.EnableViewState;
@@ -717,7 +749,7 @@ namespace Rock.Web.UI
                             blockWrapper.ClientIDMode = ClientIDMode.Static;
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
 
-                            string blockTypeCss = block.BlockType.Name;
+                            string blockTypeCss = block.BlockType != null ? block.BlockType.Name : "";
                             var parts = blockTypeCss.Split( new char[] { '>' } );
                             if ( parts.Length > 1 )
                             {
@@ -751,7 +783,7 @@ namespace Rock.Web.UI
                                 {
                                     NotificationBox nbBlockLoad = new NotificationBox();
                                     nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
-                                    nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name);
+                                    nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
                                     nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );
                                     nbBlockLoad.Dismissable = true;
                                     control = nbBlockLoad;
@@ -1281,6 +1313,26 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the context entity types.
+        /// </summary>
+        /// <returns></returns>
+        public List<EntityTypeCache> GetContextEntityTypes()
+        {
+            var result = new List<EntityTypeCache>();
+
+            foreach (var item in this.ModelContext.Keys)
+            {
+                var entityType = EntityTypeCache.Read( item );
+                if ( entityType != null )
+                {
+                    result.Add( entityType );
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets the current context object for a given entity type.
         /// </summary>
         /// <param name="entity">The <see cref="Rock.Web.Cache.EntityTypeCache"/> containing a reference to the entity.</param>
@@ -1374,7 +1426,6 @@ namespace Rock.Web.UI
 
             return null;
         }
-
 
         /// <summary>
         /// Adds an update trigger for when the block instance properties are updated.
@@ -1643,8 +1694,11 @@ namespace Rock.Web.UI
         /// value
         /// </summary>
         /// <param name="name">A <see cref="System.String" /> representing the name of the page parameter.</param>
-        /// <returns>A <see cref="System.String"/> containing the parameter value; otherwise an empty string.</returns>
-        public string PageParameter( string name )
+        /// <param name="searchFormParams">if set to <c>true</c> [search form parameters].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> containing the parameter value; otherwise an empty string.
+        /// </returns>
+        public string PageParameter( string name, bool searchFormParams = false )
         {
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
@@ -1653,7 +1707,7 @@ namespace Rock.Web.UI
                     return (string)Page.RouteData.Values[name];
                 }
 
-                if ( !String.IsNullOrEmpty( Request.QueryString[name] ) )
+                if ( !string.IsNullOrEmpty( Request.QueryString[name] ) )
                 {
                     return Request.QueryString[name];
                 }
@@ -1661,6 +1715,14 @@ namespace Rock.Web.UI
                 if ( PageReference.Parameters.ContainsKey( name ) )
                 {
                     return PageReference.Parameters[name];
+                }
+
+                if ( searchFormParams )
+                {
+                    if ( !string.IsNullOrEmpty( this.Page.Request.Params[name] ) )
+                    {
+                        return this.Page.Request.Params[name];
+                    }
                 }
             }
 
