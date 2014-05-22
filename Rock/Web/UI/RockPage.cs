@@ -662,11 +662,9 @@ namespace Rock.Web.UI
                     {
                         Page.Trace.Warn( "Adding popup controls (footer elements)" );
                         AddPopupControls();
-                        if ( canAdministratePage )
-                        {
-                            Page.Trace.Warn( "Adding zone config elements" );
-                            AddZoneConfigElements();
-                        }
+
+                        Page.Trace.Warn( "Adding zone elements" );
+                        AddZoneElements( canAdministratePage );
                     }
 
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
@@ -1437,9 +1435,12 @@ namespace Rock.Web.UI
         /// <summary>
         /// Adds the config elements.
         /// </summary>
-        private void AddZoneConfigElements()
+        private void AddZoneElements( bool canConfigPage)
         {
-            AddBlockMove();
+            if ( canConfigPage )
+            {
+                AddBlockMove();
+            }
 
             // Add Zone Wrappers
             foreach ( KeyValuePair<string, KeyValuePair<string, Zone>> zoneControl in this.Zones )
@@ -1451,43 +1452,46 @@ namespace Rock.Web.UI
                 parent.Controls.AddAt( parent.Controls.IndexOf( control ), zoneWrapper );
                 zoneWrapper.ID = string.Format( "zone-{0}", zoneControl.Key.ToLower() );
                 zoneWrapper.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                zoneWrapper.Attributes.Add( "class", "zone-instance can-configure" );
+                zoneWrapper.Attributes.Add( "class", "zone-instance" + ( canConfigPage ? " can-configure" : "" ) );
 
-                // Zone content configuration widget
-                HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
-                zoneWrapper.Controls.Add( zoneConfig );
-                zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
+                if ( canConfigPage )
+                {
+                    // Zone content configuration widget
+                    HtmlGenericControl zoneConfig = new HtmlGenericControl( "div" );
+                    zoneWrapper.Controls.Add( zoneConfig );
+                    zoneConfig.Attributes.Add( "class", "zone-configuration config-bar" );
 
-                HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
-                zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
-                zoneConfigLink.Attributes.Add( "href", "#" );
-                zoneConfig.Controls.Add( zoneConfigLink );
-                HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                iZoneConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
-                zoneConfigLink.Controls.Add( iZoneConfig );
+                    HtmlGenericControl zoneConfigLink = new HtmlGenericControl( "a" );
+                    zoneConfigLink.Attributes.Add( "class", "zoneinstance-config" );
+                    zoneConfigLink.Attributes.Add( "href", "#" );
+                    zoneConfig.Controls.Add( zoneConfigLink );
+                    HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
+                    iZoneConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
+                    zoneConfigLink.Controls.Add( iZoneConfig );
 
-                HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
-                zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
-                zoneConfig.Controls.Add( zoneConfigBar );
+                    HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
+                    zoneConfigBar.Attributes.Add( "class", "zone-configuration-bar" );
+                    zoneConfig.Controls.Add( zoneConfigBar );
 
-                HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
-                zoneConfigTitle.InnerText = zoneControl.Value.Key;
-                zoneConfigBar.Controls.Add( zoneConfigTitle );
+                    HtmlGenericControl zoneConfigTitle = new HtmlGenericControl( "span" );
+                    zoneConfigTitle.InnerText = zoneControl.Value.Key;
+                    zoneConfigBar.Controls.Add( zoneConfigTitle );
 
-                // Configure Blocks icon
-                HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
-                zoneConfigBar.Controls.Add( aBlockConfig );
-                aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
-                aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                aBlockConfig.Attributes.Add( "class", "zone-blocks" );
-                aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", _pageCache.Id, zoneControl.Key ) ) + "')" );
-                aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
-                aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
-                //aBlockConfig.InnerText = "Blocks";
-                HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
-                aBlockConfig.Controls.Add( iZoneBlocks );
+                    // Configure Blocks icon
+                    HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
+                    zoneConfigBar.Controls.Add( aBlockConfig );
+                    aBlockConfig.ID = string.Format( "aBlockConfig-{0}", zoneControl.Key );
+                    aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                    aBlockConfig.Attributes.Add( "class", "zone-blocks" );
+                    aBlockConfig.Attributes.Add( "height", "500px" );
+                    aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", _pageCache.Id, zoneControl.Key ) ) + "')" );
+                    aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
+                    aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
+                    //aBlockConfig.InnerText = "Blocks";
+                    HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
+                    iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
+                    aBlockConfig.Controls.Add( iZoneBlocks );
+                }
 
                 HtmlGenericContainer zoneContent = new HtmlGenericContainer( "div" );
                 zoneContent.Attributes.Add( "class", "zone-content" );
