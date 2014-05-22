@@ -1,5 +1,14 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EditPerson.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.EditPerson" %>
 
+
+<%--
+    ******************************************************************************************************************************
+    * NOTE: The Security/EditMyAccount.ascx block has very similiar functionality.  If updating this block, make sure to check
+    * that block also.  It may need the same updates.
+    ******************************************************************************************************************************
+--%>
+
+
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
         <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
