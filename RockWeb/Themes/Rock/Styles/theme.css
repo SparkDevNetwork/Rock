@@ -2404,6 +2404,11 @@ dl dd {
   background-color: #dff0d8;
   color: #468847;
 }
+.workflow-activity .panel-title:before {
+  content: "\f1b3";
+  font-family: FontAwesome;
+  font-weight: normal;
+}
 /*
     Used to manage styles for specific blocks.
 
