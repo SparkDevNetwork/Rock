@@ -117,12 +117,14 @@
     }
 
     .social-icons {
+        text-align: center;
+
         .icon {
-            float: left;
             background-color: @accent-bold-color;
             margin: 0 2px;
             border-radius: @border-radius-base;
             font-size: 16px;
+            display: inline-block;
 
             a {
                 color: @accent-bold-text-color;
@@ -629,6 +631,13 @@ span.field-value {
     .personprofilebar-bio {
         .personcontact {
             margin-top: 0;
+        }
+
+        .social-icons {
+            text-align: left;
+            .icon {
+                float: left;
+            }
         }
     }
 }
