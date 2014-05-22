@@ -70,12 +70,28 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
-            if ( userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).Count() != 0 )
+            var userLogin = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
+            if ( userLogin != null )
             {
-                // this key already exists in the database. Show the error and get out of here.
-                nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
-                nbWarningMessage.Visible = true;
-                return;
+                if ( int.Parse( hfRestUserId.Value ) > 0 )
+                {
+                    var personService = new PersonService( rockContext );
+                    var user = userLoginService.GetByPersonId( int.Parse( hfRestUserId.Value ) ).FirstOrDefault();
+                    if ( userLogin.UserName != user.UserName )
+                    {
+                        // this key already exists in the database. Show the error and get out of here.
+                        nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
+                        nbWarningMessage.Visible = true;
+                        return;
+                    }
+                }
+                else
+                {
+                    // this key already exists in the database. Show the error and get out of here.
+                    nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
+                    nbWarningMessage.Visible = true;
+                    return;
+                }
             }
 
             long key;
@@ -150,7 +166,7 @@ namespace RockWeb.Blocks.Security
 
                 // the key gets saved in the api key field of a user login (which you have to create if needed)
                 entityType = entityTypeService.Get( "Rock.Security.Authentication.Database" );
-                var userLogin = userLoginService.GetByPersonId( restUser.Id ).FirstOrDefault();
+                userLogin = userLoginService.GetByPersonId( restUser.Id ).FirstOrDefault();
                 if ( userLogin == null )
                 {
                     userLogin = new UserLogin();
