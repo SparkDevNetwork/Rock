@@ -252,6 +252,11 @@
 
 // 3. Workflow
 // -------------------------
+
+.workflow-section-activities {
+    margin-top: 64px;
+}
+
 .workflow-activities-readonly-header
 {
 	color: #515151;
@@ -275,6 +280,10 @@
        & > .panel-heading {
             background-color: @state-success-bg;
             color: @state-success-text;
+           
+            a.btn-link {
+                color: @state-success-text;
+            }
         }
     }
 
@@ -282,5 +291,29 @@
         content: @fa-var-cubes;
         font-family: FontAwesome;
         font-weight: normal;
+    }
+}
+
+.workflow-action {
+    .workflow-action-name:before {
+        content: @fa-var-cube;
+        font-family: FontAwesome;
+        font-weight: normal;
+    }
+
+    .criteria-exists {
+        background-color: darken(@accent-color, 10%);
+        color: @accent-text-color;
+    }
+
+    .conditional-run-criteria {
+        margin-top: -15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        background-color: lighten(@accent-color, 4%);
+    }
+
+    .form-action-rows .row {
+        margin-bottom: 12px;
     }
 }

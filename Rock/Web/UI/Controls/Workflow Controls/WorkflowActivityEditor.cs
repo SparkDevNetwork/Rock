@@ -342,7 +342,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _lblInactive.ClientIDMode = ClientIDMode.Static;
             _lblInactive.ID = this.ID + "_lblInactive";
             _lblInactive.CssClass = "label label-important pull-right";
-            _lblInactive.Text = "Inactive";
+            _lblInactive.Text = "<span class='label label-danger'>Inactive</span>";
 
             _lbDeleteActivityType = new LinkButton();
             Controls.Add( _lbDeleteActivityType );

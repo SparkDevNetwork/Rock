@@ -176,26 +176,13 @@ span.data-view-filter-label {
 
 /* Style the inactive and activated with workflow activity headers differently */
 
-div.workflow-activity-list > section.workflow-activity-inactive > .panel-heading {
-    color: #A4A4A4;
-    background-color: #E6E6E6;
-    border-color: #E6E6E6;
-}
-
-div.workflow-action-list a.criteria-exists {
-    color: red;
-}
 
 /* Get rid of spacing on the form field grid when editing a form entry action */
 tbody.workflow-formfield-list td > div.checkbox {
-    margin-top: 0px;
+    --margin-top: 0px;
 }
 tbody.workflow-formfield-list td > div.checkbox:last-child { 
-    margin-bottom: 0px;
+    --margin-bottom: 0px;
 }
 
-/* Add some spacing between the rows where actions are entered for a form entry action */
-div.form-action-rows > div.row {
-    margin-bottom: 12px;
-}
 /*********************************************************************************************/
