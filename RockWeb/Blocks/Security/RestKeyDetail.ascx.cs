@@ -78,6 +78,15 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
+            long key;
+            bool isNumeric = long.TryParse( tbKey.Text, out key );
+            if ( !isNumeric )
+            {
+                nbWarningMessage.Text = "The API Key has to be numeric. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
+                nbWarningMessage.Visible = true;
+                return;
+            }
+
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
