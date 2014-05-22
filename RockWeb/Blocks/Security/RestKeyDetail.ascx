@@ -13,13 +13,18 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="row">
+                            <div class="col-md-12">
+                                <div class="control-label">Name</div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="col-sm-6">
-                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
+                                <Rock:RockTextBox ID="tbName" runat="server" CssClass="form-group" />
                             </div>
                             <div class="col-sm-6">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" />
+                                        <asp:CheckBox ID="cbActive" runat="server" Checked="true" Text="Active" />
                                     </div>
                                 </div>
                             </div>
@@ -32,12 +37,20 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-12">
+                        <div class="control-label">Key</div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbKey" runat="server" Label="Key" MaxLength="12" Help="Add a 12 digit API key for this user." />
+                        <Rock:RockTextBox ID="tbKey" runat="server" MaxLength="12" CssClass="form-group" />
                     </div>
                     <div class="col-md-6">
                         <Rock:BootstrapButton ID="lbGenerate" runat="server" Text="Generate Key" CssClass="btn btn-primary" OnClick="lbGenerate_Click" />
                     </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12"></div>
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
