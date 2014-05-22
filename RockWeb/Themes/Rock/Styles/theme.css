@@ -541,8 +541,12 @@ div.tagsinput {
   overflow-y: auto;
   float: left;
 }
+.taglist {
+  text-align: center;
+}
 .taglist .tag {
-  float: left;
+  --float: left;
+  display: inline-block;
   height: 22px;
   line-height: 18px;
   position: relative;
@@ -630,6 +634,9 @@ div.tagsinput input {
   margin: -2px 0 0 10px;
   border-radius: 4px;
   padding: 2px;
+  display: block;
+  clear: both;
+  margin: 0 auto;
 }
 div.tagsinput input:hover,
 div.tagsinput input:focus {
@@ -689,6 +696,18 @@ div.tagsinput .tags_clear {
 }
 .tag-letterlist a {
   font-weight: 600;
+}
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 768px) {
+  .taglist {
+    text-align: left;
+  }
+  .taglist .tag {
+    float: left;
+  }
+  div.tagsinput input {
+    margin: 0;
+  }
 }
 .switch {
   display: inline-block;
@@ -2932,6 +2951,12 @@ span.field-value {
     text-align: left;
     padding-bottom: 0;
   }
+  .personprofilebar-bio .social-icons {
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons .icon {
+    float: left;
+  }
   .personprofilebar-badge .badge-group {
     text-align: left;
   }
@@ -2943,12 +2968,6 @@ span.field-value {
 @media (min-width: 992px) {
   .personprofilebar-bio .personcontact {
     margin-top: 0;
-  }
-  .personprofilebar-bio .social-icons {
-    text-align: left;
-  }
-  .personprofilebar-bio .social-icons .icon {
-    float: left;
   }
 }
 /* Large devices (large desktops, 1200px and up) */
