@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("com.ccvonline")]
+[assembly: AssemblyTitle("com.ccvonline.SampleProject")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("com.ccvonline")]
+[assembly: AssemblyProduct("com.ccvonline.SampleProject")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5073694c-880a-4487-931c-b11a1cc6b409")]
+[assembly: Guid("b77bb9e7-74de-4fe7-b4a8-427226bc5a4b")]
 
 // Version information for an assembly consists of the following four values:
 //

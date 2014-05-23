@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A5B47749-D8B2-4223-822B-26208BCE34F4}</ProjectGuid>
+    <ProjectGuid>{496EC024-71ED-4AD1-B677-2A3FA60CCD05}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.ccvonline.CommandCenter</RootNamespace>
-    <AssemblyName>com.ccvonline.CommandCenter</AssemblyName>
+    <RootNamespace>com.ccvonline.SampleProject</RootNamespace>
+    <AssemblyName>com.ccvonline.SampleProject</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -54,10 +54,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Rock">
+    <Reference Include="Rock, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Rest">
+    <Reference Include="Rock.Rest, Version=1.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -78,7 +80,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.5.1.2\lib\net45\System.Web.Http.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Http.OData">
+    <Reference Include="System.Web.Http.OData, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.AspNet.WebApi.OData.5.1.2\lib\net45\System.Web.Http.OData.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Http.WebHost, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -92,22 +95,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\CommandCenterContext.cs" />
-    <Compile Include="Data\CommandCenterService.cs" />
-    <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Data\SampleProjectContext.cs" />
+    <Compile Include="Data\SampleProjectService.cs" />
     <Compile Include="Migrations\002_AddSystemData.cs" />
-    <Compile Include="Model\Recording.cs" />
-    <Compile Include="Model\RecordingService.cs" />
+    <Compile Include="Migrations\001_CreateDb.cs" />
+    <Compile Include="Model\ReferralAgency.cs" />
+    <Compile Include="Model\ReferralAgencyService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rest\RecordingsController.cs" />
+    <Compile Include="Rest\ReferralAgenciesController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\com.ccvonline\com.ccvonline.csproj">
-      <Project>{c61f05c4-f947-4a32-84c1-413bdfa912fa}</Project>
+      <Project>{83775a9e-0455-4801-b1ef-dc70d786d09b}</Project>
       <Name>com.ccvonline</Name>
     </ProjectReference>
   </ItemGroup>

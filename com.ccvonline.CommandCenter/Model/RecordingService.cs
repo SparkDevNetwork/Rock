@@ -1,20 +1,4 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -29,6 +13,12 @@ namespace com.ccvonline.CommandCenter.Model
     /// </summary>
     public class RecordingService : CommandCenterService<Recording>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecordingService"/> class.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public RecordingService( CommandCenterContext context ) : base( context ) { }
+
         /// <summary>
         /// Sends the recording request.
         /// </summary>
@@ -83,14 +73,14 @@ namespace com.ccvonline.CommandCenter.Model
         /// <param name="recordingName">Name of the recording.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Recording StartRecording( int? campusId, string label, string app, string streamName, string recordingName, int? personId )
+        public Recording StartRecording( int? campusId, string label, string app, string streamName, string recordingName )
         {
             Rock.Net.RockWebResponse response = SendRecordingRequest( app, streamName, recordingName, "start" );
 
             if ( response != null && response.HttpStatusCode == System.Net.HttpStatusCode.OK )
             {
                 Recording recording = new Recording();
-                this.Add( recording, personId );
+                this.Add( recording );
 
                 recording.CampusId = campusId;
                 recording.Date = DateTime.Today;
@@ -100,7 +90,8 @@ namespace com.ccvonline.CommandCenter.Model
                 recording.RecordingName = recordingName;
                 recording.StartTime = DateTime.Now;
                 recording.StartResponse = ParseResponse( response.Message );
-                this.Save( recording, personId );
+
+                this.Context.SaveChanges();
 
                 return recording;
             }
@@ -118,7 +109,7 @@ namespace com.ccvonline.CommandCenter.Model
         /// <param name="recordingName">Name of the recording.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Recording StopRecording( int? campusId, string label, string app, string streamName, string recordingName, int? personId )
+        public Recording StopRecording( int? campusId, string label, string app, string streamName, string recordingName )
         {
             Rock.Net.RockWebResponse response = SendRecordingRequest( app, streamName, recordingName, "stop" );
 
@@ -142,29 +133,16 @@ namespace com.ccvonline.CommandCenter.Model
                 {
                     recording.StopTime = stopTime;
                     recording.StopResponse = responseMessage;
-                    this.Save( recording, personId );
 
                     stoppedRecording = recording;
                 }
+
+                this.Context.SaveChanges();
 
                 return stoppedRecording;
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Determines whether this instance can delete the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
-        /// </returns>
-        public bool CanDelete( Recording item, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-            return true;
         }
 
     }

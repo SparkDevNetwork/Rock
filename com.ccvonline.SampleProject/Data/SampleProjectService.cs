@@ -1,17 +1,17 @@
-﻿using Rock.Data;
+using Rock.Data;
 
-namespace com.ccvonline.CommandCenter.Data
+namespace com.ccvonline.SampleProject.Data
 {
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class CommandCenterService<T> : Rock.Data.Service<T> where T : Rock.Data.Entity<T>, new()
+    public class SampleProjectService<T> : Rock.Data.Service<T> where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommandCenterService{T}"/> class.
+        /// Initializes a new instance of the <see cref="DocumentationService{T}"/> class.
         /// </summary>
-        public CommandCenterService( CommandCenterContext context )
+        public SampleProjectService( SampleProjectContext context )
             : base( context )
         {
         }
@@ -27,6 +27,5 @@ namespace com.ccvonline.CommandCenter.Data
             errorMessage = string.Empty;
             return true;
         }
-
     }
 }

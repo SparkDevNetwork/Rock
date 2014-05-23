@@ -1,36 +1,30 @@
-﻿using System.Data.Entity;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Web;
 
-using com.ccvonline.CommandCenter.Model;
+using com.ccvonline.SampleProject.Model;
 
-namespace com.ccvonline.CommandCenter.Data
+namespace com.ccvonline.SampleProject.Data
 {
     /// <summary>
     /// 
     /// </summary>
-    public partial class CommandCenterContext : Rock.Data.DbContext
+    public partial class SampleProjectContext : Rock.Data.DbContext
     {
-        
+
         #region Models
 
-        /// <summary>
-        /// Gets or sets the commandCenter competencies.
-        /// </summary>
-        /// <value>
-        /// The commandCenter competencies.
-        /// </value>
-        public DbSet<Recording> Recordings { get; set; }
+        public DbSet<ReferralAgency> ReferralAgencies { get; set; }
 
-        #endregion        
-        
+        #endregion
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommandCenterContext"/> class.
+        /// Initializes a new instance of the <see cref="SampleProjectContext"/> class.
         /// </summary>
-        public CommandCenterContext()
+        public SampleProjectContext()
             : base( "RockContext" )
         {
-            // intentionally left blank
+             //intentionally left blank
         }
 
         /// <summary>

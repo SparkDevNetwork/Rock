@@ -4,8 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 
-using com.CcvOnline.SampleProject.Data;
-using com.CcvOnline.SampleProject.Model;
+using com.ccvonline.SampleProject.Data;
+using com.ccvonline.SampleProject.Model;
 
 using Rock;
 using Rock.Attribute;
@@ -210,7 +210,7 @@ namespace RockWeb.Plugins.org_RockSolidChurch.SampleProject
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var definedType = DefinedTypeCache.Read( com.CcvOnline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Read( com.ccvonline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
             if ( definedType != null )
             {
                 ddlAgencyType.BindToDefinedType( definedType, true );

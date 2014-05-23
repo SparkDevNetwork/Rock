@@ -1,20 +1,4 @@
-﻿// <copyright>
-// Copyright 2013 by the Spark Development Network
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Configuration;
@@ -24,6 +8,7 @@ using System.Web;
 using System.Web.Configuration;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -72,14 +57,19 @@ namespace com.ccvonline.Authentication
             bool convert = false;
             if ( valid && Boolean.TryParse( GetAttributeValue( "ConvertToDatabaseLogin" ), out convert ) && convert )
             {
-                // Convert to database type
-                var service = new UserLoginService();
-                var rockUser = service.GetByUserName( user.UserName );
-                if ( rockUser != null )
+                var databaseAuthEntityType = Rock.Web.Cache.EntityTypeCache.Read( "Rock.Security.Authentication.Database" );
+                if ( databaseAuthEntityType != null )
                 {
-                    rockUser.Password = DatabaseEncodePassword( password, encryptionKey );
-                    rockUser.ServiceName = "Rock.Security.Authentication.Database";
-                    service.Save( rockUser, null );
+                    // Convert to database type
+                    var rockContext = new RockContext();
+                    var service = new UserLoginService( rockContext );
+                    var rockUser = service.GetByUserName( user.UserName );
+                    if ( rockUser != null )
+                    {
+                        rockUser.Password = DatabaseEncodePassword( password, encryptionKey );
+                        rockUser.EntityTypeId = databaseAuthEntityType.Id;
+                        rockContext.SaveChanges();
+                    }
                 }
             }
 
@@ -174,5 +164,45 @@ namespace com.ccvonline.Authentication
             return returnBytes;
         }
 
+
+        public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Uri GenerateLoginUrl( HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ImageUrl()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsReturningFromAuthentication( HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool RequiresRemoteAuthentication
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override AuthenticationServiceType ServiceType
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override bool SupportsChangePassword
+        {
+            get { throw new NotImplementedException(); }
+        }
     }
 }
