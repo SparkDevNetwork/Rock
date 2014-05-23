@@ -99,7 +99,6 @@ namespace Rock.Model
             target.IsGridColumn = source.IsGridColumn;
             target.DefaultValue = source.DefaultValue;
             target.IsMultiValue = source.IsMultiValue;
-            target.IsReadOnly = source.IsReadOnly;
             target.IsRequired = source.IsRequired;
             target.IconCssClass = source.IconCssClass;
             target.CreatedDateTime = source.CreatedDateTime;
