@@ -146,10 +146,17 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
+            var userLoginService = new UserLoginService( rockContext );
             var restUser = personService.Get( e.RowKeyId );
             if ( restUser != null )
             {
                 restUser.RecordStatusValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+
+                // remove all user logins for key
+                foreach ( var login in restUser.Users.ToList() )
+                {
+                    userLoginService.Delete( login );
+                }
                 rockContext.SaveChanges();
             }
 
