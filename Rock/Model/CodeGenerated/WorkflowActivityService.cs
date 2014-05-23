@@ -89,6 +89,8 @@ namespace Rock.Model
         {
             target.WorkflowId = source.WorkflowId;
             target.ActivityTypeId = source.ActivityTypeId;
+            target.AssignedPersonAliasId = source.AssignedPersonAliasId;
+            target.AssignedGroupId = source.AssignedGroupId;
             target.ActivatedDateTime = source.ActivatedDateTime;
             target.LastProcessedDateTime = source.LastProcessedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;

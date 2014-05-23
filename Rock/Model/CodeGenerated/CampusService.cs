@@ -111,6 +111,7 @@ namespace Rock.Model
             target.LocationId = source.LocationId;
             target.PhoneNumber = source.PhoneNumber;
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;
+            target.ServiceTimes = source.ServiceTimes;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

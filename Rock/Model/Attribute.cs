@@ -159,7 +159,16 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the is read only.
+        /// </summary>
+        /// <value>
+        /// The is read only.
+        /// </value>
+        [DataMember]
+        public bool? IsReadOnly { get; set; }
+
         /// <summary>
         /// Gets or sets a flag indicating if a value is required.
         /// </summary>
