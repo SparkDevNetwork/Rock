@@ -72,27 +72,12 @@ namespace RockWeb.Blocks.Security
             var userLoginService = new UserLoginService( rockContext );
 
             var userLogin = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
-            if ( userLogin != null )
+            if ( userLogin != null && userLogin.PersonId != int.Parse( hfRestUserId.Value ) )
             {
-                if ( int.Parse( hfRestUserId.Value ) > 0 )
-                {
-                    var personService = new PersonService( rockContext );
-                    var user = userLoginService.GetByPersonId( int.Parse( hfRestUserId.Value ) ).FirstOrDefault();
-                    if ( userLogin.UserName != user.UserName )
-                    {
-                        // this key already exists in the database. Show the error and get out of here.
-                        nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
-                        nbWarningMessage.Visible = true;
-                        return;
-                    }
-                }
-                else
-                {
-                    // this key already exists in the database. Show the error and get out of here.
-                    nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
-                    nbWarningMessage.Visible = true;
-                    return;
-                }
+                // this key already exists in the database. Show the error and get out of here.
+                nbWarningMessage.Text = "This API Key already exists. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
+                nbWarningMessage.Visible = true;
+                return;
             }
 
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
