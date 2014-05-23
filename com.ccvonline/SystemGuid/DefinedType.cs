@@ -1,9 +1,9 @@
 using System;
 
-namespace com.CcvOnline.SystemGuid
+namespace com.ccvonline.SystemGuid
 {
     /// <summary>
-    /// System Defined Types used specifically by the com.CcvOnline.* Plugins
+    /// System Defined Types used specifically by the com.ccvonline.* Plugins
     /// </summary>
     public static class DefinedType
     {

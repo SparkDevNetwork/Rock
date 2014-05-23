@@ -7,8 +7,8 @@
     <ProjectGuid>{83775A9E-0455-4801-B1EF-DC70D786D09B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.CcvOnline</RootNamespace>
-    <AssemblyName>com.CcvOnline</AssemblyName>
+    <RootNamespace>com.ccvonline</RootNamespace>
+    <AssemblyName>com.ccvonline</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

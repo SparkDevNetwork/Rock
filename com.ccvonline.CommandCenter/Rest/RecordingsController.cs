@@ -4,12 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 
-using com.CcvOnline.CommandCenter.Model;
+using com.ccvonline.CommandCenter.Model;
 
 using Rock.Rest;
 using Rock.Rest.Filters;
 
-namespace com.CcvOnline.CommandCenter.Rest
+namespace com.ccvonline.CommandCenter.Rest
 {
     /// <summary>
     /// Recordings REST API
@@ -29,7 +29,7 @@ namespace com.CcvOnline.CommandCenter.Rest
         public void AddRoutes( System.Web.Routing.RouteCollection routes )
         {
             routes.MapHttpRoute(
-                name: "com.CcvOnline.CommandCenter.Recording",
+                name: "com.ccvonline.CommandCenter.Recording",
                 routeTemplate: "api/Recordings/{action}/{campusId}/{label}/{app}/{stream}/{recording}",
                 defaults: new
                 {
@@ -37,7 +37,7 @@ namespace com.CcvOnline.CommandCenter.Rest
                 } );
 
             routes.MapHttpRoute(
-                name: "com.CcvOnline.CommandCenter.RecordingDate",
+                name: "com.ccvonline.CommandCenter.RecordingDate",
                 routeTemplate: "api/Recordings/dates/{qualifier}",
                 defaults: new
                 {

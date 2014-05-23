@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace com.CcvOnline.SystemGuid
+namespace com.ccvonline.SystemGuid
 {
     /// <summary>
-    /// Static Guids for DefinedValues used specifically by the com.CcvOnline.* Plugins
+    /// Static Guids for DefinedValues used specifically by the com.ccvonline.* Plugins
     /// </summary>
     public static class DefinedValue
     {

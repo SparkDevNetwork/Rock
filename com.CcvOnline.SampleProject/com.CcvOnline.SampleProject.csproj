@@ -7,8 +7,8 @@
     <ProjectGuid>{496EC024-71ED-4AD1-B677-2A3FA60CCD05}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.CcvOnline.SampleProject</RootNamespace>
-    <AssemblyName>com.CcvOnline.SampleProject</AssemblyName>
+    <RootNamespace>com.ccvonline.SampleProject</RootNamespace>
+    <AssemblyName>com.ccvonline.SampleProject</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -110,9 +110,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\com.CcvOnline\com.CcvOnline.csproj">
+    <ProjectReference Include="..\com.ccvonline\com.ccvonline.csproj">
       <Project>{83775a9e-0455-4801-b1ef-dc70d786d09b}</Project>
-      <Name>com.CcvOnline</Name>
+      <Name>com.ccvonline</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

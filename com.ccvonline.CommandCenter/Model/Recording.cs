@@ -8,17 +8,17 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.CcvOnline.Data;
-using com.CcvOnline.CommandCenter.Data;
+using com.ccvonline.Data;
+using com.ccvonline.CommandCenter.Data;
 
 using Rock.Model;
 
-namespace com.CcvOnline.CommandCenter.Model
+namespace com.ccvonline.CommandCenter.Model
 {
     /// <summary>
     /// 
     /// </summary>
-    [Table( "_com_CcvOnline_CommandCenter_Recording" )]
+    [Table( "_com_ccvonline_CommandCenter_Recording" )]
     [DataContract]
     public class Recording : Model<Recording>
     {

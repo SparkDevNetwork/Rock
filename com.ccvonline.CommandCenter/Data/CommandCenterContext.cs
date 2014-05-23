@@ -2,9 +2,9 @@
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Web;
 
-using com.CcvOnline.CommandCenter.Model;
+using com.ccvonline.CommandCenter.Model;
 
-namespace com.CcvOnline.CommandCenter.Data
+namespace com.ccvonline.CommandCenter.Data
 {
     /// <summary>
     /// 

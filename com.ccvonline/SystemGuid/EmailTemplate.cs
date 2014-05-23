@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace com.CcvOnline.SystemGuid
+namespace com.ccvonline.SystemGuid
 {
     /// <summary>
-    /// Email Templates used specifically by the com.CcvOnline.* Plugins
+    /// Email Templates used specifically by the com.ccvonline.* Plugins
     /// </summary>
     public static class EmailTemplate
     {

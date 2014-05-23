@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Rock.Plugin;
 
-namespace com.CcvOnline.SampleProject.Migrations
+namespace com.ccvonline.SampleProject.Migrations
 {
     [MigrationNumber( 1, "1.0.8" )]
     public class CreateDb : Migration

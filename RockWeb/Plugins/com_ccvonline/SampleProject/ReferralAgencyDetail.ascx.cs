@@ -6,8 +6,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using com.CcvOnline.SampleProject.Data;
-using com.CcvOnline.SampleProject.Model;
+using com.ccvonline.SampleProject.Data;
+using com.ccvonline.SampleProject.Model;
 
 using Rock;
 using Rock.Constants;
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.org_RockSolidChurch.SampleProject
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            var definedType = DefinedTypeCache.Read( com.CcvOnline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Read( com.ccvonline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
             if (definedType != null)
             {
                 ddlAgencyType.BindToDefinedType( definedType, true );

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace com.CcvOnline.SystemGuid
+namespace com.ccvonline.SystemGuid
 {
     /// <summary>
     /// System Attribute Guids

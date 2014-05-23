@@ -2,12 +2,12 @@ using System.Linq;
 using System.Net;
 using System.Web.Http;
 
-using com.CcvOnline.SampleProject.Model;
+using com.ccvonline.SampleProject.Model;
 
 using Rock.Rest;
 using Rock.Rest.Filters;
 
-namespace com.CcvOnline.SampleProject.Rest
+namespace com.ccvonline.SampleProject.Rest
 {
     /// <summary>
     /// REST API for Referral Agencies

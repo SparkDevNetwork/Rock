@@ -6,7 +6,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "http://localh
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.1"
-		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.CcvOnline.SampleProject.dll;{83775A9E-0455-4801-B1EF-DC70D786D09B}|com.CcvOnline.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|com.ccvonline.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|com.ccvonline.Authentication.dll;"
+		ProjectReferences = "{496ec024-71ed-4ad1-b677-2a3fa60ccd05}|com.ccvonline.SampleProject.dll;{83775A9E-0455-4801-B1EF-DC70D786D09B}|com.ccvonline.dll;{a5b47749-d8b2-4223-822b-26208bce34f4}|com.ccvonline.CommandCenter.dll;{10702916-bb67-4be9-a507-e1f8932bd05f}|com.ccvonline.Authentication.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_50345"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50345\"
@@ -24,13 +24,13 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb(2)", "http://localh
 		SlnRelativePath = "RockWeb\"
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.CcvOnline.SampleProject", "com.CcvOnline.SampleProject\com.CcvOnline.SampleProject.csproj", "{496EC024-71ED-4AD1-B677-2A3FA60CCD05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.SampleProject", "com.ccvonline.SampleProject\com.ccvonline.SampleProject.csproj", "{496EC024-71ED-4AD1-B677-2A3FA60CCD05}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.CcvOnline", "com.CcvOnline\com.CcvOnline.csproj", "{83775A9E-0455-4801-B1EF-DC70D786D09B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline", "com.ccvonline\com.ccvonline.csproj", "{83775A9E-0455-4801-B1EF-DC70D786D09B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.CcvOnline.Authentication", "com.CcvOnline.Authentication\com.CcvOnline.Authentication.csproj", "{10702916-BB67-4BE9-A507-E1F8932BD05F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.Authentication", "com.ccvonline.Authentication\com.ccvonline.Authentication.csproj", "{10702916-BB67-4BE9-A507-E1F8932BD05F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.CcvOnline.CommandCenter", "com.CcvOnline.CommandCenter\com.CcvOnline.CommandCenter.csproj", "{A5B47749-D8B2-4223-822B-26208BCE34F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.ccvonline.CommandCenter", "com.ccvonline.CommandCenter\com.ccvonline.CommandCenter.csproj", "{A5B47749-D8B2-4223-822B-26208BCE34F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

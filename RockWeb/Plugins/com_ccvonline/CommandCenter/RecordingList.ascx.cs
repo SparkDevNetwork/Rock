@@ -26,10 +26,10 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using com.CcvOnline.CommandCenter.Model;
-using com.CcvOnline.CommandCenter.Data;
+using com.ccvonline.CommandCenter.Model;
+using com.ccvonline.CommandCenter.Data;
 
-namespace RockWeb.Plugins.com_CcvOnline.CommandCenter
+namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 {
     /// <summary>
     /// 

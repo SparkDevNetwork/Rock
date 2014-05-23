@@ -13,7 +13,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
 
-namespace com.CcvOnline.Authentication
+namespace com.ccvonline.Authentication
 {
     /// <summary>
     /// Authenticates a username/password using Arena's password encryption

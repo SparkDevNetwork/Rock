@@ -1,7 +1,7 @@
-using com.CcvOnline.SampleProject.Data;
+using com.ccvonline.SampleProject.Data;
 using Rock.Model;
 
-namespace com.CcvOnline.SampleProject.Model
+namespace com.ccvonline.SampleProject.Model
 {
     /// <summary>
     /// 
