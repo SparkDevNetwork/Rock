@@ -156,6 +156,8 @@
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
+    <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
+    <Compile Include="Attribute\PersonFieldAttribute.cs" />
     <Compile Include="Attribute\SlidingDateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricCategoriesFieldAttribute.cs" />
@@ -215,6 +217,7 @@
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
+    <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\SlidingDateRangeFieldType.cs" />
     <Compile Include="Field\Types\EntityFieldType.cs" />
     <Compile Include="Field\Types\MetricCategoriesFieldType.cs" />
@@ -244,7 +247,7 @@
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\DbContext.cs" />
-    <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
+    <Compile Include="Field\Types\SecurityRoleFieldType.cs" />
     <Compile Include="Field\Types\DaysOfWeekFieldType.cs" />
     <Compile Include="Field\Types\DayOfWeekFieldType.cs" />
     <Compile Include="Field\Types\RemoteAuthsFieldType.cs" />
@@ -720,6 +723,10 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
     <Compile Include="Workflow\Action\ActivateActions.cs" />
+    <Compile Include="Workflow\Action\AssignActivityToAttributeValue.cs" />
+    <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
+    <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
+    <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
