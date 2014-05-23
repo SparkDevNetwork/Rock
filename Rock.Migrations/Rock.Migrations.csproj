@@ -929,6 +929,10 @@
     <Compile Include="Migrations\201405212250538_WorkflowActivityAssigned.Designer.cs">
       <DependentUpon>201405212250538_WorkflowActivityAssigned.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201405232140359_CampusServiceTimes.cs" />
+    <Compile Include="Migrations\201405232140359_CampusServiceTimes.Designer.cs">
+      <DependentUpon>201405232140359_CampusServiceTimes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1606,6 +1610,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201405212250538_WorkflowActivityAssigned.resx">
       <DependentUpon>201405212250538_WorkflowActivityAssigned.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201405232140359_CampusServiceTimes.resx">
+      <DependentUpon>201405232140359_CampusServiceTimes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

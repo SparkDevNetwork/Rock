@@ -20,18 +20,13 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
-                    </div>
-                    <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                        <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
                     </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
-                    </div>
-                    <div class="col-md-6">
-                        <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
+                        <Rock:LocationPicker ID="lpAddress" runat="server" AllowedPickerModes="Address" Label="Campus Address" />
+                        <Rock:KeyValueList ID="kvlServiceTimes" runat="server" label="Service Times" KeyPrompt="Day" ValuePrompt="Time" Help="A list of days and times that this campus has services." />
                     </div>
                 </div>
 
