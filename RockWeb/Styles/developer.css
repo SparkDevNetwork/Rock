@@ -170,19 +170,8 @@ span.data-view-filter-label {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
 }
 
-/*********************************************************************************************/
-/* DT 5/20/2014 Workflow Type Editor                                                         */
-/*********************************************************************************************/
-
-/* Style the inactive and activated with workflow activity headers differently */
-
-
-/* Get rid of spacing on the form field grid when editing a form entry action */
-tbody.workflow-formfield-list td > div.checkbox {
-    --margin-top: 0px;
-}
-tbody.workflow-formfield-list td > div.checkbox:last-child { 
-    --margin-bottom: 0px;
+/* DT 5/20/2014 Get rid of spacing on the form field grid when editing a form entry action */
+td.grid-select-field > div.checkbox:last-child {
+    margin-bottom: 0px;
 }
 
-/*********************************************************************************************/
