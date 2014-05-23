@@ -30,7 +30,7 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [DisplayName( "Rest Key Detail" )]
+    [DisplayName( "REST Key Detail" )]
     [Category( "Security" )]
     [Description( "Displays the details of the given REST API Key." )]
     public partial class RestKeyDetail : Rock.Web.UI.RockBlock, IDetailBlock
@@ -70,8 +70,15 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
+<<<<<<< 69d551efe7e8804606b1862e4a0f006ffb49241f
             var userLogin = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
             if ( userLogin != null )
+=======
+
+            // ensure no one else has this key
+            var userWithKey = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
+            if ( userWithKey != null && userWithKey.PersonId != int.Parse( hfRestUserId.Value ) )
+>>>>>>> c69637542d41f98659da1fd7f89746825b9f6272
             {
                 if ( int.Parse( hfRestUserId.Value ) > 0 )
                 {
@@ -92,15 +99,6 @@ namespace RockWeb.Blocks.Security
                     nbWarningMessage.Visible = true;
                     return;
                 }
-            }
-
-            long key;
-            bool isNumeric = long.TryParse( tbKey.Text, out key );
-            if ( !isNumeric )
-            {
-                nbWarningMessage.Text = "The API Key has to be numeric. Please enter a different one, or generate one by clicking the 'Generate Key' button below. ";
-                nbWarningMessage.Visible = true;
-                return;
             }
 
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
@@ -234,10 +232,10 @@ namespace RockWeb.Blocks.Security
         {
             StringBuilder sb = new StringBuilder();
             Random rnd = new Random();
-            char[] codeCharacters = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+            char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
             int poolSize = codeCharacters.Length;
 
-            for ( int i = 0; i < 12; i++ )
+            for ( int i = 0; i < 24; i++ )
             {
                 sb.Append( codeCharacters[rnd.Next( poolSize )] );
             }
@@ -279,7 +277,7 @@ namespace RockWeb.Blocks.Security
             }
 
             hfRestUserId.Value = restUser.Id.ToString();
-            lTitle.Text = ActionTitle.Edit( "Rest Key" ).FormatAsHtmlTitle();
+            lTitle.Text = ActionTitle.Edit( "REST Key" ).FormatAsHtmlTitle();
             if ( restUser.Id > 0 )
             {
                 tbName.Text = restUser.LastName;
