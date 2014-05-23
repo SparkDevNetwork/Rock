@@ -70,15 +70,9 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
-<<<<<<< 69d551efe7e8804606b1862e4a0f006ffb49241f
+
             var userLogin = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
             if ( userLogin != null )
-=======
-
-            // ensure no one else has this key
-            var userWithKey = userLoginService.Queryable().Where( a => a.ApiKey == tbKey.Text ).FirstOrDefault();
-            if ( userWithKey != null && userWithKey.PersonId != int.Parse( hfRestUserId.Value ) )
->>>>>>> c69637542d41f98659da1fd7f89746825b9f6272
             {
                 if ( int.Parse( hfRestUserId.Value ) > 0 )
                 {
