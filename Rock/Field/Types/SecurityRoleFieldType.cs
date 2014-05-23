@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -23,9 +26,9 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) Group
+    /// Field Type to select 0 or more security roles
     /// </summary>
-    public class GroupFieldType : FieldType, IEntityFieldType
+    public class SecurityRoleFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -40,10 +43,10 @@ namespace Rock.Field.Types
             string formattedValue = value;
 
             int? groupId = value.AsIntegerOrNull();
-            if (groupId.HasValue)
+            if ( groupId.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get(groupId.Value);
-                if (group != null)
+                var group = new GroupService( new RockContext() ).Get( groupId.Value );
+                if ( group != null )
                 {
                     formattedValue = group.Name;
                 }
@@ -51,7 +54,7 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
-
+        
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
@@ -60,67 +63,51 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            GroupPicker groupPicker = new GroupPicker { ID = id }; 
-            return groupPicker;
-        }
+            var editControl = new RockDropDownList { ID = id };
 
-        /// <summary>
-        /// Reads new values entered by the user for the field (as id)
-        /// </summary>
-        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override string GetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            GroupPicker groupPicker = control as GroupPicker;
-            if ( groupPicker != null )
+            var roles = new GroupService( new RockContext() ).Queryable().Where(g => g.IsSecurityRole).OrderBy( t => t.Name );
+            if ( roles.Any() )
             {
-                return groupPicker.SelectedValue;
+                foreach ( var role in roles )
+                {
+                    editControl.Items.Add( new ListItem( role.Name, role.Guid.ToString() ) );
+                }
+
+                return editControl;
             }
 
             return null;
         }
 
         /// <summary>
-        /// Sets the value (as id)
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( control != null && control is ListControl )
+                return ( (ListControl)control ).SelectedValue;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Sets the value.
         /// </summary>
         /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="configurationValues"></param>
         /// <param name="value">The value.</param>
-        public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             if ( value != null )
             {
-                GroupPicker groupPicker = control as GroupPicker;
-                int groupId = 0;
-                int.TryParse( value, out groupId );
-                Group group = new GroupService( new RockContext() ).Get( groupId );
-                groupPicker.SetValue( group );
+                if ( control != null && control is ListControl )
+                    ( (ListControl)control ).SelectedValue = value;
             }
-        }
-
-        /// <summary>
-        /// Gets the edit value as the IEntity.Id
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
-        }
-
-        /// <summary>
-        /// Sets the edit value from IEntity.Id value
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="id">The identifier.</param>
-        public void SetEditValueFromEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
-        {
-            SetEditValue( control, configurationValues, id.ToString() );
         }
     }
 }

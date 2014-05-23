@@ -312,14 +312,16 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
+            var canEdit = IsUserAuthorized( Authorization.EDIT );
+
             // Find first active action form
             foreach ( var activity in _workflow.ActiveActivities )
             {
-                if ( activity.ActivityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( canEdit || ( activity.ActivityType.IsAuthorized( Authorization.VIEW, CurrentPerson )  && activity.IsAssigned( CurrentPerson, true ) ) )
                 {
                     foreach ( var action in activity.ActiveActions )
                     {
-                        if ( action.ActionType.WorkflowForm != null && action.ActionType.WorkflowForm.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                        if ( action.ActionType.WorkflowForm != null )
                         {
                             _activity = activity;
                             _activity.LoadAttributes();
