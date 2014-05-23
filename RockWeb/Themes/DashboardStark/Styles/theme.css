@@ -1671,179 +1671,6 @@ ul.rocklist .rocklist-item.selected {
   }
 }
 /*
-    Used to manage styles related to Rock's internal grid component
-    
-    1. Bootstrap Overrides
-    2. Filter
-    3. Column Header
-    4. Footer
-    5. Light Style - Used for small grids
-    5. Reusable classes
-    6. Column Types
-    7. Row Types
-
-*/
-.table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th {
-  cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.03) !important;
-}
-td.wrap-contents {
-  -ms-word-break: break-all;
-  word-break: break-all;
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
-  -ms-hyphens: auto;
-  hyphens: auto;
-}
-.grid-filter {
-  background-color: #d5d5d5;
-  border-radius: 4px;
-  padding: 0 6px 12px 6px;
-  margin-bottom: -10px;
-}
-.grid-filter header {
-  border-radius: 4px 4px 0 0;
-  padding: 4px;
-  cursor: pointer;
-  height: 24px;
-  text-align: right;
-}
-.grid-filter header h3 {
-  font-size: 12px;
-  margin: 0 2px 0 2px;
-  line-height: 16px;
-  display: inline;
-  font-weight: 300;
-}
-.grid-filter header i {
-  color: #666666;
-}
-.grid-filter header fieldset {
-  margin-bottom: 0;
-}
-.grid-filter h4 {
-  margin: 12px 0 20px;
-  padding-bottom: 8px;
-  font-weight: 300;
-}
-.grid-filter .grid-filter-entry {
-  margin-bottom: 12px;
-}
-.grid-filter .picker .picker-label {
-  background-color: #eeeeee;
-  color: #333333;
-  border-color: #d5d5d5;
-}
-.grid-filter + div .grid-table {
-  margin-top: -12px;
-}
-.grid-filter-entry legend + .control-group {
-  margin-top: 0;
-}
-.grid-filter-overview fieldset {
-  margin-bottom: 12px;
-}
-.table thead th {
-  background-color: #428bca;
-  font-size: 14px;
-  color: #ecf0f3;
-  font-weight: 300;
-}
-.table thead th a {
-  color: #ecf0f3;
-  display: block;
-}
-.table thead th.ascending a::before {
-  padding-right: 5px;
-  content: "\f0d8";
-  font-family: FontAwesome;
-}
-.table thead th.descending a::before {
-  padding-right: 5px;
-  content: "\f0d7";
-  font-family: FontAwesome;
-}
-.grid-paging .pagination {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-.grid-paging .grid-pager {
-  float: right;
-}
-.grid-paging .grid-pagesize {
-  float: left;
-}
-.grid-paging .grid-itemcount {
-  float: left;
-  font-size: 11px;
-  margin-left: 10px;
-  margin-top: 7px;
-}
-td.grid-col-actions {
-  text-align: right;
-}
-.grid-actions {
-  text-align: right;
-  background-color: #d5d5d5;
-}
-.grid-actions .btn {
-  margin-left: 8px;
-  background-color: #999999;
-  color: #ffffff;
-}
-.grid-actions .btn:hover {
-  background-color: #808080;
-}
-.table-light thead th {
-  background-color: inherit;
-  color: #333333;
-  font-weight: 700;
-}
-.table-light tfoot td {
-  background-color: inherit;
-}
-.table-light tfoot td .grid-actions a {
-  border-radius: 0;
-  border-style: none;
-  border-width: 0;
-  box-shadow: none;
-  border-color: none;
-}
-.table-light .grid-columncommand {
-  text-align: right;
-  width: 42px;
-}
-.table-padded td,
-.table-padded th {
-  padding: 12px !important;
-}
-.grid-select-field .checkbox,
-.grid-select-field .radio {
-  padding-left: 0;
-  margin: 0;
-}
-.grid-select-field .checkbox input,
-.grid-select-field .radio input {
-  float: none;
-  margin: 0;
-}
-.table .color-field {
-  padding: 0;
-  width: 4px;
-}
-.table .color-field + th {
-  border-left-width: 0px;
-}
-.table .grid-icon img {
-  width: 72px;
-  height: 72px;
-}
-.table > tbody > tr.grid-section-header > td {
-  background-color: #eeeeee;
-  color: #333333;
-}
-/*
     Used to manage styles related to modal dialog.
 
 */
@@ -2105,6 +1932,183 @@ dl dd {
 }
 .panel-dashboard > .panel-footer + .panel-collapse .panel-body {
   border-bottom-color: #d5d5d5;
+}
+/*
+    Used to manage styles related to Rock's internal grid component
+    
+    1. Bootstrap Overrides
+    2. Filter
+    3. Column Header
+    4. Footer
+    5. Light Style - Used for small grids
+    5. Reusable classes
+    6. Column Types
+    7. Row Types
+
+*/
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+td.wrap-contents {
+  -ms-word-break: break-all;
+  word-break: break-all;
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
+}
+.grid-filter {
+  background-color: #d5d5d5;
+  border-radius: 4px;
+  padding: 0 6px 12px 6px;
+  margin-bottom: -10px;
+}
+.grid-filter header {
+  border-radius: 4px 4px 0 0;
+  padding: 4px;
+  cursor: pointer;
+  height: 24px;
+  text-align: right;
+}
+.grid-filter header h3 {
+  font-size: 12px;
+  margin: 0 2px 0 2px;
+  line-height: 16px;
+  display: inline;
+  font-weight: 300;
+}
+.grid-filter header i {
+  color: #666666;
+}
+.grid-filter header fieldset {
+  margin-bottom: 0;
+}
+.grid-filter h4 {
+  margin: 12px 0 20px;
+  padding-bottom: 8px;
+  font-weight: 300;
+}
+.grid-filter .grid-filter-entry {
+  margin-bottom: 12px;
+}
+.grid-filter .picker .picker-label {
+  background-color: #eeeeee;
+  color: #333333;
+  border-color: #d5d5d5;
+}
+.grid-filter + div .grid-table {
+  margin-top: -12px;
+}
+.grid-filter-entry legend + .control-group {
+  margin-top: 0;
+}
+.grid-filter-overview fieldset {
+  margin-bottom: 12px;
+}
+.table thead th {
+  background-color: #428bca;
+  font-size: 14px;
+  color: #ecf0f3;
+  font-weight: 300;
+}
+.table thead th a {
+  color: #ecf0f3;
+  display: block;
+}
+.table thead th.ascending a::before {
+  padding-right: 5px;
+  content: "\f0d8";
+  font-family: FontAwesome;
+}
+.table thead th.descending a::before {
+  padding-right: 5px;
+  content: "\f0d7";
+  font-family: FontAwesome;
+}
+.grid-paging .pagination {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.grid-paging .grid-pager {
+  float: right;
+}
+.grid-paging .grid-pagesize {
+  float: left;
+}
+.grid-paging .grid-itemcount {
+  float: left;
+  font-size: 11px;
+  margin-left: 10px;
+  margin-top: 7px;
+}
+td.grid-col-actions {
+  text-align: right;
+}
+.grid-actions {
+  text-align: right;
+  background-color: #d5d5d5;
+}
+.grid-actions .btn {
+  margin-left: 8px;
+  background-color: #999999;
+  color: #ffffff;
+}
+.grid-actions .btn:hover {
+  background-color: #808080;
+}
+.table-light thead th {
+  background-color: inherit;
+  color: #333333;
+  font-weight: 700;
+}
+.table-light tfoot td {
+  background-color: inherit;
+}
+.table-light tfoot td .grid-actions a {
+  border-radius: 0;
+  border-style: none;
+  border-width: 0;
+  box-shadow: none;
+  border-color: none;
+}
+.table-light .grid-columncommand {
+  text-align: right;
+  width: 42px;
+}
+.table-padded td,
+.table-padded th {
+  padding: 12px !important;
+}
+.grid-select-field .checkbox,
+.grid-select-field .radio {
+  padding-left: 0;
+  margin: 0;
+}
+.grid-select-field .checkbox input,
+.grid-select-field .radio input {
+  float: none;
+  margin: 0;
+}
+.grid-select-field .checkbox:last-child,
+.grid-select-field .radio:last-child {
+  margin-bottom: 0px;
+}
+.table .color-field {
+  padding: 0;
+  width: 4px;
+}
+.table .color-field + th {
+  border-left-width: 0px;
+}
+.table .grid-icon img {
+  width: 72px;
+  height: 72px;
+}
+.table > tbody > tr.grid-section-header > td {
+  background-color: #eeeeee;
+  color: #333333;
 }
 /*
     Used to manage styles for specific blocks.
