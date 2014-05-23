@@ -11,8 +11,9 @@
                 <Columns>
                     <Rock:DateField DataField="MetricValueDateTime" HeaderText="Date/Time" SortExpression="MetricValueDateTime" />
                     <Rock:EnumField DataField="MetricValueType" HeaderText="Type" SortExpression="MetricValueType" />
-                    <asp:BoundField DataField="XValue" HeaderText="Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" />
-                    <asp:BoundField DataField="YValue" HeaderText="Y Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="YValue" HeaderText="Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="XValue" HeaderText="X Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" />
+                    
                     <Rock:DeleteField OnClick="gMetricValues_Delete" />
                 </Columns>
             </Rock:Grid>
