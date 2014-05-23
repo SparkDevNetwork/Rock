@@ -11,6 +11,8 @@
                 <h1>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
             </div>
 
             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -25,7 +27,7 @@
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="IconCssClass" />
                         <Rock:CategoryPicker ID="cpMetricCategories" runat="server" AllowMultiSelect="true" Label="Categories" />
-                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Help="Select the entity type which can be used to partition metric values. For example, select Campus if the Metric is Attendance for each campus." />
+                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Series Partition" Help="Select the entity type which can be used to partition metric values. For example, select Campus if the Metric is Attendance for each campus." />
                         <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
                     </div>
                     <div class="col-md-6">
@@ -42,15 +44,13 @@
                         <Rock:CodeEditor ID="ceSourceSql" runat="server" Label="Source SQL" EditorMode="Sql" />
                         <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Source DataView" />
                         <Rock:RockControlWrapper ID="rcwSchedule" runat="server" Label="Schedule">
-                            <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
+                            <Rock:RockRadioButtonList ID="rblScheduleSelect" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="rblScheduleSelect_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
                             
                             <Rock:RockDropDownList ID="ddlSchedule" runat="server" />
                             
                             <asp:HiddenField ID="hfUniqueScheduleId" runat="server" />
                             <Rock:ScheduleBuilder ID="sbSchedule" runat="server" ShowDuration="false" ShowScheduleFriendlyTextAsToolTip="true" />
                         </Rock:RockControlWrapper>
-
-                        <Rock:RockLiteral ID="ltLastRunDateTime" runat="server" Label="Last Run" />
                     </div>
                 </div>
 
