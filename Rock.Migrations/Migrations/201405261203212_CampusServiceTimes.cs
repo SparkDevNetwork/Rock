@@ -29,7 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Campus", "ServiceTimes", c => c.String(maxLength: 500));
+            RockMigrationHelper.DeleteAttribute( "F5810A78-D2E2-4017-8B2A-73AE83B6725E" );
+
+            AddColumn( "dbo.Campus", "ServiceTimes", c => c.String( maxLength: 500 ) );
 
             Sql( @"
     UPDATE [Attribute]
