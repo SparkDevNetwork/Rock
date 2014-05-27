@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Core
                 }
                 foreach(var actionType in activityType.ActionTypes)
                 {
-                    if (!activityType.IsValid)
+                    if ( !actionType.IsValid )
                     {
                         return;
                     }
@@ -656,7 +656,7 @@ namespace RockWeb.Blocks.Core
         {
             ParseControls();
 
-            var workflowActivityTypeEditor = sender as WorkflowActivityEditor;
+            var workflowActivityTypeEditor = sender as WorkflowActivityTypeEditor;
             if ( workflowActivityTypeEditor != null )
             {
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
@@ -689,7 +689,7 @@ namespace RockWeb.Blocks.Core
         {
             ParseControls();
 
-            var workflowActivityTypeEditor = sender as WorkflowActivityEditor;
+            var workflowActivityTypeEditor = sender as WorkflowActivityTypeEditor;
             if ( workflowActivityTypeEditor != null )
             {
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
@@ -723,10 +723,10 @@ namespace RockWeb.Blocks.Core
         {
             ParseControls();
 
-            var workflowActionTypeEditor = sender as WorkflowActionEditor;
+            var workflowActionTypeEditor = sender as WorkflowActionTypeEditor;
             if ( workflowActionTypeEditor != null )
             {
-                var workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityEditor;
+                var workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityTypeEditor;
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
                 if ( activityType != null && actionType != null )
@@ -752,10 +752,10 @@ namespace RockWeb.Blocks.Core
         {
             ParseControls();
 
-            var workflowActionTypeEditor = sender as WorkflowActionEditor;
+            var workflowActionTypeEditor = sender as WorkflowActionTypeEditor;
             if ( workflowActionTypeEditor != null )
             {
-                var workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityEditor;
+                var workflowActivityTypeEditor = workflowActionTypeEditor.Parent as WorkflowActivityTypeEditor;
                 var activityType = ActivityTypesState.Where( a => a.Guid == workflowActivityTypeEditor.ActivityTypeGuid ).FirstOrDefault();
                 var actionType = activityType.ActionTypes.Where( a => a.Guid.Equals( workflowActionTypeEditor.ActionTypeGuid ) ).FirstOrDefault();
                 if ( actionType != null )
@@ -1176,10 +1176,10 @@ namespace RockWeb.Blocks.Core
         /// <param name="activeActivityTypeGuid">The active activity type unique identifier.</param>
         /// <param name="activeWorkflowActionTypeGuid">The active workflow action type unique identifier.</param>
         /// <returns></returns>
-        private WorkflowActivityEditor BuildActivityControl( Control parentControl, bool setValues, WorkflowActivityType activityType, 
+        private WorkflowActivityTypeEditor BuildActivityControl( Control parentControl, bool setValues, WorkflowActivityType activityType, 
             Dictionary<Guid, string> workflowAttributes, Guid? activeActivityTypeGuid = null, Guid? activeWorkflowActionTypeGuid = null, bool showInvalid = false )
         {
-            var control = new WorkflowActivityEditor();
+            var control = new WorkflowActivityTypeEditor();
             control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
@@ -1235,11 +1235,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="actionType">Type of the action.</param>
         /// <param name="activeWorkflowActionTypeGuid">The active workflow action type unique identifier.</param>
         /// <returns></returns>
-        private WorkflowActionEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType, 
+        private WorkflowActionTypeEditor BuildActionControl( Control parentControl, bool setValues, WorkflowActionType actionType, 
             Dictionary<Guid, string> attributes, Dictionary<string, string> activities, Guid? activeWorkflowActionTypeGuid = null, 
                 bool showInvalid = false )
         {
-            var control = new WorkflowActionEditor();
+            var control = new WorkflowActionTypeEditor();
             control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
@@ -1316,7 +1316,7 @@ namespace RockWeb.Blocks.Core
 
             ActivityTypesState = new List<WorkflowActivityType>();
             int order = 0;
-            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityEditor>() )
+            foreach ( var activityEditor in phActivities.Controls.OfType<WorkflowActivityTypeEditor>() )
             {
                 WorkflowActivityType workflowActivityType = activityEditor.GetWorkflowActivityType( expandInvalid );
                 workflowActivityType.Order = order++;
