@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
-    public class WorkflowActionEditor : CompositeControl, IHasValidationGroup
+    public class WorkflowActionTypeEditor : CompositeControl, IHasValidationGroup
     {
         private HiddenField _hfExpanded;
         private HiddenField _hfActionTypeGuid;
@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder _phActionAttributes;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="WorkflowActionEditor"/> is expanded.
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActionTypeEditor"/> is expanded.
         /// </summary>
         /// <value>
         ///   <c>true</c> if expanded; otherwise, <c>false</c>.

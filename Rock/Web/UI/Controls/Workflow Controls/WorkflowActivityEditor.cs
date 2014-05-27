@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
-    public class WorkflowActivityEditor : CompositeControl, IHasValidationGroup
+    public class WorkflowActivityTypeEditor : CompositeControl, IHasValidationGroup
     {
         private HiddenField _hfExpanded;
         private HiddenField _hfActivityTypeGuid;
@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
         private Grid _gAttributes;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="WorkflowActivityEditor"/> is expanded.
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActivityTypeEditor"/> is expanded.
         /// </summary>
         /// <value>
         ///   <c>true</c> if expanded; otherwise, <c>false</c>.
@@ -225,7 +225,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             get
             {
                 var result = new List<Guid>();
-                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+                foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
                 {
                     if (workflowActionTypeEditor.Expanded)
                     {
@@ -255,7 +255,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             result.IsActivatedWithWorkflow = _cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
             int order = 0;
-            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
             {
                 bool wasExpanded = workflowActionTypeEditor.Expanded;
                 WorkflowActionType workflowActionType = workflowActionTypeEditor.GetWorkflowActionType( expandInvalid );
@@ -466,7 +466,7 @@ javascript:
         {
             if ( !Expanded )
             {
-                foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+                foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
                 {
                     if ( workflowActionTypeEditor.Expanded )
                     {
@@ -590,7 +590,7 @@ javascript:
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "workflow-action-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            foreach ( WorkflowActionEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionEditor>() )
+            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
             {
                 workflowActionTypeEditor.ValidationGroup = ValidationGroup;
                 workflowActionTypeEditor.RenderControl( writer );
