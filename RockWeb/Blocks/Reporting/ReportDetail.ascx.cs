@@ -952,7 +952,7 @@ namespace RockWeb.Blocks.Reporting
 
                 try
                 {
-                    //gReport.Caption = report.Name;
+                    gReport.ExportFilename = report.Name;
                     gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
                     gReport.DataBind();
                 }

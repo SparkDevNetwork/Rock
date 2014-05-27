@@ -157,6 +157,36 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the filename to use when exporting the grid contents. 
+        /// The .xlsx extension will be appended if not given. Special characters are removed
+        /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
+        /// </summary>
+        /// <value>
+        /// The value of a the export's filename.
+        /// </value>
+        public string ExportFilename
+        {
+            get
+            {
+                string exportFilename = ViewState["ExportFilename"] as string;
+                if ( string.IsNullOrWhiteSpace( exportFilename ) )
+                {
+                    exportFilename = "RockExport.xlsx";
+                }
+                else if (! exportFilename.EndsWith( ".xlsx" ) )
+                {
+                    exportFilename += ".xlsx";
+                }
+                return exportFilename.RemoveSpecialCharacters();
+            }
+
+            set
+            {
+                ViewState["ExportFilename"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [hide delete button for is system].
         /// </summary>
         /// <value>
@@ -1112,7 +1142,7 @@ namespace Rock.Web.UI.Controls
             OnGridRebind( e );
 
             // create default settings
-            string filename = "export.xlsx";
+            string filename = ExportFilename;
             string workSheetName = "Export";
             string title = "Rock Export";
 
@@ -1124,7 +1154,6 @@ namespace Rock.Web.UI.Controls
             {
                 excel.Workbook.Properties.Title = this.Caption;
                 workSheetName = this.Caption;
-                filename = this.Caption.Replace( " ", "" ) + ".xlsx";
                 title = this.Caption;
             }
             else
