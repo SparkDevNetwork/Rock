@@ -165,6 +165,15 @@ $(document).on('focusout', '.js-conditional-run-criteria', function (e) {
     }
 });
 
+$('.js-action-criteria-comparison').change( function (event) {
+    var $valueRow = $(this).closest('div.conditional-run-criteria').find('div.js-text-or-ddl-row');
+    if ($(this).val() == '32' || $(this).val() == '64') {
+        $valueRow.slideUp();
+    } else {
+        $valueRow.slideDown();
+    }
+});
+
 // fix so that the Reorder button will fire its event, but not the parent event 
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
@@ -353,6 +362,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _ddlCriteriaComparisonType = new RockDropDownList();
             Controls.Add( _ddlCriteriaComparisonType );
             _ddlCriteriaComparisonType.ID = this.ID + "_ddlCriteriaComparisonType";
+            _ddlCriteriaComparisonType.CssClass = "js-action-criteria-comparison";
             _ddlCriteriaComparisonType.BindToEnum( typeof( ComparisonType ) );
             _ddlCriteriaComparisonType.Label = "&nbsp;";
 
@@ -507,18 +517,30 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-7" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _ddlCriteriaAttribute.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-3" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-5" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _ddlCriteriaComparisonType.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderEndTag();  // row
+
+            writer.RenderEndTag();  // col-md-6
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            var comparisonType = _ddlCriteriaComparisonType.SelectedValueAsEnum<ComparisonType>();
+            _tbddlCriteriaValue.Style["display"] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : "block";
             _tbddlCriteriaValue.RenderControl( writer );
             writer.RenderEndTag();
 
