@@ -559,11 +559,13 @@ namespace RockWeb.Blocks.Reporting
 
             if ( metric.LastRunDateTime != null )
             {
-                ltLastRunDateTime.Text = "<span class='label label-success'>" + metric.LastRunDateTime.ToString() + "</span>";
+                ltLastRunDateTime.LabelType = LabelType.Success;
+                ltLastRunDateTime.Text = "Last Run: " + metric.LastRunDateTime.ToString();
             }
             else
             {
-                ltLastRunDateTime.Text = "<span class='label label-warning'>Never Run</span>";
+                ltLastRunDateTime.LabelType = LabelType.Warning;
+                ltLastRunDateTime.Text = "Never Run";
             }
 
             ddlDataView.SetValue( metric.DataViewId );
@@ -593,6 +595,17 @@ namespace RockWeb.Blocks.Reporting
             if ( metric.MetricCategories != null && metric.MetricCategories.Any() )
             {
                 descriptionListMain.Add( "Categories", metric.MetricCategories.Select( s => s.Category.ToString() ).OrderBy( o => o ).ToList().AsDelimited( "," ) );
+            }
+
+            if ( metric.LastRunDateTime != null )
+            {
+                ltLastRunDateTime.LabelType = LabelType.Success;
+                ltLastRunDateTime.Text = "Last Run: " + metric.LastRunDateTime.ToString();
+            }
+            else
+            {
+                ltLastRunDateTime.LabelType = LabelType.Warning;
+                ltLastRunDateTime.Text = "Never Run";
             }
 
             lblMainDetails.Text = descriptionListMain.Html;

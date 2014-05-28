@@ -39,6 +39,10 @@ namespace Rock.Web.UI.Controls
         private Label _lblActionTypeName;
         private LinkButton _lbDeleteActionType;
 
+        private RockDropDownList _ddlCriteriaAttribute;
+        private RockDropDownList _ddlCriteriaComparisonType;
+        private RockTextOrDropDownList _tbddlCriteriaValue;
+
         private RockTextBox _tbActionTypeName;
         private RockDropDownList _ddlEntityType;
         private RockCheckBox _cbIsActionCompletedOnSuccess;
@@ -148,6 +152,28 @@ $('.workflow-action a.js-action-delete').click(function (event) {
     return Rock.dialogs.confirmDelete(event, 'Action Type', 'This will also delete all the actions of this type from any existing persisted workflows!');
 });
 
+$('.workflow-action a.js-workflow-action-criteria').click(function (event) {
+    event.stopImmediatePropagation();
+    $(this).closest('.workflow-action').find('div.conditional-run-criteria').slideToggle();
+});
+
+$(document).on('focusout', '.js-conditional-run-criteria', function (e) {
+    if ( $(this).val() == '' ) {
+        $(this).closest('.workflow-action').find('a.js-workflow-action-criteria').removeClass('criteria-exists');
+    } else {
+        $(this).closest('.workflow-action').find('a.js-workflow-action-criteria').addClass('criteria-exists');
+    }
+});
+
+$('.js-action-criteria-comparison').change( function (event) {
+    var $valueRow = $(this).closest('div.conditional-run-criteria').find('div.js-text-or-ddl-row');
+    if ($(this).val() == '32' || $(this).val() == '64') {
+        $valueRow.slideUp();
+    } else {
+        $valueRow.slideDown();
+    }
+});
+
 // fix so that the Reorder button will fire its event, but not the parent event 
 $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
@@ -215,6 +241,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             EnsureChildControls();
             WorkflowActionType result = new WorkflowActionType();
             result.Guid = new Guid( _hfActionTypeGuid.Value );
+            
+            result.CriteriaAttributeGuid = _ddlCriteriaAttribute.SelectedValueAsGuid();
+            result.CriteriaComparisonType = _ddlCriteriaComparisonType.SelectedValueAsEnum<ComparisonType>();
+            result.CriteriaValue = _tbddlCriteriaValue.SelectedValue;
+
             result.Name = _tbActionTypeName.Text;
             result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
             result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
@@ -223,7 +254,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^^^" };
             }
             else
             {
@@ -245,10 +276,28 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// Sets the type of the workflow action.
         /// </summary>
         /// <param name="value">The value.</param>
-        public void SetWorkflowActionType(WorkflowActionType value)
+        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, string> workflowTypeAttributes )
         {
             EnsureChildControls();
             _hfActionTypeGuid.Value = value.Guid.ToString();
+
+            _ddlCriteriaAttribute.Items.Clear();
+            _ddlCriteriaAttribute.Items.Add( new ListItem() );
+
+            _tbddlCriteriaValue.DropDownList.Items.Clear();
+            _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem() );
+            foreach ( var attribute in workflowTypeAttributes )
+            {
+                var li = new ListItem( attribute.Value, attribute.Key.ToString() );
+                li.Selected = value.CriteriaAttributeGuid.HasValue && value.CriteriaAttributeGuid.Value.ToString() == li.Value; 
+                _ddlCriteriaAttribute.Items.Add( li );
+
+                _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
+            }
+
+            _ddlCriteriaComparisonType.SetValue( value.CriteriaComparisonType.ConvertToInt() );
+            _tbddlCriteriaValue.SelectedValue = value.CriteriaValue;
+
             _tbActionTypeName.Text = value.Name;
             _ddlEntityType.SetValue( value.EntityTypeId );
             _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
@@ -256,7 +305,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^Submit" };
+                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^^^" };
                 _cbIsActionCompletedOnSuccess.Checked = true;
                 _cbIsActionCompletedOnSuccess.Enabled = false;
             }
@@ -302,6 +351,26 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteActionType.Controls.Add( iDelete );
             iDelete.AddCssClass( "fa fa-times" );
+
+            _ddlCriteriaAttribute = new RockDropDownList();
+            Controls.Add( _ddlCriteriaAttribute );
+            _ddlCriteriaAttribute.ID = this.ID + "_ddlCriteriaAttribute";
+            _ddlCriteriaAttribute.CssClass = "js-conditional-run-criteria";
+            _ddlCriteriaAttribute.Label = "Conditional Run Criteria";
+            _ddlCriteriaAttribute.Help = "Optional criteria to prevent action from running.  If the criteria is not met, the action will be skipped when this activity is processed.";
+
+            _ddlCriteriaComparisonType = new RockDropDownList();
+            Controls.Add( _ddlCriteriaComparisonType );
+            _ddlCriteriaComparisonType.ID = this.ID + "_ddlCriteriaComparisonType";
+            _ddlCriteriaComparisonType.CssClass = "js-action-criteria-comparison";
+            _ddlCriteriaComparisonType.BindToEnum( typeof( ComparisonType ) );
+            _ddlCriteriaComparisonType.Label = "&nbsp;";
+
+            _tbddlCriteriaValue = new RockTextOrDropDownList();
+            Controls.Add( _tbddlCriteriaValue );
+            _tbddlCriteriaValue.ID = this.ID + "_tbddlCriteriaValue";
+            _tbddlCriteriaValue.TextBox.Label = "Text Value";
+            _tbddlCriteriaValue.DropDownList.Label = "Attribute Value";
 
             _tbActionTypeName = new RockTextBox();
             Controls.Add( _tbActionTypeName );
@@ -400,7 +469,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left workflow-action-name" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblActionTypeName.Text = _tbActionTypeName.Text;
             _lblActionTypeName.RenderControl( writer );
@@ -409,6 +478,8 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            string criteriaExistsClass = _ddlCriteriaAttribute.SelectedValueAsGuid().HasValue ? " criteria-exists" : string.Empty;
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link js-workflow-action-criteria{0}'><i class='fa fa-filter'></i></a>", criteriaExistsClass ) );
             writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa {0}'></i></a>",
                 Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
@@ -437,6 +508,43 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             }
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // add Criteria fields
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row conditional-run-criteria" );
+            if ( !_ddlCriteriaAttribute.SelectedValueAsGuid().HasValue )
+            {
+                writer.AddStyleAttribute( "display", "none" );
+            }
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-7" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _ddlCriteriaAttribute.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-5" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _ddlCriteriaComparisonType.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // row
+
+            writer.RenderEndTag();  // col-md-6
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-lg-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            var comparisonType = _ddlCriteriaComparisonType.SelectedValueAsEnum<ComparisonType>();
+            _tbddlCriteriaValue.Style["display"] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : "block";
+            _tbddlCriteriaValue.RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
 
             // action edit fields
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );

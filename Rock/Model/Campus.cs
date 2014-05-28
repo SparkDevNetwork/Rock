@@ -1,4 +1,5 @@
-﻿// <copyright>
+﻿using System.Collections.Generic;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +19,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -93,6 +93,16 @@ namespace Rock.Model
         [DataMember]
         public int? LeaderPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the service times (Stored as a delimeted list)
+        /// </summary>
+        /// <value>
+        /// The service times.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string ServiceTimes { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -130,6 +140,34 @@ namespace Rock.Model
             return this.Name;
         }
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public override object ToLiquid()
+        {
+            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
+
+            var serviceTimes = new Dictionary<string, object>();
+
+            string[] KeyValues = ServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
+            foreach( string keyValue in KeyValues)
+            {
+                var dayTime = keyValue.Split( new char[] { '^' } );
+                if (dayTime.Length == 2)
+                {
+                    var serviceTime = new Dictionary<string, string>();
+                    serviceTime.Add( "Day", dayTime[0] );
+                    serviceTime.Add( "Time", dayTime[1] );
+                    serviceTimes.Add( "ServiceTime", serviceTime );
+                }
+
+            }
+
+            mergeFields.Add( "ServiceTimes", serviceTimes );
+
+            return mergeFields;
+        }
         #endregion
 
     }

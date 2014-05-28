@@ -45,6 +45,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.BackgroundCssClass = "modal-backdrop";
+            this.Y = 50;
         }
 
         /// <summary>

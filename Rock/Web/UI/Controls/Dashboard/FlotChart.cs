@@ -464,8 +464,11 @@ namespace Rock.Web.UI.Controls
                 var param = parts.Split( '=' );
                 if ( param[0] == "DateStamp" )
                 {
-                    long dateStamp = long.Parse( param[1] );
-                    chartClickArgs.DateTimeValue = new DateTime( 1970, 1, 1 ).AddMilliseconds( dateStamp );
+                    long dateStamp = 0;
+                    if ( long.TryParse( param[1], out dateStamp ) )
+                    {
+                        chartClickArgs.DateTimeValue = new DateTime( 1970, 1, 1 ).AddMilliseconds( dateStamp );
+                    }
                 }
                 else if ( param[0] == "YValue" )
                 {
@@ -627,12 +630,12 @@ namespace Rock.Web.UI.Controls
                 $('#{0}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
                     
                     if (item) {{
-                        debugger
                         __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId);
                     }}
                     else
                     {{
                         // no point was clicked
+                        __doPostBack('{1}', 'DateStamp=;YValue=;SeriesId=');
                     }}
                 }});
 ";

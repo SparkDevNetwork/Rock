@@ -100,6 +100,9 @@ namespace Rock.Model
             target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
             target.WorkflowFormId = source.WorkflowFormId;
+            target.CriteriaAttributeGuid = source.CriteriaAttributeGuid;
+            target.CriteriaComparisonType = source.CriteriaComparisonType;
+            target.CriteriaValue = source.CriteriaValue;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -181,7 +181,13 @@ namespace Rock.Web.UI
                         {
                             _contextTypesRequired.Add( entityType );
                         }
+                        else
+                        {
+                            // block support any ContextType of any entityType, so load all the ones that RockPage knows about
+                            _contextTypesRequired = RockPage.GetContextEntityTypes();
+                        }
                     }
+                    
                 }
                 return _contextTypesRequired;
             }
@@ -203,15 +209,31 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public T ContextEntity<T>() where T : Rock.Data.IEntity
         {
-            string entityTypeName = typeof( T ).FullName;
-            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            IEntity entity = ContextEntity( typeof( T ).FullName );
+            if ( entity != null )
             {
-                var entity = ContextEntities[entityTypeName];
                 return (T)entity;
             }
             else
             {
                 return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Returns the ContextEntity of the entityType specified
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.  For example: Rock.Model.Campus </param>
+        /// <returns></returns>
+        public Rock.Data.IEntity ContextEntity(string entityTypeName)
+        {
+            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            {
+                return ContextEntities[entityTypeName];
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -380,7 +402,7 @@ namespace Rock.Web.UI
                 Data.IEntity contextEntity = RockPage.GetCurrentContext( contextEntityType );
                 if ( contextEntity != null )
                 {
-                    ContextEntities.Add( contextEntityType.Name, contextEntity );
+                    ContextEntities.AddOrReplace( contextEntityType.Name, contextEntity );
                 }
             }
 

@@ -159,7 +159,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if a value is required.
         /// </summary>

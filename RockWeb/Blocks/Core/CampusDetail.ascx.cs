@@ -115,12 +115,23 @@ namespace RockWeb.Blocks.Core
             }
 
             campus.Name = tbCampusName.Text;
-            campus.ShortCode = tbCampusCode.Text;
             campus.PhoneNumber = tbPhoneNumber.Text;
+            if ( lpAddress.Location != null )
+            {
+                campus.LocationId = lpAddress.Location.Id;
+            }
+            else
+            {
+                campus.LocationId = null;
+            }
+
+            campus.ShortCode = tbCampusCode.Text;
 
             var personService = new PersonService( rockContext );
             var leaderPerson = personService.Get( ppCampusLeader.SelectedValue ?? 0 );
             campus.LeaderPersonAliasId = leaderPerson != null ? leaderPerson.PrimaryAliasId : null;
+
+            campus.ServiceTimes = kvlServiceTimes.Value;
 
             campus.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, campus );
@@ -172,9 +183,12 @@ namespace RockWeb.Blocks.Core
 
             hfCampusId.Value = campus.Id.ToString();
             tbCampusName.Text = campus.Name;
-            tbCampusCode.Text = campus.ShortCode;
             tbPhoneNumber.Text = campus.PhoneNumber;
+            lpAddress.Location = campus.Location;
+
+            tbCampusCode.Text = campus.ShortCode;
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
+            kvlServiceTimes.Value = campus.ServiceTimes;
 
             campus.LoadAttributes();
             phAttributes.Controls.Clear();
