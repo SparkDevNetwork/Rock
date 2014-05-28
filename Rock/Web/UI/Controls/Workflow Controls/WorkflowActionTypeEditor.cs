@@ -29,7 +29,7 @@ using Rock.Workflow;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Report Filter control
+    /// Control used by WorkflowTypeDetail block to edit a workflow action type
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
     public class WorkflowActionTypeEditor : CompositeControl, IHasValidationGroup

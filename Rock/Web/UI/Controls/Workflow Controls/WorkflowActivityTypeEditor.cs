@@ -25,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Report Filter control
+    /// Control used by WorkflowTypeDetail block to edit a workflow activity type
     /// </summary>
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
     public class WorkflowActivityTypeEditor : CompositeControl, IHasValidationGroup

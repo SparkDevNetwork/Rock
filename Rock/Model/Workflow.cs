@@ -123,7 +123,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -193,7 +192,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing the <see cref="Rock.Model.WorkflowLog"/> entries for this Workflow instance.
         /// </value>
-        [DataMember]
         public virtual ICollection<WorkflowLog> LogEntries
         {
             get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }

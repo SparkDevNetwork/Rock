@@ -694,13 +694,15 @@
     <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
-    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormActionList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionEditor.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityEditor.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormActionList.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormAttributeRow.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowFormEditor.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityEditor.cs" />
+    <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ISupressRowSelected.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />

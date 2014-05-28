@@ -100,7 +100,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
-        [DataMember]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -157,6 +156,8 @@ namespace Rock.Model
             {
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
+
+            this.LastProcessedDateTime = RockDateTime.Now;
 
             this.ActionType.LoadAttributes();
 
