@@ -2,7 +2,7 @@
 Import-Module WebAdministration
 
 # stop website - needed to allow the deploy to overwrite the sql server spatial types
-Write-Host "Stopping IIS Website"
+Write-Host "Stopping IIS website"
 Stop-WebSite 'RockRMS'
  
 # move content folder to temp
