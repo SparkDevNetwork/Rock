@@ -105,6 +105,11 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// Guid for countries
+        /// </summary>
+        public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
+
+        /// <summary>
         /// Guid for the types of States that can be tied to a Location's address.
         /// </summary>
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
@@ -184,5 +189,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHART_STYLES = "FC684FD7-FE68-493F-AF38-1656FBF67E6B";
 
+        /// <summary>
+        /// Guid for the css classes
+        /// </summary>
+        public const string CSS_CLASSES = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
     }
 }

@@ -148,31 +148,6 @@ namespace Rock.Workflow
         }
 
         /// <summary>
-        /// Gets a worklow attribute value.  Will check both the workflow and the activity for the selected attribute guid
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="guid">The attribute guid.</param>
-        /// <returns></returns>
-        protected string GetWorklowAttributeValue( WorkflowAction action, Guid guid )
-        {
-            var testAttribute = AttributeCache.Read( guid );
-            if ( testAttribute != null )
-            {
-                string testAttributeValue = string.Empty;
-                if ( testAttribute.EntityTypeId == new Rock.Model.Workflow().TypeId )
-                {
-                    return action.Activity.Workflow.GetAttributeValue( testAttribute.Key );
-                }
-                else if ( testAttribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                {
-                    return action.Activity.GetAttributeValue( testAttribute.Key );
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Sets the workflow attribute value.
         /// </summary>
         /// <param name="action">The action.</param>
@@ -193,6 +168,22 @@ namespace Rock.Workflow
                     action.Activity.SetAttributeValue( testAttribute.Key, value );
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolves the merge fields.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        protected Dictionary<string, object> GetMergeFields( WorkflowAction action )
+        {
+            var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", action.Activity );
+            mergeFields.Add( "Workflow", action.Activity.Workflow );
+
+            return mergeFields;
         }
 
     }

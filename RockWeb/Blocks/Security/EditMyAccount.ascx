@@ -19,13 +19,11 @@
                     <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                     <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
                     <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" />
-
                     <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
                         <asp:ListItem Text="Male" Value="Male" />
                         <asp:ListItem Text="Female" Value="Female" />
                         <asp:ListItem Text="Unknown" Value="Unknown" />
                     </Rock:RockRadioButtonList>
-
                 </fieldset>
 
                 <fieldset>
@@ -45,7 +43,7 @@
                                             <div class="col-sm-5">
                                                 <div class="row">
                                                     <div class="col-xs-6">
-                                                        <asp:CheckBox ID="cbSms"  runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
+                                                        <asp:CheckBox ID="cbSms"  runat="server" Text="sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number"  />
                                                     </div>
                                                     <div class="col-xs-6">
                                                         <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />

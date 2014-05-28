@@ -90,6 +90,8 @@ namespace Rock.Model
             
             // ignoring Campus,CreatedByPersonAliasId 
             
+            // ignoring Campus,LeaderPersonAliasId 
+            
             // ignoring Campus,ModifiedByPersonAliasId 
             
             // ignoring Category,CreatedByPersonAliasId 
@@ -379,6 +381,8 @@ namespace Rock.Model
             // ignoring WorkflowActionType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActionType,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActivity,AssignedPersonAliasId 
             
             // ignoring WorkflowActivity,CreatedByPersonAliasId 
             

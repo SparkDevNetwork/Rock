@@ -32,8 +32,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Name" )]
 
-    [TextField( "Text Value", "A text value to use for the workflow name.", false, "", "", 0 )]
-    [WorkflowAttribute( "Attribute", "An attribute value to use for the workflow name (will only be used if 'Text Value' is blank).", false, "", "", 1 )]
+    [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The value to use for the workflow's name", false, "", "", 1, "NameValue" )]
     public class SetName : ActionComponent
     {
         /// <summary>
@@ -48,20 +47,21 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            string name = GetAttributeValue( action, "TextValue" );
-            if (string.IsNullOrWhiteSpace(name))
+            string nameValue = GetAttributeValue( action, "NameValue" );
+            Guid guid = nameValue.AsGuid();
+            if (guid.IsEmpty())
             {
-                Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
-                if ( !guid.IsEmpty() )
-                {
-                    name = GetWorklowAttributeValue( action, guid );
-                }
+                nameValue = nameValue.ResolveMergeFields( GetMergeFields( action ) );
+            }
+            else
+            {
+                nameValue = action.GetWorklowAttributeValue( guid );
             }
 
-            if (!string.IsNullOrWhiteSpace(name))
+            if ( !string.IsNullOrWhiteSpace( nameValue ) )
             {
-                action.Activity.Workflow.Name = name;
-                action.AddLogEntry( string.Format( "Set Workflow Name to '{0}'", name ) );
+                action.Activity.Workflow.Name = nameValue;
+                action.AddLogEntry( string.Format( "Set Workflow Name to '{0}'", nameValue ) );
             }
 
             return true;

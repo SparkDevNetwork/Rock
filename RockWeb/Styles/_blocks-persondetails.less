@@ -117,12 +117,14 @@
     }
 
     .social-icons {
+        text-align: center;
+
         .icon {
-            float: left;
             background-color: @accent-bold-color;
             margin: 0 2px;
             border-radius: @border-radius-base;
             font-size: 16px;
+            display: inline-block;
 
             a {
                 color: @accent-bold-text-color;
@@ -234,6 +236,7 @@
         table-layout: fixed;
         height: 40px;
         margin: 0 auto;
+        width: 220px;
 
         li {
             position: relative;
@@ -608,6 +611,13 @@ span.field-value {
         .personcontact {
             text-align: left;
             padding-bottom: 0;
+        }
+
+        .social-icons {
+            text-align: left;
+            .icon {
+                float: left;
+            }
         }
     }
 

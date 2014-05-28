@@ -30,12 +30,24 @@ namespace Rock.Reporting.Dashboard
         /// <summary>
         /// Creates from json.
         /// </summary>
+        /// <param name="name">The name.</param>
         /// <param name="json">The json.</param>
         /// <returns></returns>
-        public static ChartStyle CreateFromJson( string json )
+        public static ChartStyle CreateFromJson( string name,  string json )
         {
-            return JsonConvert.DeserializeObject( json, typeof( ChartStyle ) ) as ChartStyle;
+            var result = JsonConvert.DeserializeObject( json, typeof( ChartStyle ) ) as ChartStyle;
+            result.Name = name;
+            return result;
         }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [JsonIgnore]
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the series colors. SeriesColors[0] will be used for the first series, SeriesColors[1] for the second, etc
@@ -135,7 +147,7 @@ namespace Rock.Reporting.Dashboard
         /// </returns>
         public override string ToString()
         {
-            return this.ToJson( true );
+            return this.Name ?? this.ToJson( true );
         }
 
         /// <summary>

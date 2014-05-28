@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -32,7 +33,8 @@ namespace Rock.Reporting.Dashboard
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
     [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 6 )]
+    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4", Order = 6 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
     public abstract class ChartDashboardWidget : DashboardWidget
     {
         /// <summary>
@@ -130,30 +132,32 @@ namespace Rock.Reporting.Dashboard
                 int? result = null;
                 if ( GetEntityFromContext )
                 {
-                    if ( this.ContextEntity() != null )
+                    EntityTypeCache entityTypeCache = null;
+                    if ( this.MetricId.HasValue )
                     {
-                        result = this.ContextEntity().Id;
+                        var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
+                        if ( metric != null )
+                        {
+                            entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                        }
                     }
 
+                    if ( this.ContextEntity( entityTypeCache.Name ) != null )
+                    {
+                        result = this.ContextEntity( entityTypeCache.Name ).Id;
+                    }
+
+                    // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
                     if ( !result.HasValue )
                     {
-                        // if Getting the EntityFromContext, and we didn't get it from ContextEntity, get it from the Page Param
-                        if ( this.MetricId.HasValue )
+                        // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
+                        var entityParamName = "EntityId";
+                        if ( entityTypeCache != null )
                         {
-                            // figure out what the param name should be ("CampusId, GroupId, etc") depending on metric's entityType
-                            var entityParamName = "EntityId";
-                            var metric = new Rock.Model.MetricService( new Rock.Data.RockContext() ).Get( this.MetricId ?? 0 );
-                            if ( metric != null )
-                            {
-                                var entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
-                                if ( entityTypeCache != null )
-                                {
-                                    entityParamName = entityTypeCache.Name + "Id";
-                                }
-                            }
-
-                            result = this.PageParameter( entityParamName ).AsIntegerOrNull();
+                            entityParamName = entityTypeCache.Name + "Id";
                         }
+
+                        result = this.PageParameter( entityParamName ).AsIntegerOrNull();
                     }
                 }
                 else
@@ -166,6 +170,20 @@ namespace Rock.Reporting.Dashboard
                 }
 
                 return result;
+            }
+        }
+
+        /// <summary>
+        /// Gets the detail page.
+        /// </summary>
+        /// <value>
+        /// The detail page.
+        /// </value>
+        public Guid? DetailPageGuid
+        {
+            get
+            {
+                return ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
             }
         }
 
@@ -234,7 +252,7 @@ namespace Rock.Reporting.Dashboard
                         try
                         {
                             definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.GetAttributeValue( "ChartStyle" ) );
+                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
                         }
                         catch ( Exception ex )
                         {
@@ -245,6 +263,20 @@ namespace Rock.Reporting.Dashboard
                 }
 
                 return new ChartStyle();
+            }
+        }
+
+        /// <summary>
+        /// Gets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "1||4" );
             }
         }
     }

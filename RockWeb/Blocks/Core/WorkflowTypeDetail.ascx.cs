@@ -396,6 +396,9 @@ namespace RockWeb.Blocks.Core
                             workflowActionType = new WorkflowActionType();
                             workflowActivityType.ActionTypes.Add( workflowActionType );
                         }
+                        workflowActionType.CriteriaAttributeGuid = editorWorkflowActionType.CriteriaAttributeGuid;
+                        workflowActionType.CriteriaComparisonType = editorWorkflowActionType.CriteriaComparisonType;
+                        workflowActionType.CriteriaValue = editorWorkflowActionType.CriteriaValue;
                         workflowActionType.Name = editorWorkflowActionType.Name;
                         workflowActionType.EntityTypeId = editorWorkflowActionType.EntityTypeId;
                         workflowActionType.IsActionCompletedOnSuccess = editorWorkflowActionType.IsActionCompletedOnSuccess;
@@ -1147,14 +1150,12 @@ namespace RockWeb.Blocks.Core
                 System.Web.HttpContext.Current.Items["WorkflowType"] = workflowType;
 
                 var workflowAttributes = new Dictionary<Guid, string>();
-
-
                 AttributesState.OrderBy( a => a.Order ).ToList().ForEach( a => workflowAttributes.Add( a.Guid, a.Name ) );
                 System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] = workflowAttributes;
 
                 if ( workflowAttributes.Any() )
                 {
-                    wpAttributes.Title = string.Format( "Attributes ({0})", workflowAttributes.Count.ToString( "N0" ) );
+                    wpAttributes.Title = string.Format( "Attributes <small>Count: {0}</small>", workflowAttributes.Count.ToString( "N0" ) );
                 }
                 else
                 {
@@ -1277,7 +1278,7 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
-            control.SetWorkflowActionType( actionType );
+            control.SetWorkflowActionType( actionType, System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] as Dictionary<Guid, string> );
 
             control.Expanded = ExpandedActions.Contains( actionType.Guid );
 
