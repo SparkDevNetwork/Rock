@@ -29,7 +29,8 @@ namespace Rock.Model
     /// </summary>
     [Table( "WorkflowLog" )]
     [DataContract]
-    public partial class WorkflowLog : Entity<WorkflowLog>
+    [NotAudited]
+    public partial class WorkflowLog : Model<WorkflowLog>
     {
 
         #region Entity Properties
