@@ -51,7 +51,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( !Required )
                 {
-                    this.Items.Add( new ListItem( string.Empty, "00" ) );
+                    this.Items.Add( new ListItem( string.Empty, "0" ) );
                 }
 
                 if ( IncludeGlobalOption )
@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.SelectedValueAsInt( false );
+                return this.SelectedValueAsInt( true );
             }
             set
             {
