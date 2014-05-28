@@ -394,6 +394,9 @@ namespace RockWeb.Blocks.Reporting
             {
                 ceSourceSql.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid();
                 ddlDataView.Visible = sourceValueType.Guid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid();
+
+                // only show LastRun label if SourceValueType is not Manual
+                ltLastRunDateTime.Visible = sourceValueType.Guid != Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid();
             }
         }
 
@@ -447,6 +450,7 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 metric = new Metric { Id = 0, IsSystem = false };
+                metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
                 metric.MetricCategories = new List<MetricCategory>();
                 if ( parentCategoryId.HasValue )
                 {
@@ -597,6 +601,9 @@ namespace RockWeb.Blocks.Reporting
                 descriptionListMain.Add( "Categories", metric.MetricCategories.Select( s => s.Category.ToString() ).OrderBy( o => o ).ToList().AsDelimited( "," ) );
             }
 
+            // only show LastRun label if SourceValueType is not Manual
+            ltLastRunDateTime.Visible = metric.SourceValueTypeId != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+
             if ( metric.LastRunDateTime != null )
             {
                 ltLastRunDateTime.LabelType = LabelType.Success;
@@ -663,7 +670,8 @@ namespace RockWeb.Blocks.Reporting
                 ddlSchedule.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
             }
 
-            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).ToList();
+            // limit to EntityTypes that support picking a Value with a picker
+            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where(a => a.SingleValueFieldTypeId.HasValue).ToList();
         }
 
         #endregion
