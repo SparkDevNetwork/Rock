@@ -38,10 +38,10 @@ namespace Rock.PayFlowPro.Reporting
 
             if ( metaDataResponse != null )
             {
-                RowCount = ( (string)metaDataResponse.Element( "numberOfRows" ) ).AsInteger() ?? 0;
-                PageCount = ( (string)metaDataResponse.Element( "numberOfPages" ) ).AsInteger() ?? 0;
-                PageSize = ( (string)metaDataResponse.Element( "pageSize" ) ).AsInteger() ?? 0;
-                ColumnCount = ( (string)metaDataResponse.Element( "numberOfColumns" ) ).AsInteger() ?? 0;
+                RowCount = ( (string)metaDataResponse.Element( "numberOfRows" ) ).AsInteger();
+                PageCount = ( (string)metaDataResponse.Element( "numberOfPages" ) ).AsInteger();
+                PageSize = ( (string)metaDataResponse.Element( "pageSize" ) ).AsInteger();
+                ColumnCount = ( (string)metaDataResponse.Element( "numberOfColumns" ) ).AsInteger();
 
                 Columns = new List<string>();
 
