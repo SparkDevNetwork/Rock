@@ -56,6 +56,7 @@
                             <Columns>
                                 <Rock:DateTimeField DataField="LogDateTime" HeaderText="When" FormatAsElapsedTime="true" />
                                 <asp:BoundField DataField="LogText" HeaderText="Message" />
+                                <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
                             </Columns>
                         </Rock:Grid>
                     </div>

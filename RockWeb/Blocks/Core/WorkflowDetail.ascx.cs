@@ -335,9 +335,14 @@ namespace RockWeb.Blocks.Core
 
                             // Save action updates
                             rockContext.SaveChanges();
+
+
                         }
 
                     } );
+
+                    var errorMessages = new List<string>();
+                    service.Process( dbWorkflow, out errorMessages );
 
                     var qryParams = new Dictionary<string, string>();
                     qryParams["workflowTypeId"] = dbWorkflow.WorkflowTypeId.ToString();
@@ -487,7 +492,7 @@ namespace RockWeb.Blocks.Core
 
         private void BindLog()
         {
-            var logEntries = new WorkflowLogService( new RockContext() ).Queryable( "" )
+            var logEntries = new WorkflowLogService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person" )
                 .Where( l => l.WorkflowId == Workflow.Id )
                 .OrderBy( l => l.LogDateTime)
                 .ToList();
