@@ -510,7 +510,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // add Criteria fields
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row conditional-run-criteria" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row conditional-run-criteria alert-warning" );
             if ( !_ddlCriteriaAttribute.SelectedValueAsGuid().HasValue )
             {
                 writer.AddStyleAttribute( "display", "none" );
