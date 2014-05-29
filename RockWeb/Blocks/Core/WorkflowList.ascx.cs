@@ -58,6 +58,9 @@ namespace RockWeb.Blocks.Core
 
             if ( _workflowType != null )
             {
+                gfWorkflows.ApplyFilterClick += gfWorkflows_ApplyFilterClick;
+                gfWorkflows.DisplayFilterValue += gfWorkflows_DisplayFilterValue;
+
                 // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
                 this.BlockUpdated += Block_BlockUpdated;
                 this.AddConfigurationUpdateTrigger( upnlSettings );
@@ -114,6 +117,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
+                BindFilter();
                 BindGrid();
             }
 
@@ -155,7 +159,40 @@ namespace RockWeb.Blocks.Core
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
         }
-        
+
+        protected void gfWorkflows_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Activated":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+                case "State":
+                    {
+                        e.Value =  e.Value == "0" ? "Active" : "Completed";
+                        break;
+                    }
+                case "Completed":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+                        break;
+                    }
+            }
+        }
+
+        protected void gfWorkflows_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfWorkflows.SaveUserPreference( "Activated", drpActivated.DelimitedValues );
+            gfWorkflows.SaveUserPreference( "State", ddlState.SelectedValue );
+            gfWorkflows.SaveUserPreference( "Completed", drpCompleted.DelimitedValues );
+            gfWorkflows.SaveUserPreference( "Name", tbName.Text );
+            gfWorkflows.SaveUserPreference( "Status", tbStatus.Text );
+
+            BindGrid();
+        }
+
         /// <summary>
         /// Handles the Add event of the gWorkflows control.
         /// </summary>
@@ -251,7 +288,7 @@ namespace RockWeb.Blocks.Core
                 NavigateToLinkedPage( "EntryPage", qryParam );
             }
         }
-        
+
         #endregion
 
         #region Methods
@@ -303,14 +340,73 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            drpActivated.DelimitedValues = gfWorkflows.GetUserPreference( "Activated" );
+            ddlState.SetValue( gfWorkflows.GetUserPreference( "State" ) );
+            drpActivated.DelimitedValues = gfWorkflows.GetUserPreference( "Activated" );
+            drpCompleted.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
+            tbName.Text = gfWorkflows.GetUserPreference( "Name" );
+            tbStatus.Text = gfWorkflows.GetUserPreference( "Status" );
+        }
+
+        /// <summary>
         /// Binds the grid.
         /// </summary>
         private void BindGrid()
         {
             var rockContext = new RockContext();
             var workflowService = new WorkflowService( rockContext );
+
             var qry = workflowService.Queryable( "Activities" )
-                .Where( a => a.WorkflowTypeId.Equals( _workflowType.Id ) );
+                .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
+
+            // Activated Date Range Filter
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfWorkflows.GetUserPreference( "Activated" );
+            if ( drp.LowerValue.HasValue )
+            {
+                qry = qry.Where( w => w.ActivatedDateTime >= drp.LowerValue.Value );
+            }
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                qry = qry.Where( w => w.ActivatedDateTime.Value < upperDate );
+            }
+
+            // State Filter
+            int? state = gfWorkflows.GetUserPreference( "State" ).AsIntegerOrNull();
+            if ( state.HasValue )
+            {
+                qry = qry.Where( w => w.CompletedDateTime.HasValue == ( state == 1 ) );
+            }
+
+            // Completed Date Range Filter
+            var drp2 = new DateRangePicker();
+            drp2.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
+            if ( drp2.LowerValue.HasValue )
+            {
+                qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value >= drp2.LowerValue.Value );
+            }
+            if ( drp2.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp2.UpperValue.Value.Date.AddDays( 1 );
+                qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
+            }
+
+            string name = gfWorkflows.GetUserPreference("Name");
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                qry = qry.Where( w => w.Name.StartsWith(name));
+            }
+
+            string status = gfWorkflows.GetUserPreference("Status");
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                qry = qry.Where( w => w.Status.StartsWith(status));
+            }
 
             var sortProperty = gWorkflows.SortProperty;
             if ( sortProperty != null )
