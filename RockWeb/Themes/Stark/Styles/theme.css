@@ -3,9 +3,10 @@
     
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
-    3. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    4. ASP.Net Overrides - Yep they get it wrong too sometimes
-    5. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+    
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -2428,14 +2429,16 @@ td.grid-col-actions {
   font-weight: normal;
 }
 .workflow-action .criteria-exists {
-  background-color: #bbbbbb;
-  color: #333333;
+  background-color: #f0ad4e;
+  color: #ffffff;
+  border: 1px solid #eea236;
 }
 .workflow-action .conditional-run-criteria {
   margin-top: -15px;
   margin-bottom: 15px;
   padding-top: 15px;
-  background-color: #dfdfdf;
+  border-width: 1px;
+  border-style: solid;
 }
 .workflow-action .form-action-rows .row {
   margin-bottom: 12px;
@@ -3562,6 +3565,23 @@ small {
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin-top: 2px;
 }
+.clickable {
+  cursor: pointer;
+}
+.navigation-tip {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #333333;
+  background-color: #d5d5d5;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+a.help {
+  margin-left: 6px;
+  outline: 0;
+  color: #bbbbbb;
+}
 .control-label {
   font-weight: 700;
 }
@@ -3853,17 +3873,29 @@ fieldset[disabled] .btn-authenication.active {
   color: #468847;
   border-bottom: 1px dotted #468847;
 }
+.alert-success a.help {
+  border-bottom: 0;
+}
 .alert-info a {
   color: #3a87ad;
   border-bottom: 1px dotted #3a87ad;
+}
+.alert-info a.help {
+  border-bottom: 0;
 }
 .alert-warning a {
   color: #c09853;
   border-bottom: 1px dotted #c09853;
 }
+.alert-warning a.help {
+  border-bottom: 0;
+}
 .alert-danger a {
   color: #b94a48;
   border-bottom: 1px dotted #b94a48;
+}
+.alert-danger a.help {
+  border-bottom: 0;
 }
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
@@ -3900,23 +3932,6 @@ ul.list-padded li:first-child {
 }
 div.aspNetDisabled {
   opacity: 0.5;
-}
-.clickable {
-  cursor: pointer;
-}
-.navigation-tip {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  padding: 2px 4px;
-  font-size: 90%;
-  color: #333333;
-  background-color: #d5d5d5;
-  white-space: nowrap;
-  border-radius: 4px;
-}
-a.help {
-  margin-left: 6px;
-  outline: 0;
-  color: #bbbbbb;
 }
 @media print {
   @page {
