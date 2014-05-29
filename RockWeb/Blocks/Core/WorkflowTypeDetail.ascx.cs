@@ -369,6 +369,7 @@ namespace RockWeb.Blocks.Core
                     if ( workflowActivityType == null )
                     {
                         workflowActivityType = new WorkflowActivityType();
+                        workflowActivityType.Guid = editorWorkflowActivityType.Guid;
                         workflowType.ActivityTypes.Add( workflowActivityType );
                     }
                     workflowActivityType.IsActive = editorWorkflowActivityType.IsActive;
@@ -394,6 +395,7 @@ namespace RockWeb.Blocks.Core
                         {
                             // New action
                             workflowActionType = new WorkflowActionType();
+                            workflowActionType.Guid = editorWorkflowActionType.Guid;
                             workflowActivityType.ActionTypes.Add( workflowActionType );
                         }
                         workflowActionType.CriteriaAttributeGuid = editorWorkflowActionType.CriteriaAttributeGuid;

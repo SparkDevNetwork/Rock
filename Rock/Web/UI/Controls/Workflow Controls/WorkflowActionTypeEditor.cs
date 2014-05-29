@@ -356,8 +356,8 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             Controls.Add( _ddlCriteriaAttribute );
             _ddlCriteriaAttribute.ID = this.ID + "_ddlCriteriaAttribute";
             _ddlCriteriaAttribute.CssClass = "js-conditional-run-criteria";
-            _ddlCriteriaAttribute.Label = "Conditional Run Criteria";
-            _ddlCriteriaAttribute.Help = "Optional criteria to prevent action from running.  If the criteria is not met, the action will be skipped when this activity is processed.";
+            _ddlCriteriaAttribute.Label = "Only Run If";
+            _ddlCriteriaAttribute.Help = "Optional criteria to prevent the action from running.  If the criteria is not met, this action will be skipped when this activity is processed.";
 
             _ddlCriteriaComparisonType = new RockDropDownList();
             Controls.Add( _ddlCriteriaComparisonType );

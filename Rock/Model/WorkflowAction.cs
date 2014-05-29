@@ -230,18 +230,30 @@ namespace Rock.Model
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        public string GetWorklowAttributeValue( Guid guid )
+        public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
             var attribute = AttributeCache.Read( guid );
             if ( attribute != null && Activity != null )
             {
+                string value = string.Empty;
+
                 if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
                 {
-                    return Activity.Workflow.GetAttributeValue( attribute.Key );
+                    value = Activity.Workflow.GetAttributeValue( attribute.Key );
                 }
                 else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
                 {
-                    return Activity.GetAttributeValue( attribute.Key );
+                    value = Activity.GetAttributeValue( attribute.Key );
+                }
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    if (formatted)
+                    {
+                        value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, condensed );
+                    }
+
+                    return value;
                 }
             }
 
@@ -272,6 +284,20 @@ namespace Rock.Model
         {
             CompletedDateTime = RockDateTime.Now;
             AddSystemLogEntry( "Completed" );
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid()
+        {
+            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
+            mergeFields.Add( "ActionType", this.ActionType );
+            return mergeFields;
         }
 
         /// <summary>

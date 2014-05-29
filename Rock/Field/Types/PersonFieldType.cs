@@ -47,10 +47,29 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = value.AsGuid();
-                formattedValue = new PersonAliasService( new RockContext() ).Queryable()
+                var person = new PersonAliasService( new RockContext() ).Queryable()
                     .Where( a => a.Guid.Equals( guid ) )
-                    .Select( a => a.Person.NickName + " " + a.Person.LastName )
+                    .Select( a => a.Person )
                     .FirstOrDefault();
+                if (person != null)
+                {
+                    if ( !condensed )
+                    {
+                        try
+                        {
+                            string appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue("InternalApplicationRoot").EnsureTrailingForwardslash();
+                            formattedValue = string.Format( "<a href='{0}person/{1}' target='_blank'>{2}</a>", appRoot, person.Id, person.FullName );
+                        }
+                        catch
+                        {
+                            formattedValue = person.FullName;
+                        }
+                    }
+                    else
+                    {
+                        formattedValue = person.FullName;
+                    }
+                }
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );

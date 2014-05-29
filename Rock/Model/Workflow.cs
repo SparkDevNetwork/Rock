@@ -308,6 +308,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid()
+        {
+            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
+            mergeFields.Add( "WorkflowType", this.WorkflowType );
+            return mergeFields;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -382,7 +396,16 @@ namespace Rock.Model
             var workflow = new Workflow();
             workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
-            workflow.Name = name ?? workflowType.Name;
+            
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                workflow.Name = name;
+            }
+            else
+            {
+                workflow.Name = workflowType.Name;
+            }
+
             workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;
