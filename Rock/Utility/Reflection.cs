@@ -82,12 +82,16 @@ namespace Rock
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null )
             {
-                foreach ( var file in Directory.GetFiles( httpContext.Server.MapPath( "~/Plugins" ), "*.dll", SearchOption.AllDirectories ) )
+                var pluginsDir = new DirectoryInfo( httpContext.Server.MapPath( "~/Plugins" ) );
+                if ( pluginsDir.Exists )
                 {
-                    var assembly = Assembly.LoadFrom( file );
-                    if ( !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
+                    foreach ( var file in pluginsDir.GetFiles( "*.dll", SearchOption.AllDirectories ) )
                     {
-                        assemblies.Add( assembly.FullName.ToLower(), assembly );
+                        var assembly = Assembly.LoadFrom( file.FullName );
+                        if ( !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
+                        {
+                            assemblies.Add( assembly.FullName.ToLower(), assembly );
+                        }
                     }
                 }
             }
