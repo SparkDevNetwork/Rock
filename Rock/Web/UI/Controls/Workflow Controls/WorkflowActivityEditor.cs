@@ -403,7 +403,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             // Name/Description div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right activity-controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa {0}'></i></a>",
