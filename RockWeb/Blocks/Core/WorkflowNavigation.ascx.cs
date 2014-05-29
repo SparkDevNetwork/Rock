@@ -189,27 +189,36 @@ namespace RockWeb.Blocks.Core
         private void BuildCategoryControl(Control parentControl, WorkflowNavigationCategory category)
         {
             var divPanel = new HtmlGenericContainer( "div" );
-            //divPanel.AddCssClass( "panel panel-default" );
+            divPanel.AddCssClass( "panel panel-default panel-workflowitem" );
             parentControl.Controls.Add( divPanel );
 
-            var divHeading = new HtmlGenericControl( "div" );
-            //divHeading.AddCssClass( "panel-heading" );
-            divPanel.Controls.Add( divHeading );
-
-            var headingTitle = new HtmlGenericControl( "h3" );
-            //headingTitle.AddCssClass( "panel-title" );
-            divHeading.Controls.Add( headingTitle );
+            var divPanelHeading = new HtmlGenericControl( "div" );
+            divPanelHeading.AddCssClass( "panel-heading" );
+            divPanel.Controls.Add( divPanelHeading );
 
             var headingA = new HtmlGenericControl( "a" );
             headingA.Attributes.Add( "data-toggle", "collapse" );
             headingA.Attributes.Add( "data-parent", "#" + parentControl.ClientID );
-            headingTitle.Controls.Add( headingA );
+            headingA.AddCssClass( "collapsed clearfix" );
+            divPanelHeading.Controls.Add( headingA );
+
+            var divHeadingTitle = new HtmlGenericControl( "div" );
+            divHeadingTitle.AddCssClass( "panel-title clearfix" );
+            headingA.Controls.Add( divHeadingTitle );
+
+            var headingTitle = new HtmlGenericControl( "h3" );
+            headingTitle.AddCssClass( "pull-left" );
+            divHeadingTitle.Controls.Add( headingTitle );
+
+            var panelNavigation = new HtmlGenericControl( "i" );
+            panelNavigation.AddCssClass( "fa panel-navigation pull-right" );
+            divHeadingTitle.Controls.Add( panelNavigation );
 
             if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
             {
-                headingA.Controls.Add( new LiteralControl( string.Format( "<i class='{0}'></i> ", category.IconCssClass ) ) );
+                headingTitle.Controls.Add( new LiteralControl( string.Format( "<i class='{0}'></i> ", category.IconCssClass ) ) );
             }
-            headingA.Controls.Add( new LiteralControl( category.Name ) );
+            headingTitle.Controls.Add( new LiteralControl( category.Name ) );
 
             var divCollapse = new HtmlGenericControl( "div" );
             divCollapse.ID = string.Format( "collapse-category-", category.Id );
@@ -218,16 +227,20 @@ namespace RockWeb.Blocks.Core
 
             headingA.Attributes.Add( "href", "#" + divCollapse.ClientID );
 
+            var divPanelBody = new HtmlGenericControl( "div" );
+            divPanelBody.AddCssClass( "panel-body" );
+            divCollapse.Controls.Add( divPanelBody );
+
             if (category.WorkflowTypes.Any())
             {
                 var ulGroup = new HtmlGenericControl( "ul" );
-                ulGroup.AddCssClass( "list-group" );
-                divCollapse.Controls.Add( ulGroup );
+                ulGroup.AddCssClass( "list-unstyled" );
+                divPanelBody.Controls.Add( ulGroup );
 
                 foreach ( var workflowType in category.WorkflowTypes )
                 {
                     var li = new HtmlGenericControl( "li" );
-                    li.AddCssClass( "list-group-item" );
+                    li.AddCssClass( "xlist-group-item" );
                     ulGroup.Controls.Add( li );
 
                     var qryParms = new Dictionary<string, string>();

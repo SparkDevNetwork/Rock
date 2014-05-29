@@ -2440,6 +2440,30 @@ td.grid-col-actions {
 .workflow-action .form-action-rows .row {
   margin-bottom: 12px;
 }
+.panel-group .panel-workflowitem {
+  margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem:hover {
+  background-color: #f1f1f1;
+}
+.panel-group .panel-workflowitem .panel-heading {
+  padding: 30px;
+}
+.panel-group .panel-workflowitem .panel-heading a h3 {
+  margin: 0;
+}
+.panel-group .panel-workflowitem .panel-heading a h3 i {
+  font-size: 35px;
+  margin-right: 12px;
+}
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
+  font-family: FontAwesome;
+  content: "\f077";
+  font-size: 20px;
+}
+.panel-group .panel-workflowitem .panel-heading a.collapsed i.panel-navigation:before {
+  content: "\f078";
+}
 /*
     Used to manage styles for specific blocks.
 
