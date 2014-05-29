@@ -446,7 +446,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
-        public static int AsInteger( this string str)
+        public static int AsInteger( this string str )
         {
             return str.AsIntegerOrNull() ?? 0;
         }
@@ -456,7 +456,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static int? AsIntegerOrNull( this string str)
+        public static int? AsIntegerOrNull( this string str )
         {
             int value;
             if ( int.TryParse( str, out value ) )
@@ -522,7 +522,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static decimal? AsDecimalOrNull( this string str)
+        public static decimal? AsDecimalOrNull( this string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -556,7 +556,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static double? AsDoubleOrNull( this string str)
+        public static double? AsDoubleOrNull( this string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -1350,7 +1350,7 @@ namespace Rock
             string css = webControl.CssClass;
 
             while ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-            { 
+            {
                 css = Regex.Replace( css, match, " ", RegexOptions.IgnoreCase );
             }
 
@@ -1674,6 +1674,25 @@ namespace Rock
             else
             {
                 return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            }
+        }
+
+        /// <summary>
+        /// Converts to enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumValue">The enum value.</param>
+        /// <returns></returns>
+        public static T? ConvertToEnumOrNull<T>( this String enumValue ) where T : struct // actually limited to enum, but struct is the closest we can do
+        {
+            T result;
+            if ( Enum.TryParse<T>( enumValue, out result ) )
+            {
+                return result;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -2056,7 +2075,7 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             if ( !dictionary.ContainsKey( key ) )
             {
