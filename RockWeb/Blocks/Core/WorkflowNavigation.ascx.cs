@@ -41,38 +41,13 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for navigating workflow types and launching and/or managing workflows." )]
 
-    [LinkedPage("Entry Page", "Page used to launch a new workflow of the selected type.")]
-    [LinkedPage( "Manage Page", "Page used to manage workflows of the selected type." )]
+    [CategoryField( "Categories", "The categories to display", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
+    [BooleanField("Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1)]
+    [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type.", true, "", "", 2 )]
+    [LinkedPage( "Manage Page", "Page used to manage workflows of the selected type.", true, "", "", 3 )]
     public partial class WorkflowNavigation : Rock.Web.UI.RockBlock
     {
-        #region Fields
-        #endregion
-
-        #region Properties
-
-        private List<WorkflowNavigationCategory> RootCategories { get; set; }
-
-        #endregion
-
         #region Base Control Methods
-
-        protected override void LoadViewState( object savedState )
-        {
-            base.LoadViewState( savedState );
-
-            string json = ViewState["RootCategories"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                RootCategories = new List<WorkflowNavigationCategory>();
-            }
-            else
-            {
-                RootCategories = JsonConvert.DeserializeObject<List<WorkflowNavigationCategory>>( json );
-            }
-
-            BuildControls();
-
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -97,17 +72,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                RootCategories = GetData();
                 BuildControls();
             }
-        }
-
-        protected override object SaveViewState()
-        {
-            var jsonSetting = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-            ViewState["RootCategories"] = JsonConvert.SerializeObject( RootCategories, Formatting.None, jsonSetting );
-
-            return base.SaveViewState();
         }
 
         #endregion
@@ -121,7 +87,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            BuildControls();
         }
 
         #endregion
@@ -133,13 +99,17 @@ namespace RockWeb.Blocks.Core
             int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
 
             var rockContext = new RockContext();
-            var categories = new CategoryService( rockContext ).GetByEntityTypeId( entityTypeId ).ToList();
+
+            var categories = new CategoryService( rockContext ).GetByEntityTypeId( entityTypeId );
             var workflowTypes = new WorkflowTypeService( rockContext ).Queryable().ToList();
 
-            return GetCategories( null, categories, workflowTypes );
+            var filter = new List<Guid>();
+            GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => filter.Add( c.AsGuid() ) );
+
+            return GetCategories( null, categories.ToList(), workflowTypes, filter.Any(), filter );
         }
 
-        private List<WorkflowNavigationCategory> GetCategories( int? parentCategoryId, IEnumerable<Category> categories, IEnumerable<WorkflowType> workflowTypes )
+        private List<WorkflowNavigationCategory> GetCategories( int? parentCategoryId, IEnumerable<Category> categories, IEnumerable<WorkflowType> workflowTypes, bool checkFilter, List<Guid> filter )
         {
             var items = new List<WorkflowNavigationCategory>();
 
@@ -150,28 +120,47 @@ namespace RockWeb.Blocks.Core
                 .OrderBy( c => c.Order )
                 .ThenBy( c => c.Name ) )
             {
-                if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                {
-                    var categoryItem = new WorkflowNavigationCategory( category );
-                    items.Add( categoryItem );
-
-                    // Recurse child categories
-                    categoryItem.ChildCategories = GetCategories( category.Id, categories, workflowTypes );
-
-                    // get workflow types
-                    categoryItem.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
-                    foreach ( var workflowType in workflowTypes
-                        .Where( w =>
-                            w.CategoryId == category.Id )
-                        .OrderBy( w => w.Order )
-                        .ThenBy( w => w.Name ) )
+                    if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
-                        if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                        bool includeCategory = !checkFilter || filter.Contains( category.Guid );
+                        bool checkChildFilter = checkFilter;
+
+                        if (includeCategory)
                         {
-                            categoryItem.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
+                            if ( checkFilter && GetAttributeValue("IncludeChildCategories").AsBoolean() )
+                            {
+                                checkChildFilter = false;
+                            }
+
+                            var categoryItem = new WorkflowNavigationCategory( category );
+                            items.Add( categoryItem );
+
+                            // Recurse child categories
+                            categoryItem.ChildCategories = GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter );
+
+                            // get workflow types
+                            categoryItem.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
+                            foreach ( var workflowType in workflowTypes
+                                .Where( w =>
+                                    w.CategoryId == category.Id )
+                                .OrderBy( w => w.Order )
+                                .ThenBy( w => w.Name ) )
+                            {
+                                if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                                {
+                                    categoryItem.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach ( var categoryItem in GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter ) )
+                            {
+                                items.Add(categoryItem);
+                            }
                         }
                     }
-                }
+                
             }
 
             return items;
@@ -180,7 +169,7 @@ namespace RockWeb.Blocks.Core
         private void BuildControls()
         {
             pnlContent.Controls.Clear();
-            foreach ( var childCategory in RootCategories )
+            foreach ( var childCategory in GetData() )
             {
                 BuildCategoryControl( pnlContent, childCategory );
             }
