@@ -282,8 +282,12 @@ namespace RockWeb.Blocks.Core
                         {
                             _rockContext.SaveChanges();
                             _workflow.SaveAttributeValues( _rockContext );
+                            foreach ( var activity in _workflow.Activities )
+                            {
+                                activity.SaveAttributeValues( _rockContext );
+                            }
                         } );
-
+                        
                         WorkflowId = _workflow.Id;
                     }
                 }
@@ -506,7 +510,7 @@ namespace RockWeb.Blocks.Core
                                 _workflow.SaveAttributeValues( _rockContext );
                                 foreach(var activity in _workflow.Activities)
                                 {
-                                    activity.SaveAttributeValues();
+                                    activity.SaveAttributeValues( _rockContext );
                                 }
                             } );
 

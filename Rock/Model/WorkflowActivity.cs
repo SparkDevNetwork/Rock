@@ -306,6 +306,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid()
+        {
+            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
+            mergeFields.Add( "ActivityType", this.ActivityType );
+            return mergeFields;
+        }        
+        
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.
         /// </summary>
         /// <returns>
