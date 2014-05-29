@@ -205,22 +205,10 @@
                 $(chartContainer).bind('plothover', function (event, pos, item) {
 
                     if (item) {
-                        var yaxisLabel = $(chartContainer).find('.js-yaxis-value').val();
-                        var tooltipText = '';
-
-                        if (yaxisLabel) {
-                            tooltipText += yaxisLabel + '<br />';
-                        }
-
-                        tooltipText += new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                        var tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
 
                         if (item.series.label) {
                             tooltipText += '<br />' + item.series.label;
-                        }
-
-                        if (item.series.chartData[item.dataIndex].MetricValueType) {
-                            // if it's a goal measure...
-                            tooltipText += ' goal';
                         }
 
                         tooltipText += ': ' + item.series.chartData[item.dataIndex].YValue;
