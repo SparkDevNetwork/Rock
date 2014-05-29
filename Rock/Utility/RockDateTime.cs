@@ -62,7 +62,7 @@ namespace Rock
                 return _orgTimeZoneInfo;
             }
         }
-            
+
         /// <summary>
         /// Gets current datetime based on the OrgTimeZone setting set in web.config.
         /// </summary>
@@ -98,9 +98,23 @@ namespace Rock
         /// </summary>
         /// <param name="localDateTime">The local date time.</param>
         /// <returns></returns>
-        public static DateTime ConvertLocalDateTimeToRockDateTime( DateTime localDateTime)
+        public static DateTime ConvertLocalDateTimeToRockDateTime( DateTime localDateTime )
         {
             return TimeZoneInfo.ConvertTime( localDateTime, OrgTimeZoneInfo );
+        }
+
+        /// <summary>
+        /// Gets the first day of week which is Monday within Rock
+        /// </summary>
+        /// <value>
+        /// The first day of week.
+        /// </value>
+        public static DayOfWeek FirstDayOfWeek
+        {
+            get
+            {
+                return DayOfWeek.Monday;
+            }
         }
     }
 }
