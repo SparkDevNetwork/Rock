@@ -281,6 +281,12 @@ namespace RockWeb.Blocks.CheckIn
                 // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
             }
+            else
+            {
+                // if no specific GroupType is specified, show all GroupTypes with GroupTypePurpose of Checkin Template (since this blocktype is specifically for Checkin)
+                int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
+            }
 
             if ( gGroupLocationSchedule.SortProperty != null )
             {
