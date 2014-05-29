@@ -35,11 +35,10 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
-    [TextField( "To", "The To address that email should be sent to.", false, "", "", 0 )]
-    [WorkflowAttribute( "To Attribute", "An attribute that contains the person or email address that email should be sent to.", false, "", "", 1 )]
-    [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 2 )]
-    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 3 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 4 )]
+    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 0, "To")]
+    [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 1 )]
+    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 2 )]
+    [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
     public class SendEmail : ActionComponent
     {
         /// <summary>
@@ -56,14 +55,8 @@ namespace Rock.Workflow.Action
 
             var recipients = new List<string>();
 
-            string to = GetAttributeValue( action, "To" );
-            if ( !string.IsNullOrWhiteSpace( to ) )
-            {
-                recipients.Add( to );
-            }
-
-            // Get the To attribute email value
-            Guid guid = GetAttributeValue( action, "ToAttribute" ).AsGuid();
+            string nameValue = GetAttributeValue( action, "To" );
+            Guid guid = nameValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
                 var attribute = AttributeCache.Read( guid );
@@ -84,7 +77,7 @@ namespace Rock.Workflow.Action
                                     Guid personAliasGuid = toValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        to = new PersonAliasService( new RockContext() ).Queryable()
+                                        string to = new PersonAliasService( new RockContext() ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
                                             .Select( a => a.Person.Email )
                                             .FirstOrDefault();
@@ -97,6 +90,14 @@ namespace Rock.Workflow.Action
                                 }
                         }
                     }
+                }
+            }
+            else
+            {
+                string to = GetAttributeValue( action, "To" );
+                if ( !string.IsNullOrWhiteSpace( to ) )
+                {
+                    recipients.Add( to );
                 }
             }
 
