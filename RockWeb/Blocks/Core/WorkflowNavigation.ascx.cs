@@ -17,20 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-
-using Newtonsoft.Json;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
 
 namespace RockWeb.Blocks.Core
 {
@@ -42,7 +38,7 @@ namespace RockWeb.Blocks.Core
     [Description( "Block for navigating workflow types and launching and/or managing workflows." )]
 
     [CategoryField( "Categories", "The categories to display", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
-    [BooleanField("Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1)]
+    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type.", true, "", "", 2 )]
     [LinkedPage( "Manage Page", "Page used to manage workflows of the selected type.", true, "", "", 3 )]
     public partial class WorkflowNavigation : Rock.Web.UI.RockBlock
@@ -120,47 +116,47 @@ namespace RockWeb.Blocks.Core
                 .OrderBy( c => c.Order )
                 .ThenBy( c => c.Name ) )
             {
-                    if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                {
+                    bool includeCategory = !checkFilter || filter.Contains( category.Guid );
+                    bool checkChildFilter = checkFilter;
+
+                    if ( includeCategory )
                     {
-                        bool includeCategory = !checkFilter || filter.Contains( category.Guid );
-                        bool checkChildFilter = checkFilter;
-
-                        if (includeCategory)
+                        if ( checkFilter && GetAttributeValue( "IncludeChildCategories" ).AsBoolean() )
                         {
-                            if ( checkFilter && GetAttributeValue("IncludeChildCategories").AsBoolean() )
-                            {
-                                checkChildFilter = false;
-                            }
-
-                            var categoryItem = new WorkflowNavigationCategory( category );
-                            items.Add( categoryItem );
-
-                            // Recurse child categories
-                            categoryItem.ChildCategories = GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter );
-
-                            // get workflow types
-                            categoryItem.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
-                            foreach ( var workflowType in workflowTypes
-                                .Where( w =>
-                                    w.CategoryId == category.Id )
-                                .OrderBy( w => w.Order )
-                                .ThenBy( w => w.Name ) )
-                            {
-                                if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                                {
-                                    categoryItem.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
-                                }
-                            }
+                            checkChildFilter = false;
                         }
-                        else
+
+                        var categoryItem = new WorkflowNavigationCategory( category );
+                        items.Add( categoryItem );
+
+                        // Recurse child categories
+                        categoryItem.ChildCategories = GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter );
+
+                        // get workflow types
+                        categoryItem.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
+                        foreach ( var workflowType in workflowTypes
+                            .Where( w =>
+                                w.CategoryId == category.Id )
+                            .OrderBy( w => w.Order )
+                            .ThenBy( w => w.Name ) )
                         {
-                            foreach ( var categoryItem in GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter ) )
+                            if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                             {
-                                items.Add(categoryItem);
+                                categoryItem.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
                             }
                         }
                     }
-                
+                    else
+                    {
+                        foreach ( var categoryItem in GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter ) )
+                        {
+                            items.Add( categoryItem );
+                        }
+                    }
+                }
+
             }
 
             return items;
@@ -175,7 +171,7 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        private void BuildCategoryControl(Control parentControl, WorkflowNavigationCategory category)
+        private void BuildCategoryControl( Control parentControl, WorkflowNavigationCategory category )
         {
             var divPanel = new HtmlGenericContainer( "div" );
             divPanel.AddCssClass( "panel panel-default panel-workflowitem" );
@@ -220,7 +216,7 @@ namespace RockWeb.Blocks.Core
             divPanelBody.AddCssClass( "panel-body" );
             divCollapse.Controls.Add( divPanelBody );
 
-            if (category.WorkflowTypes.Any())
+            if ( category.WorkflowTypes.Any() )
             {
                 var ulGroup = new HtmlGenericControl( "ul" );
                 ulGroup.AddCssClass( "list-unstyled" );

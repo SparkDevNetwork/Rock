@@ -620,22 +620,29 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
         {
-            if ( content == null )
-                return string.Empty;
+            try
+            {
+                if ( content == null )
+                    return string.Empty;
 
-            // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
-                return content;
+                // If there's no merge codes, just return the content
+                if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                    return content;
 
-            //// NOTE: This means that template filters will also use CSharpNamingConvention
-            //// For example the dotliquid documentation says to do this for formatting dates: 
-            //// {{ some_date_value | date:"MMM dd, yyyy" }}
-            //// However, if CSharpNamingConvention is enabled, it needs to be: 
-            //// {{ some_date_value | Date:"MMM dd, yyyy" }}
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( content );
+                //// NOTE: This means that template filters will also use CSharpNamingConvention
+                //// For example the dotliquid documentation says to do this for formatting dates: 
+                //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                Template template = Template.Parse( content );
 
-            return template.Render( Hash.FromDictionary( mergeObjects ) );
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
+            }
+            catch ( Exception ex )
+            {
+                return "Error resolving Liquid merge fields: " + ex.Message;
+            }
         }
 
         /// <summary>

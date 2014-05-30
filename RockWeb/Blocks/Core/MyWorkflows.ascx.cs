@@ -39,7 +39,19 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "List all of the workflows that current user is currently assigned to." )]
 
-    [LinkedPage( "Workflow Entry Page", "The page used to enter workflow form data." )]
+    [CodeEditorField( "Contents", @"
+The Liquid template to use for displaying activities assigned to current user. 
+<pre>
+</pre>
+", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"
+    <ul>
+        {% for workflow in Workflows %}
+            {% for activity in workflow.Activities %}
+                <li><a href='WorkflowEntry/{{ workflow.WorkflowTypeId }}/{{ workflow.Id }}'>{{ workflow.WorkflowType.Name }}: {{ workflow.Name }} ({{ activity.ActivityType.Name }})</a></li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+", "", 0 )]
     public partial class MyWorkflows : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -99,30 +111,18 @@ namespace RockWeb.Blocks.Core
 
         private void BindData()
         {
-            var rockContext = new RockContext();
-
-            var activities = GetActivities( rockContext );
-
-            rptWorkflows.DataSource = activities
-                .OrderByDescending( a => a.ActivatedDateTime )
-                .Select( a => new
-                {
-                    WorkflowTypeId = a.Workflow.WorkflowTypeId,
-                    WorkflowId = a.WorkflowId,
-                    WorkflowType = a.Workflow.WorkflowType.Name,
-                    Workflow = a.Workflow.Name,
-                    Activity = a.ActivityType.Name
-                } )
-                .ToList();
-            rptWorkflows.DataBind();
+            var mergeFields = new Dictionary<string, object>();
+            mergeFields.Add( "Workflows", GetWorkflows() );
+            lContents.Text = GetAttributeValue( "Contents" ).ResolveMergeFields( mergeFields );
         }
 
-
-        private List<WorkflowActivity> GetActivities( RockContext rockContext )
+        private List<Workflow> GetWorkflows()
         {
+            var rockContext = new RockContext();
+
             var authorizedWorkflowTypes = GetAuthorizedWorkflowTypes( rockContext );
 
-            var myActivities = new List<WorkflowActivity>();
+            var myWorkflows = new List<Workflow>();
 
             var workflows = new WorkflowService( rockContext ).Queryable( "Activities" )
                 .Where( w =>
@@ -132,25 +132,24 @@ namespace RockWeb.Blocks.Core
 
             foreach ( var workflow in workflows )
             {
-                var activities = workflow.Activities
-                    .Where( a =>
-                        a.IsActive &&
-                        authorizedWorkflowTypes[workflow.WorkflowTypeId].ContainsKey( a.ActivityTypeId ) );
-
-                foreach ( var activity in activities.OrderBy( a => a.ActivityType.Order ) )
+                foreach ( var activity in workflow.Activities.OrderBy( a => a.ActivityType.Order ).ToList() )
                 {
-                    if ( activity.IsAssigned( CurrentPerson, false ) )
+                    if ( !activity.IsActive ||
+                        !authorizedWorkflowTypes[workflow.WorkflowTypeId].ContainsKey( activity.ActivityTypeId ) ||
+                        !activity.IsAssigned( CurrentPerson, false ) ||
+                        !activity.ActiveActions.Any( a => authorizedWorkflowTypes[workflow.WorkflowTypeId][activity.ActivityTypeId].Contains( a.ActionTypeId ) ) )
                     {
-                        if ( activity.ActiveActions.Any( a => authorizedWorkflowTypes[workflow.WorkflowTypeId][activity.ActivityTypeId].Contains( a.ActionTypeId ) ) )
-                        {
-                            myActivities.Add( activity );
-                            break;
-                        }
+                        workflow.Activities.Remove( activity );
                     }
+                }
+
+                if (workflow.Activities.Any())
+                {
+                    myWorkflows.Add( workflow );
                 }
             }
 
-            return myActivities;
+            return myWorkflows;
         }
 
         private Dictionary<int, Dictionary<int, List<int>>> GetAuthorizedWorkflowTypes( RockContext rockContext )
