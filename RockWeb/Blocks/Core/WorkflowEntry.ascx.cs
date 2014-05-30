@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Core
                         RockLiteral lAttribute = new RockLiteral();
                         lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
                         lAttribute.Label = formAttribute.Attribute.Name;
-                        lAttribute.Text = attribute.FieldType.Field.FormatValue(phAttributes, value, attribute.QualifierValues, false);
+                        lAttribute.Text = attribute.FieldType.Field.FormatValueExtended(phAttributes, value, attribute.QualifierValues);
                         phAttributes.Controls.Add(lAttribute);
                     }
                     else

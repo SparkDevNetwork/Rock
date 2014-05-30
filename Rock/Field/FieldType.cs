@@ -35,6 +35,26 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
+        
+        /// <summary>
+        /// Supportses the extended formatting.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool SupportsExtendedFormatting
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -51,11 +71,15 @@ namespace Rock.Field
         }
 
         /// <summary>
-        /// Gets the align value that should be used when displaying value
+        /// Formats the value extended.
         /// </summary>
-        public virtual HorizontalAlign AlignValue
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual string FormatValueExtended(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
         {
-            get { return HorizontalAlign.Left; }
+            return FormatValue( parentControl, value, configurationValues, false );
         }
 
         /// <summary>

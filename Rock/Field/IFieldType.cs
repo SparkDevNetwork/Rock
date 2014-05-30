@@ -26,6 +26,19 @@ namespace Rock.Field
     public interface IFieldType
     {
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether [supports extended formatting].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [supports extended formatting]; otherwise, <c>false</c>.
+        /// </value>
+        bool SupportsExtendedFormatting { get; }
+
+        /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -36,9 +49,14 @@ namespace Rock.Field
         string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
 
         /// <summary>
-        /// Gets the align value that should be used when displaying value
+        /// Formats the value extended.
         /// </summary>
-        System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        string FormatValueExtended( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
+
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
