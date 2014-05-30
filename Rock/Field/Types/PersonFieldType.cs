@@ -32,6 +32,19 @@ namespace Rock.Field.Types
     [Serializable]
     public class PersonFieldType : FieldType, IEntityFieldType
     {
+
+        /// <summary>
+        /// Supportses the extended formatting.
+        /// </summary>
+        /// <returns></returns>
+        public override bool SupportsExtendedFormatting
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -47,32 +60,46 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = value.AsGuid();
+                formattedValue = new PersonAliasService( new RockContext() ).Queryable()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.Person.NickName + " " + a.Person.LastName )
+                    .FirstOrDefault();
+            }
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        /// <summary>
+        /// Formats the value extended.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override string FormatValueExtended( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Guid guid = value.AsGuid();
                 var person = new PersonAliasService( new RockContext() ).Queryable()
                     .Where( a => a.Guid.Equals( guid ) )
                     .Select( a => a.Person )
                     .FirstOrDefault();
-                if (person != null)
+                if ( person != null )
                 {
-                    if ( !condensed )
+                    try
                     {
-                        try
-                        {
-                            string appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue("InternalApplicationRoot").EnsureTrailingForwardslash();
-                            formattedValue = string.Format( "<a href='{0}person/{1}' target='_blank'>{2}</a>", appRoot, person.Id, person.FullName );
-                        }
-                        catch
-                        {
-                            formattedValue = person.FullName;
-                        }
+                        string appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
+                        return string.Format( "<a href='{0}person/{1}' target='_blank'>{2}</a>", appRoot, person.Id, person.FullName );
                     }
-                    else
+                    catch
                     {
-                        formattedValue = person.FullName;
+                        return person.FullName;
                     }
                 }
             }
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return value;
         }
 
         /// <summary>

@@ -293,6 +293,10 @@ namespace Rock.Data
                         string value = GetAttributeValue( attribute.Key );
                         dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
                         dictionary.Add( attribute.Key + "_unformatted", value );
+                        if (attribute.Value.FieldType.Field.SupportsExtendedFormatting)
+                        {
+                            dictionary.Add( attribute.Key + "_extended", attribute.Value.FieldType.Field.FormatValueExtended( null, value, attribute.Value.QualifierValues ) );
+                        }
                     }
                 }
             }
