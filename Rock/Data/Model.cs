@@ -290,12 +290,19 @@ namespace Rock.Data
                 {
                     if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                     {
+                        int keySuffix = 0;
+                        string key = attribute.Key;
+                        while ( dictionary.ContainsKey( key ) )
+                        {
+                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
+                        }
+
                         string value = GetAttributeValue( attribute.Key );
-                        dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                        dictionary.Add( attribute.Key + "_unformatted", value );
+                        dictionary.Add( key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( key + "_unformatted", value );
                         if (attribute.Value.FieldType.Field.SupportsExtendedFormatting)
                         {
-                            dictionary.Add( attribute.Key + "_extended", attribute.Value.FieldType.Field.FormatValueExtended( null, value, attribute.Value.QualifierValues ) );
+                            dictionary.Add( key + "_extended", attribute.Value.FieldType.Field.FormatValueExtended( null, value, attribute.Value.QualifierValues ) );
                         }
                     }
                 }

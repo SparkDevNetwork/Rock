@@ -3,13 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <ul>
-            <asp:Repeater ID="rptWorkflows" runat="server" >
-                <ItemTemplate >
-                    <li><a href="<%# FormatUrl( (int)Eval("WorkflowTypeId"), (int)Eval("WorkflowId") ) %>"><%# Eval("WorkflowType") %>: <%# Eval("Workflow") %> (<%# Eval("Activity") %>)</a></li>
-                </ItemTemplate>
-            </asp:Repeater>
-        </ul>
+        <asp:Literal ID="lContents" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>
