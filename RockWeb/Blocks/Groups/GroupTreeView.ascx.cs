@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
-            foreach ( var group in qry )
+            foreach ( var group in qry.OrderBy( g => g.Name ) )
             {
                 // return first group they are authorized to view
                 if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
