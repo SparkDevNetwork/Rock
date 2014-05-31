@@ -473,5 +473,47 @@ namespace Rock.Web.UI.Controls
         {
             // intentionally blank, but we need the postback to fire
         }
+
+        /// <summary>
+        /// Gets or sets the DelimitedValues (for the stored Attribute Value)
+        /// Value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// </summary>
+        /// <value>
+        /// The delimited values.
+        /// </value>
+        public string DelimitedValues
+        {
+            get
+            {
+                var guid = Guid.Empty;
+                var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
+
+                if ( metric != null )
+                {
+                    guid = metric.Guid;
+                }
+
+                return string.Format( "{0}|{1}|{2}|{3}", guid.ToString(), this.EntityId, this.GetEntityFromContext, this.CombineValues );
+            }
+
+            set
+            {
+                var valueParts = value.Split( '|' );
+                if ( valueParts.Length > 0 )
+                {
+                    var metric = new MetricService( new RockContext() ).Get( valueParts[0].AsGuid() );
+                    if ( metric != null )
+                    {
+                        this.MetricId = metric.Id;
+                        if ( valueParts.Length > 3 )
+                        {
+                            this.EntityId = valueParts[1].AsIntegerOrNull();
+                            this.GetEntityFromContext = valueParts[2].AsBoolean( false );
+                            this.CombineValues = valueParts[3].AsBoolean( false );
+                        }
+                    }
+                }
+            }
+        }
     }
 }
