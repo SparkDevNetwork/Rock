@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", hfRootGroupId.ValueAsInt() );
         }
 
         /// <summary>
