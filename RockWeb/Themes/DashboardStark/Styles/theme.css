@@ -314,6 +314,9 @@ img.jcrop-preview {
 .picker.picker-novalue .picker-label {
   width: 100%;
 }
+.picker.picker-mergefield {
+  width: 370px;
+}
 #dialog .scroll-container-picker {
   width: 360px;
 }
@@ -2123,6 +2126,9 @@ td.grid-col-actions {
 .htmlcontent-edit-header .html-content-approve {
   float: right;
   margin-top: 4px;
+}
+.codeeditor-header .picker-mergefield {
+  float: right;
 }
 .my-account {
   margin-bottom: 15px;
