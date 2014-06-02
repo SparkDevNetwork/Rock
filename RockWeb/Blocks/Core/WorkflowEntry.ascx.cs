@@ -392,7 +392,20 @@ namespace RockWeb.Blocks.Core
                         RockLiteral lAttribute = new RockLiteral();
                         lAttribute.ID = "lAttribute_" + formAttribute.Id.ToString();
                         lAttribute.Label = formAttribute.Attribute.Name;
-                        lAttribute.Text = attribute.FieldType.Field.FormatValueExtended(phAttributes, value, attribute.QualifierValues);
+
+                        var field = attribute.FieldType.Field;
+                        string formattedValue = field.FormatValue( phAttributes, value, attribute.QualifierValues, false );
+                        if ( field is Rock.Field.ILinkableFieldType )
+                        {
+                            string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                            url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
+                            lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
+                        }
+                        else
+                        {
+                            lAttribute.Text = formattedValue;
+                        }
+
                         phAttributes.Controls.Add(lAttribute);
                     }
                     else

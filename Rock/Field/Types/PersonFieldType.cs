@@ -30,20 +30,8 @@ namespace Rock.Field.Types
     /// Field used to save and display a person
     /// </summary>
     [Serializable]
-    public class PersonFieldType : FieldType, IEntityFieldType
+    public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
-
-        /// <summary>
-        /// Supportses the extended formatting.
-        /// </summary>
-        /// <returns></returns>
-        public override bool SupportsExtendedFormatting
-        {
-            get
-            {
-                return true;
-            }
-        }
 
         /// <summary>
         /// Returns the field's current value(s)
@@ -76,27 +64,16 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        public override string FormatValueExtended( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 Guid guid = value.AsGuid();
-                var person = new PersonAliasService( new RockContext() ).Queryable()
+                int personId = new PersonAliasService( new RockContext() ).Queryable()
                     .Where( a => a.Guid.Equals( guid ) )
-                    .Select( a => a.Person )
+                    .Select( a => a.PersonId )
                     .FirstOrDefault();
-                if ( person != null )
-                {
-                    try
-                    {
-                        string appRoot = Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" ).EnsureTrailingForwardslash();
-                        return string.Format( "<a href='{0}person/{1}' target='_blank'>{2}</a>", appRoot, person.Id, person.FullName );
-                    }
-                    catch
-                    {
-                        return person.FullName;
-                    }
-                }
+                return string.Format( "person/{0}", personId );
             }
 
             return value;

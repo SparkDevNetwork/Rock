@@ -31,14 +31,6 @@ namespace Rock.Field
         System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
 
         /// <summary>
-        /// Gets a value indicating whether [supports extended formatting].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [supports extended formatting]; otherwise, <c>false</c>.
-        /// </value>
-        bool SupportsExtendedFormatting { get; }
-
-        /// <summary>
         /// Formats the value based on the type and qualifiers
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -47,16 +39,6 @@ namespace Rock.Field
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed );
-
-        /// <summary>
-        /// Formats the value extended.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        string FormatValueExtended( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues );
-
 
         /// <summary>
         /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
