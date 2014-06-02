@@ -293,10 +293,21 @@ namespace Rock.Model
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public override object ToLiquid()
+        public override object ToLiquid( bool debug )
         {
-            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
-            mergeFields.Add( "ActionType", this.ActionType );
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+
+            if ( debug )
+            {
+                mergeFields.Add( "Activity", Activity.ToLiquid( true ) );
+                mergeFields.Add( "ActionType", this.ActionType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Activity", Activity );
+                mergeFields.Add( "ActionType", this.ActionType );
+            }
+
             return mergeFields;
         }
 

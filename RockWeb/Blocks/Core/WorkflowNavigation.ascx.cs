@@ -94,69 +94,38 @@ namespace RockWeb.Blocks.Core
         {
             int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
 
+            var selectedCategories = new List<Guid>();
+            GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );
+
+            bool includeChildCategories = GetAttributeValue( "IncludeChildCategories" ).AsBoolean();
+
             var rockContext = new RockContext();
-
-            var categories = new CategoryService( rockContext ).GetByEntityTypeId( entityTypeId );
+            var categories = new CategoryService( rockContext ).GetNavigationItems( entityTypeId, selectedCategories, includeChildCategories, CurrentPerson );
             var workflowTypes = new WorkflowTypeService( rockContext ).Queryable().ToList();
-
-            var filter = new List<Guid>();
-            GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => filter.Add( c.AsGuid() ) );
-
-            return GetCategories( null, categories.ToList(), workflowTypes, filter.Any(), filter );
+            return GetWorkflowNavigationCategories( categories, workflowTypes );
         }
 
-        private List<WorkflowNavigationCategory> GetCategories( int? parentCategoryId, IEnumerable<Category> categories, IEnumerable<WorkflowType> workflowTypes, bool checkFilter, List<Guid> filter )
+        private List<WorkflowNavigationCategory> GetWorkflowNavigationCategories( List<CategoryNavigationItem> categoryItems, IEnumerable<WorkflowType> workflowTypes )
         {
             var items = new List<WorkflowNavigationCategory>();
 
-            foreach ( var category in categories
-                .Where( c =>
-                    c.ParentCategoryId == parentCategoryId ||
-                    ( !c.ParentCategoryId.HasValue && !parentCategoryId.HasValue ) )
-                .OrderBy( c => c.Order )
-                .ThenBy( c => c.Name ) )
+            foreach ( var category in categoryItems )
             {
-                if ( category.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                var workflowNavigationCategory = new WorkflowNavigationCategory( category.Category );
+                workflowNavigationCategory.ChildCategories = GetWorkflowNavigationCategories( category.ChildCategories, workflowTypes );
+                workflowNavigationCategory.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
+                foreach ( var workflowType in workflowTypes
+                    .Where( w => w.CategoryId == category.Category.Id )
+                    .OrderBy( w => w.Order )
+                    .ThenBy( w => w.Name ) )
                 {
-                    bool includeCategory = !checkFilter || filter.Contains( category.Guid );
-                    bool checkChildFilter = checkFilter;
-
-                    if ( includeCategory )
+                    if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
-                        if ( checkFilter && GetAttributeValue( "IncludeChildCategories" ).AsBoolean() )
-                        {
-                            checkChildFilter = false;
-                        }
-
-                        var categoryItem = new WorkflowNavigationCategory( category );
-                        items.Add( categoryItem );
-
-                        // Recurse child categories
-                        categoryItem.ChildCategories = GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter );
-
-                        // get workflow types
-                        categoryItem.WorkflowTypes = new List<WorkflowNavigationWorkflowType>();
-                        foreach ( var workflowType in workflowTypes
-                            .Where( w =>
-                                w.CategoryId == category.Id )
-                            .OrderBy( w => w.Order )
-                            .ThenBy( w => w.Name ) )
-                        {
-                            if ( workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                            {
-                                categoryItem.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach ( var categoryItem in GetCategories( category.Id, categories, workflowTypes, checkChildFilter, filter ) )
-                        {
-                            items.Add( categoryItem );
-                        }
+                        workflowNavigationCategory.WorkflowTypes.Add( new WorkflowNavigationWorkflowType( workflowType ) );
                     }
                 }
 
+                items.Add( workflowNavigationCategory );
             }
 
             return items;
