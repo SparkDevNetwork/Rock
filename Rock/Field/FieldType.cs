@@ -43,18 +43,6 @@ namespace Rock.Field
         }
         
         /// <summary>
-        /// Supportses the extended formatting.
-        /// </summary>
-        /// <returns></returns>
-        public virtual bool SupportsExtendedFormatting
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -68,18 +56,6 @@ namespace Rock.Field
                 return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
 
             return value;
-        }
-
-        /// <summary>
-        /// Formats the value extended.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public virtual string FormatValueExtended(Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues)
-        {
-            return FormatValue( parentControl, value, configurationValues, false );
         }
 
         /// <summary>
