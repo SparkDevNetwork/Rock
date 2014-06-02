@@ -932,16 +932,20 @@ namespace Rock.Attribute
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null )
+        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             foreach ( var attributeCategory in attributeCategories )
             {
-                HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+                if ( showHeading )
+                {
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                parentControl.Controls.Add( header );
+                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                    parentControl.Controls.Add( header );
+                }
 
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );

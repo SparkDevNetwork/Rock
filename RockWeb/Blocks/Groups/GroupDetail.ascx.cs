@@ -965,7 +965,7 @@ namespace RockWeb.Blocks.Groups
 
             // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
 
             // Get Map Style
             phMaps.Controls.Clear();
