@@ -312,12 +312,22 @@ namespace Rock.Model
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public override object ToLiquid()
+        public override object ToLiquid( bool debug )
         {
-            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
-            mergeFields.Add( "ActivityType", this.ActivityType );
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "Workflow", Workflow.ToLiquid( true ) );
+                mergeFields.Add( "ActivityType", this.ActivityType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Workflow", Workflow );
+                mergeFields.Add( "ActivityType", this.ActivityType );
+            }
+
             return mergeFields;
-        }        
+        }       
         
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.

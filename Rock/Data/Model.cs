@@ -258,15 +258,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public override object ToLiquid()
-        {
-            return this.ToLiquid( false );
-        }
-
-        /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>

@@ -33,25 +33,160 @@ using Rock.Security;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// List all of the workflows that current user is currently assigned to.
+    /// List all of the active workflow activities assigned to the current user that have a form entry action.
     /// </summary>
     [DisplayName( "My Workflows" )]
     [Category( "Core" )]
-    [Description( "List all of the workflows that current user is currently assigned to." )]
+    [Description( "List active workflow activities assigned to the current user that have a form entry action." )]
 
-    [CodeEditorField( "Contents", @"
-The Liquid template to use for displaying activities assigned to current user. 
+    [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
+    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
+    [CodeEditorField( "Contents", @"The Liquid template to use for displaying activities assigned to current user. 
+The following object model is available to the liquid template (Note: and workflow or activity attributes will also be available 
+as fields on the workflow or activity)...
 <pre>
+{
+  ""Actions"": [
+    {
+      ""ActivityId"": 0,
+      ""ActionTypeId"": 0,
+      ""LastProcessedDateTime"": null,
+      ""CompletedDateTime"": null,
+      ""FormAction"": null,
+      ""IsActive"": true,
+      ""CreatedDateTime"": null,
+      ""ModifiedDateTime"": null,
+      ""CreatedByPersonAliasId"": null,
+      ""ModifiedByPersonAliasId"": null,
+      ""Id"": 0,
+      ""Guid"": ""68673d26-fbeb-464c-882d-992c5bd60e19"",
+      ""ForeignId"": null,
+      ""UrlEncodedKey"": ""EAAAABul!2fMqcPFoFJEAauTEsj0aH1yCR7B3RI6v9wDzBsy4OPcDXF28gnUw90KVGKZCtX2dea449c9jYMO!2b71NLpdBk!3d"",
+      ""Activity"": {
+        ""WorkflowId"": 0,
+        ""ActivityTypeId"": 0,
+        ""AssignedPersonAliasId"": null,
+        ""AssignedGroupId"": null,
+        ""ActivatedDateTime"": null,
+        ""LastProcessedDateTime"": null,
+        ""CompletedDateTime"": null,
+        ""IsActive"": false,
+        ""Actions"": [],
+        ""CreatedDateTime"": null,
+        ""ModifiedDateTime"": null,
+        ""CreatedByPersonAliasId"": null,
+        ""ModifiedByPersonAliasId"": null,
+        ""Id"": 0,
+        ""Guid"": ""75bb018e-cdd4-467f-bfe8-dfeea4588d7b"",
+        ""ForeignId"": null,
+        ""UrlEncodedKey"": ""EAAAAPhlc7JODOrteeyeyY0j8P4gMZJVp2krvh2233xa0Nk1GZL4QvXIxSWGzugZVgafMjSgmua5xkaUugJzMMuHlcU!3d"",
+        ""Workflow"": {
+          ""WorkflowTypeId"": 0,
+          ""Name"": null,
+          ""Description"": null,
+          ""Status"": null,
+          ""IsProcessing"": false,
+          ""ActivatedDateTime"": null,
+          ""LastProcessedDateTime"": null,
+          ""CompletedDateTime"": null,
+          ""IsActive"": false,
+          ""Activities"": [],
+          ""IsPersisted"": false,
+          ""CreatedDateTime"": null,
+          ""ModifiedDateTime"": null,
+          ""CreatedByPersonAliasId"": null,
+          ""ModifiedByPersonAliasId"": null,
+          ""Id"": 0,
+          ""Guid"": ""bff03650-ac70-4172-9915-ec3dae54a84c"",
+          ""ForeignId"": null,
+          ""UrlEncodedKey"": ""EAAAAFe1QzuSp!2bDm5xz7DXcbsTZVbgtGLqL59qBA2bC9NQLBfyHm3NgsLjGJ93CGvA!2fXIec6B5CXAnS70oyVuLXPTwk!3d"",
+          ""WorkflowType"": {
+            ""IsSystem"": false,
+            ""IsActive"": null,
+            ""Name"": null,
+            ""Description"": null,
+            ""CategoryId"": null,
+            ""Order"": 0,
+            ""WorkTerm"": null,
+            ""ProcessingIntervalSeconds"": null,
+            ""IsPersisted"": false,
+            ""LoggingLevel"": 0,
+            ""IconCssClass"": null,
+            ""Category"": null,
+            ""ActivityTypes"": [],
+            ""CreatedDateTime"": null,
+            ""ModifiedDateTime"": null,
+            ""CreatedByPersonAliasId"": null,
+            ""ModifiedByPersonAliasId"": null,
+            ""Id"": 0,
+            ""Guid"": ""c5436b8c-3318-42ce-955e-8c92941e31e7"",
+            ""ForeignId"": null,
+            ""UrlEncodedKey"": ""EAAAAGSb5DpmqLSq!2bDDN0k1JVmEfc6UTBMebv9YISx0q4PzxZ33Mu8!2boX!2bGWkGPq8z3KBBOLEhLGY8vvnw7sN3kLFM8!3d""
+          }
+        },
+        ""ActivityType"": {
+          ""IsActive"": null,
+          ""WorkflowTypeId"": 0,
+          ""Name"": null,
+          ""Description"": null,
+          ""IsActivatedWithWorkflow"": false,
+          ""Order"": 0,
+          ""ActionTypes"": [],
+          ""CreatedDateTime"": null,
+          ""ModifiedDateTime"": null,
+          ""CreatedByPersonAliasId"": null,
+          ""ModifiedByPersonAliasId"": null,
+          ""Id"": 0,
+          ""Guid"": ""dba263b3-1d8c-492b-8e3b-f22b0ec8de74"",
+          ""ForeignId"": null,
+          ""UrlEncodedKey"": ""EAAAAAdvo6mI5UkO9Nl2hFwQORghGVY431blosTie11MmydvePVfZty5vE!2fPQddx40e3bAP50K6oqpPhlxkfeerZ278!3d""
+        }
+      },
+      ""ActionType"": {
+        ""ActivityTypeId"": 0,
+        ""Name"": null,
+        ""Order"": 0,
+        ""EntityTypeId"": 0,
+        ""IsActionCompletedOnSuccess"": false,
+        ""IsActivityCompletedOnSuccess"": false,
+        ""WorkflowFormId"": null,
+        ""CriteriaAttributeGuid"": null,
+        ""CriteriaComparisonType"": 0,
+        ""CriteriaValue"": null,
+        ""EntityType"": null,
+        ""WorkflowForm"": null,
+        ""CreatedDateTime"": null,
+        ""ModifiedDateTime"": null,
+        ""CreatedByPersonAliasId"": null,
+        ""ModifiedByPersonAliasId"": null,
+        ""Id"": 0,
+        ""Guid"": ""b2da5aea-0a29-468b-b793-629712a80d5d"",
+        ""ForeignId"": null,
+        ""UrlEncodedKey"": ""EAAAANd2YTTVJlcnjRwqg0FLMcyUD9NZ8CF6T!2bAkdZqMiQv!2fc6GU8A2vbLPR187daK8B!2bgBZeKPEz4UUvV9K1Xyey70!3d""
+      }
+    }
+  ]
+}
 </pre>
 ", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, false, @"
-    <ul>
-        {% for workflow in Workflows %}
-            {% for activity in workflow.Activities %}
-                <li><a href='WorkflowEntry/{{ workflow.WorkflowTypeId }}/{{ workflow.Id }}'>{{ workflow.WorkflowType.Name }}: {{ workflow.Name }} ({{ activity.ActivityType.Name }})</a></li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-", "", 0 )]
+{% if Actions.size > 0 %}
+    <div class='panel panel-info'> 
+        <div class='panel-heading'>
+            <h4 class='panel-title'>My Tasks</h4>
+        </div>
+        <div class='panel-body'>
+            <ul class='fa-ul'>
+                {% for action in Actions %}
+                    <li>
+                        <i class='fa-li {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i>
+                        <a href='WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}
+", "", 2 )]
     public partial class MyWorkflows : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -75,6 +210,19 @@ The Liquid template to use for displaying activities assigned to current user.
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            // helper code to get the liquid help text
+            //var workflowAction = new WorkflowAction();
+            //workflowAction.ActionType = new WorkflowActionType();
+            //workflowAction.Activity = new WorkflowActivity();
+            //workflowAction.Activity.ActivityType = new WorkflowActivityType();
+            //workflowAction.Activity.Workflow = new Workflow();
+            //workflowAction.Activity.Workflow.WorkflowType = new WorkflowType();
+            //var actions = new List<object>();
+            //actions.Add( workflowAction.ToLiquid( true ) );
+            //var mergeFields = new Dictionary<string, object>();
+            //mergeFields.Add( "Actions", actions );
+            //string help = mergeFields.ToJson();
         }
 
         /// <summary>
@@ -112,114 +260,64 @@ The Liquid template to use for displaying activities assigned to current user.
         private void BindData()
         {
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Workflows", GetWorkflows() );
+            mergeFields.Add( "Actions", GetActions() );
             lContents.Text = GetAttributeValue( "Contents" ).ResolveMergeFields( mergeFields );
         }
 
-        private List<Workflow> GetWorkflows()
+        private List<WorkflowAction> GetActions()
         {
             var rockContext = new RockContext();
 
-            var authorizedWorkflowTypes = GetAuthorizedWorkflowTypes( rockContext );
+            // Get all of the active form actions that user is assigned to and authorized to view
+            var formActions = GetActiveForms( rockContext );
 
-            var myWorkflows = new List<Workflow>();
-
-            var workflows = new WorkflowService( rockContext ).Queryable( "Activities" )
-                .Where( w =>
-                    authorizedWorkflowTypes.Keys.Contains( w.WorkflowTypeId ) &&
-                    w.ActivatedDateTime.HasValue &&
-                    !w.CompletedDateTime.HasValue );
-
-            foreach ( var workflow in workflows )
+            // If a category filter was specified, filter list by selected categories
+            var categoryIds = GetCategories(rockContext);
+            if ( categoryIds.Any() )
             {
-                foreach ( var activity in workflow.Activities.OrderBy( a => a.ActivityType.Order ).ToList() )
-                {
-                    if ( !activity.IsActive ||
-                        !authorizedWorkflowTypes[workflow.WorkflowTypeId].ContainsKey( activity.ActivityTypeId ) ||
-                        !activity.IsAssigned( CurrentPerson, false ) ||
-                        !activity.ActiveActions.Any( a => authorizedWorkflowTypes[workflow.WorkflowTypeId][activity.ActivityTypeId].Contains( a.ActionTypeId ) ) )
-                    {
-                        workflow.Activities.Remove( activity );
-                    }
-                }
-
-                if (workflow.Activities.Any())
-                {
-                    myWorkflows.Add( workflow );
-                }
+                formActions = formActions
+                    .Where( a =>
+                        a.ActionType.ActivityType.WorkflowType.CategoryId.HasValue &&
+                        categoryIds.Contains( a.ActionType.ActivityType.WorkflowType.CategoryId.Value ) )
+                    .ToList();
             }
 
-            return myWorkflows;
+            return formActions;
         }
 
-        private Dictionary<int, Dictionary<int, List<int>>> GetAuthorizedWorkflowTypes( RockContext rockContext )
+        private List<WorkflowAction> GetActiveForms( RockContext rockContext )
         {
-            var service = new WorkflowTypeService( rockContext );
-
-            var AuthorizedWorkflowTypes = Session[string.Format( "MyWorkflows_Items_{0}", CurrentPersonId )] as Dictionary<int, Dictionary<int, List<int>>>;
-            if ( AuthorizedWorkflowTypes != null )
+            var formActions = RockPage.GetSharedItem( "ActiveForms" ) as List<WorkflowAction>;
+            if (formActions == null)
             {
-                var whenCached = Session[string.Format( "MyWorkflows_Items_Cached_{0}", CurrentPersonId )] as DateTime?;
-                var workflowTypesLastModified = service.Queryable().Select( w => w.ModifiedDateTime ).DefaultIfEmpty().Max() ?? DateTime.MinValue;
-                if ( !whenCached.HasValue || whenCached.Value.CompareTo( workflowTypesLastModified ) < 0 )
-                {
-                    AuthorizedWorkflowTypes = null;
-                }
+                formActions = new WorkflowActionService( rockContext ).GetActiveForms( CurrentPerson );
+                RockPage.SaveSharedItem( "ActiveForms", formActions );
             }
 
-            if ( AuthorizedWorkflowTypes == null )
+            return formActions;
+        }
+
+        private List<int> GetCategories( RockContext rockContext )
+        {
+            int entityTypeId = EntityTypeCache.Read( typeof( Rock.Model.WorkflowType ) ).Id;
+
+            var selectedCategories = new List<Guid>();
+            GetAttributeValue( "Categories" ).SplitDelimitedValues().ToList().ForEach( c => selectedCategories.Add( c.AsGuid() ) );
+
+            bool includeChildCategories = GetAttributeValue( "IncludeChildCategories" ).AsBoolean();
+
+            return GetCategoryIds( new List<int>(), new CategoryService( rockContext ).GetNavigationItems( entityTypeId, selectedCategories, includeChildCategories, CurrentPerson ) );
+        }
+
+        private List<int> GetCategoryIds( List<int> ids, List<CategoryNavigationItem> categories )
+        {
+            foreach( var categoryNavItem in categories)
             {
-                AuthorizedWorkflowTypes = new Dictionary<int, Dictionary<int, List<int>>>();
-
-                // Iterate the workflow types
-                foreach ( var workflowType in service.Queryable( "ActivityTypes" ) )
-                {
-                    // If user is authorized to view workflow type
-                    if ( workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                    {
-                        // Iterate the activity types
-                        foreach ( var activityType in workflowType.ActivityTypes )
-                        {
-                            // If user is authorized to view workflow type
-                            if ( activityType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                            {
-                                // Iterate the actions
-                                foreach ( var actionType in activityType.ActionTypes )
-                                {
-                                    // If action is a form
-                                    if ( actionType.WorkflowFormId.HasValue )
-                                    {
-                                        // Save the workflow type
-                                        if ( !AuthorizedWorkflowTypes.ContainsKey( workflowType.Id ) )
-                                        {
-                                            AuthorizedWorkflowTypes.Add( workflowType.Id, new Dictionary<int, List<int>>() );
-                                        }
-                                        var AuthorizedActivityTypes = AuthorizedWorkflowTypes[workflowType.Id];
-
-                                        // Save the activity type
-                                        if ( !AuthorizedActivityTypes.ContainsKey( activityType.Id ) )
-                                        {
-                                            AuthorizedActivityTypes.Add( activityType.Id, new List<int>() );
-                                        }
-                                        var AuthorizedActionTypes = AuthorizedActivityTypes[activityType.Id];
-
-                                        // Save the action type
-                                        AuthorizedActionTypes.Add( actionType.Id );
-
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Session[string.Format( "MyWorkflows_Items_{0}", CurrentPersonId )] = AuthorizedWorkflowTypes;
-                Session[string.Format( "MyWorkflows_Items_Cached_{0}", CurrentPersonId )] = DateTime.Now;
+                ids.Add( categoryNavItem.Category.Id );
+                GetCategoryIds( ids, categoryNavItem.ChildCategories );
             }
 
-            return AuthorizedWorkflowTypes;
-
+            return ids;
         }
 
         protected string FormatUrl( int workflowTypeId, int workflowId )

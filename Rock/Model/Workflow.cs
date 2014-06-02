@@ -314,10 +314,18 @@ namespace Rock.Model
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public override object ToLiquid()
+        public override object ToLiquid( bool debug )
         {
-            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
-            mergeFields.Add( "WorkflowType", this.WorkflowType );
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType );
+            }
+
             return mergeFields;
         }
 
