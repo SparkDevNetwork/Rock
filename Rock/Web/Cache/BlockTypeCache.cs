@@ -283,7 +283,10 @@ namespace Rock.Web.Cache
             // see if bug has been fixed.
             //if (TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).Ticks <= 0)
             //{
+            if ( fileinfo.Exists )
+            {
                 cacheItemPolicy.ChangeMonitors.Add( new HostFileChangeMonitor( filePaths ) );
+            }
             //}
         }
 
