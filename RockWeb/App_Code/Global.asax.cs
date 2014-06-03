@@ -752,9 +752,19 @@ namespace RockWeb
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
             foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
             {
-                if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                try
+                {
+                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                    {
+                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                    }
+
+                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                }
+                catch (Exception ex)
+                {
+                    LogError( ex, null );
+                }
             }
 
             // Cache all the attributes.
