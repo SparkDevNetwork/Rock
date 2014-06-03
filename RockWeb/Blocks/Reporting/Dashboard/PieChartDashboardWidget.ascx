@@ -3,8 +3,9 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select a metric in the block settings." />
-        <Rock:PieChart ID="pcExample" runat="server" />
+        <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one metric in the block settings." />
+        <span> TODO: show a pie chart </span>
+        <Rock:PieChart ID="pcChart" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

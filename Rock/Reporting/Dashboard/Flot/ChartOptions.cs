@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock.Model;
 using Rock.Utility;
 
 namespace Rock.Reporting.Dashboard.Flot
@@ -25,6 +27,27 @@ namespace Rock.Reporting.Dashboard.Flot
     /// </summary>
     public class ChartOptions
     {
+        /// <summary>
+        /// Sets the chart style.
+        /// </summary>
+        /// <param name="chartStyleDefinedValueGuid">The chart style defined value unique identifier.</param>
+        public void SetChartStyle( Guid? chartStyleDefinedValueGuid )
+        {
+            ChartStyle chartStyle = null;
+            if ( chartStyleDefinedValueGuid.HasValue )
+            {
+                var rockContext = new Rock.Data.RockContext();
+                var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
+                if ( definedValue != null )
+                {
+                    definedValue.LoadAttributes( rockContext );
+                    chartStyle = ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                }
+            }
+
+            SetChartStyle( chartStyle ?? new ChartStyle() );
+        }
+
         /// <summary>
         /// Sets the chart style.
         /// </summary>
@@ -107,7 +130,6 @@ function (val, axis) {
 
             // copy Goal Series Color to Flot custom settings
             this.customSettings.goalSeriesColor = chartStyle.GoalSeriesColor;
-
 
             if ( chartStyle.PieLabels != null )
             {

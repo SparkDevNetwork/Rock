@@ -239,7 +239,7 @@
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
-    <Compile Include="Reporting\Dashboard\ChartDashboardWidget.cs">
+    <Compile Include="Reporting\Dashboard\LineBarPointsChartDashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Data\DbService.cs" />

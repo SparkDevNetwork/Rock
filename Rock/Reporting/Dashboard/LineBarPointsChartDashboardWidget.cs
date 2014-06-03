@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using Rock.Attribute;
@@ -28,15 +29,18 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    /// Base class that be can be used to implement a LineChart, BarChart or PointsChart Dashboard widget
     /// </summary>
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
     [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 4 )]
     [MetricEntityField( "Metric", "Select the metric and the filter", Order = 5 )]
-    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4", Order = 6 )]
+    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 6 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
-    public abstract class ChartDashboardWidget : DashboardWidget
+    public abstract class LineBarPointsChartDashboardWidget : DashboardWidget
     {
+        public abstract FlotChart FlotChartControl { get; }
+        public abstract NotificationBox MetricWarningControl { get; }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -70,9 +74,73 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
-        /// Loads the chart.
+        /// Gets the detail page.
         /// </summary>
-        public abstract void LoadChart();
+        /// <value>
+        /// The detail page.
+        /// </value>
+        public Guid? DetailPageGuid
+        {
+            get
+            {
+                return ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the metric value.
+        /// </summary>
+        /// <value>
+        /// The type of the metric value.
+        /// </value>
+        public MetricValueType? MetricValueType
+        {
+            get
+            {
+                string[] metricValueTypes = this.GetAttributeValue( "MetricValueTypes" ).SplitDelimitedValues();
+                var selected = metricValueTypes.Select( a => a.ConvertToEnum<MetricValueType>() ).ToArray();
+                if ( selected.Length == 1 )
+                {
+                    // if they picked one, return that one
+                    return selected[0];
+                }
+                else
+                {
+                    // if they picked both or neither, return null, which indicates to show both
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the chart style.
+        /// </summary>
+        /// <value>
+        /// The chart style.
+        /// </value>
+        public Guid? ChartStyleDefinedValueGuid
+        {
+            get
+            {
+                return this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
+            }
+        }
+
+        /// <summary>
+        /// Gets the date range.
+        /// </summary>
+        /// <value>
+        /// The date range.
+        /// </value>
+        public DateRange DateRange
+        {
+            get
+            {
+                return SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "1||4" );
+            }
+        }
+
+        #region single metric specific
 
         /// <summary>
         /// Gets the metric identifier.
@@ -115,7 +183,8 @@ namespace Rock.Reporting.Dashboard
                     return valueParts[2].AsBoolean();
                 }
 
-                return false;
+                // there is no metric, so try to get the EntityFromContext
+                return true;
             }
         }
 
@@ -142,7 +211,7 @@ namespace Rock.Reporting.Dashboard
                         }
                     }
 
-                    if ( this.ContextEntity( entityTypeCache.Name ) != null )
+                    if ( entityTypeCache != null && this.ContextEntity( entityTypeCache.Name ) != null )
                     {
                         result = this.ContextEntity( entityTypeCache.Name ).Id;
                     }
@@ -174,20 +243,6 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
-        /// Gets the detail page.
-        /// </summary>
-        /// <value>
-        /// The detail page.
-        /// </value>
-        public Guid? DetailPageGuid
-        {
-            get
-            {
-                return ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether to combine values with different EntityId values into one series vs. showing each in it's own series
         /// </summary>
         /// <value>
@@ -207,76 +262,47 @@ namespace Rock.Reporting.Dashboard
             }
         }
 
+        #endregion
+
         /// <summary>
-        /// Gets the type of the metric value.
+        /// Loads the chart.
         /// </summary>
-        /// <value>
-        /// The type of the metric value.
-        /// </value>
-        public MetricValueType? MetricValueType
+        public void LoadChart()
         {
-            get
+            FlotChartControl.StartDate = this.DateRange.Start;
+            FlotChartControl.EndDate = this.DateRange.End;
+            FlotChartControl.MetricValueType = this.MetricValueType;
+            FlotChartControl.MetricId = this.MetricId;
+            FlotChartControl.EntityId = this.EntityId;
+            FlotChartControl.Title = this.Title;
+            FlotChartControl.Subtitle = this.Subtitle;
+            FlotChartControl.CombineValues = this.CombineValues;
+            FlotChartControl.ShowTooltip = true;
+            if ( this.DetailPageGuid.HasValue )
             {
-                string[] metricValueTypes = this.GetAttributeValue( "MetricValueTypes" ).SplitDelimitedValues();
-                var selected = metricValueTypes.Select( a => a.ConvertToEnum<MetricValueType>() ).ToArray();
-                if ( selected.Length == 1 )
-                {
-                    // if they picked one, return that one
-                    return selected[0];
-                }
-                else
-                {
-                    // if they picked both or neither, return null, which indicates to show both
-                    return null;
-                }
+                FlotChartControl.ChartClick += lcExample_ChartClick;
             }
+
+            FlotChartControl.Options.SetChartStyle( this.ChartStyleDefinedValueGuid );
+
+            MetricWarningControl.Visible = !this.MetricId.HasValue;
         }
 
         /// <summary>
-        /// Gets the chart style.
+        /// Lcs the example_ chart click.
         /// </summary>
-        /// <value>
-        /// The chart style.
-        /// </value>
-        public ChartStyle ChartStyle
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        public void lcExample_ChartClick( object sender, Rock.Web.UI.Controls.FlotChart.ChartClickArgs e )
         {
-            get
+            if ( this.DetailPageGuid.HasValue )
             {
-                Guid? chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
-                if ( chartStyleDefinedValueGuid.HasValue )
-                {
-                    var rockContext = new Rock.Data.RockContext();
-                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        try
-                        {
-                            definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
-                        }
-                        catch ( Exception ex )
-                        {
-                            WidgetErrorMessage = "Error loading Chart Style: " + definedValue.Name;
-                            WidgetErrorDetails = ex.Message;
-                        }
-                    }
-                }
-
-                return new ChartStyle();
-            }
-        }
-
-        /// <summary>
-        /// Gets the date range.
-        /// </summary>
-        /// <value>
-        /// The date range.
-        /// </value>
-        public DateRange DateRange
-        {
-            get
-            {
-                return SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "1||4" );
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString.Add( "MetricId", this.MetricId.ToString() );
+                qryString.Add( "SeriesId", e.SeriesId );
+                qryString.Add( "YValue", e.YValue.ToString() );
+                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString( "o" ) );
+                NavigateToPage( this.DetailPageGuid.Value, qryString );
             }
         }
     }
