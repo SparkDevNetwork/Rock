@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Data\Model.cs" />
     <Compile Include="Data\NamedModel.cs" />
+    <Compile Include="Migrations\001_FixNamespaceCase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
     <Compile Include="SystemGuid\Category.cs" />
