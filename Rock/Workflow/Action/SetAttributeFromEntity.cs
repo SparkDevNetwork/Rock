@@ -29,11 +29,11 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute to the entity that workflow is being acted on (Action's entity parameter).
+    /// Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter).
     /// </summary>
-    [Description( "Sets an attribute to the entity that workflow is being acted on (Action's entity parameter)." )]
+    [Description( "Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter)." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute to Entity" )]
+    [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
 
     [WorkflowAttribute( "Attribute", "The person attribute to set the value of.", false, "", "", 0 )]
     public class SetAttributeToEntity : ActionComponent
