@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +17,6 @@
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -27,49 +25,17 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// </summary>
     [DisplayName( "Bar Chart" )]
     [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
-    public partial class BarChartDashboardWidget : ChartDashboardWidget
+    [Description( "Bar Chart DashboardWidget" )]
+    public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
-        /// <summary>
-        /// Loads the chart.
-        /// </summary>
-        public override void LoadChart()
+        public override Rock.Web.UI.Controls.FlotChart FlotChartControl
         {
-            bcExample.StartDate = this.DateRange.Start;
-            bcExample.EndDate = this.DateRange.End;
-            bcExample.MetricValueType = this.MetricValueType;
-            bcExample.MetricId = this.MetricId;
-            bcExample.EntityId = this.EntityId;
-            bcExample.Title = this.Title;
-            bcExample.Subtitle = this.Subtitle;
-            bcExample.CombineValues = this.CombineValues;
-            bcExample.ShowTooltip = false;
-            if ( this.DetailPageGuid.HasValue )
-            {
-                bcExample.ChartClick += bcExample_ChartClick;
-            }
-
-            bcExample.Options.SetChartStyle( this.ChartStyle );
-
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
+            get { return bcChart; }
         }
 
-        /// <summary>
-        /// Bcs the example_ chart click.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void bcExample_ChartClick( object sender, FlotChart.ChartClickArgs e )
+        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
-            if ( this.DetailPageGuid.HasValue )
-            {
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString.Add( "MetricId", this.MetricId.ToString() );
-                qryString.Add( "SeriesId", e.SeriesId );
-                qryString.Add( "YValue", e.YValue.ToString() );
-                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString( "o" ) );
-                NavigateToPage( this.DetailPageGuid.Value, qryString );
-            }
+            get { return nbMetricWarning; }
         }
     }
 }

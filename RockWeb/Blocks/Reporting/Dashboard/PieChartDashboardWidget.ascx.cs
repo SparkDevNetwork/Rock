@@ -15,41 +15,96 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Pie Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class PieChartDashboardWidget : ChartDashboardWidget
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
+    [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 4, "MetricCategories" )]
+    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 5 )]
+    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 6 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
+    public partial class PieChartDashboardWidget : DashboardWidget
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            this.BlockUpdated += Block_BlockUpdated;
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            LoadChart();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            LoadChart();
+        }
+        
         /// <summary>
         /// Loads the chart.
         /// </summary>
-        public override void LoadChart()
+        public void LoadChart()
         {
-            pcExample.StartDate = this.DateRange.Start;
-            pcExample.EndDate = this.DateRange.End;
-            pcExample.MetricValueType = this.MetricValueType;
-            pcExample.MetricId = this.MetricId;
-            pcExample.EntityId = this.EntityId;
-            pcExample.Title = this.Title;
-            pcExample.Subtitle = this.Subtitle;
-            pcExample.CombineValues = this.CombineValues;
-            pcExample.ShowTooltip = true;
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? "" );
+            pcChart.StartDate = dateRange.Start;
+            pcChart.EndDate = dateRange.End;
+            pcChart.Title = this.Title;
+            pcChart.Subtitle = this.Subtitle;
+            //pcExample.CombineValues = this.CombineValues;
+            pcChart.ShowTooltip = true;
 
-            pcExample.Options.SetChartStyle( this.ChartStyle );
-            
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
+            pcChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            //pcChart.DataSourceUrl = "TODO";
+
+            nbMetricWarning.Visible = !this.Metrics.Any();
+        }
+
+        /// <summary>
+        /// Gets the metrics.
+        /// </summary>
+        /// <value>
+        /// The metrics.
+        /// </value>
+        public List<Metric> Metrics
+        {
+            get
+            {
+                var metricCategoryGuids = ( GetAttributeValue( "MetricCategories" ) ?? string.Empty ).Split( ',' ).Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
+                return new MetricCategoryService( new Rock.Data.RockContext() ).GetByGuids( metricCategoryGuids ).Select( a => a.Metric ).ToList();
+            }
         }
     }
 }
