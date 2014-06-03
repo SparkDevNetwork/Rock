@@ -33,10 +33,10 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     [DisplayName( "Workflow Type Detail" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow type." )]
     public partial class WorkflowTypeDetail : RockBlock
     {

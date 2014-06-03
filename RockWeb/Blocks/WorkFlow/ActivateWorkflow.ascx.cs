@@ -29,13 +29,13 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
     /// Activates a workflow and then redirects user to workflow entry page.
     /// </summary>
     [DisplayName( "Activate Workflow" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Activates a workflow and then redirects user to workflow entry page." )]
 
     [LinkedPage( "Workflow Entry Page" )]

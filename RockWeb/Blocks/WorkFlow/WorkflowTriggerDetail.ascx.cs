@@ -32,10 +32,10 @@ using Rock.Web.UI.Controls;
 using Rock.Security;
 
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     [DisplayName( "Workflow Trigger Detail" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Displays the details of the given workflow trigger." )]
     public partial class WorkflowTriggerDetail : RockBlock, IDetailBlock
     {

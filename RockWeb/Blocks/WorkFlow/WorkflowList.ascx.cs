@@ -30,10 +30,10 @@ using Rock;
 using Attribute = Rock.Model.Attribute;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     [DisplayName( "Workflow List" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Lists all the workflows." )]
 
     [LinkedPage( "Entry Page", "Page used to launch a new workflow of the selected type." )]

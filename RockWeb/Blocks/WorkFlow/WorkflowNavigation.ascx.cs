@@ -28,13 +28,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
     /// Block for navigating workflow types and launching and/or managing workflows.
     /// </summary>
     [DisplayName( "Workflow Navigation" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Block for navigating workflow types and launching and/or managing workflows." )]
 
     [CategoryField( "Categories", "The categories to display", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
