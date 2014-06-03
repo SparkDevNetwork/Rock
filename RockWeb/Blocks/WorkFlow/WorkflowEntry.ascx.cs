@@ -27,17 +27,18 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Security;
 using Rock.Workflow;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
     /// Used to enter information for a workflow form entry action.
     /// </summary>
     [DisplayName( "Workflow Entry" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Used to enter information for a workflow form entry action." )]
 
     [WorkflowTypeField("Workflow Type", "Type of workflow to start.")]
@@ -102,19 +103,6 @@ namespace RockWeb.Blocks.Core
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
-        }
-
-        /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
@@ -127,6 +115,26 @@ namespace RockWeb.Blocks.Core
                 BuildForm(false);
             }
         }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+
+            if ( _workflowType != null )
+            {
+                RockPage.PageTitle = _workflowType.Name;
+            }
+
+        }
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -148,6 +156,28 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.List{BreadCrumb}" /> of block related <see cref="Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            LoadWorkflowType();
+
+            if ( _workflowType != null )
+            {
+                breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
+            }
+
+            return breadCrumbs;
+        }
 
         #endregion
 
@@ -183,36 +213,7 @@ namespace RockWeb.Blocks.Core
 
         private bool HydrateObjects()
         {
-            _rockContext = new RockContext();
-            _workflowService = new WorkflowService( _rockContext );
-            _workflowTypeService = new WorkflowTypeService( _rockContext );
-
-            // Get the workflow type id (initial page request)
-            if ( !WorkflowTypeId.HasValue )
-            {
-                // Get workflow type set by attribute value
-                Guid workflowTypeguid = GetAttributeValue( "WorkflowType" ).AsGuid();
-                if ( !workflowTypeguid.IsEmpty() )
-                {
-                    _workflowType = _workflowTypeService.Get( workflowTypeguid );
-                }
-
-                // If an attribute value was not provided, check for query/route value
-                if ( _workflowType != null )
-                {
-                    WorkflowTypeId = _workflowType.Id;
-                }
-                else
-                {
-                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
-                }
-            }
-
-            // Get the workflow type 
-            if ( _workflowType == null && WorkflowTypeId.HasValue )
-            {
-                _workflowType = _workflowTypeService.Get( WorkflowTypeId.Value );
-            }
+            LoadWorkflowType();
 
             if ( _workflowType == null )
             {
@@ -342,6 +343,51 @@ namespace RockWeb.Blocks.Core
             ShowMessage( NotificationBoxType.Warning, string.Empty, "The selected workflow is not in a state that requires you to enter information." );
             return false;
 
+        }
+
+        private void LoadWorkflowType()
+        {
+            if ( _rockContext == null )
+            {
+                _rockContext = new RockContext();
+            }
+
+            if ( _workflowService == null )
+            {
+                _workflowService = new WorkflowService( _rockContext );
+            }
+
+            if ( _workflowTypeService == null )
+            {
+                _workflowTypeService = new WorkflowTypeService( _rockContext );
+            }
+
+            // Get the workflow type id (initial page request)
+            if ( !WorkflowTypeId.HasValue )
+            {
+                // Get workflow type set by attribute value
+                Guid workflowTypeguid = GetAttributeValue( "WorkflowType" ).AsGuid();
+                if ( !workflowTypeguid.IsEmpty() )
+                {
+                    _workflowType = _workflowTypeService.Get( workflowTypeguid );
+                }
+
+                // If an attribute value was not provided, check for query/route value
+                if ( _workflowType != null )
+                {
+                    WorkflowTypeId = _workflowType.Id;
+                }
+                else
+                {
+                    WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
+                }
+            }
+
+            // Get the workflow type 
+            if ( _workflowType == null && WorkflowTypeId.HasValue )
+            {
+                _workflowType = _workflowTypeService.Get( WorkflowTypeId.Value );
+            }
         }
 
         private void ProcessActionRequest()

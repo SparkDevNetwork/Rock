@@ -33,16 +33,16 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     [DisplayName( "Workflow Detail" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Displays the details of a workflow instance." )]
     public partial class WorkflowDetail : RockBlock
     {
         #region Properties
 
-        private Workflow Workflow { get; set; }
+        private Rock.Model.Workflow Workflow { get; set; }
         private List<string> LogEntries { get; set; } 
         private List<Guid> ExpandedActivities { get; set; }
 

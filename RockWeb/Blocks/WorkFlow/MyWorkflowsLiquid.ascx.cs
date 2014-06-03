@@ -30,14 +30,14 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Security;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
-    /// List all of the active workflow activities assigned to the current user that have a form entry action.
+    /// Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template.
     /// </summary>
-    [DisplayName( "My Workflows" )]
-    [Category( "Core" )]
-    [Description( "List active workflow activities assigned to the current user that have a form entry action." )]
+    [DisplayName( "My Workflows Liquid" )]
+    [Category( "WorkFlow" )]
+    [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template." )]
 
     [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
     [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
@@ -187,7 +187,7 @@ as fields on the workflow or activity)...
     </div>
 {% endif %}
 ", "", 2 )]
-    public partial class MyWorkflows : Rock.Web.UI.RockBlock
+    public partial class MyWorkflowsLiquid : Rock.Web.UI.RockBlock
     {
         #region Fields
 

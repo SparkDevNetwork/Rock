@@ -26,10 +26,10 @@ using Rock.Security;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Core
+namespace RockWeb.Blocks.WorkFlow
 {
     [DisplayName( "Workflow Trigger List" )]
-    [Category( "Core" )]
+    [Category( "WorkFlow" )]
     [Description( "Lists all the workflow triggers." )]
 
     [LinkedPage("Detail Page")]
