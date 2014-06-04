@@ -82,8 +82,15 @@ namespace Rock.Extension
             // Create the MEF Catalog
             var catalog = new AggregateCatalog();
 
-            // Add the currently running assembly to the Catalog
-            catalog.Catalogs.Add( new AssemblyCatalog( this.GetType().Assembly ) );
+            // Add executing assembly's directory
+            string codeBase = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder( codeBase );
+            string path = Uri.UnescapeDataString( uri.Path );
+            string dir = Path.GetDirectoryName( path );
+            if ( Directory.Exists( dir ) )
+            {
+                catalog.Catalogs.Add( new SafeDirectoryCatalog( dir ) );
+            }
 
             // Add all the assemblies in the 'Plugins' subdirectory
             string pluginsFolder = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Plugins" );
