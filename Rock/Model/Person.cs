@@ -1009,29 +1009,25 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </summary>
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </value>
-        [NotMapped]
-        public virtual UserLogin ImpersonatedUser
+        public virtual UserLogin GetImpersonatedUser()
         {
-            get
-            {
-                UserLogin user = new UserLogin();
-                user.UserName = this.FullName;
-                user.PersonId = this.Id;
-                user.Person = this;
-                return user;
-            }
+            UserLogin user = new UserLogin();
+            user.UserName = this.FullName;
+            user.PersonId = this.Id;
+            user.Person = this;
+            return user;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>

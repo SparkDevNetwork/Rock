@@ -518,7 +518,7 @@ namespace Rock.Web.UI
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
-                    CurrentUser = impersonatedPerson.ImpersonatedUser;
+                    CurrentUser = impersonatedPerson.GetImpersonatedUser();
                 }
             }
 

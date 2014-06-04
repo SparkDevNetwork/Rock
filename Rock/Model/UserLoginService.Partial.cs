@@ -187,7 +187,7 @@ namespace Rock.Model
                     Rock.Model.PersonService personService = new Model.PersonService( rockContext );
                     Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( userName.Substring( 8 ) );
                     if ( impersonatedPerson != null )
-                        return impersonatedPerson.ImpersonatedUser;
+                        return impersonatedPerson.GetImpersonatedUser();
                 }
                 else
                 {
