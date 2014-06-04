@@ -78,10 +78,13 @@ namespace Rock.Attribute
                 var contextAttribute = (ContextAwareAttribute)customAttribute;
                 if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
-                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                    properties++;
+                    if ( contextAttribute.IsConfigurable )
+                    {
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
 
-                    blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    }
                 }
             }
 
