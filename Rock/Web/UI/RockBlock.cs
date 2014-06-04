@@ -183,8 +183,11 @@ namespace Rock.Web.UI
                         }
                         else
                         {
-                            // block support any ContextType of any entityType, so load all the ones that RockPage knows about
-                            _contextTypesRequired = RockPage.GetContextEntityTypes();
+                            if ( !contextAttribute.IsConfigurable )
+                            {
+                                // block support any ContextType of any entityType, and it isn't configurable in BlockPropties, so load all the ones that RockPage knows about
+                                _contextTypesRequired = RockPage.GetContextEntityTypes();
+                            }
                         }
                     }
                     
