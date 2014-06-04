@@ -4,7 +4,6 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select at least one metric in the block settings." />
-        <span> TODO: show a pie chart </span>
         <Rock:PieChart ID="pcChart" runat="server" />
 
     </ContentTemplate>
