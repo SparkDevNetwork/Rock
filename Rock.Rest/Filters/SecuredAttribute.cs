@@ -29,7 +29,7 @@ using Rock.Security;
 namespace Rock.Rest.Filters
 {
     /// <summary>
-    /// 
+    /// Checks to see if the Logged-In person has authorization View (HttpMethod: GET) or Edit (all other HttpMethods) for the RestController and Controller's associated EntityType
     /// </summary>
     public class SecuredAttribute : ActionFilterAttribute
     {
