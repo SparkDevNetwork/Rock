@@ -128,53 +128,16 @@
             ///
             /// handles putting chart data into a piechart
             ///
-            plotPieChartData: function (chartData, chartOptions, plotSelector, combineValues) {
-                var workingChartData = null;
+            plotPieChartData: function (chartData, chartOptions, plotSelector) {
                 var pieData = [];
-                if (combineValues) {
-                    var combinedChartDataLookup = {};
-
-                    $.each(chartData, function (indexInArray, chartDataRow) {
-                        var combinedDataIndex = chartDataRow.XValue + '|' + chartDataRow.DateTimeStamp;
-                        var combinedChartDataRow = combinedChartDataLookup[combinedDataIndex];
-                        if (combinedChartDataRow) {
-
-                            // inc YValue for combined row
-                            combinedChartDataRow.YValue += chartDataRow.YValue;
-
-                            // take first non-null Note for the combined data row
-                            combinedChartDataRow.Note = combinedChartDataRow.Note || chartDataRow.Note;
-                        }
-                        else {
-                            combinedChartDataRow = chartDataRow;
-                            combinedChartDataLookup[combinedDataIndex] = combinedChartDataRow;
-                        }
-                    });
-
-                    var combinedChartData = [];
-
-                    for (var lookupId in combinedChartDataLookup) {
-                        var combinedChartDataItem = combinedChartDataLookup[lookupId];
-                        combinedChartData.push(combinedChartDataItem);
-                    }
-
-                    workingChartData = combinedChartData;
-                }
-                else {
-                    workingChartData = chartData;
-                }
 
                 // populate the chartMeasurePoints data array with data from the REST result for pie data
-                for (var i = 0; i < workingChartData.length; i++) {
-                    var pieSeriesLabel = workingChartData[i].Note || workingChartData[i].XValue;
-                    if (!pieSeriesLabel || pieSeriesLabel == "0") {
-                        pieSeriesLabel = new Date(workingChartData[i].DateTimeStamp).toLocaleDateString();
-                    }
+                for (var i = 0; i < chartData.length; i++) {
 
                     pieData.push({
-                        label: pieSeriesLabel,
-                        data: workingChartData[i].YValue,
-                        chartData: [workingChartData[i]]
+                        label: chartData[i].MetricTitle,
+                        data: chartData[i].YValueTotal,
+                        chartData: [chartData[i]]
                     });
                 }
 
@@ -205,13 +168,31 @@
                 $(chartContainer).bind('plothover', function (event, pos, item) {
 
                     if (item) {
-                        var tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
 
-                        if (item.series.label) {
-                            tooltipText += '<br />' + item.series.label;
+                        var tooltipText = "";
+                        if (item.series.chartData[item.dataIndex].DateTimeStamp) {
+                            tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                        };
+
+                        if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
+                            tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
                         }
 
-                        tooltipText += ': ' + item.series.chartData[item.dataIndex].YValue;
+                        if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
+                            tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
+                        }
+
+                        if (tooltipText) {
+                            tooltipText += '<br />';
+                        }
+
+                        if (item.series.label) {
+                            tooltipText += item.series.label;
+                        }
+
+                        var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+
+                        tooltipText += ': ' + pointValue;
                         $toolTip.find('.tooltip-inner').html(tooltipText);
                         var tipTop = pos.pageY - ($toolTip.height() / 2);
                         $toolTip.css({ top: tipTop, left: pos.pageX + 5, opacity: 1 });

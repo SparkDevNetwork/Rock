@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
     [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 4, "MetricCategories" )]
-    [CustomCheckboxListField( "Metric Value Types", "Select which metric value types to display in the chart", "Goal,Measure", false, "Measure", Order = 5 )]
+    [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 5 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 6 )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
     public partial class PieChartDashboardWidget : DashboardWidget
@@ -72,39 +72,69 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         {
             LoadChart();
         }
-        
+
         /// <summary>
         /// Loads the chart.
         /// </summary>
         public void LoadChart()
         {
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? "" );
-            pcChart.StartDate = dateRange.Start;
-            pcChart.EndDate = dateRange.End;
             pcChart.Title = this.Title;
             pcChart.Subtitle = this.Subtitle;
-            //pcExample.CombineValues = this.CombineValues;
             pcChart.ShowTooltip = true;
-
             pcChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-            //pcChart.DataSourceUrl = "TODO";
 
-            nbMetricWarning.Visible = !this.Metrics.Any();
+            var metricIdList = this.GetMetricIds();
+
+            string restApiUrl = string.Format( "~/api/MetricValues/GetSummary?metricIdList={0}", metricIdList.AsDelimited( "," ) );
+
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? "" );
+            if ( dateRange != null )
+            {
+                if ( dateRange.Start.HasValue )
+                {
+                    restApiUrl += string.Format( "&startDate={0}", dateRange.Start.Value.ToString( "o" ) );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    restApiUrl += string.Format( "&endDate={0}", dateRange.End.Value.ToString( "o" ) );
+                }
+
+
+            }
+
+            var metricValueType = this.GetAttributeValue( "MetricValueTypes" ).ConvertToEnumOrNull<MetricValueType>() ?? Rock.Model.MetricValueType.Measure;
+
+            restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
+
+            pcChart.DataSourceUrl = restApiUrl;
+            //pcChart.PieOptions.tilt = 0.5;
+            //pcChart.ChartHeight =  
+            pcChart.PieOptions.label = new Rock.Reporting.Dashboard.Flot.PieLabel { show = true };
+            pcChart.PieOptions.label.formatter = @"
+function labelFormatter(label, series) {
+	return ""<div style='font-size:8pt; text-align:center; padding:2px; '>"" + label + ""<br/>"" + Math.round(series.percent) + ""%</div>"";
+}
+".Trim();
+            pcChart.Legend.show = false;
+            
+            nbMetricWarning.Visible = !metricIdList.Any();
         }
 
         /// <summary>
         /// Gets the metrics.
         /// </summary>
+        /// <returns></returns>
+        /// 
         /// <value>
         /// The metrics.
         /// </value>
-        public List<Metric> Metrics
+        public List<int> GetMetricIds()
         {
-            get
-            {
-                var metricCategoryGuids = ( GetAttributeValue( "MetricCategories" ) ?? string.Empty ).Split( ',' ).Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
-                return new MetricCategoryService( new Rock.Data.RockContext() ).GetByGuids( metricCategoryGuids ).Select( a => a.Metric ).ToList();
-            }
+
+            var metricCategoryGuids = ( GetAttributeValue( "MetricCategories" ) ?? string.Empty ).Split( ',' ).Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
+            return new MetricCategoryService( new Rock.Data.RockContext() ).GetByGuids( metricCategoryGuids ).Select( a => a.MetricId ).ToList();
+
         }
     }
 }
