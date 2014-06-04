@@ -798,6 +798,8 @@ namespace RockWeb
 
         private void Error66( Exception ex )
         {
+            LogError( ex, HttpContext.Current );
+
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
                 try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
