@@ -358,7 +358,7 @@ namespace Rock.Web.UI.Controls
             var metric = metricService.Get( this.MetricId ?? 0 );
             _phEntityTypeEntityIdValue.Controls.Clear();
 
-            string fieldTypeName = "Entity";
+            string fieldTypeName = null;
             Control entityTypeEditControl = null;
             if ( metric != null )
             {
@@ -376,48 +376,47 @@ namespace Rock.Web.UI.Controls
                 _entityTypeEditControl = entityTypeEditControl;
             }
 
-            var rockControlWrapper = new RockControlWrapper();
-            rockControlWrapper.Label = string.Format( "{0} filter", fieldTypeName );
-            rockControlWrapper.Help = string.Format(
-                "Either select a specific {0}, or select 'Get from page context' to determine the {0} based on the page context. Leave {0} blank to show values for all {1}",
-                fieldTypeName,
-                fieldTypeName.Pluralize() );
-
-            rockControlWrapper.ID = string.Format( "{0}_{1}", this.ID, "rockControlWrapper" );
-            _phEntityTypeEntityIdValue.Controls.Add( rockControlWrapper );
-
-            if ( _rblSelectOrContext == null )
-            {
-                _rblSelectOrContext = new RockRadioButtonList();
-                _rblSelectOrContext.ID = string.Format( "{0}_{1}", this.ID, "rblSelectOrContext" );
-                _rblSelectOrContext.RepeatDirection = RepeatDirection.Horizontal;
-                _rblSelectOrContext.Items.Add( new ListItem( "Select " + fieldTypeName, "0" ) );
-                _rblSelectOrContext.Items.Add( new ListItem( "Get from page context", "1" ) );
-                _rblSelectOrContext.AutoPostBack = true;
-                _rblSelectOrContext.SelectedIndexChanged += rblSelectOrContext_SelectedIndexChanged;
-            }
-            else
-            {
-                _rblSelectOrContext.Items[0].Text = "Select " + fieldTypeName;
-            }
-
-            rockControlWrapper.Controls.Add( _rblSelectOrContext );
-
             if ( _entityTypeEditControl != null )
             {
+                var rockControlWrapper = new RockControlWrapper();
+                rockControlWrapper.Label = string.Format( "{0} filter", fieldTypeName );
+                rockControlWrapper.Help = string.Format(
+                    "Either select a specific {0}, or select 'Get from page context' to determine the {0} based on the page context. Leave {0} blank to show values for all {1}",
+                    fieldTypeName,
+                    fieldTypeName.Pluralize() );
+
+                rockControlWrapper.ID = string.Format( "{0}_{1}", this.ID, "rockControlWrapper" );
+                _phEntityTypeEntityIdValue.Controls.Add( rockControlWrapper );
+
+                if ( _rblSelectOrContext == null )
+                {
+                    _rblSelectOrContext = new RockRadioButtonList();
+                    _rblSelectOrContext.ID = string.Format( "{0}_{1}", this.ID, "rblSelectOrContext" );
+                    _rblSelectOrContext.RepeatDirection = RepeatDirection.Horizontal;
+                    _rblSelectOrContext.Items.Add( new ListItem( "Select " + fieldTypeName, "0" ) );
+                    _rblSelectOrContext.Items.Add( new ListItem( "Get from page context", "1" ) );
+                    _rblSelectOrContext.AutoPostBack = true;
+                    _rblSelectOrContext.SelectedIndexChanged += rblSelectOrContext_SelectedIndexChanged;
+                }
+                else
+                {
+                    _rblSelectOrContext.Items[0].Text = "Select " + fieldTypeName;
+                }
+
+                rockControlWrapper.Controls.Add( _rblSelectOrContext );
+
                 _entityTypeEditControl.Visible = _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 0;
                 rockControlWrapper.Controls.Add( _entityTypeEditControl );
+                if ( _cbCombine == null )
+                {
+                    _cbCombine = new RockCheckBox();
+                    _cbCombine.ID = string.Format( "{0}_{1}", this.ID, "cbCombine" );
+                }
+
+                _cbCombine.Text = "Combine multiple values to one line when showing values for multiple " + fieldTypeName.Pluralize();
+
+                rockControlWrapper.Controls.Add( _cbCombine );
             }
-
-            if ( _cbCombine == null )
-            {
-                _cbCombine = new RockCheckBox();
-                _cbCombine.ID = string.Format( "{0}_{1}", this.ID, "cbCombine" );
-            }
-
-            _cbCombine.Text = "Combine multiple values to one line when showing values for multiple " + fieldTypeName.Pluralize();
-
-            rockControlWrapper.Controls.Add( _cbCombine );
         }
 
         /// <summary>
