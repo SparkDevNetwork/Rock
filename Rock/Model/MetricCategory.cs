@@ -83,6 +83,7 @@ namespace Rock.Model
         /// <value>
         /// The icon CSS class.
         /// </value>
+        [NotAudited]
         public string IconCssClass 
         { 
             get

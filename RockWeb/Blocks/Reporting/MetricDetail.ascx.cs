@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Reporting
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
                 // delete any categories that were removed
-                foreach ( var metricCategory in metric.MetricCategories )
+                foreach ( var metricCategory in metric.MetricCategories.ToList() )
                 {
                     if ( !selectedCategoryIds.Contains( metricCategory.CategoryId ) )
                     {
