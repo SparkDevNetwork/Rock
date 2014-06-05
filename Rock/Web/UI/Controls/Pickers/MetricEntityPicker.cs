@@ -396,6 +396,10 @@ namespace Rock.Web.UI.Controls
                 _rblSelectOrContext.AutoPostBack = true;
                 _rblSelectOrContext.SelectedIndexChanged += rblSelectOrContext_SelectedIndexChanged;
             }
+            else
+            {
+                _rblSelectOrContext.Items[0].Text = "Select " + fieldTypeName;
+            }
 
             rockControlWrapper.Controls.Add( _rblSelectOrContext );
 
@@ -409,8 +413,9 @@ namespace Rock.Web.UI.Controls
             {
                 _cbCombine = new RockCheckBox();
                 _cbCombine.ID = string.Format( "{0}_{1}", this.ID, "cbCombine" );
-                _cbCombine.Text = "Combine multiple values to one line when showing values for multiple " + fieldTypeName.Pluralize();
             }
+
+            _cbCombine.Text = "Combine multiple values to one line when showing values for multiple " + fieldTypeName.Pluralize();
 
             rockControlWrapper.Controls.Add( _cbCombine );
         }

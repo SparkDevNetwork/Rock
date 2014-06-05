@@ -527,7 +527,10 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = metric.Description;
             tbIconCssClass.Text = metric.IconCssClass;
             cpMetricCategories.SetValues( metric.MetricCategories.Select( a => a.Category ) );
-            ddlSourceType.SetValue( metric.SourceValueTypeId );
+
+            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+
+            ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbXAxisLabel.Text = metric.XAxisLabel;
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
