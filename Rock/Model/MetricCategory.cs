@@ -113,7 +113,7 @@ namespace Rock.Model
         /// <value>
         /// The category id.
         /// </value>
-        public virtual int? ICategorized.CategoryId
+        int? ICategorized.CategoryId
         {
             get 
             { 
