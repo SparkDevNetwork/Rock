@@ -192,17 +192,17 @@ namespace com.ccvonline.Authentication
 
         public override bool RequiresRemoteAuthentication
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public override AuthenticationServiceType ServiceType
         {
-            get { throw new NotImplementedException(); }
+            get { return AuthenticationServiceType.Internal; }
         }
 
         public override bool SupportsChangePassword
         {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
     }
 }
