@@ -19,11 +19,11 @@
                 <Rock:DataTextBox ID="tbStream" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="StreamName" />
                 <Rock:DataTextBox ID="tbLabel" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="Label" />
                 <Rock:DataTextBox ID="tbRecording" runat="server" SourceTypeName="com.ccvonline.CommandCenter.Model.Recording, com.ccvonline.CommandCenter" PropertyName="RecordingName" CssClass="input-xlarge" />
-                <Rock:RockTextBox ID="lStarted" runat="server" LabelText="Started" />
-                <Rock:RockTextBox ID="lStartResponse" runat="server" LabelText="Start Response" />
-                <Rock:RockTextBox ID="lStopped" runat="server" LabelText="Stopped" />
-                <Rock:RockTextBox ID="lStopResponse" runat="server" LabelText="Stop Response" />
-                <Rock:RockCheckBox ID="cbStartRecording" runat="server" LabelText="Start Recording" />
+                <Rock:RockTextBox ID="lStarted" runat="server" Label="Started" />
+                <Rock:RockTextBox ID="lStartResponse" runat="server" Label="Start Response" />
+                <Rock:RockTextBox ID="lStopped" runat="server" Label="Stopped" />
+                <Rock:RockTextBox ID="lStopResponse" runat="server" Label="Stop Response" />
+                <Rock:RockCheckBox ID="cbStartRecording" runat="server" Label="Start Recording" />
             </fieldset>
 
             <div class="actions">

@@ -7,11 +7,11 @@
 
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:CampusPicker ID="cpCampus" runat="server" />
-            <Rock:DatePicker ID="dtStartDate" runat="server" LabelText="From Date" />
-            <Rock:DatePicker ID="dtEndDate" runat="server" LabelText="To Date" />
-            <Rock:RockTextBox ID="tbStream" runat="server" LabelText="Stream"></Rock:RockTextBox>
-            <Rock:RockTextBox ID="tbLabel" runat="server" LabelText="Label"></Rock:RockTextBox>
-            <Rock:RockTextBox ID="tbRecording" runat="server" LabelText="Recording"></Rock:RockTextBox>
+            <Rock:DatePicker ID="dtStartDate" runat="server" Label="From Date" />
+            <Rock:DatePicker ID="dtEndDate" runat="server" Label="To Date" />
+            <Rock:RockTextBox ID="tbStream" runat="server" Label="Stream"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="tbLabel" runat="server" Label="Label"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="tbRecording" runat="server" Label="Recording"></Rock:RockTextBox>
         </Rock:GridFilter>
 
         <Rock:Grid ID="gRecordings" runat="server" EmptyDataText="No Recordings Found" AllowSorting="true" OnRowSelected="gRecordings_Edit">
