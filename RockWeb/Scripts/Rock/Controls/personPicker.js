@@ -56,8 +56,14 @@
                 exports.personPickers[controlId].updateScrollbar();
             });
 
-            $('.picker-select').on('click', '.picker-select-item', function () {
+            $('.picker-select').on('click', '.picker-select-item', function (e) {
+                e.stopPropagation();
+
                 var $selectedItem = $(this).attr('data-person-id');
+                var alreadySelected = $(this).find('.picker-select-item-details:hidden').length == 0 && e.target.type != 'radio';
+                if (alreadySelected) {
+                    $('#btnSelect_' + controlId).get(0).click();
+                }
 
                 // hide other open details
                 $('.picker-select-item-details').each(function () {
