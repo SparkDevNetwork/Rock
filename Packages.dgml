@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <DirectedGraph GraphDirection="LeftToRight" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="com.CcvOnline.CommandCenter" Label="com.CcvOnline.CommandCenter" Category="Project" />
+    <Node Id="com.ccvonline.CommandCenter" Label="com.ccvonline.CommandCenter" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
@@ -12,11 +12,11 @@
     <Node Id="Microsoft.Data.OData 5.6.1" Label="Microsoft.Data.OData 5.6.1" Category="Package" />
     <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
     <Node Id="System.Spatial 5.6.1" Label="System.Spatial 5.6.1" Category="Package" />
-    <Node Id="com.CcvOnline.Authentication" Label="com.CcvOnline.Authentication" Category="Project" />
+    <Node Id="com.ccvonline.Authentication" Label="com.ccvonline.Authentication" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
-    <Node Id="com.CcvOnline" Label="com.CcvOnline" Category="Project" />
+    <Node Id="com.ccvonline" Label="com.ccvonline" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
-    <Node Id="com.CcvOnline.SampleProject" Label="com.CcvOnline.SampleProject" Category="Project" />
+    <Node Id="com.ccvonline.SampleProject" Label="com.ccvonline.SampleProject" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
@@ -64,11 +64,11 @@
     <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" />
-    <Link Source="com.CcvOnline.CommandCenter" Target="EntityFramework 6.1.0" Category="Installed Package" />
-    <Link Source="com.CcvOnline.CommandCenter" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
-    <Link Source="com.CcvOnline.CommandCenter" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
-    <Link Source="com.CcvOnline.Authentication" Target="EntityFramework 6.1.0" Category="Installed Package" />
-    <Link Source="com.CcvOnline" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="com.ccvonline.CommandCenter" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="com.ccvonline.CommandCenter" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="com.ccvonline.CommandCenter" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
+    <Link Source="com.ccvonline.Authentication" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="com.ccvonline" Target="EntityFramework 6.1.0" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
@@ -79,9 +79,9 @@
     <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" />
-    <Link Source="com.CcvOnline.SampleProject" Target="EntityFramework 6.1.0" Category="Installed Package" />
-    <Link Source="com.CcvOnline.SampleProject" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
-    <Link Source="com.CcvOnline.SampleProject" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
+    <Link Source="com.ccvonline.SampleProject" Target="EntityFramework 6.1.0" Category="Installed Package" />
+    <Link Source="com.ccvonline.SampleProject" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="com.ccvonline.SampleProject" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
