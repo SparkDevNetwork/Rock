@@ -48,7 +48,6 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
-
         #region Fields
 
         /// <summary>
@@ -92,6 +91,8 @@ namespace RockWeb
         {
             try
             {
+                DateTime startDateTime = RockDateTime.Now;
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
@@ -99,6 +100,14 @@ namespace RockWeb
 
                 // Get a db context
                 var rockContext = new RockContext();
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    new AttributeService( rockContext ).Get( 0 );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
+                }
+
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
 
@@ -109,17 +118,12 @@ namespace RockWeb
                     RegisterRoutes( rockContext, RouteTable.Routes );
                 }
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
-                {
-                    new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-                }
-
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
@@ -177,7 +181,6 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
-
             }
             catch ( Exception ex )
             {
