@@ -50,13 +50,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         protected override void OnLoad( EventArgs e )
         {
             // clear the session residentGraderSessionKey just in case
-            Session["residentGraderSessionKey"] = string.Empty;
+            Session["ResidentGraderSessionKey"] = string.Empty;
 
             base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
-                hfCompetencyPersonProjectId.Value = this.PageParameter( "competencyPersonProjectId" );
+                hfCompetencyPersonProjectId.Value = this.PageParameter( "CompetencyPersonProjectId" );
                 LoadDropDowns();
             }
         }
@@ -72,7 +72,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyPersonProjectId = this.PageParameter( pageReference, "competencyPersonProjectId" ).AsInteger();
+            int? competencyPersonProjectId = this.PageParameter( pageReference, "CompetencyPersonProjectId" ).AsInteger();
             if ( competencyPersonProjectId != null )
             {
                 breadCrumbs.Add( new BreadCrumb( "Grade Request", pageReference ) );
@@ -98,7 +98,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             List<Person> facilitatorList = new List<Person>();
 
-            Group residencyGraderSecurityRole = new GroupService().Get( groupId.AsInteger() ?? 0 );
+            Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( groupId.AsInteger() ?? 0 );
             if ( residencyGraderSecurityRole != null )
             {
                 foreach ( var groupMember in residencyGraderSecurityRole.Members.OrderBy( a => a.Person.FullName ) )
@@ -107,7 +107,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 }
             }
 
-            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( hfCompetencyPersonProjectId.ValueAsInt() );
+            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
             if ( competencyPersonProject != null )
             {
                 if ( competencyPersonProject.Project.Competency.TeacherOfRecordPerson != null )
@@ -125,7 +125,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
             else
             {
-                nbSendMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Error;
+                nbSendMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                 nbSendMessage.Text = "No facilitators configured";
             }
         }
@@ -155,74 +155,67 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             nbWarningMessage.Text = string.Empty;
 
-            var userLoginService = new UserLoginService();
+            var rockContext = new Rock.Data.RockContext();
+
+            var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( tbUserName.Text );
-            if ( userLogin != null && userLogin.ServiceType == AuthenticationServiceType.Internal )
+            if ( userLogin != null && userLogin.EntityType != null )
             {
-                foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
+                var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+                if ( component.IsActive && !component.RequiresRemoteAuthentication )
                 {
-                    var component = serviceEntry.Value.Value;
-                    string componentName = component.GetType().FullName;
-
-                    if (
-                        userLogin.ServiceName == componentName &&
-                        component.AttributeValues.ContainsKey( "Active" ) &&
-                        bool.Parse( component.AttributeValues["Active"][0].Value )
-                    )
+                    if ( component.Authenticate( userLogin, tbPassword.Text ) )
                     {
-                        if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        int groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsInteger() ?? 0;
+
+                        Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( groupId );
+                        if ( residencyGraderSecurityRole != null )
                         {
-                            string groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" );
-
-                            Group residencyGraderSecurityRole = new GroupService().Get( groupId.AsInteger() ?? 0 );
-                            if ( residencyGraderSecurityRole != null )
+                            // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
+                            bool userAuthorizedToGrade = residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
+                            if ( !userAuthorizedToGrade )
                             {
-                                // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
-                                bool userAuthorizedToGrade = residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
-                                if ( !userAuthorizedToGrade )
+                                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
+                                if ( competencyPersonProject != null )
                                 {
-                                    CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( hfCompetencyPersonProjectId.ValueAsInt() );
-                                    if ( competencyPersonProject != null )
-                                    {
-                                        userAuthorizedToGrade = competencyPersonProject.Project.Competency.TeacherOfRecordPersonId.Equals( userLogin.PersonId );
-                                    }
+                                    userAuthorizedToGrade = competencyPersonProject.Project.Competency.TeacherOfRecordPersonId.Equals( userLogin.PersonId );
+                                }
 
-                                    if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
+                                if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
+                                {
+                                    // somebody besides the Resident is logged in
+                                    NavigateToParentPage();
+                                    return;
+                                }
+                            }
+
+                            if ( userAuthorizedToGrade )
+                            {
+                                string gradeDetailPageGuid = this.GetAttributeValue( "ResidentGradeDetailPage" );
+                                if ( !string.IsNullOrWhiteSpace( gradeDetailPageGuid ) )
+                                {
+                                    var page = new PageService( rockContext ).Get( new Guid( gradeDetailPageGuid ) );
+                                    if ( page != null )
                                     {
-                                        // somebody besides the Resident is logged in
-                                        NavigateToParentPage();
+                                        string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + DateTime.Now.Ticks;
+                                        string residentGraderSessionKey = Rock.Security.Encryption.EncryptString( identifier );
+                                        Session["ResidentGraderSessionKey"] = residentGraderSessionKey;
+                                        var queryString = new Dictionary<string, string>();
+                                        queryString.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
+
+                                        NavigateToPage( page.Guid, queryString );
+
                                         return;
                                     }
                                 }
 
-                                if ( userAuthorizedToGrade )
-                                {
-                                    string gradeDetailPageGuid = this.GetAttributeValue( "ResidentGradeDetailPage" );
-                                    if ( !string.IsNullOrWhiteSpace( gradeDetailPageGuid ) )
-                                    {
-                                        var page = new PageService().Get( new Guid( gradeDetailPageGuid ) );
-                                        if ( page != null )
-                                        {
-                                            string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + DateTime.Now.Ticks;
-                                            string residentGraderSessionKey = Rock.Security.Encryption.EncryptString( identifier );
-                                            Session["residentGraderSessionKey"] = residentGraderSessionKey;
-                                            var queryString = new Dictionary<string, string>();
-                                            queryString.Add( "competencyPersonProjectId", hfCompetencyPersonProjectId.Value );
-
-                                            NavigateToPage( page.Guid, queryString );
-
-                                            return;
-                                        }
-                                    }
-
-                                    nbWarningMessage.Text = "Ooops! Grading page not configured.";
-                                    return;
-                                }
-                                else
-                                {
-                                    nbWarningMessage.Text = "User not authorized to grade this project";
-                                    return;
-                                }
+                                nbWarningMessage.Text = "Ooops! Grading page not configured.";
+                                return;
+                            }
+                            else
+                            {
+                                nbWarningMessage.Text = "User not authorized to grade this project";
+                                return;
                             }
                         }
                     }
@@ -246,8 +239,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
 
             int personId = ddlFacilitators.SelectedValueAsInt() ?? 0;
+            var rockContext = new Rock.Data.RockContext();
 
-            Person facilitator = new PersonService().Get( personId );
+            Person facilitator = new PersonService( rockContext ).Get( personId );
 
             if ( facilitator == null )
             {
@@ -257,9 +251,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             string gradeDetailPageGuid = this.GetAttributeValue( "ResidentGradeDetailPage" );
 
-            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( hfCompetencyPersonProjectId.ValueAsInt() );
+            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
 
-            var userLoginService = new UserLoginService();
+            var userLoginService = new UserLoginService( rockContext );
             var facilitatorUserLogin = userLoginService.GetByPersonId( facilitator.Id ).FirstOrDefault();
 
             Uri gradeDetailPageUrl = null;
@@ -272,15 +266,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
                     int routeId = 0;
                     {
-                        routeId = pageCache.PageRoutes.FirstOrDefault().Key;
+                        routeId = pageCache.PageRoutes.FirstOrDefault().Id;
                     }
 
                     // set Ticks (3rd part) to 0 since this is an emailed request
                     string identifier = hfCompetencyPersonProjectId.Value + "|" + facilitatorUserLogin.Guid + "|0";
                     string gradeKey = Rock.Security.Encryption.EncryptString( identifier );
 
-                    queryString.Add( "competencyPersonProjectId", hfCompetencyPersonProjectId.Value );
-                    queryString.Add( "gradeKey", Server.UrlEncode( gradeKey ) );
+                    queryString.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
+                    queryString.Add( "GradeKey", Server.UrlEncode( gradeKey ) );
 
                     PageReference pageReference = new PageReference( pageCache.Id, routeId, queryString );
 
@@ -305,13 +299,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             recipients.Add( facilitator.Email, mergeObjects );
 
-            Email email = new Email( com.ccvonline.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST );
-
-            email.Send( recipients );
+            Email.Send( com.ccvonline.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
 
             var parentParams = new Dictionary<string, string>();
-            parentParams.Add( "competencyPersonProjectId", hfCompetencyPersonProjectId.Value );
-            NavigateToParentPage(parentParams);
+            parentParams.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
+            NavigateToParentPage( parentParams );
         }
 
         #endregion

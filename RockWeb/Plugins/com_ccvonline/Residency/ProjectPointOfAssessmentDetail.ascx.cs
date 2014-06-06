@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
 using Rock;
@@ -25,6 +26,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
@@ -46,17 +48,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? itemId = PageParameter( "projectPointOfAssessmentId" ).AsInteger( true );
-                int? projectId = PageParameter( "projectId" ).AsInteger( true );
+                int? itemId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger( true );
+                int? projectId = PageParameter( "ProjectId" ).AsInteger( true );
                 if ( itemId != null )
                 {
                     if ( projectId == null )
                     {
-                        ShowDetail( "projectPointOfAssessmentId", itemId.Value );
+                        ShowDetail( "ProjectPointOfAssessmentId", itemId.Value );
                     }
                     else
                     {
-                        ShowDetail( "projectPointOfAssessmentId", itemId.Value, projectId.Value );
+                        ShowDetail( "ProjectPointOfAssessmentId", itemId.Value, projectId.Value );
                     }
                 }
                 else
@@ -77,7 +79,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? projectPointOfAssessmentId = this.PageParameter( pageReference, "projectPointOfAssessmentId" ).AsInteger();
+            int? projectPointOfAssessmentId = this.PageParameter( pageReference, "ProjectPointOfAssessmentId" ).AsInteger();
             if ( projectPointOfAssessmentId != null )
             {
                 breadCrumbs.Add( new BreadCrumb( "Point of Assessment", pageReference ) );
@@ -102,7 +104,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["projectId"] = hfProjectId.Value;
+            qryString["ProjectId"] = hfProjectId.Value;
             NavigateToParentPage( qryString );
         }
 
@@ -113,8 +115,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var residencyContext = new ResidencyContext();
             ProjectPointOfAssessment projectPointOfAssessment;
-            ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>();
+            ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
 
             int projectPointOfAssessmentId = int.Parse( hfProjectPointOfAssessmentId.Value );
 
@@ -123,7 +126,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 projectPointOfAssessment = new ProjectPointOfAssessment();
                 projectPointOfAssessment.AssessmentOrder = lblAssessmentOrder.Text.AsInteger().Value;
                 projectPointOfAssessment.ProjectId = hfProjectId.ValueAsInt();
-                projectPointOfAssessmentService.Add( projectPointOfAssessment, CurrentPersonId );
+                projectPointOfAssessmentService.Add( projectPointOfAssessment );
             }
             else
             {
@@ -139,13 +142,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                projectPointOfAssessmentService.Save( projectPointOfAssessment, CurrentPersonId );
-            } );
+            residencyContext.SaveChanges();
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["projectId"] = hfProjectId.Value;
+            qryString["ProjectId"] = hfProjectId.Value;
             NavigateToParentPage( qryString );
         }
 
@@ -154,13 +154,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void LoadDropDowns()
         {
-            var list = new Rock.Model.DefinedValueService().GetByDefinedTypeGuid( new Guid( com.ccvonline.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE ) )
-                .OrderBy( a => a.Name ).ToList();
+            var definedTypeCache = DefinedTypeCache.Read( com.ccvonline.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE.AsGuid() );
 
-            list.Insert( 0, new DefinedValue { Id = Rock.Constants.None.Id, Name = Rock.Constants.None.Text } );
+            var list = definedTypeCache.DefinedValues.OrderBy( a => a.Name ).ToList();
+            foreach ( var item in list )
+            {
+                ddlPointOfAssessmentTypeValue.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+            }
 
-            ddlPointOfAssessmentTypeValue.DataSource = list;
-            ddlPointOfAssessmentTypeValue.DataBind();
+            ddlPointOfAssessmentTypeValue.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
         }
 
         /// <summary>
@@ -182,7 +184,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue, int? projectId )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "projectPointOfAssessmentId" )
+            if ( itemKey != "ProjectPointOfAssessmentId" )
             {
                 return;
             }
@@ -191,11 +193,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             LoadDropDowns();
 
+            var residencyContext = new ResidencyContext();
+
             // Load depending on Add(0) or Edit
             ProjectPointOfAssessment projectPointOfAssessment = null;
-            var projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>();
+            var projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
 
-            string projectName = new ResidencyService<Project>().Queryable()
+            string projectName = new ResidencyService<Project>( residencyContext ).Queryable()
                 .Where( a => a.Id.Equals( projectId.Value ) )
                 .Select( a => a.Name ).FirstOrDefault();
 

@@ -39,8 +39,13 @@
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
                     </div>
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
+                        </div>
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />

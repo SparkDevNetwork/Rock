@@ -41,11 +41,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "competencyPersonId" );
+                string itemId = PageParameter( "CompetencyPersonId" );
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "competencyPersonId", itemId.AsInteger() ?? 0 );
+                    ShowDetail( "CompetencyPersonId", itemId.AsInteger() ?? 0 );
                 }
                 else
                 {
@@ -66,14 +66,14 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "competencyPersonId" )
+            if ( itemKey != "CompetencyPersonId" )
             {
                 return;
             }
 
             pnlDetails.Visible = true;
 
-            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>().Get( itemKeyValue );
+            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( itemKeyValue );
 
             if ( competencyPerson != null )
             {

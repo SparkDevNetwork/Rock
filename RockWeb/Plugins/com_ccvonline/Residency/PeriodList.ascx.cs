@@ -21,7 +21,6 @@ using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -30,7 +29,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class PeriodList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
@@ -79,7 +78,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "periodId", 0 );
+            NavigateToLinkedPage( "DetailPage", "PeriodId", 0 );
         }
 
         /// <summary>
@@ -89,7 +88,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "periodId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "PeriodId", e.RowKeyId );
         }
 
         /// <summary>
@@ -99,24 +98,23 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var residencyContext = new ResidencyContext();
+            var periodService = new ResidencyService<Period>( residencyContext );
+
+            Period period = periodService.Get( e.RowKeyId );
+            if ( period != null )
             {
-                var periodService = new ResidencyService<Period>();
-
-                Period period = periodService.Get( e.RowKeyId );
-                if ( period != null )
+                string errorMessage;
+                if ( !periodService.CanDelete( period, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !periodService.CanDelete( period, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    periodService.Delete( period, CurrentPersonId );
-                    periodService.Save( period, CurrentPersonId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                periodService.Delete( period );
+
+                residencyContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -140,7 +138,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var periodService = new ResidencyService<Period>();
+            var periodService = new ResidencyService<Period>( new ResidencyContext() );
             SortProperty sortProperty = gList.SortProperty;
 
             if ( sortProperty != null )
@@ -162,7 +160,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;

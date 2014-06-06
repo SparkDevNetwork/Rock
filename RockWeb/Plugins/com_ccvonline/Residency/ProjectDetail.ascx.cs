@@ -46,17 +46,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "projectId" );
-                string competencyId = PageParameter( "competencyId" );
+                string itemId = PageParameter( "ProjectId" );
+                string competencyId = PageParameter( "CompetencyId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( competencyId ) )
                     {
-                        ShowDetail( "projectId", int.Parse( itemId ) );
+                        ShowDetail( "ProjectId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "projectId", int.Parse( itemId ), int.Parse( competencyId ) );
+                        ShowDetail( "ProjectId", int.Parse( itemId ), int.Parse( competencyId ) );
                     }
                 }
                 else
@@ -77,10 +77,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? projectId = this.PageParameter( pageReference, "projectId" ).AsInteger();
+            int? projectId = this.PageParameter( pageReference, "ProjectId" ).AsInteger();
             if ( projectId != null )
             {
-                Project project = new ResidencyService<Project>().Get( projectId.Value );
+                Project project = new ResidencyService<Project>( new ResidencyContext() ).Get( projectId.Value );
                 if ( project != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( project.Name, pageReference ) );
@@ -115,11 +115,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // Cancelling on Add.  Return to Grid
                 // if this page was called from the Competency Detail page, return to that
-                string competencyId = PageParameter( "competencyId" );
+                string competencyId = PageParameter( "CompetencyId" );
                 if ( !string.IsNullOrWhiteSpace( competencyId ) )
                 {
                     Dictionary<string, string> qryString = new Dictionary<string, string>();
-                    qryString["competencyId"] = competencyId;
+                    qryString["CompetencyId"] = competencyId;
                     NavigateToParentPage( qryString );
                 }
                 else
@@ -130,7 +130,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ResidencyService<Project> service = new ResidencyService<Project>();
+                ResidencyService<Project> service = new ResidencyService<Project>( new ResidencyContext() );
                 Project item = service.Get( hfProjectId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }
@@ -143,7 +143,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ResidencyService<Project> service = new ResidencyService<Project>();
+            ResidencyService<Project> service = new ResidencyService<Project>( new ResidencyContext() );
             Project item = service.Get( hfProjectId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -167,15 +167,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var residencyContext = new ResidencyContext();
+
             Project project;
-            ResidencyService<Project> projectService = new ResidencyService<Project>();
+            ResidencyService<Project> projectService = new ResidencyService<Project>( residencyContext );
 
             int projectId = int.Parse( hfProjectId.Value );
 
             if ( projectId == 0 )
             {
                 project = new Project();
-                projectService.Add( project, CurrentPersonId );
+                projectService.Add( project );
             }
             else
             {
@@ -193,13 +195,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                projectService.Save( project, CurrentPersonId );
-            } );
+            residencyContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["projectId"] = project.Id.ToString();
+            qryParams["ProjectId"] = project.Id.ToString();
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
@@ -222,7 +221,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue, int? competencyId )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "projectId" )
+            if ( itemKey != "ProjectId" )
             {
                 return;
             }
@@ -231,15 +230,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             Project project = null;
 
+            var residencyContext = new ResidencyContext();
+
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                project = new ResidencyService<Project>().Get( itemKeyValue );
+                project = new ResidencyService<Project>( residencyContext ).Get( itemKeyValue );
             }
             else
             {
                 project = new Project { Id = 0 };
                 project.CompetencyId = competencyId ?? 0;
-                project.Competency = new ResidencyService<Competency>().Get( project.CompetencyId );
+                project.Competency = new ResidencyService<Competency>( residencyContext ).Get( project.CompetencyId );
             }
 
             hfProjectId.Value = project.Id.ToString();
@@ -308,9 +309,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             SetEditMode( false );
 
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Name", string.Format( "{0} - {1}", project.Name, project.Description) )
+                .Add( "Name", string.Format( "{0} - {1}", project.Name, project.Description ) )
                 .Add( "Competency", project.Competency.Name )
-                .Add( "Default # of Assessments", project.MinAssessmentCountDefault)
+                .Add( "Default # of Assessments", project.MinAssessmentCountDefault )
                 .Html;
         }
 

@@ -42,11 +42,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int personId = this.PageParameter( "personId" ).AsInteger() ?? 0;
+                int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
 
                 if ( personId != 0 )
                 {
-                    ShowDetail( "personId", personId );
+                    ShowDetail( "PersonId", personId );
                 }
                 else
                 {
@@ -66,10 +66,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? personId = this.PageParameter( pageReference, "personId" ).AsInteger();
+            int? personId = this.PageParameter( pageReference, "PersonId" ).AsInteger();
             if ( personId != null )
             {
-                Person person = new PersonService().Get( personId.Value );
+                Person person = new PersonService( new Rock.Data.RockContext() ).Get( personId.Value );
                 if ( person != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( person.FullName, pageReference ) );
@@ -95,7 +95,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "personId" )
+            if ( itemKey != "PersonId" )
             {
                 return;
             }
@@ -103,7 +103,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             pnlDetails.Visible = true;
 
             // this is always just a View block (they are added/edited on the GroupMember block)
-            Person person = new ResidencyService<Person>().Get( itemKeyValue );
+            Person person = new ResidencyService<Person>( new ResidencyContext() ).Get( itemKeyValue );
 
             ShowReadonlyDetails( person );
         }

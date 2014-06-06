@@ -206,7 +206,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     competencyPerson.PersonId = hfPersonId.ValueAsInt();
                     competencyPerson.CompetencyId = competencyId;
 
-
                     Competency competency = competencyService.Get( competencyId );
                     foreach ( var project in competency.Projects )
                     {

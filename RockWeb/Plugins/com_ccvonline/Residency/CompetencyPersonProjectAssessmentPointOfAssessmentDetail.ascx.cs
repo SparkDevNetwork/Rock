@@ -213,8 +213,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Add( "Resident", personProject.CompetencyPerson.Person )
                 .Add( "Project", string.Format( "{0} - {1}", personProject.Project.Name, personProject.Project.Description ) )
                 .Add( "Competency", personProject.CompetencyPerson.Competency.Name ).Html;
-            
-            lblMainDetailsCol2.Text = new DescriptionList()                
+
+            lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Assessment #", competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.AssessmentOrder )
                 .Add( "Assessment Text", competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.AssessmentText )
                 .Add( "Assessor", projectAssessment.AssessorPerson )

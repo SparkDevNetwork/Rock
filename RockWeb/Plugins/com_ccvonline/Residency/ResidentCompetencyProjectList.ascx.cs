@@ -29,7 +29,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class ResidentCompetencyProjectList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gProjectList.Actions.ShowAdd = false;
             gProjectList.GridRebind += gList_GridRebind;
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -57,7 +57,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? competencyPersonId = this.PageParameter( "competencyPersonId" ).AsInteger();
+                int? competencyPersonId = this.PageParameter( "CompetencyPersonId" ).AsInteger();
                 hfCompetencyPersonId.Value = competencyPersonId.ToString();
                 BindGrid();
             }
@@ -72,7 +72,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         protected void BindGrid()
         {
-            var competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>();
+            var competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() );
             int competencyPersonId = hfCompetencyPersonId.ValueAsInt();
             SortProperty sortProperty = gProjectList.SortProperty;
             var qry = competencyPersonProjectService.Queryable();
@@ -119,7 +119,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gProjectList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "competencyPersonProjectId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "CompetencyPersonProjectId", e.RowKeyId );
         }
 
         #endregion
@@ -129,7 +129,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gProjectList.Visible = visible;

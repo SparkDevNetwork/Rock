@@ -31,7 +31,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     [BooleanField( "Show Competency Column" )]
     [BooleanField( "Show Project Column" )]
     [BooleanField( "Show Grid Title" )]
@@ -74,7 +74,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? competencyPersonProjectId = this.PageParameter( "competencyPersonProjectId" ).AsInteger();
+                int? competencyPersonProjectId = this.PageParameter( "CompetencyPersonProjectId" ).AsInteger();
                 hfCompetencyPersonProjectId.Value = competencyPersonProjectId.ToString();
                 BindGrid();
             }
@@ -91,7 +91,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "competencyPersonProjectAssessmentId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "CompetencyPersonProjectAssessmentId", e.RowKeyId );
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var competencyPersonProjectAssessmentService = new ResidencyService<CompetencyPersonProjectAssessment>();
+            var competencyPersonProjectAssessmentService = new ResidencyService<CompetencyPersonProjectAssessment>( new ResidencyContext() );
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
             SortProperty sortProperty = gList.SortProperty;
 
@@ -129,7 +129,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 // limit only to current person
                 qry = qry.Where( a => a.CompetencyPersonProject.CompetencyPerson.PersonId == this.CurrentPersonId );
             }
-
 
             if ( sortProperty != null )
             {
@@ -151,7 +150,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;

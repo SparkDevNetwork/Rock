@@ -78,7 +78,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ResidencyService<Period> service = new ResidencyService<Period>();
+                ResidencyService<Period> service = new ResidencyService<Period>( new ResidencyContext() );
                 Period item = service.Get( hfPeriodId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }
@@ -91,7 +91,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ResidencyService<Period> service = new ResidencyService<Period>();
+            ResidencyService<Period> service = new ResidencyService<Period>( new ResidencyContext() );
             Period item = service.Get( hfPeriodId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -121,15 +121,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
+            var residencyContext = new ResidencyContext();
+
             Period period;
-            ResidencyService<Period> periodService = new ResidencyService<Period>();
+            ResidencyService<Period> periodService = new ResidencyService<Period>( residencyContext );
 
             int periodId = int.Parse( hfPeriodId.Value );
 
             if ( periodId == 0 )
             {
                 period = new Period();
-                periodService.Add( period, CurrentPersonId );
+                periodService.Add( period );
             }
             else
             {
@@ -147,13 +149,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                periodService.Save( period, CurrentPersonId );
-            } );
+            residencyContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["periodId"] = period.Id.ToString();
+            qryParams["PeriodId"] = period.Id.ToString();
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
@@ -165,7 +164,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "periodId" )
+            if ( itemKey != "PeriodId" )
             {
                 return;
             }
@@ -176,7 +175,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             Period period = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                period = new ResidencyService<Period>().Get( itemKeyValue );
+                period = new ResidencyService<Period>( new ResidencyContext() ).Get( itemKeyValue );
                 lActionTitle.Text = ActionTitle.Edit( Period.FriendlyTypeName );
             }
             else
@@ -247,10 +246,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             SetEditMode( false );
 
-            lblMainDetails.Text = new DescriptionList()
+            lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Name", period.Name )
-                .Add( "Description", period.Description )
-                .StartSecondColumn()
+                .Add( "Description", period.Description ).Html;
+
+            lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Start Date", period.StartDate )
                 .Add( "End Date", period.EndDate )
                 .Html;

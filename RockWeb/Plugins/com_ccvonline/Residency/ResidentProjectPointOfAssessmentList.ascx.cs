@@ -61,7 +61,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? competencyPersonProjectId = this.PageParameter( "competencyPersonProjectId" ).AsInteger();
+                int? competencyPersonProjectId = this.PageParameter( "CompetencyPersonProjectId" ).AsInteger();
                 hfCompetencyPersonProjectId.Value = competencyPersonProjectId.ToString();
                 BindGrid();
             }
@@ -90,7 +90,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>();
+            var competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() );
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
             CompetencyPersonProject competencyPersonProject = competencyPersonProjectService.Get( competencyPersonProjectId );
 
@@ -98,7 +98,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // somebody besides the Resident is logged in
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["competencyPersonId"] = competencyPersonProject.CompetencyPersonId.ToString();
+                qryString["CompetencyPersonId"] = competencyPersonProject.CompetencyPersonId.ToString();
                 NavigateToParentPage( qryString );
                 return;
             }
@@ -118,7 +118,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 new
                 {
                     a.Id,
-                    ProjectPointOfAssessmentColor = a.PointOfAssessmentTypeValue != null ? a.PointOfAssessmentTypeValue.GetAttributeValue("Color") : string.Empty,
+                    ProjectPointOfAssessmentColor = a.PointOfAssessmentTypeValue != null ? a.PointOfAssessmentTypeValue.GetAttributeValue( "Color" ) : string.Empty,
                     a.PointOfAssessmentTypeValue,
                     a.AssessmentOrder,
                     a.AssessmentText
@@ -143,7 +143,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;

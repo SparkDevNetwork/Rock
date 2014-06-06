@@ -30,7 +30,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class TrackList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
@@ -54,7 +54,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -65,7 +65,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? periodId = this.PageParameter( "periodId" ).AsInteger();
+                int? periodId = this.PageParameter( "PeriodId" ).AsInteger();
                 hfPeriodId.Value = periodId.ToString();
                 BindGrid();
             }
@@ -87,7 +87,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             int newIndex = e.NewIndex;
             int periodId = hfPeriodId.ValueAsInt();
 
-            var trackService = new ResidencyService<Track>();
+            var residencyContext = new ResidencyContext();
+
+            var trackService = new ResidencyService<Track>( residencyContext );
             var items = trackService.Queryable()
                 .Where( a => a.PeriodId.Equals( periodId ) )
                 .OrderBy( a => a.DisplayOrder ).ToList();
@@ -114,12 +116,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                         {
                             // temporarily, set the order to negative in case another row has this value.
                             item.DisplayOrder = -order;
-                            trackService.Save( item, CurrentPersonId );
                         }
                     }
 
                     order++;
                 }
+
+                residencyContext.SaveChanges();
 
                 foreach ( Track item in items )
                 {
@@ -129,10 +132,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                         {
                             // update the value back to positive now that all the rows have their new order
                             item.DisplayOrder = -item.DisplayOrder;
-                            trackService.Save( item, CurrentPersonId );
                         }
                     }
                 }
+
+                residencyContext.SaveChanges();
             } );
 
             BindGrid();
@@ -164,7 +168,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="projectPointOfAssessmentId">The residency project point of assessment id.</param>
         protected void gList_ShowEdit( int projectPointOfAssessmentId )
         {
-            NavigateToLinkedPage( "DetailPage", "trackId", projectPointOfAssessmentId, "periodId", hfPeriodId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "TrackId", projectPointOfAssessmentId, "PeriodId", hfPeriodId.ValueAsInt() );
         }
 
         /// <summary>
@@ -174,24 +178,22 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var residencyContext = new ResidencyContext();
+            var trackService = new ResidencyService<Track>( residencyContext );
+            Track track = trackService.Get( e.RowKeyId );
+
+            if ( track != null )
             {
-                var trackService = new ResidencyService<Track>();
-                Track track = trackService.Get( e.RowKeyId );
-
-                if ( track != null )
+                string errorMessage;
+                if ( !trackService.CanDelete( track, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !trackService.CanDelete( track, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    trackService.Delete( track, CurrentPersonId );
-                    trackService.Save( track, CurrentPersonId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                trackService.Delete( track );
+                residencyContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -215,7 +217,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var trackService = new ResidencyService<Track>();
+            var trackService = new ResidencyService<Track>( new ResidencyContext() );
             int periodId = hfPeriodId.ValueAsInt();
             SortProperty sortProperty = gList.SortProperty;
             var qry = trackService.Queryable();
@@ -242,7 +244,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;

@@ -47,17 +47,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "trackId" );
-                string periodId = PageParameter( "periodId" );
+                string itemId = PageParameter( "TrackId" );
+                string periodId = PageParameter( "PeriodId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( periodId ) )
                     {
-                        ShowDetail( "trackId", int.Parse( itemId ) );
+                        ShowDetail( "TrackId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "trackId", int.Parse( itemId ), int.Parse( periodId ) );
+                        ShowDetail( "TrackId", int.Parse( itemId ), int.Parse( periodId ) );
                     }
                 }
                 else
@@ -78,10 +78,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? trackId = this.PageParameter( pageReference, "trackId" ).AsInteger();
+            int? trackId = this.PageParameter( pageReference, "TrackId" ).AsInteger();
             if ( trackId != null )
             {
-                Track track = new ResidencyService<Track>().Get( trackId.Value );
+                Track track = new ResidencyService<Track>( new ResidencyContext() ).Get( trackId.Value );
                 if ( track != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( track.Name, pageReference ) );
@@ -116,11 +116,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // Cancelling on Add.  Return to Grid
                 // if this page was called from the Period Detail page, return to that
-                string periodId = PageParameter( "periodId" );
+                string periodId = PageParameter( "PeriodId" );
                 if ( !string.IsNullOrWhiteSpace( periodId ) )
                 {
                     Dictionary<string, string> qryString = new Dictionary<string, string>();
-                    qryString["periodId"] = periodId;
+                    qryString["PeriodId"] = periodId;
                     NavigateToParentPage( qryString );
                 }
                 else
@@ -131,7 +131,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ResidencyService<Track> service = new ResidencyService<Track>();
+                ResidencyService<Track> service = new ResidencyService<Track>( new ResidencyContext() );
                 Track item = service.Get( hfTrackId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }
@@ -144,7 +144,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ResidencyService<Track> service = new ResidencyService<Track>();
+            ResidencyService<Track> service = new ResidencyService<Track>( new ResidencyContext() );
             Track item = service.Get( hfTrackId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -169,7 +169,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         protected void btnSave_Click( object sender, EventArgs e )
         {
             Track track;
-            ResidencyService<Track> trackService = new ResidencyService<Track>();
+            var residencyContext = new ResidencyContext();
+            ResidencyService<Track> trackService = new ResidencyService<Track>( residencyContext );
 
             int trackId = hfTrackId.ValueAsInt();
             int periodId = hfPeriodId.ValueAsInt();
@@ -177,7 +178,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( trackId == 0 )
             {
                 track = new Track();
-                trackService.Add( track, CurrentPersonId );
+                trackService.Add( track );
 
                 int maxDisplayOrder = trackService.Queryable()
                         .Where( a => a.PeriodId.Equals( periodId ) )
@@ -199,13 +200,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                trackService.Save( track, CurrentPersonId );
-            } );
+            residencyContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["trackId"] = track.Id.ToString();
+            qryParams["TrackId"] = track.Id.ToString();
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
@@ -228,24 +226,26 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue, int? periodId )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "trackId" )
+            if ( itemKey != "TrackId" )
             {
                 return;
             }
 
             pnlDetails.Visible = true;
 
+            var residencyContext = new ResidencyContext();
+
             // Load depending on Add(0) or Edit
             Track track = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                track = new ResidencyService<Track>().Get( itemKeyValue );
+                track = new ResidencyService<Track>( residencyContext ).Get( itemKeyValue );
             }
             else
             {
                 track = new Track { Id = 0 };
                 track.PeriodId = periodId ?? 0;
-                track.Period = new ResidencyService<Period>().Get( track.PeriodId );
+                track.Period = new ResidencyService<Period>( residencyContext ).Get( track.PeriodId );
             }
 
             hfTrackId.Value = track.Id.ToString();
@@ -310,10 +310,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             SetEditMode( false );
 
-            lblMainDetails.Text = new DescriptionList()
+            lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Name", track.Name )
-                .Add( "Description", track.Description )
-                .StartSecondColumn()
+                .Add( "Description", track.Description ).Html;
+
+            lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Period", track.Period.Name )
                 .Html;
         }

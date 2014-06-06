@@ -32,7 +32,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class ResidentCompetencyList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
@@ -72,7 +72,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gCompetencyList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "competencyPersonId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "CompetencyPersonId", e.RowKeyId );
         }
 
         /// <summary>
@@ -96,8 +96,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindRepeater()
         {
-            var trackService = new ResidencyService<Track>();
-            var competencyPersonService = new ResidencyService<CompetencyPerson>();
+            var residencyContext = new ResidencyContext();
+            var trackService = new ResidencyService<Track>( residencyContext );
+            var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
             int currentPersonId = this.CurrentPersonId ?? 0;
 
             List<int> residentCompetencyIds = competencyPersonService.Queryable().Where( a => a.PersonId.Equals( currentPersonId ) )
@@ -123,7 +124,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 int trackId = track.Id;
                 int currentPersonId = this.CurrentPersonId ?? 0;
                 Grid gCompetencyList = e.Item.FindControl( "gCompetencyList" ) as Grid;
-                var competencyPersonService = new ResidencyService<CompetencyPerson>();
+                var competencyPersonService = new ResidencyService<CompetencyPerson>( new ResidencyContext() );
 
                 var qryPersonCompetencies = competencyPersonService.Queryable()
                     .Where( a => a.PersonId.Equals( currentPersonId ) && a.Competency.TrackId.Equals( trackId ) )
@@ -153,7 +154,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             foreach ( var item in rpTracks.Items.OfType<RepeaterItem>() )

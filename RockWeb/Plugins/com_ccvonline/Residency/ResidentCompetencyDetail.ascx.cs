@@ -17,25 +17,20 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
-using System.Linq;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
-using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class ResidentCompetencyDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -50,10 +45,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string competencyPersonId = PageParameter( "competencyPersonId" );
+                string competencyPersonId = PageParameter( "CompetencyPersonId" );
                 if ( !string.IsNullOrWhiteSpace( competencyPersonId ) )
                 {
-                    ShowDetail( "competencyPersonId", int.Parse( competencyPersonId ) );
+                    ShowDetail( "CompetencyPersonId", int.Parse( competencyPersonId ) );
                 }
                 else
                 {
@@ -73,10 +68,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyPersonId = this.PageParameter( pageReference, "competencyPersonId" ).AsInteger();
+            int? competencyPersonId = this.PageParameter( pageReference, "CompetencyPersonId" ).AsInteger();
             if ( competencyPersonId != null )
             {
-                CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>().Get( competencyPersonId.Value );
+                CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( competencyPersonId.Value );
                 if ( competencyPerson != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( competencyPerson.Competency.Name, pageReference ) );
@@ -104,7 +99,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "competencyPersonId" )
+            if ( itemKey != "CompetencyPersonId" )
             {
                 return;
             }
@@ -113,7 +108,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             hfCompetencyPersonId.Value = itemKeyValue.ToString();
 
-            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>().Get(hfCompetencyPersonId.ValueAsInt());
+            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( hfCompetencyPersonId.ValueAsInt() );
 
             if ( competencyPerson.PersonId != CurrentPersonId )
             {

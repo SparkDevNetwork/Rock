@@ -53,7 +53,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 {
                     if ( string.IsNullOrWhiteSpace( trackId ) )
                     {
-                        ShowDetail( "CompetencyId", int.Parse( itemId ));
+                        ShowDetail( "CompetencyId", int.Parse( itemId ) );
                     }
                     else
                     {
@@ -78,10 +78,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyId = this.PageParameter(pageReference, "CompetencyId" ).AsInteger();
+            int? competencyId = this.PageParameter( pageReference, "CompetencyId" ).AsInteger();
             if ( competencyId != null )
             {
-                Competency competency = new ResidencyService<Competency>( new ResidencyContext()).Get( competencyId.Value );
+                Competency competency = new ResidencyService<Competency>( new ResidencyContext() ).Get( competencyId.Value );
                 if ( competency != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( competency.Name, pageReference ) );
@@ -322,7 +322,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Add( "Description", competency.Description )
                 .Add( "Period", competency.Track.Period.Name )
                 .Add( "Track", competency.Track.Name ).Html;
-            
+
             lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Teacher of Record", competency.TeacherOfRecordPerson )
                 .Add( "Facilitator", competency.FacilitatorPerson )

@@ -11,6 +11,7 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
                 <div class="well">
+                    <Rock:NotificationBox ID="nbWarningMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Warning" />
                     <asp:LinkButton ID="btnGrade" runat="server" Text="Grade" CssClass="btn btn-primary pull-right" OnClick="btnGrade_Click" />
 
                     <div class="row-fluid">

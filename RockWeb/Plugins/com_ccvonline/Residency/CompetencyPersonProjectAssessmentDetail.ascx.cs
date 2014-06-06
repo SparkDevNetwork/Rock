@@ -122,7 +122,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ResidencyService<CompetencyPersonProjectAssessment> service = new ResidencyService<CompetencyPersonProjectAssessment>(new ResidencyContext());
+                ResidencyService<CompetencyPersonProjectAssessment> service = new ResidencyService<CompetencyPersonProjectAssessment>( new ResidencyContext() );
                 CompetencyPersonProjectAssessment item = service.Get( hfCompetencyPersonProjectAssessmentId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }

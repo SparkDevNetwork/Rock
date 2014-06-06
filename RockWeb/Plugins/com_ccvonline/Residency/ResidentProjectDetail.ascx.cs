@@ -48,10 +48,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string competencyPersonProjectId = PageParameter( "competencyPersonProjectId" );
+                string competencyPersonProjectId = PageParameter( "CompetencyPersonProjectId" );
                 if ( !string.IsNullOrWhiteSpace( competencyPersonProjectId ) )
                 {
-                    ShowDetail( "competencyPersonProjectId", int.Parse( competencyPersonProjectId ) );
+                    ShowDetail( "CompetencyPersonProjectId", int.Parse( competencyPersonProjectId ) );
                 }
                 else
                 {
@@ -71,10 +71,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyPersonProjectId = this.PageParameter( pageReference, "competencyPersonProjectId" ).AsInteger();
+            int? competencyPersonProjectId = this.PageParameter( pageReference, "CompetencyPersonProjectId" ).AsInteger();
             if ( competencyPersonProjectId != null )
             {
-                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( competencyPersonProjectId.Value );
+                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( competencyPersonProjectId.Value );
                 if ( competencyPersonProject != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( competencyPersonProject.Project.Name, pageReference ) );
@@ -104,20 +104,20 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "competencyPersonProjectId" )
+            if ( itemKey != "CompetencyPersonProjectId" )
             {
                 return;
             }
 
             pnlDetails.Visible = true;
 
-            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( itemKeyValue );
+            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( itemKeyValue );
 
             if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
             {
                 // somebody besides the Resident is logged in
                 Dictionary<string, string> queryString = new Dictionary<string, string>();
-                queryString.Add( "competencyPersonId", competencyPersonProject.CompetencyPersonId.ToString() );
+                queryString.Add( "CompetencyPersonId", competencyPersonProject.CompetencyPersonId.ToString() );
                 NavigateToParentPage( queryString );
                 return;
             }
@@ -150,12 +150,16 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         protected void btnGrade_Click( object sender, EventArgs e )
         {
             string gradeRequestPageGuid = this.GetAttributeValue( "GradeRequestPage" );
-            if ( !string.IsNullOrWhiteSpace( gradeRequestPageGuid ) )
+            var page = Rock.Web.Cache.PageCache.Read( gradeRequestPageGuid.AsGuid() );
+            if ( page != null )
             {
                 Dictionary<string, string> queryString = new Dictionary<string, string>();
-                queryString.Add( "competencyPersonProjectId", hfCompetencyPersonProjectId.Value );
-                var page = new PageService().Get( new Guid( gradeRequestPageGuid ) );
+                queryString.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
                 NavigateToPage( page.Guid, queryString );
+            }
+            else
+            {
+                nbWarningMessage.Text = "Ooops! Grade request page not configured.";
             }
         }
 

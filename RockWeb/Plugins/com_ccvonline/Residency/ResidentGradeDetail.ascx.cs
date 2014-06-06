@@ -29,6 +29,7 @@ using Rock.Web;
 using Rock.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
+using Rock.Web.Cache;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
@@ -50,7 +51,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( "competencyPersonProjectId", hfCompetencyPersonProjectId.ValueAsInt() );
+                ShowDetail( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.ValueAsInt() );
             }
 
             // minimize the chance of using the Browser Back button to accidently "re-grade" the project after the residentGraderSessionKey has expired
@@ -70,10 +71,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyPersonProjectId = this.PageParameter( pageReference, "competencyPersonProjectId" ).AsInteger();
+            int? competencyPersonProjectId = this.PageParameter( pageReference, "CompetencyPersonProjectId" ).AsInteger();
             if ( competencyPersonProjectId != null )
             {
-                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( competencyPersonProjectId.Value );
+                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( competencyPersonProjectId.Value );
                 if ( competencyPersonProject != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( competencyPersonProject.Project.Name + " - Grade", pageReference ) );
@@ -111,7 +112,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void NavigateToGraderLogin()
         {
             Dictionary<string, string> qryString = new Dictionary<string, string>();
-            qryString["competencyPersonProjectId"] = hfCompetencyPersonProjectId.Value;
+            qryString["CompetencyPersonProjectId"] = hfCompetencyPersonProjectId.Value;
             NavigateToParentPage( qryString );
         }
 
@@ -122,19 +123,20 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var residencyContext = new ResidencyContext();
             CompetencyPersonProject competencyPersonProject;
-            ResidencyService<CompetencyPersonProject> competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>();
+            ResidencyService<CompetencyPersonProject> competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>( residencyContext );
 
             CompetencyPersonProjectAssessment competencyPersonProjectAssessment;
-            ResidencyService<CompetencyPersonProjectAssessment> competencyPersonProjectAssessmentService = new ResidencyService<CompetencyPersonProjectAssessment>();
+            ResidencyService<CompetencyPersonProjectAssessment> competencyPersonProjectAssessmentService = new ResidencyService<CompetencyPersonProjectAssessment>( residencyContext );
 
-            ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment> competencyPersonProjectAssessmentPointOfAssessmentService = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>();
+            ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment> competencyPersonProjectAssessmentPointOfAssessmentService = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>( residencyContext );
 
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
             if ( competencyPersonProjectId == 0 )
             {
                 competencyPersonProject = new CompetencyPersonProject();
-                competencyPersonProjectService.Add( competencyPersonProject, CurrentPersonId );
+                competencyPersonProjectService.Add( competencyPersonProject );
             }
             else
             {
@@ -145,7 +147,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( competencyPersonProjectAssessmentId == 0 )
             {
                 competencyPersonProjectAssessment = new CompetencyPersonProjectAssessment();
-                competencyPersonProjectAssessmentService.Add( competencyPersonProjectAssessment, CurrentPersonId );
+                competencyPersonProjectAssessmentService.Add( competencyPersonProjectAssessment );
             }
             else
             {
@@ -193,37 +195,36 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                competencyPersonProjectService.Save( competencyPersonProject, CurrentPersonId );
+                // Save changes first to make sure we have a valid competencyPersonProject.Id
+                residencyContext.SaveChanges();
                 competencyPersonProjectAssessment.CompetencyPersonProjectId = competencyPersonProject.Id;
 
                 // set Overall Rating based on average of POA ratings
                 competencyPersonProjectAssessment.OverallRating = (decimal?)competencyPersonProjectAssessmentPointOfAssessmentList.Average( a => a.Rating );
-                competencyPersonProjectAssessmentService.Save( competencyPersonProjectAssessment, CurrentPersonId );
 
+                // Save changes first to make sure we have a valid competencyPersonProject.Id
+                residencyContext.SaveChanges();
                 foreach ( var competencyPersonProjectAssessmentPointOfAssessment in competencyPersonProjectAssessmentPointOfAssessmentList )
                 {
                     competencyPersonProjectAssessmentPointOfAssessment.CompetencyPersonProjectAssessmentId = competencyPersonProjectAssessment.Id;
 
                     if ( competencyPersonProjectAssessmentPointOfAssessment.Id == 0 )
                     {
-                        competencyPersonProjectAssessmentPointOfAssessmentService.Add( competencyPersonProjectAssessmentPointOfAssessment, CurrentPersonId );
+                        competencyPersonProjectAssessmentPointOfAssessmentService.Add( competencyPersonProjectAssessmentPointOfAssessment );
                     }
-
-                    competencyPersonProjectAssessmentPointOfAssessmentService.Save( competencyPersonProjectAssessmentPointOfAssessment, CurrentPersonId );
                 }
+
+                residencyContext.SaveChanges();
             } );
 
-            Rock.Model.Page page = null;
-            string personProjectDetailPageGuid = this.GetAttributeValue( "PersonProjectDetailPage" );
-            if ( !string.IsNullOrWhiteSpace( personProjectDetailPageGuid ) )
-            {
-                page = new PageService().Get( new Guid( personProjectDetailPageGuid ) );
-            }
+            Guid personProjectDetailPageGuid = ( this.GetAttributeValue( "PersonProjectDetailPage" ) ?? string.Empty ).AsGuid();
+
+            var page = PageCache.Read( personProjectDetailPageGuid );
 
             if ( page != null )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["competencyPersonProjectId"] = hfCompetencyPersonProjectId.Value;
+                qryString["CompetencyPersonProjectId"] = hfCompetencyPersonProjectId.Value;
                 NavigateToPage( page.Guid, qryString );
             }
             else
@@ -240,33 +241,33 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "competencyPersonProjectId" )
+            if ( itemKey != "CompetencyPersonProjectId" )
             {
                 return;
             }
 
             pnlDetails.Visible = true;
 
-            hfCompetencyPersonProjectId.Value = this.PageParameter( "competencyPersonProjectId" );
+            hfCompetencyPersonProjectId.Value = this.PageParameter( "CompetencyPersonProjectId" );
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
 
             // first try to get the key from the url (in case it from an emailed request)
-            string emailedKey = Server.UrlDecode(this.PageParameter( "gradeKey" ));
+            string emailedKey = Server.UrlDecode( this.PageParameter( "GradeKey" ) );
 
             if ( !string.IsNullOrWhiteSpace( emailedKey ) )
             {
                 // if they got here from email, put the key in session, and reload page without the key in the url to minimize chance of problems
-                Session["residentGraderSessionKey"] = emailedKey;
+                Session["ResidentGraderSessionKey"] = emailedKey;
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "competencyPersonProjectId", competencyPersonProjectId.ToString() );
+                qryParams.Add( "CompetencyPersonProjectId", competencyPersonProjectId.ToString() );
                 NavigateToPage( this.RockPage.Guid, qryParams );
                 return;
             }
 
-            string encryptedKey = Session["residentGraderSessionKey"] as string;
+            string encryptedKey = Session["ResidentGraderSessionKey"] as string;
 
             // clear the residentGraderSessionKey so they don't accidently grade this again with a stale grader login
-            Session["residentGraderSessionKey"] = null;
+            Session["ResidentGraderSessionKey"] = null;
 
             string residentGraderSessionKey = string.Empty;
 
@@ -289,7 +290,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     //// a live (via Facilitator Login) request goes stale if it has been 10 minutes between the Login and this page loading
                     //// an emailed request just sets Ticks to 0 since we can't really do anything to prevent it
 
-                    assessorPerson = new UserLoginService().Get( new Guid( userLoginGuid ) ).Person;
+                    assessorPerson = new UserLoginService( new Rock.Data.RockContext() ).Get( new Guid( userLoginGuid ) ).Person;
 
                     string ticks = residentGraderSessionKeyParts[2];
                     if ( ticks.Equals( "0" ) )
@@ -318,7 +319,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             int assessorPersonId = assessorPerson.Id;
             hfAssessorPersonId.Value = assessorPerson.Id.ToString();
 
-            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( competencyPersonProjectId );
+            var residencyContext = new ResidencyContext();
+
+            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( residencyContext ).Get( competencyPersonProjectId );
 
             if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
             {
@@ -355,11 +358,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Add( "Project", string.Format( "{0} - {1}", competencyPersonProject.Project.Name, competencyPersonProject.Project.Description ) )
                 .Html;
 
-            List<ProjectPointOfAssessment> projectPointOfAssessmentList = new ResidencyService<ProjectPointOfAssessment>().Queryable()
+            List<ProjectPointOfAssessment> projectPointOfAssessmentList = new ResidencyService<ProjectPointOfAssessment>( residencyContext ).Queryable()
                 .Where( a => a.ProjectId == competencyPersonProject.ProjectId ).ToList();
 
             // get any POA Ratings that might exist
-            List<CompetencyPersonProjectAssessmentPointOfAssessment> competencyPersonProjectAssessmentPointOfAssessmentList = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>().Queryable()
+            List<CompetencyPersonProjectAssessmentPointOfAssessment> competencyPersonProjectAssessmentPointOfAssessmentList = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>( residencyContext ).Queryable()
                 .Where( a => a.CompetencyPersonProjectAssessmentId == competencyPersonProjectAssessment.Id ).ToList();
 
             var competencyPersonProjectAssessmentPointOfAssessmentListJoined = from projectPointOfAssessment in projectPointOfAssessmentList

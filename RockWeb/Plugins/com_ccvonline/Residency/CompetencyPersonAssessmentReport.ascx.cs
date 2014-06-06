@@ -87,7 +87,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     classSemesterName = "Fall Semester";
                 }
 
-                tbSemesterName.Text = classSemesterName;                
+                tbSemesterName.Text = classSemesterName;
                 BindGrids();
             }
         }
@@ -132,38 +132,35 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             int personId = groupMember.PersonId;
             var person = groupMember.Person;
-            
 
             if ( person != null )
             {
                 lbResidentName.Text = person.FullName;
             }
 
-
             lbSemester.Text = tbSemesterName.Text;
             lbCurrentDate.Text = DateTime.Today.ToShortDateString();
             DateTime startDate = pDateRange.LowerValue ?? DateTime.MinValue;
             DateTime endDate;
-            if (pDateRange.UpperValue.HasValue)
+            if ( pDateRange.UpperValue.HasValue )
             {
-                endDate = pDateRange.UpperValue.Value.AddDays(1);
+                endDate = pDateRange.UpperValue.Value.AddDays( 1 );
             }
             else
             {
                 endDate = DateTime.MaxValue;
             }
 
-
             DateTime dateStartFilter = pDateRange.LowerValue ?? DateTime.Today;
             var closestResidencyPeriodForDateRange = new ResidencyService<Period>( residencyContext ).Queryable().Where( a => a.StartDate <= dateStartFilter ).OrderByDescending( a => a.StartDate ).FirstOrDefault();
-            if (closestResidencyPeriodForDateRange != null)
+            if ( closestResidencyPeriodForDateRange != null )
             {
                 lbYear.Text = closestResidencyPeriodForDateRange.Name;
             }
 
             // Assessment Summary Grid
             var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
-            
+
             var qryAssessmentSummary = competencyPersonService.Queryable()
                 .Where( a => a.PersonId.Equals( personId ) )
                 .Select( a => new
@@ -211,9 +208,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gAssessmentDetails.DataBind();
         }
 
-
-
         #endregion
-        
-}
+    }
 }

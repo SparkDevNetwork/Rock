@@ -30,7 +30,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     public partial class ProjectList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
@@ -62,7 +62,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             if ( !Page.IsPostBack )
             {
-                int? competencyId = this.PageParameter( "competencyId" ).AsInteger();
+                int? competencyId = this.PageParameter( "CompetencyId" ).AsInteger();
                 hfCompetencyId.Value = competencyId.ToString();
                 BindGrid();
             }
@@ -100,7 +100,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="id">The id.</param>
         protected void gList_ShowEdit( int id )
         {
-            NavigateToLinkedPage( "DetailPage", "projectId", id, "competencyId", hfCompetencyId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "ProjectId", id, "CompetencyId", hfCompetencyId.ValueAsInt() );
         }
 
         /// <summary>
@@ -110,24 +110,22 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var residencyContext = new ResidencyContext();
+            var projectService = new ResidencyService<Project>( residencyContext );
+
+            Project project = projectService.Get( e.RowKeyId );
+            if ( project != null )
             {
-                var projectService = new ResidencyService<Project>();
-
-                Project project = projectService.Get( e.RowKeyId );
-                if ( project != null )
+                string errorMessage;
+                if ( !projectService.CanDelete( project, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !projectService.CanDelete( project, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    projectService.Delete( project, CurrentPersonId );
-                    projectService.Save( project, CurrentPersonId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                projectService.Delete( project );
+                residencyContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -151,7 +149,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var projectService = new ResidencyService<Project>();
+            var projectService = new ResidencyService<Project>( new ResidencyContext() );
             int competencyId = hfCompetencyId.ValueAsInt();
             SortProperty sortProperty = gList.SortProperty;
             var qry = projectService.Queryable();
@@ -178,7 +176,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;

@@ -32,7 +32,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page" )]
     [BooleanField( "Show Add", "", true )]
     [BooleanField( "Show Delete", "", true )]
     public partial class PersonList : RockBlock, ISecondaryBlock
@@ -83,7 +83,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "groupMemberId", e.RowKeyId, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId, "GroupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -103,44 +103,46 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                var groupMemberService = new GroupMemberService();
-                int groupMemberId = e.RowKeyId;
+            var rockContext = new Rock.Data.RockContext();
+            var residencyContext = new ResidencyContext();
 
-                GroupMember groupMember = groupMemberService.Get( groupMemberId );
-                if ( groupMember != null )
+            var groupMemberService = new GroupMemberService( rockContext );
+            int groupMemberId = e.RowKeyId;
+
+            GroupMember groupMember = groupMemberService.Get( groupMemberId );
+            if ( groupMember != null )
+            {
+                // check if person can be removed from the Group and also check if person can be removed from all the person assigned competencies
+                string errorMessage;
+                if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
                 {
-                    // check if person can be removed from the Group and also check if person can be removed from all the person assigned competencies
-                    string errorMessage;
-                    if ( !groupMemberService.CanDelete( groupMember, out errorMessage ) )
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
+                }
+
+                var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
+                var personCompetencyList = competencyPersonService.Queryable().Where( a => a.PersonId.Equals( groupMember.PersonId ) );
+                foreach ( var item in personCompetencyList )
+                {
+                    if ( !competencyPersonService.CanDelete( item, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
                     }
-
-                    var competencyPersonService = new ResidencyService<CompetencyPerson>();
-                    var personCompetencyList = competencyPersonService.Queryable().Where( a => a.PersonId.Equals( groupMember.PersonId ) );
-                    foreach ( var item in personCompetencyList )
-                    {
-                        if ( !competencyPersonService.CanDelete( item, out errorMessage ) )
-                        {
-                            mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                            return;
-                        }
-                    }
-
-                    // if you made it this far, delete all person's assigned competencies, and finally delete from Group
-                    foreach ( var item in personCompetencyList )
-                    {
-                        competencyPersonService.Delete( item, CurrentPersonId );
-                        competencyPersonService.Save( item, CurrentPersonId );
-                    }
-
-                    groupMemberService.Delete( groupMember, CurrentPersonId );
-                    groupMemberService.Save( groupMember, CurrentPersonId );
                 }
-            } );
+
+                // if you made it this far, delete all person's assigned competencies, and finally delete from Group
+                foreach ( var item in personCompetencyList )
+                {
+                    competencyPersonService.Delete( item );
+                }
+
+                residencyContext.SaveChanges();
+
+                groupMemberService.Delete( groupMember );
+
+                rockContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -164,7 +166,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var residencyGroupMemberService = new ResidencyService<Rock.Model.GroupMember>();
+            var residencyContext = new ResidencyContext();
+
+            var residencyGroupMemberService = new ResidencyService<Rock.Model.GroupMember>( residencyContext );
 
             int residencyGroupId = PageParameter( "groupId" ).AsInteger() ?? 0;
             hfGroupId.SetValue( residencyGroupId );
@@ -172,15 +176,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             var residencyGroupMemberList = residencyGroupMemberService.Queryable( "Person" )
                 .Where( a => a.GroupId.Equals( residencyGroupId ) ).ToList();
 
-            var competencyPersonService = new ResidencyService<CompetencyPerson>();
+            var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
             var competencyPersonQry = competencyPersonService.Queryable( "Competency,CompetencyPersonProjects" ).GroupBy( a => a.PersonId );
 
-            var competencyPersonProjectQry = new ResidencyService<CompetencyPersonProject>().Queryable().GroupBy( a => a.CompetencyPerson.PersonId)
+            var competencyPersonProjectQry = new ResidencyService<CompetencyPersonProject>( residencyContext ).Queryable().GroupBy( a => a.CompetencyPerson.PersonId )
                 .Select( x => new
             {
                 PersonId = x.Key,
-                MinAssessmentCountTotal = x.Sum(nn => nn.MinAssessmentCount ?? nn.Project.MinAssessmentCountDefault),
-                CompletedProjectAssessmentsTotal = x.Sum( dd => dd.CompetencyPersonProjectAssessments.Where( nn => nn.AssessmentDateTime != null).Count())
+                MinAssessmentCountTotal = x.Sum( nn => nn.MinAssessmentCount ?? nn.Project.MinAssessmentCountDefault ),
+                CompletedProjectAssessmentsTotal = x.Sum( dd => dd.CompetencyPersonProjectAssessments.Where( nn => nn.AssessmentDateTime != null ).Count() )
             } ).ToList();
 
             var groupMemberCompetencies = from groupMember in residencyGroupMemberList
@@ -210,7 +214,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
             else
             {
-                gList.DataSource = dataResult.OrderBy( s => s.FullName ).ToList();
+                gList.DataSource = dataResult.ToList().OrderBy( s => s.FullName ).ToList();
             }
 
             gList.DataBind();
@@ -223,7 +227,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
             gList.Visible = visible;
