@@ -17,7 +17,7 @@ namespace com.ccvonline.SampleProject.Migrations
         public override void Up()
         {
             Sql( @"
-    CREATE TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency](
+    CREATE TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency](
 	    [Id] [int] IDENTITY(1,1) NOT NULL,
         [ContactName] [nvarchar](100) NULL,
         [PhoneNumber] [nvarchar](100) NULL,
@@ -32,31 +32,31 @@ namespace com.ccvonline.SampleProject.Migrations
 	    [CreatedByPersonAliasId] [int] NULL,
 	    [ModifiedByPersonAliasId] [int] NULL,
 	    [ForeignId] [nvarchar](50) NULL,
-     CONSTRAINT [PK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency] PRIMARY KEY CLUSTERED 
+     CONSTRAINT [PK_dbo._com_ccvonline_SampleProject_ReferralAgency] PRIMARY KEY CLUSTERED 
     (
 	    [Id] ASC
     )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
     )
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId] FOREIGN KEY([AgencyTypeValueId])
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId] FOREIGN KEY([AgencyTypeValueId])
     REFERENCES [dbo].[DefinedValue] ([Id])
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId]
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.Campus_CampusId] FOREIGN KEY([CampusId])
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.Campus_CampusId] FOREIGN KEY([CampusId])
     REFERENCES [dbo].[Campus] ([Id])
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.Campus_CampusId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.Campus_CampusId]
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId] FOREIGN KEY([CreatedByPersonAliasId])
     REFERENCES [dbo].[PersonAlias] ([Id])
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId]
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency]  WITH CHECK ADD  CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId] FOREIGN KEY([ModifiedByPersonAliasId])
     REFERENCES [dbo].[PersonAlias] ([Id])
 
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] CHECK CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId]
 " );
         
         }
@@ -67,11 +67,11 @@ namespace com.ccvonline.SampleProject.Migrations
         public override void Down()
         {
             Sql(@"
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId]
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId]
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.Campus_CampusId]
-    ALTER TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._org_rockSolidChurch_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId]
-    DROP TABLE [dbo].[_org_rockSolidChurch_SampleProject_ReferralAgency]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_ModifiedByPersonAliasId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.PersonAlias_CreatedByPersonAliasId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.Campus_CampusId]
+    ALTER TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency] DROP CONSTRAINT [FK_dbo._com_ccvonline_SampleProject_ReferralAgency_dbo.DefinedValue_ReferralAgencyTypeValueId]
+    DROP TABLE [dbo].[_com_ccvonline_SampleProject_ReferralAgency]
 " );
         }
     }

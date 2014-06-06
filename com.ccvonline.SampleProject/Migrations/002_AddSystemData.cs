@@ -24,8 +24,8 @@ namespace com.ccvonline.SampleProject.Migrations
     UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '4BF8FA57-AE86-4103-B07E-80ECE0000AEE'
 " );
 
-            UpdateBlockType( "Referral Agency Detail", "Displays the details of a Referral Agency.", "~/Plugins/org_RockSolidChurch/SampleProject/ReferralAgencyDetail.ascx", "RockSolidChurch > Sample Project", "2F130DF6-1EE4-45CE-9410-CBB0517EB33E" );
-            UpdateBlockType( "Referral Agency List", "Lists all the Referral Agencies.", "~/Plugins/org_RockSolidChurch/SampleProject/ReferralAgencyList.ascx", "RockSolidChurch > Sample Project", "53F447CE-4B91-470A-A15D-B60DCAAB29CB" );
+            UpdateBlockType( "Referral Agency Detail", "Displays the details of a Referral Agency.", "~/Plugins/com_ccvonline/SampleProject/ReferralAgencyDetail.ascx", "CCV > Sample Project", "2F130DF6-1EE4-45CE-9410-CBB0517EB33E" );
+            UpdateBlockType( "Referral Agency List", "Lists all the Referral Agencies.", "~/Plugins/com_ccvonline/SampleProject/ReferralAgencyList.ascx", "CCV > Sample Project", "53F447CE-4B91-470A-A15D-B60DCAAB29CB" );
             
             // Add Block to Page: Referral Agencies, Site: Rock RMS
             AddBlock( "223AC4F2-CBED-4733-807A-188CFBBFA0C8", "", "53F447CE-4B91-470A-A15D-B60DCAAB29CB", "Referral Agency List", "Main", "", "", 0, "A0B53736-4132-4D1B-8300-9F9FB1A5DC21" );
@@ -56,7 +56,7 @@ namespace com.ccvonline.SampleProject.Migrations
         public override void Down()
         {
             Sql( @"
-    UPDATE [_org_rockSolidChurch_SampleProject_ReferralAgency] SET [AgencyTypeValueId] = NULL
+    UPDATE [_com_ccvonline_SampleProject_ReferralAgency] SET [AgencyTypeValueId] = NULL
 " );
 
             DeleteDefinedType( "150478D4-3709-4543-906F-1F9496B4E7D0" );

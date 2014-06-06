@@ -16,23 +16,23 @@
 
             <div class="row">
                 <div class="col-md-6">
-                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="Name" />
+                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Name" />
                 </div>
                 <div class="col-md-6">
                 </div>
             </div>
 
-            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
             <div class="row">
                 <div class="col-md-6">
                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
-                    <Rock:DataDropDownList ID="ddlAgencyType" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="AgencyTypeValue" Label="Agency Type" />
+                    <Rock:DataDropDownList ID="ddlAgencyType" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="AgencyTypeValue" Label="Agency Type" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:DataTextBox ID="tbContactName" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="ContactName" />
-                    <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="PhoneNumber" />
-                    <Rock:DataTextBox ID="tbWebsite" runat="server" SourceTypeName="org.RockSolidChurch.SampleProject.Model.ReferralAgency, org.RockSolidChurch.SampleProject" PropertyName="Website" />
+                    <Rock:DataTextBox ID="tbContactName" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="ContactName" />
+                    <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="PhoneNumber" />
+                    <Rock:DataTextBox ID="tbWebsite" runat="server" SourceTypeName="com.ccvonline.SampleProject.Model.ReferralAgency, com.ccvonline.SampleProject" PropertyName="Website" />
                 </div>
             </div>
 
