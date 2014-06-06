@@ -18,13 +18,13 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 
-namespace RockWeb.Plugins.org_RockSolidChurch.SampleProject
+namespace RockWeb.Plugins.com_ccvonline.SampleProject
 {
     /// <summary>
     /// Displays the details of a Referral Agency.
     /// </summary>
     [DisplayName( "Referral Agency Detail" )]
-    [Category( "RockSolidChurch > Sample Project" )]
+    [Category( "CCV > Sample Project" )]
     [Description( "Displays the details of a Referral Agency." )]
 
     public partial class ReferralAgencyDetail : Rock.Web.UI.RockBlock

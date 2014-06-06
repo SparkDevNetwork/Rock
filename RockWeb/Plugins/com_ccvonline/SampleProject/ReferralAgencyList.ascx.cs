@@ -14,13 +14,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.org_RockSolidChurch.SampleProject
+namespace RockWeb.Plugins.com_ccvonline.SampleProject
 {
     /// <summary>
     /// Lists all the Referral Agencies.
     /// </summary>
     [DisplayName( "Referral Agency List" )]
-    [Category( "RockSolidChurch > Sample Project" )]
+    [Category( "CCV > Sample Project" )]
     [Description( "Lists all the Referral Agencies." )]
 
     [LinkedPage( "Detail Page" )]
