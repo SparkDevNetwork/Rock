@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -26,9 +27,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Period List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays a list of all of the residency periods.  For example: Fall 2013/Spring 2014, etc" )]
+
     [LinkedPage( "Detail Page" )]
     public partial class PeriodList : RockBlock, ISecondaryBlock
     {

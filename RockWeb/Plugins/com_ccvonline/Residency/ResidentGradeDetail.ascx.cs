@@ -30,12 +30,14 @@ using Rock.Web.UI;
 using System.Web.UI.WebControls;
 using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using System.ComponentModel;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Project Grading Form" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Form for grading a project." )]
+
     [LinkedPage( "Person Project Detail Page" )]
     public partial class ResidentGradeDetail : RockBlock, IDetailBlock
     {

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
@@ -34,9 +35,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Project Grading Request" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Form where a resident can request that a project be graded." )]
+
     [LinkedPage( "Resident Grade Detail Page" )]
     [GroupField( "Residency Grader Security Role" )]
     public partial class ResidentGradeRequest : RockBlock

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -25,9 +26,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident Name" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Block that simply shows a resident's name" )]
+
     public partial class PersonDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

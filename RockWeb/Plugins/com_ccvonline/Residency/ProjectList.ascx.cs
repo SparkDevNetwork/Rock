@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -27,9 +28,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Project List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays a list of projects for a competency." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class ProjectList : RockBlock, ISecondaryBlock
     {

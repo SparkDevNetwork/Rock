@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -29,9 +30,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident Competency List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Lists all of a resident's competencies." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class ResidentCompetencyList : RockBlock, ISecondaryBlock
     {

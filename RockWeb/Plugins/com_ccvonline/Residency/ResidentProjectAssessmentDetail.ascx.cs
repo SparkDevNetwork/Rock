@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -28,9 +29,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident Project Assessment Detail" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays the details of a resident's project assessment." )]
+
     public partial class ResidentProjectAssessmentDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

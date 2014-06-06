@@ -29,9 +29,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    [DisplayName( "Point of Assessmemnt List" )]
-    [Category( "Residency" )]
-    [Description( "Displays a list of all Points of Assessment." )]
+    [DisplayName( "Point of Assessment List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays a list of a project's points of assessment." )]
 
     [LinkedPage( "Detail Page" )]
     public partial class ProjectPointOfAssessmentList : RockBlock, ISecondaryBlock

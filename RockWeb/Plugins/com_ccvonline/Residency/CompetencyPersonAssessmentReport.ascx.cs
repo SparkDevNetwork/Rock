@@ -26,9 +26,14 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web;
+using System.ComponentModel;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
+    [DisplayName( "Resident Assessments Report" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Reports a summary of competency assessments for a resident." )]
+    
     /// <summary>
     /// Reports summary of Assessments for ResidencyCompetencies for a Person
     /// </summary>
@@ -122,7 +127,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void BindGrids()
         {
             var residencyContext = new ResidencyContext();
-            int groupMemberId = this.PageParameter( "groupMemberId" ).AsInteger() ?? 0;
+            int groupMemberId = this.PageParameter( "GroupMemberId" ).AsInteger() ?? 0;
             var groupMember = new ResidencyService<GroupMember>( residencyContext ).Get( groupMemberId );
 
             if ( groupMember == null )

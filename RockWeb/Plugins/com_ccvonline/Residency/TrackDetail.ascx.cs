@@ -27,12 +27,14 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
+using System.ComponentModel;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Track Detail" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays the details of a residency track." )]
+
     public partial class TrackDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

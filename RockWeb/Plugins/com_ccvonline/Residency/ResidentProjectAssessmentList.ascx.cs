@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -28,9 +29,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident Project Assessment List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays a list of a resident's project assessments." )]
+
     [LinkedPage( "Detail Page" )]
     [BooleanField( "Show Competency Column" )]
     [BooleanField( "Show Project Column" )]

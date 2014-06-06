@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
@@ -28,9 +29,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Period Detail" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays the details of a residency period.  For example: Fall 2013/Spring 2014" )]
+
     public partial class PeriodDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

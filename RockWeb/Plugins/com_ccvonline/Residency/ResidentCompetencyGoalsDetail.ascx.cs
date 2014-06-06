@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
@@ -24,9 +25,10 @@ using Rock.Web.UI;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident Competency Goals Detail" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays the details of a resident's competency's goals." )]
+
     public partial class ResidentCompetencyGoalsDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

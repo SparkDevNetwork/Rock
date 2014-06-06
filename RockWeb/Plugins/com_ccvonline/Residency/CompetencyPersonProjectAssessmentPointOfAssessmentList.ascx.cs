@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -27,9 +28,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Project Assessment - Point of Assessment List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Lists all the resident's points of assessment for a project assessment." )]
+
     [LinkedPage( "Detail Page" )]
     public partial class CompetencyPersonProjectAssessmentPointOfAssessmentList : RockBlock, ISecondaryBlock
     {

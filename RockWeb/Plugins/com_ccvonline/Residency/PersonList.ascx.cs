@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -29,9 +30,10 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DisplayName( "Resident List" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays a list of all of the residents for a period, along with a summary of their compentencies and projects" )]
+
     [LinkedPage( "Detail Page" )]
     [BooleanField( "Show Add", "", true )]
     [BooleanField( "Show Delete", "", true )]

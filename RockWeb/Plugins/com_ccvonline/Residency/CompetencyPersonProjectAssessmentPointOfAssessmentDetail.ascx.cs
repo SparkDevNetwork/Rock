@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -33,6 +34,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// Note: This isn't a standard DetailPage.  It takes a two parameters instead of just one
     /// </summary>
+    [DisplayName( "Resident Project Point of Assessment Detail" )]
+    [Category( "CCV > Residency" )]
+    [Description( "Displays the details of a project's point of assessment for a resident." )]
+    
     public partial class CompetencyPersonProjectAssessmentPointOfAssessmentDetail : RockBlock
     {
         #region Control Methods
