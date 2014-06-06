@@ -24,14 +24,8 @@
                 <asp:BoundField HeaderText="Started" DataField="StartTime" SortExpression="StartTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />
                 <asp:BoundField HeaderText="Stopped" DataField="StopTime" SortExpression="StopTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />
                 <asp:BoundField HeaderText="Length" DataField="Length" />
-                <asp:TemplateField>
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lbStart" runat="server" Text="Start" CssClass="btn btn-mini" CommandName="START" CommandArgument='<%# Eval("Id") %>'><i class="icon-play"></i></asp:LinkButton></ItemTemplate>
-                </asp:TemplateField>
-                <asp:TemplateField>
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lbStop" runat="server" Text="Stop" CssClass="btn btn-mini" CommandName="STOP" CommandArgument='<%# Eval("Id") %>'><i class="icon-stop"></i></asp:LinkButton></ItemTemplate>
-                </asp:TemplateField>
+                <Rock:LinkButtonField CssClass="btn btn-default btn-sm" OnClick="gRecordings_Start" Text='<i class="fa fa-play"></i>' /> 
+                <Rock:LinkButtonField CssClass="btn btn-default btn-sm" OnClick="gRecordings_Stop" Text='<i class="fa fa-stop"></i>' /> 
                 <Rock:DeleteField OnClick="gRecordings_Delete" />
             </Columns>
         </Rock:Grid>

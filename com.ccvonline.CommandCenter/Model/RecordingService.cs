@@ -27,14 +27,14 @@ namespace com.ccvonline.CommandCenter.Model
         /// <param name="recordingName">Name of the recording.</param>
         /// <param name="action">The action.</param>
         /// <returns></returns>
-        /// <exception cref="System.ApplicationException">missing 'ccvonlineWowzaServer' Global Attribute value</exception>
+        /// <exception cref="System.ApplicationException">missing 'WowzaServer' Global Attribute value</exception>
         static public Rock.Net.RockWebResponse SendRecordingRequest( string app, string streamName, string recordingName, string action )
         {
             var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
-            if ( globalAttributes.AttributeValues.ContainsKey( "ccvonlineWowzaServer" ) )
+            if ( globalAttributes.AttributeValues.ContainsKey( "WowzaServer" ) )
             {
-                string wowzaServerUrl = globalAttributes.AttributeValues["ccvonlineWowzaServer"].Value;
+                string wowzaServerUrl = globalAttributes.AttributeValues["WowzaServer"].Value;
                 if ( !string.IsNullOrWhiteSpace( wowzaServerUrl ) )
                 {
                     Dictionary<string, string> parms = new Dictionary<string, string>();
@@ -47,7 +47,7 @@ namespace com.ccvonline.CommandCenter.Model
                 }
             }
 
-            throw new ApplicationException( "missing 'ccvonlineWowzaServer' Global Attribute value" );
+            throw new ApplicationException( "missing 'WowzaServer' Global Attribute value" );
         }
 
         /// <summary>

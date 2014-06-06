@@ -65,7 +65,6 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             gRecordings.DataKeyNames = new string[] { "id" };
             gRecordings.Actions.AddClick += gRecordings_Add;
             gRecordings.RowDataBound += gRecordings_RowDataBound;
-            gRecordings.RowCommand += gRecordings_RowCommand;
             gRecordings.GridRebind += gRecordings_GridRebind;
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -217,22 +216,38 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         }
 
         /// <summary>
-        /// Handles the RowCommand event of the gRecordings control.
+        /// Handles the Start event of the gRecordings control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewCommandEventArgs" /> instance containing the event data.</param>
-        protected void gRecordings_RowCommand( object sender, GridViewCommandEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRecordings_Start( object sender, RowEventArgs e )
         {
-            if ( e.CommandName == "START" || e.CommandName == "STOP" )
-            {
-                var dataContext = new CommandCenterContext();
-                var service = new RecordingService( dataContext );
+            var dataContext = new CommandCenterContext();
+            var service = new RecordingService( dataContext );
 
-                var recording = service.Get( Int32.Parse( e.CommandArgument.ToString() ) );
-                if ( recording != null && SendRequest( e.CommandName.ToString().ToLower(), recording ) )
-                {
-                    dataContext.SaveChanges();
-                }
+            var recording = service.Get( e.RowKeyId );
+            if ( recording != null && SendRequest( "start", recording ) )
+            {
+                dataContext.SaveChanges();
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the Stop event of the gRecordings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gRecordings_Stop( object sender, RowEventArgs e )
+        {
+            var dataContext = new CommandCenterContext();
+            var service = new RecordingService( dataContext );
+
+            var recording = service.Get( e.RowKeyId );
+            if ( recording != null && SendRequest( "stop", recording ) )
+            {
+                dataContext.SaveChanges();
             }
 
             BindGrid();
@@ -340,6 +355,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     if ( action.ToLower() == "start" )
                     {
                         recording.StartTime = DateTime.Now;
+                        recording.StopTime = null;
                         recording.StartResponse = RecordingService.ParseResponse( response.Message );
                     }
                     else
@@ -360,5 +376,6 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         }
 
         #endregion
+
     }
 }
