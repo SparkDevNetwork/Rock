@@ -218,11 +218,6 @@
       </Rules>
       <AnalyzerSettings>
         <StringProperty Name="CompanyName">company</StringProperty>
-        <StringProperty Name="Copyright">//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//</StringProperty>
       </AnalyzerSettings>
     </Analyzer>
     <Analyzer AnalyzerId="StyleCop.CSharp.OrderingRules">
@@ -329,6 +324,13 @@
           <Value>hf</Value>
           <Value>i</Value>
           <Value>ph</Value>
+          <Value>a</Value>
+          <Value>md</Value>
+          <Value>nb</Value>
+          <Value>is</Value>
+          <Value>to</Value>
+          <Value>cc</Value>
+          <Value>hb</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>
@@ -390,6 +392,11 @@
           </RuleSettings>
         </Rule>
         <Rule Name="ClosingSquareBracketsMustBeSpacedCorrectly">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="NegativeSignsMustBeSpacedCorrectly">
           <RuleSettings>
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
