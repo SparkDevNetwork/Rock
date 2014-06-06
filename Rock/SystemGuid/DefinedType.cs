@@ -193,5 +193,10 @@ namespace Rock.SystemGuid
         /// Guid for the css classes
         /// </summary>
         public const string CSS_CLASSES = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+
+        /// The domains allowed to make REST API calls using CORS
+        /// </summary>
+        public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
+
     }
 }
