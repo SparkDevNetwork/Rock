@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="Data\ResidencyContext.cs" />
     <Compile Include="Data\ResidencyService.cs" />
+    <Compile Include="Migrations\CreateDb.cs" />
     <Compile Include="Model\Competency.cs" />
     <Compile Include="Model\CompetencyPerson.cs" />
     <Compile Include="Model\Period.cs" />
