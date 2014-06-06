@@ -24,6 +24,9 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field
 {
+    /// <summary>
+    /// Fields Types that are used to edit a Rock entity
+    /// </summary>
     public interface IEntityFieldType : IFieldType
     {
         /// <summary>

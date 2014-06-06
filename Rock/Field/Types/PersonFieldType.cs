@@ -60,7 +60,6 @@ namespace Rock.Field.Types
         /// <summary>
         /// Formats the value extended.
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>

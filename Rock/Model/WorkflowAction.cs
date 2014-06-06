@@ -229,6 +229,8 @@ namespace Rock.Model
         /// Gets a worklow attribute value.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
+        /// <param name="formatted">if set to <c>true</c> [formatted].</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <returns></returns>
         public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {

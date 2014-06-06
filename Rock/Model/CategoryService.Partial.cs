@@ -86,6 +86,7 @@ namespace Rock.Model
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="selectedCategoryGuids">The selected category guids.</param>
         /// <param name="includeAllChildren">if set to <c>true</c> will include all the child categories of any selected category.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
         public List<CategoryNavigationItem> GetNavigationItems( int? entityTypeId, List<Guid> selectedCategoryGuids, bool includeAllChildren, Person currentPerson )
         {

@@ -276,6 +276,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// Sets the type of the workflow action.
         /// </summary>
         /// <param name="value">The value.</param>
+        /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
         public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, string> workflowTypeAttributes )
         {
             EnsureChildControls();

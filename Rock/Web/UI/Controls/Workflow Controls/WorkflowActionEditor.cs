@@ -95,6 +95,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the workflow action.
         /// </summary>
         /// <param name="action">The value.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         public void SetWorkflowAction( WorkflowAction action, bool setValues = false )
         {
             EnsureChildControls();

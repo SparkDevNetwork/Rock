@@ -24,6 +24,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class BarChart : FlotChart
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BarChart"/> class.
+        /// </summary>
         public BarChart()
         {
             this.Options.series = new SeriesOptions( true, false, false );

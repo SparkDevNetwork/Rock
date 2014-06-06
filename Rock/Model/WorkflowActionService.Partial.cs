@@ -28,6 +28,10 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowActionService 
     {
+        /// <summary>
+        /// Gets the active forms.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<WorkflowAction> GetActiveForms()
         {
             return Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow" )
@@ -43,6 +47,11 @@ namespace Rock.Model
                     !a.Activity.Workflow.CompletedDateTime.HasValue );
         }
 
+        /// <summary>
+        /// Gets the active forms.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
         public List<WorkflowAction> GetActiveForms( Person person )
         {
             // Get all of the active form actions

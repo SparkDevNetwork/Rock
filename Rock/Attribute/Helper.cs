@@ -935,6 +935,7 @@ namespace Rock.Attribute
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
         public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             foreach ( var attributeCategory in attributeCategories )

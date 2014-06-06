@@ -277,9 +277,24 @@ namespace Rock.Web.UI.Controls
         [Flags]
         public enum SlidingDateRangeType
         {
+            /// <summary>
+            /// All
+            /// </summary>
             All = -1,
+
+            /// <summary>
+            /// The last
+            /// </summary>
             Last = 0,
+
+            /// <summary>
+            /// The current
+            /// </summary>
             Current = 1,
+
+            /// <summary>
+            /// The date range
+            /// </summary>
             DateRange = 2
         }
 
@@ -288,10 +303,29 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public enum TimeUnitType
         {
+            /// <summary>
+            /// The hour
+            /// </summary>
             Hour = 0,
+
+            /// <summary>
+            /// The day
+            /// </summary>
             Day = 1,
+
+            /// <summary>
+            /// The week
+            /// </summary>
             Week = 2,
+
+            /// <summary>
+            /// The month
+            /// </summary>
             Month = 3,
+
+            /// <summary>
+            /// The year
+            /// </summary>
             Year = 4
         }
 
