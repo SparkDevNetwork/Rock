@@ -46,6 +46,120 @@ request is allowed by default (but still controlled through security).");
             RockMigrationHelper.AddBlockAttributeValue("BC6CE880-382B-4DF2-8C10-B7F7C1DEC9FB","9280D61F-C4F3-4A3E-A9BB-BCD67FF78637",@"df7c8df7-49f9-4858-9e5d-20842af65ad8");
             // Attrib Value for Block:Defined Type Detail, Attribute:Defined Type Page: REST CORS Domains, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue("EF27C0E7-9D1A-41AB-970B-C854299CE667","0305EF98-C791-4626-9996-F189B9BB674C",@"df7c8df7-49f9-4858-9e5d-20842af65ad8");
+
+
+            Sql( @"
+/* Move Communications Under People */
+UPDATE [Page]
+SET [ParentPageId] = (SELECT [Id] FROM [Page] WHERE [Guid] = '97ECDC48-6DF6-492E-8C72-161F76AE111B')
+WHERE 
+	[Id] = (SELECT [Id] FROM [Page] WHERE [Guid] = '7F79E512-B9DB-4780-9887-AD6D63A39050')
+
+/* Move Prayer Under People */
+UPDATE [Page]
+SET [ParentPageId] = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0F4B33D-DD11-4CCC-B79D-9342831B8701')
+WHERE 
+	[Id] = (SELECT [Id] FROM [Page] WHERE [Guid] = '1A3437C8-D4CB-4329-A366-8D6A4CBF79BF')
+
+UPDATE [DefinedType] SET [HelpText] = 'chart styles are defined with a json object. click the ''show/hide fields'' button below to view an example with all the available chart style fields.
+<p>
+    <a data-toggle=""collapse""  href=""#collapsefields"" class=''btn btn-action btn-xs''>show/hide  fields</a>
+</p>
+
+<div id=""collapsefields"" class=""panel-collapse collapse"">
+<pre>
+{
+  ""seriescolors"": [
+    ""#00cc00"",
+    ""#007a00"",
+    ""#005500"",
+    ""#4db84d""
+  ],
+  ""goalseriescolor"": ""blue"",
+  ""grid"": {  
+    ""colorgradient"": null,
+    ""color"": ""black"",
+    ""backgroundcolorgradient"": [""rgba(0, 125, 0, .2)"", ""rgba(0,255,0,.1)"", ""rgba(0,125,0,.01)""],
+    ""backgroundcolor"": null,
+    ""borderwidth"": {
+      ""top"": 0,
+      ""right"": 0,
+      ""bottom"": 1,
+      ""left"": 1
+    },
+    ""bordercolor"": {
+      ""top"": null,
+      ""right"": null,
+      ""bottom"": ""green"",
+      ""left"": ""black""
+    }
+  },
+  ""xaxis"": {
+    ""color"": ""#99c2ff"",
+    ""font"": {
+      ""size"": null,
+      ""family"": null,
+      ""color"": ""#336600""
+    },
+    ""datetimeformat"": ""%b %d, %y""
+  },
+  ""yaxis"": {
+    ""color"": ""#99c2ff"",
+    ""font"": {
+      ""size"": null,
+      ""family"": null,
+      ""color"": ""#336600""
+    },
+    ""datetimeformat"": null
+  },
+  ""fillopacity"": 0.2,
+  ""fillcolor"": null,
+  ""legend"": {
+    ""backgroundcolor"": ""transparent"",
+    ""backgroundopacity"": null,
+    ""labelboxbordercolor"": null
+  },
+  ""title"": {
+    ""font"": {
+      ""size"": 18,
+      ""family"": ""terminal"",
+      ""color"": ""#296629""
+    },
+    ""align"": ""left""
+  },
+  ""subtitle"": {
+    ""font"": {
+      ""size"": 12,
+      ""family"": ""terminal"",
+      ""color"": ""#00cc66""
+    },
+    ""align"": ""right""
+  }
+}
+</pre>
+
+datetimeformat of the xaxis and yaxis supports the following specifiers.  for example ""%b %d, %y"" will output something like ''december 25, 2014''
+<pre>
+%a: weekday name (customizable)
+%b: month name (customizable)
+%d: day of month, zero-padded (01-31)
+%e: day of month, space-padded ( 1-31)
+%h: hours, 24-hour time, zero-padded (00-23)
+%i: hours, 12-hour time, zero-padded (01-12)
+%m: month, zero-padded (01-12)
+%m: minutes, zero-padded (00-59)
+%q: quarter (1-4)
+%s: seconds, zero-padded (00-59)
+%y: year (two digits)
+%y: year (four digits)
+%p: am/pm
+%p: am/pm (uppercase version of %p)
+%w: weekday as number (0-6, 0 being sunday)
+</pre>
+</div>'
+" );
+
+
         }
         
         /// <summary>
