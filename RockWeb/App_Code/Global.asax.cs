@@ -160,6 +160,8 @@ namespace RockWeb
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
+                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );

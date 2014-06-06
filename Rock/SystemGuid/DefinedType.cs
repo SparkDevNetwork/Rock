@@ -179,5 +179,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
 
+        /// <summary>
+        /// The domains allowed to make REST API calls using CORS
+        /// </summary>
+        public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
+
     }
 }
