@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -28,11 +29,12 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    [DetailPage]
-    public partial class ProjectPointOfAssessmentList : RockBlock, IDimmableBlock
+    [DisplayName( "Point of Assessmemnt List" )]
+    [Category( "Residency" )]
+    [Description( "Displays a list of all Points of Assessment." )]
+
+    [LinkedPage( "Detail Page" )]
+    public partial class ProjectPointOfAssessmentList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -51,7 +53,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridReorder += gList_GridReorder;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
@@ -109,41 +111,38 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Updates the item orders.
         /// </summary>
-        /// <param name="projectPointOfAssessmentService">The project point of assessment service.</param>
+        /// <param name="dbContext">The database context.</param>
         /// <param name="items">The items.</param>
-        private void UpdateItemOrders( ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService, System.Collections.Generic.List<ProjectPointOfAssessment> items )
+        private void UpdateItemOrders( DbContext dbContext, System.Collections.Generic.List<ProjectPointOfAssessment> items )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            int order = 1;
+            foreach ( ProjectPointOfAssessment item in items )
             {
-                int order = 1;
-                foreach ( ProjectPointOfAssessment item in items )
+                if ( item != null )
                 {
-                    if ( item != null )
+                    if ( item.AssessmentOrder != order )
                     {
-                        if ( item.AssessmentOrder != order )
-                        {
-                            // temporarily, set the order to negative in case another row has this value.
-                            item.AssessmentOrder = -order;
-                            projectPointOfAssessmentService.Save( item, CurrentPersonId );
-                        }
-                    }
-
-                    order++;
-                }
-
-                foreach ( ProjectPointOfAssessment item in items )
-                {
-                    if ( item != null )
-                    {
-                        if ( item.AssessmentOrder < 0 )
-                        {
-                            // update the value back to positive now that all the rows have their new order
-                            item.AssessmentOrder = -item.AssessmentOrder;
-                            projectPointOfAssessmentService.Save( item, CurrentPersonId );
-                        }
+                        // temporarily, set the order to negative in case another row has this value.
+                        item.AssessmentOrder = -order;
                     }
                 }
-            } );
+
+                order++;
+            }
+
+            foreach ( ProjectPointOfAssessment item in items )
+            {
+                if ( item != null )
+                {
+                    if ( item.AssessmentOrder < 0 )
+                    {
+                        // update the value back to positive now that all the rows have their new order
+                        item.AssessmentOrder = -item.AssessmentOrder;
+                    }
+                }
+            }
+
+            dbContext.SaveChanges();
         }
 
         #endregion
@@ -176,7 +175,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="projectPointOfAssessmentId">The residency project point of assessment id.</param>
         protected void gList_ShowEdit( int projectPointOfAssessmentId )
         {
-            NavigateToDetailPage( "projectPointOfAssessmentId", projectPointOfAssessmentId, "projectId", hfProjectId.Value.AsInteger().Value );
+            NavigateToLinkedPage( "DetailPage", "projectPointOfAssessmentId", projectPointOfAssessmentId, "projectId", hfProjectId.Value.AsInteger().Value );
         }
 
         /// <summary>
@@ -190,7 +189,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 var projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>();
 
-                ProjectPointOfAssessment projectPointOfAssessment = projectPointOfAssessmentService.Get( (int)e.RowKeyValue );
+                ProjectPointOfAssessment projectPointOfAssessment = projectPointOfAssessmentService.Get( e.RowKeyId );
                 if ( projectPointOfAssessment != null )
                 {
                     string errorMessage;
@@ -206,7 +205,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     int iProjectId = hfProjectId.ValueAsInt();
 
                     // after an item is deleted, we need to renumber all the items
-                    List<ProjectPointOfAssessment> items = projectPointOfAssessmentService.Queryable().Where( a => a.ProjectId == iProjectId ).OrderBy( a => a.AssessmentOrder).ToList();
+                    List<ProjectPointOfAssessment> items = projectPointOfAssessmentService.Queryable().Where( a => a.ProjectId == iProjectId ).OrderBy( a => a.AssessmentOrder ).ToList();
                     UpdateItemOrders( projectPointOfAssessmentService, items );
                 }
             } );
@@ -239,7 +238,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Where( a => a.ProjectId == projectId )
                 .OrderBy( s => s.AssessmentOrder ).ToList();
 
-            foreach (var item in rawList)
+            foreach ( var item in rawList )
             {
                 if ( item.PointOfAssessmentTypeValue != null )
                 {
@@ -263,15 +262,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Sets the visible.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

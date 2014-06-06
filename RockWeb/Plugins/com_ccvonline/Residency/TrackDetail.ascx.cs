@@ -158,7 +158,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            DimOtherBlocks( editable );
+            HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -206,7 +206,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             var qryParams = new Dictionary<string, string>();
             qryParams["trackId"] = track.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Track.FriendlyTypeName );

@@ -18,11 +18,16 @@
                     </legend>
 
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    <div class="row-fluid">
-                        <asp:Literal runat="server" ID="lblMainDetails" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
+                        </div>
                     </div>
                     <div class="row-fluid">
-                        <Rock:NumberBox ID="tbRating" runat="server" LabelText="Rating" MaximumValue="5" MinimumValue="1" />
+                        <Rock:NumberBox ID="tbRating" runat="server" Label="Rating" MaximumValue="5" MinimumValue="1" />
                         <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessmentPointOfAssessment, com.ccvonline.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
                     </div>
                 </fieldset>

@@ -3,16 +3,16 @@
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
         <div class="no-print well">
-            <Rock:DateRangePicker runat="server" ID="pDateRange" LabelText="Select Date/Range" />
-            <Rock:LabeledTextBox runat="server" ID="tbSemesterName" CssClass="js-semester-name-edit" LabelText="Semester Name" Required="true" />
+            <Rock:DateRangePicker runat="server" ID="pDateRange" Label="Select Date/Range" />
+            <Rock:RockTextBox runat="server" ID="tbSemesterName" CssClass="js-semester-name-edit" Label="Semester Name" Required="true" />
             <asp:LinkButton ID="btnApply" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApply_Click" />
         </div>
 
         <div class="row-fluid">
-            <Rock:LabeledText runat="server" ID="lbResidentName" LabelText="<b>Resident</b>" />
-            <Rock:LabeledText runat="server" ID="lbYear" LabelText="<b>Year</b>" />
-            <Rock:LabeledText runat="server" ID="lbSemester" LabelText="<b>Semester</b>" TextCssClass="js-semester-name-label" />
-            <Rock:LabeledText runat="server" ID="lbCurrentDate" LabelText="<b>Date</b>" />
+            <Rock:RockLiteral runat="server" ID="lbResidentName" Label="<b>Resident</b>" />
+            <Rock:RockLiteral runat="server" ID="lbYear" Label="<b>Year</b>" />
+            <Rock:RockLiteral runat="server" ID="lbSemester" Label="<b>Semester</b>" CssClass ="js-semester-name-label" />
+            <Rock:RockLiteral runat="server" ID="lbCurrentDate" Label="<b>Date</b>" />
         </div>
 
         <h3>Assessment Summary</h3>

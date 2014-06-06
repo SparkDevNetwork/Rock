@@ -47,17 +47,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "competencyPersonProjectId" );
-                string competencyPersonId = PageParameter( "competencyPersonId" );
+                string itemId = PageParameter( "CompetencyPersonProjectId" );
+                string competencyPersonId = PageParameter( "CompetencyPersonId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( competencyPersonId ) )
                     {
-                        ShowDetail( "competencyPersonProjectId", int.Parse( itemId ) );
+                        ShowDetail( "CompetencyPersonProjectId", int.Parse( itemId ) );
                     }
                     else
                     {
-                        ShowDetail( "competencyPersonProjectId", int.Parse( itemId ), int.Parse( competencyPersonId ) );
+                        ShowDetail( "CompetencyPersonProjectId", int.Parse( itemId ), int.Parse( competencyPersonId ) );
                     }
                 }
                 else
@@ -78,10 +78,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? competencyPersonProjectId = this.PageParameter( pageReference, "competencyPersonProjectId" ).AsInteger();
+            int? competencyPersonProjectId = this.PageParameter( pageReference, "CompetencyPersonProjectId" ).AsInteger();
             if ( competencyPersonProjectId != null )
             {
-                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( competencyPersonProjectId.Value );
+                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( competencyPersonProjectId.Value );
                 if ( competencyPersonProject != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( competencyPersonProject.Project.Name, pageReference ) );
@@ -116,11 +116,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // Cancelling on Add.  Return to Grid
                 // if this page was called from the CompetencyPerson Detail page, return to that
-                string competencyPersonId = PageParameter( "competencyPersonId" );
+                string competencyPersonId = PageParameter( "CompetencyPersonId" );
                 if ( !string.IsNullOrWhiteSpace( competencyPersonId ) )
                 {
                     Dictionary<string, string> qryString = new Dictionary<string, string>();
-                    qryString["competencyPersonId"] = competencyPersonId;
+                    qryString["CompetencyPersonId"] = competencyPersonId;
                     NavigateToParentPage( qryString );
                 }
                 else
@@ -131,7 +131,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             else
             {
                 // Cancelling on Edit.  Return to Details
-                ResidencyService<CompetencyPersonProject> service = new ResidencyService<CompetencyPersonProject>();
+                ResidencyService<CompetencyPersonProject> service = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() );
                 CompetencyPersonProject item = service.Get( hfCompetencyPersonProjectId.ValueAsInt() );
                 ShowReadonlyDetails( item );
             }
@@ -144,7 +144,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ResidencyService<CompetencyPersonProject> service = new ResidencyService<CompetencyPersonProject>();
+            ResidencyService<CompetencyPersonProject> service = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() );
             CompetencyPersonProject item = service.Get( hfCompetencyPersonProjectId.ValueAsInt() );
             ShowEditDetails( item );
         }
@@ -158,7 +158,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             pnlEditDetails.Visible = editable;
             fieldsetViewDetails.Visible = !editable;
 
-            DimOtherBlocks( editable );
+            HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -168,15 +168,16 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            var residencyContext = new ResidencyContext();
             CompetencyPersonProject competencyPersonProject;
-            ResidencyService<CompetencyPersonProject> competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>();
+            ResidencyService<CompetencyPersonProject> competencyPersonProjectService = new ResidencyService<CompetencyPersonProject>( residencyContext );
 
             int competencyPersonProjectId = int.Parse( hfCompetencyPersonProjectId.Value );
 
             if ( competencyPersonProjectId == 0 )
             {
                 competencyPersonProject = new CompetencyPersonProject();
-                competencyPersonProjectService.Add( competencyPersonProject, CurrentPersonId );
+                competencyPersonProjectService.Add( competencyPersonProject );
 
                 // these inputs are only editable on Add
                 competencyPersonProject.ProjectId = ddlProject.SelectedValueAsInt() ?? 0;
@@ -187,7 +188,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 competencyPersonProject = competencyPersonProjectService.Get( competencyPersonProjectId );
             }
 
-            if (!string.IsNullOrWhiteSpace(tbMinAssessmentCountOverride.Text))
+            if ( !string.IsNullOrWhiteSpace( tbMinAssessmentCountOverride.Text ) )
             {
                 competencyPersonProject.MinAssessmentCount = tbMinAssessmentCountOverride.Text.AsInteger();
             }
@@ -202,14 +203,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
-            {
-                competencyPersonProjectService.Save( competencyPersonProject, CurrentPersonId );
-            } );
+            residencyContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["competencyPersonProjectId"] = competencyPersonProject.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            qryParams["CompetencyPersonProjectId"] = competencyPersonProject.Id.ToString();
+            NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -231,10 +229,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         public void ShowDetail( string itemKey, int itemKeyValue, int? competencyPersonId )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "competencyPersonProjectId" )
+            if ( itemKey != "CompetencyPersonProjectId" )
             {
                 return;
             }
+
+            var residencyContext = new ResidencyContext();
 
             pnlDetails.Visible = true;
 
@@ -242,13 +242,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             CompetencyPersonProject competencyPersonProject = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                competencyPersonProject = new ResidencyService<CompetencyPersonProject>().Get( itemKeyValue );
+                competencyPersonProject = new ResidencyService<CompetencyPersonProject>( residencyContext ).Get( itemKeyValue );
             }
             else
             {
                 competencyPersonProject = new CompetencyPersonProject { Id = 0 };
                 competencyPersonProject.CompetencyPersonId = competencyPersonId ?? 0;
-                competencyPersonProject.CompetencyPerson = new ResidencyService<CompetencyPerson>().Get( competencyPersonProject.CompetencyPersonId );
+                competencyPersonProject.CompetencyPerson = new ResidencyService<CompetencyPerson>( residencyContext ).Get( competencyPersonProject.CompetencyPersonId );
             }
 
             hfCompetencyPersonProjectId.Value = competencyPersonProject.Id.ToString();
@@ -258,7 +258,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( !IsUserAuthorized( "Edit" ) )
+            if ( !IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( CompetencyPersonProject.FriendlyTypeName );
@@ -286,14 +286,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void LoadDropDowns()
         {
-            var projectQry = new ResidencyService<Project>().Queryable();
+            var residencyContext = new ResidencyContext();
+            var projectQry = new ResidencyService<Project>( residencyContext ).Queryable();
 
             int competencyPersonId = hfCompetencyPersonId.ValueAsInt();
-            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>().Get( competencyPersonId );
+            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( residencyContext ).Get( competencyPersonId );
             projectQry = projectQry.Where( a => a.CompetencyId == competencyPerson.CompetencyId );
 
             // list 
-            List<int> assignedProjectIds = new ResidencyService<CompetencyPersonProject>().Queryable()
+            List<int> assignedProjectIds = new ResidencyService<CompetencyPersonProject>( residencyContext ).Queryable()
                 .Where( a => a.CompetencyPersonId.Equals( competencyPersonId ) )
                 .Select( a => a.ProjectId ).ToList();
 
@@ -349,7 +350,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 tbMinAssessmentCountOverride.Text = string.Empty;
             }
-                        
+
             /* Only allow changing the Project when in Add mode (If this record has already be saved, the child tables (especially assessments) are assuming this project doesn't change) */
 
             if ( competencyPersonProject.Project != null )
@@ -361,7 +362,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // they haven't picked a Project yet, so set the lblMinAssessmentCountDefault.text based on whatever project the ddl defaults to
                 ddlProject_SelectedIndexChanged( null, null );
-                
+
                 // shouldn't happen in Edit, but just in case
                 lblProject.Text = Rock.Constants.None.Text;
             }
@@ -398,10 +399,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlProject_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var project = new ResidencyService<Project>().Get( ddlProject.SelectedValueAsInt() ?? 0 );
+            var project = new ResidencyService<Project>( new ResidencyContext() ).Get( ddlProject.SelectedValueAsInt() ?? 0 );
             if ( project != null )
             {
-                lblMinAssessmentCountDefault.Text = project.MinAssessmentCountDefault .ToString();
+                lblMinAssessmentCountDefault.Text = project.MinAssessmentCountDefault.ToString();
             }
         }
 

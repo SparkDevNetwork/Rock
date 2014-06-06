@@ -35,7 +35,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class ResidentCompetencyDetail : RockBlock, IDetailBlock
     {
         #region Control Methods

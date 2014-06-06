@@ -31,8 +31,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// Lists ResidencyCompetencies for a Person
     /// </summary>
-    [DetailPage]
-    public partial class CompetencyPersonList : RockBlock, IDimmableBlock
+    [LinkedPage( "Detail Page" )]
+    public partial class CompetencyPersonList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -50,7 +50,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridRebind += gList_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
@@ -66,11 +66,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !Page.IsPostBack )
             {
                 // allow this block to work with either a personId or groupMemberId parameter
-                int personId = this.PageParameter( "personId" ).AsInteger() ?? 0;
+                int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
                 if ( personId == 0 )
                 {
-                    int groupMemberId = this.PageParameter( "groupMemberId" ).AsInteger() ?? 0;
-                    personId = new ResidencyService<GroupMember>().Queryable().Where( a => a.Id.Equals( groupMemberId ) ).Select( a => a.PersonId ).FirstOrDefault();
+                    int groupMemberId = this.PageParameter( "GroupMemberId" ).AsInteger() ?? 0;
+                    personId = new ResidencyService<GroupMember>( new ResidencyContext() ).Queryable().Where( a => a.Id.Equals( groupMemberId ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
 
                 hfPersonId.Value = personId.ToString();
@@ -99,7 +99,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            gList_ShowEdit( (int)e.RowKeyValue );
+            gList_ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonId">The residency competency person id.</param>
         protected void gList_ShowEdit( int competencyPersonId )
         {
-            NavigateToDetailPage( "competencyPersonId", competencyPersonId, "personId", hfPersonId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "CompetencyPersonId", competencyPersonId, "PersonId", hfPersonId.ValueAsInt() );
         }
 
         /// <summary>
@@ -118,24 +118,22 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            var residencyContext = new ResidencyContext();
+            var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
+            CompetencyPerson competencyPerson = competencyPersonService.Get( e.RowKeyId );
+
+            if ( competencyPerson != null )
             {
-                var competencyPersonService = new ResidencyService<CompetencyPerson>();
-                CompetencyPerson competencyPerson = competencyPersonService.Get( (int)e.RowKeyValue );
-
-                if ( competencyPerson != null )
+                string errorMessage;
+                if ( !competencyPersonService.CanDelete( competencyPerson, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !competencyPersonService.CanDelete( competencyPerson, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    competencyPersonService.Delete( competencyPerson, CurrentPersonId );
-                    competencyPersonService.Save( competencyPerson, CurrentPersonId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                competencyPersonService.Delete( competencyPerson );
+                residencyContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -159,7 +157,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var competencyPersonService = new ResidencyService<CompetencyPerson>();
+            var competencyPersonService = new ResidencyService<CompetencyPerson>( new ResidencyContext() );
             int personId = hfPersonId.ValueAsInt();
             SortProperty sortProperty = gList.SortProperty;
             var qry = competencyPersonService.Queryable()
@@ -189,15 +187,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

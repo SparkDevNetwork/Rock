@@ -21,7 +21,7 @@
 
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Name" />
                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                    <Rock:LabeledText ID="lblPeriod" runat="server" LabelText="Period" />
+                    <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
 
                 </fieldset>
 

@@ -29,8 +29,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
-    public partial class ResidentCompetencyProjectList : RockBlock, IDimmableBlock
+    [LinkedPage("Detail Page")]
+    public partial class ResidentCompetencyProjectList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -119,20 +119,20 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gProjectList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToDetailPage( "competencyPersonProjectId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "competencyPersonProjectId", e.RowKeyId );
         }
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gProjectList.Enabled = !dimmed;
+            gProjectList.Visible = visible;
         }
 
         #endregion

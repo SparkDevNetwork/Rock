@@ -174,7 +174,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             cbStartRecording.Visible = false;
 
-            bool readOnly = !IsUserAuthorized( "Edit" );
+            bool readOnly = !IsUserAuthorized( Rock.Security.Authorization.EDIT );
             nbEditModeMessage.Text = string.Empty;
 
             if ( readOnly )

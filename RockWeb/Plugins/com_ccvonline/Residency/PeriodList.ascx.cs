@@ -30,8 +30,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
-    public partial class PeriodList : RockBlock, IDimmableBlock
+    [LinkedPage("Detail Page")]
+    public partial class PeriodList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridRebind += gList_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
@@ -79,7 +79,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "periodId", 0 );
+            NavigateToLinkedPage( "DetailPage", "periodId", 0 );
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "periodId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "periodId", e.RowKeyId );
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 var periodService = new ResidencyService<Period>();
 
-                Period period = periodService.Get( (int)e.RowKeyValue );
+                Period period = periodService.Get( e.RowKeyId );
                 if ( period != null )
                 {
                     string errorMessage;
@@ -157,15 +157,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

@@ -28,7 +28,7 @@ namespace com.ccvonline.Residency.Data
     /// <summary>
     /// 
     /// </summary>
-    public partial class ResidencyContext : DbContext
+    public partial class ResidencyContext : Rock.Data.DbContext
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ResidencyContext"/> class.
@@ -57,17 +57,7 @@ namespace com.ccvonline.Residency.Data
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-
-            // Model Configurations
-            modelBuilder.Configurations.Add( new CompetencyConfiguration() );
-            modelBuilder.Configurations.Add( new CompetencyPersonConfiguration() );
-            modelBuilder.Configurations.Add( new CompetencyPersonProjectConfiguration());
-            modelBuilder.Configurations.Add( new CompetencyPersonProjectAssessmentConfiguration());
-            modelBuilder.Configurations.Add( new CompetencyPersonProjectAssessmentPointOfAssessmentConfiguration());
-            modelBuilder.Configurations.Add( new PeriodConfiguration() );
-            modelBuilder.Configurations.Add( new ProjectConfiguration());
-            modelBuilder.Configurations.Add( new ProjectPointOfAssessmentConfiguration());
-            modelBuilder.Configurations.Add( new TrackConfiguration() );
+            modelBuilder.Configurations.AddFromAssembly( typeof( ResidencyContext ).Assembly );
         }
         
         #region Models

@@ -30,8 +30,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage] 
-    public partial class CompetencyList : RockBlock, IDimmableBlock
+    [LinkedPage( "Detail Page" )]
+    public partial class CompetencyList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridRebind += gList_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
@@ -62,7 +62,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             if ( !Page.IsPostBack )
             {
-                int? trackId = this.PageParameter( "trackId" ).AsInteger();
+                int? trackId = this.PageParameter( "TrackId" ).AsInteger();
                 hfTrackId.Value = trackId.ToString();
                 BindGrid();
                 BindGrid();
@@ -92,7 +92,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            gList_ShowEdit( (int)e.RowKeyValue );
+            gList_ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyId">The residency competency id.</param>
         protected void gList_ShowEdit( int competencyId )
         {
-            NavigateToDetailPage( "competencyId", competencyId, "trackId", hfTrackId.Value.AsInteger().Value );
+            NavigateToLinkedPage( "DetailPage", "CompetencyId", competencyId, "TrackId", hfTrackId.Value.AsInteger().Value );
         }
 
         /// <summary>
@@ -111,24 +111,23 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Delete( object sender, RowEventArgs e )
         {
-            RockTransactionScope.WrapTransaction( () =>
+
+            var residencyContext = new ResidencyContext();
+            var competencyService = new ResidencyService<Competency>( residencyContext );
+
+            Competency competency = competencyService.Get( e.RowKeyId );
+            if ( competency != null )
             {
-                var competencyService = new ResidencyService<Competency>();
-
-                Competency competency = competencyService.Get( (int)e.RowKeyValue );
-                if ( competency != null )
+                string errorMessage;
+                if ( !competencyService.CanDelete( competency, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !competencyService.CanDelete( competency, out errorMessage ) )
-                    {
-                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
-
-                    competencyService.Delete( competency, CurrentPersonId );
-                    competencyService.Save( competency, CurrentPersonId );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    return;
                 }
-            } );
+
+                competencyService.Delete( competency );
+                residencyContext.SaveChanges();
+            }
 
             BindGrid();
         }
@@ -152,7 +151,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrid()
         {
-            var competencyService = new ResidencyService<Competency>();
+            var competencyService = new ResidencyService<Competency>( new ResidencyContext() );
             int trackId = hfTrackId.ValueAsInt();
 
             SortProperty sortProperty = gList.SortProperty;
@@ -179,15 +178,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = !visible;
         }
 
         #endregion

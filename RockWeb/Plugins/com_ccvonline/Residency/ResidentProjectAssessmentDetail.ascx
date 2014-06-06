@@ -20,7 +20,7 @@
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlEditComments" runat="server">
-                    <Rock:LabeledTextBox ID="tbResidentComments" runat="server" TextMode="MultiLine" Rows="5" CssClass="input-xlarge" LabelText="Resident Comments" />
+                    <Rock:RockTextBox ID="tbResidentComments" runat="server" TextMode="MultiLine" Rows="5" CssClass="input-xlarge" Label="Resident Comments" />
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />

@@ -30,11 +30,11 @@
                                 TextMode="MultiLine" Rows="12" CssClass="input-xlarge" />
                         </div>
                         <div class="span6">
-                            <Rock:LabeledText ID="lblPeriod" runat="server" LabelText="Period" />
-                            <Rock:LabeledText ID="lblTrack" runat="server" LabelText="Track" />
+                            <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
+                            <Rock:RockLiteral ID="lblTrack" runat="server" Label="Track" />
 
-                            <Rock:PersonPicker ID="ppTeacherOfRecord" runat="server" LabelText="Teacher of Record" />
-                            <Rock:PersonPicker ID="ppFacilitator" runat="server" LabelText="Facilitator" />
+                            <Rock:PersonPicker ID="ppTeacherOfRecord" runat="server" Label="Teacher of Record" />
+                            <Rock:PersonPicker ID="ppFacilitator" runat="server" Label="Facilitator" />
                             <Rock:DataTextBox ID="tbCreditHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="CreditHours" CssClass="input-mini" />
                             <Rock:DataTextBox ID="tbSupervisionHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="SupervisionHours" CssClass="input-mini" />
                             <Rock:DataTextBox ID="tbImplementationHours" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Competency, com.ccvonline.Residency" PropertyName="ImplementationHours" CssClass="input-mini" />
@@ -57,8 +57,13 @@
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
                     </div>
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
+                        </div>
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />

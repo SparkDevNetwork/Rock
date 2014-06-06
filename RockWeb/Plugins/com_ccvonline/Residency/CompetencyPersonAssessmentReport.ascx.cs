@@ -67,7 +67,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !Page.IsPostBack )
             {
                 // set reasonable defaults for Date/Range and Semester Name
-                var currentResidencyPeriod = new ResidencyService<Period>().Queryable().Where( a => a.StartDate <= DateTime.Now ).OrderByDescending( a => a.StartDate ).FirstOrDefault();
+                var currentResidencyPeriod = new ResidencyService<Period>( new ResidencyContext() ).Queryable().Where( a => a.StartDate <= DateTime.Now ).OrderByDescending( a => a.StartDate ).FirstOrDefault();
                 string classSemesterName = string.Empty;
                 if ( currentResidencyPeriod != null )
                 {
@@ -121,8 +121,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void BindGrids()
         {
+            var residencyContext = new ResidencyContext();
             int groupMemberId = this.PageParameter( "groupMemberId" ).AsInteger() ?? 0;
-            var groupMember = new ResidencyService<GroupMember>().Get( groupMemberId );
+            var groupMember = new ResidencyService<GroupMember>( residencyContext ).Get( groupMemberId );
 
             if ( groupMember == null )
             {
@@ -154,14 +155,14 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
 
             DateTime dateStartFilter = pDateRange.LowerValue ?? DateTime.Today;
-            var closestResidencyPeriodForDateRange = new ResidencyService<Period>().Queryable().Where( a => a.StartDate <= dateStartFilter ).OrderByDescending( a => a.StartDate ).FirstOrDefault();
+            var closestResidencyPeriodForDateRange = new ResidencyService<Period>( residencyContext ).Queryable().Where( a => a.StartDate <= dateStartFilter ).OrderByDescending( a => a.StartDate ).FirstOrDefault();
             if (closestResidencyPeriodForDateRange != null)
             {
                 lbYear.Text = closestResidencyPeriodForDateRange.Name;
             }
 
             // Assessment Summary Grid
-            var competencyPersonService = new ResidencyService<CompetencyPerson>();
+            var competencyPersonService = new ResidencyService<CompetencyPerson>( residencyContext );
             
             var qryAssessmentSummary = competencyPersonService.Queryable()
                 .Where( a => a.PersonId.Equals( personId ) )
@@ -183,7 +184,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gAssessmentSummary.DataBind();
 
             // Assessment Details Grid
-            var personProjectAssessmentList = new ResidencyService<CompetencyPersonProjectAssessment>()
+            var personProjectAssessmentList = new ResidencyService<CompetencyPersonProjectAssessment>( residencyContext )
                 .Queryable( "AssessorPerson,CompetencyPersonProject" )
                 .Where( a => a.CompetencyPersonProject.CompetencyPerson.PersonId == personId )
                 .OrderBy( a => a.CompetencyPersonProject.CompetencyPerson.Person.FullName )

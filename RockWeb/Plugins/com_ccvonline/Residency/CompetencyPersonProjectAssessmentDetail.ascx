@@ -23,9 +23,9 @@
                         <asp:Literal runat="server" ID="lblEditDetails" />
                     </div>
                     <div class="row-fluid">
-                        <Rock:PersonPicker ID="ppAssessor" runat="server" LabelText="Assessor" />
-                        <Rock:DateTimePicker ID="dtpAssessmentDateTime" runat="server" LabelText="Assessment Date/Time" Required="true" />
-                        <Rock:LabeledText ID="lblOverallRating" runat="server" LabelText="Overall Rating" />
+                        <Rock:PersonPicker ID="ppAssessor" runat="server" Label="Assessor" />
+                        <Rock:DateTimePicker ID="dtpAssessmentDateTime" runat="server" Label="Assessment Date/Time" Required="true" />
+                        <Rock:RockLiteral ID="lblOverallRating" runat="server" Label="Overall Rating" />
                         <Rock:DataTextBox ID="tbRatingNotes" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessment, com.ccvonline.Residency" PropertyName="RatingNotes" TextMode="MultiLine" Rows="3" />
                         <Rock:DataTextBox ID="tbResidentComments" runat="server" SourceTypeName="com.ccvonline.Residency.Model.CompetencyPersonProjectAssessment, com.ccvonline.Residency" PropertyName="ResidentComments" TextMode="MultiLine" Rows="3" />
                     </div>
@@ -46,8 +46,13 @@
                     <div class="row-fluid">
                         <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
                     </div>
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
+                        </div>
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />

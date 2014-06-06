@@ -24,11 +24,11 @@
 
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Name" />
                     <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge" />
-                    <Rock:LabeledText ID="lblPeriod" runat="server" LabelText="Period" />
-                    <Rock:LabeledText ID="lblTrack" runat="server" LabelText="Track" />
-                    <Rock:LabeledText ID="lblCompetency" runat="server" LabelText="Competency" />
+                    <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
+                    <Rock:RockLiteral ID="lblTrack" runat="server" Label="Track" />
+                    <Rock:RockLiteral ID="lblCompetency" runat="server" Label="Competency" />
                     <Rock:DataTextBox ID="tbMinAssessmentCountDefault" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="MinAssessmentCountDefault"
-                        LabelText="Default # of Assessments" Help="Set this to specify the default minimum number of assessments of this project that a person must complete." CssClass="input-mini" />
+                        Label="Default # of Assessments" Help="Set this to specify the default minimum number of assessments of this project that a person must complete." CssClass="input-mini" />
 
                 </fieldset>
 

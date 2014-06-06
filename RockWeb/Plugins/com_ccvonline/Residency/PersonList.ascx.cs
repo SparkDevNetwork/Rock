@@ -32,10 +32,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     [BooleanField( "Show Add", "", true )]
     [BooleanField( "Show Delete", "", true )]
-    public partial class PersonList : RockBlock, IDimmableBlock
+    public partial class PersonList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -53,7 +53,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridRebind += gList_GridRebind;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete && this.GetAttributeValue( "ShowAdd" ).AsBoolean();
             gList.IsDeleteEnabled = canAddEditDelete && this.GetAttributeValue( "ShowDelete" ).AsBoolean();
         }
@@ -83,7 +83,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupMemberId", (int)e.RowKeyValue, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", e.RowKeyId, "groupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             RockTransactionScope.WrapTransaction( () =>
             {
                 var groupMemberService = new GroupMemberService();
-                int groupMemberId = (int)e.RowKeyValue;
+                int groupMemberId = e.RowKeyId;
 
                 GroupMember groupMember = groupMemberService.Get( groupMemberId );
                 if ( groupMember != null )
@@ -218,15 +218,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

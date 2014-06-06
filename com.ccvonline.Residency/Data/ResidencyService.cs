@@ -28,14 +28,6 @@ namespace com.ccvonline.Residency.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="ResidencyService{T}"/> class.
         /// </summary>
-        public ResidencyService()
-            : this( new ResidencyContext() )
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ResidencyService{T}"/> class.
-        /// </summary>
         /// <param name="residencyContext">The residency context.</param>
         public ResidencyService( ResidencyContext residencyContext )
             : base( residencyContext )
@@ -133,7 +125,7 @@ namespace com.ccvonline.Residency.Data
         /// <param name="item">The item.</param>
         /// <param name="personId">The person unique identifier.</param>
         /// <returns></returns>
-        public override bool Delete( T item, int? personId )
+        public override bool Delete( T item )
         {
             // Manually delete child tables of CompetencyPerson, CompetencyPersonProject, and CompetencyPersonProjectAssessment due to CascadeDelete conflicts
             if ( typeof( T ) == typeof( CompetencyPerson ) )
@@ -144,8 +136,7 @@ namespace com.ccvonline.Residency.Data
                 {
                     // recursively calls Delete( T item..)
                     var competencyPersonProject = competencyPersonProjectService.Get( rowId );
-                    competencyPersonProjectService.Delete( competencyPersonProject, personId );
-                    competencyPersonProjectService.Save( competencyPersonProject, personId );
+                    competencyPersonProjectService.Delete( competencyPersonProject);
                 }
             }
 
@@ -158,8 +149,7 @@ namespace com.ccvonline.Residency.Data
                 {
                     // recursively calls Delete( T item..)
                     var competencyPersonProjectAssessment = competencyPersonProjectAssessmentService.Get( rowId );
-                    competencyPersonProjectAssessmentService.Delete( competencyPersonProjectAssessment, personId );
-                    competencyPersonProjectAssessmentService.Save( competencyPersonProjectAssessment, personId );
+                    competencyPersonProjectAssessmentService.Delete( competencyPersonProjectAssessment );
                 }
             }
 
@@ -171,12 +161,11 @@ namespace com.ccvonline.Residency.Data
                 foreach ( var rowId in competencyPersonProjectAssessment.CompetencyPersonProjectAssessmentPointOfAssessments.Select( a => a.Id ).ToList() )
                 {
                     var competencyPersonProjectAssessmentPointOfAssessment = competencyPersonProjectAssessmentPointOfAssessmentService.Get( rowId );
-                    competencyPersonProjectAssessmentPointOfAssessmentService.Delete( competencyPersonProjectAssessmentPointOfAssessment, personId );
-                    competencyPersonProjectAssessmentPointOfAssessmentService.Save( competencyPersonProjectAssessmentPointOfAssessment, personId );
+                    competencyPersonProjectAssessmentPointOfAssessmentService.Delete( competencyPersonProjectAssessmentPointOfAssessment );
                 }
             }
 
-            return base.Delete( item, personId );
+            return base.Delete( item );
         }
 
         /// <summary>
@@ -205,7 +194,7 @@ namespace com.ccvonline.Residency.Data
         {
             errorMessage = string.Empty;
 
-            if ( new ResidencyService<Track>().Queryable().Any( a => a.PeriodId == item.Id ) )
+            if ( new ResidencyService<Track>(this.ResidencyContext).Queryable().Any( a => a.PeriodId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Period.FriendlyTypeName, Track.FriendlyTypeName );
                 return false;
@@ -254,7 +243,7 @@ namespace com.ccvonline.Residency.Data
         {
             errorMessage = string.Empty;
 
-            if ( new ResidencyService<Competency>().Queryable().Any( a => a.TrackId == item.Id ) )
+            if ( new ResidencyService<Competency>(this.ResidencyContext).Queryable().Any( a => a.TrackId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Track.FriendlyTypeName, Competency.FriendlyTypeName );
                 return false;

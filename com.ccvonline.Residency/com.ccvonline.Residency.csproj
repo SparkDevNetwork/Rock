@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>com.ccvonline.Residency</RootNamespace>
     <AssemblyName>com.ccvonline.Residency</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,13 +34,11 @@
     <Reference Include="DotLiquid">
       <HintPath>..\RockWeb\Bin\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.dll</HintPath>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Rock">
       <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
@@ -57,79 +56,6 @@
   <ItemGroup>
     <Compile Include="Data\ResidencyContext.cs" />
     <Compile Include="Data\ResidencyService.cs" />
-    <Compile Include="Migrations\201306182055075_CreateTables.cs" />
-    <Compile Include="Migrations\201306182055075_CreateTables.Designer.cs">
-      <DependentUpon>201306182055075_CreateTables.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306182118537_AddIndexes01.cs" />
-    <Compile Include="Migrations\201306182118537_AddIndexes01.Designer.cs">
-      <DependentUpon>201306182118537_AddIndexes01.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306182121125_ResidencyGroupType.cs" />
-    <Compile Include="Migrations\201306182121125_ResidencyGroupType.Designer.cs">
-      <DependentUpon>201306182121125_ResidencyGroupType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306182123129_BlocksPages01.cs" />
-    <Compile Include="Migrations\201306182123129_BlocksPages01.Designer.cs">
-      <DependentUpon>201306182123129_BlocksPages01.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306182129019_AddDefinedTypeResidencyCompetencyType.cs" />
-    <Compile Include="Migrations\201306182129019_AddDefinedTypeResidencyCompetencyType.Designer.cs">
-      <DependentUpon>201306182129019_AddDefinedTypeResidencyCompetencyType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306190045357_ResidentProjectPageAttrib.cs" />
-    <Compile Include="Migrations\201306190045357_ResidentProjectPageAttrib.Designer.cs">
-      <DependentUpon>201306190045357_ResidentProjectPageAttrib.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306192250413_RenamePluginFolder.cs" />
-    <Compile Include="Migrations\201306192250413_RenamePluginFolder.Designer.cs">
-      <DependentUpon>201306192250413_RenamePluginFolder.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306282130325_AssessmentOverallRatingColumn.cs" />
-    <Compile Include="Migrations\201306282130325_AssessmentOverallRatingColumn.Designer.cs">
-      <DependentUpon>201306282130325_AssessmentOverallRatingColumn.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307030047193_UpdateResidencyGroupBlockAttributes.cs" />
-    <Compile Include="Migrations\201307030047193_UpdateResidencyGroupBlockAttributes.Designer.cs">
-      <DependentUpon>201307030047193_UpdateResidencyGroupBlockAttributes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307040031117_DropProjectAssignment01.cs" />
-    <Compile Include="Migrations\201307040031117_DropProjectAssignment01.Designer.cs">
-      <DependentUpon>201307040031117_DropProjectAssignment01.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307092236084_GradeEmailTemplate.cs" />
-    <Compile Include="Migrations\201307092236084_GradeEmailTemplate.Designer.cs">
-      <DependentUpon>201307092236084_GradeEmailTemplate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307100024485_BlocksPages02.cs" />
-    <Compile Include="Migrations\201307100024485_BlocksPages02.Designer.cs">
-      <DependentUpon>201307100024485_BlocksPages02.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307102157464_CreateResidencySite.cs" />
-    <Compile Include="Migrations\201307102157464_CreateResidencySite.Designer.cs">
-      <DependentUpon>201307102157464_CreateResidencySite.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307232155134_DefinedTypePointOfAssessmentType.cs" />
-    <Compile Include="Migrations\201307232155134_DefinedTypePointOfAssessmentType.Designer.cs">
-      <DependentUpon>201307232155134_DefinedTypePointOfAssessmentType.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201308030121542_ResidentProjectAssessmentPages.cs" />
-    <Compile Include="Migrations\201308030121542_ResidentProjectAssessmentPages.Designer.cs">
-      <DependentUpon>201308030121542_ResidentProjectAssessmentPages.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201308132139358_EmptyForCore.cs" />
-    <Compile Include="Migrations\201308132139358_EmptyForCore.Designer.cs">
-      <DependentUpon>201308132139358_EmptyForCore.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201310302214235_MoreCascadeDeletes.cs" />
-    <Compile Include="Migrations\201310302214235_MoreCascadeDeletes.Designer.cs">
-      <DependentUpon>201310302214235_MoreCascadeDeletes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201402122024089_GradeBook.cs" />
-    <Compile Include="Migrations\201402122024089_GradeBook.Designer.cs">
-      <DependentUpon>201402122024089_GradeBook.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\Competency.cs" />
     <Compile Include="Model\CompetencyPerson.cs" />
     <Compile Include="Model\Period.cs" />
@@ -150,62 +76,6 @@
       <Project>{c61f05c4-f947-4a32-84c1-413bdfa912fa}</Project>
       <Name>com.ccvonline</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Migrations\201306182055075_CreateTables.resx">
-      <DependentUpon>201306182055075_CreateTables.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306182118537_AddIndexes01.resx">
-      <DependentUpon>201306182118537_AddIndexes01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306182121125_ResidencyGroupType.resx">
-      <DependentUpon>201306182121125_ResidencyGroupType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306182123129_BlocksPages01.resx">
-      <DependentUpon>201306182123129_BlocksPages01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306182129019_AddDefinedTypeResidencyCompetencyType.resx">
-      <DependentUpon>201306182129019_AddDefinedTypeResidencyCompetencyType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306190045357_ResidentProjectPageAttrib.resx">
-      <DependentUpon>201306190045357_ResidentProjectPageAttrib.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306192250413_RenamePluginFolder.resx">
-      <DependentUpon>201306192250413_RenamePluginFolder.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306282130325_AssessmentOverallRatingColumn.resx">
-      <DependentUpon>201306282130325_AssessmentOverallRatingColumn.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307030047193_UpdateResidencyGroupBlockAttributes.resx">
-      <DependentUpon>201307030047193_UpdateResidencyGroupBlockAttributes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307040031117_DropProjectAssignment01.resx">
-      <DependentUpon>201307040031117_DropProjectAssignment01.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307092236084_GradeEmailTemplate.resx">
-      <DependentUpon>201307092236084_GradeEmailTemplate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307100024485_BlocksPages02.resx">
-      <DependentUpon>201307100024485_BlocksPages02.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307102157464_CreateResidencySite.resx">
-      <DependentUpon>201307102157464_CreateResidencySite.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307232155134_DefinedTypePointOfAssessmentType.resx">
-      <DependentUpon>201307232155134_DefinedTypePointOfAssessmentType.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201308030121542_ResidentProjectAssessmentPages.resx">
-      <DependentUpon>201308030121542_ResidentProjectAssessmentPages.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201308132139358_EmptyForCore.resx">
-      <DependentUpon>201308132139358_EmptyForCore.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201310302214235_MoreCascadeDeletes.resx">
-      <DependentUpon>201310302214235_MoreCascadeDeletes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201402122024089_GradeBook.resx">
-      <DependentUpon>201402122024089_GradeBook.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

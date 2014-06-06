@@ -137,7 +137,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             pnlEditComments.Visible = editable;
             pnlViewComments.Visible = !editable;
-            DimOtherBlocks( editable );
+            HideSecondaryBlocks( editable );
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             var qryParams = new Dictionary<string, string>();
             qryParams["competencyPersonProjectAssessmentId"] = competencyPersonProjectAssessment.Id.ToString();
-            NavigateToPage( this.CurrentPage.Guid, qryParams );
+            NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -261,7 +261,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "projectPointOfAssessmentId", (int)e.RowKeyValues["ProjectPointOfAssessmentId"], "competencyPersonProjectAssessmentId", (int)e.RowKeyValues["CompetencyPersonProjectAssessmentId"] );
+            NavigateToLinkedPage( "DetailPage", "projectPointOfAssessmentId", e.RowKeyIds["ProjectPointOfAssessmentId"], "competencyPersonProjectAssessmentId", e.RowKeyIds["CompetencyPersonProjectAssessmentId"] );
         }
 
         /// <summary>

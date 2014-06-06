@@ -31,11 +31,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     [BooleanField( "Show Competency Column" )]
     [BooleanField( "Show Project Column" )]
     [BooleanField( "Show Grid Title" )]
-    public partial class ResidentProjectAssessmentList : RockBlock, IDimmableBlock
+    public partial class ResidentProjectAssessmentList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -91,7 +91,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "competencyPersonProjectAssessmentId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "competencyPersonProjectAssessmentId", e.RowKeyId );
         }
 
         /// <summary>
@@ -146,15 +146,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

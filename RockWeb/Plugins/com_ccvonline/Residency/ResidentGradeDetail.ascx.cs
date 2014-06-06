@@ -182,7 +182,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessmentId = projectPointOfAssessmentId;
                 }
 
-                LabeledDropDownList ddlPointOfAssessmentRating = item.FindControl( "ddlPointOfAssessmentRating" ) as LabeledDropDownList;
+                RockDropDownList ddlPointOfAssessmentRating = item.FindControl( "ddlPointOfAssessmentRating" ) as RockDropDownList;
                 TextBox tbRatingNotesPOA = item.FindControl( "tbRatingNotesPOA" ) as TextBox;
 
                 competencyPersonProjectAssessmentPointOfAssessment.Rating = ddlPointOfAssessmentRating.SelectedValueAsInt();
@@ -259,7 +259,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 Session["residentGraderSessionKey"] = emailedKey;
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
                 qryParams.Add( "competencyPersonProjectId", competencyPersonProjectId.ToString() );
-                NavigateToPage( this.CurrentPage.Guid, qryParams );
+                NavigateToPage( this.RockPage.Guid, qryParams );
                 return;
             }
 
@@ -390,7 +390,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             CompetencyPersonProjectAssessmentPointOfAssessment competencyPersonProjectAssessmentPointOfAssessment = e.Item.DataItem as CompetencyPersonProjectAssessmentPointOfAssessment;
             if ( competencyPersonProjectAssessmentPointOfAssessment != null )
             {
-                LabeledDropDownList ddlPointOfAssessmentRating = e.Item.FindControl( "ddlPointOfAssessmentRating" ) as LabeledDropDownList;
+                RockDropDownList ddlPointOfAssessmentRating = e.Item.FindControl( "ddlPointOfAssessmentRating" ) as RockDropDownList;
                 ddlPointOfAssessmentRating.Items.Clear();
                 ddlPointOfAssessmentRating.Items.Add( new ListItem( "-", Rock.Constants.None.IdValue ) );
                 for ( int ratingOption = 1; ratingOption <= 5; ratingOption++ )

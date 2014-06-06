@@ -30,8 +30,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
-    public partial class CompetencyPersonProjectAssessmentPointOfAssessmentList : RockBlock, IDimmableBlock
+    [LinkedPage( "Detail Page" )]
+    public partial class CompetencyPersonProjectAssessmentPointOfAssessmentList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -60,7 +60,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? competencyPersonProjectAssessmentId = this.PageParameter( "competencyPersonProjectAssessmentId" ).AsInteger();
+                int? competencyPersonProjectAssessmentId = this.PageParameter( "CompetencyPersonProjectAssessmentId" ).AsInteger();
                 hfCompetencyPersonProjectAssessmentId.Value = competencyPersonProjectAssessmentId.ToString();
                 BindGrid();
             }
@@ -86,7 +86,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProjectAssessmentPointOfAssessmentId">The residency competency person project assessment point of assessment id.</param>
         protected void gList_ShowEdit( int projectPointOfAssessmentId, int competencyPersonProjectAssessmentId )
         {
-            NavigateToDetailPage( "projectPointOfAssessmentId", projectPointOfAssessmentId, "competencyPersonProjectAssessmentId", competencyPersonProjectAssessmentId );
+            NavigateToLinkedPage( "DetailPage", "ProjectPointOfAssessmentId", projectPointOfAssessmentId, "CompetencyPersonProjectAssessmentId", competencyPersonProjectAssessmentId );
         }
 
         /// <summary>
@@ -109,19 +109,19 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void BindGrid()
         {
             SortProperty sortProperty = gList.SortProperty;
-
+            var residencyContext = new ResidencyContext();
             int competencyPersonProjectAssessmentId = hfCompetencyPersonProjectAssessmentId.ValueAsInt();
 
-            List<CompetencyPersonProjectAssessmentPointOfAssessment> personPointOfAssessmentList = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>().Queryable()
+            List<CompetencyPersonProjectAssessmentPointOfAssessment> personPointOfAssessmentList = new ResidencyService<CompetencyPersonProjectAssessmentPointOfAssessment>( residencyContext ).Queryable()
                 .Where( a => a.CompetencyPersonProjectAssessmentId.Equals( competencyPersonProjectAssessmentId ) ).ToList();
 
             CompetencyPersonProjectAssessment competencyPersonProjectAssessment
-                = new ResidencyService<CompetencyPersonProjectAssessment>().Get( competencyPersonProjectAssessmentId );
+                = new ResidencyService<CompetencyPersonProjectAssessment>( residencyContext ).Get( competencyPersonProjectAssessmentId );
 
             List<ProjectPointOfAssessment> projectPointOfAssessmentList;
             if ( competencyPersonProjectAssessment != null )
             {
-                projectPointOfAssessmentList = new ResidencyService<ProjectPointOfAssessment>().Queryable()
+                projectPointOfAssessmentList = new ResidencyService<ProjectPointOfAssessment>( residencyContext ).Queryable()
                     .Where( a => a.ProjectId.Equals( competencyPersonProjectAssessment.CompetencyPersonProject.ProjectId ) ).ToList();
             }
             else
@@ -165,15 +165,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

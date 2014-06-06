@@ -31,7 +31,7 @@
                     <ItemTemplate>
                         <div class="row-fluid">
                             <div class="span1">
-                                <Rock:LabeledDropDownList ID="ddlPointOfAssessmentRating" runat="server" LabelText="Rating" CssClass="input-mini" />
+                                <Rock:RockDropDownList ID="ddlPointOfAssessmentRating" runat="server" Label="Rating" CssClass="input-mini" />
                             </div>
                             <div class="span11">
                                 <div class="row-fluid">
@@ -39,14 +39,14 @@
                                     <p>
                                         <asp:Literal ID="lblAssessmentText" runat="server" />
                                     </p>
-                                    <Rock:LabeledTextBox ID="tbRatingNotesPOA" runat="server" CssClass="input-xxlarge" TextMode="MultiLine" Rows="4" LabelText="Instructor Notes" />
+                                    <Rock:RockTextBox ID="tbRatingNotesPOA" runat="server" CssClass="input-xxlarge" TextMode="MultiLine" Rows="4" Label="Instructor Notes" />
                                 </div>
                             </div>
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
 
-                <Rock:LabeledTextBox ID="tbRatingNotesOverall" runat="server" CssClass="input-xxlarge" TextMode="MultiLine" Rows="4" LabelText="Evaluation Notes" />
+                <Rock:RockTextBox ID="tbRatingNotesOverall" runat="server" CssClass="input-xxlarge" TextMode="MultiLine" Rows="4" Label="Evaluation Notes" />
 
             </fieldset>
 

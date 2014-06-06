@@ -185,7 +185,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gRecordings_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "recordingId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "recordingId", e.RowKeyId );
         }
 
         /// <summary>

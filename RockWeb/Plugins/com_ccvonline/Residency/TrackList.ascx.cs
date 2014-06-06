@@ -30,8 +30,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
-    public partial class TrackList : RockBlock, IDimmableBlock
+    [LinkedPage("Detail Page")]
+    public partial class TrackList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -50,7 +50,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             gList.GridReorder += gList_GridReorder;
 
             // Block Security and special attributes (RockPage takes care of "View")
-            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            bool canAddEditDelete = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             gList.Actions.ShowAdd = canAddEditDelete;
             gList.IsDeleteEnabled = canAddEditDelete;
         }
@@ -155,7 +155,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            gList_ShowEdit( (int)e.RowKeyValue );
+            gList_ShowEdit( e.RowKeyId );
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="projectPointOfAssessmentId">The residency project point of assessment id.</param>
         protected void gList_ShowEdit( int projectPointOfAssessmentId )
         {
-            NavigateToDetailPage( "trackId", projectPointOfAssessmentId, "periodId", hfPeriodId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "trackId", projectPointOfAssessmentId, "periodId", hfPeriodId.ValueAsInt() );
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             RockTransactionScope.WrapTransaction( () =>
             {
                 var trackService = new ResidencyService<Track>();
-                Track track = trackService.Get( (int)e.RowKeyValue );
+                Track track = trackService.Get( e.RowKeyId );
 
                 if ( track != null )
                 {
@@ -237,15 +237,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
-            gList.Enabled = !dimmed;
+            gList.Visible = visible;
         }
 
         #endregion

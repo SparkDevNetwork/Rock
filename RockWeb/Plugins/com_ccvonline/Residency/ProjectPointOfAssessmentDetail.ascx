@@ -19,8 +19,8 @@
                 </legend>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <Rock:LabeledDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" LabelText="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
-                <Rock:LabeledText ID="lblAssessmentOrder" runat="server" LabelText="Assessment #" />
+                <Rock:RockDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" Label="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
+                <Rock:RockLiteral ID="lblAssessmentOrder" runat="server" Label="Assessment #" />
                 <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="com.ccvonline.Residency.Model.ProjectPointOfAssessment, com.ccvonline.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge"/>
             </fieldset>
 

@@ -32,8 +32,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
-    public partial class ResidentCompetencyList : RockBlock, IDimmableBlock
+    [LinkedPage("Detail Page")]
+    public partial class ResidentCompetencyList : RockBlock, ISecondaryBlock
     {
         #region Control Methods
 
@@ -72,7 +72,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gCompetencyList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "competencyPersonId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "competencyPersonId", e.RowKeyId );
         }
 
         /// <summary>
@@ -148,24 +148,24 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
         #endregion
 
-        #region IDimmableBlock
+        #region ISecondaryBlock
 
         /// <summary>
-        /// Sets the dimmed.
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page.
         /// </summary>
         /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
+        public void SetVisible( bool visible )
         {
             foreach ( var item in rpTracks.Items.OfType<RepeaterItem>() )
             {
                 foreach ( var grid in item.Controls.OfType<Grid>() )
                 {
-                    grid.Enabled = !dimmed;
+                    grid.Visible = visible;
                 }
 
                 foreach ( var label in item.Controls.OfType<Label>() )
                 {
-                    label.Enabled = !dimmed;
+                    label.Visible = visible;
                 }
             }
         }
