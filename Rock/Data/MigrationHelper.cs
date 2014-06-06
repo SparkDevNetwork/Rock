@@ -1079,14 +1079,35 @@ namespace Rock.Data
                 DECLARE @Order int
                 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedType];
 
-                INSERT INTO [DefinedType] (
-                    [IsSystem],[FieldTypeId],[Order],
-                    [Category],[Name],[Description],[HelpText],
-                    [Guid])
-                VALUES(
-                    1,@FieldTypeId,@Order,
-                    '{0}','{1}','{2}','{4}',
-                    '{3}')
+                IF NOT EXISTS (
+                    SELECT [Id] 
+                    FROM [DefinedType] 
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [DefinedType] (
+                        [IsSystem],[FieldTypeId],[Order],
+                        [Category],[Name],[Description],[HelpText],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@Order,
+                        '{0}','{1}','{2}','{4}',
+                        '{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [DefinedType] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [Category] = '{0}',
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [HelpText] = '{4}'
+                    WHERE [Guid] = '{3}'
+
+                END
 ",
                     category,
                     name,
