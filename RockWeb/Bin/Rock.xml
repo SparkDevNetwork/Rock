@@ -43094,6 +43094,11 @@
             Guid for the types of map styles
             </summary>
         </member>
+        <member name="F:Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS">
+            <summary>
+            The domains allowed to make REST API calls using CORS
+            </summary>
+        </member>
         <member name="T:Rock.SystemGuid.Page">
             <summary>
             System Pages.  NOTE: Some of these are referenced in Migrations to avoid string-typos.

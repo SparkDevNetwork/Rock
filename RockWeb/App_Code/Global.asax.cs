@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -159,6 +159,8 @@ namespace RockWeb
 
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
+
+                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
 
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
