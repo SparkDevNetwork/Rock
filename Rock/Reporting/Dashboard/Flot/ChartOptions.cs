@@ -408,9 +408,24 @@ function (val, axis) {
     [JsonConverter( typeof( EnumAsStringJsonConverter ) )]
     public enum AxisPosition
     {
+        /// <summary>
+        /// The bottom
+        /// </summary>
         bottom,
+
+        /// <summary>
+        /// The top
+        /// </summary>
         top,
+
+        /// <summary>
+        /// The left
+        /// </summary>
         left,
+
+        /// <summary>
+        /// The right
+        /// </summary>
         right
     }
 
@@ -420,6 +435,9 @@ function (val, axis) {
     [JsonConverter( typeof( EnumAsStringJsonConverter ) )]
     public enum AxisMode
     {
+        /// <summary>
+        /// The time
+        /// </summary>
         time
     }
 

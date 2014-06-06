@@ -32,7 +32,15 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private HiddenField _hiddenField;
+
+        /// <summary>
+        /// The _text box
+        /// </summary>
         public RockTextBox _textBox;
+
+        /// <summary>
+        /// The _drop down list
+        /// </summary>
         public RockDropDownList _dropDownList;
 
         #endregion
@@ -200,6 +208,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         #endregion

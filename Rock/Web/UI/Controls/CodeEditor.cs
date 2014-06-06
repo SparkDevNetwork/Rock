@@ -305,6 +305,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the merge field help.
+        /// </summary>
+        /// <value>
+        /// The merge field help.
+        /// </value>
         public string MergeFieldHelp
         {
             get { return ViewState["MergeFieldHelp"] as string ?? string.Empty; }

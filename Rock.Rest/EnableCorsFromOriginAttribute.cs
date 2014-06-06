@@ -44,13 +44,15 @@ namespace Rock.Rest
 
         private async Task<bool> IsOriginValid( string origin )
         {
+            bool result = false;
+
             var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.REST_API_ALLOWED_DOMAINS.AsGuid() );
             if (definedType != null)
             {
-                return definedType.DefinedValues.Select( v => v.Name ).Contains( origin, StringComparer.OrdinalIgnoreCase );
+                result = definedType.DefinedValues.Select( v => v.Name ).Contains( origin, StringComparer.OrdinalIgnoreCase );
             }
 
-            return false;
+            return await Task.FromResult<bool>( result );
         }
     }
 }

@@ -42,6 +42,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowFormActionList"/> class.
+        /// </summary>
         public WorkflowFormActionList()
         {
             _hfValue = new HiddenField();
@@ -59,6 +62,12 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Activities"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the value.
+        /// </summary>
+        /// <value>
+        /// The value.
+        /// </value>
         public string Value
         {
             get
@@ -72,6 +81,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             Controls.Clear();

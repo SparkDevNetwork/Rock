@@ -174,7 +174,6 @@ namespace Rock.Workflow
         /// Resolves the merge fields.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="value">The value.</param>
         /// <returns></returns>
         protected Dictionary<string, object> GetMergeFields( WorkflowAction action )
         {

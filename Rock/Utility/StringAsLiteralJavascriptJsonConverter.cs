@@ -74,6 +74,13 @@ namespace Rock.Utility
             writer.WriteRawValue( value as string );
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this 
+        /// <see cref="T:Newtonsoft.Json.JsonConverter" /> can read JSON.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this <see cref="T:Newtonsoft.Json.JsonConverter" /> can read JSON; otherwise, <c>false</c>.
+        /// </value>
         public override bool CanRead
         {
             get
@@ -82,6 +89,13 @@ namespace Rock.Utility
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this 
+        /// <see cref="T:Newtonsoft.Json.JsonConverter" /> can write JSON.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this <see cref="T:Newtonsoft.Json.JsonConverter" /> can write JSON; otherwise, <c>false</c>.
+        /// </value>
         public override bool CanWrite
         {
             get

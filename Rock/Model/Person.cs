@@ -1100,6 +1100,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="gender">The gender.</param>
+        /// <param name="RecordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>

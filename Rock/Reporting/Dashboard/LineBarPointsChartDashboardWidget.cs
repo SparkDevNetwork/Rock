@@ -38,7 +38,20 @@ namespace Rock.Reporting.Dashboard
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
     public abstract class LineBarPointsChartDashboardWidget : DashboardWidget
     {
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
         public abstract FlotChart FlotChartControl { get; }
+
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
         public abstract NotificationBox MetricWarningControl { get; }
         
         /// <summary>

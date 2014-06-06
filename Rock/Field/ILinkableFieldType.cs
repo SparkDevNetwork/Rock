@@ -24,6 +24,9 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field
 {
+    /// <summary>
+    /// Fields that provide a like to view the value in Rock
+    /// </summary>
     public interface ILinkableFieldType : IFieldType
     {
         /// <summary>

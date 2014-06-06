@@ -1513,7 +1513,8 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <summary>
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="blockGuid">The block unique identifier.</param>
+        /// <param name="order">The order.</param>
         /// <param name="action">The action.</param>
         /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
@@ -1632,8 +1633,10 @@ WHERE [EntityTypeId] = @EntityTypeId
         /// <summary>
         /// Adds the page security authentication. Set GroupGuid to null when setting to a special role
         /// </summary>
-        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="order">The order.</param>
         /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
@@ -1772,15 +1775,15 @@ INSERT INTO [dbo].[Auth]
         /// Updates the BlockType Attribute for the given blocktype and key (if it exists);
         /// otherwise it inserts a new record.
         /// </summary>
-        /// <param name="blockTypeGuid"></param>
-        /// <param name="fieldTypeGuid"></param>
-        /// <param name="name"></param>
-        /// <param name="key"></param>
-        /// <param name="category"></param>
-        /// <param name="description"></param>
-        /// <param name="order"></param>
-        /// <param name="defaultValue"></param>
-        /// <param name="guid"></param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdatePersonAttribute( string fieldTypeGuid, string categoryGuid, string name, string key, string iconCssClass, string description, int order, string defaultValue, string guid )
         {
 
