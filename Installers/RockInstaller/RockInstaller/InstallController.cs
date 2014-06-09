@@ -221,6 +221,8 @@ namespace RockInstaller
                 return;
             }
 
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+
             // download rock
             UpdateStep( "step-downloadsql", "Step 2: Downloading Rock" );
 
@@ -231,6 +233,8 @@ namespace RockInstaller
                 this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred in the downloading of Rock. Message: {0}</div>", result.Message ) );
                 return;
             }
+
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
 
             // create database
             UpdateStep( "step-downloadrock", "Step 3: Creating Database" );
@@ -243,6 +247,8 @@ namespace RockInstaller
                 return;
             }
 
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+
             // configuring rock
             UpdateStep( "step-sql", "Step 4: Configuring Rock" );
 
@@ -252,6 +258,8 @@ namespace RockInstaller
                 this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred while configuring Rock. Message: {0}</div>", result.Message ) );
                 return;
             }
+
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
 
             // unzip rock
             UpdateStep( "step-configure", "Step 5: Installing Rock Application" );
@@ -264,6 +272,8 @@ namespace RockInstaller
                 return;
             }
 
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+
             // delete the installer
             result = DeleteInstaller( installData );
             if ( !result.Success )
@@ -272,6 +282,8 @@ namespace RockInstaller
                 this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred while while deleting the installer. At this point you may need to restart the install if Rock does not start. Message: {0}</div>", result.Message ) );
                 return;
             }
+
+            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
 
             // show install success, goodbye
             this.ShowSuccess();
@@ -366,52 +378,16 @@ namespace RockInstaller
                 }
             }
 
-            // run schema creation
+            // run sql install
             if ( result.Success )
             {
-                this.SendConsoleMessage( "Preparing to run sql-schema.sql" );
+                this.SendConsoleMessage( "Preparing to run sql-install.sql" );
 
-                result = RunSqlScript( installData, serverPath + @"\sql-schema.sql", 10, 1, 30, 40);
+                result = RunSqlScript( installData, serverPath + @"\sql-install.sql", 10, 1, 60, 40 );
 
                 if ( result.Success )
                 {
-                    this.SendConsoleMessage( String.Format( "Successfully ran sql-schema.sql.") );
-                }
-            }
-
-            // run data import
-            if ( result.Success )
-            {
-                this.SendConsoleMessage( "Preparing to run sql-data.sql" );
-
-                string sqlDataFile = serverPath + @"\sql-data.sql";
-
-                // split file up to run
-                string sqlScript = System.IO.File.ReadAllText( sqlDataFile );
-
-                // add go each place we turn on/off identity insert
-                var pattern = "(?<line>SET IDENTITY_INSERT.*)";
-                var replacePattern = "${line}" + Environment.NewLine + "GO" + Environment.NewLine;
-                sqlScript = Regex.Replace( sqlScript, pattern, replacePattern, RegexOptions.IgnoreCase );
-
-                // add go for each exec
-                pattern = "(?<line>EXEC.*)"; ;
-                replacePattern = Environment.NewLine + "GO" + Environment.NewLine + "${line}";
-                sqlScript = Regex.Replace( sqlScript, pattern, replacePattern, RegexOptions.IgnoreCase );
-
-                System.IO.File.WriteAllText( sqlDataFile, sqlScript + Environment.NewLine + "GO" );
-
-                result = RunSqlScript( installData, serverPath + @"\sql-data.sql", 10, 1, 30, 70 );
-
-                if ( result.Success )
-                {
-                    this.UpdateProgressBar( 100 );
-                    this.SendConsoleMessage( String.Format( "Successfully ran sql-data.sql." ) );
-                }
-                else
-                {
-                    // because the error in this case will include the whole sql script (all 53mb) that's not helpful lets provide a simplier message
-                    //result.Message = "An error occurred while running sql-data.sql.";
+                    this.SendConsoleMessage( String.Format( "Successfully ran sql-install.sql." ) );
                 }
             }
 
@@ -597,7 +573,23 @@ namespace RockInstaller
 
                 try
                 {
-                    File.Delete( "" );
+                    File.Delete( serverPath + @"Start.aspx" );
+                    File.Delete( serverPath + @"Install.aspx" );
+                    File.Delete( serverPath + @"InstallController.cs" );
+                    File.Delete( serverPath + @"Startup.cs" );
+
+                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
+                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll" );
+                    File.Delete( serverPath + @"bin\Microsoft.Owin.dll" );
+                    File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
+                    File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
+                    File.Delete( serverPath + @"bin\Owin.dll" );
+
+                    File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
+                    File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
+                    File.Delete( serverPath + @"bin\RockInstaller.dll" );
+                    File.Delete( serverPath + @"bin\RockInstallTools.dll" );
+                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );
                 }
                 catch ( Exception ex )
                 {
@@ -611,9 +603,8 @@ namespace RockInstaller
             {
                 File.Delete( serverPath + @"\rock-install-latest.zip" );
                 File.Delete( serverPath + @"\sql-config.sql" );
-                File.Delete( serverPath + @"\sql-data.sql" );
+                File.Delete( serverPath + @"\sql-install.sql" );
                 File.Delete( serverPath + @"\sql-latest.zip" );
-                File.Delete( serverPath + @"\sql-schema.sql" );
                 File.Delete( serverPath + @"\webconfig.xml" );
             }
             catch ( Exception ex )
