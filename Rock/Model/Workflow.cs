@@ -162,6 +162,7 @@ namespace Rock.Model
         /// <value>
         /// The active activities.
         /// </value>
+        [NotMapped]
         public virtual IEnumerable<WorkflowActivity> ActiveActivities
         {
             get
@@ -171,6 +172,22 @@ namespace Rock.Model
                     .OrderBy( a => a.ActivityType.Order );
             }
         }
+
+        /// <summary>
+        /// Gets the active activity names.
+        /// </summary>
+        /// <value>
+        /// The active activity names.
+        /// </value>
+        [NotMapped]
+        public virtual string ActiveActivityNames
+        {
+            get
+            {
+                return ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" );
+            }
+        }
+
 
         /// <summary>
         /// Gets a flag indicating whether this instance has active activities.

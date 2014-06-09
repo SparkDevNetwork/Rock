@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             SelectedWorkflowTypeId = ViewState["SelectedWorkflowTypeId"] as int?;
 
-            //GetData();
+            GetData();
         }
 
         protected override void OnInit( EventArgs e )
@@ -78,7 +78,6 @@ namespace RockWeb.Blocks.WorkFlow
             gWorkflows.DataKeyNames = new string[] { "id" };
             gWorkflows.Actions.ShowAdd = false;
             gWorkflows.IsDeleteEnabled = false;
-            gWorkflows.RowDataBound += gWorkflows_RowDataBound;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
              
         }
@@ -165,29 +164,6 @@ namespace RockWeb.Blocks.WorkFlow
                 NavigateToLinkedPage( "EntryPage", qryParam );
             }
         }
-
-        /// <summary>
-        /// Handles the RowDataBound event of the gWorkflows control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        void gWorkflows_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                Literal lActivities = e.Row.FindControl( "lActivities" ) as Literal;
-                if ( lActivities != null )
-                {
-                    var workflow = e.Row.DataItem as Workflow;
-                    if ( workflow != null )
-                    {
-                        string activities = string.Empty;
-                        workflow.ActiveActivities.ToList().ForEach( a => activities += a.ActivityType.Name + "<br/>" );
-                        lActivities.Text = activities;
-                    }
-                }
-            }
-        }
         
         /// <summary>
         /// Handles the GridRebind event of the gWorkflows control.
@@ -252,7 +228,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     WorkflowType = w,
                     Count = workflowTypeCounts[w.Id],
-                    Class = ( SelectedWorkflowTypeId.HasValue && SelectedWorkflowTypeId.Value == w.Id ) ? "success" : ""
+                    Class = ( SelectedWorkflowTypeId.HasValue && SelectedWorkflowTypeId.Value == w.Id ) ? "active" : ""
                 } );
 
             // If displaying active only, update query to exclude those workflow types without any active form actions
@@ -276,7 +252,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( selectedWorkflowType != null )
             {
-                //AddAttributeColumns( selectedWorkflowType );
+
+                AddAttributeColumns( selectedWorkflowType );
+
                 gWorkflows.DataSource = userFormActions
                     .Select( a => a.Activity.Workflow )
                     .Distinct()
@@ -284,6 +262,7 @@ namespace RockWeb.Blocks.WorkFlow
                     .ToList();
                 gWorkflows.DataBind();
                 gWorkflows.Visible = true;
+
             }
             else
             {
