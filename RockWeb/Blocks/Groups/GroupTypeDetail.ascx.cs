@@ -516,6 +516,8 @@ namespace RockWeb.Blocks.Groups
             // need WrapTransaction due to Attribute saves    
             RockTransactionScope.WrapTransaction( () =>
             {
+                rockContext.SaveChanges();
+
                 /* Save Attributes */
                 string qualifierValue = groupType.Id.ToString();
                 SaveAttributes( new GroupType().TypeId, "Id", qualifierValue, GroupTypeAttributesState, rockContext );
