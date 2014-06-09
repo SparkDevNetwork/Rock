@@ -7,7 +7,7 @@ using Rock.Plugin;
 
 namespace com.ccvonline.Residency.Migrations
 {
-    [MigrationNumber(1, "1.0.8")]
+    [MigrationNumber( 1, "1.0.8" )]
     public class CreateDb : Migration
     {
         /// <summary>
@@ -229,7 +229,7 @@ ALTER TABLE [dbo].[_com_ccvonline_Residency_Period] ADD CONSTRAINT [FK_dbo._com_
         /// </summary>
         public override void Down()
         {
-            
+
         }
     }
 }

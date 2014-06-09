@@ -67,7 +67,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 int? trackId = this.PageParameter( "TrackId" ).AsInteger();
                 hfTrackId.Value = trackId.ToString();
                 BindGrid();
-                BindGrid();
             }
 
             base.OnLoad( e );
@@ -187,7 +186,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            gList.Visible = !visible;
+            gList.Visible = visible;
         }
 
         #endregion

@@ -58,6 +58,9 @@
     <Compile Include="Data\ResidencyService.cs" />
     <Compile Include="Migrations\AddIndexes.cs" />
     <Compile Include="Migrations\CreateDb.cs" />
+    <Compile Include="Migrations\PopulateData01.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\Competency.cs" />
     <Compile Include="Model\CompetencyPerson.cs" />
     <Compile Include="Model\Period.cs" />
