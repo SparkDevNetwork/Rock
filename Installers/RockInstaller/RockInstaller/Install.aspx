@@ -1,18 +1,5 @@
 ﻿<%@ Page Language="C#"  %>
 
-<script language="CS" runat="server">
-
-    void Page_Load( object sender, EventArgs e )
-    {
-        // add timezones to dropdown
-        foreach ( TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones() )
-        {
-            ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
-        }
-    }
-    
-</script>
-
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -236,17 +223,17 @@
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Database Server</label>
-						<asp:TextBox ID="txtServerName" Text="" runat="server" CssClass="required-field form-control">localhost</asp:TextBox>
+						<asp:TextBox ID="txtServerName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Database Name</label>
-						<asp:TextBox ID="txtDatabaseName" Text="" runat="server" CssClass="required-field form-control">SignalRTest</asp:TextBox>
+						<asp:TextBox ID="txtDatabaseName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Database Username</label>
-						<asp:TextBox ID="txtUsername" Text="" runat="server" CssClass="required-field form-control">RockUser</asp:TextBox>
+						<asp:TextBox ID="txtUsername" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
@@ -254,7 +241,7 @@
 								
                         <div class="row">
                             <div class="col-md-8">
-                                <asp:TextBox ID="txtPassword" Text="rRUZew6tpsYBhXuZ"  runat="server" CssClass="required-field form-control password-field"></asp:TextBox>
+                                <asp:TextBox ID="txtPassword" TextMode="Password" runat="server" CssClass="required-field form-control password-field"></asp:TextBox>
                             </div>
                             <div class="col-md-4" style="padding-top: 6px;">
                                 <input id="show-password" type="checkbox" class="show-password" />
@@ -307,16 +294,16 @@
 
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Administrator Username</label>
-						<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text="">admin</asp:TextBox>
+						<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Administrator Password</label>
-                        <asp:TextBox ID="txtAdminPassword"  runat="server" CssClass="required-field form-control" Text="">admin</asp:TextBox>
+                        <asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
                     </div>
                     <div class="form-group">
                         <label class="control-label" for="inputEmail">Administrator Password (confirm)</label>
-                        <asp:TextBox ID="txtAdminPasswordConfirm"  runat="server" CssClass="required-field form-control" Text="">admin</asp:TextBox>
+                        <asp:TextBox ID="txtAdminPasswordConfirm" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 
                     <div class="btn-list clearfix">
@@ -369,12 +356,12 @@
 
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Internal URL <small>Used Inside Organization</small></label>
-						<asp:TextBox ID="txtInternalAddress" runat="server" placeholder="http://yourinternalsite.com/" CssClass="required-field form-control" Text="">http://rock.ccvonline.com</asp:TextBox>
+						<asp:TextBox ID="txtInternalAddress" runat="server" placeholder="http://yourinternalsite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Public URL <small>Used Externally</small></label>
-						<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://(www.)yoursite.com/" CssClass="required-field form-control" Text="">http://www.ccvonline.com</asp:TextBox>
+						<asp:TextBox ID="txtPublicAddress" runat="server" placeholder="http://(www.)yoursite.com/" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 
                     <div class="form-group">
@@ -442,17 +429,17 @@
 
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Organization Name</label>
-						<asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Church" CssClass="required-field form-control" Text="">CCV</asp:TextBox>
+						<asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Church" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Organization Default Email Address</label>
-						<asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourchurch.com" CssClass="required-field form-control" Text="">info@ccvonline.com</asp:TextBox>
+						<asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Organization Phone Number</label>
-						<asp:TextBox ID="txtOrgPhone" placeholder="(555) 555-5555" runat="server" CssClass="required-field form-control" Text="">(623) 376-2444</asp:TextBox>
+						<asp:TextBox ID="txtOrgPhone" placeholder="(555) 555-5555" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
@@ -508,7 +495,7 @@
 
 					<div class="form-group">
 						<label class="control-label" for="inputEmail">Email Server</label>
-						<asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text="">mail.ccvonline.com</asp:TextBox>
+						<asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 					</div>
 							
 					<div class="form-group">
@@ -670,6 +657,38 @@
         if ( Request["Debug"] != null )
         {
             isDebug = Convert.ToBoolean( Request["Debug"] );
+        }
+
+        if ( isDebug )
+        {
+            // set default values for input fields if debugging
+            txtServerName.Text = "localhost";
+            txtDatabaseName.Text = "RockInstallTest";
+            txtUsername.Text = "RockInstallUser";
+            txtPassword.TextMode = TextBoxMode.SingleLine;
+            txtPassword.Text = "rocktestpassword!23";
+
+            txtAdminUsername.Text = "admin";
+            txtAdminPassword.TextMode = TextBoxMode.SingleLine;
+            txtAdminPassword.Text = "admin";
+            txtAdminPasswordConfirm.TextMode = TextBoxMode.SingleLine;
+            txtAdminPasswordConfirm.Text = "admin";
+
+            txtInternalAddress.Text = "http://rock.rocksolidchurchdemo.com";
+            txtPublicAddress.Text = "http://www.rocksolidchurchdemo.com";
+
+            txtOrgName.Text = "Rock Solid Church (install)";
+            txtOrgEmail.Text = "info@rocksolidchurchdemo.com";
+            txtOrgPhone.Text = "(602) 555-5555";
+
+            txtEmailServer.Text = "mail.rocksolidchurchdemo.com";
+        }
+        
+        // load timezones
+        // add timezones to dropdown
+        foreach ( TimeZoneInfo timeZone in TimeZoneInfo.GetSystemTimeZones() )
+        {
+            ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
         }
     }
 
