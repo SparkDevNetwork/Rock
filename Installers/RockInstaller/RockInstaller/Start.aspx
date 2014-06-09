@@ -90,14 +90,28 @@
 
                     // download assembly
                     WebClient wc = new WebClient();
-                    wc.DownloadFile( serverUrl + @"\Ionic.Zip.dll", binDirectoryLocation + @"\Ionic.Zip.dll" );
+                    wc.DownloadFile( serverUrl + @"\Install.aspx", serverPath + @"\Install.aspx" );
+                    wc.DownloadFile( serverUrl + @"\InstallController.cs", serverPath + @"\InstallController.cs" );
+                    wc.DownloadFile( serverUrl + @"\Startup.cs", serverPath + @"\Startup.cs" );
+                    
+                    
+                    wc.DownloadFile( serverUrl + @"\Microsoft.AspNet.SignalR.Core.dll", binDirectoryLocation + @"\Microsoft.AspNet.SignalR.Core.dll" );
+                    wc.DownloadFile( serverUrl + @"\Microsoft.AspNet.SignalR.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.AspNet.SignalR.SystemWeb.dll" );
+                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.dll", binDirectoryLocation + @"\Microsoft.Owin.dll" );
+                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.Host.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.Owin.Host.SystemWeb.dll" );
+                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.Security.dll", binDirectoryLocation + @"\Microsoft.Owin.Security.dll" );
+                    wc.DownloadFile( serverUrl + @"\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
+
+                    wc.DownloadFile( serverUrl + @"\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
+                    wc.DownloadFile( serverUrl + @"\Microsoft.ApplicationBlocks.Data.dll", binDirectoryLocation + @"\Microsoft.ApplicationBlocks.Data.dll" );
+                    wc.DownloadFile( serverUrl + @"\RockInstaller.dll", binDirectoryLocation + @"\RockInstaller.dll" );
+                    wc.DownloadFile( serverUrl + @"\RockInstallTools.dll", binDirectoryLocation + @"\RockInstallTools.dll" );
+                    wc.DownloadFile( serverUrl + @"\Subtext.Scripting.dll", binDirectoryLocation + @"\Subtext.Scripting.dll" );
                 }
                 
             }
             catch ( Exception ex ) { }
-            
-            
-            
+
             pnlRedirect.Visible = true;
         }
     }
