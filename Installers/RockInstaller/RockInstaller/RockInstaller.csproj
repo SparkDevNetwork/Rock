@@ -89,7 +89,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="rock-installer.less" />
+    <Content Include="images\done.svg" />
+    <Content Include="images\favicon.ico" />
+    <Content Include="images\welcome.jpg" />
+    <Content Include="Styles\rock-installer.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -99,12 +102,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="rock-installer.css" />
     <Content Include="Scripts\jquery.signalR-2.0.3.min.js" />
     <Content Include="Install.aspx" />
     <Content Include="Scripts\rock-install.js" />
     <Content Include="Default.aspx" />
     <Content Include="Start.aspx" />
+    <Content Include="Styles\rock-installer.css" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
