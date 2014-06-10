@@ -23,14 +23,16 @@ using Rock;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
+using Rock.Data;
+using Rock.Constants;
 
 namespace RockWeb.Plugins.com_ccvonline.Residency
 {
     [DisplayName( "Resident Name" )]
     [Category( "CCV > Residency" )]
-    [Description( "Block that simply shows a resident's name" )]
+    [Description( "Simple block used to add or view a Resident" )]
 
-    public partial class PersonDetail : RockBlock, IDetailBlock
+    public partial class PersonDetail : RockBlock
     {
         #region Control Methods
 
@@ -44,16 +46,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
+                string groupId = PageParameter( "GroupId" );
+                string personId = PageParameter( "PersonId" );
 
-                if ( personId != 0 )
-                {
-                    ShowDetail( "PersonId", personId );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( "PersonId", int.Parse( personId ), groupId.AsInteger() ?? 0 );
             }
         }
 
@@ -90,11 +86,109 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         }
 
         /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        private void ShowReadonlyDetails( Person person )
+        {
+            SetEditMode( false );
+
+            lblMainDetails.Text = new DescriptionList()
+                .Add( "Name", person )
+                .Html;
+        }
+
+        #endregion
+
+        #region Edit Events
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            SetEditMode( false );
+
+            if ( hfPersonId.ValueAsInt().Equals( 0 ) )
+            {
+                // Cancelling on Add.  Return to Grid
+                NavigateToParentPage();
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                PersonService personService = new PersonService( new RockContext() );
+                Person item = personService.Get( hfPersonId.ValueAsInt() );
+                ShowReadonlyDetails( item );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            PersonService personService = new PersonService( new RockContext() );
+            Person item = personService.Get( hfPersonId.ValueAsInt() );
+            ShowEditDetails( item );
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            fieldsetViewDetails.Visible = !editable;
+
+            HideSecondaryBlocks( editable );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            if ( !ppPerson.PersonId.HasValue )
+            {
+                // controls will render error messages
+                return;
+            }
+
+
+            // NOTE: this block only saves when adding a record
+            var rockContext = new RockContext();
+            int groupId = hfGroupId.ValueAsInt();
+            Group group = new GroupService( rockContext ).Get( groupId );
+            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            GroupMember groupMember = new GroupMember();
+            groupMember.GroupId = group.Id;
+
+            groupMember.PersonId = ppPerson.PersonId.Value;
+            groupMember.GroupRoleId = group.GroupType.DefaultGroupRoleId ?? 0;
+            groupMemberService.Add( groupMember );
+            rockContext.SaveChanges();
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams["PersonId"] = groupMember.PersonId.ToString();
+            qryParams["GroupId"] = groupMember.GroupId.ToString();
+            NavigateToPage( this.RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupId">The group identifier.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int groupId )
         {
             // return if unexpected itemKey 
             if ( itemKey != "PersonId" )
@@ -104,23 +198,52 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             pnlDetails.Visible = true;
 
-            // this is always just a View block (they are added/edited on the GroupMember block)
-            Person person = new ResidencyService<Person>( new ResidencyContext() ).Get( itemKeyValue );
+            // Load depending on Add(0) or Edit
+            Person person = null;
+            var rockContext = new RockContext();
 
-            ShowReadonlyDetails( person );
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                person = new PersonService( rockContext ).Get( itemKeyValue );
+                lActionTitle.Text = ActionTitle.Edit( "Resident" );
+            }
+            else
+            {
+                person = new Person { Id = 0 };
+                lActionTitle.Text = ActionTitle.Add( "Resident" );
+            }
+
+            hfPersonId.Value = person.Id.ToString();
+            hfGroupId.Value = groupId.ToString();
+
+            if ( person.Id > 0 )
+            {
+                ShowReadonlyDetails( person );
+            }
+            else
+            {
+                ShowEditDetails( person );
+            }
         }
 
         /// <summary>
-        /// Shows the readonly details.
+        /// Shows the edit details.
         /// </summary>
-        /// <param name="person">The person.</param>
-        private void ShowReadonlyDetails( Person person )
+        /// <param name="person">The residency period.</param>
+        private void ShowEditDetails( Person person )
         {
-            fieldsetViewDetails.Visible = true;
+            if ( person.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( "Resident" );
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( "Resident" );
+            }
 
-            lblMainDetails.Text = new DescriptionList()
-                .Add( "Name", person )
-                .Html;
+            SetEditMode( true );
+
+            ppPerson.SetValue( person );
         }
 
         #endregion

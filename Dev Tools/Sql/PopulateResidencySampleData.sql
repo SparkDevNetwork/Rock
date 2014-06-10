@@ -88,5 +88,5 @@ select  @groupTypeId = [Id] from dbo.GroupType where Guid = '00043CE6-EB1B-43B5-
 
 delete from [dbo].[Group] where [Guid] = '4B7D22E8-B08C-42DC-B1F1-F2834BC8D1DF';
 
-INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
-                            VALUES (0,null,@groupTypeId,null,'Residents - Fall 2013 to Spring 2014','Residents in the Residency program for the Fall 2013 to Spring 2014 period.',0,1,'4B7D22E8-B08C-42DC-B1F1-F2834BC8D1DF');
+INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Order],[Guid])
+                            VALUES (0,null,@groupTypeId,null,'Residents - Fall 2013 to Spring 2014','Residents in the Residency program for the Fall 2013 to Spring 2014 period.',0,1,0,'4B7D22E8-B08C-42DC-B1F1-F2834BC8D1DF');

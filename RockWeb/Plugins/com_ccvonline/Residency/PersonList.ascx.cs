@@ -85,7 +85,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gList_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "PersonId", 0, "GroupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId, "GroupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "PersonId", e.RowKeyId, "GroupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -109,9 +109,16 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             var residencyContext = new ResidencyContext();
 
             var groupMemberService = new GroupMemberService( rockContext );
-            int groupMemberId = e.RowKeyId;
+            int personId = e.RowKeyId;
+            int groupId = hfGroupId.ValueAsInt();
+            var group = new GroupService( rockContext ).Get( groupId );
+            int? groupRoleId = null;
+            if ( group != null )
+            {
+                groupRoleId = group.GroupType.DefaultGroupRoleId;
+            }
 
-            GroupMember groupMember = groupMemberService.Get( groupMemberId );
+            GroupMember groupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( groupId, personId, groupRoleId ?? 0 );
             if ( groupMember != null )
             {
                 // check if person can be removed from the Group and also check if person can be removed from all the person assigned competencies
@@ -201,7 +208,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             var dataResult = groupMemberCompetencies.Select( a => new
             {
-                Id = a.GroupMember.Id,
+                Id = a.GroupMember.PersonId,
                 FullName = a.GroupMember.Person.FullName,
                 CompetencyCount = a.ResidentCompentencies == null ? 0 : a.ResidentCompentencies.Count(),
                 CompletedProjectAssessmentsTotal = competencyPersonProjectQry.Where( g => g.PersonId == a.GroupMember.PersonId ).Select( g => g.CompletedProjectAssessmentsTotal ).FirstOrDefault(),
