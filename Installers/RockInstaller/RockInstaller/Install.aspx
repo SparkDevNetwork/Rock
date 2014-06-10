@@ -5,24 +5,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
-
-    <link href="rock-installer.css" rel="stylesheet">
-
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
     
-    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
-    
-    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
 
-    <% if (isDebug == true) {%>
-        <script src="Scripts/jquery.signalR-2.0.3.min.js"></script>
-        <script src="Scripts/rock-install.js"></script>
-    <% } else { %>
-        <script src="<%=String.Format("{0}jquery.signalR.min.js", baseStorageUrl) %>"></script>
-        <script src="<%=String.Format("{0}rock-install.js", baseStorageUrl) %>"></script>
-    <% } %>
+    <script src="<%=String.Format("{0}Scripts/jquery.signalR.min.js", storageUrl) %>"></script>
+    <script src="<%=String.Format("{0}Scripts/rock-install.js", storageUrl) %>"></script>
+    <link href="<%=String.Format("{0}Styles/rock-installer.css", storageUrl) %>" rel="stylesheet" />
+    <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", storageUrl) %>" />
 
     <script src="/signalr/hubs" type="text/javascript"></script>
 
@@ -199,7 +191,7 @@
                 
                 <!-- welcome panel -->
                 <div id="pnlWelcome">
-                    <img src="<%=storageUrl %>/welcome.jpg" />
+                    <img src="<%=storageUrl %>images/welcome.jpg" />
 
                     <div class="btn-list clearfix">
 						<a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Install Video</a>
@@ -595,11 +587,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div id="pnlDone">
-                                <% if (isDebug == true) {%>
-                                    <img src="done.svg" style="width: 100%;" />
-                                <% } else { %>
-                                    <%=String.Format("<img src='{0}done.svg' style='width: 100%; max-width: 400px;' />", baseStorageUrl) %>
-                                <% } %>
+                                <%=String.Format("<img src='{0}images/done.svg' style='width: 100%; max-width: 400px;' />", storageUrl) %>
                             </div>
                             <script>
                                 // toggle console
@@ -614,7 +602,7 @@
                             <p>Congratulations, this install is in the bag. All that's left is to startup Rock and login.</p>
 
                             <div class="alert alert-info">
-                                <strong>Be Aware</strong>Rock can take a minute or two to start, that's normal. See you on the other side.
+                                <strong>Be Aware</strong> Rock can take a minute or two to start, that's normal. See you on the other side.
                             </div>
 
                             <div id="pnlVideo" style="display: none;">
@@ -682,6 +670,8 @@
             txtOrgPhone.Text = "(602) 555-5555";
 
             txtEmailServer.Text = "mail.rocksolidchurchdemo.com";
+
+            storageUrl = "/";
         }
         
         // load timezones

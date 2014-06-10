@@ -221,7 +221,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // download rock
             UpdateStep( "step-downloadsql", "Step 2: Downloading Rock" );
@@ -234,7 +234,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // create database
             UpdateStep( "step-downloadrock", "Step 3: Creating Database" );
@@ -247,7 +247,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // configuring rock
             UpdateStep( "step-sql", "Step 4: Configuring Rock" );
@@ -259,7 +259,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // unzip rock
             UpdateStep( "step-configure", "Step 5: Installing Rock Application" );
@@ -272,7 +272,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // delete the installer
             result = DeleteInstaller( installData );
@@ -283,7 +283,7 @@ namespace RockInstaller
                 return;
             }
 
-            Thread.Sleep( 500 ); // slow the process to let progress bars catchup
+            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
             // show install success, goodbye
             this.ShowSuccess();
@@ -299,7 +299,7 @@ namespace RockInstaller
             string serverDir = baseStorageUrl + installData.InstallerProperties.InstallVersion;
             this.SendConsoleMessage( "Downloading file: " + serverDir + "/data/" + sqlScripts );
 
-            result = DownloadFile( serverDir + "/data/" + sqlScripts, serverPath + @"\" + sqlScripts, 10, 1 );
+            result = DownloadFile( serverDir + "/Data/" + sqlScripts, serverPath + @"\" + sqlScripts, 10, 1 );
 
             this.SendConsoleMessage( "File Download Complete!" );
 
@@ -315,7 +315,7 @@ namespace RockInstaller
             string rockURL = baseStorageUrl + installData.InstallerProperties.InstallVersion;
             this.SendConsoleMessage( "Downloading file: " + rockURL + "/data/" + rockSource );
 
-            result = DownloadFile( rockURL + "/data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
+            result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
 
             this.SendConsoleMessage( "File Download Complete!" );
 
@@ -596,6 +596,11 @@ namespace RockInstaller
                     result.Success = false;
                     result.Message = ex.Message;
                 }
+            }
+            else
+            {
+                // if it is a debug session let's do delete the connection string file
+                File.Delete( serverPath + @"web.ConnectionStrings.config" );
             }
 
             // these files should be deleted even in the developer environment
