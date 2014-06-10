@@ -64,6 +64,7 @@ namespace Rock.Rest.Controllers
                 string displayText = block.GetAttributeValue( "DisplayText" );
 
                 List<Guid> metricCategoryGuids = block.GetAttributeValue( "MetricCategories" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
+                bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
 
                 RockContext rockContext = new RockContext();
                 MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
@@ -103,11 +104,12 @@ namespace Rock.Rest.Controllers
                     var lastMetricValue = qryMeasureValues.OrderByDescending( a => a.MetricValueDateTime ).FirstOrDefault();
                     if ( lastMetricValue != null )
                     {
-                        metricYTDData.LastValue = lastMetricValue.YValue;
+                        metricYTDData.LastValue = lastMetricValue.YValue.HasValue ? Math.Round( lastMetricValue.YValue.Value, roundYValues ? 0 : 2) : (decimal?)null;
                         metricYTDData.LastValueDate = lastMetricValue.MetricValueDateTime.HasValue ? lastMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
                     }
 
-                    metricYTDData.CumulativeValue = qryMeasureValues.Sum( a => a.YValue );
+                    decimal? sum = qryMeasureValues.Sum( a => a.YValue );
+                    metricYTDData.CumulativeValue = sum.HasValue ? Math.Round(sum.Value, roundYValues ? 0 : 2) : (decimal?)null;
 
                     // figure out goal as of current date time by figuring out the slope of the goal
                     var qryGoalValuesCurrentYear = metricValueService.Queryable()
@@ -132,9 +134,9 @@ namespace Rock.Rest.Controllers
                         var changeInY = goalLineEndPoint.YValue - goalLineStartPoint.YValue;
                         if ( changeInX != 0 )
                         {
-                            var slope = changeInY / changeInX;
-                            var goalValue = ( ( slope * ( currentDateTime.ToJavascriptMilliseconds() - goalLineStartPoint.DateTimeStamp ) ) + goalLineStartPoint.YValue ).Value;
-                            metricYTDData.GoalValue = Math.Round( goalValue, 2 );
+                            decimal? slope = changeInY / changeInX;
+                            decimal goalValue = ( ( slope * ( currentDateTime.ToJavascriptMilliseconds() - goalLineStartPoint.DateTimeStamp ) ) + goalLineStartPoint.YValue ).Value;
+                            metricYTDData.GoalValue = Math.Round( goalValue, roundYValues ? 0 : 2 );
                         }
                     }
                     else
@@ -187,7 +189,7 @@ namespace Rock.Rest.Controllers
         /// The last value.
         /// </value>
         [DataMember]
-        public decimal? LastValue { get; set; }
+        public object LastValue { get; set; }
 
         /// <summary>
         /// Gets or sets the last value date.
@@ -205,7 +207,7 @@ namespace Rock.Rest.Controllers
         /// The cumulative value.
         /// </value>
         [DataMember]
-        public decimal? CumulativeValue { get; set; }
+        public object CumulativeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the goal value.
@@ -214,6 +216,6 @@ namespace Rock.Rest.Controllers
         /// The goal value.
         /// </value>
         [DataMember]
-        public decimal? GoalValue { get; set; }
+        public object GoalValue { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace Rock
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} to {1}", Start, End );
+            return string.Format( "{0} to {1}", Start.HasValue ? Start.Value.ToString( "f" ) : null, End.HasValue ? End.Value.ToString( "f" ) : null );
         }
     }
 }

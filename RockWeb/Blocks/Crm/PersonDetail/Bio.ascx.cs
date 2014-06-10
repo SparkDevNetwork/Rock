@@ -37,8 +37,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [DisplayName( "Person Bio" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
-    [PersonBadgesField("Badges")]
-    [LinkedPage( "Business Detail Page" )]
+
+    [PersonBadgesField("Badges", "The label badges to display in this block.", false, "", "", 0)]
+    [CodeEditorField("Actions", @"
+Custom html content to display as a list of actions. Any instance of '{0}' will be replaced with the current person's id.
+Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
+&lt;li&gt; element for each available action.  Example:
+<pre>
+    &lt;li&gt;
+        &lt;a href='~/LaunchWorkflow/1?PersonId={0}' tabindex='0'&gt;First Action&lt;/a&gt;
+        &lt;a href='~/LaunchWorkflow/2?PersonId={0}' tabindex='0'&gt;Second Action&lt;/a&gt;
+        &lt;a href='~/LaunchWorkflow/3?PersonId={0}' tabindex='0'&gt;Third Action&lt;/a&gt;
+    &lt;/li&gt;
+    &lt;li class='divider'&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href='~/LaunchWorkflow/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
+</pre>
+", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 1 )]
+    [LinkedPage( "Business Detail Page", "The page to redirect user to if a business is is requested.", false, "", "", 2 )]
     public partial class Bio : PersonBlock
     {
         #region Base Control Methods
@@ -67,6 +82,44 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 // Set the browser page title to include person's name
                 RockPage.BrowserTitle = Person.FullName;
+
+                string badgeList = GetAttributeValue( "Badges" );
+                if ( !string.IsNullOrWhiteSpace( badgeList ) )
+                {
+                    foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                    {
+                        Guid guid = badgeGuid.AsGuid();
+                        if ( guid != Guid.Empty )
+                        {
+                            var personBadge = PersonBadgeCache.Read( guid );
+                            if ( personBadge != null )
+                            {
+                                blStatus.PersonBadges.Add( personBadge );
+                            }
+                        }
+                    }
+                }
+
+                var actions = GetAttributeValue( "Actions" );
+                if (!string.IsNullOrWhiteSpace(actions))
+                {
+                    ulActions.Visible = true;
+
+                    string appRoot = ResolveRockUrl( "~/" );
+                    string themeRoot = ResolveRockUrl( "~~/" );
+                    actions = actions.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
+                    if ( actions.Contains( "{0}" ) )
+                    {
+                        actions = string.Format( actions, Person.Id );
+                    }
+
+                    lActions.Text = actions;
+                }
+                else
+                {
+                    ulActions.Visible = false;
+                }
             }
 
         }
@@ -198,26 +251,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     taglPersonTags.EntityGuid = Person.Guid;
                     taglPersonTags.GetTagValues( CurrentPersonId );
 
-                    if ( !Page.IsPostBack )
-                    {
-                        string badgeList = GetAttributeValue( "Badges" );
-                        if ( !string.IsNullOrWhiteSpace( badgeList ) )
-                        {
-                            foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
-                            {
-                                Guid guid = badgeGuid.AsGuid();
-                                if ( guid != Guid.Empty )
-                                {
-                                    var personBadge = PersonBadgeCache.Read( guid );
-                                    if ( personBadge != null )
-                                    {
-                                        blStatus.PersonBadges.Add( personBadge );
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     // Every person should have an alias record with same id.  If it's missing, create it
                     if ( !Person.Aliases.Any( a => a.AliasPersonId == Person.Id ) )
                     {
@@ -232,6 +265,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
             }
+        }
+
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
         }
 
         #endregion

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
@@ -27,50 +26,16 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [DisplayName( "Line Chart" )]
     [Category( "Dashboard" )]
     [Description( "DashboardWidget using flotcharts" )]
-    public partial class LineChartDashboardWidget : ChartDashboardWidget
+    public partial class LineChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
-        /// <summary>
-        /// Loads the chart.
-        /// </summary>
-        public override void LoadChart()
+        public override Rock.Web.UI.Controls.FlotChart FlotChartControl
         {
-            lcExample.StartDate = this.DateRange.Start;
-            lcExample.EndDate = this.DateRange.End;
-            lcExample.MetricValueType = this.MetricValueType;
-            lcExample.MetricId = this.MetricId;
-            lcExample.EntityId = this.EntityId;
-            lcExample.Title = this.Title;
-            lcExample.Subtitle = this.Subtitle;
-            lcExample.CombineValues = this.CombineValues;
-            lcExample.ShowTooltip = true;
-            if ( this.DetailPageGuid.HasValue )
-            {
-                lcExample.ChartClick += lcExample_ChartClick;
-            }
-
-            lcExample.Options.SetChartStyle( this.ChartStyle );
-
-            string debug = this.ChartStyle.ToJson( false );
-
-            nbMetricWarning.Visible = !this.MetricId.HasValue;
+            get { return lcChart; }
         }
 
-        /// <summary>
-        /// Lcs the example_ chart click.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        public void lcExample_ChartClick( object sender, Rock.Web.UI.Controls.FlotChart.ChartClickArgs e )
+        public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
-            if (this.DetailPageGuid.HasValue)
-            {
-                Dictionary<string, string> qryString = new Dictionary<string,string>();
-                qryString.Add( "MetricId", this.MetricId.ToString() );
-                qryString.Add( "SeriesId", e.SeriesId );
-                qryString.Add( "YValue", e.YValue.ToString() );
-                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString("o") );
-                NavigateToPage( this.DetailPageGuid.Value, qryString );
-            }
+            get { return nbMetricWarning; }
         }
     }
 }

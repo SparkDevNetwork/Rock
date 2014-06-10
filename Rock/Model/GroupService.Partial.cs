@@ -98,7 +98,7 @@ namespace Rock.Model
             {
                 if ( rootGroupId != 0 )
                 {
-                    qry = qry.Where( a => a.Id == rootGroupId );
+                    qry = qry.Where( a => a.ParentGroupId == rootGroupId );
                 }
                 else
                 {

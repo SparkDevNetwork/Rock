@@ -48,7 +48,6 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
-
         #region Fields
 
         /// <summary>
@@ -92,30 +91,39 @@ namespace RockWeb
         {
             try
             {
+                DateTime startDateTime = RockDateTime.Now;
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-                // Run any needed Rock and/or plugin migrations
-                MigrateDatabase();
-
                 // Get a db context
                 var rockContext = new RockContext();
-
-                RegisterRoutes( rockContext, RouteTable.Routes );
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
+                }
+
+
+                RegisterRoutes( rockContext, RouteTable.Routes );
+
+                // Run any needed Rock and/or plugin migrations
+                if (MigrateDatabase())
+                {
+                    // If one or more migrations were run, re-register the routes in case a migration added any new routes
+                    RegisterRoutes( rockContext, RouteTable.Routes );
                 }
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
@@ -160,6 +168,8 @@ namespace RockWeb
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
+                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );
@@ -173,7 +183,6 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
-
             }
             catch ( Exception ex )
             {
@@ -451,13 +460,17 @@ namespace RockWeb
         /// <summary>
         /// Migrates the database.
         /// </summary>
-        public void MigrateDatabase()
+        /// <returns>True if at least one migration was run</returns>
+        public bool MigrateDatabase()
         {
+            bool result = false;
+
             // Check if database should be auto-migrated for the core and plugins
             if ( ConfigurationManager.AppSettings["AutoMigrateDatabase"].AsBoolean( true ) )
             {
                 try
                 {
+
                     Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
 
                     var rockContext = new RockContext();
@@ -467,12 +480,17 @@ namespace RockWeb
                     {
                         // If database did not exist, initialize a database (which runs existing Rock migrations)
                         rockContext.Database.Initialize( true );
+                        result = true;
                     }
                     else
                     {
                         // If database does exist, run any pending Rock migrations
                         var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                        migrator.Update();
+                        if ( migrator.GetPendingMigrations().Any() )
+                        {
+                            migrator.Update();
+                            result = true;
+                        }
                     }
 
                     // Migrate any plugins that have pending migrations
@@ -543,6 +561,8 @@ namespace RockWeb
                                                 pluginMigration.MigrationName = migrationType.Value.Name;
                                                 pluginMigrationService.Add( pluginMigration );
                                                 rockContext.SaveChanges();
+
+                                                result = true;
                                             }
                                             catch ( Exception ex )
                                             {
@@ -573,6 +593,8 @@ namespace RockWeb
                 // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
+
+            return result;
         }
 
         /// Formats the exception.
@@ -630,6 +652,8 @@ namespace RockWeb
         /// <param name="routes">The routes.</param>
         private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
         {
+            routes.Clear();
+
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
             // find each page that has defined a custom routes.
@@ -733,9 +757,19 @@ namespace RockWeb
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
             foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
             {
-                if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                try
+                {
+                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                    {
+                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                    }
+
+                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                }
+                catch (Exception ex)
+                {
+                    LogError( ex, null );
+                }
             }
 
             // Cache all the attributes.
@@ -769,6 +803,8 @@ namespace RockWeb
 
         private void Error66( Exception ex )
         {
+            LogError( ex, HttpContext.Current );
+
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
                 try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler

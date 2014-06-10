@@ -39,6 +39,8 @@ namespace Rock.Web.UI.Controls
         {
  	         base.OnInit(e);
              base.DefaultText = "Add Merge Field";
+
+             this.CssClass += " picker-mergefield picker-novalue";
         }
 
         /// <summary>
@@ -50,7 +52,7 @@ namespace Rock.Web.UI.Controls
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
-                this.CssClass += " picker-mergefield picker-novalue";
+                //this.CssClass += " picker-mergefield picker-novalue";
             }
         }
         

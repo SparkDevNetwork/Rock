@@ -30,10 +30,37 @@ namespace Rock.Web.UI.Controls
         public PieChart()
         {
             this.Options.series = new SeriesOptions( false, false, false );
-            this.Options.series.pie = new Pie { show = true };
-            this.Options.series.pie.label = new PieLabel { show = true };
-            this.Options.legend = this.Options.legend ?? new Legend();
-            this.Options.legend.show = false;
+
+            this.Options.series.pie = new Pie();
+            this.Options.legend = new Legend();
+        }
+
+        /// <summary>
+        /// Gets the pie options.
+        /// </summary>
+        /// <value>
+        /// The pie options.
+        /// </value>
+        public Pie PieOptions
+        {
+            get
+            {
+                return this.Options.series.pie;
+            }
+        }
+
+        /// <summary>
+        /// Gets the legend.
+        /// </summary>
+        /// <value>
+        /// The legend.
+        /// </value>
+        public Legend Legend
+        {
+            get
+            {
+                return this.Options.legend;
+            }
         }
     }
 }

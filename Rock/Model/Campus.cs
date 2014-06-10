@@ -144,17 +144,17 @@ namespace Rock.Model
         /// To the liquid.
         /// </summary>
         /// <returns></returns>
-        public override object ToLiquid()
+        public override object ToLiquid( bool debug )
         {
-            var mergeFields = base.ToLiquid() as Dictionary<string, object>;
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
 
             var serviceTimes = new Dictionary<string, object>();
 
             string[] KeyValues = ServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
-            foreach( string keyValue in KeyValues)
+            foreach ( string keyValue in KeyValues )
             {
                 var dayTime = keyValue.Split( new char[] { '^' } );
-                if (dayTime.Length == 2)
+                if ( dayTime.Length == 2 )
                 {
                     var serviceTime = new Dictionary<string, string>();
                     serviceTime.Add( "Day", dayTime[0] );
@@ -168,6 +168,7 @@ namespace Rock.Model
 
             return mergeFields;
         }
+
         #endregion
 
     }

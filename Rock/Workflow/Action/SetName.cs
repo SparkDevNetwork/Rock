@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                nameValue = action.GetWorklowAttributeValue( guid );
+                nameValue = action.GetWorklowAttributeValue( guid, true, true );
             }
 
             if ( !string.IsNullOrWhiteSpace( nameValue ) )

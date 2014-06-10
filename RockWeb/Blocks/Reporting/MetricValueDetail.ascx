@@ -26,12 +26,7 @@
                         <Rock:RockDropDownList ID="ddlMetricValueType" runat="server" Label="Type" />
                         <Rock:DateTimePicker ID="dtpMetricValueDateTime" runat="server" Label="Value Date/Time" />
                         <Rock:NumberBox ID="tbYValue" runat="server" Label="Value" NumberType="Double" />
-
                         <Rock:DataTextBox ID="tbXValue" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="XValue" />
-                        
-                        
-                        
-                        
                     </div>
                     <div class="col-md-6">
                         <asp:PlaceHolder ID="phEntityTypeEntityIdValue" runat="server" />

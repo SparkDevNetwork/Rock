@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select a metric in the block settings." />
-        <Rock:BarChart ID="bcExample" runat="server" />
+        <Rock:BarChart ID="bcChart" runat="server" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

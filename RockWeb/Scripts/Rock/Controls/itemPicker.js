@@ -64,6 +64,11 @@
                     .on('rockTree:selected', function () {
                         // intentionally blank
                     })
+                    .on('rockTree:itemClicked', function (e) {
+                        if (!self.options.allowMultiSelect) {
+                            $control.find('.picker-btn').get(0).click();
+                        }
+                    })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                         self.updateScrollbar();
                     });

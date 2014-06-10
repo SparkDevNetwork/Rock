@@ -48,8 +48,7 @@ namespace Rock.Model
         /// <value>
         /// The x value.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember( IsRequired = false )]
         public string XValue { get; set; }
 
         /// <summary>

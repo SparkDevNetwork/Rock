@@ -78,10 +78,13 @@ namespace Rock.Attribute
                 var contextAttribute = (ContextAwareAttribute)customAttribute;
                 if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
-                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                    properties++;
+                    if ( contextAttribute.IsConfigurable )
+                    {
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
 
-                    blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    }
                 }
             }
 
@@ -932,16 +935,21 @@ namespace Rock.Attribute
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
-        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null )
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
+        public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             foreach ( var attributeCategory in attributeCategories )
             {
-                HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+                if ( showHeading )
+                {
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                parentControl.Controls.Add( header );
+                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                    parentControl.Controls.Add( header );
+                }
 
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );

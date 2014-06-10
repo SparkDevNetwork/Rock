@@ -290,7 +290,7 @@ namespace Rock.Data
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
-        public virtual object ToLiquid()
+        public object ToLiquid()
         {
             return this.ToLiquid( false );
         }
@@ -323,7 +323,11 @@ namespace Rock.Data
                         propValue = ( (Guid)propValue ).ToString();
                     }
 
-                    if ( debug && propValue is DotLiquid.ILiquidizable )
+                    if ( debug && propValue is IEntity )
+                    {
+                        dictionary.Add( propInfo.Name, ( (IEntity)propValue ).ToLiquid( true ) );
+                    }
+                    else if ( debug && propValue is DotLiquid.ILiquidizable )
                     {
                         dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
                     }

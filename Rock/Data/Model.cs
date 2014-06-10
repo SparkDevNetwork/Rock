@@ -258,15 +258,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public override object ToLiquid()
-        {
-            return this.ToLiquid( false );
-        }
-
-        /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
@@ -290,9 +281,21 @@ namespace Rock.Data
                 {
                     if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
                     {
+                        int keySuffix = 0;
+                        string key = attribute.Key;
+                        while ( dictionary.ContainsKey( key ) )
+                        {
+                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
+                        }
+
+                        var field = attribute.Value.FieldType.Field;
                         string value = GetAttributeValue( attribute.Key );
-                        dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                        dictionary.Add( attribute.Key + "_unformatted", value );
+                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( key + "_unformatted", value );
+                        if (field is Rock.Field.ILinkableFieldType)
+                        {
+                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                        }
                     }
                 }
             }

@@ -565,7 +565,7 @@ namespace Rock.Web.UI.Controls
             if ( this.GetType() == typeof( PieChart ) )
             {
                 scriptFormat += @"
-                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector, combineValues);
+                Rock.controls.charts.plotPieChartData(chartData, chartOptions, plotSelector);
                 
 ";
             }
