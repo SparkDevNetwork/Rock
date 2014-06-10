@@ -254,7 +254,17 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^^^" };
+                result.WorkflowForm = _formEditor.Form;
+                if ( result.WorkflowForm == null )
+                {
+                    result.WorkflowForm = new WorkflowActionForm();
+                    result.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    var systemEmail = new SystemEmailService(new RockContext()).Get(SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid());
+                    if ( systemEmail != null )
+                    {
+                        result.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                    }
+                }
             }
             else
             {
@@ -306,7 +316,17 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^^^" };
+                if (value.WorkflowForm == null)
+                {
+                    value.WorkflowForm = new WorkflowActionForm();
+                    value.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    var systemEmail = new SystemEmailService( new RockContext() ).Get( SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+                    if ( systemEmail != null )
+                    {
+                        value.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                    }
+                }
+                _formEditor.Form = value.WorkflowForm;
                 _cbIsActionCompletedOnSuccess.Checked = true;
                 _cbIsActionCompletedOnSuccess.Enabled = false;
             }

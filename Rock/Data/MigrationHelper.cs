@@ -2001,5 +2001,77 @@ INSERT INTO [dbo].[Auth]
         }
 
         #endregion
+
+        #region SystemEmail
+
+        /// <summary>
+        /// Updates the system email.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="to">To.</param>
+        /// <param name="cc">The cc.</param>
+        /// <param name="bcc">The BCC.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateSystemEmail( string category, string title, string from, string fromName, string to,
+            string cc, string bcc, string subject, string body, string guid )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [SystemEmail] WHERE [guid] = '{9}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [SystemEmail] (
+                        [IsSystem],[Category],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid])
+                    VALUES(
+                        1,'{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [SystemEmail] SET 
+                        [Category] = '{0}',
+                        [Title] = '{1}',
+                        [From] = '{2}',
+                        [FromName] = '{3}',
+                        [To] = '{4}',
+                        [Cc] = '{5}',
+                        [Bcc] = '{6}',
+                        [Subject] = '{7}',
+                        [Body] = '{8}'
+                    WHERE [Guid] = '{9}'
+                END
+",
+                    category.Replace( "'", "''" ),
+                    title.Replace( "'", "''" ),
+                    from.Replace( "'", "''" ),
+                    fromName.Replace( "'", "''" ),
+                    to.Replace( "'", "''" ),
+                    cc.Replace( "'", "''" ),
+                    bcc.Replace( "'", "''" ),
+                    subject.Replace( "'", "''" ),
+                    body.Replace( "'", "''" ),
+                    guid ) );
+        }
+
+        /// <summary>
+        /// Deletes the SystemEmail.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSystemEmail( string guid )
+        {
+            Migration.Sql( string.Format( @"
+                DELETE [SystemEmail] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
     }
 }
