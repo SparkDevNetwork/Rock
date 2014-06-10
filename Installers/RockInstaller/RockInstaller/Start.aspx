@@ -6,6 +6,7 @@
 
     const string requiredDotnetVersion = "4.5.1";
     public string redirectPage = string.Empty;
+    public string serverUrl = "http://storage.rockrms.com/install/";
 
     void Page_Load( object sender, EventArgs e )
     {        
@@ -74,47 +75,109 @@
             
             
             // download files
-            string serverPath = Server.MapPath( "." );
+            string serverPath = Server.MapPath( "." ) + @"\";
             string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
-            string serverUrl = "http://storage.rockrms.com/" + version;
+            serverUrl += version + "/";
+
+            bool downloadSuccessful = true;
             
             try
             {
-                if ( !isDebug )
+                if ( isDebug )
                 {
+                    serverUrl = "/";
+                } else {
                     // create the bin directory
                     if ( !Directory.Exists( binDirectoryLocation ) )
                     {
                         Directory.CreateDirectory( binDirectoryLocation );
                     }
 
-                    // download assembly
-                    WebClient wc = new WebClient();
-                    wc.DownloadFile( serverUrl + @"\Install.aspx", serverPath + @"\Install.aspx" );
-                    wc.DownloadFile( serverUrl + @"\InstallController.cs", serverPath + @"\InstallController.cs" );
-                    wc.DownloadFile( serverUrl + @"\Startup.cs", serverPath + @"\Startup.cs" );
-                    
-                    
-                    wc.DownloadFile( serverUrl + @"\Microsoft.AspNet.SignalR.Core.dll", binDirectoryLocation + @"\Microsoft.AspNet.SignalR.Core.dll" );
-                    wc.DownloadFile( serverUrl + @"\Microsoft.AspNet.SignalR.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.AspNet.SignalR.SystemWeb.dll" );
-                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.dll", binDirectoryLocation + @"\Microsoft.Owin.dll" );
-                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.Host.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.Owin.Host.SystemWeb.dll" );
-                    wc.DownloadFile( serverUrl + @"\Microsoft.Owin.Security.dll", binDirectoryLocation + @"\Microsoft.Owin.Security.dll" );
-                    wc.DownloadFile( serverUrl + @"\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
+                    // download files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "Install.aspx", serverUrl, serverPath );
+                    }
 
-                    wc.DownloadFile( serverUrl + @"\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
-                    wc.DownloadFile( serverUrl + @"\Microsoft.ApplicationBlocks.Data.dll", binDirectoryLocation + @"\Microsoft.ApplicationBlocks.Data.dll" );
-                    wc.DownloadFile( serverUrl + @"\RockInstaller.dll", binDirectoryLocation + @"\RockInstaller.dll" );
-                    wc.DownloadFile( serverUrl + @"\RockInstallTools.dll", binDirectoryLocation + @"\RockInstallTools.dll" );
-                    wc.DownloadFile( serverUrl + @"\Subtext.Scripting.dll", binDirectoryLocation + @"\Subtext.Scripting.dll" );
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "InstallController.cs", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "Startup.cs", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.Core.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll", serverUrl, serverPath );
+                    }
+
+                    /*
+                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.dll", binDirectoryLocation + @"\Microsoft.Owin.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.Host.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.Owin.Host.SystemWeb.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.Security.dll", binDirectoryLocation + @"\Microsoft.Owin.Security.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
+
+                    wc.DownloadFile( serverUrl + @"\bin\Ionic.Zip.dll", binDirectoryLocation + @"\Ionic.Zip.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Newtonsoft.Json.dll", binDirectoryLocation + @"\Newtonsoft.Json.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.ApplicationBlocks.Data.dll", binDirectoryLocation + @"\Microsoft.ApplicationBlocks.Data.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\RockInstaller.dll", binDirectoryLocation + @"\RockInstaller.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\RockInstallTools.dll", binDirectoryLocation + @"\RockInstallTools.dll" );
+                    wc.DownloadFile( serverUrl + @"\bin\Subtext.Scripting.dll", binDirectoryLocation + @"\Subtext.Scripting.dll" );
+                     */
                 }
                 
             }
-            catch ( Exception ex ) { }
+            catch ( Exception ex ) {
+                downloadSuccessful = false;
+            }
 
-            pnlRedirect.Visible = true;
+            if ( downloadSuccessful )
+            {
+                pnlRedirect.Visible = true;
+            }
         }
     }
+
+    private bool DownloadFile( string filename, string serverUrl, string serverPath )
+    {
+        string nextFileUrl = string.Empty;
+        string nextFilePath = string.Empty;
+
+        try
+        {
+            WebClient wc = new WebClient();
+
+            nextFileUrl = serverUrl + filename;
+            nextFilePath = serverPath + filename;
+            wc.DownloadFile( nextFileUrl, nextFilePath );
+
+            return true;
+        }
+        catch ( Exception ex )
+        {
+            lEnvironmentErrors.Visible = false;
+
+            if ( ex.InnerException != null )
+            {
+                lErrors.Text = String.Format( "<h1>An Error Occurred</h1> <div class='alert alert-danger'><strong>Error:</strong> Could not download the file {0} to {1}. Message: {2}</div>", nextFileUrl, nextFilePath, ex.InnerException.Message );
+            }
+            else
+            {
+                lErrors.Text = String.Format( "<h1>An Error Occurred</h1> <div class='alert alert-danger'><strong>Error:</strong> Could not download the file {0} to {1}. Message: {2}</div>", nextFileUrl, nextFilePath, ex.Message );
+            }
+
+            return false;
+        }
+    }
+    
  </script>
 
 
@@ -123,14 +186,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
 
-    <link href="rock-installer.css" rel="stylesheet">
+    <link href="<%=String.Format("{0}Styles/rock-installer.css", serverUrl) %>" rel="stylesheet" />
+    <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", serverUrl) %>" />
 
-    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
-    <script src="Scripts/rock-install.js"></script>
+    <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="<%=String.Format("{0}Scripts/rock-install.js", serverUrl) %>"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -176,6 +240,7 @@
                     </p>
                 </asp:Label>
 
+                <asp:Literal ID="lErrors" runat="server"></asp:Literal>
             </div>
         </div>
     </form>
