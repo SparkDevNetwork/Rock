@@ -17,13 +17,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
 
-    <link href="rock-installer.css" rel="stylesheet">
+    <link href="/Styles/rock-installer.css" rel="stylesheet" />
 
-    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
     <script src="Scripts/rock-install.js"></script>
 </head>
 <body>

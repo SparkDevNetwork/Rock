@@ -12,6 +12,32 @@
     {        
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
+
+        string version = "2_0_0";
+        bool isDebug = false;
+
+        // prepare redirect links
+        redirectPage = "Install.aspx?";
+
+        if ( Request["Version"] != null )
+        {
+            redirectPage += "Version=" + Request["Version"];
+            version = Request["Version"];
+        }
+
+        if ( Request["Debug"] != null )
+        {
+            redirectPage += "&Debug=" + Request["Debug"];
+            isDebug = Convert.ToBoolean( Request["Debug"] );
+        }
+
+        redirectPage = redirectPage.TrimEnd( '?' );
+
+
+        // download files
+        string serverPath = Server.MapPath( "." ) + @"\";
+        string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
+        serverUrl += version + "/";        
         
         // run initial checks
         // -----------------------------
@@ -53,32 +79,6 @@
         }
         else
         {
-            string version = "2_0_0";
-            bool isDebug = false;
-            
-            // prepare redirect links
-            redirectPage = "Install.aspx?";
-
-            if ( Request["Version"] != null )
-            {
-                redirectPage += "Version=" + Request["Version"];
-                version = Request["Version"];
-            }
-
-            if ( Request["Debug"] != null )
-            {
-                redirectPage += "&Debug=" + Request["Debug"];
-                isDebug = Convert.ToBoolean( Request["Debug"] );
-            }
-
-            redirectPage.TrimEnd( '?' );
-            
-            
-            // download files
-            string serverPath = Server.MapPath( "." ) + @"\";
-            string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
-            serverUrl += version + "/";
-
             bool downloadSuccessful = true;
             
             try
@@ -109,6 +109,7 @@
                         downloadSuccessful = DownloadFile( "Startup.cs", serverUrl, serverPath );
                     }
 
+                    // signalr bin files
                     if ( downloadSuccessful )
                     {
                         downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.Core.dll", serverUrl, serverPath );
@@ -119,19 +120,56 @@
                         downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll", serverUrl, serverPath );
                     }
 
-                    /*
-                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.dll", binDirectoryLocation + @"\Microsoft.Owin.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.Host.SystemWeb.dll", binDirectoryLocation + @"\Microsoft.Owin.Host.SystemWeb.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.Owin.Security.dll", binDirectoryLocation + @"\Microsoft.Owin.Security.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Owin.dll", binDirectoryLocation + @"\Owin.dll" );
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.dll", serverUrl, serverPath );
+                    }
 
-                    wc.DownloadFile( serverUrl + @"\bin\Ionic.Zip.dll", binDirectoryLocation + @"\Ionic.Zip.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Newtonsoft.Json.dll", binDirectoryLocation + @"\Newtonsoft.Json.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Microsoft.ApplicationBlocks.Data.dll", binDirectoryLocation + @"\Microsoft.ApplicationBlocks.Data.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\RockInstaller.dll", binDirectoryLocation + @"\RockInstaller.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\RockInstallTools.dll", binDirectoryLocation + @"\RockInstallTools.dll" );
-                    wc.DownloadFile( serverUrl + @"\bin\Subtext.Scripting.dll", binDirectoryLocation + @"\Subtext.Scripting.dll" );
-                     */
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.Host.SystemWeb.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.Security.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Owin.dll", serverUrl, serverPath );
+                    }
+                    
+                    // other bin files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Ionic.Zip.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Newtonsoft.Json.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.ApplicationBlocks.Data.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\RockInstaller.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\RockInstallTools.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Subtext.Scripting.dll", serverUrl, serverPath );
+                    }
                 }
                 
             }
@@ -344,6 +382,7 @@
         else
         {
             result.Message = String.Format( "The server does not have the correct .Net runtime.  You have .Net version {0} Rock requires version {1}.", version, requiredDotnetVersion );
+            result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
         }
 
         return result;
@@ -376,10 +415,18 @@
     }
     
     public class EnvironmentCheckResult {
+
+        private bool _didPass = false;
+        private string _adListItem = string.Empty;
+        private string _iconCss = string.Empty;
+        private string _message = string.Empty;
+        private string _helpText = string.Empty;
+        private string _helpLink = string.Empty;
+        
         public bool DidPass
         {
-            get;
-            set;
+            get { return this._didPass;}
+            set { this._didPass = value; }
         }
 
         public string AsListItem
@@ -394,7 +441,7 @@
         {
             get
             {
-                if ( this.DidPass )
+                if ( this._didPass )
                 {
                     return "fa fa-check-circle pass";
                 }
@@ -407,22 +454,22 @@
         
         public string Message
         {
-            get;
-            set;
+            get { return this._message; }
+            set { this._message = value; }
         }
 
         public string HelpText
         {
             get
             {
-                return String.Format( "<a href='{0}' class='btn btn-info btn-xs'>Let's Fix It Together</a>", this.HelpLink );
+                return String.Format( "<a href='{0}' class='btn btn-info btn-xs'>Let's Fix It Together</a>", this._helpLink );
             }
         }
         
         public string HelpLink
         {
-            get;
-            set;
+            get { return this._helpLink; }
+            set { this._helpLink = value; }
         }
     }
 </script>
