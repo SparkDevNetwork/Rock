@@ -1009,29 +1009,25 @@ namespace Rock.Model
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Gets the <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </summary>
         /// <value>
         /// Th <see cref="Rock.Model.UserLogin"/> of the user being impersonated.
         /// </value>
-        [NotMapped]
-        public virtual UserLogin ImpersonatedUser
+        public virtual UserLogin GetImpersonatedUser()
         {
-            get
-            {
-                UserLogin user = new UserLogin();
-                user.UserName = this.FullName;
-                user.PersonId = this.Id;
-                user.Person = this;
-                return user;
-            }
+            UserLogin user = new UserLogin();
+            user.UserName = this.FullName;
+            user.PersonId = this.Id;
+            user.Person = this;
+            return user;
         }
-
-        #endregion
-
-        #region Methods
-
+        
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
@@ -1104,6 +1100,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="gender">The gender.</param>
+        /// <param name="RecordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>

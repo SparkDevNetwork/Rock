@@ -30,8 +30,9 @@ namespace Rock.Field.Types
     /// Field used to save and display a person
     /// </summary>
     [Serializable]
-    public class PersonFieldType : FieldType, IEntityFieldType
+    public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
     {
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -54,6 +55,27 @@ namespace Rock.Field.Types
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
+
+        /// <summary>
+        /// Formats the value extended.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public string UrlLink( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                Guid guid = value.AsGuid();
+                int personId = new PersonAliasService( new RockContext() ).Queryable()
+                    .Where( a => a.Guid.Equals( guid ) )
+                    .Select( a => a.PersonId )
+                    .FirstOrDefault();
+                return string.Format( "person/{0}", personId );
+            }
+
+            return value;
         }
 
         /// <summary>

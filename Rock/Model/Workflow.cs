@@ -123,7 +123,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -163,6 +162,7 @@ namespace Rock.Model
         /// <value>
         /// The active activities.
         /// </value>
+        [NotMapped]
         public virtual IEnumerable<WorkflowActivity> ActiveActivities
         {
             get
@@ -172,6 +172,22 @@ namespace Rock.Model
                     .OrderBy( a => a.ActivityType.Order );
             }
         }
+
+        /// <summary>
+        /// Gets the active activity names.
+        /// </summary>
+        /// <value>
+        /// The active activity names.
+        /// </value>
+        [NotMapped]
+        public virtual string ActiveActivityNames
+        {
+            get
+            {
+                return ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" );
+            }
+        }
+
 
         /// <summary>
         /// Gets a flag indicating whether this instance has active activities.
@@ -193,7 +209,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing the <see cref="Rock.Model.WorkflowLog"/> entries for this Workflow instance.
         /// </value>
-        [DataMember]
         public virtual ICollection<WorkflowLog> LogEntries
         {
             get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }
@@ -310,6 +325,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType );
+            }
+
+            return mergeFields;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -384,7 +421,16 @@ namespace Rock.Model
             var workflow = new Workflow();
             workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
-            workflow.Name = name ?? workflowType.Name;
+            
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                workflow.Name = name;
+            }
+            else
+            {
+                workflow.Name = workflowType.Name;
+            }
+
             workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;

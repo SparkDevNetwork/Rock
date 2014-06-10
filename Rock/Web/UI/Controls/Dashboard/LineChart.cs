@@ -24,6 +24,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class LineChart : FlotChart
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LineChart"/> class.
+        /// </summary>
         public LineChart()
         {
             this.Options.series = new SeriesOptions( false, true, false );

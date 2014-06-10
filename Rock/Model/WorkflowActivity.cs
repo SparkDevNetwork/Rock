@@ -117,7 +117,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -306,6 +305,30 @@ namespace Rock.Model
             return false;
         }
 
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "Workflow", Workflow.ToLiquid( true ) );
+                mergeFields.Add( "ActivityType", this.ActivityType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Workflow", Workflow );
+                mergeFields.Add( "ActivityType", this.ActivityType );
+            }
+
+            return mergeFields;
+        }       
+        
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.
         /// </summary>

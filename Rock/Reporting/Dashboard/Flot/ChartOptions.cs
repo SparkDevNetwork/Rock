@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using Newtonsoft.Json;
+using Rock.Model;
 using Rock.Utility;
 
 namespace Rock.Reporting.Dashboard.Flot
@@ -25,6 +27,27 @@ namespace Rock.Reporting.Dashboard.Flot
     /// </summary>
     public class ChartOptions
     {
+        /// <summary>
+        /// Sets the chart style.
+        /// </summary>
+        /// <param name="chartStyleDefinedValueGuid">The chart style defined value unique identifier.</param>
+        public void SetChartStyle( Guid? chartStyleDefinedValueGuid )
+        {
+            ChartStyle chartStyle = null;
+            if ( chartStyleDefinedValueGuid.HasValue )
+            {
+                var rockContext = new Rock.Data.RockContext();
+                var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
+                if ( definedValue != null )
+                {
+                    definedValue.LoadAttributes( rockContext );
+                    chartStyle = ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                }
+            }
+
+            SetChartStyle( chartStyle ?? new ChartStyle() );
+        }
+
         /// <summary>
         /// Sets the chart style.
         /// </summary>
@@ -107,7 +130,6 @@ function (val, axis) {
 
             // copy Goal Series Color to Flot custom settings
             this.customSettings.goalSeriesColor = chartStyle.GoalSeriesColor;
-
 
             if ( chartStyle.PieLabels != null )
             {
@@ -386,9 +408,24 @@ function (val, axis) {
     [JsonConverter( typeof( EnumAsStringJsonConverter ) )]
     public enum AxisPosition
     {
+        /// <summary>
+        /// The bottom
+        /// </summary>
         bottom,
+
+        /// <summary>
+        /// The top
+        /// </summary>
         top,
+
+        /// <summary>
+        /// The left
+        /// </summary>
         left,
+
+        /// <summary>
+        /// The right
+        /// </summary>
         right
     }
 
@@ -398,6 +435,9 @@ function (val, axis) {
     [JsonConverter( typeof( EnumAsStringJsonConverter ) )]
     public enum AxisMode
     {
+        /// <summary>
+        /// The time
+        /// </summary>
         time
     }
 
@@ -665,7 +705,40 @@ function (val, axis) {
         /// <value>
         /// The show.
         /// </value>
-        public bool? show { get; set; }
+        public bool show
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the radius as a percentage of available space
+        /// Defaults to .75 if there is a legend, or 1 if there isn't
+        /// </summary>
+        /// <value>
+        /// The radius.
+        /// </value>
+        public double? radius { get; set; }
+
+        /// <summary>
+        /// Factor of PI used for the starting angle (in radians) It can range between 0 and 2 (where 0 and 2 have the same result).
+        /// Default is 1.5
+        /// </summary>
+        /// <value>
+        /// The start angle.
+        /// </value>
+        public double? startAngle { get; set; }
+
+        /// <summary>
+        /// Percentage of tilt ranging from 0 and 1, where 1 has no change (fully vertical) and 0 is completely flat (fully horizontal -- in which case nothing actually gets drawn).
+        /// Default is 1.0
+        /// </summary>
+        /// <value>
+        /// The tilt.
+        /// </value>
+        public double? tilt { get; set; }
 
         /// <summary>
         /// Gets or sets the label.
@@ -719,6 +792,15 @@ function (val, axis) {
         /// The background.
         /// </value>
         public dynamic background { get; set; }
+
+        /// <summary>
+        /// Gets or sets the formatter.
+        /// </summary>
+        /// <value>
+        /// The formatter.
+        /// </value>
+        [JsonConverter( typeof( StringAsLiteralJavascriptJsonConverter ) )]
+        public string formatter { get; set; }
     }
 
     /// <summary>

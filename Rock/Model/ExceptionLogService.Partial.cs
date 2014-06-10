@@ -199,64 +199,71 @@ namespace Rock.Model
                     ModifiedDateTime = RockDateTime.Now
                 };
 
-            // If current HttpContext is null, return early.
-            if ( context == null )
+            try
             {
-                return exceptionLog;
-            }
-
-            // If current HttpContext is available, populate its information as well.
-            var request = context.Request;
-
-            StringBuilder cookies = new StringBuilder();
-            var cookieList = request.Cookies;
-
-            if ( cookieList.Count > 0 )
-            {
-                cookies.Append( "<table class=\"cookies exception-table\">" );
-
-                foreach ( string cookie in cookieList )
+                // If current HttpContext is null, return early.
+                if ( context == null )
                 {
-                    var httpCookie = cookieList[cookie];
-                    if ( httpCookie != null )
-                        cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                    return exceptionLog;
                 }
 
-                cookies.Append( "</table>" );
+                // If current HttpContext is available, populate its information as well.
+                var request = context.Request;
+
+                StringBuilder cookies = new StringBuilder();
+                var cookieList = request.Cookies;
+
+                if ( cookieList.Count > 0 )
+                {
+                    cookies.Append( "<table class=\"cookies exception-table\">" );
+
+                    foreach ( string cookie in cookieList )
+                    {
+                        var httpCookie = cookieList[cookie];
+                        if ( httpCookie != null )
+                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                    }
+
+                    cookies.Append( "</table>" );
+                }
+
+                StringBuilder formItems = new StringBuilder();
+                var formList = request.Form;
+
+                if ( formList.Count > 0 )
+                {
+                    formItems.Append( "<table class=\"form-items exception-table\">" );
+
+                    foreach ( string formItem in formList )
+                        formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem] + "</td></tr>" );
+
+                    formItems.Append( "</table>" );
+                }
+
+                StringBuilder serverVars = new StringBuilder();
+                var serverVarList = request.ServerVariables;
+
+                if ( serverVarList.Count > 0 )
+                {
+                    serverVars.Append( "<table class=\"server-variables exception-table\">" );
+
+                    foreach ( string serverVar in serverVarList )
+                        serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+
+                    serverVars.Append( "</table>" );
+                }
+
+                exceptionLog.Cookies = cookies.ToString();
+                exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+                exceptionLog.PageUrl = request.Url.ToString();
+                exceptionLog.ServerVariables = serverVars.ToString();
+                exceptionLog.QueryString = request.Url.Query;
+                exceptionLog.Form = formItems.ToString();
             }
-            
-            StringBuilder formItems = new StringBuilder();
-            var formList = request.Form;
-
-            if ( formList.Count > 0 )
-            {
-                formItems.Append( "<table class=\"form-items exception-table\">" );
-
-                foreach ( string formItem in formList )
-                    formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem] + "</td></tr>" );
-
-                formItems.Append( "</table>" );
+            catch { 
+                // Intentionally do nothing
             }
 
-            StringBuilder serverVars = new StringBuilder();
-            var serverVarList = request.ServerVariables;
-
-            if ( serverVarList.Count > 0 )
-            {
-                serverVars.Append( "<table class=\"server-variables exception-table\">" );
-
-                foreach ( string serverVar in serverVarList )
-                    serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
-
-                serverVars.Append( "</table>" );
-            }
-
-            exceptionLog.Cookies = cookies.ToString();
-            exceptionLog.StatusCode = context.Response.StatusCode.ToString();
-            exceptionLog.PageUrl = request.Url.ToString();
-            exceptionLog.ServerVariables = serverVars.ToString();
-            exceptionLog.QueryString = request.Url.Query;
-            exceptionLog.Form = formItems.ToString();
             return exceptionLog;
         }
     }

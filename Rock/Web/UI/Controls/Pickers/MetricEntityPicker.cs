@@ -358,7 +358,7 @@ namespace Rock.Web.UI.Controls
             var metric = metricService.Get( this.MetricId ?? 0 );
             _phEntityTypeEntityIdValue.Controls.Clear();
 
-            string fieldTypeName = "Entity";
+            string fieldTypeName = null;
             Control entityTypeEditControl = null;
             if ( metric != null )
             {
@@ -376,43 +376,47 @@ namespace Rock.Web.UI.Controls
                 _entityTypeEditControl = entityTypeEditControl;
             }
 
-            var rockControlWrapper = new RockControlWrapper();
-            rockControlWrapper.Label = string.Format( "{0} filter", fieldTypeName );
-            rockControlWrapper.Help = string.Format(
-                "Either select a specific {0}, or select 'Get from page context' to determine the {0} based on the page context. Leave {0} blank to show values for all {1}",
-                fieldTypeName,
-                fieldTypeName.Pluralize() );
-
-            rockControlWrapper.ID = string.Format( "{0}_{1}", this.ID, "rockControlWrapper" );
-            _phEntityTypeEntityIdValue.Controls.Add( rockControlWrapper );
-
-            if ( _rblSelectOrContext == null )
-            {
-                _rblSelectOrContext = new RockRadioButtonList();
-                _rblSelectOrContext.ID = string.Format( "{0}_{1}", this.ID, "rblSelectOrContext" );
-                _rblSelectOrContext.RepeatDirection = RepeatDirection.Horizontal;
-                _rblSelectOrContext.Items.Add( new ListItem( "Select " + fieldTypeName, "0" ) );
-                _rblSelectOrContext.Items.Add( new ListItem( "Get from page context", "1" ) );
-                _rblSelectOrContext.AutoPostBack = true;
-                _rblSelectOrContext.SelectedIndexChanged += rblSelectOrContext_SelectedIndexChanged;
-            }
-
-            rockControlWrapper.Controls.Add( _rblSelectOrContext );
-
             if ( _entityTypeEditControl != null )
             {
+                var rockControlWrapper = new RockControlWrapper();
+                rockControlWrapper.Label = string.Format( "{0} filter", fieldTypeName );
+                rockControlWrapper.Help = string.Format(
+                    "Either select a specific {0}, or select 'Get from page context' to determine the {0} based on the page context. Leave {0} blank to show values for all {1}",
+                    fieldTypeName,
+                    fieldTypeName.Pluralize() );
+
+                rockControlWrapper.ID = string.Format( "{0}_{1}", this.ID, "rockControlWrapper" );
+                _phEntityTypeEntityIdValue.Controls.Add( rockControlWrapper );
+
+                if ( _rblSelectOrContext == null )
+                {
+                    _rblSelectOrContext = new RockRadioButtonList();
+                    _rblSelectOrContext.ID = string.Format( "{0}_{1}", this.ID, "rblSelectOrContext" );
+                    _rblSelectOrContext.RepeatDirection = RepeatDirection.Horizontal;
+                    _rblSelectOrContext.Items.Add( new ListItem( "Select " + fieldTypeName, "0" ) );
+                    _rblSelectOrContext.Items.Add( new ListItem( "Get from page context", "1" ) );
+                    _rblSelectOrContext.AutoPostBack = true;
+                    _rblSelectOrContext.SelectedIndexChanged += rblSelectOrContext_SelectedIndexChanged;
+                }
+                else
+                {
+                    _rblSelectOrContext.Items[0].Text = "Select " + fieldTypeName;
+                }
+
+                rockControlWrapper.Controls.Add( _rblSelectOrContext );
+
                 _entityTypeEditControl.Visible = _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 0;
                 rockControlWrapper.Controls.Add( _entityTypeEditControl );
-            }
+                if ( _cbCombine == null )
+                {
+                    _cbCombine = new RockCheckBox();
+                    _cbCombine.ID = string.Format( "{0}_{1}", this.ID, "cbCombine" );
+                }
 
-            if ( _cbCombine == null )
-            {
-                _cbCombine = new RockCheckBox();
-                _cbCombine.ID = string.Format( "{0}_{1}", this.ID, "cbCombine" );
                 _cbCombine.Text = "Combine multiple values to one line when showing values for multiple " + fieldTypeName.Pluralize();
-            }
 
-            rockControlWrapper.Controls.Add( _cbCombine );
+                rockControlWrapper.Controls.Add( _cbCombine );
+            }
         }
 
         /// <summary>
@@ -472,6 +476,48 @@ namespace Rock.Web.UI.Controls
         public void rblSelectOrContext_SelectedIndexChanged( object sender, EventArgs e )
         {
             // intentionally blank, but we need the postback to fire
+        }
+
+        /// <summary>
+        /// Gets or sets the DelimitedValues (for the stored Attribute Value)
+        /// Value is pipe delimited: Metric (as Guid) | EntityId | GetEntityFromContext | CombineValues
+        /// </summary>
+        /// <value>
+        /// The delimited values.
+        /// </value>
+        public string DelimitedValues
+        {
+            get
+            {
+                var guid = Guid.Empty;
+                var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
+
+                if ( metric != null )
+                {
+                    guid = metric.Guid;
+                }
+
+                return string.Format( "{0}|{1}|{2}|{3}", guid.ToString(), this.EntityId, this.GetEntityFromContext, this.CombineValues );
+            }
+
+            set
+            {
+                var valueParts = value.Split( '|' );
+                if ( valueParts.Length > 0 )
+                {
+                    var metric = new MetricService( new RockContext() ).Get( valueParts[0].AsGuid() );
+                    if ( metric != null )
+                    {
+                        this.MetricId = metric.Id;
+                        if ( valueParts.Length > 3 )
+                        {
+                            this.EntityId = valueParts[1].AsIntegerOrNull();
+                            this.GetEntityFromContext = valueParts[2].AsBoolean( false );
+                            this.CombineValues = valueParts[3].AsBoolean( false );
+                        }
+                    }
+                }
+            }
         }
     }
 }

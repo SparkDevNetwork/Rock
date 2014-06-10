@@ -99,5 +99,12 @@ namespace Rock.Data
         /// <returns></returns>
         IEntity Clone();
 
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> [debug].</param>
+        /// <returns></returns>
+        object ToLiquid( bool debug );
+
     }
 }

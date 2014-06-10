@@ -35,6 +35,14 @@ namespace Rock.Field
         }
 
         /// <summary>
+        /// Gets the align value that should be used when displaying value
+        /// </summary>
+        public virtual HorizontalAlign AlignValue
+        {
+            get { return HorizontalAlign.Left; }
+        }
+        
+        /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
@@ -48,14 +56,6 @@ namespace Rock.Field
                 return System.Web.HttpUtility.HtmlEncode( value ).Truncate( 100 );
 
             return value;
-        }
-
-        /// <summary>
-        /// Gets the align value that should be used when displaying value
-        /// </summary>
-        public virtual HorizontalAlign AlignValue
-        {
-            get { return HorizontalAlign.Left; }
         }
 
         /// <summary>

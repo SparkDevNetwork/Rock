@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAddGroupRoot_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "GroupId", 0, "ParentGroupId", hfRootGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var qry = groupService.GetNavigationChildren( 0, hfRootGroupId.ValueAsInt(), hfLimitToSecurityRoleGroups.Value.AsBoolean(), groupTypeIds );
 
-            foreach ( var group in qry )
+            foreach ( var group in qry.OrderBy( g => g.Name ) )
             {
                 // return first group they are authorized to view
                 if ( group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

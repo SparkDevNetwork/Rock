@@ -247,6 +247,20 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             RegisterJavaScript();
 
+            writer.AddAttribute( "id", this.ClientID);
+            foreach (var styleKey in this.Style.Keys)
+            {
+                string styleName = (string)styleKey;
+                writer.AddStyleAttribute( styleName, this.Style[styleName] );
+            }
+            
+            if (!string.IsNullOrEmpty(this.CssClass))
+            {
+                writer.AddAttribute( "class", this.CssClass );
+            }
+
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            
             writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -254,7 +268,8 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
             writer.Write( "<span class='to'> to </span>" );
             _tbUpperValue.RenderControl( writer );
 
-            writer.RenderEndTag();
+            writer.RenderEndTag(); // form-control-group
+            writer.RenderEndTag(); // id
         }
 
         /// <summary>

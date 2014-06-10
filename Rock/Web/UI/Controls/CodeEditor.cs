@@ -305,6 +305,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the merge field help.
+        /// </summary>
+        /// <value>
+        /// The merge field help.
+        /// </value>
         public string MergeFieldHelp
         {
             get { return ViewState["MergeFieldHelp"] as string ?? string.Empty; }
@@ -377,7 +383,9 @@ namespace Rock.Web.UI.Controls
             // Add merge field help
             if ( MergeFields.Any() )
             {
+                writer.Write( "<div class='codeeditor-header margin-b-md clearfix'>" );
                 _mfpMergeFields.RenderControl( writer );
+                writer.Write( "</div>" );
             }
 
             // add editor div

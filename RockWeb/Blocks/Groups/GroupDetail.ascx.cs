@@ -514,7 +514,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     // Cancelling on Add, and we know the parentGroupID, so we are probably in treeview mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
-                    qryParams["GroupId"] = parentGroupId.ToString();
+                    if ( parentGroupId != 0 )
+                    {
+                        qryParams["GroupId"] = parentGroupId.ToString();
+                    }
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
@@ -962,7 +965,7 @@ namespace RockWeb.Blocks.Groups
 
             // display attribute values
             var attributeCategories = Helper.GetAttributeCategories( attributes );
-            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes );
+            Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
 
             // Get Map Style
             phMaps.Controls.Clear();

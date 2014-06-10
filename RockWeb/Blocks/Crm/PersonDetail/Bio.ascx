@@ -20,6 +20,19 @@
 
             <Rock:PersonProfileBadgeList id="blStatus" runat="server" />
 
+            <ul id="ulActions" runat="server" class="nav pull-right">
+                <li class="dropdown">
+                    <a class="persondetails-actions dropdown-toggle" data-toggle="dropdown" href="#" tabindex="0">
+                        <i class="fa fa-cog"></i>
+                        <span>Actions</span>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <asp:Literal ID="lActions" runat="server" />
+                    </ul>
+                </li>
+            </ul>
+
         </div>
     </div> 
 
