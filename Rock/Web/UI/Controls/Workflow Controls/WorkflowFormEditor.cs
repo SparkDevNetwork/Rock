@@ -39,7 +39,8 @@ namespace Rock.Web.UI.Controls
         private CodeEditor _ceFooterText;
         private RockTextBox _tbInactiveMessage;
         private WorkflowFormActionList _falActions;
-
+        private RockDropDownList _ddlNotificationSystemEmail;
+        private RockCheckBox _cbIncludeActions;
 
         /// <summary>
         /// Gets or sets the validation group.
@@ -91,6 +92,9 @@ namespace Rock.Web.UI.Controls
                         form.FormAttributes.Add( formAttribute );
                     }
 
+                    form.NotificationSystemEmailId = _ddlNotificationSystemEmail.SelectedValueAsId();
+                    form.IncludeActionsInNotification = _cbIncludeActions.Checked;
+
                     return form;
                 }
                 return null;
@@ -125,14 +129,19 @@ namespace Rock.Web.UI.Controls
                         row.IsRequired = formAttribute.IsRequired;
                         Controls.Add( row );
                     }
+
+                    _ddlNotificationSystemEmail.SetValue( value.NotificationSystemEmailId );
+                    _cbIncludeActions.Checked = value.IncludeActionsInNotification;
                 }
                 else
                 {
                     _hfFormGuid.Value = string.Empty;
                     _ceHeaderText.Text = string.Empty;
                     _ceFooterText.Text = string.Empty;
-                    _falActions.Value = "Submit^Submit^Your information has been submitted succesfully.";
+                    _falActions.Value = "Submit^^^Your information has been submitted succesfully.";
                     _tbInactiveMessage.Text = string.Empty;
+                    _ddlNotificationSystemEmail.SelectedIndex = 0;
+                    _cbIncludeActions.Checked = true;
                 }
             }
         }
@@ -226,6 +235,26 @@ namespace Rock.Web.UI.Controls
             _tbInactiveMessage.TextMode = TextBoxMode.MultiLine;
             _tbInactiveMessage.Rows = 2;
             Controls.Add( _tbInactiveMessage );
+
+            _ddlNotificationSystemEmail = new RockDropDownList();
+            _ddlNotificationSystemEmail.Label = "Notification Email";
+            _ddlNotificationSystemEmail.Help = "An optional system email that should be sent to the person or people assigned to this activity (Any System Email with a category of 'Workflow').";
+            _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
+            Controls.Add( _ddlNotificationSystemEmail );
+
+            _ddlNotificationSystemEmail.DataValueField = "Id";
+            _ddlNotificationSystemEmail.DataTextField = "Title";
+            _ddlNotificationSystemEmail.DataSource = new SystemEmailService(new RockContext()).Queryable()
+                .Where( e => e.Category == "Workflow").OrderBy( e => e.Title ).ToList();
+            _ddlNotificationSystemEmail.DataBind();
+            _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
+
+            _cbIncludeActions = new RockCheckBox();
+            _cbIncludeActions.Label = "Include Actions in Email";
+            _cbIncludeActions.Text = "Yes";
+            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required.";
+            _cbIncludeActions.ID = this.ID + "_cbIncludeActions";
+            Controls.Add( _cbIncludeActions );
         }
 
         /// <summary>
@@ -236,6 +265,21 @@ namespace Rock.Web.UI.Controls
         {
             if ( _hfFormGuid.Value.AsGuid() != Guid.Empty )
             {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlNotificationSystemEmail.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbIncludeActions.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // row
+
                 _ceHeaderText.ValidationGroup = ValidationGroup;
                 _ceHeaderText.RenderControl( writer );
 

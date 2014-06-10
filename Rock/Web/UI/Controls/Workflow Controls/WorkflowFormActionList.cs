@@ -36,7 +36,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfValue;
         private List<RockTextBox> _actionControls;
-        private List<RockDropDownList> _cssClassControls;
+        private List<RockDropDownList> _buttonHtmlControls;
         private List<RockDropDownList> _activityControls;
         private List<RockTextBox> _responseControls;
 
@@ -92,7 +92,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfValue );
 
             _actionControls = new List<RockTextBox>();
-            _cssClassControls = new List<RockDropDownList>();
+            _buttonHtmlControls = new List<RockDropDownList>();
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
 
@@ -111,20 +111,20 @@ namespace Rock.Web.UI.Controls
                 tbAction.Text = nameValueResponse.Length > 0 ? nameValueResponse[0] : string.Empty;
                 _actionControls.Add( tbAction );
 
-                var ddlCssClass = new RockDropDownList();
-                ddlCssClass.ID = this.ID + "_ddlCssClass" + i.ToString();
-                Controls.Add( ddlCssClass );
-                ddlCssClass.AddCssClass( "form-action-css" );
-                ddlCssClass.AddCssClass( "form-control" );
-                ddlCssClass.AddCssClass( "js-form-action-input" );
-                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.CSS_CLASSES.AsGuid() );
+                var ddlButtonHtml = new RockDropDownList();
+                ddlButtonHtml.ID = this.ID + "_ddlButtonHtml" + i.ToString();
+                Controls.Add( ddlButtonHtml );
+                ddlButtonHtml.AddCssClass( "form-action-css" );
+                ddlButtonHtml.AddCssClass( "form-control" );
+                ddlButtonHtml.AddCssClass( "js-form-action-input" );
+                var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
                 foreach( var definedValue in definedType.DefinedValues )
                 {
-                    var li = new ListItem( definedValue.Name, definedValue.GetAttributeValue( "CSSClass" ) );
+                    var li = new ListItem( definedValue.Name, definedValue.Guid.ToString() );
                     li.Selected = nameValueResponse.Length > 1 && li.Value == nameValueResponse[1];
-                    ddlCssClass.Items.Add( li );
+                    ddlButtonHtml.Items.Add( li );
                 }
-                _cssClassControls.Add( ddlCssClass );
+                _buttonHtmlControls.Add( ddlButtonHtml );
 
                 var ddlActivity = new RockDropDownList();
                 ddlActivity.ID = this.ID + "_ddlActivity" + i.ToString();
@@ -249,7 +249,7 @@ namespace Rock.Web.UI.Controls
                 // Write Css
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _cssClassControls[i].RenderControl( writer );
+                _buttonHtmlControls[i].RenderControl( writer );
                 writer.RenderEndTag();  
 
                 // Write Activity Value

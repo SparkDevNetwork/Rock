@@ -215,8 +215,6 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            this.LastProcessedDateTime = RockDateTime.Now;
-
             errorMessages = new List<string>();
 
             foreach ( var action in this.ActiveActions )
@@ -243,6 +241,8 @@ namespace Rock.Model
                     break;
                 }
             }
+
+            this.LastProcessedDateTime = RockDateTime.Now;
 
             AddSystemLogEntry( "Processing Complete" );
 

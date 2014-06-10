@@ -427,6 +427,8 @@ namespace RockWeb.Blocks.WorkFlow
                             workflowActionType.WorkflowForm.Footer = editorWorkflowActionType.WorkflowForm.Footer;
                             workflowActionType.WorkflowForm.InactiveMessage = editorWorkflowActionType.WorkflowForm.InactiveMessage;
                             workflowActionType.WorkflowForm.Actions = editorWorkflowActionType.WorkflowForm.Actions;
+                            workflowActionType.WorkflowForm.NotificationSystemEmailId = editorWorkflowActionType.WorkflowForm.NotificationSystemEmailId;
+                            workflowActionType.WorkflowForm.IncludeActionsInNotification = editorWorkflowActionType.WorkflowForm.IncludeActionsInNotification;
 
                             var editorGuids = editorWorkflowActionType.WorkflowForm.FormAttributes
                                 .Select( a => a.Attribute.Guid )
