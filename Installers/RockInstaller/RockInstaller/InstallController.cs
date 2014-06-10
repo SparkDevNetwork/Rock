@@ -546,8 +546,12 @@ namespace RockInstaller
             // if we're not in development unzip the file, otherwise we'll fake it... (for that full experience)
             if ( !installData.InstallerProperties.IsDebug )
             {
+                this.SendConsoleMessage( "Preparing to unzip the rock application file." );
+                
                 // unzip the rock zip
                 result = UnzipFile( serverPath + @"\" + rockSource, serverPath, 10, 1, 100, 0 );
+
+                this.SendConsoleMessage( "Unzip complete." );
             }
             else
             {
@@ -914,8 +918,9 @@ namespace RockInstaller
                             }
                             else if ( currentPercentile >= unzipNextProgressbarPercentile )
                             {
-                                this.UpdateProgressBar( (int)(currentPercentile * (percentOfStep * .01)) + startPercent );
-                                unzipNextConsolePercentile = currentPercentile + progressbarEventFrequency;
+                                int progressbarState = (int)(currentPercentile * (percentOfStep * .01)) + startPercent;
+                                this.UpdateProgressBar( progressbarState );
+                                unzipNextProgressbarPercentile = currentPercentile + progressbarEventFrequency;
                             }
                         }
                     } 
