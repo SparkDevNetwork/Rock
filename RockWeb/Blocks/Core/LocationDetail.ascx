@@ -28,6 +28,7 @@
                         <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
                         <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" 
                             Help="The printer that this location should use for printing" />
+                        <Rock:ImageEditor ID="imgImage" runat="server" Label="Image" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
                         <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
                     <div class="col-md-6">
@@ -51,11 +52,16 @@
             <fieldset id="fieldsetViewDetails" runat="server">
 
                 <div class="row">
+                    <div class="col-md-2">
+                        <div class="photo">
+                            <asp:Literal ID="lImage" runat="server" />
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                         <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                     </div>
-                    <div class="col-md-6 location-maps">
+                    <div class="col-md-4 location-maps">
                         <asp:PlaceHolder ID="phMaps" runat="server" />
                     </div>
                 </div>
