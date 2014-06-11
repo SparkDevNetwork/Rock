@@ -7,49 +7,45 @@
             <asp:HiddenField ID="hfTrackId" runat="server" />
             <asp:HiddenField ID="hfPeriodId" runat="server" />
 
-            <div id="pnlEditDetails" runat="server" class="well">
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+            </div>
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
-                <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <fieldset>
-                    <legend>
-                        <asp:Literal ID="lActionTitle" runat="server" />
-                    </legend>
+            <div id="pnlEditDetails" runat="server">
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-
-                    <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Name" />
-                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                    <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
-
-                </fieldset>
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Name" />
+                        <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Track, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />
+                    </div>
+                </div>
 
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <legend>Track - Competencies
-                </legend>
-                <div class="well">
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblMainDetailsCol1" runat="server" />
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
-                        </div>
-                        <div class="col-md-6">
-                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
-                        </div>
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblMainDetailsCol2" runat="server" />
                     </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
-                    </div>
+                </div>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                 </div>
 
             </fieldset>

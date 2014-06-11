@@ -11,7 +11,7 @@
             <asp:HiddenField ID="hfCompetencyPersonProjectAssessmentId" runat="server" />
             <asp:HiddenField ID="hfAssessorPersonId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
             <fieldset>
@@ -21,20 +21,20 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="well">
-                    <div class="row-fluid">
+                <div >
+                    <div class="row">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                 </div>
 
                 <asp:Repeater ID="rptPointOfAssessment" runat="server" OnItemDataBound="rptPointOfAssessment_ItemDataBound">
                     <ItemTemplate>
-                        <div class="row-fluid">
+                        <div class="row">
                             <div class="span1">
                                 <Rock:RockDropDownList ID="ddlPointOfAssessmentRating" runat="server" Label="Rating" CssClass="input-mini" />
                             </div>
                             <div class="span11">
-                                <div class="row-fluid">
+                                <div class="row">
                                     <asp:HiddenField ID="hfProjectPointOfAssessmentId" runat="server" />
                                     <p>
                                         <asp:Literal ID="lblAssessmentText" runat="server" />

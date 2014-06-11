@@ -275,14 +275,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProjectAssessment">The competency person project assessment.</param>
         private void ShowEditDetails( CompetencyPersonProjectAssessment competencyPersonProjectAssessment )
         {
-            if ( competencyPersonProjectAssessment.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( "Project Assessment" );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( "Project Assessment" );
-            }
+            lReadOnlyTitle.Text = string.Format("Assessment for {0}", competencyPersonProjectAssessment.CompetencyPersonProject.Project.Name).FormatAsHtmlTitle();
 
             SetEditMode( true );
 
@@ -305,6 +298,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProjectAssessment">The competency person project assessment.</param>
         private void ShowReadonlyDetails( CompetencyPersonProjectAssessment competencyPersonProjectAssessment )
         {
+            lReadOnlyTitle.Text = string.Format( "Assessment for {0}", competencyPersonProjectAssessment.CompetencyPersonProject.Project.Name ).FormatAsHtmlTitle();
+            
             SetEditMode( false );
 
             string projectText = string.Format( "{0} - {1}", competencyPersonProjectAssessment.CompetencyPersonProject.Project.Name, competencyPersonProjectAssessment.CompetencyPersonProject.Project.Description );

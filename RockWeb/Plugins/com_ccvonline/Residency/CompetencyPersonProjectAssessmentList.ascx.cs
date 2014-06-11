@@ -181,7 +181,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            gList.Visible = visible;
+            pnlList.Visible = visible;
         }
 
         #endregion

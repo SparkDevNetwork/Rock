@@ -117,12 +117,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( dpStartDate.SelectedDate > dpEndDate.SelectedDate )
-            {
-                dpStartDate.ShowErrorMessage( WarningMessage.DateRangeEndDateBeforeStartDate() );
-                return;
-            }
-
             var residencyContext = new ResidencyContext();
 
             Period period;
@@ -142,8 +136,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             period.Name = tbName.Text;
             period.Description = tbDescription.Text;
-            period.StartDate = dpStartDate.SelectedDate;
-            period.EndDate = dpEndDate.SelectedDate;
+            period.StartDate = dpStartEndDate.LowerValue;
+            period.EndDate = dpStartEndDate.UpperValue;
 
             if ( !period.IsValid )
             {
@@ -178,12 +172,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 period = new ResidencyService<Period>( new ResidencyContext() ).Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Period.FriendlyTypeName );
             }
             else
             {
                 period = new Period { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Period.FriendlyTypeName );
             }
 
             hfPeriodId.Value = period.Id.ToString();
@@ -223,21 +215,21 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="period">The residency period.</param>
         private void ShowEditDetails( Period period )
         {
-            if ( period.Id > 0 )
+            if ( period.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Period.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( Period.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Period.FriendlyTypeName );
+                lReadOnlyTitle.Text = period.Name.FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
 
             tbName.Text = period.Name;
             tbDescription.Text = period.Description;
-            dpStartDate.SelectedDate = period.StartDate;
-            dpEndDate.SelectedDate = period.EndDate;
+            dpStartEndDate.LowerValue= period.StartDate;
+            dpStartEndDate.UpperValue = period.EndDate;
         }
 
         /// <summary>
@@ -246,10 +238,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="period">The residency project.</param>
         private void ShowReadonlyDetails( Period period )
         {
+            lReadOnlyTitle.Text = period.Name.FormatAsHtmlTitle();
+            
             SetEditMode( false );
 
             lblMainDetailsCol1.Text = new DescriptionList()
-                .Add( "Name", period.Name )
                 .Add( "Description", period.Description ).Html;
 
             lblMainDetailsCol2.Text = new DescriptionList()

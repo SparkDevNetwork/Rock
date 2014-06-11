@@ -288,13 +288,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competency">The residency competency.</param>
         private void ShowEditDetails( Competency competency )
         {
-            if ( competency.Id > 0 )
+            if ( competency.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Competency.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( Competency.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Competency.FriendlyTypeName );
+                lReadOnlyTitle.Text = competency.Name.FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -317,10 +317,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competency">The residency competency.</param>
         private void ShowReadonlyDetails( Competency competency )
         {
+            lReadOnlyTitle.Text = competency.Name.FormatAsHtmlTitle();
+            
             SetEditMode( false );
 
             lblMainDetailsCol1.Text = new DescriptionList()
-                .Add( "Name", competency.Name )
                 .Add( "Description", competency.Description )
                 .Add( "Period", competency.Track.Period.Name )
                 .Add( "Track", competency.Track.Name ).Html;

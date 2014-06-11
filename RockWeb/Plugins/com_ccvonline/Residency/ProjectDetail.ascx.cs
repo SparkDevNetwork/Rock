@@ -283,13 +283,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="project">The residency project.</param>
         private void ShowEditDetails( Project project )
         {
-            if ( project.Id > 0 )
+            if ( project.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Project.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( Project.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Project.FriendlyTypeName );
+                lReadOnlyTitle.Text = project.Name.FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -308,10 +308,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="project">The residency project.</param>
         private void ShowReadonlyDetails( Project project )
         {
+            lReadOnlyTitle.Text = project.Name.FormatAsHtmlTitle();
+
             SetEditMode( false );
 
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Name", string.Format( "{0} - {1}", project.Name, project.Description ) )
+                .Add( "Description", project.Description )
                 .Add( "Competency", project.Competency.Name )
                 .Add( "Default # of Assessments", project.MinAssessmentCountDefault )
                 .Html;

@@ -37,7 +37,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     [DisplayName( "Resident Project Point of Assessment Detail" )]
     [Category( "CCV > Residency" )]
     [Description( "Displays the details of a project's point of assessment for a resident." )]
-    
+
     public partial class CompetencyPersonProjectAssessmentPointOfAssessmentDetail : RockBlock
     {
         #region Control Methods
@@ -202,14 +202,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( "Project Assessment- Point of Assessment" );
             }
 
-            if ( competencyPersonProjectAssessmentPointOfAssessment.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( "Project Assessment- Point of Assessment" );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( "Project Assessment- Point of Assessment" );
-            }
+            lReadOnlyTitle.Text = competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.Project.Name.FormatAsHtmlTitle();
 
             var personProject = competencyPersonProjectAssessmentPointOfAssessment.CompetencyPersonProjectAssessment.CompetencyPersonProject;
             var projectAssessment = competencyPersonProjectAssessmentPointOfAssessment.CompetencyPersonProjectAssessment;

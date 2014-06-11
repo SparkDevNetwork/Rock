@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
@@ -239,7 +240,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            gList.Visible = visible;
+            pnlList.Visible = visible;
         }
 
         #endregion

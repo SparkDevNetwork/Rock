@@ -10,11 +10,11 @@
             <asp:HiddenField ID="hfCompetencyPersonProjectId" runat="server" />
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <div class="well">
+                <div >
                     <Rock:NotificationBox ID="nbWarningMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Warning" />
                     <asp:LinkButton ID="btnGrade" runat="server" Text="Grade" CssClass="btn btn-primary pull-right" OnClick="btnGrade_Click" />
 
-                    <div class="row-fluid">
+                    <div class="row">
                         <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
                 </div>

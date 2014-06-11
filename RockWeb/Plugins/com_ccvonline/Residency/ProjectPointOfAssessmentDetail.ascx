@@ -1,32 +1,36 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ProjectPointOfAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.ProjectPointOfAssessmentDetail" %>
 
 <!-- just to help do css intellisense at design time  -->
-<link rel="stylesheet" type="text/css" href="~/CSS/bootstrap.min.css" visible="false" />
+<link rel="stylesheet" type="text/css" href="~/Themes/Rock/Styles/bootstrap.css" visible="false" />
+<link rel="stylesheet" type="text/css" href="~/Themes/Rock/Styles/theme.css" visible="false" />
 
 <asp:UpdatePanel ID="upProjectPointOfAssessmentDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
-            
+
             <asp:HiddenField ID="hfProjectId" runat="server" />
             <asp:HiddenField ID="hfProjectPointOfAssessmentId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
-            <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+            </div>
 
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" />
-                </legend>
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                <Rock:RockDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" Label="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
-                <Rock:RockLiteral ID="lblAssessmentOrder" runat="server" Label="Assessment #" />
-                <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="com.ccvonline.Residency.Model.ProjectPointOfAssessment, com.ccvonline.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge"/>
-            </fieldset>
+            <div class="row">
+                <div class="col-md-12">
+                    <Rock:RockDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" Label="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
+                    <Rock:RockLiteral ID="lblAssessmentOrder" runat="server" Label="Assessment #" />
+                    <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="com.ccvonline.Residency.Model.ProjectPointOfAssessment, com.ccvonline.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" />
+                </div>
+            </div>
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </asp:Panel>

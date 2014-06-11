@@ -208,7 +208,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 projectPointOfAssessment = projectPointOfAssessmentService.Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( "Point of Assessment " + projectPointOfAssessment.AssessmentOrder.ToString() );
             }
             else
             {
@@ -222,8 +221,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                         .Select( a => a.AssessmentOrder ).DefaultIfEmpty( 0 ).Max();
 
                     projectPointOfAssessment.AssessmentOrder = maxAssessmentOrder + 1;
-
-                    lActionTitle.Text = ActionTitle.Add( "Point of Assessment " + projectPointOfAssessment.AssessmentOrder.ToString() );
                 }
             }
 
@@ -231,6 +228,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 return;
             }
+
+            lReadOnlyTitle.Text = ( "Point of Assessment " + projectPointOfAssessment.AssessmentOrder.ToString() ).FormatAsHtmlTitle();
 
             hfProjectPointOfAssessmentId.Value = projectPointOfAssessment.Id.ToString();
             hfProjectId.Value = projectId.ToString();
@@ -250,7 +249,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( "Point of Assessment " + projectPointOfAssessment.AssessmentOrder.ToString() );
                 btnCancel.Text = "Close";
             }
 

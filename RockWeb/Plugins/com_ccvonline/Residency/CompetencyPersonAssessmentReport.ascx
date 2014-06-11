@@ -8,7 +8,7 @@
             <asp:LinkButton ID="btnApply" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApply_Click" />
         </div>
 
-        <div class="row-fluid">
+        <div class="row">
             <Rock:RockLiteral runat="server" ID="lbResidentName" Label="<b>Resident</b>" />
             <Rock:RockLiteral runat="server" ID="lbYear" Label="<b>Year</b>" />
             <Rock:RockLiteral runat="server" ID="lbSemester" Label="<b>Semester</b>" CssClass ="js-semester-name-label" />

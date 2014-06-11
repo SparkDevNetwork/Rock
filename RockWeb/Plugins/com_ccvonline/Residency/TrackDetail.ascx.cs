@@ -288,13 +288,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="track">The track.</param>
         private void ShowEditDetails( Track track )
         {
-            if ( track.Id > 0 )
+            if ( track.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Track.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( Track.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Track.FriendlyTypeName );
+                lReadOnlyTitle.Text = track.Name.FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -310,10 +310,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="track">The track.</param>
         private void ShowReadonlyDetails( Track track )
         {
+            lReadOnlyTitle.Text = track.Name.FormatAsHtmlTitle();
+            
             SetEditMode( false );
 
             lblMainDetailsCol1.Text = new DescriptionList()
-                .Add( "Name", track.Name )
                 .Add( "Description", track.Description ).Html;
 
             lblMainDetailsCol1.Text = new DescriptionList()

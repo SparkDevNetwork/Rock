@@ -7,7 +7,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfCompetencyPersonProjectAssessmentId" runat="server" />
-            <div class="well">
+            <div >
                 <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lblMainDetailsCol1" runat="server" />
@@ -17,7 +17,7 @@
                         </div>
                     </div>
                 <asp:Panel ID="pnlViewComments" runat="server">
-                    <div class="row-fluid">
+                    <div class="row">
                         <asp:Literal ID="lblResidentComments" runat="server" />
                     </div>
                     <div class="actions">

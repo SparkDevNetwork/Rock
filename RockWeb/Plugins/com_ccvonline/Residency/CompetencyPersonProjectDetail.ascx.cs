@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -328,13 +329,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProject">The competency person project.</param>
         private void ShowEditDetails( CompetencyPersonProject competencyPersonProject )
         {
-            if ( competencyPersonProject.Id > 0 )
+            if ( competencyPersonProject.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( CompetencyPersonProject.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( CompetencyPersonProject.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( CompetencyPersonProject.FriendlyTypeName );
+                lReadOnlyTitle.Text = CompetencyPersonProject.FriendlyTypeName;
             }
 
             LoadDropDowns();
@@ -384,6 +385,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProject">The competency person project.</param>
         private void ShowReadonlyDetails( CompetencyPersonProject competencyPersonProject )
         {
+            lReadOnlyTitle.Text = CompetencyPersonProject.FriendlyTypeName;
+
             SetEditMode( false );
 
             lblMainDetails.Text = new DescriptionList()

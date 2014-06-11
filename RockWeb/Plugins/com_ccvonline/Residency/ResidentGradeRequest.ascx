@@ -3,12 +3,12 @@
 <asp:UpdatePanel ID="updatePanel" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfCompetencyPersonProjectId" runat="server" />
-        <div class="well">
+        <div >
             <fieldset>
                 <legend>
                     <asp:Literal ID="lblLoginTitle" runat="server" Text="Facilitator Login" /></legend>
 
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" ValidationGroup="vgLogin" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgLogin"/>
 
                 <asp:Literal ID="lblLoginInstructions" runat="server" Text="The teacher of this competency or an authorized grader must login to grade this project." />
 
@@ -26,7 +26,7 @@
             <legend>
                 <asp:Literal ID="lblEmailRequestTitle" runat="server" Text="Email Request to Facilitator" /></legend>
 
-            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-error" ValidationGroup="vgEmailRequest" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgEmailRequest"/>
 
             <Rock:DataDropDownList ID="ddlFacilitators" runat="server" Required="true" DataTextField="FullName" DataValueField="Id" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FullName" ValidationGroup="vgEmailRequest" Label="Facilitator" />
 

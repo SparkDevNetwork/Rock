@@ -10,11 +10,11 @@
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
 
-                <div class="row-fluid">
+                <div class="row">
                     <h3>
                         <asp:Literal runat="server" ID="lblCompetencyName" />
                     </h3>
-                    <div class="well">
+                    <div >
                         <dl>
                             <dt>Facilitator</dt>
                             <dd>

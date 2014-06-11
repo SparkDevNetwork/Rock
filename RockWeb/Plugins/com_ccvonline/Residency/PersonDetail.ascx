@@ -7,37 +7,32 @@
             <asp:HiddenField ID="hfGroupId" runat="server" />
             <asp:HiddenField ID="hfPersonId" runat="server" />
 
-            <div id="pnlEditDetails" runat="server" class="well">
-
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
-
-                <fieldset>
-                    <legend>
-                        <asp:Literal ID="lActionTitle" runat="server" />
-                    </legend>
-
-                    <Rock:PersonPicker ID="ppPerson" runat="server" Label="Select Resident" Required="true" />
-
-                </fieldset>
-
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
-
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
             </div>
-            
-            <fieldset id="fieldsetViewDetails" runat="server">
-                <legend>Resident
-                </legend>
-                <div class="well">
-                    <div class="row-fluid">
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+            <div id="pnlEditDetails" runat="server">
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <Rock:PersonPicker ID="ppPerson" runat="server" Label="Select Resident" Required="true" />
+
                     </div>
                 </div>
 
-            </fieldset>
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
+
+            </div>
 
         </asp:Panel>
     </ContentTemplate>

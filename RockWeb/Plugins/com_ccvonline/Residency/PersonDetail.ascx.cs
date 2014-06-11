@@ -91,11 +91,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="person">The person.</param>
         private void ShowReadonlyDetails( Person person )
         {
-            SetEditMode( false );
+            lReadOnlyTitle.Text = person.ToString().FormatAsHtmlTitle();
 
-            lblMainDetails.Text = new DescriptionList()
-                .Add( "Name", person )
-                .Html;
+            SetEditMode( false );
         }
 
         #endregion
@@ -144,7 +142,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
-            fieldsetViewDetails.Visible = !editable;
 
             HideSecondaryBlocks( editable );
         }
@@ -162,12 +159,25 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-
             // NOTE: this block only saves when adding a record
-            var rockContext = new RockContext();
+            var rockContext = new RockContext(); GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             int groupId = hfGroupId.ValueAsInt();
             Group group = new GroupService( rockContext ).Get( groupId );
-            GroupMemberService groupMemberService = new GroupMemberService( rockContext );
+            int? defaultGroupRoleId = group.GroupType.DefaultGroupRoleId;
+
+            // check to see if the person is alread a member of the gorup/role
+            var existingGroupMember = groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId(
+                groupId, ppPerson.SelectedValue ?? 0, defaultGroupRoleId ?? 0 );
+
+            if ( existingGroupMember != null )
+            {
+                // person already in group, show warning message
+                var person = new PersonService( rockContext ).Get( ppPerson.PersonId.Value );
+                nbWarning.Title = "Resident already added";
+                nbWarning.Text = string.Format( "{0} already is in the group {1}", person, group );
+                return;
+            }
+
             GroupMember groupMember = new GroupMember();
             groupMember.GroupId = group.Id;
 
@@ -205,12 +215,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 person = new PersonService( rockContext ).Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( "Resident" );
             }
             else
             {
                 person = new Person { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( "Resident" );
             }
 
             hfPersonId.Value = person.Id.ToString();
@@ -232,13 +240,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="person">The residency period.</param>
         private void ShowEditDetails( Person person )
         {
-            if ( person.Id > 0 )
+            if ( person.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( "Resident" );
+                lReadOnlyTitle.Text = ActionTitle.Add( Person.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( "Resident" );
+                lReadOnlyTitle.Text = person.ToString().FormatAsHtmlTitle();
             }
 
             SetEditMode( true );

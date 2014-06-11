@@ -201,29 +201,36 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     competencyToAssignIdList.Add( selectedId );
                 }
 
-                foreach ( var competencyId in competencyToAssignIdList )
+
+                RockTransactionScope.WrapTransaction( () =>
                 {
-                    CompetencyPerson competencyPerson = new CompetencyPerson();
-                    competencyPersonService.Add( competencyPerson );
-                    competencyPerson.PersonId = hfPersonId.ValueAsInt();
-                    competencyPerson.CompetencyId = competencyId;
-
-                    Competency competency = competencyService.Get( competencyId );
-                    foreach ( var project in competency.Projects )
+                    foreach ( var competencyId in competencyToAssignIdList )
                     {
-                        // add all the projects associated with the competency
-                        CompetencyPersonProject competencyPersonProject = new CompetencyPersonProject
-                            {
-                                CompetencyPersonId = competencyPerson.Id,
-                                ProjectId = project.Id,
-                                MinAssessmentCount = null
-                            };
+                        CompetencyPerson competencyPerson = new CompetencyPerson();
+                        competencyPersonService.Add( competencyPerson );
+                        competencyPerson.PersonId = hfPersonId.ValueAsInt();
+                        competencyPerson.CompetencyId = competencyId;
 
-                        competencyPersonProjectService.Add( competencyPersonProject );
+                        // save changes here first to make sure we can a valid competencyPerson.id
+                        residencyContext.SaveChanges();
+
+                        Competency competency = competencyService.Get( competencyId );
+                        foreach ( var project in competency.Projects )
+                        {
+                            // add all the projects associated with the competency
+                            CompetencyPersonProject competencyPersonProject = new CompetencyPersonProject
+                                {
+                                    CompetencyPersonId = competencyPerson.Id,
+                                    ProjectId = project.Id,
+                                    MinAssessmentCount = null
+                                };
+
+                            competencyPersonProjectService.Add( competencyPersonProject );
+                        }
                     }
-                }
 
-                residencyContext.SaveChanges();
+                    residencyContext.SaveChanges();
+                } );
             }
             else
             {
@@ -367,20 +374,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPerson">The competency person.</param>
         private void ShowEditDetails( CompetencyPerson competencyPerson )
         {
-            if ( competencyPerson.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( "Competency for Resident" );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( "Competency to Resident" );
-            }
-
+            lReadOnlyTitle.Text = competencyPerson.Person.ToString().FormatAsHtmlTitle();
+            
             SetEditMode( true );
 
             LoadDropDowns();
-
-            lblPersonName.Text = competencyPerson.Person.FullName;
 
             ddlCompetency.SetValue( competencyPerson.CompetencyId );
 
@@ -407,10 +405,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPerson">The competency person.</param>
         private void ShowReadonlyDetails( CompetencyPerson competencyPerson )
         {
+            lReadOnlyTitle.Text = competencyPerson.Person.ToString().FormatAsHtmlTitle();
+            
             SetEditMode( false );
 
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Resident", competencyPerson.Person )
                 .Add( "Competency", competencyPerson.Competency.Name )
                 .Html;
         }
