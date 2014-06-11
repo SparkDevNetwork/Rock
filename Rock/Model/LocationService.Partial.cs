@@ -188,7 +188,7 @@ namespace Rock.Model
             var rockContext = new RockContext();
             Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
 
-            // Try each of the standardization services that were found through MEF
+            // Try each of the verification services that were found through MEF
             foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
             {
                 if ( service.Value.Value.IsActive )
@@ -200,10 +200,10 @@ namespace Rock.Model
                         // Log the results of the service
                         Model.ServiceLog log = new Model.ServiceLog();
                         log.LogDateTime = RockDateTime.Now;
-                        log.Type = "Location Standardize";
+                        log.Type = "Location Verify";
                         log.Name = service.Value.Metadata.ComponentName;
                         log.Input = inputLocation;
-                        log.Result = result;
+                        log.Result = result.Left( 200 );
                         log.Success = success;
                         logService.Add( log );
                     }
