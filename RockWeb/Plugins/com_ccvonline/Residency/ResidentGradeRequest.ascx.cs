@@ -59,6 +59,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !Page.IsPostBack )
             {
                 hfCompetencyPersonProjectId.Value = this.PageParameter( "CompetencyPersonProjectId" );
+
+                lFacilitatorLoginTitle.Text = "Facilitator Login".FormatAsHtmlTitle();
+                lblEmailRequestTitle.Text = "Email Request to Facilitator".FormatAsHtmlTitle();
+
                 LoadDropDowns();
             }
         }
@@ -103,7 +107,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( groupId.AsInteger() ?? 0 );
             if ( residencyGraderSecurityRole != null )
             {
-                foreach ( var groupMember in residencyGraderSecurityRole.Members.OrderBy( a => a.Person.FullName ) )
+                foreach ( var groupMember in residencyGraderSecurityRole.Members.ToList().OrderBy( a => a.Person.FullName ) )
                 {
                     facilitatorList.Add( groupMember.Person );
                 }
@@ -122,8 +126,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( facilitatorList.Any() )
             {
                 nbSendMessage.Text = string.Empty;
-                ddlFacilitators.DataSource = facilitatorList;
-                ddlFacilitators.DataBind();
+                foreach ( var item in facilitatorList )
+                {
+                    ddlFacilitators.Items.Add( new ListItem( item.ToString(), item.Id.ToString() ) );
+                }
             }
             else
             {
@@ -247,7 +253,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( facilitator == null )
             {
-                ddlFacilitators.ShowErrorMessage( "Facilitator not found" );
+                nbSendMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbSendMessage.Text = "Facilitator not found";
                 return;
             }
 

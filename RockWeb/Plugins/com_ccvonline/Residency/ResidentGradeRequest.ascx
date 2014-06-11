@@ -3,37 +3,53 @@
 <asp:UpdatePanel ID="updatePanel" runat="server">
     <ContentTemplate>
         <asp:HiddenField ID="hfCompetencyPersonProjectId" runat="server" />
-        <div >
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lblLoginTitle" runat="server" Text="Facilitator Login" /></legend>
 
-                <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgLogin"/>
+        <asp:Panel ID="pnlGraderLogin" runat="server">
+            <div class="panel panel-default">
+                <div class="panel-body">
 
-                <asp:Literal ID="lblLoginInstructions" runat="server" Text="The teacher of this competency or an authorized grader must login to grade this project." />
+                    <div class="banner">
+                        <h1>
+                            <asp:Literal ID="lFacilitatorLoginTitle" runat="server" />
+                        </h1>
+                    </div>
 
-                <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ValidationGroup="vgLogin" />
-                <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" AutoCompleteType="Disabled" ValidationGroup="vgLogin" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgLogin" />
 
-                <Rock:NotificationBox ID="nbWarningMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Warning" />
+                            <Rock:NotificationBox ID="nbLoginInstructions" runat="server" Text="The teacher of this competency or an authorized grader must login to grade this project." NotificationBoxType="Info" />
 
-                <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" ValidationGroup="vgLogin" />
+                            <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ValidationGroup="vgLogin" />
+                            <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" AutoCompleteType="Disabled" ValidationGroup="vgLogin" />
 
-            </fieldset>
-        </div>
+                            <Rock:NotificationBox ID="nbWarningMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Warning" />
+                        </div>
+                    </div>
 
-        <fieldset>
-            <legend>
-                <asp:Literal ID="lblEmailRequestTitle" runat="server" Text="Email Request to Facilitator" /></legend>
+                    <div class="actions">
+                        <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" ValidationGroup="vgLogin" />
+                    </div>
+                </div>
+            </div>
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgEmailRequest"/>
+        </asp:Panel>
 
-            <Rock:DataDropDownList ID="ddlFacilitators" runat="server" Required="true" DataTextField="FullName" DataValueField="Id" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FullName" ValidationGroup="vgEmailRequest" Label="Facilitator" />
+        <asp:Panel ID="pnlEmailRequest" runat="server">
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lblEmailRequestTitle" runat="server" />
+                </h1>
+            </div>
+
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgEmailRequest" />
+
+            <Rock:RockDropDownList ID="ddlFacilitators" runat="server" Required="true" ValidationGroup="vgEmailRequest" Label="Facilitator" />
 
             <asp:Button ID="btnSendRequest" runat="server" Text="Send" CssClass="btn btn-primary" OnClick="btnSendRequest_Click" ValidationGroup="vgEmailRequest" />
 
             <Rock:NotificationBox ID="nbSendMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Info" />
+        </asp:Panel>
 
-        </fieldset>
     </ContentTemplate>
 </asp:UpdatePanel>

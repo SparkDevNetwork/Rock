@@ -119,7 +119,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            lblCompetencyName.Text = competencyPerson.Competency.Name;
+            lReadOnlyTitle.Text  = competencyPerson.Competency.Name.FormatAsHtmlTitle();
+
             lblFacilitator.Text = competencyPerson.Competency.FacilitatorPerson != null ? competencyPerson.Competency.FacilitatorPerson.FullName : Rock.Constants.None.TextHtml;
             lblDescription.Text = !string.IsNullOrWhiteSpace( competencyPerson.Competency.Description ) ? competencyPerson.Competency.Description : Rock.Constants.None.TextHtml;
         }

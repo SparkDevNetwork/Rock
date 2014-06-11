@@ -137,8 +137,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             string residentCompetencyPageGuid = this.GetAttributeValue( "ResidentCompetencyPage" );
 
+            lReadOnlyTitle.Text = competencyPersonProject.CompetencyPerson.Person.ToString().FormatAsHtmlTitle();
+
             lblMainDetails.Text = new DescriptionList()
-                .Add( "Resident", competencyPersonProject.CompetencyPerson.Person )
                 .Add( "Competency", competencyPersonProject.CompetencyPerson.Competency.Name )
                 .Add( "Project", string.Format( "{0} - {1}", competencyPersonProject.Project.Name, competencyPersonProject.Project.Description ) )
                 .Html;

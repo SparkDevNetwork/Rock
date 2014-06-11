@@ -3,31 +3,35 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
+
             <asp:HiddenField ID="hfCompetencyPersonId" runat="server" />
 
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" />
-                </legend>
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+            </div>
 
-                <div class="row">
-                    <h3>
-                        <asp:Literal runat="server" ID="lblCompetencyName" />
-                    </h3>
-                    <div >
-                        <dl>
-                            <dt>Facilitator</dt>
-                            <dd>
-                                <asp:Literal runat="server" ID="lblFacilitator" /></dd>
-                            <dt>Description</dt>
-                            <dd>
-                                <asp:Literal runat="server" ID="lblDescription" />
-                            </dd>
-                        </dl>
-                    </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <dl>
+                        <dt>Facilitator</dt>
+                        <dd>
+                            <asp:Literal runat="server" ID="lblFacilitator" /></dd>
+                    </dl>
                 </div>
-
-            </fieldset>
+            </div>
+            <div class="col-md-6">
+            </div>
+            <div>
+                <dl>
+                    <dt>Description</dt>
+                    <dd>
+                        <asp:Literal runat="server" ID="lblDescription" />
+                    </dd>
+                </dl>
+            </div>
+            </div>
 
         </asp:Panel>
     </ContentTemplate>

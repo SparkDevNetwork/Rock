@@ -229,12 +229,13 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             string projectText = string.Format( "{0} - {1}", competencyPersonProjectAssessment.CompetencyPersonProject.Project.Name, competencyPersonProjectAssessment.CompetencyPersonProject.Project.Description );
 
+            lReadOnlyTitle.Text = competencyPersonProjectAssessment.CompetencyPersonProject.CompetencyPerson.Person.ToString().FormatAsHtmlTitle();
+
             lblMainDetailsCol1.Text = new DescriptionList()
-                .Add( "Resident", competencyPersonProjectAssessment.CompetencyPersonProject.CompetencyPerson.Person )
                 .Add( "Competency", competencyPersonProjectAssessment.CompetencyPersonProject.Project.Competency.Name )
                 .Add( "Project", projectText ).Html;
 
-            lblMainDetailsCol1.Text = new DescriptionList()
+            lblMainDetailsCol2.Text = new DescriptionList()
                 .Add( "Assessor", competencyPersonProjectAssessment.AssessorPerson )
                 .Add( "Assessment Date/Time", competencyPersonProjectAssessment.AssessmentDateTime )
                 .Add( "Rating", competencyPersonProjectAssessment.OverallRating.ToString() )
@@ -252,16 +253,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         #endregion
 
         #region Grid Events
-
-        /// <summary>
-        /// Handles the Edit event of the gList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gList_Edit( object sender, RowEventArgs e )
-        {
-            NavigateToLinkedPage( "DetailPage", "ProjectPointOfAssessmentId", (int)e.RowKeyValues["ProjectPointOfAssessmentId"], "CompetencyPersonProjectAssessmentId", (int)e.RowKeyValues["CompetencyPersonProjectAssessmentId"] );
-        }
 
         /// <summary>
         /// Handles the GridRebind event of the gList control.

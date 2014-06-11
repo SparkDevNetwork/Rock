@@ -1,40 +1,49 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ResidentProjectAssessmentDetail.ascx.cs" Inherits="RockWeb.Plugins.com_ccvonline.Residency.ResidentProjectAssessmentDetail" %>
 
-<!-- just to help do css intellisense at design time  -->
-<link rel="stylesheet" type="text/css" href="~/CSS/bootstrap.min.css" visible="false" />
-
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfCompetencyPersonProjectAssessmentId" runat="server" />
-            <div >
-                <div class="row">
-                        <div class="col-md-6">
-                            <asp:Literal ID="lblMainDetailsCol1" runat="server" />
-                        </div>
-                        <div class="col-md-6">
-                            <asp:Literal ID="lblMainDetailsCol2" runat="server" />
-                        </div>
-                    </div>
-                <asp:Panel ID="pnlViewComments" runat="server">
-                    <div class="row">
-                        <asp:Literal ID="lblResidentComments" runat="server" />
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
-                    </div>
-                </asp:Panel>
-                <asp:Panel ID="pnlEditComments" runat="server">
-                    <Rock:RockTextBox ID="tbResidentComments" runat="server" TextMode="MultiLine" Rows="5" CssClass="input-xlarge" Label="Resident Comments" />
-                    <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-                    </div>
-                </asp:Panel>
+
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <asp:Literal ID="lblMainDetailsCol1" runat="server" />
+                </div>
+                <div class="col-md-6">
+                    <asp:Literal ID="lblMainDetailsCol2" runat="server" />
+                </div>
+            </div>
+
+            <asp:Panel ID="pnlViewComments" runat="server">
+                <div class="row">
+                    <asp:Literal ID="lblResidentComments" runat="server" />
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                </div>
+            </asp:Panel>
+
+            <asp:Panel ID="pnlEditComments" runat="server">
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockTextBox ID="tbResidentComments" runat="server" TextMode="MultiLine" Rows="5" Label="Resident Comments" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
+            </asp:Panel>
+
             <h4>Project Assessment
             </h4>
-            <Rock:Grid ID="gList" runat="server" AllowSorting="false" OnRowSelected="gList_Edit" DataKeyNames="ProjectPointOfAssessmentId,CompetencyPersonProjectAssessmentId" DisplayType="Light">
+            <Rock:Grid ID="gList" runat="server" AllowSorting="false" DataKeyNames="ProjectPointOfAssessmentId,CompetencyPersonProjectAssessmentId" DisplayType="Light" RowClickEnabled="false">
                 <Columns>
                     <Rock:ColorField DataField="ProjectPointOfAssessmentColor" ToolTipDataField="ProjectPointOfAssessment.PointOfAssessmentTypeValue.Name" />
                     <asp:BoundField DataField="ProjectPointOfAssessment.AssessmentOrder" HeaderText="#" />

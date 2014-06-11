@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
+        <h4>Projects</h4>
         <asp:HiddenField ID="hfCompetencyPersonId" runat="server" />
         <Rock:Grid ID="gProjectList" runat="server" AllowSorting="true" OnRowSelected="gProjectList_RowSelected" DataKeyNames="Id" RowItemText="Project" DisplayType="Light">
             <Columns>

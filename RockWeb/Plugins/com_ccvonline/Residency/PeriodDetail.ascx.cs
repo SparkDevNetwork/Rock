@@ -245,9 +245,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Description", period.Description ).Html;
 
+
+
             lblMainDetailsCol2.Text = new DescriptionList()
-                .Add( "Start Date", period.StartDate )
-                .Add( "End Date", period.EndDate )
+                .Add( "Date Range", string.Format("{0} to {1}", (period.StartDate ?? DateTime.MinValue).ToShortDateString(), (period.EndDate  ?? DateTime.MaxValue).ToShortDateString() ))
                 .Html;
         }
 
