@@ -28,6 +28,8 @@
                 </ul>
             </div>
         
+            <Rock:NotificationBox ID="nbInvalidTransport" runat="server" NotificationBoxType="Warning" Dismissable="true" Title="Warning" Visible="false" />
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="pull-right">

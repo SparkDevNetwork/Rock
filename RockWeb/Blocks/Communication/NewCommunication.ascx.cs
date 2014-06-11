@@ -675,6 +675,7 @@ namespace RockWeb.Blocks.Communication
 
             // The component to load control for
             ChannelComponent component = null;
+            string channelName = string.Empty;
 
             // Get the current channel type
             EntityTypeCache entityType = null;
@@ -685,12 +686,13 @@ namespace RockWeb.Blocks.Communication
 
             foreach ( var serviceEntry in ChannelContainer.Instance.Components )
             {
-                var channelComponent = serviceEntry.Value.Value;
-
+                var channelComponent = serviceEntry.Value;
+    
                 // Default to first component
                 if ( component == null )
                 {
-                    component = channelComponent;
+                    component = channelComponent.Value;
+                    channelName = channelComponent.Metadata.ComponentName + " ";
                 }
 
                 // If invalid entity type, exit (and use first component found)
@@ -698,9 +700,10 @@ namespace RockWeb.Blocks.Communication
                 {
                     break;
                 }
-                else if ( entityType.Id == channelComponent.EntityType.Id )
+                else if ( entityType.Id == channelComponent.Value.EntityType.Id )
                 {
-                    component = channelComponent;
+                    component = channelComponent.Value;
+                    channelName = channelComponent.Metadata.ComponentName + " ";
                     break;
                 }
             }
@@ -721,6 +724,16 @@ namespace RockWeb.Blocks.Communication
                 
                 // Set the channel in case it wasn't already set or the previous component type was not found
                 ChannelEntityTypeId = component.EntityType.Id;
+
+                if (component.Transport == null || !component.Transport.IsActive)
+                {
+                    nbInvalidTransport.Text = string.Format( "The {0}channel does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.", channelName );
+                    nbInvalidTransport.Visible = true;
+                }
+                else
+                {
+                    nbInvalidTransport.Visible = false;
+                }
 
                 return channelControl;
             }
