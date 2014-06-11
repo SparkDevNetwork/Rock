@@ -56,6 +56,9 @@ namespace com.ccvonline.Residency.Data
         /// </remarks>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+            // we don't want this context to create a database or look for EF Migrations, do set the Initializer to null
+            Database.SetInitializer<ResidencyContext>( new NullDatabaseInitializer<ResidencyContext>() );
+
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( ResidencyContext ).Assembly );
         }
