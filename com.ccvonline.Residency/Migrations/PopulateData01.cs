@@ -284,38 +284,30 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             // Attrib for BlockType: com .ccvonline - Residency Competency Person Project Detail:Residency Competency Person Page
             AddBlockTypeAttribute( "5847D528-98BB-487C-BE26-A8FF60F74033", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Residency Competency Person Page", "ResidencyCompetencyPersonPage", "", "", 0, "", "A718D831-2126-415D-A147-E67B78F8419F" );
 
-            // Attrib for BlockType: Group List:Show GroupType
-            AddBlockTypeAttribute( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show GroupType", "ShowGroupType", "", "", 0, "True", "242DF3C9-4BE8-4216-9AAE-CA19B9B8FC91" );
-
-            // Attrib for BlockType: Group List:Show IsSystem
-            AddBlockTypeAttribute( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show IsSystem", "ShowIsSystem", "", "", 0, "True", "7CDBC199-D661-4FF8-B1FD-1F7F822F69BE" );
-
-            // Attrib Value for Group List:Limit to Security Role Groups
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "1DAD66E3-8859-487E-8200-483C98DE2E07", "False" );
-
-            // Attrib Value for Group List:Group Types
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "C3FD6CE3-D37F-4A53-B0D7-AB1B1F252324", "19" );
 
             // Attrib Value for Group List:Detail Page
             AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "8E57EC42-ABEE-4D35-B7FA-D8513880E8E4", "531c64e2-282b-4644-9619-319bdbac627e" );
+            
+            // Attrib Value for Group List:Limit to Security Role Groups
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "1DAD66E3-8859-487E-8200-483C98DE2E07", "False" );
 
-            // Attrib Value for Group List:Show User Count
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "D7A5D717-6B3F-4033-B707-B92D81D402C2", "True" );
+            // Attrib Value for Group List:Display Description Column
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
 
             // Attrib Value for Group List:Show Description
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "99AF141C-8F5F-4FB8-8748-837A4BFCFB94", "False" );
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "A0E1B2A4-9D86-4F57-B608-FC7CC498EAC3", "False" );
 
-            // Attrib Value for Group List:Show Edit
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "0EC725C5-F6F7-47DC-ABC2-8A59B6033F45", "True" );
+            // Attrib Value for Group List:Display System Column
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "766A4BFA-D2D1-4744-B30D-637A7E3B9D8F", "False" );
 
-            // Attrib Value for Group List:Show Notification
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "D5B9A3DB-DD94-4B7C-A784-28BA691181E0", "False" );
+            // Attrib Value for Group List:Display Group Type Column
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "951D268A-B2A8-42A2-B1C1-3B854070DDF9", "False" );
 
             // Attrib Value for Group Detail:Show Edit
             AddBlockAttributeValue( "746B438D-75E3-495A-9678-C3C14629511A", "50C7E223-459E-4A1C-AE3C-2892CBD40D22", "True" );
 
             // Attrib Value for Group Detail:Group Types
-            AddBlockAttributeValue( "746B438D-75E3-495A-9678-C3C14629511A", "15AC7A62-7BF2-44B7-93CD-EA8F96BF529A", "19" );
+            AddBlockAttributeValue( "746B438D-75E3-495A-9678-C3C14629511A", "15AC7A62-7BF2-44B7-93CD-EA8F96BF529A", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
 
             // Attrib Value for Group Detail:Limit to Security Role Groups
             AddBlockAttributeValue( "746B438D-75E3-495A-9678-C3C14629511A", "12295C7E-08F4-4AC5-8A34-C829620FC0B1", "False" );
@@ -333,13 +325,10 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             AddBlockAttributeValue( "F377C5DC-0618-4259-AA32-B75959CBEC85", "A718D831-2126-415D-A147-E67B78F8419F", "6f095271-8060-4577-8e72-c0ee2389527c" );
 
             // Attrib Value for Group List:Show GroupType
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "242DF3C9-4BE8-4216-9AAE-CA19B9B8FC91", "False" );
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "5AF2A432-1A7A-4171-879E-F413D58039C1", "False" );
 
             // Attrib Value for Group List:Show IsSystem
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "7CDBC199-D661-4FF8-B1FD-1F7F822F69BE", "False" );
-
-            // Attrib Value for Residency Competency Person Detail:Resident Detail Page
-            // TODO AddBlockAttributeValue( "71D6DCB8-6CEC-4703-8088-9B3FC0DEE7A6", "241A26B9-C86C-4132-AEF4-E6C61D31B9FB", "57f487e8-46e4-4f6e-b03e-96cc2c4be185" );
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "8A6E9BEF-F372-495D-816E-86E84E534DD6", "False" );
 
             // Residency Groups - Group List: Limit to GroupType Residency
             AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
@@ -515,31 +504,20 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             // Attrib Value for Block:Groups, Attribute:Detail Page, Page:Grade Book
             AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "8E57EC42-ABEE-4D35-B7FA-D8513880E8E4", "f650b68f-de1e-4952-9a4d-05d8a6b3f51c" );
 
-            // Attrib Value for Block:Groups, Attribute:Show User Count, Page:Grade Book
-            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "D7A5D717-6B3F-4033-B707-B92D81D402C2", "True" );
-
             // Attrib Value for Block:Groups, Attribute:Show Description, Page:Grade Book
-            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "99AF141C-8F5F-4FB8-8748-837A4BFCFB94", "False" );
-
-            // Attrib Value for Block:Groups, Attribute:Show Edit, Page:Grade Book
-            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "0EC725C5-F6F7-47DC-ABC2-8A59B6033F45", "True" );
+            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "A0E1B2A4-9D86-4F57-B608-FC7CC498EAC3", "False" );
 
             // Attrib Value for Block:Groups, Attribute:Limit to Security Role Groups, Page:Grade Book
             AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "1DAD66E3-8859-487E-8200-483C98DE2E07", "False" );
 
             // Attrib Value for Block:Groups, Attribute:Group Types, Page:Grade Book
-            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "C3FD6CE3-D37F-4A53-B0D7-AB1B1F252324", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
-
-            // Attrib Value for Block:Groups, Attribute:Show Notification, Page:Grade Book
-            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "D5B9A3DB-DD94-4B7C-A784-28BA691181E0", "False" );
+            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
 
             // Attrib Value for Block:Groups, Attribute:Show GroupType, Page:Grade Book
-            // NOTE: due to bug in Rock Core, this attribute might not exist, so we'll have to set it manually
-            //AddBlockAttributeValue("E4E626BD-D100-40E3-A6C8-4D68EC40C2F8","5AF2A432-1A7A-4171-879E-F413D58039C1","False");
+            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "951D268A-B2A8-42A2-B1C1-3B854070DDF9", "False" );
 
             // Attrib Value for Block:Groups, Attribute:Show IsSystem, Page:Grade Book
-            // NOTE: due to bug in Rock Core, this attribute might not exist, so we'll have to set it manually
-            //AddBlockAttributeValue("E4E626BD-D100-40E3-A6C8-4D68EC40C2F8","8A6E9BEF-F372-495D-816E-86E84E534DD6","False");
+            AddBlockAttributeValue("E4E626BD-D100-40E3-A6C8-4D68EC40C2F8","766A4BFA-D2D1-4744-B30D-637A7E3B9D8F","False");
 
             // Attrib for BlockType: com_ccvonline - Residency Person List:Show Add
             AddBlockTypeAttribute( "13EE0E6A-BBC6-4D86-9226-E246CFBA11B2", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Add", "ShowAdd", "", "", 0, "True", "9C78BE0D-3199-4B3C-AA35-B43535E70B10" );
@@ -567,7 +545,7 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] = 'A4BE6749-0190-4655
 -- Resident..
 update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
  ('F98B0061-8327-4B96-8A5E-B3C58D899B31',
- 'A16C4B0F-66C6-4CF0-8B54-B232DDF553B9',
+'A16C4B0F-66C6-4CF0-8B54-B232DDF553B9',
 '5D729D30-8E33-4913-A56F-98F803479C6D',
 '56F3E462-28EF-4EC5-A58C-C5FDE48356E0',
 'ADE663B9-386B-479C-ABD9-3349E1B4B827',
@@ -575,7 +553,8 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
 '83DBB422-38C5-44F3-9FDE-3737AC8CF2A7',
 '0DF59029-C17B-474D-8DD1-ED312B734202',
 '4827C8D3-B0FA-4AA4-891F-1F27C7D76606',
-'57F487E8-46E4-4F6E-B03E-96CC2C4BE185)
+'57F487E8-46E4-4F6E-B03E-96CC2C4BE185',
+'531C64E2-282B-4644-9619-319BDBAC627E')
 
 " );
 
