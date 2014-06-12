@@ -14,7 +14,6 @@
     1. HTML Overrides
     2. Bootstrap Overides
     3. Theme Styling
-    4. Responsive Overrides 
 
 */
 
@@ -57,28 +56,27 @@ header {
 // homepage items
 #announcement-rotator {
     margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
+    @media (min-width: @screen-sm-min) {
+        margin: @spacing-lg-px 0;
+    }
+}
 
-    .item {
-        img {
-            width: 100%;
+.announcements-container {
+    max-width: 1440px;
+    .center-block();
+
+    .announcement-list {
+        .make-row();
+
+        .announcement {
+            .make-sm-column(4, @grid-gutter-width/2 );
+            margin-bottom: @grid-gutter-width/2;
+            @media (max-width: @screen-xs-max) {
+                max-width: 400px;
+                .center-block();
+            }
+            img { width: 100%; }
         }
-    }
-}
-
-.announcement-list {
-    .announcement {
-        margin: 0 auto @spacing-lg-px;
-        max-width: 390px;
-    }
-    .announcement-title { margin: @spacing-sm-px 0; }
-    img {
-        width: 100%;
-    }
-}
-
-.announcement-detail {
-    img {
-        width: 100%;
     }
 }
 
@@ -129,26 +127,4 @@ footer {
         position: relative;
         top: -12px;
     }
-}
-
-// 4. Responsive Overrides 
-// -------------------------
-
-// default styling should be for phones 767px or less
-
-// Small devices (tablets, 768px and up)
-@media (min-width: @screen-sm-min) {
-    #announcement-rotator {
-        margin: @spacing-lg-px 0;
-    }
-}
-
-// Medium devices (desktops, 992px and up) 
-@media (min-width: @screen-md-min) {
-
-}
-
-// Large devices (large desktops, 1200px and up) 
-@media (min-width: @screen-lg-min) {
-
 }
