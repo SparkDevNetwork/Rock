@@ -18,10 +18,12 @@
 
 // Styling
 .slide-control {
-	color: @accent-light-text-color;
-	background: @accent-light-color;
+	color: @gray-lighter;
+	background: @gray;
 	overflow: auto;
-	.border-bottom-radius(5px);
+	@media (min-width: @screen-sm-min) {
+		.border-bottom-radius(5px);
+	}
 	li {
 		text-align: center;
 		padding: 0 @grid-gutter-width*@spacing-md;
@@ -31,9 +33,9 @@
 
 		span {
 			.transition(opacity .6s); // matches default flexslider animation time
-			opacity: .5;
+			.opacity(.5);
 		}
-		&.flex-active span { opacity: 1; }
+		&.flex-active span { .opacity(1); }
 	}
 }
 

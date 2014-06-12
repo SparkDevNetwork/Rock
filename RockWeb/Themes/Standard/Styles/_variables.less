@@ -2,6 +2,16 @@
 // Rock 1.0 Variables
 // --------------------------------------------------
 
+// orange
+// @main-color: #ea5800;
+
+// blue
+@main-color: #00afea;
+
+// red
+// @main-color: #d12f32;
+
+
 // Constants
 @const-border-darken-amt: 10%; // creates a border color by darkening the background by this amount
 
@@ -17,7 +27,7 @@
 @accent-light-text-color: darken(@gray-lighter, 50%);
 @accent-semibold-color: darken(@accent-bold-color, 15%);
 @accent-semibold-text-color: #fff;
-@accent-bold-color: #00afea; // overrides brand color
+@accent-bold-color: @main-color; // overrides brand color
 @accent-bold-text-color: #fff;
 
 @text-light-color: lighten(@text-color, 20%);
