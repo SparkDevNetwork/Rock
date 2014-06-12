@@ -4,15 +4,17 @@
     <ContentTemplate>
         <div class="no-print well">
             <Rock:DateRangePicker runat="server" ID="pDateRange" Label="Select Date/Range" />
-            <Rock:RockTextBox runat="server" ID="tbSemesterName" CssClass="js-semester-name-edit" Label="Semester Name" Required="true" />
+            <Rock:RockTextBox runat="server" ID="tbSemesterName" Label="Semester Name" Required="true" />
             <asp:LinkButton ID="btnApply" runat="server" Text="Apply" CssClass="btn btn-primary" OnClick="btnApply_Click" />
         </div>
 
         <div class="row">
-            <Rock:RockLiteral runat="server" ID="lbResidentName" Label="<b>Resident</b>" />
-            <Rock:RockLiteral runat="server" ID="lbYear" Label="<b>Year</b>" />
-            <Rock:RockLiteral runat="server" ID="lbSemester" Label="<b>Semester</b>" CssClass ="js-semester-name-label" />
-            <Rock:RockLiteral runat="server" ID="lbCurrentDate" Label="<b>Date</b>" />
+            <div class="col-md-12">
+                <Rock:RockLiteral runat="server" ID="lbResidentName" Label="<b>Resident</b>" />
+                <Rock:RockLiteral runat="server" ID="lbYear" Label="<b>Year</b>" />
+                <Rock:RockLiteral runat="server" ID="lbSemester" Label="<b>Semester</b>" />
+                <Rock:RockLiteral runat="server" ID="lbCurrentDate" Label="<b>Date</b>" />
+            </div>
         </div>
 
         <h3>Assessment Summary</h3>

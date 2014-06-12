@@ -22,7 +22,9 @@
 
             <asp:Panel ID="pnlViewComments" runat="server">
                 <div class="row">
-                    <asp:Literal ID="lblResidentComments" runat="server" />
+                    <div class="col-md-6">
+                        <asp:Literal ID="lblResidentComments" runat="server" />
+                    </div>
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />

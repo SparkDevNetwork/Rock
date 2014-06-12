@@ -127,16 +127,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void BindGrids()
         {
             var residencyContext = new ResidencyContext();
-            int groupMemberId = this.PageParameter( "GroupMemberId" ).AsInteger() ?? 0;
-            var groupMember = new ResidencyService<GroupMember>( residencyContext ).Get( groupMemberId );
-
-            if ( groupMember == null )
-            {
-                return;
-            }
-
-            int personId = groupMember.PersonId;
-            var person = groupMember.Person;
+            int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
+            var person = new PersonService( new RockContext() ).Get( personId );
 
             if ( person != null )
             {
@@ -189,7 +181,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             var personProjectAssessmentList = new ResidencyService<CompetencyPersonProjectAssessment>( residencyContext )
                 .Queryable( "AssessorPerson,CompetencyPersonProject" )
                 .Where( a => a.CompetencyPersonProject.CompetencyPerson.PersonId == personId )
-                .OrderBy( a => a.CompetencyPersonProject.CompetencyPerson.Person.FullName )
+                .OrderBy( a => a.CompetencyPersonProject.CompetencyPerson.Person.LastName )
+                .ThenBy( a => a.CompetencyPersonProject.CompetencyPerson.Person.NickName )
+                .ThenBy( a => a.CompetencyPersonProject.CompetencyPerson.Person.FirstName )
                 .ThenBy( a => a.CompetencyPersonProject.CompetencyPerson.Competency.Name )
                 .ThenBy( a => a.CompetencyPersonProject.Project.Name )
                 .ThenBy( a => a.AssessmentDateTime )
@@ -200,7 +194,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     Competency = s.CompetencyPersonProject.Project.Competency,
                     ProjectName = s.CompetencyPersonProject.Project.Name,
                     ProjectDescription = s.CompetencyPersonProject.Project.Description,
-                    Evaluator = s.AssessorPerson.FullName,
+                    Evaluator = s.AssessorPerson,
                     s.AssessmentDateTime,
                     s.OverallRating,
                     s.RatingNotes,

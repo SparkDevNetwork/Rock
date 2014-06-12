@@ -575,6 +575,155 @@ INSERT INTO [dbo].[PageContext]([IsSystem],[PageId],[Entity],[IdParameter],[Crea
             AddDefinedValue( "338A8802-4022-404F-9FA2-150F1FB3838F", "People Agility", "", "3929AD70-86C7-4F2E-9B91-A7FED4F7085C", true );
             AddDefinedValue( "338A8802-4022-404F-9FA2-150F1FB3838F", "Leadership Agility", "", "0DE0C7A1-E399-4447-8B9F-C5243DC2BEB4", true );
             AddDefinedValue( "338A8802-4022-404F-9FA2-150F1FB3838F", "Personal Composition", "", "C4DE3D73-7168-4AE1-AF7C-B849E7296D81", true );
+
+
+            // Add Block to Page: Coursework, Site: Rock RMS
+            AddBlock( "826C0BFF-C831-4427-98F9-57FF462D82F5", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Coursework Page Menu", "Main", "", "", 2, "72CA76E1-F938-4EE6-A060-FBBC39FF5D68" );
+
+            // Add Block to Page: Assessments, Site: Rock RMS
+            AddBlock( "162927F6-E503-43C4-B075-55F1E592E96E", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Assessments Page Menu", "Main", "", "", 1, "D3BA196E-69C4-4480-A474-EFFFFEDD8D55" );
+
+            // Add Block to Page: Projects, Site: Rock RMS
+            AddBlock( "ADE663B9-386B-479C-ABD9-3349E1B4B827", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Page Menu", "Main", "", "", 1, "9431600F-43EC-4024-A228-0EE51CBCFAB9" );
+
+            // Add Block to Page: Goals, Site: Rock RMS
+            AddBlock( "83DBB422-38C5-44F3-9FDE-3737AC8CF2A7", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Goals Page Menu", "Main", "", "", 1, "978A376A-7DC9-41BC-85B9-CFD9895ADCE1" );
+
+            // Add Block to Page: Notes, Site: Rock RMS
+            AddBlock( "130FA92D-9D5F-45D1-84AA-B399F2E868E6", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Notes Page Menu", "Main", "", "", 1, "8678D9C4-ECDF-48DB-8D27-87616415FF6F" );
+
+            // Attrib for BlockType: Group List:Display Active Status Column
+            AddBlockTypeAttribute( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Display Active Status Column", "DisplayActiveStatusColumn", "", "Should the Active Status column be displayed?", 6, @"False", "639A22FC-6958-4838-BB75-FA1D18EE6ABA" );
+
+            // Attrib Value for Block:Group List, Attribute:Display Active Status Column Page: Resident Groups, Site: Rock RMS
+            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "639A22FC-6958-4838-BB75-FA1D18EE6ABA", @"False" );
+
+            // Attrib Value for Block:Groups, Attribute:Display Active Status Column Page: Grade Book, Site: Rock RMS
+            AddBlockAttributeValue( "E4E626BD-D100-40E3-A6C8-4D68EC40C2F8", "639A22FC-6958-4838-BB75-FA1D18EE6ABA", @"False" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:CSS File Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Enable Debug Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "2EF904CD-976E-4489-8C18-9BA43885ACD9", @"False" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Include Current Parameters Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Include Current QueryString Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"True" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Is Secondary Block Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Number of Levels Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Root Page Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"f98b0061-8327-4b96-8a5e-b3c58d899b31" );
+
+            // Attrib Value for Block:Resident Coursework Page Menu, Attribute:Template Page: Coursework, Site: Rock RMS
+            AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include 'PageListAsTabs' %}
+" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:CSS File Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Enable Debug Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "2EF904CD-976E-4489-8C18-9BA43885ACD9", @"False" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Include Current Parameters Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Include Current QueryString Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"True" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Is Secondary Block Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Number of Levels Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Root Page Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"f98b0061-8327-4b96-8a5e-b3c58d899b31" );
+
+            // Attrib Value for Block:Resident Assessments Page Menu, Attribute:Template Page: Assessments, Site: Rock RMS
+            AddBlockAttributeValue( "D3BA196E-69C4-4480-A474-EFFFFEDD8D55", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include 'PageListAsTabs' %}
+
+" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:CSS File Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Enable Debug Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "2EF904CD-976E-4489-8C18-9BA43885ACD9", @"False" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Include Current Parameters Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Include Current QueryString Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"True" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Is Secondary Block Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Number of Levels Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Root Page Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"826c0bff-c831-4427-98f9-57ff462d82f5" );
+
+            // Attrib Value for Block:Resident Project Page Menu, Attribute:Template Page: Projects, Site: Rock RMS
+            AddBlockAttributeValue( "9431600F-43EC-4024-A228-0EE51CBCFAB9", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include 'PageListAsTabs' %}" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:CSS File Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Enable Debug Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "2EF904CD-976E-4489-8C18-9BA43885ACD9", @"False" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Include Current Parameters Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Include Current QueryString Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"True" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Is Secondary Block Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Number of Levels Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Root Page Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"826c0bff-c831-4427-98f9-57ff462d82f5" );
+
+            // Attrib Value for Block:Resident Project Goals Page Menu, Attribute:Template Page: Goals, Site: Rock RMS
+            AddBlockAttributeValue( "978A376A-7DC9-41BC-85B9-CFD9895ADCE1", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include 'PageListAsTabs' %}
+" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:CSS File Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Enable Debug Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "2EF904CD-976E-4489-8C18-9BA43885ACD9", @"False" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Include Current Parameters Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", @"True" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Include Current QueryString Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", @"True" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Is Secondary Block Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", @"False" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Number of Levels Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "6C952052-BC79-41BA-8B88-AB8EA3E99648", @"3" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Root Page Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"826c0bff-c831-4427-98f9-57ff462d82f5" );
+
+            // Attrib Value for Block:Resident Project Notes Page Menu, Attribute:Template Page: Notes, Site: Rock RMS
+            AddBlockAttributeValue( "8678D9C4-ECDF-48DB-8D27-87616415FF6F", "1322186A-862A-4CF1-B349-28ECB67229BA", @"{% include 'PageListAsTabs' %}" );
         }
 
         /// <summary>
