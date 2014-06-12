@@ -375,9 +375,6 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             // Attrib Value for Resident Project Detail:Grade Request Page
             AddBlockAttributeValue( "402DB31D-7C84-4154-890E-D18AEE5FC0E2", "0CAB3D65-0492-4CD1-BAEE-139A2BF9A7BA", "5d729d30-8e33-4913-a56f-98f803479c6d" );
 
-            // Attrib Value for Resident Grade Request:Residency Grader Security Role
-            AddBlockAttributeValue( "142BDAEE-51CF-4DDF-AD74-E31B0D571E9B", "DEDE968C-1347-4037-9BFC-A62C7BA59186", "31" );
-
             // Attrib Value for Resident Grade Request:Resident Grade Detail Page
             AddBlockAttributeValue( "142BDAEE-51CF-4DDF-AD74-E31B0D571E9B", "06B61C6B-84D9-4F3E-A191-F51531A2E905", "a16c4b0f-66c6-4cf0-8b54-b232ddf553b9" );
 
