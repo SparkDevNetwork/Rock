@@ -127,14 +127,14 @@ namespace Rock.Model
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the color of the hilight.
+        /// Gets or sets the color of the highlight.
         /// </summary>
         /// <value>
-        /// The color of the hilight.
+        /// The color of the highlight.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string HilightColor { get; set; }
+        public string HighlightColor { get; set; }
 
         #endregion
 
