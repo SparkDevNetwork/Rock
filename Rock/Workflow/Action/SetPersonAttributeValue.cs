@@ -29,14 +29,15 @@ using Rock.Web.Cache;
 namespace Rock.Workflow.Action
 {
     /// <summary>
-    /// Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter).
+    /// Sets an attribute's value to the selected value
     /// </summary>
-    [Description( "Sets an attribute value to the entity that workflow is being acted on (Action's entity parameter)." )]
+    [Description( "Sets a person attribute's value to the selected person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
+    [ExportMetadata( "ComponentName", "Set Person Attribute Value" )]
 
     [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
-    public class SetAttributeToEntity : ActionComponent
+    [PersonField("Person", "The person to set attribute value to", true, "", "", 1)]
+    public class SetPersonAttributeValue : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -50,53 +51,45 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
-            if ( !guid.IsEmpty() )
+            string attributeValue = GetAttributeValue( action, "Attribute" );
+            Guid guid = attributeValue.AsGuid();
+            if (!guid.IsEmpty())
             {
                 var attribute = AttributeCache.Read( guid );
                 if ( attribute != null )
                 {
-                    if ( entity != null )
+                    string value = GetAttributeValue( action, "Person" );
+                    guid = value.AsGuid();
+                    if ( !guid.IsEmpty() )
                     {
-                        if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid() ).Id )
+                        var person = new PersonService( rockContext ).Get( guid, true );
+                        if ( person != null )
                         {
-                            var person = entity as Person;
-
-                            var primaryAlias = new PersonAliasService(rockContext).Queryable().FirstOrDefault( a => a.AliasPersonId == person.Id );
-                            if ( primaryAlias != null )
-                            {
-                                SetWorkflowAttributeValue( action, guid, primaryAlias.Guid.ToString() );
-                                return true;
-                            }
-                            else
-                            {
-                                errorMessages.Add( "Could not determine person primary alias!" );
-                            }
-                        }
-                        else if ( entity is Group && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid() ).Id )
-                        {
-                            var group = entity as Group;
-                            SetWorkflowAttributeValue( action, guid, group.Id.ToString() );
+                            action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
+                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
                             return true;
                         }
                         else
                         {
-                            errorMessages.Add( "The attribute is not the correct type for the entity!" );
+                            errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guid.ToString() ) );
                         }
+                    }
+                    else
+                    {
+                        errorMessages.Add( string.Format( "Selected person value ('{0}') was not a valid Guid!", value ) );
                     }
                 }
                 else
                 {
-                    errorMessages.Add( "Invalid attribute!" );
+                    errorMessages.Add( string.Format( "Attribute coulnd not be found for selected attribute value ('{0}')!", guid.ToString() ) );
                 }
             }
             else
             {
-                errorMessages.Add( "Invalid attribute!" );
+                errorMessages.Add( string.Format( "Selected attribute value ('{0}') was not a valid Guid!", attributeValue ) );
             }
 
-
-            return false;
+            return true;
         }
 
     }
