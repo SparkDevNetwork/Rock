@@ -3967,6 +3967,8 @@ div.aspNetDisabled {
   color: #fff;
   background: #333;
   overflow: auto;
+  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 .slide-control li {
   text-align: center;
@@ -4053,7 +4055,6 @@ html[xmlns] .slides {
     1. HTML Overrides
     2. Bootstrap Overides
     3. Theme Styling
-    4. Responsive Overrides 
 
 */
 main {
@@ -4078,20 +4079,53 @@ header .login-status {
 #announcement-rotator {
   margin: 0 -15px 30px;
 }
-#announcement-rotator .item img {
-  width: 100%;
+@media (min-width: 768px) {
+  #announcement-rotator {
+    margin: 30px 0;
+  }
 }
-.announcement-list .announcement {
-  margin: 0 auto 30px;
-  max-width: 390px;
+.announcements-container {
+  max-width: 1440px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
-.announcement-list .announcement-title {
-  margin: 7.5px 0;
+.announcements-container .announcement-list {
+  margin-left: -15px;
+  margin-right: -15px;
 }
-.announcement-list img {
-  width: 100%;
+.announcements-container .announcement-list:before,
+.announcements-container .announcement-list:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
 }
-.announcement-detail img {
+.announcements-container .announcement-list:after {
+  clear: both;
+}
+.announcements-container .announcement-list .announcement {
+  position: relative;
+  min-height: 1px;
+  padding-left: 7.5px;
+  padding-right: 7.5px;
+  margin-bottom: 15px;
+}
+@media (min-width: 768px) {
+  .announcements-container .announcement-list .announcement {
+    float: left;
+    width: 33.33333333333333%;
+  }
+}
+@media (max-width: 767px) {
+  .announcements-container .announcement-list .announcement {
+    max-width: 400px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+.announcements-container .announcement-list .announcement img {
   width: 100%;
 }
 .nav-sub li {
@@ -4130,9 +4164,4 @@ footer .footer-address {
   font-size: 210px;
   position: relative;
   top: -12px;
-}
-@media (min-width: 768px) {
-  #announcement-rotator {
-    margin: 30px 0;
-  }
 }

@@ -16,7 +16,7 @@
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
-	<main class="container">
+	<div class="container">
         
         <!-- Start Content Area -->
         
@@ -26,11 +26,13 @@
             <span class="ajax-error-message"></span>
         </div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <Rock:Zone Name="Sub Feature" runat="server" />
-            </div>
-        </div>
+    </div>
+
+    <div class="announcements-container">
+        <Rock:Zone Name="Sub Feature" runat="server" />
+    </div>
+
+    <div class="container">
 
         <div class="row">
             <div class="col-md-12">
@@ -52,6 +54,6 @@
 
         <!-- End Content Area -->
 
-	</main>
+	</div>
         
 </asp:Content>
