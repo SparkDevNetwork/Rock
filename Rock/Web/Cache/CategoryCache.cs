@@ -220,7 +220,7 @@ namespace Rock.Web.Cache
                 this.Description = category.Description;
                 this.Order = category.Order;
                 this.IconCssClass = category.IconCssClass;
-                this.HighlightColor = category.HilightColor;
+                this.HighlightColor = category.HighlightColor;
             }
         }
 

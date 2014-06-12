@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.WorkFlow
             Name = category.Name;
             Description = category.Description;
             IconCssClass = category.IconCssClass;
-            HighlightColor = category.HilightColor;
+            HighlightColor = category.HighlightColor;
         }
     }
 
