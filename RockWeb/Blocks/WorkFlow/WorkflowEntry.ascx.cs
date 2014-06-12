@@ -201,6 +201,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent(string eventArgument)
         {
+            GetFormValues();
             CompleteFormAction( eventArgument );
         }
 

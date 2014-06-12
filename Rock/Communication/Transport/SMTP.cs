@@ -271,8 +271,12 @@ namespace Rock.Communication.Transport
                     sendTo.Add( recipient.Key );
                     foreach ( string to in sendTo )
                     {
-                        string subject = template.Subject;
-                        string body = template.Body;
+                        message.To.Clear();
+                        message.To.Add( to );
+
+                        string subject = template.Subject.ResolveMergeFields( mergeObjects );
+                        string body = Regex.Replace( template.Body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
                         if (!string.IsNullOrWhiteSpace(themeRoot))
                         {
                             subject = subject.Replace( "~~/", themeRoot );
@@ -287,10 +291,8 @@ namespace Rock.Communication.Transport
                             body = body.Replace( @" href=""/", @" href=""" + appRoot );
                         }
 
-                        message.To.Clear();
-                        message.To.Add( to );
-                        message.Subject = subject.ResolveMergeFields( mergeObjects );
-                        message.Body = Regex.Replace( body.ResolveMergeFields( mergeObjects ), @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+                        message.Subject = subject;
+                        message.Body = body;
 
                         smtpClient.Send( message );
                     }
@@ -310,16 +312,28 @@ namespace Rock.Communication.Transport
             var globalAttributes = GlobalAttributesCache.Read();
 
             string from = string.Empty;
+            string fromName = string.Empty;
             channelData.TryGetValue( "From", out from );
+
             if ( string.IsNullOrWhiteSpace( from ) )
             {
                 from = globalAttributes.GetValue( "OrganizationEmail" );
+                fromName = globalAttributes.GetValue( "OrganizationName" );
             }
 
             if (!string.IsNullOrWhiteSpace(from))
             {
                 MailMessage message = new MailMessage();
-                message.From = new MailAddress(from);
+
+                if ( string.IsNullOrWhiteSpace( fromName ) )
+                {
+                    message.From = new MailAddress( from );
+                }
+                else
+                {
+                    message.From = new MailAddress( from, fromName );
+                } 
+
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
 
