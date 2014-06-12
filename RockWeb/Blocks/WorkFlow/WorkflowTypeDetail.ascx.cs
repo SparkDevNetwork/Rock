@@ -1244,8 +1244,8 @@ namespace RockWeb.Blocks.WorkFlow
                 bool showInvalid = false )
         {
             var control = new WorkflowActionTypeEditor();
-            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
+            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
 
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
