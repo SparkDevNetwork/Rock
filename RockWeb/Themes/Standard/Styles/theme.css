@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
 /*
    Rock's Core CSS
     
@@ -223,7 +225,7 @@ img.jcrop-preview {
 }
 .picker .picker-label {
   padding: 6px 12px;
-  font-size: 14px;
+  font-size: 15px;
   color: #555555;
   background-color: #eeeeee;
   border: 1px solid #cccccc;
@@ -1808,7 +1810,7 @@ a.aspNetDisabled {
   padding-top: 0;
 }
 .form-group {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.428571429;
 }
 .form-group .checkbox:last-child {
@@ -2309,7 +2311,7 @@ td.grid-col-actions {
 }
 .panel-note-light article .note-author,
 .panel-note-light article .note-created {
-  font-size: 13px;
+  font-size: 14px;
   opacity: 0.7;
 }
 .panel-noteentry {
@@ -3484,7 +3486,7 @@ iframe.email-body {
   min-height: 24px !important;
   font-weight: 700 !important;
   font-size: 24px !important;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
 }
 .cke_dialog_close_button {
   background-image: none !important;
@@ -3497,7 +3499,7 @@ iframe.email-body {
   color: #3a3a3a !important;
   font-weight: 700 !important;
   font-size: 20px !important;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   margin-top: 8px;
 }
 .cke_dialog_close_button .cke_label:after {
@@ -3525,7 +3527,7 @@ a.cke_dialog_ui_button:active {
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 a.cke_dialog_ui_button span {
   text-shadow: none !important;
@@ -3606,7 +3608,7 @@ a.help {
 .popover-content header {
   margin: -9px -14px 8px -14px;
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: normal;
   line-height: 18px;
   background-color: #f7f7f7;
@@ -4068,6 +4070,10 @@ main {
 }
 .navbar .navbar-toggle i.fa-bars {
   color: #ffffff;
+}
+.navbar .navbar-brand {
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
 }
 a:hover i.fs {
   text-decoration: none;

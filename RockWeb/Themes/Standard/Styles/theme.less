@@ -7,6 +7,9 @@
 @import "_print.less";
 @import "_ad-rotater.less";
 
+@import url(http://fonts.googleapis.com/css?family=Montserrat:700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,300,700,800,600);
+
 
 /*
     Rock Theme Styles
@@ -36,6 +39,8 @@ main {
         padding: 6px 10px;
         i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
     }
+
+    .navbar-brand { font-family: @headings-font-family; text-transform: uppercase; }
 }
 
 a:hover i.fs
@@ -50,7 +55,7 @@ a:hover i.fs
     padding: 3em;
     width: 10em;
     margin: 1em;
-    text-align: center;
+text-align: center;
     display: inline-block;
 }
 .accent {
