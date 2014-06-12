@@ -57,6 +57,7 @@
     <Compile Include="Data\ResidencyContext.cs" />
     <Compile Include="Data\ResidencyService.cs" />
     <Compile Include="Migrations\AddIndexes.cs" />
+    <Compile Include="Migrations\AddIsPassFail.cs" />
     <Compile Include="Migrations\CreateDb.cs" />
     <Compile Include="Migrations\PopulateData01.cs">
       <SubType>Code</SubType>

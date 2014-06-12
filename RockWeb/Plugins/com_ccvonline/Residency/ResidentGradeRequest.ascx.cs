@@ -40,7 +40,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
     [Description( "Form where a resident can request that a project be graded." )]
 
     [LinkedPage( "Resident Grade Detail Page" )]
-    [GroupField( "Residency Grader Security Role" )]
+
+    //TODO Add a SecurityRole attribute (requires 1.0.9) [SecurityRoleField( "Residency Grader Security Role" )]
     public partial class ResidentGradeRequest : RockBlock
     {
         #region Control Methods
@@ -177,54 +178,52 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                         int groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsInteger() ?? 0;
 
                         Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( groupId );
-                        if ( residencyGraderSecurityRole != null )
-                        {
-                            // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
-                            bool userAuthorizedToGrade = residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
-                            if ( !userAuthorizedToGrade )
-                            {
-                                CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
-                                if ( competencyPersonProject != null )
-                                {
-                                    userAuthorizedToGrade = competencyPersonProject.Project.Competency.TeacherOfRecordPersonId.Equals( userLogin.PersonId );
-                                }
 
-                                if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
+                        // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
+                        bool userAuthorizedToGrade = (residencyGraderSecurityRole != null) && residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
+                        if ( !userAuthorizedToGrade )
+                        {
+                            CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
+                            if ( competencyPersonProject != null )
+                            {
+                                userAuthorizedToGrade = competencyPersonProject.Project.Competency.TeacherOfRecordPersonId.Equals( userLogin.PersonId );
+                            }
+
+                            if ( competencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
+                            {
+                                // somebody besides the Resident is logged in
+                                NavigateToParentPage();
+                                return;
+                            }
+                        }
+
+                        if ( userAuthorizedToGrade )
+                        {
+                            string gradeDetailPageGuid = this.GetAttributeValue( "ResidentGradeDetailPage" );
+                            if ( !string.IsNullOrWhiteSpace( gradeDetailPageGuid ) )
+                            {
+                                var page = new PageService( rockContext ).Get( new Guid( gradeDetailPageGuid ) );
+                                if ( page != null )
                                 {
-                                    // somebody besides the Resident is logged in
-                                    NavigateToParentPage();
+                                    string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + DateTime.Now.Ticks;
+                                    string residentGraderSessionKey = Rock.Security.Encryption.EncryptString( identifier );
+                                    Session["ResidentGraderSessionKey"] = residentGraderSessionKey;
+                                    var queryString = new Dictionary<string, string>();
+                                    queryString.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
+
+                                    NavigateToPage( page.Guid, queryString );
+
                                     return;
                                 }
                             }
 
-                            if ( userAuthorizedToGrade )
-                            {
-                                string gradeDetailPageGuid = this.GetAttributeValue( "ResidentGradeDetailPage" );
-                                if ( !string.IsNullOrWhiteSpace( gradeDetailPageGuid ) )
-                                {
-                                    var page = new PageService( rockContext ).Get( new Guid( gradeDetailPageGuid ) );
-                                    if ( page != null )
-                                    {
-                                        string identifier = hfCompetencyPersonProjectId.Value + "|" + userLogin.Guid + "|" + DateTime.Now.Ticks;
-                                        string residentGraderSessionKey = Rock.Security.Encryption.EncryptString( identifier );
-                                        Session["ResidentGraderSessionKey"] = residentGraderSessionKey;
-                                        var queryString = new Dictionary<string, string>();
-                                        queryString.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );
-
-                                        NavigateToPage( page.Guid, queryString );
-
-                                        return;
-                                    }
-                                }
-
-                                nbWarningMessage.Text = "Ooops! Grading page not configured.";
-                                return;
-                            }
-                            else
-                            {
-                                nbWarningMessage.Text = "User not authorized to grade this project";
-                                return;
-                            }
+                            nbWarningMessage.Text = "Ooops! Grading page not configured.";
+                            return;
+                        }
+                        else
+                        {
+                            nbWarningMessage.Text = "User not authorized to grade this project";
+                            return;
                         }
                     }
                 }

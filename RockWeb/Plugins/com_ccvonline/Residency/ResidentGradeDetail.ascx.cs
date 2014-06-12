@@ -137,8 +137,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
             if ( competencyPersonProjectId == 0 )
             {
+                // shouldn't happen
                 competencyPersonProject = new CompetencyPersonProject();
                 competencyPersonProjectService.Add( competencyPersonProject );
+                residencyContext.SaveChanges();
             }
             else
             {
@@ -184,12 +186,22 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                     competencyPersonProjectAssessmentPointOfAssessment = new CompetencyPersonProjectAssessmentPointOfAssessment();
                     //// set competencyPersonProjectAssessmentPointOfAssessment.CompetencyPersonProjectAssessmentId = competencyPersonProjectAssessment.Id in save in case it's new
                     competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessmentId = projectPointOfAssessmentId;
+                    competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment = new ResidencyService<ProjectPointOfAssessment>( residencyContext ).Get( projectPointOfAssessmentId );
                 }
 
                 RockDropDownList ddlPointOfAssessmentRating = item.FindControl( "ddlPointOfAssessmentRating" ) as RockDropDownList;
+                RockCheckBox ckPointOfAssessmentPassFail = item.FindControl( "ckPointOfAssessmentPassFail" ) as RockCheckBox;
                 TextBox tbRatingNotesPOA = item.FindControl( "tbRatingNotesPOA" ) as TextBox;
 
-                competencyPersonProjectAssessmentPointOfAssessment.Rating = ddlPointOfAssessmentRating.SelectedValueAsInt();
+                if ( competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.IsPassFail )
+                {
+                    competencyPersonProjectAssessmentPointOfAssessment.Rating = ckPointOfAssessmentPassFail.Checked ? 5 : 1;
+                }
+                else
+                {
+                    competencyPersonProjectAssessmentPointOfAssessment.Rating = ddlPointOfAssessmentRating.SelectedValueAsInt();
+                }
+                
                 competencyPersonProjectAssessmentPointOfAssessment.RatingNotes = tbRatingNotesPOA.Text;
 
                 competencyPersonProjectAssessmentPointOfAssessmentList.Add( competencyPersonProjectAssessmentPointOfAssessment );
@@ -197,8 +209,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                // Save changes first to make sure we have a valid competencyPersonProject.Id
-                residencyContext.SaveChanges();
                 competencyPersonProjectAssessment.CompetencyPersonProjectId = competencyPersonProject.Id;
 
                 // set Overall Rating based on average of POA ratings
@@ -404,7 +414,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 }
 
                 ddlPointOfAssessmentRating.SetValue( competencyPersonProjectAssessmentPointOfAssessment.Rating.ToString() );
+                ddlPointOfAssessmentRating.Visible = !competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.IsPassFail;
                 HiddenField hfProjectPointOfAssessmentId = e.Item.FindControl( "hfProjectPointOfAssessmentId" ) as HiddenField;
+
+                RockCheckBox ckPointOfAssessmentPassFail = e.Item.FindControl( "ckPointOfAssessmentPassFail" ) as RockCheckBox;
+                ckPointOfAssessmentPassFail.Visible = competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.IsPassFail;
+                ckPointOfAssessmentPassFail.Checked = competencyPersonProjectAssessmentPointOfAssessment.Rating == 5;
 
                 hfProjectPointOfAssessmentId.Value = competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessmentId.ToString();
 

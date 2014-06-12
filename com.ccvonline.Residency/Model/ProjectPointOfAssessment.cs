@@ -76,6 +76,15 @@ namespace com.ccvonline.Residency.Model
         [Required]
         [DataMember]
         public string AssessmentText { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is pass fail.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is pass fail; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPassFail { get; set; }
         
         #endregion
 

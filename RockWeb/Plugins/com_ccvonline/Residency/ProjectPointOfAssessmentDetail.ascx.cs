@@ -137,6 +137,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             projectPointOfAssessment.PointOfAssessmentTypeValueId = ddlPointOfAssessmentTypeValue.SelectedValueAsInt();
             projectPointOfAssessment.AssessmentText = tbAssessmentText.Text;
+            projectPointOfAssessment.IsPassFail = cbIsPassFail.Checked;
 
             if ( !projectPointOfAssessment.IsValid )
             {
@@ -236,6 +237,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             lblAssessmentOrder.Text = projectPointOfAssessment.AssessmentOrder.ToString();
             tbAssessmentText.Text = projectPointOfAssessment.AssessmentText;
             ddlPointOfAssessmentTypeValue.SetValue( projectPointOfAssessment.PointOfAssessmentTypeValueId );
+            cbIsPassFail.Checked = projectPointOfAssessment.IsPassFail;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

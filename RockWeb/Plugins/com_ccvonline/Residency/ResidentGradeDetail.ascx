@@ -34,20 +34,22 @@
 
             <asp:Repeater ID="rptPointOfAssessment" runat="server" OnItemDataBound="rptPointOfAssessment_ItemDataBound">
                 <ItemTemplate>
-                    <div class="row">
-                        <div class="col-md-1">
-                            <Rock:RockDropDownList ID="ddlPointOfAssessmentRating" runat="server" Label="Rating" />
-                        </div>
-                        <div class="col-md-11">
-                            <div class="row">
-                                <asp:HiddenField ID="hfProjectPointOfAssessmentId" runat="server" />
-                                <p>
-                                    <asp:Literal ID="lblAssessmentText" runat="server" />
-                                </p>
-                                <Rock:RockTextBox ID="tbRatingNotesPOA" runat="server" TextMode="MultiLine" Rows="4" Label="Instructor Notes" />
+                    <div class="row panel-body">
+                        <asp:HiddenField ID="hfProjectPointOfAssessmentId" runat="server" />
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <asp:Literal ID="lblAssessmentText" runat="server" />
+                            </div>
+                            <div class="panel-body">
+                                <div class="col-md-1">
+                                    <Rock:RockDropDownList ID="ddlPointOfAssessmentRating" runat="server" Label="Rating" />
+                                    <Rock:RockCheckBox ID="ckPointOfAssessmentPassFail" runat="server" Text="Passed"  />
+                                </div>
+                                <div class="col-md-11">
+                                    <Rock:RockTextBox ID="tbRatingNotesPOA" runat="server" TextMode="MultiLine" Rows="4" Label="Instructor Notes" />
+                                </div>
                             </div>
                         </div>
-                    </div>
                 </ItemTemplate>
             </asp:Repeater>
 

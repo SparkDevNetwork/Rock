@@ -25,6 +25,7 @@
                     <Rock:RockDropDownList ID="ddlPointOfAssessmentTypeValue" runat="server" Label="Point of Assessment Type" DataTextField="Name" DataValueField="Id" />
                     <Rock:RockLiteral ID="lblAssessmentOrder" runat="server" Label="Assessment #" />
                     <Rock:DataTextBox ID="tbAssessmentText" runat="server" SourceTypeName="com.ccvonline.Residency.Model.ProjectPointOfAssessment, com.ccvonline.Residency" PropertyName="AssessmentText" TextMode="MultiLine" Rows="3" />
+                    <Rock:RockCheckBox ID="cbIsPassFail" runat="server" Label="Graded as Pass/Fail" />
                 </div>
             </div>
 
