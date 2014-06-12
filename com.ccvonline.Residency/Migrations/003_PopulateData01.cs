@@ -325,10 +325,86 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             AddBlockAttributeValue( "F377C5DC-0618-4259-AA32-B75959CBEC85", "A718D831-2126-415D-A147-E67B78F8419F", "6f095271-8060-4577-8e72-c0ee2389527c" );
 
             // Attrib Value for Group List:Show GroupType
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "5AF2A432-1A7A-4171-879E-F413D58039C1", "False" );
+            string blockGuid = "AD59F37C-97EC-4F07-A604-3AAF8270C737";
+            string attributeKey = "DisplayGroupTypeColumn";
+            string value = "false";
 
-            // Attrib Value for Group List:Show IsSystem
-            AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "8A6E9BEF-F372-495D-816E-86E84E534DD6", "False" );
+            Sql( string.Format( @"
+                
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @BlockEntityTypeId int                
+                SET @BlockEntityTypeId = (SELECT [Id] from [EntityType] where [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
+                
+                DECLARE @BlockTypeId int
+                SET @BlockTypeId = (SELECT [BlockTypeId] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] 
+                    WHERE [EntityTypeId] = @BlockEntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
+                    AND [Key] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @BlockId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@BlockId,
+                    0,'{2}',
+                    NEWID())
+",
+                    blockGuid,
+                    attributeKey,
+                    value.Replace( "'", "''" )
+                )
+            );
+
+            attributeKey = "DisplaySystemColumn";
+
+
+            Sql( string.Format( @"
+                
+                DECLARE @BlockId int
+                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @BlockEntityTypeId int                                
+                SET @BlockEntityTypeId = (SELECT [Id] from [EntityType] where [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
+                
+                DECLARE @BlockTypeId int
+                SET @BlockTypeId = (SELECT [BlockTypeId] FROM [Block] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] 
+                    WHERE [EntityTypeId] = @BlockEntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
+                    AND [Key] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @BlockId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@BlockId,
+                    0,'{2}',
+                    NEWID())
+",
+                    blockGuid,
+                    attributeKey,
+                    value.Replace( "'", "''" )
+                )
+            );
 
             // Residency Groups - Group List: Limit to GroupType Residency
             AddBlockAttributeValue( "AD59F37C-97EC-4F07-A604-3AAF8270C737", "5164FF88-A53B-4982-BE50-D56F1FE13FC6", "00043ce6-eb1b-43b5-a12a-4552b91a3e28" );
