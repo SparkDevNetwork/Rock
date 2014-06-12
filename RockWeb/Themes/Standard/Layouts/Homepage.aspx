@@ -55,5 +55,12 @@
         <!-- End Content Area -->
 
 	</div>
+
+    <div class="container">
+        <div class="accent color">Accent</div>
+        <div class="accent-light color">Light</div>
+        <div class="accent-semi color">Semibold</div>
+        <div class="accent-bold color">Bold</div>
+    </div>
         
 </asp:Content>
