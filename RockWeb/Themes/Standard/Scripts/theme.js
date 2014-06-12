@@ -4,6 +4,6 @@ $(document).ready(function() {
 		manualControls: '.slide-control li',
 		directionNav: false,
 		pauseOnAction: false,
-		// pauseOnHover: true
+		pauseOnHover: true
 	})
 })

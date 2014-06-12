@@ -82,6 +82,13 @@ header {
     }
 }
 
+.main-feature {
+    @media (min-width: @screen-sm-min) {
+        background: @gray-lighter;
+        margin-bottom: @grid-gutter-width;
+    }
+}
+
 // homepage items
 #announcement-rotator {
     margin: 0  -@grid-gutter-width/2 @spacing-lg-px;
@@ -95,7 +102,7 @@ header {
     .center-block();
 
     .announcement-list {
-        .make-row();
+        .make-row(-@grid-gutter-width/2);
 
         .announcement {
             .make-sm-column(4, @grid-gutter-width/2 );
@@ -121,7 +128,10 @@ header {
 }
 
 footer {
-    margin-bottom: 50px;
+    padding-bottom: 50px;
+    .opacity(.5);
+    .transition(opacity .5s);
+    &:hover { .opacity(1); }
 
     .footer-message {
         float: left;
