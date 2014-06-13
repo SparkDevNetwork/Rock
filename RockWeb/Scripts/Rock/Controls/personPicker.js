@@ -62,7 +62,7 @@
                 var $selectedItem = $(this).attr('data-person-id');
                 var alreadySelected = $(this).find('.picker-select-item-details:hidden').length == 0 && e.target.type != 'radio';
                 if (alreadySelected) {
-                    $('#btnSelect_' + controlId).get(0).click();
+                    $('#' + controlId + '_btnSelect').get(0).click();
                 }
 
                 // hide other open details
