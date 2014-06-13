@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                 var ddlButtonHtml = new RockDropDownList();
                 ddlButtonHtml.ID = this.ID + "_ddlButtonHtml" + i.ToString();
                 Controls.Add( ddlButtonHtml );
-                ddlButtonHtml.AddCssClass( "form-action-css" );
+                ddlButtonHtml.AddCssClass( "form-action-button" );
                 ddlButtonHtml.AddCssClass( "form-control" );
                 ddlButtonHtml.AddCssClass( "js-form-action-input" );
                 var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
@@ -169,7 +169,13 @@ namespace Rock.Web.UI.Controls
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""row"">" );
             valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-key form-control js-form-action-input"" type=""text"" placeholder=""Action""></input></div>" );
-            valueHtml.Append( @"<div class=""col-sm-2""><input class=""form-action-css form-control js-form-action-input"" type=""text"" placeholder=""CSS Class""></input></div>" );
+            valueHtml.Append( @"<div class=""col-sm-2""><select class=""form-action-button form-control js-form-action-input"">" );
+            var definedType = Rock.Web.Cache.DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.BUTTON_HTML.AsGuid() );
+            foreach ( var definedValue in definedType.DefinedValues )
+            {
+                valueHtml.AppendFormat( @"<option value=""{0}"">{1}</option>", definedValue.Guid.ToString(), definedValue.Name );
+            }
+            valueHtml.Append( @"</select></div>" );
             valueHtml.Append( @"<div class=""col-sm-3""><select class=""form-action-value form-control js-form-action-input""><option value=""""></option>" );
             foreach ( var activity in Activities )
             {
@@ -202,7 +208,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
             writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "CSS Class" );
+            writer.Write( "Button Type" );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
@@ -246,7 +252,7 @@ namespace Rock.Web.UI.Controls
                 _actionControls[i].RenderControl( writer );
                 writer.RenderEndTag();  
 
-                // Write Css
+                // Write Button Type
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _buttonHtmlControls[i].RenderControl( writer );
@@ -310,7 +316,7 @@ namespace Rock.Web.UI.Controls
         $actionList.find('div.form-action-rows:first').children('div.row').each(function( index ) {
             newValue += 
                 $(this).find('.form-action-key:first').val() + '^' + 
-                $(this).find('.form-action-css:first').val() + '^' + 
+                $(this).find('.form-action-button:first').val() + '^' + 
                 $(this).find('.form-action-value:first').val() + '^' + 
                 $(this).find('.form-action-response:first').val() + '|'
         });

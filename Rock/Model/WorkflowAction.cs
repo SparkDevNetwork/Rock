@@ -204,22 +204,19 @@ namespace Rock.Model
             if ( ActionType != null &&
                 ActionType.CriteriaAttributeGuid.HasValue )
             {
+                result = false;
+
                 string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value );
-                if ( !string.IsNullOrWhiteSpace( criteria ) )
+
+                Guid guid = ActionType.CriteriaValue.AsGuid();
+                if ( guid.IsEmpty() )
                 {
-                    result = false;
-
-                    Guid guid = ActionType.CriteriaValue.AsGuid();
-                    if ( guid.IsEmpty() )
-                    {
-                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                    }
-                    else
-                    {
-                        string value = GetWorklowAttributeValue( guid );
-                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                    }
-
+                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                }
+                else
+                {
+                    string value = GetWorklowAttributeValue( guid );
+                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
                 }
             }
 

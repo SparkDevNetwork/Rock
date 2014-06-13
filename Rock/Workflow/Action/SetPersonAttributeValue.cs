@@ -62,11 +62,11 @@ namespace Rock.Workflow.Action
                     guid = value.AsGuid();
                     if ( !guid.IsEmpty() )
                     {
-                        var person = new PersonService( rockContext ).Get( guid, true );
-                        if ( person != null )
+                        var personAlias = new PersonAliasService( rockContext ).Get( guid );
+                        if ( personAlias != null && personAlias.Person != null )
                         {
                             action.Activity.Workflow.SetAttributeValue( attribute.Key, value );
-                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, value ) );
+                            action.AddLogEntry( string.Format( "Set '{0}' attribute to '{1}'.", attribute.Name, personAlias.Person.FullName ) );
                             return true;
                         }
                         else
@@ -76,7 +76,9 @@ namespace Rock.Workflow.Action
                     }
                     else
                     {
-                        errorMessages.Add( string.Format( "Selected person value ('{0}') was not a valid Guid!", value ) );
+                        action.Activity.Workflow.SetAttributeValue( attribute.Key, string.Empty );
+                        action.AddLogEntry( string.Format( "Set '{0}' attribute to nobody.", attribute.Name ) );
+                        return true;
                     }
                 }
                 else
