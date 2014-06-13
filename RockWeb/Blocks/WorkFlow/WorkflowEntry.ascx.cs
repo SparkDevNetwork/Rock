@@ -73,6 +73,18 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the workflow type was set by attribute.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [configured type]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ConfiguredType
+        {
+            get { return ViewState["ConfiguredType"] as bool? ?? false; }
+            set { ViewState["ConfiguredType"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the workflow identifier.
         /// </summary>
         /// <value>
@@ -128,7 +140,7 @@ namespace RockWeb.Blocks.WorkFlow
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            if ( _workflowType != null )
+            if ( _workflowType != null && !ConfiguredType )
             {
                 RockPage.PageTitle = _workflowType.Name;
             }
@@ -171,7 +183,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             LoadWorkflowType();
 
-            if ( _workflowType != null )
+            if ( _workflowType != null && !ConfiguredType )
             {
                 breadCrumbs.Add( new BreadCrumb( _workflowType.Name, pageReference ) );
             }
@@ -374,10 +386,12 @@ namespace RockWeb.Blocks.WorkFlow
                 if ( _workflowType != null )
                 {
                     WorkflowTypeId = _workflowType.Id;
+                    ConfiguredType = true;
                 }
                 else
                 {
                     WorkflowTypeId = PageParameter( "WorkflowTypeId" ).AsIntegerOrNull();
+                    ConfiguredType = false;
                 }
             }
 
@@ -599,18 +613,24 @@ namespace RockWeb.Blocks.WorkFlow
                         WorkflowId = _workflow.Id;
                     }
 
+                    int? previousActivityId = null;
+                    if ( _activity != null )
+                    {
+                        previousActivityId = _activity.Id;
+                    }
+
                     ActionTypeId = null;
                     _action = null;
                     _actionType = null;
                     _activity = null;
 
-                    if ( HydrateObjects() )
+                    if ( HydrateObjects() && _activity.Id != previousActivityId )
                     {
                         BuildForm( true );
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText );
+                        ShowMessage( NotificationBoxType.Success, string.Empty, responseText, ( _activity == null || _activity.Id != previousActivityId ) );
                     }
                 }
                 else
@@ -620,14 +640,17 @@ namespace RockWeb.Blocks.WorkFlow
             }
         }
 
-        private void ShowMessage(NotificationBoxType type, string title, string message)
+        private void ShowMessage(NotificationBoxType type, string title, string message, bool hideForm = true )
         {
             nbMessage.NotificationBoxType = type;
             nbMessage.Title = title;
             nbMessage.Text = message;
             nbMessage.Visible = true;
 
-            pnlForm.Visible = false;
+            if ( hideForm )
+            {
+                pnlForm.Visible = false;
+            }
 
         }
 
