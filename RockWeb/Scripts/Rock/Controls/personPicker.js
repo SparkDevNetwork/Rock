@@ -56,7 +56,7 @@
                 exports.personPickers[controlId].updateScrollbar();
             });
 
-            $('.picker-select').on('click', '.picker-select-item', function (e) {
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
                 e.stopPropagation();
 
                 var $selectedItem = $(this).attr('data-person-id');
@@ -66,7 +66,7 @@
                 }
 
                 // hide other open details
-                $('.picker-select-item-details').each(function () {
+                $('#' + controlId + ' .picker-select-item-details').each(function () {
                     var $el = $(this),
                         $currentItem = $el.closest('.picker-select-item').attr('data-person-id');
 
