@@ -112,7 +112,7 @@ namespace com.ccvonline.Residency.Migrations
             // hide breadcrumb name for most of the residency admin pages
             Sql( @"
 update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in 
-  ('FD705EED-CD8D-4F53-8C16-ABBA15CC27D5', 'F8D8663B-FE4F-4F48-A359-DBE656AE69A2', '038AEF17-65EE-4161-BF9E-64AACC791701','2BD2E7BB-4199-4C18-B51A-AA3755DECD1B','37BA8EAD-16C5-4257-953D-D202684A8E61','DD65505A-6FE2-4478-8901-9F38F484E3EB')"
+  ('FD705EED-CD8D-4F53-8C16-ABBA15CC27D5', 'F8D8663B-FE4F-4F48-A359-DBE656AE69A2', '038AEF17-65EE-4161-BF9E-64AACC791701','2BD2E7BB-4199-4C18-B51A-AA3755DECD1B','37BA8EAD-16C5-4257-953D-D202684A8E61','DD65505A-6FE2-4478-8901-9F38F484E3EB','F8D8663B-FE4F-4F48-A359-DBE656AE69A2')"
                 );
 
             UpdateBlockType( "Competency Detail", "Displays the details of a competency.", "~/Plugins/com_ccvonline/Residency/CompetencyDetail.ascx", "CCV > Residency", "D1D1C418-B84B-4307-B4EC-D2FD2970D639" );

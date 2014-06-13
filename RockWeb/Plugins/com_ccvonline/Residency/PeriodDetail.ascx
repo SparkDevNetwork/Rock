@@ -5,6 +5,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfPeriodId" runat="server" />
+            <asp:HiddenField ID="hfCloneFromPeriodId" runat="server" />
 
             <div class="banner">
                 <h1>
@@ -18,7 +19,8 @@
             <div id="pnlEditDetails" runat="server">
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
+                        <Rock:NotificationBox ID="nbCloneMessage" runat="server" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Period, com.ccvonline.Residency" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Period, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         <Rock:DateRangePicker ID="dpStartEndDate" runat="server" Label="Date Range "/>

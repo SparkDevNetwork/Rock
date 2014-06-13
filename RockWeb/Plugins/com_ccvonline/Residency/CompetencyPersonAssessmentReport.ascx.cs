@@ -76,7 +76,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 string classSemesterName = string.Empty;
                 if ( currentResidencyPeriod != null )
                 {
-                    if ( DateTime.Today >= currentResidencyPeriod.EndDate )
+                    if ( RockDateTime.Today >= currentResidencyPeriod.EndDate )
                     {
                         pDateRange.LowerValue = new DateTime( currentResidencyPeriod.EndDate.Value.Year, 1, 1 );
                         pDateRange.UpperValue = currentResidencyPeriod.EndDate;

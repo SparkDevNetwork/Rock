@@ -62,6 +62,7 @@
     <Compile Include="Migrations\003_PopulateData01.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Migrations\005_ResidentPageUpdates.cs" />
     <Compile Include="Model\Competency.cs" />
     <Compile Include="Model\CompetencyPerson.cs" />
     <Compile Include="Model\Period.cs" />

@@ -59,6 +59,40 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs.
+        /// </summary>
+        /// <param name="pageReference">The <see cref="T:Rock.Web.PageReference" />.</param>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.List`1" /> of block related <see cref="T:Rock.Web.UI.BreadCrumb">BreadCrumbs</see>.
+        /// </returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? periodId = this.PageParameter( pageReference, "PeriodId" ).AsInteger();
+            if ( periodId != null )
+            {
+                Period period = new ResidencyService<Period>( new ResidencyContext() ).Get( periodId.Value );
+                if ( period != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( period.Name, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "Period", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
+        }
+
         #endregion
 
         #region Edit Events
@@ -121,6 +155,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             Period period;
             ResidencyService<Period> periodService = new ResidencyService<Period>( residencyContext );
+            ResidencyService<Track> trackService = new ResidencyService<Track>( residencyContext );
+            ResidencyService<Competency> competencyService = new ResidencyService<Competency>( residencyContext );
+            ResidencyService<Project> projectService = new ResidencyService<Project>( residencyContext );
+            ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
 
             int periodId = int.Parse( hfPeriodId.Value );
 
@@ -145,7 +183,76 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            residencyContext.SaveChanges();
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                residencyContext.SaveChanges();
+
+                if ( hfCloneFromPeriodId.ValueAsInt() > 0 )
+                {
+                    var clonePeriod = periodService.Get( hfCloneFromPeriodId.ValueAsInt() );
+                    foreach ( var track in clonePeriod.Tracks )
+                    {
+                        var newTrack = new Track
+                        {
+                            PeriodId = period.Id,
+                            Name = track.Name,
+                            Description = track.Description,
+                            DisplayOrder = track.DisplayOrder
+                        };
+
+                        trackService.Add( newTrack );
+                        residencyContext.SaveChanges();
+
+                        foreach ( var competency in track.Competencies )
+                        {
+                            var newCompetency = new Competency
+                            {
+                                TrackId = newTrack.Id,
+                                Goals = competency.Goals,
+                                CreditHours = competency.CreditHours,
+                                SupervisionHours = competency.SupervisionHours,
+                                ImplementationHours = competency.ImplementationHours,
+                                Name = competency.Name,
+                                Description = competency.Description
+                            };
+
+                            competencyService.Add( newCompetency );
+                            residencyContext.SaveChanges();
+
+                            foreach ( var project in competency.Projects )
+                            {
+                                var newProject = new Project
+                                {
+                                    CompetencyId = newCompetency.Id,
+                                    MinAssessmentCountDefault = project.MinAssessmentCountDefault,
+                                    Name = project.Name,
+                                    Description = project.Description
+                                };
+
+                                projectService.Add( newProject );
+                                residencyContext.SaveChanges();
+                                
+                                foreach ( var projectPointOfAssessment in project.ProjectPointOfAssessments )
+                                {
+                                    var newProjectPointOfAssessment = new ProjectPointOfAssessment
+                                    {
+                                        ProjectId = newProject.Id,
+                                        PointOfAssessmentTypeValueId = projectPointOfAssessment.PointOfAssessmentTypeValueId,
+                                        AssessmentOrder = projectPointOfAssessment.AssessmentOrder,
+                                        AssessmentText = projectPointOfAssessment.AssessmentText,
+                                        IsPassFail = projectPointOfAssessment.IsPassFail
+                                    };
+
+                                    projectPointOfAssessmentService.Add( newProjectPointOfAssessment );
+                                    residencyContext.SaveChanges();
+                                }
+                            }
+                        }
+                    }
+                }
+            } );
+
+
 
             var qryParams = new Dictionary<string, string>();
             qryParams["PeriodId"] = period.Id.ToString();
@@ -179,6 +286,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
 
             hfPeriodId.Value = period.Id.ToString();
+            hfCloneFromPeriodId.Value = ( PageParameter( "CloneFromPeriodId" ).AsInteger() ?? 0 ).ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -217,7 +325,18 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             if ( period.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( Period.FriendlyTypeName ).FormatAsHtmlTitle();
+                if ( hfCloneFromPeriodId.ValueAsInt() > 0 )
+                {
+                    var clonePeriod = new ResidencyService<Period>( new ResidencyContext() ).Get( hfCloneFromPeriodId.ValueAsInt() );
+                    string title = string.Format( "Clone period from {0}", clonePeriod.Name );
+                    nbCloneMessage.Text = string.Format( "This will add a new period, and copy all the tracks, competencies and projects from {0}", clonePeriod.Name );
+                    lReadOnlyTitle.Text = title.FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lReadOnlyTitle.Text = ActionTitle.Add( Period.FriendlyTypeName ).FormatAsHtmlTitle();
+                }
+
             }
             else
             {
@@ -228,7 +347,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             tbName.Text = period.Name;
             tbDescription.Text = period.Description;
-            dpStartEndDate.LowerValue= period.StartDate;
+            dpStartEndDate.LowerValue = period.StartDate;
             dpStartEndDate.UpperValue = period.EndDate;
         }
 
@@ -239,16 +358,14 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void ShowReadonlyDetails( Period period )
         {
             lReadOnlyTitle.Text = period.Name.FormatAsHtmlTitle();
-            
+
             SetEditMode( false );
 
             lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Description", period.Description ).Html;
 
-
-
             lblMainDetailsCol2.Text = new DescriptionList()
-                .Add( "Date Range", string.Format("{0} to {1}", (period.StartDate ?? DateTime.MinValue).ToShortDateString(), (period.EndDate  ?? DateTime.MaxValue).ToShortDateString() ))
+                .Add( "Date Range", string.Format( "{0} to {1}", ( period.StartDate ?? DateTime.MinValue ).ToShortDateString(), ( period.EndDate ?? DateTime.MaxValue ).ToShortDateString() ) )
                 .Html;
         }
 

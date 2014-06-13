@@ -385,14 +385,14 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyPersonProject">The competency person project.</param>
         private void ShowReadonlyDetails( CompetencyPersonProject competencyPersonProject )
         {
-            lReadOnlyTitle.Text = CompetencyPersonProject.FriendlyTypeName;
+            lReadOnlyTitle.Text = competencyPersonProject.Project.Name.FormatAsHtmlTitle();
 
             SetEditMode( false );
 
             lblMainDetails.Text = new DescriptionList()
                 .Add( "Resident", competencyPersonProject.CompetencyPerson.Person )
                 .Add( "Competency", competencyPersonProject.CompetencyPerson.Competency.Name )
-                .Add( "Project", string.Format( "{0} - {1}", competencyPersonProject.Project.Name, competencyPersonProject.Project.Description ) )
+                .Add( "Project Description",  competencyPersonProject.Project.Description)
                 .Add( "Assessments Required", competencyPersonProject.MinAssessmentCount ?? competencyPersonProject.Project.MinAssessmentCountDefault )
                 .Html;
         }

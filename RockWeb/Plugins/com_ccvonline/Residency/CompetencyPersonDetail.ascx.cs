@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
 using Rock;
@@ -363,8 +364,20 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         private void LoadDropDowns()
         {
-            ddlPeriod.DataSource = new ResidencyService<Period>( new ResidencyContext() ).Queryable().OrderBy( a => a.Name ).ToList();
-            ddlPeriod.DataBind();
+            var periodList = new ResidencyService<Period>( new ResidencyContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+            var today = RockDateTime.Today;
+            
+            foreach ( var period in periodList )
+            {
+                ddlPeriod.Items.Add( new ListItem( period.Name, period.Id.ToString() ) );
+            }
+
+            var currentOrNextPeriod = periodList.Where( p => p.EndDate > today ).OrderBy( o => o.StartDate ).FirstOrDefault();
+            if ( currentOrNextPeriod != null )
+            {
+                ddlPeriod.SetValue( ( currentOrNextPeriod.Id ) );
+            }
+            
             ddlPeriod_SelectedIndexChanged( null, null );
         }
 
