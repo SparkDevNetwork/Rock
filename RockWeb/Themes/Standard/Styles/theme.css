@@ -4151,6 +4151,8 @@ header .login-status {
   padding-left: 7.5px;
   padding-right: 7.5px;
   margin-bottom: 15px;
+  -webkit-transition: opacity 0.3s;
+  transition: opacity 0.3s;
 }
 @media (min-width: 768px) {
   .announcements-container .announcement-list .announcement {
@@ -4165,6 +4167,10 @@ header .login-status {
     margin-left: auto;
     margin-right: auto;
   }
+}
+.announcements-container .announcement-list .announcement:hover {
+  opacity: 0.75;
+  filter: alpha(opacity=75);
 }
 .announcements-container .announcement-list .announcement img {
   width: 100%;

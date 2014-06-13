@@ -6316,18 +6316,18 @@ a.list-group-item:focus {
   border-bottom: 1px solid #dddddd;
 }
 .panel-default {
-  border-color: #b7edff;
+  border-color: #eeeeee;
 }
 .panel-default > .panel-heading {
   color: #6f6f6f;
   background-color: #eeeeee;
-  border-color: #b7edff;
+  border-color: #eeeeee;
 }
 .panel-default > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #b7edff;
+  border-top-color: #eeeeee;
 }
 .panel-default > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #b7edff;
+  border-bottom-color: #eeeeee;
 }
 .panel-primary {
   border-color: #00afea;
