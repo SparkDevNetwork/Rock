@@ -63,6 +63,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Migrations\005_ResidentPageUpdates.cs" />
+    <Compile Include="Migrations\006_GradeRequestEmail.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\007_ResidencySite.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\Competency.cs" />
     <Compile Include="Model\CompetencyPerson.cs" />
     <Compile Include="Model\Period.cs" />

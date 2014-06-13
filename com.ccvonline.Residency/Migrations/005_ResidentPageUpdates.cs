@@ -10,6 +10,7 @@ namespace com.ccvonline.Residency.Migrations
     /// <summary>
     /// 
     /// </summary>
+    [MigrationNumber( 5, "1.0.8" )]
     public class ResidentPageUpdates : Migration
     {
         /// <summary>
@@ -17,21 +18,6 @@ namespace com.ccvonline.Residency.Migrations
         /// </summary>
         public override void Up()
         {
-            // Add Block to Page: Coursework, Site: Rock RMS
-            AddBlock( "826C0BFF-C831-4427-98F9-57FF462D82F5", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Coursework Page Menu", "Main", "", "", 2, "72CA76E1-F938-4EE6-A060-FBBC39FF5D68" );
-
-            // Add Block to Page: Assessments, Site: Rock RMS
-            AddBlock( "162927F6-E503-43C4-B075-55F1E592E96E", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Assessments Page Menu", "Main", "", "", 1, "D3BA196E-69C4-4480-A474-EFFFFEDD8D55" );
-
-            // Add Block to Page: Projects, Site: Rock RMS
-            AddBlock( "ADE663B9-386B-479C-ABD9-3349E1B4B827", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Page Menu", "Main", "", "", 1, "9431600F-43EC-4024-A228-0EE51CBCFAB9" );
-
-            // Add Block to Page: Goals, Site: Rock RMS
-            AddBlock( "83DBB422-38C5-44F3-9FDE-3737AC8CF2A7", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Goals Page Menu", "Main", "", "", 1, "978A376A-7DC9-41BC-85B9-CFD9895ADCE1" );
-
-            // Add Block to Page: Notes, Site: Rock RMS
-            AddBlock( "130FA92D-9D5F-45D1-84AA-B399F2E868E6", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "Resident Project Notes Page Menu", "Main", "", "", 1, "8678D9C4-ECDF-48DB-8D27-87616415FF6F" );
-
             // Attrib Value for Block:Resident Coursework Page Menu, Attribute:CSS File Page: Coursework, Site: Rock RMS
             AddBlockAttributeValue( "72CA76E1-F938-4EE6-A060-FBBC39FF5D68", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", @"" );
 

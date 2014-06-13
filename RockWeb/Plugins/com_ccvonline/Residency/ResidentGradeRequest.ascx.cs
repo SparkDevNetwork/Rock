@@ -180,7 +180,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                         Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( groupId );
 
                         // Grader must either by member of ResidencyGraderSecurityRole or the Teacher of Record for this project's competency
-                        bool userAuthorizedToGrade = (residencyGraderSecurityRole != null) && residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
+                        bool userAuthorizedToGrade = ( residencyGraderSecurityRole != null ) && residencyGraderSecurityRole.Members.Any( a => a.PersonId == userLogin.PersonId );
                         if ( !userAuthorizedToGrade )
                         {
                             CompetencyPersonProject competencyPersonProject = new ResidencyService<CompetencyPersonProject>( new ResidencyContext() ).Get( hfCompetencyPersonProjectId.ValueAsInt() );
@@ -274,7 +274,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
                     int routeId = 0;
                     {
-                        routeId = pageCache.PageRoutes.FirstOrDefault().Id;
+                        var pageRoute = pageCache.PageRoutes.FirstOrDefault();
+                        if ( pageRoute != null )
+                        {
+                            routeId = pageRoute.Id;
+                        }
                     }
 
                     // set Ticks (3rd part) to 0 since this is an emailed request
@@ -298,7 +302,11 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             var mergeObjects = new Dictionary<string, object>();
             mergeObjects.Add( "Facilitator", facilitator.ToDictionary() );
-            mergeObjects.Add( "Resident", competencyPersonProject.CompetencyPerson.Person.ToDictionary() );
+            
+            // load person using rockContext to avoid error when doing ToLiquid
+            var person = new PersonService( rockContext ).Get( competencyPersonProject.CompetencyPerson.PersonId );
+            mergeObjects.Add( "Resident", person.ToLiquid() );
+
             mergeObjects.Add( "Project", competencyPersonProject.Project.ToDictionary() );
 
             mergeObjects.Add( "GradeDetailPageUrl", gradeDetailPageUrl.ToString() );
