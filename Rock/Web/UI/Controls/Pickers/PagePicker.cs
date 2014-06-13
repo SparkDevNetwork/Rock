@@ -377,7 +377,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
             _hfPageRouteId = new HiddenField();
-            _hfPageRouteId.ClientIDMode = ClientIDMode.Static;
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
