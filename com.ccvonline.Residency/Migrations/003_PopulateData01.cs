@@ -610,7 +610,7 @@ update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] in
             // Breadcrumb updates
             Sql( @"
 -- Period Detail
-update [Page] set [BreadCrumbDisplayName] = 1 where [Guid] = 'F8D8663B-FE4F-4F48-A359-DBE656AE69A2'
+update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] = 'F8D8663B-FE4F-4F48-A359-DBE656AE69A2'
 
 -- Project Assessment
 update [Page] set [BreadCrumbDisplayName] = 0 where [Guid] = 'A4BE6749-0190-4655-B3F6-0CEEC2DDD5C4'
