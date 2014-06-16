@@ -1282,7 +1282,7 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
             }
-            control.SetWorkflowActionType( actionType, System.Web.HttpContext.Current.Items["WorkflowTypeAttributes"] as Dictionary<Guid, string> );
+            control.SetWorkflowActionType( actionType, attributes );
 
             control.Expanded = ExpandedActions.Contains( actionType.Guid );
 
