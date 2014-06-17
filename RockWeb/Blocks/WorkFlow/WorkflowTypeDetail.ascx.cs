@@ -270,19 +270,25 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( workflowType != null )
             {
+                // Load the state objects for the source workflow type
                 LoadStateDetails( workflowType, rockContext );
 
+                // clone the workflow type
                 var newWorkflowType = workflowType.Clone( false );
                 newWorkflowType.Id = 0;
                 newWorkflowType.Guid = Guid.NewGuid();
                 newWorkflowType.IsSystem = false;
                 newWorkflowType.Name = workflowType.Name + " - Copy";
 
+                // Create temporary state objects for the new workflow type
                 var newAttributesState = new List<Attribute>();
                 var newActivityTypesState = new List<WorkflowActivityType>();
                 var newActivityAttributesState = new Dictionary<Guid, List<Attribute>>();
-                var attributeXref = new Dictionary<Guid, Guid>();
 
+                // Dictionary to keep the attributes and activity types linked between the source and the target based on their guids
+                var guidXref = new Dictionary<Guid, Guid>();
+
+                // Clone the workflow attributes
                 foreach ( var attribute in AttributesState )
                 {
                     var newAttribute = attribute.Clone( false );
@@ -290,7 +296,13 @@ namespace RockWeb.Blocks.WorkFlow
                     newAttribute.Guid = Guid.NewGuid();
                     newAttributesState.Add( newAttribute );
 
-                    attributeXref.Add( attribute.Guid, newAttribute.Guid );
+                    guidXref.Add( attribute.Guid, newAttribute.Guid );
+                }
+
+                // Create new guids for all the existing activity types
+                foreach (var activityType in ActivityTypesState)
+                {
+                    guidXref.Add( activityType.Guid, Guid.NewGuid() );
                 }
 
                 foreach ( var activityType in ActivityTypesState )
@@ -298,7 +310,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var newActivityType = activityType.Clone( false );
                     newActivityType.WorkflowTypeId = 0;
                     newActivityType.Id = 0;
-                    newActivityType.Guid = Guid.NewGuid();
+                    newActivityType.Guid = guidXref[activityType.Guid];
                     newActivityTypesState.Add( newActivityType );
 
                     var newActivityAttributes = new List<Attribute>();
@@ -309,7 +321,7 @@ namespace RockWeb.Blocks.WorkFlow
                         newAttribute.Guid = Guid.NewGuid();
                         newActivityAttributes.Add( newAttribute );
 
-                        attributeXref.Add( attribute.Guid, newAttribute.Guid );
+                        guidXref.Add( attribute.Guid, newAttribute.Guid );
                     }
                     newActivityAttributesState.Add( newActivityType.Guid, newActivityAttributes );
 
@@ -323,15 +335,15 @@ namespace RockWeb.Blocks.WorkFlow
                         newActivityType.ActionTypes.Add( newActionType );
 
                         if ( actionType.CriteriaAttributeGuid.HasValue &&
-                            attributeXref.ContainsKey( actionType.CriteriaAttributeGuid.Value ) )
+                            guidXref.ContainsKey( actionType.CriteriaAttributeGuid.Value ) )
                         {
-                            newActionType.CriteriaAttributeGuid = attributeXref[actionType.CriteriaAttributeGuid.Value];
+                            newActionType.CriteriaAttributeGuid = guidXref[actionType.CriteriaAttributeGuid.Value];
                         }
                         Guid criteriaAttributeGuid = actionType.CriteriaValue.AsGuid();
                         if ( !criteriaAttributeGuid.IsEmpty() &&
-                            attributeXref.ContainsKey( criteriaAttributeGuid ) )
+                            guidXref.ContainsKey( criteriaAttributeGuid ) )
                         {
-                            newActionType.CriteriaValue = attributeXref[criteriaAttributeGuid].ToString();
+                            newActionType.CriteriaValue = guidXref[criteriaAttributeGuid].ToString();
                         }
 
                         if ( actionType.WorkflowForm != null )
@@ -339,25 +351,43 @@ namespace RockWeb.Blocks.WorkFlow
                             var newWorkflowForm = actionType.WorkflowForm.Clone( false );
                             newWorkflowForm.Id = 0;
                             newWorkflowForm.Guid = Guid.NewGuid();
-                            if ( actionType.WorkflowForm.ActionAttributeGuid.HasValue &&
-                                attributeXref.ContainsKey( actionType.WorkflowForm.ActionAttributeGuid.Value ) )
+
+                            var newActionButtons = new List<string>();
+                            foreach ( var actionButton in actionType.WorkflowForm.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
                             {
-                                newWorkflowForm.ActionAttributeGuid = attributeXref[actionType.WorkflowForm.ActionAttributeGuid.Value];
+                                var details = actionButton.Split( new char[] { '^' } );
+                                if ( details.Length > 2 )
+                                {
+                                    Guid oldGuid = details[2].AsGuid();
+                                    if (!oldGuid.IsEmpty() && guidXref.ContainsKey(oldGuid))
+                                    {
+                                        details[2] = guidXref[oldGuid].ToString();
+                                    }
+                                }
+                                newActionButtons.Add( details.ToList().AsDelimited("^") );
+                            }
+                            newWorkflowForm.Actions = newActionButtons.AsDelimited( "|" );
+
+                            if ( actionType.WorkflowForm.ActionAttributeGuid.HasValue &&
+                                guidXref.ContainsKey( actionType.WorkflowForm.ActionAttributeGuid.Value ) )
+                            {
+                                newWorkflowForm.ActionAttributeGuid = guidXref[actionType.WorkflowForm.ActionAttributeGuid.Value];
                             }
                             newActionType.WorkflowForm = newWorkflowForm;
 
                             foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes )
                             {
-                                if ( attributeXref.ContainsKey( formAttribute.Attribute.Guid ) )
+                                if ( guidXref.ContainsKey( formAttribute.Attribute.Guid ) )
                                 {
                                     var newFormAttribute = formAttribute.Clone( false );
                                     newFormAttribute.WorkflowActionFormId = 0;
                                     newFormAttribute.Id = 0;
                                     newFormAttribute.Guid = Guid.NewGuid();
                                     newFormAttribute.AttributeId = 0;
+
                                     newFormAttribute.Attribute = new Rock.Model.Attribute
                                         {
-                                            Guid = attributeXref[formAttribute.Attribute.Guid],
+                                            Guid = guidXref[formAttribute.Attribute.Guid],
                                             Name = formAttribute.Attribute.Name
                                         };
                                     newWorkflowForm.FormAttributes.Add( newFormAttribute );
@@ -372,9 +402,9 @@ namespace RockWeb.Blocks.WorkFlow
                             {
                                 string value = actionType.GetAttributeValue( attributeKey );
                                 Guid guidValue = value.AsGuid();
-                                if ( !guidValue.IsEmpty() && attributeXref.ContainsKey( guidValue ) )
+                                if ( !guidValue.IsEmpty() && guidXref.ContainsKey( guidValue ) )
                                 {
-                                    newActionType.SetAttributeValue( attributeKey, attributeXref[guidValue].ToString() );
+                                    newActionType.SetAttributeValue( attributeKey, guidXref[guidValue].ToString() );
                                 }
                                 else
                                 {

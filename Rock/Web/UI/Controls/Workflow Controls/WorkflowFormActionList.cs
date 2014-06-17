@@ -121,7 +121,7 @@ namespace Rock.Web.UI.Controls
                 foreach( var definedValue in definedType.DefinedValues )
                 {
                     var li = new ListItem( definedValue.Name, definedValue.Guid.ToString() );
-                    li.Selected = nameValueResponse.Length > 1 && li.Value == nameValueResponse[1];
+                    li.Selected = nameValueResponse.Length > 1 && li.Value.Equals( nameValueResponse[1], StringComparison.OrdinalIgnoreCase );
                     ddlButtonHtml.Items.Add( li );
                 }
                 _buttonHtmlControls.Add( ddlButtonHtml );
@@ -139,7 +139,7 @@ namespace Rock.Web.UI.Controls
                 ddlActivity.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
                 foreach(ListItem li in ddlActivity.Items)
                 {
-                    li.Selected = nameValueResponse.Length > 2 && li.Value == nameValueResponse[2];
+                    li.Selected = nameValueResponse.Length > 2 && li.Value.Equals( nameValueResponse[2], StringComparison.OrdinalIgnoreCase );
                 }
                 _activityControls.Add( ddlActivity );
 
