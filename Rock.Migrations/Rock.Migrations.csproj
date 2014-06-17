@@ -957,6 +957,10 @@
     <Compile Include="Migrations\201406112253101_FixHighlightSpelling.Designer.cs">
       <DependentUpon>201406112253101_FixHighlightSpelling.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201406171719190_AttendanceCampus.cs" />
+    <Compile Include="Migrations\201406171719190_AttendanceCampus.Designer.cs">
+      <DependentUpon>201406171719190_AttendanceCampus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1655,6 +1659,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201406112253101_FixHighlightSpelling.resx">
       <DependentUpon>201406112253101_FixHighlightSpelling.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201406171719190_AttendanceCampus.resx">
+      <DependentUpon>201406171719190_AttendanceCampus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
