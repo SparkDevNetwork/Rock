@@ -193,6 +193,7 @@ namespace RockWeb.Blocks.WorkFlow
             var authorizedActivityTypes = AuthorizedActivityTypes( allWorkflowTypes );
 
             // Get all the active forms for any of the authorized activities
+            int personId = CurrentPerson != null ? CurrentPerson.Id : 0;
             var activeForms = new WorkflowActionService( rockContext ).Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow" )
                 .Where( a =>
                     a.ActionType.WorkflowFormId.HasValue &&
@@ -201,13 +202,12 @@ namespace RockWeb.Blocks.WorkFlow
                     !a.Activity.CompletedDateTime.HasValue &&
                     a.Activity.Workflow.ActivatedDateTime.HasValue &&
                     !a.Activity.Workflow.CompletedDateTime.HasValue &&
-                    authorizedActivityTypes.Contains( a.ActionType.ActivityTypeId ) )
-                .ToList();
-
-
-            // Limit the forms to those assigned to current user
-            var userFormActions = activeForms
-                .Where( a => a.Activity.IsAssigned( CurrentPerson, false ) )
+                    authorizedActivityTypes.Contains( a.ActionType.ActivityTypeId ) &&
+                    (
+                        ( a.Activity.AssignedPersonAlias != null && a.Activity.AssignedPersonAlias.PersonId == personId ) ||
+                        ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                    )
+                )
                 .ToList();
 
             // Create variable for storing authorized types and the count of active form actions
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.WorkFlow
                 .Select( w => w.Id )
                 .Distinct()
                 .ToList()
-                .ForEach( w => workflowTypeCounts.Add( w, userFormActions.Where( a => a.Activity.Workflow.WorkflowTypeId == w ).Count() ) );
+                .ForEach( w => workflowTypeCounts.Add( w, activeForms.Where( a => a.Activity.Workflow.WorkflowTypeId == w ).Count() ) );
 
             // Create a query to return workflow type, the count of active action forms, and the selected class
             var qry = allWorkflowTypes
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 AddAttributeColumns( selectedWorkflowType );
 
-                gWorkflows.DataSource = userFormActions
+                gWorkflows.DataSource = activeForms
                     .Select( a => a.Activity.Workflow )
                     .Distinct()
                     .Where( w => w.WorkflowTypeId == selectedWorkflowType.Id )

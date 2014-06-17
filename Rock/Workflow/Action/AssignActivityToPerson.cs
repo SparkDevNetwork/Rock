@@ -51,13 +51,13 @@ namespace Rock.Workflow.Action
             Guid? personAliasGuid = GetAttributeValue( action, "Person" ).AsGuidOrNull();
             if ( personAliasGuid.HasValue )
             {
-                var personAlias = new PersonAliasService( new RockContext() ).Queryable( "Person" )
+                var personAlias = new PersonAliasService( rockContext ).Queryable( "Person" )
                     .Where( a => a.Guid.Equals( personAliasGuid.Value ) )
                     .FirstOrDefault();
 
                 if (personAlias != null)
                 {
-                    action.Activity.AssignedPersonAlias = null;
+                    action.Activity.AssignedPersonAlias = personAlias;
                     action.Activity.AssignedPersonAliasId = personAlias.Id;
                     action.Activity.AssignedGroup = null;
                     action.Activity.AssignedGroupId = null;
