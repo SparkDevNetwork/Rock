@@ -133,7 +133,11 @@ namespace RockWeb.Blocks.WorkFlow
         /// </returns>
         protected override object SaveViewState()
         {
-            var jsonSetting = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+            var jsonSetting = new JsonSerializerSettings 
+            { 
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
             ViewState["Workflow"] = JsonConvert.SerializeObject( Workflow, Formatting.None, jsonSetting );
             ViewState["LogEntries"] = Workflow.LogEntries.Where( l => l.Id == 0 ).Select( l => l.LogText ).ToList();
             ViewState["ExpandedActivities"] = ExpandedActivities;
