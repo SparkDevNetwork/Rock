@@ -45,6 +45,15 @@ namespace Rock.Model
         public int? LocationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that the individual attended/checked in to. 
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that was checked in to.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
         /// <value>
@@ -164,6 +173,14 @@ namespace Rock.Model
         public virtual Location Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
+        /// </value>
+        public virtual Campus Campus { get; set; }
+
+        /// <summary>
         /// Gets or sets the schedule.
         /// </summary>
         /// <value>
@@ -268,6 +285,7 @@ namespace Rock.Model
         public AttendanceConfiguration()
         {
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Person ).WithMany( p => p.Attendances ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
