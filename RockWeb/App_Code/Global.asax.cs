@@ -108,7 +108,6 @@ namespace RockWeb
                     startDateTime = RockDateTime.Now;
                 }
 
-
                 RegisterRoutes( rockContext, RouteTable.Routes );
 
                 // Run any needed Rock and/or plugin migrations
@@ -894,10 +893,17 @@ namespace RockWeb
                 pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
-                var user = UserLoginService.GetCurrentUser();
-                if ( user != null && user.Person != null )
+                try
                 {
-                    personAlias = user.Person.PrimaryAlias;
+                    var user = UserLoginService.GetCurrentUser();
+                    if ( user != null && user.Person != null )
+                    {
+                        personAlias = user.Person.PrimaryAlias;
+                    }
+                }
+                catch
+                {
+                    // Intentionally left blank
                 }
             }
 
