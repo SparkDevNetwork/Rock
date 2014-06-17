@@ -107,7 +107,10 @@ namespace Rock.Model
         {
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
+            target.Description = source.Description;
+            target.IsActive = source.IsActive;
             target.ShortCode = source.ShortCode;
+            target.Url = source.Url;
             target.LocationId = source.LocationId;
             target.PhoneNumber = source.PhoneNumber;
             target.LeaderPersonAliasId = source.LeaderPersonAliasId;

@@ -128,6 +128,7 @@ namespace Rock.Model
             target.GeocodedDateTime = source.GeocodedDateTime;
             target.IsGeoPointLocked = source.IsGeoPointLocked;
             target.PrinterDeviceId = source.PrinterDeviceId;
+            target.ImageId = source.ImageId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
