@@ -38,9 +38,17 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null )
+        public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null, string groupTypePurposeValueGuid = "" )
             : base( name, description, required, defaultGroupTypeGuid, category, order, key, typeof( Rock.Field.Types.GroupTypeFieldType ).FullName )
         {
+            if ( !string.IsNullOrWhiteSpace( groupTypePurposeValueGuid ) )
+            {
+                Guid? guid = groupTypePurposeValueGuid.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    FieldConfigurationValues.Add( "groupTypePurposeValueGuid", new Field.ConfigurationValue( groupTypePurposeValueGuid ) );
+                }
+            }
         }
     }
 }
