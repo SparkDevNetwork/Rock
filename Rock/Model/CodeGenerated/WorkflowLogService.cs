@@ -90,6 +90,10 @@ namespace Rock.Model
             target.WorkflowId = source.WorkflowId;
             target.LogDateTime = source.LogDateTime;
             target.LogText = source.LogText;
+            target.CreatedDateTime = source.CreatedDateTime;
+            target.ModifiedDateTime = source.ModifiedDateTime;
+            target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
+            target.ModifiedByPersonAliasId = source.ModifiedByPersonAliasId;
             target.Id = source.Id;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
