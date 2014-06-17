@@ -161,7 +161,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-list" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-action-list form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfValue.RenderControl( writer );

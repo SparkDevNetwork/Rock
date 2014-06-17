@@ -77,7 +77,7 @@ namespace Rock.Workflow.Action
                                     Guid personAliasGuid = toValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        string to = new PersonAliasService( new RockContext() ).Queryable()
+                                        string to = new PersonAliasService( rockContext ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
                                             .Select( a => a.Person.Email )
                                             .FirstOrDefault();

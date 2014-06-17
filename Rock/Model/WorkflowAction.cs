@@ -206,7 +206,7 @@ namespace Rock.Model
             {
                 result = false;
 
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value );
+                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
 
                 Guid guid = ActionType.CriteriaValue.AsGuid();
                 if ( guid.IsEmpty() )
