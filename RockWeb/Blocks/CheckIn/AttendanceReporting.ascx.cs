@@ -33,11 +33,15 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.CheckIn
 {
     /// <summary>
-    /// Shows a graph of attendance statistics which can be configured to show attendance for specific groups, date range, etc.
+    /// Shows a graph of attendance statistics which can be configured for specific groups, date range, etc.
     /// </summary>
     [DisplayName( "Attendance Reporting" )]
     [Category( "Check-in" )]
-    [Description( "Shows a graph of attendance statistics which can be configured to show attendance for specific groups, date range, etc." )]
+    [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style")]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked")]
+    [GroupTypeField( "Group Type", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Base Control Methods
@@ -67,7 +71,25 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
+                LoadChart();   
+            }
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the detail page unique identifier.
+        /// </summary>
+        /// <value>
+        /// The detail page unique identifier.
+        /// </value>
+        public Guid? DetailPageGuid
+        {
+            get
+            {
+                return ( GetAttributeValue( "DetailPage" ) ?? string.Empty ).AsGuidOrNull();
             }
         }
 
@@ -84,15 +106,56 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            LoadChart();
         }
 
         #endregion
 
         #region Methods
 
-        // helper functional methods (like BindGrid(), etc.)
+        /// <summary>
+        /// Loads the chart.
+        /// </summary>
+        public void LoadChart()
+        {
+            //lcAttendance.StartDate = this.DateRange.Start;
+            //lcAttendance.EndDate = this.DateRange.End;
+            
+            lcAttendance.ShowTooltip = true;
+            if ( this.DetailPageGuid.HasValue )
+            {
+                lcAttendance.ChartClick += lcAttendance_ChartClick;
+            }
+            
+            lcAttendance.DataSourceUrl = this.ResolveUrl( "~/api/Attendances/GetChartData" );
+
+            lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+        }
+
+        /// <summary>
+        /// Lcs the attendance_ chart click.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        void lcAttendance_ChartClick( object sender, FlotChart.ChartClickArgs e )
+        {
+            if ( this.DetailPageGuid.HasValue )
+            {
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString.Add( "YValue", e.YValue.ToString() );
+                qryString.Add( "DateTimeValue", e.DateTimeValue.ToString( "o" ) );
+                NavigateToPage( this.DetailPageGuid.Value, qryString );
+            }
+        }
 
         #endregion
-    }
+        protected void lShowGrid_Click( object sender, EventArgs e )
+        {
+
+        }
+        protected void btnApply_Click( object sender, EventArgs e )
+        {
+
+        }
+}
 }
