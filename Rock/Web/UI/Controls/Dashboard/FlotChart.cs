@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["SeriesNameUrl"] as string ?? "~/api/MetricValues/GetSeriesName/";
+                return ViewState["SeriesNameUrl"] as string;
             }
 
             set
@@ -595,13 +595,20 @@ namespace Rock.Web.UI.Controls
             string restUrl = this.ResolveUrl( this.DataSourceUrl );
             _hfRestUrl.Value = restUrl;
 
-            string getSeriesNameUrl = null;
-            if ( !string.IsNullOrWhiteSpace( this.SeriesNameUrl ) )
+            var seriesNameUrl = this.SeriesNameUrl;
+            if ( this.MetricId.HasValue )
             {
-                getSeriesNameUrl = this.ResolveUrl( this.SeriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
+                seriesNameUrl = seriesNameUrl ?? "~/api/MetricValues/GetSeriesName/";
             }
 
-            _hfSeriesNameUrl.Value = getSeriesNameUrl;
+            if ( !string.IsNullOrWhiteSpace( seriesNameUrl ) )
+            {
+                _hfSeriesNameUrl.Value = this.ResolveUrl( seriesNameUrl.EnsureTrailingForwardslash() + this.MetricId + "/" );
+            }
+            else
+            {
+                _hfSeriesNameUrl.Value = null;
+            }
 
             string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}')", this.ClientID ) : null;
             string chartClickScript = GetChartClickScript();
