@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="##Untitled##" Subtitle="" />
+        <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
         <div class="row">
             <div class="col-md-12">
                 <div class="pull-right">
@@ -13,14 +13,16 @@
 
         <div class="row">
             <div class="col-md-6">
+                <Rock:RockDropDownList ID="ddlGraphBy" runat="server" Label="Graph By" />
             </div>
             <div class="col-md-6">
                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
+                <Rock:RockDropDownList ID="ddlGroupBy" runat="server" Label="Group By" />
             </div>
         </div>
 
         <div class="actions">
-            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" OnClick="btnApply_Click"/>
+            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" OnClick="btnApply_Click" />
         </div>
 
 

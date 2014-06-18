@@ -298,4 +298,55 @@ namespace Rock.Model
 
     #endregion
 
+    #region Enumerations
+
+    /// <summary>
+    /// For Attendance Reporting, summarize counts by Week, Month, or Year
+    /// </summary>
+    public enum AttendanceGroupBy
+    {
+        /// <summary>
+        /// Week (using RockDateTime.FirstDayOfWeek to determine week)
+        /// </summary>
+        Week = 0,
+
+        /// <summary>
+        /// Month
+        /// </summary>
+        Month = 1,
+
+        /// <summary>
+        /// Year
+        /// </summary>
+        Year = 2
+    }
+
+    /// <summary>
+    /// For Attendance Reporting, graph into series partitioned by Total, GroupType, Campus, or Schedule
+    /// </summary>
+    public enum AttendanceGraphBy
+    {
+        /// <summary>
+        /// Total (one series)
+        /// </summary>
+        Total = 0,
+
+        /// <summary>
+        /// Each selected Check-in Area (which is actually a [GroupType] under the covers) is a series
+        /// </summary>
+        GroupType = 1,
+
+        /// <summary>
+        /// Each campus (from Attendance.CampusId) is it's own series
+        /// </summary>
+        Campus = 2,
+
+        /// <summary>
+        /// Each schedule (from Attendance.ScheduleId) is it's own series
+        /// </summary>
+        Schedule = 3
+    }
+
+    #endregion
+
 }

@@ -248,7 +248,7 @@
     <Compile Include="Data\IService.cs" />
     <Compile Include="Data\LinqRuntimeTypeBuilder.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
-    <Compile Include="Data\dbContext.cs" />
+    <Compile Include="Data\DbContext.cs" />
     <Compile Include="Field\Types\SecurityRoleFieldType.cs" />
     <Compile Include="Field\Types\DaysOfWeekFieldType.cs" />
     <Compile Include="Field\Types\DayOfWeekFieldType.cs" />
