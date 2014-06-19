@@ -31,24 +31,24 @@ namespace Rock.Migrations
         {
             #region Workflow Support Data
 
-            AddColumn("dbo.WorkflowActionForm", "ActionAttributeGuid", c => c.Guid());
-            DropColumn("dbo.WorkflowActionForm", "InactiveMessage");
+            AddColumn( "dbo.WorkflowActionForm", "ActionAttributeGuid", c => c.Guid() );
+            DropColumn( "dbo.WorkflowActionForm", "InactiveMessage" );
 
-            RockMigrationHelper.AddPage("6510AB6B-DFB4-4DBF-9F0F-7EA598E4AC54","D65F783D-87A9-4CC9-8110-E83466A0EADB","LaunchWorkflow","","5DA89BC9-A185-4749-A843-314B72170D82",""); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "6510AB6B-DFB4-4DBF-9F0F-7EA598E4AC54", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "LaunchWorkflow", "", "5DA89BC9-A185-4749-A843-314B72170D82", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPageRoute( "5DA89BC9-A185-4749-A843-314B72170D82", "LaunchWorkflow/{WorkflowTypeId}" );
 
             RockMigrationHelper.AddPage( "7625A63E-6650-4886-B605-53C2234FA5E1", "325B7BFD-8B80-44FD-A951-4E4763DA6C0D", "Contact Us", "", "B1E63FE3-779C-4388-AFE4-FD6DFC034932", "" ); // Site:Rock Solid Church
             RockMigrationHelper.AddPageRoute( "B1E63FE3-779C-4388-AFE4-FD6DFC034932", "ContactUs" );
 
             // Add Block to Page: LaunchWorkflow, Site: Rock RMS
-            RockMigrationHelper.AddBlock("5DA89BC9-A185-4749-A843-314B72170D82","","83CB0C72-4F0A-44A7-98D0-260CE33788E9","Activate Workflow","Main","","",0,"C0717EB6-80B2-48AF-AD86-EF46678F6780");
+            RockMigrationHelper.AddBlock( "5DA89BC9-A185-4749-A843-314B72170D82", "", "83CB0C72-4F0A-44A7-98D0-260CE33788E9", "Activate Workflow", "Main", "", "", 0, "C0717EB6-80B2-48AF-AD86-EF46678F6780" );
             // Add Block to Page: Contact Us, Site: Rock Solid Church
             RockMigrationHelper.AddBlock( "B1E63FE3-779C-4388-AFE4-FD6DFC034932", "", "A8BD05C8-6F89-4628-845B-059E686F089A", "Workflow Entry", "Main", "", "", 0, "CA7D13BB-6781-4908-9198-CF89E915F9D7" );
             // Add Block to Page: Contact Us, Site: Rock Solid Church
             RockMigrationHelper.AddBlock( "B1E63FE3-779C-4388-AFE4-FD6DFC034932", "", "CACB9D1A-A820-4587-986A-D66A69EE9948", "SubNav", "Sidebar1", "", "", 0, "240E241A-874B-453C-A98E-AEBADA722EC4" );
 
             // Attrib for BlockType: Person Bio:Actions
-            RockMigrationHelper.AddBlockTypeAttribute("0F5922BB-CD68-40AC-BF3C-4AAB1B98760C","1D0D3794-C210-48A8-8C68-3FBEC08A6BA5","Actions","Actions","",@"
+            RockMigrationHelper.AddBlockTypeAttribute( "0F5922BB-CD68-40AC-BF3C-4AAB1B98760C", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Actions", "Actions", "", @"
 Custom html content to display as a list of actions. Any instance of '{0}' will be replaced with the current person's id.
 Because the contents of this setting will be rendered inside a &lt;ul&gt; element, it is recommended to use an 
 &lt;li&gt; element for each available action.  Example:
@@ -61,31 +61,31 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
     &lt;li class='divider'&gt;&lt;/li&gt;
     &lt;li&gt;&lt;a href='~/LaunchWorkflow/4?PersonId={0}' tabindex='0'&gt;Fourth Action&lt;/a&gt;&lt;/li&gt;
 </pre>
-",1,@"","35F69669-48DE-4182-B828-4EC9C1C31B08");
+", 1, @"", "35F69669-48DE-4182-B828-4EC9C1C31B08" );
             // Attrib for BlockType: Activate Workflow:Workflow Entry Page
-            RockMigrationHelper.AddBlockTypeAttribute("83CB0C72-4F0A-44A7-98D0-260CE33788E9","BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108","Workflow Entry Page","WorkflowEntryPage","","",0,@"","031DD6B2-7131-4BC7-9609-4FEED6D8AEA1");
+            RockMigrationHelper.AddBlockTypeAttribute( "83CB0C72-4F0A-44A7-98D0-260CE33788E9", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Workflow Entry Page", "WorkflowEntryPage", "", "", 0, @"", "031DD6B2-7131-4BC7-9609-4FEED6D8AEA1" );
 
             // Attrib Value for Block:Bio, Attribute:Actions Layout: PersonDetail, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("B5C1FDB6-0224-43E4-8E26-6B2EAF86253A","35F69669-48DE-4182-B828-4EC9C1C31B08",@"<li>
+            RockMigrationHelper.AddBlockAttributeValue( "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "35F69669-48DE-4182-B828-4EC9C1C31B08", @"<li>
     <a href='~/LaunchWorkflow/12?PersonId={0}' tabindex='0'>
         <i class='fa fa-exclamation'></i>
         Report Data Error
     </a>
 </li>
-");
+" );
             // Attrib Value for Block:Activate Workflow, Attribute:Workflow Entry Page Page: LaunchWorkflow, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue("C0717EB6-80B2-48AF-AD86-EF46678F6780","031DD6B2-7131-4BC7-9609-4FEED6D8AEA1",@"0550d2aa-a705-4400-81ff-ab124fdf83d7,f62c0ff5-7132-43da-a23b-a4fcd8077000");
+            RockMigrationHelper.AddBlockAttributeValue( "C0717EB6-80B2-48AF-AD86-EF46678F6780", "031DD6B2-7131-4BC7-9609-4FEED6D8AEA1", @"0550d2aa-a705-4400-81ff-ab124fdf83d7,f62c0ff5-7132-43da-a23b-a4fcd8077000" );
             // Attrib Value for Block:Workflow Entry, Attribute:Workflow Type Page: Contact Us, Site: Rock Solid Church
-            RockMigrationHelper.AddBlockAttributeValue("CA7D13BB-6781-4908-9198-CF89E915F9D7","2F1D98C4-A8EF-4680-9F64-11BFC28D5597",@"236ab611-ede8-42b5-b559-6b6a88adddcb");
+            RockMigrationHelper.AddBlockAttributeValue( "CA7D13BB-6781-4908-9198-CF89E915F9D7", "2F1D98C4-A8EF-4680-9F64-11BFC28D5597", @"236ab611-ede8-42b5-b559-6b6a88adddcb" );
 
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22","");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","EEE71DDE-C6BC-489B-BAA5-1753E322F183","False");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","1322186A-862A-4CF1-B349-28ECB67229BA","{% include 'PageSubNav' %}");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","41F1C42E-2395-4063-BD4F-031DF8D5B231","7625a63e-6650-4886-b605-53c2234fa5e1");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","6C952052-BC79-41BA-8B88-AB8EA3E99648","3");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","E4CF237D-1D12-4C93-AFD7-78EB296C4B69","False");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","2EF904CD-976E-4489-8C18-9BA43885ACD9","False");
-            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4","C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2","False");
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "7A2010F0-0C0C-4CC5-A29B-9CBAE4DE3A22", "" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "EEE71DDE-C6BC-489B-BAA5-1753E322F183", "False" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include 'PageSubNav' %}" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "41F1C42E-2395-4063-BD4F-031DF8D5B231", "7625a63e-6650-4886-b605-53c2234fa5e1" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "6C952052-BC79-41BA-8B88-AB8EA3E99648", "3" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "E4CF237D-1D12-4C93-AFD7-78EB296C4B69", "False" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "2EF904CD-976E-4489-8C18-9BA43885ACD9", "False" );
+            RockMigrationHelper.AddBlockAttributeValue( "240E241A-874B-453C-A98E-AEBADA722EC4", "C80209A8-D9E0-4877-A8E3-1F7DBF64D4C2", "False" );
 
             // Attrib Value for Block:My Workflows Liquid, Attribute:Contents Page: Internal Homepage, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "2C90BDF8-48FF-4A7C-AA70-97B7E3780177", "D2149BA3-7AE8-4FE8-AF7C-4EF40DBEB4B2", @"
@@ -108,15 +108,15 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 {% endif %}
 " );
 
-            RockMigrationHelper.UpdateEntityType("Rock.Model.WorkflowType", "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE", true, true);
-            RockMigrationHelper.UpdateEntityType("Rock.Storage.Provider.Database", "0AA42802-04FD-4AEC-B011-FEB127FC85CD", false, true);
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.WorkflowType", "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE", true, true );
+            RockMigrationHelper.UpdateEntityType( "Rock.Storage.Provider.Database", "0AA42802-04FD-4AEC-B011-FEB127FC85CD", false, true );
             RockMigrationHelper.UpdateCategory( "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE", "Person", "fa fa-user", "", "BBAE05FD-8192-4616-A71E-903A927E0D90" );
             RockMigrationHelper.UpdateCategory( "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE", "Requests", "fa fa-question-circle", "", "78E38655-D951-41DB-A0FF-D6474775CFA1" );
 
             // Attrib Value for Block:Workflow Navigation, Attribute:Categories Page: Workflows, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "2D20CEC4-328E-4C2B-8059-78DFC49D8E35", "FB420F14-3D9D-4304-878F-124902E2CEAB", @"bbae05fd-8192-4616-a71e-903a927e0d90,78e38655-d951-41db-a0ff-d6474775cfa1" );
 
-            RockMigrationHelper.UpdateDefinedValue("407A3A73-A3EF-4970-B856-2A33F62AC72E", "Secondary Button", "", "8CF6E927-4FA5-4241-991C-391038B79631", false);
+            RockMigrationHelper.UpdateDefinedValue( "407A3A73-A3EF-4970-B856-2A33F62AC72E", "Secondary Button", "", "8CF6E927-4FA5-4241-991C-391038B79631", false );
             RockMigrationHelper.AddDefinedValueAttributeValue( "8CF6E927-4FA5-4241-991C-391038B79631", "6FF59F53-28EA-4BFE-AFE1-A459CC588495", @"<a href=""{{ ButtonLink }}"" onclick=""{{ ButtonClick }}"" class=""btn btn-link"" data-loading-text=""<i class='fa fa-refresh fa-spin'></i> {{ ButtonText }}"">{{ ButtonText }}</a>" );
 
             Sql( @"
@@ -842,7 +842,7 @@ Complete the form below to request that the maintenance team address a facilitie
 
             #endregion
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -863,8 +863,8 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.DeletePage( "B1E63FE3-779C-4388-AFE4-FD6DFC034932" ); // Page: Contact UsLayout: FullWidth, Site: Rock Solid Church
             RockMigrationHelper.DeletePage( "5DA89BC9-A185-4749-A843-314B72170D82" ); // Page: LaunchWorkflowLayout: Full Width, Site: Rock RMS
 
-            AddColumn("dbo.WorkflowActionForm", "InactiveMessage", c => c.String());
-            DropColumn("dbo.WorkflowActionForm", "ActionAttributeGuid");
+            AddColumn( "dbo.WorkflowActionForm", "InactiveMessage", c => c.String() );
+            DropColumn( "dbo.WorkflowActionForm", "ActionAttributeGuid" );
         }
     }
 }
