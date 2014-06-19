@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style" )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
-    [GroupTypeField( "Group Type", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Group Type Template", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Base Control Methods
@@ -82,6 +82,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
+                LoadSettings();
                 LoadChart();
             }
         }
@@ -139,6 +140,30 @@ namespace RockWeb.Blocks.CheckIn
             ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Week.ConvertToString(), AttendanceGroupBy.Week.ConvertToInt().ToString() ) );
             ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Month.ConvertToString(), AttendanceGroupBy.Month.ConvertToInt().ToString() ) );
             ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Year.ConvertToString(), AttendanceGroupBy.Year.ConvertToInt().ToString() ) );
+
+            var rockContext = new RockContext();
+
+            cpCampuses.Campuses = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
+
+            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            nbGroupTypeWarning.Visible = !groupTypeTemplateGuid.HasValue;
+            if ( groupTypeTemplateGuid.HasValue )
+            {
+                var groupTypes = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeTemplateGuid.Value );
+                rptGroupTypes.DataSource = groupTypes.ToList();
+                rptGroupTypes.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Loads the settings.
+        /// </summary>
+        public void LoadSettings()
+        {
+            foreach ( ListItem item in cpCampuses.Items )
+            {
+                item.Selected = true;
+            }
         }
 
         /// <summary>
@@ -170,6 +195,8 @@ namespace RockWeb.Blocks.CheckIn
 
             dataSourceParams.AddOrReplace( "groupBy", ddlGroupBy.SelectedValue );
             dataSourceParams.AddOrReplace( "graphBy", ddlGraphBy.SelectedValue );
+
+            dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
 
             dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
@@ -248,6 +275,27 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Handles the ItemDataBound event of the rptGroupTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptGroupTypes_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var groupType = e.Item.DataItem as GroupType;
+                var cblGroups = e.Item.FindControl( "cblGroups" ) as RockCheckBoxList;
+                cblGroups.Items.Clear();
+                foreach ( var group in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name).Select( a => new { a.Id, a.Name } ).ToList() )
+                {
+                    cblGroups.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                }
+                
+                cblGroups.Visible = cblGroups.Items.Count > 1;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnApply control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -258,5 +306,6 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         #endregion
+
     }
 }
