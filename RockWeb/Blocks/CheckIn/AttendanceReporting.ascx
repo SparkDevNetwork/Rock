@@ -10,6 +10,15 @@
                 </div>
             </div>
         </div>
+        <asp:Panel ID="pnlGrid" runat="server" Visible="false">
+            <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId">
+                <Columns>
+                    <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
+                    <asp:BoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
+                    <asp:BoundField DataField="YValue" HeaderText="Count" SortExpression="YValue" />
+                </Columns>
+            </Rock:Grid>
+        </asp:Panel>
 
         <div class="row">
             <div class="col-md-6">
