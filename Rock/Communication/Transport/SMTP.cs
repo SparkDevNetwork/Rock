@@ -309,63 +309,71 @@ namespace Rock.Communication.Transport
         /// <param name="themeRoot">The theme root.</param>
         public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
         {
-            var globalAttributes = GlobalAttributesCache.Read();
-
-            string from = string.Empty;
-            string fromName = string.Empty;
-            channelData.TryGetValue( "From", out from );
-
-            if ( string.IsNullOrWhiteSpace( from ) )
+            try
             {
-                from = globalAttributes.GetValue( "OrganizationEmail" );
-                fromName = globalAttributes.GetValue( "OrganizationName" );
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                string from = string.Empty;
+                string fromName = string.Empty;
+                channelData.TryGetValue( "From", out from );
+
+                if ( string.IsNullOrWhiteSpace( from ) )
+                {
+                    from = globalAttributes.GetValue( "OrganizationEmail" );
+                    fromName = globalAttributes.GetValue( "OrganizationName" );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( from ) )
+                {
+                    MailMessage message = new MailMessage();
+
+                    if ( string.IsNullOrWhiteSpace( fromName ) )
+                    {
+                        message.From = new MailAddress( from );
+                    }
+                    else
+                    {
+                        message.From = new MailAddress( from, fromName );
+                    }
+
+                    message.IsBodyHtml = true;
+                    message.Priority = MailPriority.Normal;
+
+                    var smtpClient = GetSmtpClient();
+
+                    string subject = string.Empty;
+                    channelData.TryGetValue( "Subject", out subject );
+
+                    string body = string.Empty;
+                    channelData.TryGetValue( "Body", out body );
+
+                    message.To.Clear();
+                    recipients.ForEach( r => message.To.Add( r ) );
+
+                    if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                    {
+                        subject = subject.Replace( "~~/", themeRoot );
+                        body = body.Replace( "~~/", themeRoot );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                    {
+                        subject = subject.Replace( "~/", appRoot );
+                        body = body.Replace( "~/", appRoot );
+                        body = body.Replace( @" src=""/", @" src=""" + appRoot );
+                        body = body.Replace( @" href=""/", @" href=""" + appRoot );
+                    }
+
+                    message.Subject = subject;
+                    message.Body = body;
+
+                    smtpClient.Send( message );
+                }
             }
 
-            if (!string.IsNullOrWhiteSpace(from))
+            catch (Exception ex)
             {
-                MailMessage message = new MailMessage();
-
-                if ( string.IsNullOrWhiteSpace( fromName ) )
-                {
-                    message.From = new MailAddress( from );
-                }
-                else
-                {
-                    message.From = new MailAddress( from, fromName );
-                } 
-
-                message.IsBodyHtml = true;
-                message.Priority = MailPriority.Normal;
-
-                var smtpClient = GetSmtpClient();
-
-                string subject = string.Empty;
-                channelData.TryGetValue("Subject", out subject);
-
-                string body = string.Empty;
-                channelData.TryGetValue("Body", out body);
-
-                message.To.Clear();
-                recipients.ForEach(r => message.To.Add(r));
-
-                if (!string.IsNullOrWhiteSpace(themeRoot))
-                {
-                    subject = subject.Replace("~~/", themeRoot);
-                    body = body.Replace("~~/", themeRoot);
-                }
-
-                if (!string.IsNullOrWhiteSpace(appRoot))
-                {
-                    subject = subject.Replace("~/", appRoot);
-                    body = body.Replace("~/", appRoot);
-                    body = body.Replace(@" src=""/", @" src=""" + appRoot);
-                    body = body.Replace(@" href=""/", @" href=""" + appRoot);
-                }
-
-                message.Subject = subject;
-                message.Body = body;
-
-                smtpClient.Send(message);
+                ExceptionLogService.LogException( ex, null );
             }
         }
 

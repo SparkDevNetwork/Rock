@@ -28,7 +28,7 @@
                         <Rock:RockDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" Label="Location Type" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationType_SelectedIndexChanged"  />
                         <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" 
                             Help="The printer that this location should use for printing" />
-                        <Rock:ImageEditor ID="imgImage" runat="server" Label="Image" BinaryFileTypeGuid="03BD8476-8A9F-4078-B628-5B538F967AFC" />
+                        <Rock:ImageEditor ID="imgImage" runat="server" Label="Image" BinaryFileTypeGuid="DAB74416-3272-4411-BA69-70944B549A4B" />
                         <asp:PlaceHolder ID="phAttributeEdits" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
                     <div class="col-md-6">
