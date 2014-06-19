@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock.Data;
@@ -48,7 +49,7 @@ namespace Rock.Model
                     a.LocationId == locationId &&
                     a.ScheduleId == scheduleId &&
                     a.GroupId == groupId &&
-                    a.PersonId == personId)
+                    a.PersonId == personId )
                 .FirstOrDefault();
         }
 
@@ -84,7 +85,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupTypeIds = null, string campusIds = null )
         {
-            var qry = Queryable().Where( a => a.DidAttend );
+            var qry = Queryable().AsNoTracking().Where( a => a.DidAttend );
 
             if ( startDate.HasValue )
             {
@@ -113,23 +114,27 @@ namespace Rock.Model
                 //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
 
                 // Build a CASE statement to group by week, or month, or year
-                SummaryDateTime = (
+                SummaryDateTime = (DateTime)(
+                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
                     groupBy == AttendanceGroupBy.Week ? SqlFunctions.DateAdd(
                         "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "weekday", a.StartDateTime ) + 2, a.StartDateTime ) ),
-                        "1900-01-01" ) ?? DateTime.MinValue :
+                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "weekday", a.StartDateTime ) + 1 + 1 + 6, a.StartDateTime ) ),
+                        "1900-01-01" ) :
 
-                    groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd(
+                   // GroupBy Month 
+                   groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd(
                         "day",
                         SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) ?? DateTime.MinValue :
+                        "1900-01-01" ) :
 
+                    // GroupBy Year
                     groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd(
                         "day",
                         SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) ?? DateTime.MinValue :
+                        "1900-01-01" ) :
 
-                    DateTime.MinValue
+                    // shouldn't happen
+                    null
                 ),
                 Campus = new
                 {
