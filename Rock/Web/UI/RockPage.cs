@@ -444,7 +444,8 @@ namespace Rock.Web.UI
 
             // add Google Maps API (doesn't like to be added during an async postback )
             var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
-            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
+            string keyParameter = string.IsNullOrWhiteSpace(googleAPIKey) ? "" : string.Format("key={0}&", googleAPIKey);
+            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?{0}sensor=false&libraries=drawing", keyParameter ) ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
