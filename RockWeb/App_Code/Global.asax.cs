@@ -371,14 +371,45 @@ namespace RockWeb
                                     if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                     {
                                         string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
                                         foreach ( string emailAddress in emailAddresses )
                                         {
                                             recipients.Add( emailAddress, mergeObjects );
                                         }
 
-                                        Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                        if ( recipients.Any() )
+                                        {
+                                            bool sendNotification = true;
+
+                                            string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                                            var serverVarList = context.Request.ServerVariables;
+
+                                            if (!string.IsNullOrWhiteSpace(filterSettings) && serverVarList.Count > 0)
+                                            {
+                                                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                                foreach ( string nameValue in nameValues )
+                                                {
+                                                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                                    {
+                                                        if (nameAndValue.Length == 2)
+                                                        {
+                                                            var serverValue = serverVarList[nameAndValue[0]];
+                                                            if (serverValue != null && serverValue.ToUpper().Contains(nameAndValue[1].ToUpper().Trim()))
+                                                            {
+                                                                sendNotification = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if ( sendNotification )
+                                            {
+                                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                            }
+                                        }
                                     }
                                 }
                                 catch
