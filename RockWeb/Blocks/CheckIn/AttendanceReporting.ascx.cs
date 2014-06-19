@@ -57,6 +57,18 @@ namespace RockWeb.Blocks.CheckIn
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            gAttendance.GridRebind += gAttendance_GridRebind;
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAttendance control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gAttendance_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
         }
 
         /// <summary>
@@ -139,13 +151,13 @@ namespace RockWeb.Blocks.CheckIn
             {
                 lcAttendance.ChartClick += lcAttendance_ChartClick;
             }
-            
+
             lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             var dataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, string>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-            
+
             if ( dateRange.Start.HasValue )
             {
                 dataSourceParams.AddOrReplace( "startDate", dateRange.Start.Value.ToString( "o" ) );
@@ -159,9 +171,14 @@ namespace RockWeb.Blocks.CheckIn
             dataSourceParams.AddOrReplace( "groupBy", ddlGroupBy.SelectedValue );
             dataSourceParams.AddOrReplace( "graphBy", ddlGraphBy.SelectedValue );
 
-            dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format("{0}={1}", s.Key, s.Value)).ToList().AsDelimited("&");
+            dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
+
+            if ( pnlGrid.Visible )
+            {
+                BindGrid();
+            }
         }
 
         /// <summary>
@@ -187,7 +204,47 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lShowGrid_Click( object sender, EventArgs e )
         {
-            //
+            if ( pnlGrid.Visible )
+            {
+                pnlGrid.Visible = false;
+            }
+            else
+            {
+                pnlGrid.Visible = true;
+                BindGrid();
+            }
+        }
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
+        {
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+
+            string groupTypeIds = null;
+            string campusIds = null;
+
+            SortProperty sortProperty = gAttendance.SortProperty;
+
+            var chartData = new AttendanceService( new RockContext() ).GetChartData(
+                ddlGroupBy.SelectedValueAsEnum<AttendanceGroupBy>(),
+                ddlGraphBy.SelectedValueAsEnum<AttendanceGraphBy>(),
+                dateRange.Start,
+                dateRange.End,
+                groupTypeIds,
+                campusIds );
+
+            if ( sortProperty != null )
+            {
+                gAttendance.DataSource = chartData.AsQueryable().Sort( sortProperty ).ToList();
+            }
+            else
+            {
+                gAttendance.DataSource = chartData.OrderBy( a => a.DateTimeStamp ).ToList();
+            }
+
+            gAttendance.DataBind();
         }
 
         /// <summary>
