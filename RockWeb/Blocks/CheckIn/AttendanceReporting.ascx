@@ -23,10 +23,18 @@
         <div class="row">
             <div class="col-md-6">
                 <Rock:RockDropDownList ID="ddlGraphBy" runat="server" Label="Graph By" />
+                <Rock:RockDropDownList ID="ddlGroupBy" runat="server" Label="Group By" />
+                <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
             </div>
             <div class="col-md-6">
                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" />
-                <Rock:RockDropDownList ID="ddlGroupBy" runat="server" Label="Group By" />
+                <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
+                <h4>Area</h4>
+                <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound" >
+                    <ItemTemplate>
+                        <Rock:RockCheckBoxList ID="cblGroups" runat="server" Label='<%# Eval("Name") %>' />
+                    </ItemTemplate>
+                </asp:Repeater>
             </div>
         </div>
 
