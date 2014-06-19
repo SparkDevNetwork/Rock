@@ -526,13 +526,14 @@ namespace RockWeb.Blocks.WorkFlow
                 var form = _actionType.WorkflowForm;
 
                 var values = new Dictionary<int, string>();
-                int i = 0;
                 foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
                 {
                     if ( formAttribute.IsVisible && !formAttribute.IsReadOnly )
                     {
                         var attribute = AttributeCache.Read( formAttribute.AttributeId );
-                        if ( attribute != null )
+                        var control = phAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
+
+                        if ( attribute != null && control != null)
                         {
                             IHasAttributes item = null;
                             if ( attribute.EntityTypeId == _workflow.TypeId )
@@ -546,7 +547,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                             if ( item != null )
                             {
-                                item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( phAttributes.Controls[i++] ), attribute.QualifierValues ) );
+                                item.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues ) );
                             }
                         }
                     }

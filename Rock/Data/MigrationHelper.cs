@@ -30,7 +30,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="MigrationHelper"/> class.
         /// </summary>
         /// <param name="migration">The migration.</param>
-        public MigrationHelper(IMigration migration)
+        public MigrationHelper( IMigration migration )
         {
             Migration = migration;
         }
@@ -126,7 +126,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="fieldTypeGuid">The field type unique identifier.</param>
-        public void UpdateEntityTypeSingleValueFieldType( string entityTypeName, string fieldTypeGuid)
+        public void UpdateEntityTypeSingleValueFieldType( string entityTypeName, string fieldTypeGuid )
         {
             EnsureEntityTypeExists( entityTypeName );
 
@@ -139,7 +139,7 @@ namespace Rock.Data
                 SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
 
                 UPDATE [EntityType] SET [SingleValueFieldTypeId] = @FieldTypeId WHERE [Id] = @EntityTypeId
-                ", entityTypeName, fieldTypeGuid)
+                ", entityTypeName, fieldTypeGuid )
             );
         }
 
@@ -595,7 +595,7 @@ namespace Rock.Data
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid )
+        public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0 )
         {
             Migration.Sql( string.Format( @"
                 
@@ -611,20 +611,22 @@ namespace Rock.Data
                         [EntityTypeId] = @EntityTypeId,
                         [Name] = '{1}',
                         [IconCssClass] = '{2}',
-                        [Description] = '{3}'
+                        [Description] = '{3}',
+                        [Order] = {5}
                     WHERE [Guid] = '{4}'
                 END
                 ELSE
                 BEGIN
                     INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[IconCssClass],[Description],[Order],[Guid] )
-                    VALUES( 1,@EntityTypeId,'{1}','{2}','{3}',0,'{4}' )  
+                    VALUES( 1,@EntityTypeId,'{1}','{2}','{3}',{5},'{4}' )  
                 END
 ",
                     entityTypeGuid,
                     name,
                     iconCssClass,
                     description.Replace( "'", "''" ),
-                    guid )
+                    guid,
+                    order )
             );
         }
 
@@ -981,10 +983,19 @@ namespace Rock.Data
                 SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
 
                 IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{3}')
+                BEGIN
                     INSERT INTO [AttributeQualifier] (
                         [IsSystem],[AttributeId],[Key],[Value],[Guid])
                     VALUES(
                         1,@AttributeId,'{1}','{2}','{3}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [AttributeQualifier] SET
+                        [Key] = '{1}',
+                        [Value] = '{2}'
+                    WHERE [Guid] = '{3}'
+                END
 ",
                     attributeGuid, // {0}
                     key, // {1}
@@ -1814,7 +1825,6 @@ INSERT INTO [dbo].[Auth]
         }
         #endregion
 
-
         #region PersonAttribute
 
         /// <summary>
@@ -1951,7 +1961,7 @@ INSERT INTO [dbo].[Auth]
                     guid )
             );
         }
-        
+
         /// <summary>
         /// Adds (or Deletes and Adds) the person badge attribute.
         /// </summary>
@@ -2116,6 +2126,448 @@ INSERT INTO [dbo].[Auth]
                     guid
                     ) );
         }
+
+        #endregion
+
+        #region Workflow Methods
+
+        public void UpdateWorkflowActionEntityAttribute( string actionEntityTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @ActionEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{0}')
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.WorkflowActionType')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@ActionEntityTypeId as varchar)
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'EntityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@ActionEntityTypeId as varchar)
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'EntityTypeId',CAST(@ActionEntityTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')  
+                END
+",
+                    actionEntityTypeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+
+        public void UpdateWorkflowType( bool isSystem, bool isActive, string name, string description, string categoryGuid, string workTerm, string iconCssClass,
+            int processingIntervalSeconds, bool isPersisted, int loggingLevel, string guid, int order = 0 )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @CategoryId int = (SELECT [Id] FROM [Category] WHERE [Guid] = '{4}')
+
+                IF EXISTS ( SELECT [Id] FROM [WorkflowType] WHERE [Guid] =  '{10}' )
+                BEGIN
+                    UPDATE [WorkflowType] SET
+                        [IsSystem] = {0},
+                        [IsActive] = {1},
+                        [Name] = '{2}',
+                        [Description] = '{3}',
+                        [CategoryId] = @CategoryId,
+                        [WorkTerm] = '{5}',
+                        [IconCssClass] = '{6}',
+                        [ProcessingIntervalSeconds] = {7},
+                        [IsPersisted] = {8},
+                        [LoggingLevel] = {9},
+                        [Order] = {11}
+                    WHERE [Guid] = '{10}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [WorkflowType] (
+                        [IsSystem], [IsActive], [Name], [Description], [CategoryId], [WorkTerm], [IconCssClass],
+                        [ProcessingIntervalSeconds], [IsPersisted], [LoggingLevel], [Guid], [Order] )
+                    VALUES( {0}, {1}, '{2}', '{3}', @CategoryId, '{5}', '{6}', {7}, {8}, {9}, '{10}', {11} )
+                END
+",
+                    ( isSystem ? "1" : "0" ),
+                    ( isActive ? "1" : "0" ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    categoryGuid,
+                    workTerm.Replace( "'", "''" ),
+                    iconCssClass.Replace( "'", "''" ),
+                    processingIntervalSeconds,
+                    ( isPersisted ? "1" : "0" ),
+                    loggingLevel,
+                    guid,
+                    order )
+            );
+        }
+
+        public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @WorkflowTypeId int = (SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '{0}')
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Workflow')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'WorkflowTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@WorkflowTypeId as varchar)
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'WorkflowTypeId',CAST(@WorkflowTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')  
+                END
+",
+                    workflowTypeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+        public void UpdateWorkflowActivityType( string WorkflowTypeGuid, bool isActive, string name, string description,
+            bool isActivatedWithWorkflow, int order, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @WorkflowTypeId int = (SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [WorkflowActivityType] WHERE [Guid] =  '{6}' )
+                BEGIN
+                    UPDATE [WorkflowActivityType] SET
+                        [WorkflowTypeId] = @WorkflowTypeId,
+                        [IsActive] = {1},
+                        [Name] = '{2}',
+                        [Description] = '{3}',
+                        [IsActivatedWithWorkflow] = {4},
+                        [Order] = {5}
+                    WHERE [Guid] = '{6}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [WorkflowActivityType] ( [WorkflowTypeId], [IsActive], [Name], [Description], [IsActivatedWithWorkflow], [Order], [Guid] )
+                    VALUES( @WorkflowTypeId, {1}, '{2}', '{3}', {4}, {5}, '{6}' )
+                END
+",
+                    WorkflowTypeGuid,
+                    ( isActive ? "1" : "0" ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    ( isActivatedWithWorkflow ? "1" : "0" ),
+                    order,
+                    guid )
+            );
+        }
+
+        public void UpdateWorkflowActivityTypeAttribute( string workflowActivityTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @WorkflowActivityTypeId int = (SELECT [Id] FROM [WorkflowActivityType] WHERE [Guid] = '{0}')
+                DECLARE @FieldTypeId int = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.WorkflowActivity')
+
+                IF EXISTS (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
+                    AND [Key] = '{2}' )
+                BEGIN
+                    UPDATE [Attribute] SET
+                        [Name] = '{3}',
+                        [Description] = '{4}',
+                        [Order] = {5},
+                        [DefaultValue] = '{6}',
+                        [Guid] = '{7}'
+                    WHERE [EntityTypeId] = @EntityTypeId
+                    AND [EntityTypeQualifierColumn] = 'ActivityTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@WorkflowActivityTypeId as varchar)
+                    AND [Key] = '{2}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Attribute] (
+                        [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                        [Key],[Name],[Description],
+                        [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId, @EntityTypeId,'ActivityTypeId',CAST(@WorkflowActivityTypeId as varchar),
+                        '{2}','{3}','{4}',
+                        {5},0,'{6}',0,0,
+                        '{7}')  
+                END
+",
+                    workflowActivityTypeGuid,
+                    fieldTypeGuid,
+                    key ?? name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue.Replace( "'", "''" ),
+                    guid )
+            );
+        }
+
+        public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemEmailGuid,
+            bool includeActionsInNotification, string actionAttributeGuid, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @SystemEmailId int = (SELECT [Id] FROM [SystemEmail] WHERE [Guid] = '{3}')
+
+                IF EXISTS ( SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] =  '{6}' )
+                BEGIN
+                    UPDATE [WorkflowActionForm] SET
+                        [Header] = '{0}',
+                        [Footer] = '{1}',
+                        [Actions] = '{2}',
+                        [NotificationSystemEmailId] = @SystemEmailId,
+                        [IncludeActionsInNotification] = {4},
+                        [ActionAttributeGuid] = {5}
+                    WHERE [Guid] = '{6}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [WorkflowActionForm] (
+                        [Header], [Footer], [Actions], [NotificationSystemEmailId], [IncludeActionsInNotification], [ActionAttributeGuid], [Guid] )
+                    VALUES( '{0}', '{1}', '{2}', @SystemEmailId, {4}, {5}, '{6}' )
+                END
+",
+                    header.Replace( "'", "''" ),
+                    footer.Replace( "'", "''" ),
+                    actions,
+                    ( string.IsNullOrWhiteSpace( systemEmailGuid ) ? Guid.Empty.ToString() : systemEmailGuid ),
+                    ( includeActionsInNotification ? "1" : "0" ),
+                    ( string.IsNullOrWhiteSpace( actionAttributeGuid ) ? "NULL" : "'" + actionAttributeGuid + "'" ),
+                    guid )
+            );
+        }
+
+        public void UpdateWorkflowActionFormAttribute( string actionFormGuid, string attributeGuid, int order,
+            bool isVisible, bool isReadOnly, bool isRequired, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @ActionFormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                IF EXISTS ( SELECT [Id] FROM [WorkflowActionFormAttribute] WHERE [Guid] =  '{6}' )
+                BEGIN
+                    UPDATE [WorkflowActionFormAttribute] SET
+                        [WorkflowActionFormId] = @ActionFormId,
+                        [AttributeId] = @AttributeId,
+                        [Order] = {2},
+                        [IsVisible] = {3},
+                        [IsReadOnly] = {4},
+                        [IsRequired] = {5}
+                    WHERE [Guid] = '{6}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [WorkflowActionFormAttribute] (
+                        [WorkflowActionFormId], [AttributeId], [Order], [IsVisible], [IsReadOnly], [IsRequired], [Guid] )
+                    VALUES( @ActionFormId, @AttributeId, {2}, {3}, {4}, {5}, '{6}' )
+                END
+",
+                    actionFormGuid,
+                    attributeGuid,
+                    order,
+                    ( isVisible ? "1" : "0" ),
+                    ( isReadOnly ? "1" : "0" ),
+                    ( isRequired ? "1" : "0" ),
+                    guid )
+            );
+        }
+
+        public void UpdateWorkflowActionType( string activityTypeGuid, string name, int order, string entityTypeGuid,
+            bool isActionCompletedOnSuccess, bool isActivityCompletedOnSuccess, string workflowFormGuid, string criteriaAttributeGuid,
+            int criteriaComparisonType, string criteriaValue, string guid )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @ActivityTypeId int = (SELECT [Id] FROM [WorkflowActivityType] WHERE [Guid] = '{0}')
+                DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '{3}')
+                DECLARE @FormId int = (SELECT [Id] FROM [WorkflowActionForm] WHERE [Guid] = '{6}')
+
+                IF EXISTS ( SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] =  '{10}' )
+                BEGIN
+                    UPDATE [WorkflowActionType] SET
+                        [ActivityTypeId] = @ActivityTypeId,
+                        [Name] = '{1}',
+                        [Order] = {2},
+                        [EntityTypeId] = @EntityTypeId,
+                        [IsActionCompletedOnSuccess] = {4},
+                        [IsActivityCompletedOnSuccess] = {5},
+                        [WorkflowFormId] = @FormId,
+                        [CriteriaAttributeGuid] = {7},
+                        [CriteriaComparisonType] = {8},
+                        [CriteriaValue] = '{9}'
+                    WHERE [Guid] = '{10}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [WorkflowActionType] (
+                        [ActivityTypeId], [Name], [Order], [EntityTypeId], [IsActionCompletedOnSuccess], [IsActivityCompletedOnSuccess],
+                        [WorkflowFormId], [CriteriaAttributeGuid], [CriteriaComparisonType], [CriteriaValue], [Guid] )
+                    VALUES( @ActivityTypeId, '{1}', {2}, @EntityTypeId, {4}, {5}, @FormId, {7}, {8}, '{9}', '{10}' )
+                END
+",
+                    activityTypeGuid,
+                    name.Replace( "'", "''" ),
+                    order,
+                    entityTypeGuid,
+                    ( isActionCompletedOnSuccess ? "1" : "0" ),
+                    ( isActivityCompletedOnSuccess ? "1" : "0" ),
+                    ( string.IsNullOrWhiteSpace( workflowFormGuid ) ? Guid.Empty.ToString() : workflowFormGuid ),
+                    ( string.IsNullOrWhiteSpace( criteriaAttributeGuid ) ? "NULL" : "'" + criteriaAttributeGuid + "'" ),
+                    criteriaComparisonType,
+                    criteriaValue,
+                    guid )
+            );
+        }
+
+        public void AddActionTypeAttributeValue( string actionTypeGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @ActionTypeId int = (SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value 
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @ActionTypeId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@ActionTypeId,
+                    0,'{2}',
+                    NEWID())
+",
+                    actionTypeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
+        /// <summary>
+        /// Adds an action type person attribute value.  Because there's not way to link to another person in target database, person attribute values
+        /// are just set to the first person alias record in target database which will most likely be the Admin, Admin record.
+        /// </summary>
+        /// <param name="actionTypeGuid">The action type unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
+        public void AddActionTypePersonAttributeValue( string actionTypeGuid, string attributeGuid, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @ActionTypeId int = (SELECT [Id] FROM [WorkflowActionType] WHERE [Guid] = '{0}')
+                DECLARE @AttributeId int = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value 
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @ActionTypeId
+
+                IF NOT EXISTS ( SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @ActionTypeId )
+                BEGIN
+                    IF '{2}' = '' OR EXISTS ( SELECT [Id] FROM [PersonAlias] WHERE [Guid] = '{2}' )
+                    BEGIN
+                        INSERT INTO [AttributeValue] (
+                            [IsSystem],[AttributeId],[EntityId],
+                            [Order],[Value],
+                            [Guid])
+                        VALUES(
+                            1,@AttributeId,@ActionTypeId,
+                            0,'{2}',
+                            NEWID())                    
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [AttributeValue] (
+                            [IsSystem],[AttributeId],[EntityId],
+                            [Order],[Value],
+                            [Guid])
+                        SELECT TOP 1
+                            1,@AttributeId,@ActionTypeId,
+                            0,CONVERT(nvarchar(50), [Guid]),
+                            NEWID()
+                        FROM [PersonAlias]
+                        ORDER BY [Id]       
+                    END
+                END
+",
+                    actionTypeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }
+
 
         #endregion
 
