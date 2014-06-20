@@ -115,6 +115,7 @@ namespace Rock.Model
 
                 // Build a CASE statement to group by week, or month, or year
                 SummaryDateTime = (DateTime)(
+                    
                     // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
                     groupBy == AttendanceGroupBy.Week ? SqlFunctions.DateAdd(
                         "day",
@@ -157,42 +158,50 @@ namespace Rock.Model
 
             if ( graphBy == AttendanceGraphBy.Total )
             {
-                result = summaryQry.GroupBy( a => a.SummaryDateTime ).ToList().Select( a => new AttendanceSummaryData
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+
+                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {
-                    DateTimeStamp = a.Key.ToJavascriptMilliseconds(),
-                    DateTime = a.Key,
+                    DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
+                    DateTime = a.Key.SummaryDateTime,
                     SeriesId = "Total",
-                    YValue = a.Count()
+                    YValue = a.Count
                 } ).ToList();
             }
             else if ( graphBy == AttendanceGraphBy.Campus )
             {
-                result = summaryQry.GroupBy( a => new { a.SummaryDateTime, a.Campus } ).ToList().Select( a => new AttendanceSummaryData
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Campus } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+
+                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Campus.Name,
-                    YValue = a.Count()
+                    SeriesId = a.Key.Series.Name,
+                    YValue = a.Count
                 } ).ToList();
             }
-            else if ( graphBy == AttendanceGraphBy.GroupType )
+            else if ( graphBy == AttendanceGraphBy.Area )
             {
-                result = summaryQry.GroupBy( a => new { a.SummaryDateTime, a.GroupType } ).ToList().Select( a => new AttendanceSummaryData
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.GroupType } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+
+                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.GroupType.Name,
-                    YValue = a.Count()
+                    SeriesId = a.Key.Series.Name,
+                    YValue = a.Count
                 } ).ToList();
             }
             else if ( graphBy == AttendanceGraphBy.Schedule )
             {
-                result = summaryQry.GroupBy( a => new { a.SummaryDateTime, a.Schedule } ).ToList().Select( a => new AttendanceSummaryData
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Schedule } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+
+                result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {
                     DateTimeStamp = a.Key.SummaryDateTime.ToJavascriptMilliseconds(),
                     DateTime = a.Key.SummaryDateTime,
-                    SeriesId = a.Key.Schedule.Name,
-                    YValue = a.Count()
+                    SeriesId = a.Key.Series.Name,
+                    YValue = a.Count
                 } ).ToList();
             }
 
