@@ -130,17 +130,6 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         public void LoadDropDowns()
         {
-            ddlGraphBy.Items.Clear();
-            ddlGraphBy.Items.Add( new ListItem( AttendanceGraphBy.Total.ConvertToString(), AttendanceGraphBy.Total.ConvertToInt().ToString() ) );
-            ddlGraphBy.Items.Add( new ListItem( AttendanceGraphBy.GroupType.ConvertToString(), AttendanceGraphBy.GroupType.ConvertToInt().ToString() ) );
-            ddlGraphBy.Items.Add( new ListItem( AttendanceGraphBy.Campus.ConvertToString(), AttendanceGraphBy.Campus.ConvertToInt().ToString() ) );
-            ddlGraphBy.Items.Add( new ListItem( AttendanceGraphBy.Schedule.ConvertToString(), AttendanceGraphBy.Schedule.ConvertToInt().ToString() ) );
-
-            ddlGroupBy.Items.Clear();
-            ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Week.ConvertToString(), AttendanceGroupBy.Week.ConvertToInt().ToString() ) );
-            ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Month.ConvertToString(), AttendanceGroupBy.Month.ConvertToInt().ToString() ) );
-            ddlGroupBy.Items.Add( new ListItem( AttendanceGroupBy.Year.ConvertToString(), AttendanceGroupBy.Year.ConvertToInt().ToString() ) );
-
             var rockContext = new RockContext();
 
             cpCampuses.Campuses = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
@@ -180,7 +169,7 @@ namespace RockWeb.Blocks.CheckIn
             lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             var dataSourceUrl = "~/api/Attendances/GetChartData";
-            var dataSourceParams = new Dictionary<string, string>();
+            var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
             if ( dateRange.Start.HasValue )
@@ -193,8 +182,8 @@ namespace RockWeb.Blocks.CheckIn
                 dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
             }
 
-            dataSourceParams.AddOrReplace( "groupBy", ddlGroupBy.SelectedValue );
-            dataSourceParams.AddOrReplace( "graphBy", ddlGraphBy.SelectedValue );
+            dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
+            dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
             dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
 
@@ -255,8 +244,8 @@ namespace RockWeb.Blocks.CheckIn
             SortProperty sortProperty = gAttendance.SortProperty;
 
             var chartData = new AttendanceService( new RockContext() ).GetChartData(
-                ddlGroupBy.SelectedValueAsEnum<AttendanceGroupBy>(),
-                ddlGraphBy.SelectedValueAsEnum<AttendanceGraphBy>(),
+                hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week,
+                hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
                 dateRange.End,
                 groupTypeIds,
