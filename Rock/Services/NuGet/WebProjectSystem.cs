@@ -255,8 +255,24 @@ namespace Rock.Services.NuGet
                         
                         if ( File.Exists( physicalFile ) )
                         {
-                            // TODO guard against things like file is temporarily locked, wait then try delete, etc.
-                            File.Delete( physicalFile );
+                            if ( physicalFile.EndsWith( ".dll" ) && !physicalFile.Contains( @"\bin\" ) )
+                            {
+                                string fileToDelete = string.Empty;
+                                int fileCount = 0;
+                                // generate a unique *.#.rdelete filename
+                                do
+                                {
+                                    fileCount++;
+                                }
+                                while ( File.Exists( string.Format( "{0}.{1}.rdelete", physicalFile, fileCount ) ) );
+
+                                fileToDelete = string.Format( "{0}.{1}.rdelete", physicalFile, fileCount );
+                                File.Move( physicalFile, fileToDelete );
+                            }                        
+                            else
+                            {
+                                File.Delete( physicalFile );
+                            }
                         }
                     }
                 }
