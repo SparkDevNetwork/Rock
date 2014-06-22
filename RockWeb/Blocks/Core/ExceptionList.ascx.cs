@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,6 +34,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Text;
 using Rock.Security;
+using Rock.Reporting.Dashboard;
 
 
 namespace RockWeb.Blocks.Administraton
@@ -47,6 +48,7 @@ namespace RockWeb.Blocks.Administraton
 
     [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
     [LinkedPage("Detail Page")]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style")]
     public partial class ExceptionList : RockBlock
     {
         #region Control Methods
@@ -104,6 +106,8 @@ namespace RockWeb.Blocks.Administraton
                 SetExceptionPanelVisibility( None.Id );
             }
 
+            lcExceptions.Options.SetChartStyle( this.ChartStyle );
+
             // get data for graphs
             ExceptionLogService exceptionLogService = new ExceptionLogService( new RockContext() );
             var exceptionList = exceptionLogService.Queryable()
@@ -116,55 +120,9 @@ namespace RockWeb.Blocks.Administraton
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
             } ).OrderBy(eg => eg.DateValue).ToList();
 
-            if ( exceptionList.Count > 1 )
+            if ( exceptionList.Count == 1 )
             {
-
-                StringBuilder sbChartData = new StringBuilder();
-                //sbChartData.Append( "[['Date', 'Unique Exceptions', 'Total Exceptions']," );
-                sbChartData.Append( "data.addColumn('date', 'Date');\n" );
-                sbChartData.Append( "data.addColumn('number', 'Unique Exceptions');\n" );
-                sbChartData.Append( "data.addColumn('number', 'Total Exceptions');\n" );
-
-                // load datatable
-                foreach ( var exception in exceptionList )
-                {
-                    //sbChartData.Append( String.Format( "['{0}', {1}, {2}],", exception.DateValue.Value.ToShortDateString(), exception.UniqueExceptionCount, exception.ExceptionCount ) );
-                    sbChartData.Append( String.Format( "data.addRow([new Date({0}, {1}, {2}), {3}, {4}]);\n", exception.DateValue.Value.Year, (exception.DateValue.Value.Month - 1), exception.DateValue.Value.Day, exception.UniqueExceptionCount, exception.ExceptionCount ) );
-                }
-
-                lGraphScript.Text = String.Format( @"
-
-            <script type=""text/javascript"">
-                google.load(""visualization"", ""1"", {{ packages: [""corechart""] }});
-                google.setOnLoadCallback(drawChart);
-
-                function drawChart() {{
-                    var data = new google.visualization.DataTable();
-                    {0}
-
-                    var options = {{
-                        vAxis: {{ title: 'Exception Count', minValue: 0, titleTextStyle: {{ color: '#515151',  italic: 'false' }} }},
-                        backgroundColor: 'transparent',
-                        colors: ['#8498ab', '#a4b4c4', '#b9c7d5', '#c6d2df', '#d8e1ea'],
-                        hAxis: {{  textStyle: {{ color: '#515151' }}, baselineColor: '#515151' }},
-                        legend: {{ position: 'bottom', textStyle: {{ color: '#515151' }} }}
-                    }};
-
-                    var chart = new google.visualization.AreaChart(document.getElementById('exception-chart'));
-                    chart.draw(data, options);
-
-                    $(window).smartresize(function(){{
-                        chart.draw(data, options);
-                    }});
-
-                }}
-
-                
-            </script>", sbChartData.ToString() );
-            }
-            else
-            {
-                pnlExceptionChart.Visible = false;
+                lcExceptions.Visible = false;
             }
 
         }
@@ -177,7 +135,39 @@ namespace RockWeb.Blocks.Administraton
             int.TryParse( stateData, out exceptionId );
 
             SetExceptionPanelVisibility( exceptionId );
+        }
 
+        /// <summary>
+        /// Gets the chart style.
+        /// </summary>
+        /// <value>
+        /// The chart style.
+        /// </value>
+        public ChartStyle ChartStyle
+        {
+            get
+            {
+                Guid? chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
+                if ( chartStyleDefinedValueGuid.HasValue )
+                {
+                    var rockContext = new Rock.Data.RockContext();
+                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
+                    if ( definedValue != null )
+                    {
+                        try
+                        {
+                            definedValue.LoadAttributes( rockContext );
+                            return ChartStyle.CreateFromJson( definedValue.Name, definedValue.GetAttributeValue( "ChartStyle" ) );
+                        }
+                        catch
+                        {
+                            // intentionally ignore and default to basic style
+                        }
+                    }
+                }
+
+                return new ChartStyle();
+            }
         }
 
         #endregion
@@ -660,7 +650,6 @@ namespace RockWeb.Blocks.Administraton
         }
 
         #endregion
-
-    }
+}
 
 }

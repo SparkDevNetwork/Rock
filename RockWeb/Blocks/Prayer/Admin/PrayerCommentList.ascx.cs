@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnInit( e );
 
-            _blockInstanceGroupCategoryId = GetAttributeValue( "GroupCategoryId" ).AsInteger() ?? 0;
+            _blockInstanceGroupCategoryId = GetAttributeValue( "GroupCategoryId" ).AsInteger();
             PrayerRequest prayerRequest = new PrayerRequest();
             Type type = prayerRequest.GetType();
             _prayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );

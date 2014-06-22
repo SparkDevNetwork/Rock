@@ -3,9 +3,10 @@
     
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
-    3. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    4. ASP.Net Overrides - Yep they get it wrong too sometimes
-    5. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+    
 
 */
 /* jquery.Jcrop.css v0.9.12 - MIT License */
@@ -286,7 +287,7 @@ img.jcrop-preview {
   margin-left: 20px;
 }
 .picker .picker-select-item-details .person-image {
-  border: 3px solid #428bca;
+  border: 1px solid #999999;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -312,6 +313,9 @@ img.jcrop-preview {
 }
 .picker.picker-novalue .picker-label {
   width: 100%;
+}
+.picker.picker-mergefield {
+  width: 370px;
 }
 #dialog .scroll-container-picker {
   width: 360px;
@@ -415,11 +419,6 @@ ul.rocktree ul {
 }
 .treeview .treeview-actions .btn {
   margin-bottom: 4px;
-}
-.treeview .treeview-scroll {
-  background-color: #ffffff;
-  border-radius: 4px;
-  border: 1px solid #d5d5d5;
 }
 .personlist {
   padding-left: 0;
@@ -546,8 +545,12 @@ div.tagsinput {
   overflow-y: auto;
   float: left;
 }
+.taglist {
+  text-align: center;
+}
 .taglist .tag {
-  float: left;
+  --float: left;
+  display: inline-block;
   height: 22px;
   line-height: 18px;
   position: relative;
@@ -635,6 +638,9 @@ div.tagsinput input {
   margin: -2px 0 0 10px;
   border-radius: 4px;
   padding: 2px;
+  display: block;
+  clear: both;
+  margin: 0 auto;
 }
 div.tagsinput input:hover,
 div.tagsinput input:focus {
@@ -694,6 +700,18 @@ div.tagsinput .tags_clear {
 }
 .tag-letterlist a {
   font-weight: 700;
+}
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 768px) {
+  .taglist {
+    text-align: left;
+  }
+  .taglist .tag {
+    float: left;
+  }
+  div.tagsinput input {
+    margin: 0;
+  }
 }
 .switch {
   display: inline-block;
@@ -1328,7 +1346,7 @@ ul.groupmembers li.member {
   min-width: 130px;
 }
 ul.groupmembers li.member .person-image {
-  border: 3px solid #428bca;
+  border: 1px solid #999999;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -1482,10 +1500,10 @@ ul.rocklist .rocklist-item.selected {
 .image-editor-photo .options a:first-child {
   margin-left: 0;
 }
-.recent i {
+.activeusers .recent i {
   color: #5cb85c;
 }
-.not-recent i {
+.activeusers .not-recent i {
   color: #f0ad4e;
 }
 .nav-paging .btn-prev {
@@ -1657,6 +1675,269 @@ ul.rocklist .rocklist-item.selected {
   }
 }
 /*
+    Used to manage styles related to modal dialog.
+
+*/
+.rock-modal-frame {
+  width: 750px;
+  -moz-box-shadow: #464646 18px 18px 80px 0px;
+  -webkit-box-shadow: #464646 18px 18px 80px 0px;
+  box-shadow: #464646 18px 18px 80px 0px;
+}
+.rock-modal {
+  background-color: #ffffff;
+}
+.rock-modal .modal-header {
+  background-color: #3a3a3a;
+  color: #bbbbbb;
+  padding: 5px 15px;
+  min-height: 34px;
+}
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header h3 {
+  float: left;
+  margin-right: 12px;
+}
+.rock-modal .modal-header .close {
+  margin: 0;
+  padding: 6px;
+  color: #bbbbbb;
+  text-shadow: none;
+}
+.rock-modal .modal-header .label {
+  margin-top: 8px;
+}
+.rock-modal .modal-header small {
+  margin-top: 12px;
+  display: block;
+  color: #6e6e6e;
+}
+.rock-modal .modal-body {
+  color: #333333;
+}
+.rock-modal .modal-body .nav-pills {
+  margin: 6px 0 18px;
+}
+.rock-modal .modal-body > .scroll-container {
+  width: 720px;
+}
+.rock-modal .modal-body > .scroll-container .viewport {
+  width: 670px;
+}
+.rock-modal .modal-body.iframe {
+  overflow: hidden;
+}
+.rock-modal .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #eeeeee;
+}
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11000;
+  width: 750px;
+  margin-left: 0px;
+  background-color: #ffffff;
+}
+.modal-body {
+  padding: 8px 12px 12px 12px;
+}
+.modal-footer:after {
+  clear: both;
+}
+.modal-footer .btn {
+  float: right;
+  margin-left: 5px;
+}
+#modal-popup_iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
+/* Bootbox Modal Overrides */
+.modal.bootbox {
+  left: 0;
+  top: 0;
+  width: auto;
+  background-color: transparent;
+}
+/*
+    Used to manage styles related to Rock's forms
+    
+    1. Bootstrap Overrides / Additions
+    2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
+    5. Validation
+    6. Custom Controls
+*/
+.form-actions {
+  padding: 12px 16px;
+  background-color: #d5d5d5;
+  color: #333333;
+}
+legend {
+  font-weight: 300;
+  color: #333333;
+  border-width: 0;
+}
+.checkbox-inline:first-child,
+.radio-inline:first-child {
+  padding-left: 30px;
+}
+a.aspNetDisabled {
+  opacity: 0.5;
+}
+.form-group.rock-literal label,
+.rock-control-wrapper label {
+  margin-bottom: 0;
+}
+.form-group.rock-literal p.form-control-static,
+.rock-control-wrapper p.form-control-static {
+  padding-top: 0;
+}
+.form-group {
+  font-size: 14px;
+  line-height: 1.42857143;
+}
+.form-group .checkbox:last-child {
+  margin-bottom: 30px;
+}
+.form-group > .form-group {
+  margin-top: 12px;
+}
+.form-horizontal .form-group {
+  margin-right: 0;
+}
+.form-horizontal .form-group label {
+  float: left;
+  padding-right: 12px;
+}
+.form-horizontal .form-group .form-control-group,
+.form-horizontal .form-group .form-control {
+  float: left;
+}
+dl {
+  margin-bottom: 0;
+}
+dl dt {
+  font-weight: 700;
+  margin-top: 16px;
+  margin-bottom: 2px;
+}
+dl dt:first-child {
+  margin-top: 0;
+}
+dl dd {
+  margin-left: 0;
+}
+.form-control.input-width-xs,
+.input-group.input-width-xs {
+  width: 60px;
+}
+.form-control.input-width-sm,
+.input-group.input-width-sm {
+  width: 90px;
+}
+.form-control.input-width-md,
+.input-group.input-width-md {
+  width: 140px;
+}
+.form-control.input-width-lg,
+.input-group.input-width-lg {
+  width: 210px;
+}
+.form-control.input-width-xl,
+.input-group.input-width-xl {
+  width: 270px;
+}
+.form-control.input-width-xxl,
+.input-group.input-width-xxl {
+  width: 530px;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group .form-control,
+.form-control-group .input-group {
+  margin-right: 6px;
+  float: left;
+}
+.form-control-group > span {
+  float: left;
+  margin: 8px 6px 0 0;
+}
+.form-control-group > label {
+  float: left;
+  margin-top: 8px;
+}
+.month-year-picker .separator,
+.month-day-picker .separator {
+  float: left;
+  font-size: 20px;
+  margin: 4px 8px 0 -2px;
+  color: #8c8c8c;
+}
+/*.date-range-picker,
+.number-range-editor {
+    span.to {
+        float: left;
+        margin: 8px 12px 0 0;
+    }
+}*/
+.validation-error {
+  color: #d9534f;
+  font-weight: 300;
+  float: left;
+}
+.btn-controlaligned {
+  margin-top: 24px;
+}
+/*
+    Used to manage styles related to Rock's dashboard
+    
+    1. Basic Widgets
+    2. 
+    3. 
+    4. 
+    5. 
+
+*/
+.panel-dashboard {
+  margin: 24px 0 0 ;
+  height: 220px;
+  border-color: #d5d5d5;
+}
+.panel-dashboard > .panel-heading {
+  color: #333333;
+  background-color: #d5d5d5;
+  border-color: #d5d5d5;
+}
+.panel-dashboard > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d5d5d5;
+}
+.panel-dashboard > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d5d5d5;
+}
+/*
     Used to manage styles related to Rock's internal grid component
     
     1. Bootstrap Overrides
@@ -1814,6 +2095,10 @@ td.grid-col-actions {
   float: none;
   margin: 0;
 }
+.grid-select-field .checkbox:last-child,
+.grid-select-field .radio:last-child {
+  margin-bottom: 0px;
+}
 .table .color-field {
   padding: 0;
   width: 4px;
@@ -1830,263 +2115,6 @@ td.grid-col-actions {
   color: #333333;
 }
 /*
-    Used to manage styles related to modal dialog.
-
-*/
-.rock-modal-frame {
-  width: 750px;
-  -moz-box-shadow: #464646 18px 18px 80px 0px;
-  -webkit-box-shadow: #464646 18px 18px 80px 0px;
-  box-shadow: #464646 18px 18px 80px 0px;
-}
-.rock-modal {
-  background-color: #ffffff;
-}
-.rock-modal .modal-header {
-  background-color: #3a3a3a;
-  color: #bbbbbb;
-  padding: 5px 15px;
-  min-height: 34px;
-}
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-.rock-modal .modal-header:after {
-  clear: both;
-}
-.rock-modal .modal-header h3 {
-  float: left;
-  margin-right: 12px;
-}
-.rock-modal .modal-header .close {
-  margin: 0;
-  padding: 6px;
-  color: #bbbbbb;
-  text-shadow: none;
-}
-.rock-modal .modal-header .label {
-  margin-top: 8px;
-}
-.rock-modal .modal-header small {
-  margin-top: 12px;
-  display: block;
-  color: #6e6e6e;
-}
-.rock-modal .modal-body {
-  color: #333333;
-}
-.rock-modal .modal-body .nav-pills {
-  margin: 6px 0 18px;
-}
-.rock-modal .modal-body > .scroll-container {
-  width: 720px;
-}
-.rock-modal .modal-body > .scroll-container .viewport {
-  width: 670px;
-}
-.rock-modal .modal-body.iframe {
-  overflow: hidden;
-}
-.rock-modal .modal-footer {
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #eeeeee;
-}
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 11000;
-  width: 750px;
-  margin-left: 0px;
-  background-color: #ffffff;
-}
-.modal-body {
-  padding: 8px 12px 12px 12px;
-}
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
-}
-#modal-popup_iframe {
-  height: 100%;
-  width: 100%;
-  border: 0;
-}
-/* Bootbox Modal Overrides */
-.modal.bootbox {
-  left: 0;
-  top: 0;
-  width: auto;
-  background-color: transparent;
-}
-/*
-    Used to manage styles related to Rock's forms
-    
-    1. Bootstrap Overrides / Additions
-    2. Data Lists
-    3. Input Sizing
-    4. Control Specific Styles
-    5. Validation
-
-*/
-.form-actions {
-  padding: 12px 16px;
-  background-color: #d5d5d5;
-  color: #333333;
-}
-legend {
-  font-weight: 300;
-  color: #333333;
-  border-width: 0;
-}
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  padding-left: 30px;
-}
-a.aspNetDisabled {
-  opacity: 0.5;
-}
-.form-group.rock-literal label,
-.rock-control-wrapper label {
-  margin-bottom: 0;
-}
-.form-group.rock-literal p.form-control-static,
-.rock-control-wrapper p.form-control-static {
-  padding-top: 0;
-}
-.form-group {
-  font-size: 14px;
-  line-height: 1.42857143;
-}
-.form-group .checkbox:last-child {
-  margin-bottom: 30px;
-}
-.form-horizontal .form-group {
-  margin-right: 0;
-}
-.form-horizontal .form-group label {
-  float: left;
-  padding-right: 12px;
-}
-.form-horizontal .form-group .form-control-group,
-.form-horizontal .form-group .form-control {
-  float: left;
-}
-dl {
-  margin-bottom: 0;
-}
-dl dt {
-  font-weight: 700;
-  margin-top: 16px;
-  margin-bottom: 2px;
-}
-dl dt:first-child {
-  margin-top: 0;
-}
-dl dd {
-  margin-left: 0;
-}
-.form-control.input-width-xs,
-.input-group.input-width-xs {
-  width: 60px;
-}
-.form-control.input-width-sm,
-.input-group.input-width-sm {
-  width: 90px;
-}
-.form-control.input-width-md,
-.input-group.input-width-md {
-  width: 140px;
-}
-.form-control.input-width-lg,
-.input-group.input-width-lg {
-  width: 210px;
-}
-.form-control.input-width-xl,
-.input-group.input-width-xl {
-  width: 270px;
-}
-.form-control.input-width-xxl,
-.input-group.input-width-xxl {
-  width: 530px;
-}
-.form-control-group:before,
-.form-control-group:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-.form-control-group:after {
-  clear: both;
-}
-.form-control-group .form-control,
-.form-control-group .input-group {
-  margin-right: 6px;
-  float: left;
-}
-.form-control-group > span {
-  float: left;
-  margin: 8px 6px 0 0;
-}
-.form-control-group > label {
-  float: left;
-  margin-top: 8px;
-}
-.month-year-picker .separator,
-.month-day-picker .separator {
-  float: left;
-  font-size: 20px;
-  margin: 4px 8px 0 -2px;
-  color: #8c8c8c;
-}
-/*.date-range-picker,
-.number-range-editor {
-    span.to {
-        float: left;
-        margin: 8px 12px 0 0;
-    }
-}*/
-.validation-error {
-  color: #d9534f;
-  font-weight: 300;
-  float: left;
-}
-/*
-    Used to manage styles related to Rock's dashboard
-    
-    1. Basic Widgets
-    2. 
-    3. 
-    4. 
-    5. 
-
-*/
-.panel-dashboard {
-  margin: 24px 0 0 ;
-  height: 220px;
-  border-color: #d5d5d5;
-}
-.panel-dashboard > .panel-heading {
-  color: #333333;
-  background-color: #d5d5d5;
-  border-color: #d5d5d5;
-}
-.panel-dashboard > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #d5d5d5;
-}
-.panel-dashboard > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #d5d5d5;
-}
-/*
     Used to manage styles for specific blocks.
 
     1. HTML Content - block to edit HTML on a page
@@ -2098,6 +2126,9 @@ dl dd {
 .htmlcontent-edit-header .html-content-approve {
   float: right;
   margin-top: 4px;
+}
+.codeeditor-header .picker-mergefield {
+  float: right;
 }
 .my-account {
   margin-bottom: 15px;
@@ -2371,6 +2402,9 @@ dl dd {
   float: left;
   margin-top: 5px;
 }
+.workflow-section-activities {
+  margin-top: 64px;
+}
 .workflow-activities-readonly-header {
   color: #515151;
   left: auto;
@@ -2382,6 +2416,62 @@ dl dd {
 .workflow-activities-readonly-header:hover {
   color: inherit;
   text-decoration: none;
+}
+.workflow-activity.activated-with-workflow > .panel-heading {
+  background-color: #dff0d8;
+  color: #468847;
+}
+.workflow-activity.activated-with-workflow > .panel-heading a.btn-link {
+  color: #468847;
+}
+.workflow-activity .panel-title:before {
+  content: "\f1b3";
+  font-family: FontAwesome;
+  font-weight: normal;
+}
+.workflow-action .workflow-action-name:before {
+  content: "\f1b2";
+  font-family: FontAwesome;
+  font-weight: normal;
+}
+.workflow-action .criteria-exists {
+  background-color: #f0ad4e;
+  color: #ffffff;
+  border: 1px solid #eea236;
+}
+.workflow-action .conditional-run-criteria {
+  margin-top: -15px;
+  margin-bottom: 15px;
+  padding-top: 15px;
+  border-width: 1px;
+  border-style: solid;
+}
+.workflow-action .form-action-rows .row {
+  margin-bottom: 12px;
+}
+.panel-group .panel-workflowitem {
+  margin-bottom: 30px;
+}
+.panel-group .panel-workflowitem:hover {
+  background-color: #f1f1f1;
+}
+.panel-group .panel-workflowitem .panel-heading {
+  padding: 30px;
+}
+.panel-group .panel-workflowitem .panel-heading a h3 {
+  margin: 0;
+}
+.panel-group .panel-workflowitem .panel-heading a h3 i {
+  font-size: 35px;
+  margin-right: 12px;
+}
+.panel-group .panel-workflowitem .panel-heading a i.panel-navigation:before {
+  font-family: FontAwesome;
+  content: "\f077";
+  font-size: 20px;
+}
+.panel-group .panel-workflowitem .panel-heading a.collapsed i.panel-navigation:before {
+  content: "\f078";
 }
 /*
     Used to manage styles for specific blocks.
@@ -2439,7 +2529,7 @@ table.attribute-grid tr th:nth-child(3) {
   overflow: hidden;
   text-align: left;
   text-indent: -999px;
-  background: url(../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
+  background: url(../../../Assets/Images/sprite-cards.png) 0 0 no-repeat;
 }
 .card-mastercard {
   background-position: -55px 0;
@@ -2524,6 +2614,38 @@ table.attribute-grid tr th:nth-child(3) {
   display: table;
   max-width: 200px;
   margin: 0 auto;
+  position: relative;
+}
+.personprofilebar-bio .photo .following-status {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  z-index: 500;
+  border-top: 70px solid #428bca;
+  border-left: 70px solid transparent;
+  transition: 1s;
+  opacity: .4;
+}
+.personprofilebar-bio .photo .following-status i {
+  position: absolute;
+  top: -60px;
+  right: 10px;
+  color: #fff;
+  font-size: 24px;
+  transition: 1s;
+  opacity: 0;
+}
+.personprofilebar-bio .photo .following-status.following {
+  opacity: 1;
+}
+.personprofilebar-bio .photo .following-status.following i {
+  opacity: 1;
+}
+.personprofilebar-bio .photo a.fluidbox-opened + .following-status {
+  opacity: 0 !important;
 }
 .personprofilebar-bio .photo img {
   width: 100%;
@@ -2536,6 +2658,40 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .photo .fluidbox-opened .fluidbox-ghost {
   cursor: -webkit-zoom-out;
   cursor: -moz-zoom-out;
+}
+.personprofilebar-bio .social-icons {
+  text-align: center;
+}
+.personprofilebar-bio .social-icons .icon {
+  background-color: #428bca;
+  margin: 0 2px;
+  border-radius: 4px;
+  font-size: 16px;
+  display: inline-block;
+}
+.personprofilebar-bio .social-icons .icon a {
+  color: #ecf0f3;
+}
+.personprofilebar-bio .social-icons .icon a:hover {
+  opacity: .6;
+}
+.personprofilebar-bio .social-icons .icon i {
+  margin: 4px;
+}
+.personprofilebar-bio .social-icons .icon.icon-facebook {
+  background-color: #44619d;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-twitter {
+  background-color: #55acee;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon.icon-instagram {
+  background-color: #39688f;
+  color: #fff;
+}
+.personprofilebar-bio .social-icons .icon:first-child {
+  margin-left: 0;
 }
 .personprofilebar-bio .taglist {
   margin-top: 7.5px;
@@ -2592,6 +2748,7 @@ table.attribute-grid tr th:nth-child(3) {
   table-layout: fixed;
   height: 40px;
   margin: 0 auto;
+  width: 220px;
 }
 .badge-attendance ul.badge-attendance-chart li {
   position: relative;
@@ -2756,6 +2913,19 @@ table.attribute-grid tr th:nth-child(3) {
   font-size: 16px;
   margin-bottom: 7.5px;
 }
+.personprofilebar-family .person-image {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: gray;
+  filter: grayscale(100%);
+  filter: url('../../Assets/Images/(desaturate.svg#grayscale');
+  transition: .5s;
+}
+.personprofilebar-family .person-image:hover {
+  -webkit-filter: grayscale(0%);
+  -moz-filter: grayscale(0%);
+  filter: grayscale(0%);
+}
 .personprofilebar-family .addresses ul {
   list-style: none;
   margin: 0;
@@ -2850,6 +3020,12 @@ span.field-value {
   .personprofilebar-bio .personcontact {
     text-align: left;
     padding-bottom: 0;
+  }
+  .personprofilebar-bio .social-icons {
+    text-align: left;
+  }
+  .personprofilebar-bio .social-icons .icon {
+    float: left;
   }
   .personprofilebar-badge .badge-group {
     text-align: left;
@@ -3395,6 +3571,23 @@ small {
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin-top: 2px;
 }
+.clickable {
+  cursor: pointer;
+}
+.navigation-tip {
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+  padding: 2px 4px;
+  font-size: 90%;
+  color: #333333;
+  background-color: #d5d5d5;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+a.help {
+  margin-left: 6px;
+  outline: 0;
+  color: #bbbbbb;
+}
 .control-label {
   font-weight: 700;
 }
@@ -3535,6 +3728,8 @@ small {
   width: 60%;
   float: left;
   padding-top: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .btn.aspNetDisabled {
   cursor: not-allowed;
@@ -3684,17 +3879,29 @@ fieldset[disabled] .btn-authenication.active {
   color: #468847;
   border-bottom: 1px dotted #468847;
 }
+.alert-success a.help {
+  border-bottom: 0;
+}
 .alert-info a {
   color: #3a87ad;
   border-bottom: 1px dotted #3a87ad;
+}
+.alert-info a.help {
+  border-bottom: 0;
 }
 .alert-warning a {
   color: #c09853;
   border-bottom: 1px dotted #c09853;
 }
+.alert-warning a.help {
+  border-bottom: 0;
+}
 .alert-danger a {
   color: #b94a48;
   border-bottom: 1px dotted #b94a48;
+}
+.alert-danger a.help {
+  border-bottom: 0;
 }
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
@@ -3731,23 +3938,6 @@ ul.list-padded li:first-child {
 }
 div.aspNetDisabled {
   opacity: 0.5;
-}
-.clickable {
-  cursor: pointer;
-}
-.navigation-tip {
-  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-  padding: 2px 4px;
-  font-size: 90%;
-  color: #333333;
-  background-color: #d5d5d5;
-  white-space: nowrap;
-  border-radius: 4px;
-}
-a.help {
-  margin-left: 6px;
-  outline: 0;
-  color: #bbbbbb;
 }
 @media print {
   @page {

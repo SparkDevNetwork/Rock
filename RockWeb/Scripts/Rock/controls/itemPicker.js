@@ -21,8 +21,8 @@
                         expandedIds: this.options.expandedIds,
                         id: this.options.startingId
                     },
-                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
-                    $hfExpandedIds = $('#hfInitialItemParentIds_' + this.options.controlId);
+                    $hfItemIds = $control.find('.js-item-id-value'),
+                    $hfExpandedIds = $control.find('.js-initial-item-parent-ids-value');
 
                 if (typeof this.options.mapItems === 'function') {
                     treeOptions.mapping = {
@@ -56,13 +56,18 @@
                 var self = this,
                     $control = $('#' + this.options.controlId),
                     $spanNames = $control.find('.selected-names'),
-                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
-                    $hfItemNames = $('#hfItemName_' + this.options.controlId);
+                    $hfItemIds = $control.find('.js-item-id-value'),
+                    $hfItemNames = $control.find('.js-item-name-value');
 
                 // Bind tree events
                 $control.find('.treeview')
                     .on('rockTree:selected', function () {
                         // intentionally blank
+                    })
+                    .on('rockTree:itemClicked', function (e) {
+                        if (!self.options.allowMultiSelect) {
+                            $control.find('.picker-btn').get(0).click();
+                        }
                     })
                     .on('rockTree:expand rockTree:collapse rockTree:dataBound rockTree:rendered', function (evt) {
                         self.updateScrollbar();

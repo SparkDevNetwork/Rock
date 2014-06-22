@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -392,8 +392,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var labelData = {0};
 
 		    function onDeviceReady() {{
-	
-			    //navigator.notification.alert('Oh boy! It's going to be a good day!, alertDismissed, 'Success', 'Continue');
 			    printLabels();
 		    }}
 		

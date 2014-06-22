@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Cms
 
             try
             {
-                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, RockPage.Guid.ToString(), (int)GetAttributeValue( "CacheDuration" ).AsInteger( true ), ref messages, ref isError );
+                Dictionary<string, object> feedDictionary = SyndicationFeedHelper.GetFeed( feedUrl, RockPage.Guid.ToString(), GetAttributeValue( "CacheDuration" ).AsInteger(), ref messages, ref isError );
 
                 if ( feedDictionary != null && feedDictionary.Count > 0 )
                 {

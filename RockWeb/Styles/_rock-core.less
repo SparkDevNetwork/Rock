@@ -3,9 +3,10 @@
     
     1. Imports - Used to import the various core less files
     2. HTML Overrides - Style overrides for basic HTML tags
-    3. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
-    4. ASP.Net Overrides - Yep they get it wrong too sometimes
-    5. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    3. Utility Classes - Classes that we use often to keep from writing from repeating ourselves
+    4. Bootstrap Overrides - When Bootstrap gets it wrong, we make it right (we know it's called delusion)
+    5. ASP.Net Overrides - Yep they get it wrong too sometimes
+    
 
 */
 
@@ -17,10 +18,10 @@
 
 @import "_components.less";
 @import "_page-admin.less";
-@import "_grid.less";
 @import "_modal.less";
 @import "_forms.less";
 @import "_dashboard.less";
+@import "_grid.less";
 
 @import "_blocks-cms.less";
 @import "_blocks-security.less";
@@ -64,7 +65,32 @@ small
 }
 
 
-// 3. Bootstrap Overrides
+// 3. Utility Classes
+//--------------------------------
+
+.clickable {
+    cursor: pointer;
+}
+
+
+.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
+    font-family: @font-family-monospace;
+    padding: 2px 4px;
+    font-size: 90%;
+    color: @accent-text-color;
+    background-color: @accent-color;
+    white-space: nowrap;
+    border-radius: @border-radius-base;
+} 
+
+// context help  
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @header-text-color;
+}
+
+// 4. Bootstrap Overrides
 //--------------------------------
 
 .nav-pills {
@@ -215,6 +241,8 @@ small
                 width: 60%;
                 float: left;
                 padding-top: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     }
@@ -268,24 +296,46 @@ small
 }
 
 // make links in alerts the same color as the text with a nice dotted underline
-.alert-success a {
-    color: @alert-success-text;
-    border-bottom: 1px dotted @alert-success-text;
+.alert-success {
+    a {
+        color: @alert-success-text;
+        border-bottom: 1px dotted @alert-success-text;
+    }
+
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-info a {
-    color: @alert-info-text;
-    border-bottom: 1px dotted @alert-info-text;
+.alert-info {
+    a {
+        color: @alert-info-text;
+        border-bottom: 1px dotted @alert-info-text;
+    }
+
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-warning a {
-    color: @alert-warning-text;
-    border-bottom: 1px dotted @alert-warning-text;
+.alert-warning { 
+    a {
+        color: @alert-warning-text;
+        border-bottom: 1px dotted @alert-warning-text;
+    }
+    a.help {
+        border-bottom: 0;
+    }
 }
 
-.alert-danger a {
-    color: @alert-danger-text;
-    border-bottom: 1px dotted @alert-danger-text;
+.alert-danger { 
+    a {
+        color: @alert-danger-text;
+        border-bottom: 1px dotted @alert-danger-text;
+    }
+    a.help {
+        border-bottom: 0;
+    }
 }
 
 
@@ -337,7 +387,7 @@ ul.list-padded {
     }
 }
 
-// 4. ASP.Net Overrides
+// 5. ASP.Net Overrides
 //--------------------------------
 
 // to make asp.net panels look disabled when enabled is false
@@ -345,27 +395,4 @@ div.aspNetDisabled {
     opacity: 0.5;
 }
 
-// 5. Utility Classes
-//--------------------------------
 
-.clickable {
-    cursor: pointer;
-}
-
-
-.navigation-tip { // used to show the user directions to a page (e.g. 'Administration > General Settings')
-    font-family: @font-family-monospace;
-    padding: 2px 4px;
-    font-size: 90%;
-    color: @accent-text-color;
-    background-color: @accent-color;
-    white-space: nowrap;
-    border-radius: @border-radius-base;
-} 
-
-// context help  
-a.help {
-    margin-left: 6px;
-    outline: 0;
-    color: @header-text-color;
-}

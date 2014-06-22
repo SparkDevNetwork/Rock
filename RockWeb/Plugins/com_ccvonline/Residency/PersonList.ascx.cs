@@ -180,7 +180,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             var residencyGroupMemberService = new ResidencyService<Rock.Model.GroupMember>( residencyContext );
 
-            int residencyGroupId = PageParameter( "groupId" ).AsInteger() ?? 0;
+            int residencyGroupId = PageParameter( "groupId" ).AsInteger();
             hfGroupId.SetValue( residencyGroupId );
 
             var residencyGroupMemberList = residencyGroupMemberService.Queryable( "Person" )

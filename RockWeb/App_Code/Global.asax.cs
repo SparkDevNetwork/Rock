@@ -48,7 +48,6 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
-
         #region Fields
 
         /// <summary>
@@ -91,31 +90,66 @@ namespace RockWeb
         protected void Application_Start( object sender, EventArgs e )
         {
             try
-            {
+            { 
+                DateTime startDateTime = RockDateTime.Now;
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
-                // Run any needed Rock and/or plugin migrations
-                MigrateDatabase();
+                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
+                // This should be removed after 1.0.9
+                try
+                {
+                    string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                }
+                catch
+                {
+                    // Intentionally Blank
+                }
 
                 // Get a db context
                 var rockContext = new RockContext();
 
-                RegisterRoutes( rockContext, RouteTable.Routes );
-
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    try
+                    {
+                        new AttributeService( rockContext ).Get( 0 );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                        startDateTime = RockDateTime.Now;
+                    }
+                    catch
+                    {
+                        // Intentionally Blank
+                    }
+                }
+
+                RegisterRoutes( rockContext, RouteTable.Routes );
+
+                // Run any needed Rock and/or plugin migrations
+                if (MigrateDatabase())
+                {
+                    // If one or more migrations were run, re-register the routes in case a migration added any new routes
+                    RegisterRoutes( rockContext, RouteTable.Routes );
                 }
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
@@ -175,7 +209,6 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
-
             }
             catch ( Exception ex )
             {
@@ -365,14 +398,45 @@ namespace RockWeb
                                     if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                     {
                                         string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
                                         foreach ( string emailAddress in emailAddresses )
                                         {
                                             recipients.Add( emailAddress, mergeObjects );
                                         }
 
-                                        Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                        if ( recipients.Any() )
+                                        {
+                                            bool sendNotification = true;
+
+                                            string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                                            var serverVarList = context.Request.ServerVariables;
+
+                                            if (!string.IsNullOrWhiteSpace(filterSettings) && serverVarList.Count > 0)
+                                            {
+                                                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                                foreach ( string nameValue in nameValues )
+                                                {
+                                                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                                    {
+                                                        if (nameAndValue.Length == 2)
+                                                        {
+                                                            var serverValue = serverVarList[nameAndValue[0]];
+                                                            if (serverValue != null && serverValue.ToUpper().Contains(nameAndValue[1].ToUpper().Trim()))
+                                                            {
+                                                                sendNotification = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if ( sendNotification )
+                                            {
+                                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                            }
+                                        }
                                     }
                                 }
                                 catch
@@ -453,13 +517,17 @@ namespace RockWeb
         /// <summary>
         /// Migrates the database.
         /// </summary>
-        public void MigrateDatabase()
+        /// <returns>True if at least one migration was run</returns>
+        public bool MigrateDatabase()
         {
+            bool result = false;
+
             // Check if database should be auto-migrated for the core and plugins
             if ( ConfigurationManager.AppSettings["AutoMigrateDatabase"].AsBoolean( true ) )
             {
                 try
                 {
+
                     Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
 
                     var rockContext = new RockContext();
@@ -469,12 +537,17 @@ namespace RockWeb
                     {
                         // If database did not exist, initialize a database (which runs existing Rock migrations)
                         rockContext.Database.Initialize( true );
+                        result = true;
                     }
                     else
                     {
                         // If database does exist, run any pending Rock migrations
                         var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                        migrator.Update();
+                        if ( migrator.GetPendingMigrations().Any() )
+                        {
+                            migrator.Update();
+                            result = true;
+                        }
                     }
 
                     // Migrate any plugins that have pending migrations
@@ -545,6 +618,8 @@ namespace RockWeb
                                                 pluginMigration.MigrationName = migrationType.Value.Name;
                                                 pluginMigrationService.Add( pluginMigration );
                                                 rockContext.SaveChanges();
+
+                                                result = true;
                                             }
                                             catch ( Exception ex )
                                             {
@@ -575,6 +650,8 @@ namespace RockWeb
                 // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
                 Database.SetInitializer<Rock.Data.RockContext>( null );
             }
+
+            return result;
         }
 
         /// Formats the exception.
@@ -632,6 +709,8 @@ namespace RockWeb
         /// <param name="routes">The routes.</param>
         private void RegisterRoutes( RockContext rockContext, RouteCollection routes )
         {
+            routes.Clear();
+
             PageRouteService pageRouteService = new PageRouteService( rockContext );
 
             // find each page that has defined a custom routes.
@@ -735,9 +814,19 @@ namespace RockWeb
             var qualifiers = new Dictionary<int, Dictionary<string, string>>();
             foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable() )
             {
-                if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                try
+                {
+                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
+                    {
+                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
+                    }
+
+                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
+                }
+                catch (Exception ex)
+                {
+                    LogError( ex, null );
+                }
             }
 
             // Cache all the attributes.
@@ -771,6 +860,8 @@ namespace RockWeb
 
         private void Error66( Exception ex )
         {
+            LogError( ex, HttpContext.Current );
+
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
                 try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
@@ -860,10 +951,17 @@ namespace RockWeb
                 pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
-                var user = UserLoginService.GetCurrentUser();
-                if ( user != null && user.Person != null )
+                try
                 {
-                    personAlias = user.Person.PrimaryAlias;
+                    var user = UserLoginService.GetCurrentUser();
+                    if ( user != null && user.Person != null )
+                    {
+                        personAlias = user.Person.PrimaryAlias;
+                    }
+                }
+                catch
+                {
+                    // Intentionally left blank
                 }
             }
 

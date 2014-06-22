@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Prayer
 
             mdFlag.SaveClick += mdFlag_SaveClick;
 
-            _flagLimit = GetAttributeValue( "FlagLimit" ).AsInteger();
+            _flagLimit = GetAttributeValue( "FlagLimit" ).AsIntegerOrNull();
             _categoryGuidString = GetAttributeValue( "CategoryGuid" );
             _enableCommunityFlagging = GetAttributeValue( "EnableCommunityFlagging" ).AsBoolean();
             lWelcomeInstructions.Text = GetAttributeValue( "WelcomeIntroductionText" );

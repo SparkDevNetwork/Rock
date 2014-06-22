@@ -47,7 +47,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "CompetencyPersonId", itemId.AsInteger() ?? 0 );
+                    ShowDetail( "CompetencyPersonId", itemId.AsInteger() );
                 }
                 else
                 {

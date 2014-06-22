@@ -192,9 +192,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             competency.TeacherOfRecordPersonId = ppTeacherOfRecord.PersonId;
             competency.FacilitatorPersonId = ppFacilitator.PersonId;
             competency.Goals = tbGoals.Text;
-            competency.CreditHours = tbCreditHours.Text.AsInteger( false );
-            competency.SupervisionHours = tbSupervisionHours.Text.AsInteger( false );
-            competency.ImplementationHours = tbImplementationHours.Text.AsInteger( false );
+            competency.CreditHours = tbCreditHours.Text.AsIntegerOrNull();
+            competency.SupervisionHours = tbSupervisionHours.Text.AsIntegerOrNull();
+            competency.ImplementationHours = tbImplementationHours.Text.AsIntegerOrNull();
 
             if ( !competency.IsValid )
             {

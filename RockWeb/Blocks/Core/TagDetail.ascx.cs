@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
             
             string pageTitle = "New Tag";
             
-            int? tagId = PageParameter( "tagId" ).AsInteger( false );
+            int? tagId = PageParameter( "tagId" ).AsIntegerOrNull();
             if (tagId.HasValue)
             {
                 Tag tag = new TagService( new RockContext() ).Get( tagId.Value );

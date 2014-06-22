@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 string groupId = PageParameter( "GroupId" );
                 string personId = PageParameter( "PersonId" );
 
-                ShowDetail( "PersonId", int.Parse( personId ), groupId.AsInteger() ?? 0 );
+                ShowDetail( "PersonId", int.Parse( personId ), groupId.AsInteger() );
             }
         }
 

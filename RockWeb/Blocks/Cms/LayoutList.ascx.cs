@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Cms
         {
             pnlLayouts.Visible = false;
 
-            int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            int siteId = PageParameter( "siteId" ).AsInteger();
             if ( siteId == 0 )
             {
                 // quit if the siteId can't be determined

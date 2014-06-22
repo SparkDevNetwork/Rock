@@ -182,7 +182,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="projectPointOfAssessmentId">The residency project point of assessment id.</param>
         protected void gList_ShowEdit( int projectPointOfAssessmentId )
         {
-            NavigateToLinkedPage( "DetailPage", "ProjectPointOfAssessmentId", projectPointOfAssessmentId, "ProjectId", hfProjectId.Value.AsInteger().Value );
+            NavigateToLinkedPage( "DetailPage", "ProjectPointOfAssessmentId", projectPointOfAssessmentId, "ProjectId", hfProjectId.Value.AsInteger() );
         }
 
         /// <summary>

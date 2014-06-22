@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,19 @@ namespace RockWeb.Blocks.CheckIn
     public partial class CheckinConfiguration : RockBlock, IDetailBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // Save and Cancel should not confirm exit
+            btnSave.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+            btnCancel.OnClientClick = string.Format( "javascript:$('#{0}').val('');return true;", confirmExit.ClientID );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -288,7 +301,7 @@ namespace RockWeb.Blocks.CheckIn
                 foreach ( string key in labelAttributeKeys )
                 {
                     var attributeValue = groupType.GetAttributeValue( key );
-                    int binaryFileId = attributeValue.AsInteger() ?? 0;
+                    int binaryFileId = attributeValue.AsInteger();
                     var binaryFile = binaryFileService.Get( binaryFileId );
                     if ( binaryFile != null )
                     {
@@ -368,7 +381,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddCheckinArea_Click( object sender, EventArgs e )
         {
-            int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger() ?? 0;
+            int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger();
             GroupType parentGroupType = new GroupTypeService( new RockContext() ).Get( parentGroupTypeId );
 
             // CheckinArea is GroupType entity

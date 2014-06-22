@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -126,7 +126,7 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessBinaryFileRequest( HttpContext context )
         {
-            int fileId = context.Request.QueryString["id"].AsInteger() ?? 0;
+            int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
 
             if ( fileId == 0 && fileGuid.Equals( Guid.Empty ) )

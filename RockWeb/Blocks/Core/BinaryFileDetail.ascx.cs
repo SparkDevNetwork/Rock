@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -398,11 +398,11 @@ namespace RockWeb.Blocks.Core
                             var workflow = Workflow.Activate( workflowType, binaryFile.FileName );
 
                             List<string> workflowErrors;
-                            if ( workflow.Process( binaryFile, out workflowErrors ) )
+                            if ( workflow.Process( workflowRockContext, binaryFile, out workflowErrors ) )
                             {
                                 binaryFile = binaryFileService.Get( binaryFile.Id );
 
-                                if ( workflowType.IsPersisted )
+                                if ( workflow.IsPersisted || workflowType.IsPersisted )
                                 {
                                     var workflowService = new Rock.Model.WorkflowService( workflowRockContext );
                                     workflowService.Add( workflow );

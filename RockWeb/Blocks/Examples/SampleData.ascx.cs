@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -866,7 +866,7 @@ namespace RockWeb.Blocks.Examples
                     group.GroupLocations.Add( groupLocation );
                 }
 
-                group.LoadAttributes();
+                group.LoadAttributes( rockContext );
 
                 // Set the study topic
                 if ( elemGroup.Attribute( "studyTopic" ) != null )
@@ -893,6 +893,8 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 groupService.Add( group );
+                // Now we have to save changes in order for the attributes to be saved correctly.
+                rockContext.SaveChanges();
                 group.SaveAttributeValues( rockContext );
             }
         }
@@ -1041,6 +1043,10 @@ namespace RockWeb.Blocks.Examples
                             //rockContext.ChangeTracker.DetectChanges();
                             //rockContext.SaveChanges( disablePrePostProcessing: true );
                         }
+                        else
+                        {
+                            throw new Exception( string.Format( "Trying to delete {0}, but: {1}", person.FullName, errorMessage ) );
+                        }
                     }
                     //rockContext.ChangeTracker.DetectChanges();
                     rockContext.SaveChanges( disablePrePostProcessing: true );
@@ -1084,6 +1090,24 @@ namespace RockWeb.Blocks.Examples
             {
                 group.Members.Remove( member );
                 groupMemberService.Delete( member );
+            }
+
+            // delete attribute values
+            group.LoadAttributes( rockContext );
+            if ( group.AttributeValues != null )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+                foreach ( KeyValuePair<string, List<AttributeValue>> entry in group.AttributeValues )
+                {
+                    foreach ( AttributeValue value in entry.Value )
+                    {
+                        var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( value.AttributeId, group.Id ).ToList();
+                        foreach ( var attributeValue in attributeValues )
+                        {
+                            attributeValueService.Delete( attributeValue );
+                        }
+                    }
+                }
             }
 
             // now delete the group

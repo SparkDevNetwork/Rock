@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Prayer
             Type type = new PrayerRequest().GetType();
             this.PrayerRequestEntityTypeId = Rock.Web.Cache.EntityTypeCache.GetId( type.FullName );
 
-            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger() ?? 0;
+            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0 )
             {
                 dtbRequest.Placeholder = string.Format( "Please pray that... (up to {0} characters)", charLimit );
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Prayer
             IEnumerable<string> errors = Enumerable.Empty<string>();
 
             // Check length in case the client side js didn't
-            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger() ?? 0;
+            int charLimit = GetAttributeValue( "CharacterLimit" ).AsInteger();
             if ( charLimit > 0  && dtbRequest.Text.Length > charLimit )
             {
                 errors = errors.Concat( new[] { string.Format( "Whoops. Would you mind reducing the length of your prayer request to {0} characters?", charLimit ) } );

@@ -102,7 +102,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="competencyId">The residency competency id.</param>
         protected void gList_ShowEdit( int competencyId )
         {
-            NavigateToLinkedPage( "DetailPage", "CompetencyId", competencyId, "TrackId", hfTrackId.Value.AsInteger().Value );
+            NavigateToLinkedPage( "DetailPage", "CompetencyId", competencyId, "TrackId", hfTrackId.Value.AsInteger() );
         }
 
         /// <summary>

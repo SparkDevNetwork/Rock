@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Groups
             {
                 case "Purpose":
 
-                    int? id = e.Value.AsInteger(false);
+                    int? id = e.Value.AsIntegerOrNull();
                     if ( id.HasValue )
                     {
                         var purpose = DefinedValueCache.Read( id.Value );
@@ -252,7 +252,7 @@ namespace RockWeb.Blocks.Groups
         {
             var qry = new GroupTypeService( new RockContext() ).Queryable();
 
-            int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsInteger(false);
+            int? purposeId = rFilter.GetUserPreference( "Purpose" ).AsIntegerOrNull();
             if ( purposeId.HasValue )
             {
                 qry = qry.Where( t => t.GroupTypePurposeValueId == purposeId.Value );

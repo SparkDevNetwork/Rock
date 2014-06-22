@@ -52,8 +52,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int projectPointOfAssessmentId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger() ?? 0;
-                int competencyPersonProjectAssessmentId = PageParameter( "CompetencyPersonProjectAssessmentId" ).AsInteger() ?? 0;
+                int projectPointOfAssessmentId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger();
+                int competencyPersonProjectAssessmentId = PageParameter( "CompetencyPersonProjectAssessmentId" ).AsInteger();
                 ShowDetail( projectPointOfAssessmentId, competencyPersonProjectAssessmentId );
             }
         }

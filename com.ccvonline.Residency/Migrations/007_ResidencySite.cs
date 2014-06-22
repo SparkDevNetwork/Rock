@@ -31,13 +31,13 @@ SET @LoginPageId = (select [Id] from [Page] where [Guid] = '07770489-9C8D-43FA-8
 INSERT INTO [Site] (IsSystem, Name, Description, Theme, DefaultPageId, LoginPageId, Guid)
     VALUES (0, 'Residency', 'The site for the Residency Resident pages', 'Stark', @PageId, @LoginPageId, '960F1D98-891A-4508-8F31-3CF206F5406E')" );
 
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Dialog", "Dialog", "", "D60C73F6-C2D7-414D-8DDA-09BF15403861" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Error", "Error", "", "23489D43-583C-40DF-A908-83CEEB9A9757" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "FullWidth", "Full Width", "", "5F8237AF-06E6-4596-9410-208CBD032559" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Homepage", "Homepage", "", "523CE2B2-24AA-4C44-91D5-C912A64506B7" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "LeftSidebar", "Left Sidebar", "", "8A855392-A965-4CF5-9091-CCE6EFBFC62F" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "RightSidebar", "Right Sidebar", "", "65330865-732D-46BC-BA7C-8438237CFBE1" );
-            AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "ThreeColum", "	Three Column", "", "1950A08D-A96B-452F-8C91-D142310C7FED" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Dialog", "Dialog", "", "D60C73F6-C2D7-414D-8DDA-09BF15403861" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Error", "Error", "", "23489D43-583C-40DF-A908-83CEEB9A9757" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "FullWidth", "Full Width", "", "5F8237AF-06E6-4596-9410-208CBD032559" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "Homepage", "Homepage", "", "523CE2B2-24AA-4C44-91D5-C912A64506B7" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "LeftSidebar", "Left Sidebar", "", "8A855392-A965-4CF5-9091-CCE6EFBFC62F" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "RightSidebar", "Right Sidebar", "", "65330865-732D-46BC-BA7C-8438237CFBE1" );
+            RockMigrationHelper.AddLayout( "960F1D98-891A-4508-8F31-3CF206F5406E", "ThreeColum", "	Three Column", "", "1950A08D-A96B-452F-8C91-D142310C7FED" );
 
             Sql( @"
 DECLARE @LayoutId int

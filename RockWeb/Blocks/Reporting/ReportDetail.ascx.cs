@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Reporting
                                 if ( nameParts.Count() > 1 )
                                 {
                                     string attributeIdPortion = nameParts[1];
-                                    int attributeID = attributeIdPortion.AsInteger() ?? 0;
+                                    int attributeID = attributeIdPortion.AsInteger();
                                     if ( attributeID > 0 )
                                     {
                                         AttributeCache attr = AttributeCache.Read( attributeID );
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Reporting
             int? categoryId = null;
             var rockContext = new RockContext();
             var reportService = new ReportService( rockContext );
-            var report = reportService.Get( hfReportId.Value.AsInteger() ?? 0 );
+            var report = reportService.Get( hfReportId.Value.AsInteger() );
 
             if ( report != null )
             {
@@ -325,7 +325,7 @@ namespace RockWeb.Blocks.Reporting
             report.CategoryId = cpCategory.SelectedValueAsInt();
             report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
             report.DataViewId = ddlDataView.SelectedValueAsInt();
-            report.FetchTop = nbFetchTop.Text.AsInteger( false );
+            report.FetchTop = nbFetchTop.Text.AsIntegerOrNull();
 
             if ( !Page.IsValid )
             {
@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( reportFieldType == ReportFieldType.DataSelectComponent )
                 {
-                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsInteger();
+                    reportField.DataSelectComponentEntityTypeId = fieldSelection.AsIntegerOrNull();
 
                     string dataSelectComponentTypeName = EntityTypeCache.Read( reportField.DataSelectComponentEntityTypeId ?? 0 ).GetEntityType().FullName;
                     DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( hfReportId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -537,7 +537,7 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( entityField.FieldKind == FieldKind.Attribute )
                     {
-                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeId );
+                        listItem.Value = string.Format( "{0}|{1}", ReportFieldType.Attribute, entityField.AttributeGuid.Value.ToString("n") );
                     }
 
                     if ( entityField.IsPreviewable )
@@ -877,7 +877,7 @@ namespace RockWeb.Blocks.Reporting
                             selectedEntityFields.Add( columnIndex, entityField );
 
                             BoundField boundField;
-                            if ( entityField.DefinedTypeId.HasValue )
+                            if ( entityField.DefinedTypeGuid.HasValue )
                             {
                                 boundField = new DefinedValueField();
                             }
@@ -895,10 +895,10 @@ namespace RockWeb.Blocks.Reporting
                     }
                     else if ( reportField.ReportFieldType == ReportFieldType.Attribute )
                     {
-                        int? attributeId = reportField.Selection.AsInteger( false );
-                        if ( attributeId.HasValue )
+                        Guid? attributeGuid = reportField.Selection.AsGuidOrNull();
+                        if ( attributeGuid.HasValue )
                         {
-                            var attribute = AttributeCache.Read( attributeId.Value );
+                            var attribute = AttributeCache.Read( attributeGuid.Value );
                             selectedAttributes.Add( columnIndex, attribute );
 
                             BoundField boundField;
@@ -952,7 +952,7 @@ namespace RockWeb.Blocks.Reporting
 
                 try
                 {
-                    //gReport.Caption = report.Name;
+                    gReport.ExportFilename = report.Name;
                     gReport.DataSource = report.GetDataSource( new RockContext(), entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
                     gReport.DataBind();
                 }
@@ -1041,7 +1041,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( reportFieldType == ReportFieldType.DataSelectComponent )
             {
-                string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ?? 0 ).GetEntityType().FullName;
+                string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ).GetEntityType().FullName;
                 DataSelectComponent dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
 
                 if ( dataSelectComponent != null )
@@ -1127,7 +1127,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.Attribute:
-                    var attribute = AttributeCache.Read( fieldSelection.AsInteger() ?? 0 );
+                    var attribute = AttributeCache.Read( fieldSelection.AsGuid());
                     if ( attribute != null )
                     {
                         defaultColumnHeaderText = attribute.Name;
@@ -1137,7 +1137,7 @@ namespace RockWeb.Blocks.Reporting
                     break;
 
                 case ReportFieldType.DataSelectComponent:
-                    string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ?? 0 ).GetEntityType().FullName;
+                    string dataSelectComponentTypeName = EntityTypeCache.Read( fieldSelection.AsInteger() ).GetEntityType().FullName;
                     dataSelectComponent = Rock.Reporting.DataSelectContainer.GetComponent( dataSelectComponentTypeName );
                     if ( dataSelectComponent != null )
                     {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( !Page.IsPostBack )
             {
-                CommunicationId = PageParameter( "CommunicationId" ).AsInteger( false );
+                CommunicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
                 ShowDetail();
             }
         }
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Communication
 
             string pageTitle = "New Communication";
 
-            int? commId = PageParameter( "CommunicationId" ).AsInteger( false );
+            int? commId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
             if ( commId.HasValue )
             {
                 var communication = new CommunicationService( new RockContext() ).Get( commId.Value );

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.Finance
             int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? int.Parse( hfIdTransValue.Value ) : 0;
 
             // null if not associated with a batch
-            int? batchId = hfBatchId.Value.AsInteger();
+            int? batchId = hfBatchId.Value.AsIntegerOrNull();
 
             if ( financialTransactionId == 0 )
             {

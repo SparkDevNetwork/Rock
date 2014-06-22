@@ -189,7 +189,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             project.Name = tbName.Text;
             project.Description = tbDescription.Text;
             project.CompetencyId = hfCompetencyId.ValueAsInt();
-            project.MinAssessmentCountDefault = tbMinAssessmentCountDefault.Text.AsInteger( false );
+            project.MinAssessmentCountDefault = tbMinAssessmentCountDefault.Text.AsIntegerOrNull();
 
             if ( !project.IsValid )
             {

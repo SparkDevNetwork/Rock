@@ -68,10 +68,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( !Page.IsPostBack )
             {
                 // allow this block to work with either a personId or groupMemberId parameter
-                int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
+                int personId = this.PageParameter( "PersonId" ).AsInteger();
                 if ( personId == 0 )
                 {
-                    int groupMemberId = this.PageParameter( "GroupMemberId" ).AsInteger() ?? 0;
+                    int groupMemberId = this.PageParameter( "GroupMemberId" ).AsInteger();
                     personId = new ResidencyService<GroupMember>( new ResidencyContext() ).Queryable().Where( a => a.Id.Equals( groupMemberId ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
 

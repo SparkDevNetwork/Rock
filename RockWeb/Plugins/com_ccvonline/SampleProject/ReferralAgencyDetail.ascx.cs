@@ -80,7 +80,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
 
             string crumbName = ActionTitle.Add( ReferralAgency.FriendlyTypeName );
 
-            int? referralAgencyId = PageParameter( "referralAgencyId" ).AsInteger( false );
+            int? referralAgencyId = PageParameter( "referralAgencyId" ).AsIntegerOrNull();
             if ( referralAgencyId.HasValue )
             {
                 _referralAgency = new ReferralAgencyService( new SampleProjectContext() ).Get( referralAgencyId.Value );
@@ -170,9 +170,9 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
         {
             pnlDetails.Visible = true;
 
-            int? referralAgencyId = PageParameter( "referralAgencyId" ).AsInteger( false );
-            int? campusId = PageParameter( "campusId" ).AsInteger( false );
-            int? agencyTypeValueId = PageParameter( "agencyTypeId" ).AsInteger( false );
+            int? referralAgencyId = PageParameter( "referralAgencyId" ).AsIntegerOrNull();
+            int? campusId = PageParameter( "campusId" ).AsIntegerOrNull();
+            int? agencyTypeValueId = PageParameter( "agencyTypeId" ).AsIntegerOrNull();
 
             ReferralAgency referralAgency = null;
             if (referralAgencyId.HasValue)

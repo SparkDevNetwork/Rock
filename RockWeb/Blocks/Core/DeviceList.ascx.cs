@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( d => d.Name.Contains( name ) );
             }
 
-            int? deviceTypeId = fDevice.GetUserPreference( "Device Type" ).AsInteger();
+            int? deviceTypeId = fDevice.GetUserPreference( "Device Type" ).AsIntegerOrNull();
             if ( deviceTypeId.HasValue )
             {
                 queryable = queryable.Where( d => d.DeviceTypeValueId == deviceTypeId.Value );
@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Core
                 queryable = queryable.Where( d => d.PrintToOverride == printTo );
             }
 
-            int? printerId = fDevice.GetUserPreference( "Printer" ).AsInteger();
+            int? printerId = fDevice.GetUserPreference( "Printer" ).AsIntegerOrNull();
             if ( printerId.HasValue )
             {
                 queryable = queryable.Where( d => d.PrinterDeviceId == printerId );

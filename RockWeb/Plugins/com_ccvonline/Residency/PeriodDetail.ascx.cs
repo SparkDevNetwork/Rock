@@ -286,7 +286,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
 
             hfPeriodId.Value = period.Id.ToString();
-            hfCloneFromPeriodId.Value = ( PageParameter( "CloneFromPeriodId" ).AsInteger() ?? 0 ).ToString();
+            hfCloneFromPeriodId.Value = ( PageParameter( "CloneFromPeriodId" ).AsInteger() ).ToString();
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;

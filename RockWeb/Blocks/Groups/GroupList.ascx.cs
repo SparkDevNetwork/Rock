@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
             {
                 case "Group Type":
 
-                    int id = e.Value.AsInteger() ?? 0;
+                    int id = e.Value.AsInteger();
 
                     var groupType = GroupTypeCache.Read( id );
                     if ( groupType != null )
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( ( GetAttributeValue( "DisplayFilter" ) ?? "false" ).AsBoolean() )
             {
-                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsInteger( false );
+                int? groupTypeFilter = gfSettings.GetUserPreference( "Group Type" ).AsIntegerOrNull();
                 if ( groupTypeFilter.HasValue )
                 {
                     groupTypeIds = groupTypeIds.Where( g => g == groupTypeFilter.Value ).ToList();

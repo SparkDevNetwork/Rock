@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Finance
             gContactList.IsDeleteEnabled = canEdit;
 
             mdAddContact.SaveClick += mdAddContact_SaveClick;
-            mdAddContact.OnCancelScript = string.Format( "$('#{0}').val('');", hfContactId.ClientID );
+            mdAddContact.OnCancelScript = string.Format( "$('#{0}').val('');", hfModalOpen.ClientID );
         }
 
         /// <summary>
@@ -131,29 +131,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     business = personService.Get( int.Parse( hfBusinessId.Value ) );
                 }
-
-                // int? orphanedPhotoId = null;
-                // if ( business.PhotoId != imgPhoto.BinaryFileId )
-                // {
-                // orphanedPhotoId = business.PhotoId;
-                // business.PhotoId = imgPhoto.BinaryFileId;
-
-                // if ( orphanedPhotoId.HasValue )
-                // {
-                // if ( business.PhotoId.HasValue )
-                // {
-                // changes.Add( "Modified the photo." );
-                // }
-                // else
-                // {
-                // changes.Add( "Deleted the photo." );
-                // }
-                // }
-                // else if ( business.PhotoId.HasValue )
-                // {
-                // changes.Add( "Added a photo." );
-                // }
-                // }
 
                 // Business Name
                 History.EvaluateChange( changes, "First Name", business.FirstName, tbBusinessName.Text );
@@ -246,20 +223,6 @@ namespace RockWeb.Blocks.Finance
                                 business.Id,
                                 changes );
                         }
-
-                        // if ( orphanedPhotoId.HasValue )
-                        // {
-                        // BinaryFileService binaryFileService = new BinaryFileService( personService.RockContext );
-                        // var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                        // if ( binaryFile != null )
-                        // {
-                        // // marked the old images as IsTemporary so they will get cleaned up later
-                        // binaryFile.IsTemporary = true;
-                        // binaryFileService.Save( binaryFile, CurrentPersonAlias );
-                        // }
-                        // }
-
-                        // Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
                     }
                 }
 
@@ -340,129 +303,42 @@ namespace RockWeb.Blocks.Finance
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
                 // GroupLocation & Location
-                var groupLocationService = new GroupLocationService( rockContext );
-                var groupLocation = businessGroup.GroupLocations.FirstOrDefault();
-                if ( groupLocation == null )
+                if ( !String.IsNullOrWhiteSpace( tbStreet1.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbStreet2.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbCity.Text.Trim() ) ||
+                     !String.IsNullOrWhiteSpace( tbZipCode.Text.Trim() ) )
                 {
-                    groupLocation = new GroupLocation();
-                    businessGroup.GroupLocations.Add( groupLocation );
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    var groupLocation = businessGroup.GroupLocations.FirstOrDefault();
+                    if ( groupLocation == null )
+                    {
+                        groupLocation = new GroupLocation();
+                        businessGroup.GroupLocations.Add( groupLocation );
+                    }
+
+                    groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+                    var locationService = new LocationService( rockContext );
+                    var location = groupLocation.Location;
+                    if ( location == null )
+                    {
+                        location = new Location();
+                        groupLocation.Location = location;
+                    }
+
+                    location.Street1 = tbStreet1.Text.Trim();
+                    location.Street2 = tbStreet2.Text.Trim();
+                    location.City = tbCity.Text.Trim();
+                    location.State = ddlState.SelectedValue;
+                    location.Zip = tbZipCode.Text.Trim();
                 }
-
-                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
-
-                var locationService = new LocationService( rockContext );
-                var location = groupLocation.Location;
-                if ( location == null )
-                {
-                    location = new Location();
-                    groupLocation.Location = location;
-                }
-
-                location.Street1 = tbStreet1.Text.Trim();
-                location.Street2 = tbStreet2.Text.Trim();
-                location.City = tbCity.Text.Trim();
-                location.State = ddlState.SelectedValue;
-                location.Zip = tbZipCode.Text.Trim();
 
                 rockContext.SaveChanges();
 
                 hfBusinessId.Value = business.Id.ToString();
-
-                // Set the Known Relationships between the Owner and the Business.
-                if ( ppOwner.PersonId != null )
-                {
-                    SetOwner( business );
-                }
             } );
 
             NavigateToParentPage();
-        }
-
-        /// <summary>
-        /// Sets the owner.
-        /// </summary>
-        /// <param name="business">The business.</param>
-        private void SetOwner( Person business )
-        {
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-
-            // Find the original owner/business relationships and remove them if they've changed
-            var ownersKnownRelationshipGroupMember = groupMemberService.Queryable()
-                .Where( g =>
-                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
-                    g.PersonId == business.Id )
-                .FirstOrDefault();
-
-            if ( ownersKnownRelationshipGroupMember != null )
-            {
-                var businessesKnownRelationshipGroupMember = groupMemberService.GetInverseRelationship( ownersKnownRelationshipGroupMember, false, CurrentPersonAlias );
-                if ( ppOwner.PersonId != businessesKnownRelationshipGroupMember.PersonId )
-                {
-                    // the id of the person in the owner person picker doesn't match the id of the person in the businesses known relationship group with the principle role.
-                    var ownersKnownRelationshipGroup = ownersKnownRelationshipGroupMember.Group;
-                    ownersKnownRelationshipGroup.Members.Remove( ownersKnownRelationshipGroupMember );
-                    groupMemberService.Delete( ownersKnownRelationshipGroupMember );
-                    var businessesKnownRelationshipGroup = businessesKnownRelationshipGroupMember.Group;
-                    businessesKnownRelationshipGroup.Members.Remove( businessesKnownRelationshipGroupMember );
-                    groupMemberService.Delete( businessesKnownRelationshipGroupMember );
-                    rockContext.SaveChanges();
-
-                    SetRelationships( business );
-                }
-            }
-            else
-            {
-                SetRelationships( business );
-            }
-        }
-
-        /// <summary>
-        /// Sets the relationships between a business and it's owner.
-        /// </summary>
-        /// <param name="business">The business.</param>
-        private void SetRelationships( Person business )
-        {
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var groupMemberService = new GroupMemberService( rockContext );
-            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                .Where( r =>
-                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
-                .Select( r => r.Id )
-                .FirstOrDefault();
-            int? principleRoleId = new GroupTypeRoleService( rockContext ).Queryable()
-                .Where( r =>
-                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_PRINCIPLE ) ) )
-                .Select( r => r.Id )
-                .FirstOrDefault();
-
-            // get the known relationship group from the owner
-            // add the business as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
-            var owner = personService.Get( (int)ppOwner.PersonId );
-            var knownRelationshipGroup = groupMemberService.Queryable()
-                .Where( g =>
-                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                    g.PersonId == owner.Id )
-                .Select( g => g.Group ).FirstOrDefault();
-            var groupMember = new GroupMember();
-            groupMember.PersonId = int.Parse( hfBusinessId.Value );
-            groupMember.GroupRoleId = (int)businessRoleId;
-            knownRelationshipGroup.Members.Add( groupMember );
-            rockContext.SaveChanges();
-
-            // get the known relationship group from the business
-            // add the owner as a group member of that group using group role of GROUPROLE_KNOWN_RELATIONSHIPS_PRINCIPLE
-            var businessKnownRelationshipGroup = groupMemberService.Queryable()
-                .Where( g =>
-                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
-                    g.PersonId == business.Id )
-                .Select( g => g.Group ).FirstOrDefault();
-            var businessGroupMember = new GroupMember();
-            businessGroupMember.PersonId = owner.Id;
-            businessGroupMember.GroupRoleId = (int)principleRoleId;
-            businessKnownRelationshipGroup.Members.Add( businessGroupMember );
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -515,20 +391,44 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             var business = personService.Get( int.Parse( hfBusinessId.Value ) );
+            var businessContactId = e.RowKeyId;
+            var businessContact = personService.Get( businessContactId );
+
             int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                 .Where( r =>
                     r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
-            var groupMemberService = new GroupMemberService( rockContext );
-            var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId && role.PersonId == e.RowKeyId ).FirstOrDefault();
-            if ( groupMember != null )
-            {
-                groupMemberService.Delete( groupMember );
-                rockContext.SaveChanges();
-            }
 
+            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                .Where( r =>
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
+                .Select( r => r.Id )
+                .FirstOrDefault();
+
+            // remove the business from the business contact's known relationship group
+            var businessContactKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == businessContact.Id )
+                .Select( g => g.Group ).FirstOrDefault();
+            var businessGroupMember = businessContactKnownRelationshipGroup.Members.Where( g => g.GroupRoleId == businessRoleId ).FirstOrDefault();
+            businessContactKnownRelationshipGroup.Members.Remove( businessGroupMember );
+            groupMemberService.Delete( businessGroupMember );
+
+            // remove the business contact from the businesses known relationship group
+            var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                .Where( g =>
+                    g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                    g.PersonId == business.Id )
+                .Select( g => g.Group ).FirstOrDefault();
+            var businessContactGroupMember = businessKnownRelationshipGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).FirstOrDefault();
+            businessKnownRelationshipGroup.Members.Remove( businessContactGroupMember );
+            groupMemberService.Delete( businessContactGroupMember );
+
+            rockContext.SaveChanges();
             BindContactListGrid( business );
         }
 
@@ -551,9 +451,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gContactList_AddClick( object sender, EventArgs e )
         {
-            var contactId = 0;
-            hfContactId.Value = contactId.ToString();
-            ppContact.PersonId = 0;
+            ppContact.SetValue( null );
             hfModalOpen.Value = "Yes";
             mdAddContact.Show();
         }
@@ -567,6 +465,7 @@ namespace RockWeb.Blocks.Finance
         {
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             var business = personService.Get( int.Parse( hfBusinessId.Value ) );
             var contactId = (int)ppContact.PersonId;
             if ( contactId > 0 )
@@ -576,17 +475,37 @@ namespace RockWeb.Blocks.Finance
                         r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
                     .Select( r => r.Id )
                     .FirstOrDefault();
-                var groupMember = business.GivingGroup.Members.Where( role => role.GroupRoleId == businessContactRoleId ).FirstOrDefault();
-                if ( groupMember == null )
-                {
-                    groupMember = new GroupMember();
-                    business.GivingGroup.Members.Add( groupMember );
-                }
+                int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+                    .Where( r =>
+                        r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
 
-                groupMember.Person = personService.Get( (int)ppContact.PersonId );
-                groupMember.GroupRoleId = (int)businessContactRoleId;
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                // get the known relationship group of the business contact
+                // add the business as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS
+                var businessContact = personService.Get( contactId );
+                var contactKnownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( g =>
+                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                        g.PersonId == businessContact.Id )
+                    .Select( g => g.Group ).FirstOrDefault();
+                var groupMember = new GroupMember();
+                groupMember.PersonId = int.Parse( hfBusinessId.Value );
+                groupMember.GroupRoleId = (int)businessRoleId;
+                contactKnownRelationshipGroup.Members.Add( groupMember );
+                rockContext.SaveChanges();
 
+                // get the known relationship group of the business
+                // add the business contact as a group member of that group using the group role of GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT
+                var businessKnownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( g =>
+                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) &&
+                        g.PersonId == business.Id )
+                    .Select( g => g.Group ).FirstOrDefault();
+                var businessGroupMember = new GroupMember();
+                businessGroupMember.PersonId = businessContact.Id;
+                businessGroupMember.GroupRoleId = (int)businessContactRoleId;
+                businessKnownRelationshipGroup.Members.Add( businessGroupMember );
                 rockContext.SaveChanges();
             }
 
@@ -674,17 +593,35 @@ namespace RockWeb.Blocks.Finance
             hfBusinessId.SetValue( business.Id );
             lTitle.Text = "View Business".FormatAsHtmlTitle();
 
+            string street1 = string.Empty;
+            string street2 = string.Empty;
+            string city = string.Empty;
+            string state = string.Empty;
+            string zip = string.Empty;
+            if ( business.GivingGroup.GroupLocations.Count > 0 )
+            {
+                street1 = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
+                street2 = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
+                city = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
+                state = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
+                zip = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+            }
             lDetailsLeft.Text = new DescriptionList()
                 .Add( "Business Name", business.FirstName )
-                .Add( "Address Line 1", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1 )
-                .Add( "Address Line 2", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2 )
-                .Add( "City", business.GivingGroup.GroupLocations.FirstOrDefault().Location.City )
-                .Add( "State", business.GivingGroup.GroupLocations.FirstOrDefault().Location.State )
-                .Add( "Zip Code", business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip )
+                .Add( "Address Line 1", street1 )
+                .Add( "Address Line 2", street2 )
+                .Add( "City", city )
+                .Add( "State", state )
+                .Add( "Zip Code", zip )
                 .Html;
 
+            string phoneNumber = string.Empty;
+            if ( business.PhoneNumbers.Count > 0 )
+            {
+                phoneNumber = business.PhoneNumbers.FirstOrDefault().ToString();
+            }
             lDetailsRight.Text = new DescriptionList()
-                .Add( "Phone Number", business.PhoneNumbers.FirstOrDefault().ToString() )
+                .Add( "Phone Number", phoneNumber )
                 .Add( "Email Address", business.Email )
                 .Add( "Giving Group", business.GivingGroup.Name )
                 .Add( "Record Status", business.RecordStatusValue )
@@ -703,14 +640,34 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = ActionTitle.Edit( business.FullName ).FormatAsHtmlTitle();
                 tbBusinessName.Text = business.FirstName;
-                tbStreet1.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
-                tbStreet2.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
-                tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
-                ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
-                tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
-                pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
-                cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
-                cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
+                if ( business.GivingGroup.GroupLocations.Count > 0 )
+                {
+                    tbStreet1.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street1;
+                    tbStreet2.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Street2;
+                    tbCity.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.City;
+                    ddlState.SelectedValue = business.GivingGroup.GroupLocations.FirstOrDefault().Location.State;
+                    tbZipCode.Text = business.GivingGroup.GroupLocations.FirstOrDefault().Location.Zip;
+                }
+                else
+                {
+                    tbStreet1.Text = string.Empty;
+                    tbStreet2.Text = string.Empty;
+                    tbCity.Text = string.Empty;
+                    ddlState.SelectedIndex = 0;
+                    tbZipCode.Text = string.Empty;
+                }
+                if ( business.PhoneNumbers.Count > 0 )
+                {
+                    pnbPhone.Text = business.PhoneNumbers.FirstOrDefault().ToString();
+                    cbSms.Checked = business.PhoneNumbers.FirstOrDefault().IsMessagingEnabled;
+                    cbUnlisted.Checked = business.PhoneNumbers.FirstOrDefault().IsUnlisted;
+                }
+                else
+                {
+                    pnbPhone.Text = string.Empty;
+                    cbSms.Checked = false;
+                    cbUnlisted.Checked = false;
+                }
                 tbEmail.Text = business.Email;
                 rblEmailPreference.SelectedValue = business.EmailPreference.ToString();
                 ddlCampus.SelectedValue = business.GivingGroup.CampusId.ToString();
@@ -722,17 +679,6 @@ namespace RockWeb.Blocks.Finance
                         g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
                         g.PersonId == business.Id )
                     .FirstOrDefault();
-
-                if ( knownRelationshipBusinessGroupMember != null )
-                {
-                    var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
-
-                    if ( inverseGroupMember != null )
-                    {
-                        ppOwner.PersonId = inverseGroupMember.Person.Id;
-                        ppOwner.PersonName = inverseGroupMember.Person.FullName;
-                    }
-                }
 
                 ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
@@ -768,21 +714,22 @@ namespace RockWeb.Blocks.Finance
             // Load up that contact list.
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
-            int? businessContactRoleId = new GroupTypeRoleService( rockContext ).Queryable()
+            int? businessRoleId = new GroupTypeRoleService( rockContext ).Queryable()
                 .Where( r =>
-                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS_CONTACT ) ) )
+                    r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) )
                 .Select( r => r.Id )
                 .FirstOrDefault();
 
             // I want a list of people that are connected to this business/person by the business contact relationship
             List<GroupMember> contactList = new List<GroupMember>();
-            if ( business.GivingGroup != null )
+            if ( business.Members.Count > 0 )
             {
-                contactList = business.GivingGroup.Members.Where( g => g.GroupRoleId == businessContactRoleId ).ToList();
+                contactList = business.Members.Where( g => g.GroupRoleId == businessRoleId ).ToList();
                 List<Person> personList = new List<Person>();
                 foreach ( var contact in contactList )
                 {
-                    personList.Add( contact.Person );
+                    var businessContact = new GroupMemberService( rockContext ).GetInverseRelationship( contact, false, CurrentPersonAlias );
+                    personList.Add( businessContact.Person );
                 }
 
                 gContactList.DataSource = personList;

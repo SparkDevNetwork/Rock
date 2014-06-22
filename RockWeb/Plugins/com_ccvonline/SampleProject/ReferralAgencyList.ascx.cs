@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
 
                 case "Agency Type":
                     {
-                        int? valueId = gfSettings.GetUserPreference( "Agency Type" ).AsInteger( false );
+                        int? valueId = gfSettings.GetUserPreference( "Agency Type" ).AsIntegerOrNull();
                         if ( valueId.HasValue )
                         {
                             var definedValue = DefinedValueCache.Read( valueId.Value );
@@ -227,13 +227,13 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
 
             var qry = service.Queryable( "Campus,AgencyTypeValue" );
 
-            int? campusId = gfSettings.GetUserPreference( "Campus" ).AsInteger( false );
+            int? campusId = gfSettings.GetUserPreference( "Campus" ).AsIntegerOrNull();
             if ( campusId.HasValue )
             {
                 qry = qry.Where( a => a.CampusId == campusId.Value );
             }
 
-            int? definedValueId = gfSettings.GetUserPreference( "Agency Type" ).AsInteger( false );
+            int? definedValueId = gfSettings.GetUserPreference( "Agency Type" ).AsIntegerOrNull();
             if ( definedValueId.HasValue )
             {
                 qry = qry.Where( a => a.AgencyTypeValueId == definedValueId.Value );

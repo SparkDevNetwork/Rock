@@ -105,7 +105,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             List<Person> facilitatorList = new List<Person>();
 
-            Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( groupId.AsInteger() ?? 0 );
+            Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( groupId.AsInteger() );
             if ( residencyGraderSecurityRole != null )
             {
                 foreach ( var groupMember in residencyGraderSecurityRole.Members.ToList().OrderBy( a => a.Person.FullName ) )
@@ -175,7 +175,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 {
                     if ( component.Authenticate( userLogin, tbPassword.Text ) )
                     {
-                        int groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsInteger() ?? 0;
+                        int groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsInteger();
 
                         Group residencyGraderSecurityRole = new GroupService( rockContext ).Get( groupId );
 

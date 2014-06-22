@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Crm
             {
                 lActionTitle.Text = ActionTitle.Add( PersonBadge.FriendlyTypeName ).FormatAsHtmlTitle();
 
-                PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger() ?? 0;
+                PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger();
                 if ( PersonBadgeId != 0 )
                 {
                     var personBadge = new PersonBadgeService( new RockContext() ).Get( PersonBadgeId );

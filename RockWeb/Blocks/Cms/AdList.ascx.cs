@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Cms
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2 )]
 
     [CodeEditorField( "Template", "The liquid template to use for rendering", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, true, @"
-    {% include 'AdList' with Ads %}
+    {% include 'AdList' %}
 ", "", 3 )]
 
     [CampusesField( "Campuses", "Display Ads for selected campus", false, "", "Filter", 4 )]

@@ -127,7 +127,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         private void BindGrids()
         {
             var residencyContext = new ResidencyContext();
-            int personId = this.PageParameter( "PersonId" ).AsInteger() ?? 0;
+            int personId = this.PageParameter( "PersonId" ).AsInteger();
             var person = new PersonService( new RockContext() ).Get( personId );
 
             if ( person != null )

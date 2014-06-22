@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Cms
 
             marketingCampaignAd.MarketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
             marketingCampaignAd.MarketingCampaignAdTypeId = int.Parse( ddlMarketingCampaignAdType.SelectedValue );
-            marketingCampaignAd.Priority = tbPriority.Text.AsInteger() ?? 0;
+            marketingCampaignAd.Priority = tbPriority.Text.AsInteger();
             marketingCampaignAd.MarketingCampaignAdStatus = (MarketingCampaignAdStatus)int.Parse( hfApprovalStatus.Value );
             if ( !string.IsNullOrWhiteSpace( hfApprovalStatusPersonId.Value ) )
             {

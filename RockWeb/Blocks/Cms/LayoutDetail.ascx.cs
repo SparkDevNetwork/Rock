@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Crm
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? layoutId = PageParameter(pageReference, "layoutId" ).AsInteger();
+            int? layoutId = PageParameter(pageReference, "layoutId" ).AsIntegerOrNull();
             if ( layoutId != null )
             {
                 Layout layout = new LayoutService( new RockContext() ).Get( layoutId.Value );

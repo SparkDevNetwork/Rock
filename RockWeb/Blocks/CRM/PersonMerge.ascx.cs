@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Crm
                 string peopleIds = PageParameter( "People" );
                 if ( !string.IsNullOrWhiteSpace( peopleIds ) )
                 {
-                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger().Value ).ToList();
+                    var selectedPersonIds = peopleIds.SplitDelimitedValues().Select( p => p.AsInteger() ).ToList();
 
                     // Get the people selected
                     var people = new PersonService( new RockContext() ).Queryable( "CreatedByPersonAlias.Person,Users" )
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                var primaryColIndex = hfSelectedColumn.Value.AsInteger( false );
+                var primaryColIndex = hfSelectedColumn.Value.AsIntegerOrNull();
                 
                 // Save the primary header radio button's selection
                 foreach ( var col in gValues.Columns.OfType<PersonMergeField>() )
@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Crm
                     }
 
                     // Photo Id
-                    int? newPhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsInteger( false );
+                    int? newPhotoId = MergeData.GetSelectedValue( MergeData.GetProperty( "Photo" ) ).Value.AsIntegerOrNull();
                     if ( !primaryPerson.PhotoId.Equals( newPhotoId ) )
                     {
                         changes.Add( "Modified the photo." );

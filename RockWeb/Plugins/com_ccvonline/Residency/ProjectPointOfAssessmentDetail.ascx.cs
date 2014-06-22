@@ -50,8 +50,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? itemId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger( true );
-                int? projectId = PageParameter( "ProjectId" ).AsInteger( true );
+                int? itemId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger();
+                int? projectId = PageParameter( "ProjectId" ).AsInteger();
                 if ( itemId != null )
                 {
                     if ( projectId == null )
@@ -126,7 +126,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             if ( projectPointOfAssessmentId == 0 )
             {
                 projectPointOfAssessment = new ProjectPointOfAssessment();
-                projectPointOfAssessment.AssessmentOrder = lblAssessmentOrder.Text.AsInteger().Value;
+                projectPointOfAssessment.AssessmentOrder = lblAssessmentOrder.Text.AsInteger();
                 projectPointOfAssessment.ProjectId = hfProjectId.ValueAsInt();
                 projectPointOfAssessmentService.Add( projectPointOfAssessment );
             }

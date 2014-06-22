@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Set the category picker's selected value
-            int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger() ?? 0;
+            int selectedPrayerCategoryId = gfFilter.GetUserPreference( FilterSetting.PrayerCategory ).AsInteger();
             Category prayerCategory = new CategoryService( new RockContext() ).Get( selectedPrayerCategoryId );
             catpPrayerCategoryFilter.SetValue( prayerCategory );
         }
@@ -256,7 +256,7 @@ namespace RockWeb.Blocks.Prayer
             {
                 case "Prayer Category":
 
-                    int categoryId = e.Value.AsInteger( false ) ?? All.Id;
+                    int categoryId = e.Value.AsIntegerOrNull() ?? All.Id;
                     if ( categoryId == All.Id )
                     {
                         e.Value = "All";
@@ -307,7 +307,7 @@ namespace RockWeb.Blocks.Prayer
                 } );
 
             // Filter by prayer category if one is selected...
-            int selectedPrayerCategoryID = catpPrayerCategoryFilter.SelectedValue.AsInteger(false) ?? All.Id;
+            int selectedPrayerCategoryID = catpPrayerCategoryFilter.SelectedValue.AsIntegerOrNull() ?? All.Id;
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID

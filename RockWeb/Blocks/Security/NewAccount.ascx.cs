@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDuplicatesNext_Click( object sender, EventArgs e )
         {
-            int personId = Request.Form["DuplicatePerson"].AsInteger() ?? 0;
+            int personId = Request.Form["DuplicatePerson"].AsInteger();
             if ( personId > 0 )
             {
                 var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             PersonService personService = new PersonService( rockContext );
-            Person person = personService.Get( hfSendPersonId.Value.AsInteger() ?? 0 );
+            Person person = personService.Get( hfSendPersonId.Value.AsInteger() );
             if ( person != null )
             {
                 string url = LinkedPageUrl( "ConfirmationPage" );
