@@ -95,12 +95,12 @@ namespace RockWeb
 
                 // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
                 // This should be removed after 1.0.9
-                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\RockWeb\Plugins\Payflow_dotNET.dll" );
+                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
                 if ( System.IO.File.Exists( physicalFile ) )
                 {
                     System.IO.File.Delete(physicalFile);
                 }
-                physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\RockWeb\Plugins\Rock.PayFlowPro.dll" );
+                physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
                 if ( System.IO.File.Exists( physicalFile ) )
                 {
                     System.IO.File.Delete(physicalFile);
@@ -116,9 +116,16 @@ namespace RockWeb
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
-                    startDateTime = RockDateTime.Now;
+                    try 
+                    {
+                        new AttributeService( rockContext ).Get( 0 );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
+                        startDateTime = RockDateTime.Now;
+                    }
+                    catch
+                    {
+                        // Intentionally Blank
+                    }                
                 }
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
