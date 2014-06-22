@@ -98,6 +98,11 @@ namespace Rock.Web.UI.Controls
             return null;
         }
 
+        /// <summary>
+        /// Sets the form.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
         public void SetForm( WorkflowActionForm value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
         {
             EnsureChildControls();
