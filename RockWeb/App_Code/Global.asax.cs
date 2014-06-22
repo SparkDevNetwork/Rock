@@ -93,22 +93,29 @@ namespace RockWeb
             {
                 DateTime startDateTime = RockDateTime.Now;
 
-                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
-                // This should be removed after 1.0.9
-                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
-                if ( System.IO.File.Exists( physicalFile ) )
-                {
-                    System.IO.File.Delete(physicalFile);
-                }
-                physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
-                if ( System.IO.File.Exists( physicalFile ) )
-                {
-                    System.IO.File.Delete(physicalFile);
-                }
-
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                }
+
+                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
+                // This should be removed after 1.0.9
+                try
+                {
+                    string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                }
+                catch
+                {
+                    // Intentionally Blank
                 }
 
                 // Get a db context
