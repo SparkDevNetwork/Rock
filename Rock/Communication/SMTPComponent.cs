@@ -451,11 +451,12 @@ namespace Rock.Communication.Transport
                 ExceptionLogService.LogException( ex, null );
             }
         }
-        
+
         /// <summary>
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
+        /// <param name="recipient">The recipient.</param>
         public virtual void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
         {
         }

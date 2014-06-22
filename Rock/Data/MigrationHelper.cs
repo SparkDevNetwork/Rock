@@ -595,6 +595,7 @@ namespace Rock.Data
         /// <param name="iconCssClass">The icon CSS class.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
         public void UpdateCategory( string entityTypeGuid, string name, string iconCssClass, string description, string guid, int order = 0 )
         {
             Migration.Sql( string.Format( @"
@@ -2131,6 +2132,17 @@ INSERT INTO [dbo].[Auth]
 
         #region Workflow Methods
 
+        /// <summary>
+        /// Updates the workflow action entity attribute.
+        /// </summary>
+        /// <param name="actionEntityTypeGuid">The action entity type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActionEntityAttribute( string actionEntityTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
             Migration.Sql( string.Format( @"
@@ -2184,6 +2196,21 @@ INSERT INTO [dbo].[Auth]
         }
 
 
+        /// <summary>
+        /// Updates the type of the workflow.
+        /// </summary>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
+        /// <param name="isActive">if set to <c>true</c> [is active].</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="categoryGuid">The category unique identifier.</param>
+        /// <param name="workTerm">The work term.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
+        /// <param name="processingIntervalSeconds">The processing interval seconds.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="loggingLevel">The logging level.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="order">The order.</param>
         public void UpdateWorkflowType( bool isSystem, bool isActive, string name, string description, string categoryGuid, string workTerm, string iconCssClass,
             int processingIntervalSeconds, bool isPersisted, int loggingLevel, string guid, int order = 0 )
         {
@@ -2230,6 +2257,17 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the workflow type attribute.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowTypeAttribute( string workflowTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
             Migration.Sql( string.Format( @"
@@ -2282,6 +2320,16 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the type of the workflow activity.
+        /// </summary>
+        /// <param name="WorkflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="isActive">if set to <c>true</c> [is active].</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="isActivatedWithWorkflow">if set to <c>true</c> [is activated with workflow].</param>
+        /// <param name="order">The order.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActivityType( string WorkflowTypeGuid, bool isActive, string name, string description,
             bool isActivatedWithWorkflow, int order, string guid )
         {
@@ -2316,6 +2364,17 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the workflow activity type attribute.
+        /// </summary>
+        /// <param name="workflowActivityTypeGuid">The workflow activity type unique identifier.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActivityTypeAttribute( string workflowActivityTypeGuid, string fieldTypeGuid, string name, string key, string description, int order, string defaultValue, string guid )
         {
             Migration.Sql( string.Format( @"
@@ -2368,6 +2427,16 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the workflow action form.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        /// <param name="footer">The footer.</param>
+        /// <param name="actions">The actions.</param>
+        /// <param name="systemEmailGuid">The system email unique identifier.</param>
+        /// <param name="includeActionsInNotification">if set to <c>true</c> [include actions in notification].</param>
+        /// <param name="actionAttributeGuid">The action attribute unique identifier.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActionForm( string header, string footer, string actions, string systemEmailGuid,
             bool includeActionsInNotification, string actionAttributeGuid, string guid )
         {
@@ -2403,6 +2472,16 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the workflow action form attribute.
+        /// </summary>
+        /// <param name="actionFormGuid">The action form unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isVisible">if set to <c>true</c> [is visible].</param>
+        /// <param name="isReadOnly">if set to <c>true</c> [is read only].</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActionFormAttribute( string actionFormGuid, string attributeGuid, int order,
             bool isVisible, bool isReadOnly, bool isRequired, string guid )
         {
@@ -2439,6 +2518,20 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Updates the type of the workflow action.
+        /// </summary>
+        /// <param name="activityTypeGuid">The activity type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="entityTypeGuid">The entity type unique identifier.</param>
+        /// <param name="isActionCompletedOnSuccess">if set to <c>true</c> [is action completed on success].</param>
+        /// <param name="isActivityCompletedOnSuccess">if set to <c>true</c> [is activity completed on success].</param>
+        /// <param name="workflowFormGuid">The workflow form unique identifier.</param>
+        /// <param name="criteriaAttributeGuid">The criteria attribute unique identifier.</param>
+        /// <param name="criteriaComparisonType">Type of the criteria comparison.</param>
+        /// <param name="criteriaValue">The criteria value.</param>
+        /// <param name="guid">The unique identifier.</param>
         public void UpdateWorkflowActionType( string activityTypeGuid, string name, int order, string entityTypeGuid,
             bool isActionCompletedOnSuccess, bool isActivityCompletedOnSuccess, string workflowFormGuid, string criteriaAttributeGuid,
             int criteriaComparisonType, string criteriaValue, string guid )
@@ -2486,6 +2579,12 @@ INSERT INTO [dbo].[Auth]
             );
         }
 
+        /// <summary>
+        /// Adds the action type attribute value.
+        /// </summary>
+        /// <param name="actionTypeGuid">The action type unique identifier.</param>
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        /// <param name="value">The value.</param>
         public void AddActionTypeAttributeValue( string actionTypeGuid, string attributeGuid, string value )
         {
             Migration.Sql( string.Format( @"

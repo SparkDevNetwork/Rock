@@ -71,6 +71,7 @@ namespace Rock.Communication.Transport
         /// Adds any additional headers.
         /// </summary>
         /// <param name="message">The message.</param>
+        /// <param name="recipient"></param>
         public override void AddAdditionalHeaders( MailMessage message, CommunicationRecipient recipient )
         {
             bool inlineCss = GetAttributeValue( "InlineCSS" ).AsBoolean( true );
