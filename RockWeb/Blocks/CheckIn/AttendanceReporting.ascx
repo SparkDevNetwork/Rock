@@ -50,14 +50,17 @@
                 <Rock:CampusesPicker ID="cpCampuses" runat="server" Label="Campuses" />
             </div>
             <div class="col-md-6">
-                
+
                 <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
                 <h4>Area</h4>
-                <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
-                    <ItemTemplate>
-                        <Rock:RockCheckBoxList ID="cblGroups" runat="server" Label='<%# Eval("Name") %>' />
-                    </ItemTemplate>
-                </asp:Repeater>
+                <ul class="rocktree">
+
+                    <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
+                        <ItemTemplate>
+                        </ItemTemplate>
+                    </asp:Repeater>
+
+                </ul>
             </div>
         </div>
 
