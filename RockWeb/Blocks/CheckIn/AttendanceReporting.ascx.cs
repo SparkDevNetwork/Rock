@@ -59,6 +59,9 @@ namespace RockWeb.Blocks.CheckIn
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             gAttendance.GridRebind += gAttendance_GridRebind;
+
+            // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnInit()
+            BuildGroupTypesUI();
         }
 
         /// <summary>
@@ -66,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gAttendance_GridRebind( object sender, EventArgs e )
+        protected void gAttendance_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -82,7 +85,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
-                LoadSettings();
+                LoadSettingsFromUserPreferences();
                 LoadChart();
             }
         }
@@ -133,25 +136,25 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             cpCampuses.Campuses = new CampusService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
-
-            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
-            nbGroupTypeWarning.Visible = !groupTypeTemplateGuid.HasValue;
-            if ( groupTypeTemplateGuid.HasValue )
-            {
-                var groupTypes = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeTemplateGuid.Value );
-                rptGroupTypes.DataSource = groupTypes.ToList();
-                rptGroupTypes.DataBind();
-            }
         }
 
         /// <summary>
-        /// Loads the settings.
+        /// Builds the group types UI.
         /// </summary>
-        public void LoadSettings()
+        private void BuildGroupTypesUI()
         {
-            foreach ( ListItem item in cpCampuses.Items )
+            var rockContext = new RockContext();
+            
+            var groupTypeService = new GroupTypeService( rockContext );
+            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+
+            nbGroupTypeWarning.Visible = !groupTypeTemplateGuid.HasValue;
+            if ( groupTypeTemplateGuid.HasValue )
             {
-                item.Selected = true;
+                var groupType = groupTypeService.Get( groupTypeTemplateGuid.Value );
+                var groupTypes = groupTypeService.GetChildGroupTypes( groupType.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
+                rptGroupTypes.DataSource = groupTypes.ToList();
+                rptGroupTypes.DataBind();
             }
         }
 
@@ -187,6 +190,8 @@ namespace RockWeb.Blocks.CheckIn
 
             dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
 
+            SaveSettingsToUserPreferences();
+
             dataSourceUrl += "?" + dataSourceParams.Select( s => string.Format( "{0}={1}", s.Key, s.Value ) ).ToList().AsDelimited( "&" );
 
             lcAttendance.DataSourceUrl = this.ResolveUrl( dataSourceUrl );
@@ -195,6 +200,45 @@ namespace RockWeb.Blocks.CheckIn
             {
                 BindGrid();
             }
+        }
+
+        /// <summary>
+        /// Saves the attendance reporting settings to user preferences.
+        /// </summary>
+        private void SaveSettingsToUserPreferences()
+        {
+            string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
+
+            this.SetUserPreference( keyPrefix + "SlidingDateRange", drpSlidingDateRange.DelimitedValues );
+            this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value );
+            this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value );
+            this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            //rockBlock.SetUserPreference( keyPrefix + "GroupTypeIds", todo );
+        }
+
+        /// <summary>
+        /// Loads the attendance reporting settings from user preferences.
+        /// </summary>
+        private void LoadSettingsFromUserPreferences()
+        {
+            string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
+
+            drpSlidingDateRange.DelimitedValues = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
+            hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
+
+            var campusIdList = this.GetUserPreference( keyPrefix + "CampusIds" ).Split( ',' ).ToList();
+            cpCampuses.SetValues( campusIdList );
+
+            if ( cpCampuses.SelectedCampusIds.Count == 0 )
+            {
+                foreach ( ListItem item in cpCampuses.Items )
+                {
+                    item.Selected = true;
+                }
+            }
+
+            //rockBlock.GetUserPreference( keyPrefix + "GroupTypeIds");
         }
 
         /// <summary>
@@ -239,7 +283,7 @@ namespace RockWeb.Blocks.CheckIn
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
             string groupTypeIds = null;
-            string campusIds = null;
+            string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
 
             SortProperty sortProperty = gAttendance.SortProperty;
 
@@ -273,14 +317,54 @@ namespace RockWeb.Blocks.CheckIn
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var groupType = e.Item.DataItem as GroupType;
-                var cblGroups = e.Item.FindControl( "cblGroups" ) as RockCheckBoxList;
-                cblGroups.Items.Clear();
-                foreach ( var group in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name).Select( a => new { a.Id, a.Name } ).ToList() )
+
+                var liGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                liGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
+                e.Item.Controls.Add( liGroupTypeItem );
+                AddGroupTypeControls( groupType, liGroupTypeItem );
+            }
+        }
+
+        /// <summary>
+        /// Adds the group type controls.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="pnlGroupTypes">The PNL group types.</param>
+        private void AddGroupTypeControls( GroupType groupType, HtmlGenericContainer liGroupTypeItem )
+        {
+            if ( groupType.Groups.Any() )
+            {
+                var cblGroupTypeGroups = new RockCheckBoxList { ID = "cblGroupTypeGroups" + groupType.Id };
+
+                cblGroupTypeGroups.Label = groupType.Name;
+                cblGroupTypeGroups.Items.Clear();
+                foreach ( var group in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList() )
                 {
-                    cblGroups.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                    cblGroupTypeGroups.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
                 }
-                
-                cblGroups.Visible = cblGroups.Items.Count > 1;
+
+                liGroupTypeItem.Controls.Add( cblGroupTypeGroups );
+            }
+            else
+            {
+                if ( groupType.ChildGroupTypes.Any() )
+                {
+                    liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
+                }
+            }
+            
+            if ( groupType.ChildGroupTypes.Any() )
+            {
+                var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );
+
+                liGroupTypeItem.Controls.Add( ulGroupTypeList );
+                foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+                {
+                    var liChildGroupTypeItem = new HtmlGenericContainer( "li", "rocktree-item rocktree-folder" );
+                    liChildGroupTypeItem.ID = "liGroupTypeItem" + groupType.Id;
+                    ulGroupTypeList.Controls.Add( liChildGroupTypeItem );
+                    AddGroupTypeControls( childGroupType, liChildGroupTypeItem );
+                }
             }
         }
 
@@ -295,6 +379,5 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         #endregion
-
     }
 }

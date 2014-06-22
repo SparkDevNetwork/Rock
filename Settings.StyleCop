@@ -317,7 +317,7 @@
       </Rules>
       <AnalyzerSettings>
         <CollectionProperty Name="Hungarian">
-		  <Value>bw</Value>
+		      <Value>bw</Value>
           <Value>cb</Value>
           <Value>lb</Value>
           <Value>tb</Value>
@@ -331,6 +331,8 @@
           <Value>to</Value>
           <Value>cc</Value>
           <Value>hb</Value>
+          <Value>ul</Value>
+          <Value>li</Value>
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>
