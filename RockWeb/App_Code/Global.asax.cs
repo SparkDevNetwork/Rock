@@ -118,6 +118,10 @@ namespace RockWeb
                     // Intentionally Blank
                 }
 
+                //// Run any needed Rock and/or plugin migrations
+                //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                MigrateDatabase();
+
                 // Get a db context
                 var rockContext = new RockContext();
 
@@ -136,13 +140,6 @@ namespace RockWeb
                 }
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
-
-                // Run any needed Rock and/or plugin migrations
-                if (MigrateDatabase())
-                {
-                    // If one or more migrations were run, re-register the routes in case a migration added any new routes
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-                }
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
