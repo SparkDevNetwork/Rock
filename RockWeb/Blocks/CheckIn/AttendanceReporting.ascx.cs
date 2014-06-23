@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style" )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
-    [GroupTypeField( "Group Type Template", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Check-in Type", key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Base Control Methods
