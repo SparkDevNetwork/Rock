@@ -80,10 +80,10 @@ namespace Rock.Model
         /// <param name="graphBy">The graph by.</param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupTypeIds = null, string campusIds = null )
+        public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
             var qry = Queryable().AsNoTracking().Where( a => a.DidAttend );
 
@@ -97,10 +97,10 @@ namespace Rock.Model
                 qry = qry.Where( a => a.StartDateTime < endDate.Value );
             }
 
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
-                var groupTypeIdList = groupTypeIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
-                qry = qry.Where( a => a.GroupId.HasValue && groupTypeIdList.Contains( a.Group.GroupTypeId ) );
+                var groupIdList = groupIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
@@ -142,10 +142,10 @@ namespace Rock.Model
                     Id = a.CampusId,
                     Name = a.Campus.Name
                 },
-                GroupType = new
+                Group = new
                 {
-                    Id = a.Group.GroupTypeId,
-                    Name = a.Group.GroupType.Name
+                    Id = a.GroupId,
+                    Name = a.Group.Name
                 },
                 Schedule = new
                 {
@@ -180,9 +180,9 @@ namespace Rock.Model
                     YValue = a.Count
                 } ).ToList();
             }
-            else if ( graphBy == AttendanceGraphBy.Area )
+            else if ( graphBy == AttendanceGraphBy.Type )
             {
-                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.GroupType } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Group } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
                 result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {

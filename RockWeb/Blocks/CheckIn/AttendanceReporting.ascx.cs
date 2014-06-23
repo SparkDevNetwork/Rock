@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.CheckIn
         private void BuildGroupTypesUI()
         {
             var rockContext = new RockContext();
-            
+
             var groupTypeService = new GroupTypeService( rockContext );
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
 
@@ -189,6 +189,7 @@ namespace RockWeb.Blocks.CheckIn
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
             dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            dataSourceParams.AddOrReplace( "groupIds", GetSelectedGroupIds().AsDelimited( "," ) );
 
             SaveSettingsToUserPreferences();
 
@@ -213,7 +214,25 @@ namespace RockWeb.Blocks.CheckIn
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value );
             this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            //rockBlock.SetUserPreference( keyPrefix + "GroupTypeIds", todo );
+
+            var selectedGroupIds = GetSelectedGroupIds();
+
+            this.SetUserPreference( keyPrefix + "GroupIds", selectedGroupIds.AsDelimited( "," ) );
+        }
+
+        /// <summary>
+        /// Gets the selected group ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetSelectedGroupIds()
+        {
+            var selectedGroupIds = new List<int>();
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+            }
+            return selectedGroupIds;
         }
 
         /// <summary>
@@ -223,13 +242,25 @@ namespace RockWeb.Blocks.CheckIn
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            drpSlidingDateRange.DelimitedValues = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
+            {
+                // default to current year
+                drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+            }
+            else
+            {
+                drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
+            }
+
             hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
             hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
 
             var campusIdList = this.GetUserPreference( keyPrefix + "CampusIds" ).Split( ',' ).ToList();
             cpCampuses.SetValues( campusIdList );
 
+            // if no campuses are selected, default to showing all of them
             if ( cpCampuses.SelectedCampusIds.Count == 0 )
             {
                 foreach ( ListItem item in cpCampuses.Items )
@@ -238,7 +269,20 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            //rockBlock.GetUserPreference( keyPrefix + "GroupTypeIds");
+            var groupIdList = this.GetUserPreference( keyPrefix + "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            // if no groups are selected, default to showing all of them
+            var selectAll = groupIdList.Count == 0;
+
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                foreach ( ListItem item in cblGroup.Items )
+                {
+
+                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                }
+            }
         }
 
         /// <summary>
@@ -282,7 +326,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
-            string groupTypeIds = null;
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
 
             SortProperty sortProperty = gAttendance.SortProperty;
@@ -292,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
                 dateRange.End,
-                groupTypeIds,
+                groupIds,
                 campusIds );
 
             if ( sortProperty != null )
@@ -352,7 +396,7 @@ namespace RockWeb.Blocks.CheckIn
                     liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
                 }
             }
-            
+
             if ( groupType.ChildGroupTypes.Any() )
             {
                 var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );

@@ -332,9 +332,9 @@ namespace Rock.Model
         Total = 0,
 
         /// <summary>
-        /// Each selected Check-in Area (which is actually a [GroupType] under the covers) is a series
+        /// Each selected Check-in Group (which is actually a [Group] under the covers) is a series
         /// </summary>
-        Area = 1,
+        Type = 1,
 
         /// <summary>
         /// Each campus (from Attendance.CampusId) is it's own series
