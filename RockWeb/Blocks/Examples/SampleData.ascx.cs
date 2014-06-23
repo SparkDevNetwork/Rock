@@ -1299,7 +1299,8 @@ namespace RockWeb.Blocks.Examples
                         AttendanceCode = attendanceCode,
                         StartDateTime = checkinDateTime,
                         EndDateTime = null,
-                        DidAttend = true
+                        DidAttend = true,
+                        CampusId = 1
                     };
 
                     member.Person.Attendances.Add( attendance );
