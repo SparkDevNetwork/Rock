@@ -11,7 +11,7 @@
             </div>
         </div>
         <asp:Panel ID="pnlGrid" runat="server" Visible="false">
-            <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId">
+            <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
                 <Columns>
                     <Rock:DateField DataField="DateTime" HeaderText="Date" SortExpression="DateTimeStamp" />
                     <asp:BoundField DataField="SeriesId" HeaderText="Series" SortExpression="SeriesId" />
@@ -29,7 +29,7 @@
                         <div class="btn-group js-graph-by">
                             <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
                             <asp:HyperLink ID="btnGraphByTotal" runat="server" CssClass="btn btn-primary" Text="Total" data-val="0" />
-                            <asp:HyperLink ID="btnGraphByArea" runat="server" CssClass="btn btn-default" Text="Area" data-val="1" />
+                            <asp:HyperLink ID="btnGraphByType" runat="server" CssClass="btn btn-default" Text="Type" data-val="1" />
                             <asp:HyperLink ID="btnGraphByCampus" runat="server" CssClass="btn btn-default" Text="Campus" data-val="2" />
                             <asp:HyperLink ID="btnGraphByTime" runat="server" CssClass="btn btn-default" Text="Schedule" data-val="3" />
                         </div>
@@ -52,7 +52,7 @@
             <div class="col-md-6">
 
                 <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
-                <h4>Area</h4>
+                <h4>Type</h4>
                 <ul class="rocktree">
 
                     <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
