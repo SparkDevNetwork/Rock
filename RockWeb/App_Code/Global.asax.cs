@@ -90,7 +90,7 @@ namespace RockWeb
         protected void Application_Start( object sender, EventArgs e )
         {
             try
-            { 
+            {
                 DateTime startDateTime = RockDateTime.Now;
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
@@ -118,31 +118,28 @@ namespace RockWeb
                     // Intentionally Blank
                 }
 
+                //// Run any needed Rock and/or plugin migrations
+                //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                MigrateDatabase();
+
                 // Get a db context
                 var rockContext = new RockContext();
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    try
+                    try 
                     {
                         new AttributeService( rockContext ).Get( 0 );
-                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
                         startDateTime = RockDateTime.Now;
                     }
                     catch
                     {
                         // Intentionally Blank
-                    }
+                    }                
                 }
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
-
-                // Run any needed Rock and/or plugin migrations
-                if (MigrateDatabase())
-                {
-                    // If one or more migrations were run, re-register the routes in case a migration added any new routes
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-                }
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
