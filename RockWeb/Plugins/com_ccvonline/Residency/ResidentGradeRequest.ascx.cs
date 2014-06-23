@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
     [LinkedPage( "Resident Grade Detail Page" )]
 
-    //TODO Add a SecurityRole attribute (requires 1.0.9) [SecurityRoleField( "Residency Grader Security Role" )]
+    [SecurityRoleField( "Residency Grader Security Role", key: "ResidencyGraderSecurityRole" )]
     public partial class ResidentGradeRequest : RockBlock
     {
         #region Control Methods
