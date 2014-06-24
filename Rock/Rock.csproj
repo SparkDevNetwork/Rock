@@ -155,6 +155,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
@@ -218,6 +219,7 @@
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\SlidingDateRangeFieldType.cs" />
