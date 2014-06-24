@@ -50,12 +50,12 @@ namespace Rock.Workflow.Action
             Guid? groupGuid = GetAttributeValue( action, "SecurityRole" ).AsGuidOrNull();
             if ( groupGuid.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( groupGuid.Value );
+                var group = new GroupService( rockContext ).Get( groupGuid.Value );
                 if ( group != null )
                 {
                     action.Activity.AssignedPersonAlias = null;
                     action.Activity.AssignedPersonAliasId = null;
-                    action.Activity.AssignedGroup = null;
+                    action.Activity.AssignedGroup = group;
                     action.Activity.AssignedGroupId = group.Id;
                     action.AddLogEntry( string.Format( "Assigned activity to '{0}' security role ({1})", group.Name, group.Id ) );
                     return true;

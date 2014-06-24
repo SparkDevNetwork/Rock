@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -56,6 +56,24 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is active.
+        /// </summary>
+        /// <value>
+        /// The is active.
+        /// </value>
+        [DataMember]
+        public bool? IsActive { get; set; }
+
+        /// <summary>
         /// Gets or sets an optional short code identifier for the campus.
         /// </summary>
         /// <value>
@@ -65,6 +83,15 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string ShortCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [DataMember]
+        public string Url { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated with this campus. 

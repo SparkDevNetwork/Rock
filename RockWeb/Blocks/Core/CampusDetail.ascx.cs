@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -24,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Core
@@ -100,7 +102,9 @@ namespace RockWeb.Blocks.Core
         {
             Campus campus;
             var rockContext = new RockContext();
-            CampusService campusService = new CampusService( rockContext );
+            var campusService = new CampusService( rockContext );
+            var locationService = new LocationService( rockContext );
+            var locationCampusValue = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.LOCATION_TYPE_CAMPUS.AsGuid());
 
             int campusId = int.Parse( hfCampusId.Value );
 
@@ -115,15 +119,36 @@ namespace RockWeb.Blocks.Core
             }
 
             campus.Name = tbCampusName.Text;
+            campus.IsActive = cbIsActive.Checked;
+            campus.Description = tbDescription.Text;
+            campus.Url = tbUrl.Text;
+
             campus.PhoneNumber = tbPhoneNumber.Text;
-            if ( lpAddress.Location != null )
+            if ( campus.Location == null )
             {
-                campus.LocationId = lpAddress.Location.Id;
+                var location = locationService.Queryable()
+                    .Where( l =>
+                        l.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) &&
+                        l.LocationTypeValueId == locationCampusValue.Id )
+                    .FirstOrDefault();
+                if (location == null)
+                {
+                    location = new Location();
+                    locationService.Add( location );
+                }
+
+                campus.Location = location;
             }
-            else
-            {
-                campus.LocationId = null;
-            }
+
+            campus.Location.Name = campus.Name;
+            campus.Location.LocationTypeValueId = locationCampusValue.Id;
+
+            string preValue = campus.Location.GetFullStreetAddress();
+            campus.Location.Street1 = tbStreet.Text;
+            campus.Location.City = tbCity.Text;
+            campus.Location.State = !string.IsNullOrWhiteSpace( tbCity.Text ) ? ddlState.SelectedValue : string.Empty;
+            campus.Location.Zip = tbZip.Text;
+            string postValue = campus.Location.GetFullStreetAddress();
 
             campus.ShortCode = tbCampusCode.Text;
 
@@ -136,7 +161,7 @@ namespace RockWeb.Blocks.Core
             campus.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, campus );
 
-            if ( !campus.IsValid )
+            if ( !campus.IsValid && campus.Location.IsValid)
             {
                 // Controls will render the error messages
                 return;
@@ -146,6 +171,12 @@ namespace RockWeb.Blocks.Core
             {
                 rockContext.SaveChanges();
                 campus.SaveAttributeValues( rockContext );
+
+                if (preValue != postValue && !string.IsNullOrWhiteSpace(campus.Location.Street1))
+                {
+                    locationService.Verify(campus.Location, true);
+                }
+
             } );
 
             Rock.Web.Cache.CampusCache.Flush( campus.Id );
@@ -183,8 +214,23 @@ namespace RockWeb.Blocks.Core
 
             hfCampusId.Value = campus.Id.ToString();
             tbCampusName.Text = campus.Name;
+            cbIsActive.Checked = !campus.IsActive.HasValue || campus.IsActive.Value;
+            tbDescription.Text = campus.Description;
+            tbUrl.Text = campus.Url;
             tbPhoneNumber.Text = campus.PhoneNumber;
-            lpAddress.Location = campus.Location;
+            if (campus.Location != null)
+            {
+                tbStreet.Text = campus.Location.Street1;
+                tbCity.Text = campus.Location.City;
+                ddlState.SelectedValue = campus.Location.State;
+                tbZip.Text = campus.Location.Zip;
+            }
+            else
+            {
+                tbStreet.Text = string.Empty;
+                tbCity.Text = string.Empty;
+                tbZip.Text = string.Empty;
+            }
 
             tbCampusCode.Text = campus.ShortCode;
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );

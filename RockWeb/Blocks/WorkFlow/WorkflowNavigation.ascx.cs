@@ -279,6 +279,14 @@ namespace RockWeb.Blocks.WorkFlow
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        public string HighlightColor { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowNavigationItem"/> class.
         /// </summary>
         public WorkflowNavigationItem()
@@ -326,6 +334,7 @@ namespace RockWeb.Blocks.WorkFlow
             Name = category.Name;
             Description = category.Description;
             IconCssClass = category.IconCssClass;
+            HighlightColor = category.HighlightColor;
         }
     }
 
@@ -361,6 +370,7 @@ namespace RockWeb.Blocks.WorkFlow
             Description = workflowType.Description;
             IconCssClass = workflowType.IconCssClass;
             WorkTerm = workflowType.WorkTerm;
+            HighlightColor = string.Empty;
         }
     }
 }

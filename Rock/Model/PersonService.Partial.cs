@@ -310,8 +310,6 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
-            var names = fullName.SplitDelimitedValues();
-
             string firstName = string.Empty;
             string lastName = string.Empty;
             string singleName = string.Empty;
@@ -319,12 +317,16 @@ namespace Rock.Model
             if ( fullName.Contains( ',' ) )
             {
                 reversed = true;
-                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
-                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+                // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
+                var nameParts = fullName.Split( ',' );
+                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
+                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
             }
             else if ( fullName.Trim().Contains( ' ' ) )
             {
                 reversed = false;
+                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
+                var names = fullName.Split( ' ' );
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }

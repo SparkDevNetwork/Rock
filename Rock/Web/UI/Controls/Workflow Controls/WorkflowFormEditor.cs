@@ -35,11 +35,12 @@ namespace Rock.Web.UI.Controls
     public class WorkflowFormEditor : CompositeControl, IHasValidationGroup
     {
         private HiddenField _hfFormGuid;
+        private RockDropDownList _ddlNotificationSystemEmail;
+        private RockCheckBox _cbIncludeActions;
         private CodeEditor _ceHeaderText;
         private CodeEditor _ceFooterText;
-        private RockTextBox _tbInactiveMessage;
         private WorkflowFormActionList _falActions;
-
+        private RockDropDownList _ddlActionAttribute;
 
         /// <summary>
         /// Gets or sets the validation group.
@@ -65,75 +66,97 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The form.
         /// </value>
-        public WorkflowActionForm Form
+        public WorkflowActionForm GetForm()
         {
-            get
+            EnsureChildControls();
+            var form = new WorkflowActionForm();
+            form.Guid = _hfFormGuid.Value.AsGuid();
+            if ( form.Guid != Guid.Empty )
             {
-                EnsureChildControls();
-                var form = new WorkflowActionForm();
-                form.Guid = _hfFormGuid.Value.AsGuid();
-                if ( form.Guid != Guid.Empty )
+                form.NotificationSystemEmailId = _ddlNotificationSystemEmail.SelectedValueAsId();
+                form.IncludeActionsInNotification = _cbIncludeActions.Checked;
+                form.Header = _ceHeaderText.Text;
+                form.Footer = _ceFooterText.Text;
+                form.Actions = _falActions.Value;
+
+                foreach ( var row in AttributeRows )
                 {
-                    form.Header = _ceHeaderText.Text;
-                    form.Footer = _ceFooterText.Text;
-                    form.Actions = _falActions.Value;
-                    form.InactiveMessage = _tbInactiveMessage.Text;
-
-                    foreach ( var row in AttributeRows )
-                    {
-                        var formAttribute = new WorkflowActionFormAttribute();
-                        formAttribute.Attribute = new Rock.Model.Attribute { Guid = row.AttributeGuid, Name = row.AttributeName };
-                        formAttribute.Guid = row.Guid;
-                        formAttribute.Order = row.Order;
-                        formAttribute.IsVisible = row.IsVisible;
-                        formAttribute.IsReadOnly = !row.IsEditable;
-                        formAttribute.IsRequired = row.IsRequired;
-                        form.FormAttributes.Add( formAttribute );
-                    }
-
-                    return form;
+                    var formAttribute = new WorkflowActionFormAttribute();
+                    formAttribute.Attribute = new Rock.Model.Attribute { Guid = row.AttributeGuid, Name = row.AttributeName };
+                    formAttribute.Guid = row.Guid;
+                    formAttribute.Order = row.Order;
+                    formAttribute.IsVisible = row.IsVisible;
+                    formAttribute.IsReadOnly = !row.IsEditable;
+                    formAttribute.IsRequired = row.IsRequired;
+                    form.FormAttributes.Add( formAttribute );
                 }
-                return null;
+
+                form.ActionAttributeGuid = _ddlActionAttribute.SelectedValueAsGuid();
+
+                return form;
             }
+            return null;
+        }
 
-            set
+        /// <summary>
+        /// Sets the form.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
+        public void SetForm( WorkflowActionForm value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
+        {
+            EnsureChildControls();
+
+            if ( value != null )
             {
-                EnsureChildControls();
+                _hfFormGuid.Value = value.Guid.ToString();
+                _ddlNotificationSystemEmail.SetValue( value.NotificationSystemEmailId );
+                _cbIncludeActions.Checked = value.IncludeActionsInNotification;
+                _ceHeaderText.Text = value.Header;
+                _ceFooterText.Text = value.Footer;
+                _falActions.Value = value.Actions;
 
-                if ( value != null )
+                // Remove any existing rows (shouldn't be any)
+                foreach ( var attributeRow in Controls.OfType<WorkflowFormAttributeRow>() )
                 {
-                    _hfFormGuid.Value = value.Guid.ToString();
-                    _ceHeaderText.Text = value.Header;
-                    _ceFooterText.Text = value.Footer;
-                    _falActions.Value = value.Actions;
-                    _tbInactiveMessage.Text = value.InactiveMessage;
-
-                    // Remove any existing rows (shouldn't be any)
-                    foreach ( var attributeRow in Controls.OfType<WorkflowFormAttributeRow>() )
-                    {
-                        Controls.Remove( attributeRow );
-                    }
-
-                    foreach ( var formAttribute in value.FormAttributes.OrderBy( a => a.Order ) )
-                    {
-                        var row = new WorkflowFormAttributeRow();
-                        row.AttributeGuid = formAttribute.Attribute.Guid;
-                        row.AttributeName = formAttribute.Attribute.Name;
-                        row.Guid = formAttribute.Guid;
-                        row.IsVisible = formAttribute.IsVisible;
-                        row.IsEditable = !formAttribute.IsReadOnly;
-                        row.IsRequired = formAttribute.IsRequired;
-                        Controls.Add( row );
-                    }
+                    Controls.Remove( attributeRow );
                 }
-                else
+
+                foreach ( var formAttribute in value.FormAttributes.OrderBy( a => a.Order ) )
                 {
-                    _hfFormGuid.Value = string.Empty;
-                    _ceHeaderText.Text = string.Empty;
-                    _ceFooterText.Text = string.Empty;
-                    _falActions.Value = "Submit^Submit^Your information has been submitted succesfully.";
-                    _tbInactiveMessage.Text = string.Empty;
+                    var row = new WorkflowFormAttributeRow();
+                    row.AttributeGuid = formAttribute.Attribute.Guid;
+                    row.AttributeName = formAttribute.Attribute.Name;
+                    row.Guid = formAttribute.Guid;
+                    row.IsVisible = formAttribute.IsVisible;
+                    row.IsEditable = !formAttribute.IsReadOnly;
+                    row.IsRequired = formAttribute.IsRequired;
+                    Controls.Add( row );
                 }
+
+                _ddlActionAttribute.Items.Clear();
+                _ddlActionAttribute.Items.Add( new ListItem() );
+                foreach ( var attributeItem in workflowTypeAttributes )
+                {
+                    var fieldType = FieldTypeCache.Read( attributeItem.Value.FieldTypeId );
+                    if ( fieldType != null && fieldType.Field is Rock.Field.Types.TextFieldType )
+                    {
+                        var li = new ListItem( attributeItem.Value.Name, attributeItem.Key.ToString() );
+                        li.Selected = value.ActionAttributeGuid.HasValue && value.ActionAttributeGuid.Value.ToString() == li.Value;
+                        _ddlActionAttribute.Items.Add( li );
+                    }
+                }        
+                
+            }
+            else
+            {
+                _hfFormGuid.Value = string.Empty;
+                _ddlNotificationSystemEmail.SelectedIndex = 0;
+                _cbIncludeActions.Checked = true;
+                _ceHeaderText.Text = string.Empty;
+                _ceFooterText.Text = string.Empty;
+                _falActions.Value = "Submit^^^Your information has been submitted succesfully.";
+                _ddlNotificationSystemEmail.SelectedIndex = 0;
             }
         }
 
@@ -197,6 +220,26 @@ namespace Rock.Web.UI.Controls
             _hfFormGuid.ID = this.ID + "_hfFormGuid";
             Controls.Add( _hfFormGuid );
 
+            _ddlNotificationSystemEmail = new RockDropDownList();
+            _ddlNotificationSystemEmail.DataValueField = "Id";
+            _ddlNotificationSystemEmail.DataTextField = "Title";
+            _ddlNotificationSystemEmail.Label = "Notification Email";
+            _ddlNotificationSystemEmail.Help = "An optional system email that should be sent to the person or people assigned to this activity (Any System Email with a category of 'Workflow').";
+            _ddlNotificationSystemEmail.ID = this.ID + "_ddlNotificationSystemEmail";
+            Controls.Add( _ddlNotificationSystemEmail );
+
+            _ddlNotificationSystemEmail.DataSource = new SystemEmailService( new RockContext() ).Queryable()
+                .Where( e => e.Category == "Workflow" ).OrderBy( e => e.Title ).ToList();
+            _ddlNotificationSystemEmail.DataBind();
+            _ddlNotificationSystemEmail.Items.Insert( 0, new ListItem( "None", "0" ) );
+
+            _cbIncludeActions = new RockCheckBox();
+            _cbIncludeActions.Label = "Include Actions in Email";
+            _cbIncludeActions.Text = "Yes";
+            _cbIncludeActions.Help = "Should the email include the option for recipient to select an action directly from within the email? Note: This only applies if none of the the form fields are required.";
+            _cbIncludeActions.ID = this.ID + "_cbIncludeActions";
+            Controls.Add( _cbIncludeActions );
+
             _ceHeaderText = new CodeEditor();
             _ceHeaderText.Label = "Form Header";
             _ceHeaderText.Help = "Text to display to user above the form fields.";
@@ -219,13 +262,12 @@ namespace Rock.Web.UI.Controls
             _falActions.ID = this.ID + "_falActions";
             Controls.Add( _falActions );
 
-            _tbInactiveMessage = new RockTextBox();
-            _tbInactiveMessage.Label = "Inactive Message";
-            _tbInactiveMessage.Help = "Text to display to user when attempting to view entry form when action or activity is not active.";
-            _tbInactiveMessage.ID = this.ID + "_tbInactiveMessage";
-            _tbInactiveMessage.TextMode = TextBoxMode.MultiLine;
-            _tbInactiveMessage.Rows = 2;
-            Controls.Add( _tbInactiveMessage );
+            _ddlActionAttribute = new RockDropDownList();
+            _ddlActionAttribute.ID = this.ID + "_ddlActionAttribute";
+            _ddlActionAttribute.Label = "Action Selected Attribute";
+            _ddlActionAttribute.Help = "Optional text attribute that should be updated with the selected action.";
+            Controls.Add( _ddlActionAttribute );
+
         }
 
         /// <summary>
@@ -236,6 +278,23 @@ namespace Rock.Web.UI.Controls
         {
             if ( _hfFormGuid.Value.AsGuid() != Guid.Empty )
             {
+                _hfFormGuid.RenderControl( writer );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlNotificationSystemEmail.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _cbIncludeActions.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // row
+
                 _ceHeaderText.ValidationGroup = ValidationGroup;
                 _ceHeaderText.RenderControl( writer );
 
@@ -320,9 +379,19 @@ namespace Rock.Web.UI.Controls
                 _ceFooterText.RenderControl( writer );
                 _falActions.RenderControl( writer );
 
-                // Don't render (not used)
-                //_tbInactiveMessage.ValidationGroup = ValidationGroup;
-                //_tbInactiveMessage.RenderControl( writer );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _ddlActionAttribute.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // row
             }
         }
 

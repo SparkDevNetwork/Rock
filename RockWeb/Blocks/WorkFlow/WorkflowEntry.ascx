@@ -3,8 +3,6 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" />
-
         <asp:Panel ID="pnlForm" runat="server">
 
             <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -20,6 +18,10 @@
             </div>
         
         </asp:Panel>
+
+        <br />
+
+        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

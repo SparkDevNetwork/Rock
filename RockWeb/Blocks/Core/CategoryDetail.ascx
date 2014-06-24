@@ -21,6 +21,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                             <Rock:CategoryPicker ID="cpParentCategory" runat="server" Label="Parent Category" />
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                            <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockLiteral ID="lblEntityTypeName" runat="server" Label="Entity Type" />

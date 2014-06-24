@@ -190,9 +190,9 @@ namespace Rock.SystemGuid
         public const string CHART_STYLES = "FC684FD7-FE68-493F-AF38-1656FBF67E6B";
 
         /// <summary>
-        /// Guid for the css classes
+        /// Guid for the button html
         /// </summary>
-        public const string CSS_CLASSES = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+        public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
 
         /// <summary>
         /// The resource t_ ap i_ allowe d_ domains

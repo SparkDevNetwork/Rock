@@ -53,7 +53,7 @@ namespace Rock.Field.Types
                 var workflowTypeAttributes = GetContextWorkflowTypeAttributes();
                 if ( workflowTypeAttributes != null && workflowTypeAttributes.ContainsKey(guid) )
                 {
-                    formattedValue = workflowTypeAttributes[guid];
+                    formattedValue = workflowTypeAttributes[guid].Name;
                 }
 
                 if (string.IsNullOrWhiteSpace(formattedValue))
@@ -89,7 +89,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var attribute in workflowTypeAttributes )
                 {
-                    editControl.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
+                    editControl.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
                 }
             }
 
@@ -129,12 +129,12 @@ namespace Rock.Field.Types
             }
         }
 
-        private Dictionary<Guid, string> GetContextWorkflowTypeAttributes()
+        private Dictionary<Guid, Rock.Model.Attribute> GetContextWorkflowTypeAttributes()
         {
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
-                return httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, string>;
+                return httpContext.Items[WORKFLOW_TYPE_ATTRIBUTES_KEY] as Dictionary<Guid, Rock.Model.Attribute>;
             }
 
             return null;

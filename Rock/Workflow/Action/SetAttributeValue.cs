@@ -33,9 +33,9 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Sets an attribute's value to the selected value." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Activate Activity" )]
+    [ExportMetadata( "ComponentName", "Set Attribute Value" )]
 
-    [WorkflowAttribute( "Attribute", "The attribute to set the value of.", false, "", "", 0 )]
+    [WorkflowAttribute( "Attribute", "The attribute to set the value of." )]
     [WorkflowTextOrAttribute( "Text Value", "Attribute Value", "The text or attribute to set the value from", false, "", "", 1, "Value" )]
     public class SetAttributeValue : ActionComponent
     {

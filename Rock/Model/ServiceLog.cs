@@ -78,7 +78,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the result that was returned from the service.
         /// </value>
-        [MaxLength( 50 )]
+        [MaxLength( 200 )]
         [DataMember]
         public string Result { get; set; }
         

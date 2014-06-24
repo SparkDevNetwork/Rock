@@ -171,6 +171,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Location Types
+
+        /// <summary>
+        /// Campus Location Type
+        /// </summary>
+        public const string LOCATION_TYPE_CAMPUS = "C0D7AE35-7901-4396-870E-3AAF472AAE88";
+
+        /// <summary>
+        /// Building Location Type
+        /// </summary>
+        public const string LOCATION_TYPE_BUILDING = "D9646A93-1667-4A44-82DA-12E1229B4695";
+
+        /// <summary>
+        /// Room Location Type
+        /// </summary>
+        public const string LOCATION_TYPE_ROOM = "107C6DA1-266D-4E1C-A443-1CD37064601D";
+
+        #endregion
+
         #region Transaction Frequency Type
 
         /// <summary>

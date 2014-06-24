@@ -171,8 +171,8 @@ namespace Rock.Services.NuGet
         }
 
         /// <summary>
-        /// Workaround until we get to NuGet 2.7 and to del with the
-        /// "because it is being used by another process" dll problem.
+        /// Workaround to deal with the "because it is being used by 
+        /// another process" dll problem.
         /// This method will always add the file to the filesystem.
         /// </summary>
         /// <param name="path"></param>
@@ -181,6 +181,8 @@ namespace Rock.Services.NuGet
         {
             string fileToDelete = string.Empty;
             int fileCount = 0;
+
+            // If dll file not in the bin folder...
             if ( path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" ) )
             {
                 string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
@@ -255,8 +257,27 @@ namespace Rock.Services.NuGet
                         
                         if ( File.Exists( physicalFile ) )
                         {
-                            // TODO guard against things like file is temporarily locked, wait then try delete, etc.
-                            File.Delete( physicalFile );
+                            // guard against things like file is temporarily locked, wait then try delete, etc.
+                            try
+                            {
+                                File.Delete( physicalFile );
+                            }
+                            catch
+                            {
+                                // if the delete failed, we'll try moving the file to a *.rdelete file for
+                                // removal later.
+
+                                // generate a unique *.#.rdelete filename
+                                int fileCount = 0;
+                                do
+                                {
+                                    fileCount++;
+                                }
+                                while ( File.Exists( string.Format( "{0}.{1}.rdelete", physicalFile, fileCount ) ) );
+
+                                string fileToDelete = string.Format( "{0}.{1}.rdelete", physicalFile, fileCount );
+                                File.Move( physicalFile, fileToDelete );
+                            }
                         }
                     }
                 }

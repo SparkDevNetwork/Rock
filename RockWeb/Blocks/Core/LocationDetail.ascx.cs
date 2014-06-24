@@ -75,6 +75,11 @@ namespace RockWeb.Blocks.Core
                 .ToList();
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
+            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
+            ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
         }
 
         /// <summary>
@@ -196,6 +201,13 @@ namespace RockWeb.Blocks.Core
                 location = locationService.Get( locationId );
             }
 
+            int? orphanedImageId = null;
+            if ( location.ImageId != imgImage.BinaryFileId )
+            {
+                orphanedImageId = location.ImageId;
+                location.ImageId = imgImage.BinaryFileId;
+            }
+
             location.Name = tbName.Text;
             location.IsActive = cbIsActive.Checked;
             location.LocationTypeValueId = ddlLocationType.SelectedValueAsId();
@@ -250,6 +262,18 @@ namespace RockWeb.Blocks.Core
                     locationService.Add( location );
                 }
                 rockContext.SaveChanges();
+
+                if (orphanedImageId.HasValue)
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                    var binaryFile = binaryFileService.Get( orphanedImageId.Value );
+                    if ( binaryFile != null )
+                    {
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
+                        rockContext.SaveChanges();
+                    }
+                }
 
                 location.SaveAttributeValues( rockContext );
 
@@ -448,6 +472,9 @@ namespace RockWeb.Blocks.Core
 
             SetEditMode( true );
 
+            imgImage.BinaryFileId = location.ImageId;
+            imgImage.NoPictureUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Assets/Images/no-picture.svg?" );
+
             tbName.Text = location.Name;
             cbIsActive.Checked = location.IsActive;
             locapAddress.SetValue( location );
@@ -519,7 +546,33 @@ namespace RockWeb.Blocks.Core
                 hlType.Visible = false;
             }
 
+            string imgTag = GetImageTag( location.ImageId, 150, 150 );
+            if ( location.ImageId.HasValue )
+            {
+                string imageUrl = ResolveRockUrl( String.Format( "~/GetImage.ashx?id={0}", location.ImageId.Value ) );
+                lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
+            }
+            else
+            {
+                lImage.Text = imgTag;
+            }
+
             DescriptionList descriptionList = new DescriptionList();
+
+            if ( location.ParentLocation != null )
+            {
+                descriptionList.Add( "Parent Location", location.ParentLocation.Name );
+            }
+
+            if ( location.LocationTypeValue != null )
+            {
+                descriptionList.Add( "Location Type", location.LocationTypeValue.Name );
+            }
+
+            if ( location.PrinterDevice != null )
+            {
+                descriptionList.Add( "Printer", location.PrinterDevice.Name );
+            }
 
             string fullAddress = location.GetFullStreetAddress();
             if ( !string.IsNullOrWhiteSpace( fullAddress ) )
@@ -527,42 +580,43 @@ namespace RockWeb.Blocks.Core
                 descriptionList.Add( "Address", fullAddress );
             }
 
-            if ( location.ParentLocation != null )
-            {
-                descriptionList.Add( "Parent Location", location.ParentLocation.Name );
-            }
-
-            if ( location.PrinterDevice != null)
-            {
-                descriptionList.Add( "Printer", location.PrinterDevice.Name );
-            }
-
             lblMainDetails.Text = descriptionList.Html;
 
             location.LoadAttributes();
             Rock.Attribute.Helper.AddDisplayControls( location, phAttributes );
 
-            // Get all the location locations and location all those that have a geo-location into either points or polygons
-            var dict = new Dictionary<string, object>();
-
-            if ( location.GeoPoint != null )
-            {
-                var pointsDict = new Dictionary<string, object>();
-                pointsDict.Add( "latitude", location.GeoPoint.Latitude );
-                pointsDict.Add( "longitude", location.GeoPoint.Longitude );
-                dict.Add( "point", pointsDict );
-            }
-
-            if ( location.GeoFence != null )
-            {
-                var polygonDict = new Dictionary<string, object>();
-                polygonDict.Add( "polygon_wkt", location.GeoFence.AsText() );
-                polygonDict.Add( "google_encoded_polygon", location.EncodeGooglePolygon() );
-                dict.Add( "polygon", polygonDict );
-            }
-
             phMaps.Controls.Clear();
-            phMaps.Controls.Add( new LiteralControl( GetAttributeValue( "MapHTML" ).ResolveMergeFields( dict ) ) );
+            var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
+            if ( mapStyleValue == null )
+            {
+                mapStyleValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK );
+            }
+
+            if ( mapStyleValue != null )
+            {
+                string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
+
+                if ( !string.IsNullOrWhiteSpace( mapStyle ) )
+                {
+                    if ( location.GeoPoint != null )
+                    {
+                        string markerPoints = string.Format( "{0},{1}", location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                        string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
+                        mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
+                        mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                        phMaps.Controls.Add( new LiteralControl ( string.Format( "<div class='group-location-map'><img src='{0}'/></div>", mapLink ) ) );
+                    }
+
+                    if ( location.GeoFence != null )
+                    {
+                        string polygonPoints = "enc:" + location.EncodeGooglePolygon();
+                        string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
+                        mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
+                        mapLink += "&sensor=false&size=350x200&format=png";
+                        phMaps.Controls.Add( new LiteralControl( string.Format( "<div class='group-location-map'><img src='{0}'/></div>", mapLink ) ) );
+                    }
+                }
+            }
 
             btnSecurity.Visible = location.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = location.Name;
@@ -582,6 +636,42 @@ namespace RockWeb.Blocks.Core
             this.HideSecondaryBlocks( editable );
         }
 
+        public string GetImageTag(int? imageId, int? maxWidth = null, int? maxHeight = null )
+        {
+            var photoUrl = new StringBuilder();
+
+            photoUrl.Append( System.Web.VirtualPathUtility.ToAbsolute( "~/" ) );
+
+            string styleString = string.Empty;
+            
+            if ( imageId.HasValue )
+            {
+                photoUrl.AppendFormat( "GetImage.ashx?id={0}", imageId );
+
+                if ( maxWidth.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
+                }
+                if ( maxHeight.HasValue )
+                {
+                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
+                }
+            }
+            else
+            {
+                photoUrl.Append( "Assets/Images/no-picture.svg?" );
+
+                if ( maxWidth.HasValue || maxHeight.HasValue )
+                {
+                    styleString = string.Format( " style='{0}{1}'",
+                        maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",
+                        maxHeight.HasValue ? "max-height:" + maxHeight.Value.ToString() + "px;" : "" );
+                }
+            }
+
+            return string.Format( "<img src='{0}'{1}/>", photoUrl.ToString(), styleString );
+        }
+        
         #endregion
     }
 }

@@ -262,7 +262,8 @@ namespace RockWeb.Blocks.Reporting
                     var parameters = GetParameters();
                     DataTable dataTable = DbService.GetDataTable( query, parameters != null ? CommandType.StoredProcedure : CommandType.Text, parameters );
 
-                    if ( string.IsNullOrWhiteSpace( ceFormattedOutput.Text ) )
+                    string formattedOutput = GetAttributeValue( "FormattedOutput" );
+                    if ( string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         gReport.Visible = true;
                         phHtml.Visible = false;
@@ -286,7 +287,7 @@ namespace RockWeb.Blocks.Reporting
                         var dropTable = new Dictionary<string, object>();
                         dropTable.Add( "rows", dropRows );
 
-                        phHtml.Controls.Add( new LiteralControl( ceFormattedOutput.Text.ResolveMergeFields( dropTable ) ) );
+                        phHtml.Controls.Add( new LiteralControl( formattedOutput.ResolveMergeFields( dropTable ) ) );
                     }
                 }
                 catch ( System.Exception ex )

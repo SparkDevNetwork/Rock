@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -157,13 +158,13 @@ namespace Rock.Model
                 throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", workflowAction));
             }
 
-            this.LastProcessedDateTime = RockDateTime.Now;
-
             this.ActionType.LoadAttributes();
 
             if ( TestCriteria() )
             {
                 bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
+
+                this.LastProcessedDateTime = RockDateTime.Now;
 
                 AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
@@ -203,22 +204,19 @@ namespace Rock.Model
             if ( ActionType != null &&
                 ActionType.CriteriaAttributeGuid.HasValue )
             {
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value );
-                if ( !string.IsNullOrWhiteSpace( criteria ) )
+                result = false;
+
+                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                Guid guid = ActionType.CriteriaValue.AsGuid();
+                if ( guid.IsEmpty() )
                 {
-                    result = false;
-
-                    Guid guid = ActionType.CriteriaValue.AsGuid();
-                    if ( guid.IsEmpty() )
-                    {
-                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                    }
-                    else
-                    {
-                        string value = GetWorklowAttributeValue( guid );
-                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                    }
-
+                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                }
+                else
+                {
+                    string value = GetWorklowAttributeValue( guid );
+                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
                 }
             }
 
@@ -310,7 +308,57 @@ namespace Rock.Model
                 mergeFields.Add( "ActionType", this.ActionType );
             }
 
+            mergeFields.Add( "FormAttributes", GetFormAttributesLiquid() );
+
             return mergeFields;
+        }
+
+
+        private List<Dictionary<string, object>> GetFormAttributesLiquid()
+        {
+            var attributeList = new List<Dictionary<string, object>>();
+
+            if ( ActionType != null && ActionType.WorkflowForm != null )
+            {
+                foreach ( var formAttribute in ActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
+                {
+                    var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                    if ( attribute != null && Activity != null )
+                    {
+                        string value = string.Empty;
+
+                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                        {
+                            value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                        }
+                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                        {
+                            value = Activity.GetAttributeValue( attribute.Key );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( value ) )
+                        {
+                            var field = attribute.FieldType.Field;
+
+                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+                            var attributeLiquid = new Dictionary<string, object>();
+                            attributeLiquid.Add( "Name", attribute.Name );
+                            attributeLiquid.Add( "Key", attribute.Key );
+                            attributeLiquid.Add( "Value", formattedValue );
+                            attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
+                            }
+
+                            attributeList.Add( attributeLiquid );
+                        }
+                    }
+                }
+            }
+
+            return attributeList;
+
         }
 
         /// <summary>

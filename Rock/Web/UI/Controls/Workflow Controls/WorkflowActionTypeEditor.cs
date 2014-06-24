@@ -254,7 +254,17 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                result.WorkflowForm = _formEditor.Form ?? new WorkflowActionForm { Actions = "Submit^^^" };
+                result.WorkflowForm = _formEditor.GetForm();
+                if ( result.WorkflowForm == null )
+                {
+                    result.WorkflowForm = new WorkflowActionForm();
+                    result.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    var systemEmail = new SystemEmailService(new RockContext()).Get(SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid());
+                    if ( systemEmail != null )
+                    {
+                        result.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                    }
+                }
             }
             else
             {
@@ -277,7 +287,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
-        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, string> workflowTypeAttributes )
+        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
         {
             EnsureChildControls();
             _hfActionTypeGuid.Value = value.Guid.ToString();
@@ -289,11 +299,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem() );
             foreach ( var attribute in workflowTypeAttributes )
             {
-                var li = new ListItem( attribute.Value, attribute.Key.ToString() );
+                var li = new ListItem( attribute.Value.Name, attribute.Key.ToString() );
                 li.Selected = value.CriteriaAttributeGuid.HasValue && value.CriteriaAttributeGuid.Value.ToString() == li.Value; 
                 _ddlCriteriaAttribute.Items.Add( li );
 
-                _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
+                _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
             }
 
             _ddlCriteriaComparisonType.SetValue( value.CriteriaComparisonType.ConvertToInt() );
@@ -306,13 +316,23 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( value.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                _formEditor.Form = value.WorkflowForm ?? new WorkflowActionForm { Actions = "Submit^^^" };
+                if (value.WorkflowForm == null)
+                {
+                    value.WorkflowForm = new WorkflowActionForm();
+                    value.WorkflowForm.Actions = "Submit^^^Your information has been submitted succesfully.";
+                    var systemEmail = new SystemEmailService( new RockContext() ).Get( SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+                    if ( systemEmail != null )
+                    {
+                        value.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                    }
+                }
+                _formEditor.SetForm( value.WorkflowForm, workflowTypeAttributes );
                 _cbIsActionCompletedOnSuccess.Checked = true;
                 _cbIsActionCompletedOnSuccess.Enabled = false;
             }
             else
             {
-                _formEditor.Form = null;
+                _formEditor.SetForm( null, workflowTypeAttributes );
                 _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActionCompletedOnSuccess.Enabled = true;
             }

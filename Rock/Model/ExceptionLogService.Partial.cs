@@ -143,7 +143,7 @@ namespace Rock.Model
             }
             catch ( Exception )
             {
-                // If logging the exception fails, write the exception to a file
+                // If logging the exception fails, write the exceptions to a file
                 try
                 {
                     string directory = AppDomain.CurrentDomain.BaseDirectory;
@@ -155,7 +155,12 @@ namespace Rock.Model
                     }
 
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
-                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", RockDateTime.Now.ToString(), ex.GetType(), ex.Message ) );
+                    string when = RockDateTime.Now.ToString();
+                    while ( ex != null )
+                    {
+                        File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", when, ex.GetType(), ex.Message ) );
+                        ex = ex.InnerException;
+                    }
                 }
                 catch
                 {

@@ -32,6 +32,19 @@ namespace Rock.Field.Types
     /// </summary>
     public class GroupTypeFieldType : FieldType, IEntityFieldType
     {
+        private const string GROUP_TYPE_PURPOSE_VALUE_GUID = "groupTypePurposeValueGuid";
+        
+        /// <summary>
+        /// Configurations the keys.
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( GROUP_TYPE_PURPOSE_VALUE_GUID );
+            return configKeys;
+        }
+        
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -68,8 +81,18 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new GroupTypePicker { ID = id };
-            editControl.GroupTypes = new GroupTypeService( new RockContext() ).Queryable()
-                .OrderBy( a => a.Name ).ToList();
+            var qryGroupTypes = new GroupTypeService( new RockContext() ).Queryable();
+            
+            if ( configurationValues.ContainsKey( GROUP_TYPE_PURPOSE_VALUE_GUID ) )
+            {
+                var groupTypePurposeValueGuid = ( configurationValues[GROUP_TYPE_PURPOSE_VALUE_GUID] ).Value.AsGuidOrNull();
+                if ( groupTypePurposeValueGuid.HasValue )
+                {
+                    qryGroupTypes = qryGroupTypes.Where( a => a.GroupTypePurposeValue.Guid == groupTypePurposeValueGuid.Value );
+                }
+            }
+
+            editControl.GroupTypes = qryGroupTypes.OrderBy( a => a.Name ).ToList();
             return editControl;
         }
 
