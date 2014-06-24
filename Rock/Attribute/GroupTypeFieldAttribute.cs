@@ -29,7 +29,7 @@ namespace Rock.Attribute
     public class GroupTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="GroupTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -38,9 +38,18 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null )
+        /// <param name="groupTypePurposeValueGuid">The group type purpose value unique identifier.</param>
+        public GroupTypeFieldAttribute( string name, string description = "", bool required = true, string defaultGroupTypeGuid = "", string category = "", int order = 0, string key = null, string groupTypePurposeValueGuid = "" )
             : base( name, description, required, defaultGroupTypeGuid, category, order, key, typeof( Rock.Field.Types.GroupTypeFieldType ).FullName )
         {
+            if ( !string.IsNullOrWhiteSpace( groupTypePurposeValueGuid ) )
+            {
+                Guid? guid = groupTypePurposeValueGuid.AsGuidOrNull();
+                if ( guid.HasValue )
+                {
+                    FieldConfigurationValues.Add( "groupTypePurposeValueGuid", new Field.ConfigurationValue( groupTypePurposeValueGuid ) );
+                }
+            }
         }
     }
 }

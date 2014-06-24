@@ -50,12 +50,12 @@ namespace Rock.Workflow.Action
             int? groupId = GetAttributeValue( action, "Group" ).AsIntegerOrNull();
             if ( groupId.HasValue )
             {
-                var group = new GroupService( new RockContext() ).Get( groupId.Value );
+                var group = new GroupService( rockContext ).Get( groupId.Value );
                 if ( group != null )
                 {
                     action.Activity.AssignedPersonAlias = null;
                     action.Activity.AssignedPersonAliasId = null;
-                    action.Activity.AssignedGroup = null;
+                    action.Activity.AssignedGroup = group;
                     action.Activity.AssignedGroupId = group.Id;
                     action.AddLogEntry( string.Format( "Assigned activity to '{0}' group ({1})", group.Name, group.Id ) );
                     return true;

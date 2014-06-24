@@ -12,8 +12,7 @@
                         <li class='<%# Eval("Class") %>'>
                             <asp:LinkButton ID="lbWorkflowType" runat="server" CommandArgument='<%# Eval("WorkflowType.Id") %>' CommandName="Display">
                                 <i class='<%# Eval("WorkflowType.IconCssClass") %>'></i>
-                                <h3><%# Eval("WorkflowType.Name") %></h3>
-                                <h3> ( <%# ((int)Eval("Count")).ToString("N0") %> <%# Eval("WorkflowType.WorkTerm").ToString() %> )</h3>
+                                <h3><%# Eval("WorkflowType.Name") %> <small><%# ((int)Eval("Count")).ToString("#,###,###") %></small></h3>
                             </asp:LinkButton>
                         </li>
                     </ItemTemplate>

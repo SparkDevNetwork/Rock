@@ -130,18 +130,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockTypeAttribute( "DDC6B004-9ED1-470F-ABF5-041250082168", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Entry Page", "EntryPage", "", "Page used to launch a new workflow of the selected type.", 0, @"", "DABA0448-C967-4E9D-863E-59C95059935A" );
             // Attrib for BlockType: Workflow List:Entry Page
             RockMigrationHelper.AddBlockTypeAttribute( "C86C80DF-F2FD-47F8-81CF-7C5EA4100C3B", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Entry Page", "EntryPage", "", "Page used to launch a new workflow of the selected type.", 0, @"", "630AF4C8-6DA1-4BC2-8D38-283D7EF3DD43" );
-            // Attrib for BlockType: Person Select:Workflow Activity
-            RockMigrationHelper.AddBlockTypeAttribute( "34B48E0F-5E37-425E-9588-E612ED34DB03", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Workflow Activity", "WorkflowActivity", "", "The name of the workflow activity to run on selection.", 0, @"", "6A111FD9-31A5-49B4-BB5D-9520315CECF0" );
-            // Attrib for BlockType: Location Select:Current Count Format
-            RockMigrationHelper.AddBlockTypeAttribute( "FFDBBAB5-78E1-4865-8A48-EF70DDC6B3F6", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Current Count Format", "CurrentCountFormat", "", "How should current count be displayed", 0, @" Count: {0}", "3DB10B5E-2A0F-4A35-B606-B8AF86ABC11C" );
-            // Attrib for BlockType: Success:Workflow Activity
-            RockMigrationHelper.AddBlockTypeAttribute( "18911F1B-294E-48D6-9E6B-0F72BF6C9491", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Workflow Activity", "WorkflowActivity", "", "The name of the workflow activity to run on selection.", 0, @"", "2D1E0EBC-3A8E-4481-82DC-CB2FE2F53FE4" );
-            // Attrib for BlockType: Dynamic Data:Person Report
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Person Report", "PersonReport", "", "Is this report a list of people.?", 8, @"False", "83B926C8-BB15-4275-9F76-BDA5A4E8001F" );
-            // Attrib for BlockType: Dynamic Data:Merge Fields
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Merge Fields", "MergeFields", "", "Any fields to make available as merge fields for any new communications", 9, @"", "59573B32-4CFE-488B-B043-B9CB013F0142" );
-            // Attrib for BlockType: Dynamic Data:Formatted Output
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Formatted Output", "FormattedOutput", "", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}", 7, @"", "B7D289C7-8AB4-4554-AFA3-70832B2D0BB0" );
             // Attrib Value for Block:Attribute Values, Attribute:Category Page: Extended Attributes, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "DCA9E640-B5EA-4C73-90BC-4A91330528D5", "EC43CF32-3BDF-4544-8B6A-CE9208DD7C81", @"dd8f467d-b83c-444f-b04c-c681167046a1" );
             // Attrib Value for Block:Workflow Entry, Attribute:Workflow Type Page: Workflow Entry, Site: Rock RMS
@@ -154,24 +142,6 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "2D20CEC4-328E-4C2B-8059-78DFC49D8E35", "6B8E6B05-87E6-4CA0-9A44-861184E3A34C", @"61e1b4b6-eace-42e8-a2fb-37465e6d0004" );
             // Attrib Value for Block:Workflow Navigation, Attribute:Entry Page Page: Workflows, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "2D20CEC4-328E-4C2B-8059-78DFC49D8E35", "DABA0448-C967-4E9D-863E-59C95059935A", @"0550d2aa-a705-4400-81ff-ab124fdf83d7" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Update Page Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "230EDFE8-33CA-478D-8C9A-572323AF3466", @"True" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Params Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "B0EC41B9-37C0-48FD-8E4E-37A8CA305012", @"" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Columns Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "90B0E6AF-B2F4-4397-953B-737A40D4023B", @"Id" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Query Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "71C8BA4E-8EF2-416B-BFE9-D1D88D9AA356", @"select Id, firstname as [First Name], lastname as [Last Name] from person" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Url Mask Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "B9163A35-E09C-466D-8A2D-4ED81DF0114C", @"~/Person/{Id}" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Show Columns Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "202A82BF-7772-481C-8419-600012607972", @"False" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Person Report Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "83B926C8-BB15-4275-9F76-BDA5A4E8001F", @"True" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Merge Fields Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "59573B32-4CFE-488B-B043-B9CB013F0142", @"first name, last name" );
-            // Attrib Value for Block:Dynamic Data, Attribute:Formatted Output Page: All People, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "C62C6EF9-0AEF-4504-91C8-C0D5D503FF3D", "B7D289C7-8AB4-4554-AFA3-70832B2D0BB0", @"" );
             RockMigrationHelper.UpdateFieldType( "Comparison", "", "Rock", "Rock.Field.Types.ComparisonFieldType", "3C742B81-3C55-48B8-A7CD-E7762EA5BB91" );
             RockMigrationHelper.UpdateFieldType( "Metric Entity", "", "Rock", "Rock.Field.Types.MetricEntityFieldType", "3A7FB32E-1CCD-4F79-B085-BDBADEB56CCF" );
             RockMigrationHelper.UpdateFieldType( "Workflow Activity", "", "Rock", "Rock.Field.Types.WorkflowActivityFieldType", "739FD425-5B8C-4605-B775-7E4D9D4C11DB" );

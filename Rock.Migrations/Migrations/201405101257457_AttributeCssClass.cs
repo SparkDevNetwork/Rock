@@ -527,14 +527,6 @@ namespace Rock.Migrations
     SET    [Value] = N'{% for group in GroupType.Groups %}{% for location in group.Locations %}{% for schedule in location.Schedules %}{{schedule.Name}}{% endfor %}{% endfor %}{% endfor %}' 
     WHERE  [Guid] = '0E5AD48B-4B80-48C5-8F38-1D9C7F6532BC' 
 
-    -- Set the category for a workflow attribute to 'Advanced' 
-    INSERT INTO [AttributeCategory] 
-	    ([AttributeId] 
-	    ,[CategoryId]) 
-    VALUES
-	    (403 
-	    ,38) 
-
     -- add the ZPL files and data for the four labels 
     DECLARE @ChildLabelFileId INT 
     DECLARE @NameTagLabelFileId INT 

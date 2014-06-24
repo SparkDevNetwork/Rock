@@ -191,7 +191,7 @@
                 
                 <!-- welcome panel -->
                 <div id="pnlWelcome">
-                    <img src="<%=storageUrl %>images/welcome.jpg" />
+                    <img src="<%=storageUrl %>Images/welcome.jpg" />
 
                     <div class="btn-list clearfix">
 						<a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Install Video</a>
@@ -635,11 +635,11 @@
     {
         if ( Request["Version"] != null )
         {
-            storageUrl = String.Format( "{0}{1}", baseStorageUrl, Request["Version"] );
+            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
         }
         else
         {
-            storageUrl = String.Format( "{0}{1}", baseStorageUrl, baseVersion );
+            storageUrl = String.Format( "{0}{1}/", baseStorageUrl, baseVersion );
         }
 
         if ( Request["Debug"] != null )

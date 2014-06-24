@@ -179,7 +179,7 @@ as fields on the workflow or activity)...
                 {% for action in Actions %}
                     <li>
                         <i class='fa-li {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i>
-                        <a href='WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
+                        <a href='~/WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -259,9 +259,16 @@ as fields on the workflow or activity)...
 
         private void BindData()
         {
+            string contents = GetAttributeValue( "Contents" );
+
+            string appRoot = ResolveRockUrl( "~/" );
+            string themeRoot = ResolveRockUrl( "~~/" );
+            contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
+
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "Actions", GetActions() );
-            lContents.Text = GetAttributeValue( "Contents" ).ResolveMergeFields( mergeFields );
+
+            lContents.Text = contents.ResolveMergeFields( mergeFields );
         }
 
         private List<WorkflowAction> GetActions()
@@ -318,14 +325,6 @@ as fields on the workflow or activity)...
             }
 
             return ids;
-        }
-
-        protected string FormatUrl( int workflowTypeId, int workflowId )
-        {
-            var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "WorkflowTypeId", workflowTypeId.ToString() );
-            qryParams.Add( "WorkflowId", workflowId.ToString() );
-            return LinkedPageUrl( "WorkflowEntryPage", qryParams );
         }
 
         #endregion

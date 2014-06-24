@@ -27,6 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Field Type POCO Entity.
     /// </summary>
+    [NotAudited]
     [Table( "FieldType" )]
     [DataContract]
     public partial class FieldType : Model<FieldType>

@@ -16,15 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+
 using Rock.Model;
-using Rock.Utility;
 using Rock.Workflow;
 
 namespace Rock.Data
@@ -74,7 +71,7 @@ namespace Rock.Data
         /// the Pre and Post processing from being run. This should only be disabled
         /// when updating a large number of records at a time (e.g. importing records).</param>
         /// <returns></returns>
-        public int SaveChanges(bool disablePrePostProcessing)
+        public int SaveChanges( bool disablePrePostProcessing )
         {
             // Pre and Post processing has been disabled, just call the base 
             // SaveChanges() method and return
@@ -104,8 +101,24 @@ namespace Rock.Data
             // If update was not cancelled by triggered workflow 
             if ( updatedItems != null )
             {
-                // Save the context changes
-                result = base.SaveChanges();
+                try
+                {
+                    // Save the context changes
+                    result = base.SaveChanges();
+                }
+                catch ( System.Data.Entity.Validation.DbEntityValidationException ex )
+                {
+                    var validationErrors = new List<string>();
+                    foreach ( var error in ex.EntityValidationErrors )
+                    {
+                        foreach ( var prop in error.ValidationErrors )
+                        {
+                            validationErrors.Add( string.Format( "{0} ({1}): {2}", error.Entry.Entity.GetType().Name, prop.PropertyName, prop.ErrorMessage ) );
+                        }
+                    }
+
+                    throw new SystemException( "Entity Validation Error: " + validationErrors.AsDelimited( ";" ), ex );
+                }
 
                 // If any items changed process audit and triggers
                 if ( updatedItems.Any() )
@@ -126,16 +139,16 @@ namespace Rock.Data
         protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias )
         {
             int? personAliasId = null;
-            if (personAlias != null)
+            if ( personAlias != null )
             {
                 personAliasId = personAlias.Id;
             }
 
             var updatedItems = new List<ContextItem>();
             foreach ( var entry in dbContext.ChangeTracker.Entries()
-                .Where( c => 
+                .Where( c =>
                     c.Entity is IEntity &&
-                    (c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted) ) )
+                    ( c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted ) ) )
             {
                 // Cast entry as IEntity
                 var entity = entry.Entity as IEntity;
@@ -169,7 +182,7 @@ namespace Rock.Data
                                 model.CreatedByPersonAliasId = personAliasId;
                             }
 
-                            if (model.Guid == Guid.Empty)
+                            if ( model.Guid == Guid.Empty )
                             {
                                 model.Guid = Guid.NewGuid();
                             }
@@ -185,7 +198,7 @@ namespace Rock.Data
 
                     }
                 }
-                else if (entry.State == EntityState.Deleted)
+                else if ( entry.State == EntityState.Deleted )
                 {
                     if ( !TriggerWorkflows( entity, WorkflowTriggerType.PreDelete, personAlias ) )
                     {
@@ -193,8 +206,8 @@ namespace Rock.Data
                     }
                 }
 
-                GetAuditDetails( dbContext, contextItem, personAliasId);
-                updatedItems.Add(contextItem);
+                GetAuditDetails( dbContext, contextItem, personAliasId );
+                updatedItems.Add( contextItem );
             }
 
             return updatedItems;
@@ -207,17 +220,17 @@ namespace Rock.Data
         /// <param name="personAlias">The person alias.</param>
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
         {
-            var audits = updatedItems.Select( i => i.Audit).ToList();
-            if (audits.Any())
+            var audits = updatedItems.Select( i => i.Audit ).ToList();
+            if ( audits.Any() )
             {
                 var transaction = new Rock.Transactions.AuditTransaction();
                 transaction.Audits = audits;
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
-            foreach( var item in updatedItems)
+            foreach ( var item in updatedItems )
             {
-                if (item.State == EntityState.Deleted)
+                if ( item.State == EntityState.Deleted )
                 {
                     TriggerWorkflows( item.Entity, WorkflowTriggerType.PostDelete, personAlias );
                 }
@@ -296,7 +309,7 @@ namespace Rock.Data
         }
 
         private static void GetAuditDetails( DbContext dbContext, ContextItem item, int? personAliasId )
-        {   
+        {
             // Get the base class (not the proxy class)
             Type rockEntityType = item.Entity.GetType();
             if ( rockEntityType.Namespace == "System.Data.Entity.DynamicProxies" )
@@ -305,7 +318,7 @@ namespace Rock.Data
             }
 
             // Check to make sure class does not have [NotAudited] attribute
-            if (AuditClass (rockEntityType))
+            if ( AuditClass( rockEntityType ) )
             {
                 var dbEntity = dbContext.Entry( item.Entity );
                 var audit = item.Audit;
@@ -322,7 +335,7 @@ namespace Rock.Data
                         if ( dbPropertyEntry != null && (
                             dbEntity.State == EntityState.Added ||
                             dbEntity.State == EntityState.Deleted ||
-                            dbPropertyEntry.IsModified ))
+                            dbPropertyEntry.IsModified ) )
                         {
                             var currentValue = dbEntity.State == EntityState.Deleted ? string.Empty : dbPropertyEntry.CurrentValue;
                             var originalValue = dbEntity.State == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue;
@@ -331,7 +344,7 @@ namespace Rock.Data
                             detail.Property = propInfo.Name;
                             detail.CurrentValue = currentValue != null ? currentValue.ToString() : string.Empty;
                             detail.OriginalValue = originalValue != null ? originalValue.ToString() : string.Empty;
-                            if (detail.CurrentValue != detail.OriginalValue)
+                            if ( detail.CurrentValue != detail.OriginalValue )
                             {
                                 audit.Details.Add( detail );
                             }
@@ -345,7 +358,7 @@ namespace Rock.Data
                     if ( entityType != null )
                     {
                         string title = item.Entity.ToString();
-                        if (string.IsNullOrWhiteSpace(title))
+                        if ( string.IsNullOrWhiteSpace( title ) )
                         {
                             title = entityType.FriendlyName ?? string.Empty;
                         }
@@ -364,8 +377,8 @@ namespace Rock.Data
         {
             var attribute = baseType.GetCustomAttribute( typeof( NotAuditedAttribute ) );
             return ( attribute == null );
-        }        
-        
+        }
+
         private static bool AuditProperty( PropertyInfo propertyInfo )
         {
             if ( propertyInfo.GetCustomAttribute( typeof( NotAuditedAttribute ) ) == null &&
@@ -437,6 +450,6 @@ namespace Rock.Data
 
             }
         }
-    
+
     }
 }

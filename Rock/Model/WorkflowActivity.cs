@@ -215,8 +215,6 @@ namespace Rock.Model
         {
             AddSystemLogEntry( "Processing..." );
 
-            this.LastProcessedDateTime = RockDateTime.Now;
-
             errorMessages = new List<string>();
 
             foreach ( var action in this.ActiveActions )
@@ -243,6 +241,8 @@ namespace Rock.Model
                     break;
                 }
             }
+
+            this.LastProcessedDateTime = RockDateTime.Now;
 
             AddSystemLogEntry( "Processing Complete" );
 
@@ -274,35 +274,6 @@ namespace Rock.Model
         {
             CompletedDateTime = RockDateTime.Now;
             AddSystemLogEntry( "Completed" );
-        }
-
-        /// <summary>
-        /// Determines whether the specified current person is assigned.
-        /// </summary>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="includeNotAssigned">if set to <c>true</c> includes activities not assigned to anyone</param>
-        /// <returns></returns>
-        public bool IsAssigned ( Person currentPerson, bool includeNotAssigned )
-        {
-            if ( !AssignedGroupId.HasValue && !AssignedPersonAliasId.HasValue )
-            {
-                return includeNotAssigned;
-            }
-
-            if ( currentPerson != null )
-            {
-                if ( AssignedPersonAlias != null && AssignedPersonAlias.PersonId == currentPerson.Id )
-                {
-                    return true;
-                }
-
-                if ( AssignedGroup != null && AssignedGroup.Members.Any( m => m.PersonId == currentPerson.Id ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>

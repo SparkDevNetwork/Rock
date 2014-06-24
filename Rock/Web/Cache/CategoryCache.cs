@@ -130,6 +130,15 @@ namespace Rock.Web.Cache
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        [DataMember]
+        public string HighlightColor { get; set; }
+
+        /// <summary>
         /// Gets the parent category.
         /// </summary>
         /// <value>
@@ -211,6 +220,7 @@ namespace Rock.Web.Cache
                 this.Description = category.Description;
                 this.Order = category.Order;
                 this.IconCssClass = category.IconCssClass;
+                this.HighlightColor = category.HighlightColor;
             }
         }
 
