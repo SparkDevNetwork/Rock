@@ -1313,23 +1313,7 @@ END:VCALENDAR
             }
 
             writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", "scroll-container scroll-container-vertical" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.Write( @"
-                <div class='scrollbar'>
-                    <div class='track'>
-                        <div class='thumb'>
-                            <div class='end'></div>
-                        </div>
-                    </div>
-                </div>
-                <div class='viewport'>
-                    <div class='overview'>
-
-                        <!-- modal body -->
-                        <div class=''>
-" );
 
             // Start DateTime
             _dpStartDateTime.RenderControl( writer );
@@ -1617,11 +1601,8 @@ END:VCALENDAR
             // Recurrence Panel: End
             writer.RenderEndTag();
 
-            // write out the closing divs that go after the recurrence panel
+            // write out the closing div for <div class='exclusions'>
             writer.Write( @"
-                            </div>
-                        </div>
-                    </div>
                 </div>
 " );
             writer.RenderEndTag();

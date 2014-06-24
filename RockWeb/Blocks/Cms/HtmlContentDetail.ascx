@@ -58,31 +58,18 @@
 
                             <asp:Panel ID="pnlVersionGrid" runat="server" Visible="false" Height="440">
 
-                                <div class="scroll-container version-grid-scroll scroll-container-vertical" style="width: 720px">
-                                    <div class="scrollbar">
-                                        <div class="track">
-                                            <div class="thumb">
-                                                <div class="end"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="viewport" style="width: 690px">
-                                        <div class="overview">
-                                            <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Light" ShowActionRow="false">
-                                                <Columns>
-                                                    <asp:BoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
-                                                    <asp:BoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
-                                                    <asp:BoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
-                                                    <Rock:BoolField DataField="Approved" HeaderText="Approved" SortExpression="Approved" />
-                                                    <asp:BoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
-                                                    <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
-                                                    <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                                                    <Rock:LinkButtonField Text="Select" OnClick="SelectVersion_Click" />
-                                                </Columns>
-                                            </Rock:Grid>
-                                        </div>
-                                    </div>
-                                </div>
+                                <Rock:Grid ID="gVersions" runat="server" DataKeyNames="Id" DisplayType="Light" ShowActionRow="false">
+                                    <Columns>
+                                        <asp:BoundField DataField="VersionText" HeaderText="Version" SortExpression="Version" />
+                                        <asp:BoundField DataField="ModifiedDateTime" HeaderText="Last Modified" SortExpression="ModifiedDateTime" />
+                                        <asp:BoundField DataField="ModifiedByPerson" HeaderText="By User" SortExpression="ModifiedByPerson" />
+                                        <Rock:BoolField DataField="Approved" HeaderText="Approved" SortExpression="Approved" />
+                                        <asp:BoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
+                                        <Rock:DateField DataField="StartDateTime" HeaderText="Start" SortExpression="StartDateTime" />
+                                        <Rock:DateField DataField="ExpireDateTime" HeaderText="Expire" SortExpression="ExpireDateTime" />
+                                        <Rock:LinkButtonField Text="Select" OnClick="SelectVersion_Click" />
+                                    </Columns>
+                                </Rock:Grid>
 
                                 <asp:LinkButton runat="server" ID="lbReturnToEdit" CssClass="btn btn-primary" Text="Back" OnClick="lbReturnToEdit_Click" />
 
