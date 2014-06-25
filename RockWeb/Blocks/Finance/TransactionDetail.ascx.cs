@@ -503,6 +503,13 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
+                int? contextPersonId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                if ( contextPersonId.HasValue )
+                {
+                    var contextPerson = new PersonService( new RockContext() ).Get( (int)contextPersonId );
+                    ppAuthorizedPerson.PersonId = contextPerson.Id;
+                    ppAuthorizedPerson.PersonName = contextPerson.FullName;
+                }                
             }
 
             SetEditMode( true );
