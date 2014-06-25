@@ -198,6 +198,48 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this schedule is currently active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsScheduleActive
+        {
+            get
+            {
+                if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( DateTimeOffset.Now.DateTime ) > 0 )
+                {
+                    return false;
+                }
+
+                if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( DateTimeOffset.Now.DateTime ) < 0 )
+                {
+                    return false;
+                }
+
+                var calEvent = this.GetCalenderEvent();
+
+                if ( calEvent != null && calEvent.DTStart != null )
+                {
+                    if ( DateTimeOffset.Now.TimeOfDay.TotalSeconds < calEvent.DTStart.TimeOfDay.TotalSeconds )
+                    {
+                        return false;
+                    }
+
+                    if ( DateTimeOffset.Now.TimeOfDay.TotalSeconds > calEvent.DTEnd.TimeOfDay.TotalSeconds )
+                    {
+                        return false;
+                    }
+
+                    var occurrences = calEvent.GetOccurrences( RockDateTime.Now.Date );
+                    return occurrences.Count > 0;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether check-in is currently active for this Schedule.
         /// </summary>
         /// <value>
