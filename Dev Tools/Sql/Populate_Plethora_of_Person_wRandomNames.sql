@@ -6056,7 +6056,7 @@ while @personCounter < @maxPerson
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
 		set @phoneNumber = ROUND(rand() * 0095551212, 0)+ 6230000000;
-		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
+		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[EmailPreference],[Guid],[RecordTypeValueId],[RecordStatusValueId])
 		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
 		SET @personId = SCOPE_IDENTITY()
 
