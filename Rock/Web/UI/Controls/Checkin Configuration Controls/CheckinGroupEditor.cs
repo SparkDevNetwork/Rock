@@ -455,9 +455,17 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
-            Group group = this.GetGroup();
-
-            bool forceContentVisible = !group.IsValid || ForceContentVisible;
+            bool forceContentVisible = ForceContentVisible;
+            
+            if ( Page.IsPostBack )
+            {
+                var postbackBtn = ( Page.FindControl( Page.Request.Params["__EVENTTARGET"] ) ) as LinkButton;
+                if ( postbackBtn != null && postbackBtn.CausesValidation )
+                {
+                    Group group = this.GetGroup();
+                    forceContentVisible = !group.IsValid || ForceContentVisible;
+                }
+            }
 
             if ( !forceContentVisible )
             {
