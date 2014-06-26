@@ -844,14 +844,14 @@ namespace RockWeb
             var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
             foreach ( var definedType in definedTypeService.Queryable().ToList() )
             {
-                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+                Rock.Web.Cache.DefinedTypeCache.Read( definedType, rockContext );
             }
 
             // Cache all the Defined Values
             var definedValueService = new Rock.Model.DefinedValueService( rockContext );
             foreach ( var definedValue in definedValueService.Queryable().ToList() )
             {
-                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                Rock.Web.Cache.DefinedValueCache.Read( definedValue, rockContext );
             }
         }
 
