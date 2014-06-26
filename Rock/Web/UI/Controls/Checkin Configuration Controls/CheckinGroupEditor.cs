@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -99,7 +100,6 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 ";
 
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "CheckinGroupEditorScript", script, true );
-
         }
 
         /// <summary>
@@ -186,6 +186,24 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             /// </value>
             [DataMember]
             public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name in the format ParentLocation1 > ParentLocation0 > Name
+            /// </summary>
+            /// <value>
+            /// The full name path.
+            /// </value>
+            [DataMember]
+            public string FullNamePath { get; set; }
+
+            /// <summary>
+            /// Gets or sets the parent location identifier.
+            /// </summary>
+            /// <value>
+            /// The parent location identifier.
+            /// </value>
+            [DataMember]
+            public int? ParentLocationId { get; set; }
         }
 
         /// <summary>
@@ -238,10 +256,12 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <summary>
         /// Gets or sets the group.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         /// <value>
         /// The group.
         /// </value>
-        public Group GetGroup()
+        public Group GetGroup( RockContext rockContext )
         {
             EnsureChildControls();
             Group result = new Group();
@@ -261,7 +281,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             }
 
             result.Name = _tbGroupName.Text;
-            result.LoadAttributes();
+            result.LoadAttributes( rockContext );
 
             // populate groupLocations with whatever is currently in the grid, with just enough info to repopulate it and save it later
             result.GroupLocations = new List<GroupLocation>();
@@ -269,7 +289,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             {
                 var groupLocation = new GroupLocation();
                 groupLocation.LocationId = item.LocationId;
-                groupLocation.Location = new Location { Id = item.LocationId, Name = item.Name };
+                groupLocation.Location = new Location { Id = item.LocationId, Name = item.Name, ParentLocationId = item.ParentLocationId };
                 result.GroupLocations.Add( groupLocation );
             }
 
@@ -281,7 +301,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// Sets the group.
         /// </summary>
         /// <param name="value">The value.</param>
-        public void SetGroup( Group value )
+        /// <param name="rockContext">The rock context.</param>
+        public void SetGroup( Group value, RockContext rockContext )
         {
             EnsureChildControls();
 
@@ -294,7 +315,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             _hfGroupTypeId.Value = value.GroupTypeId.ToString();
             _tbGroupName.Text = value.Name;
 
-            CreateGroupAttributeControls( value );
+            CreateGroupAttributeControls( value, rockContext );
         }
 
         /// <summary>
@@ -373,7 +394,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             _gLocations.Actions.AddClick += AddLocation_Click;
 
             _gLocations.DataKeyNames = new string[] { "LocationId" };
-            _gLocations.Columns.Add( new BoundField { DataField = "Name", HeaderText = "Name" } );
+            _gLocations.TooltipField = "Name";
+            _gLocations.Columns.Add( new BoundField { DataField = "FullNamePath", HeaderText = "Name" } );
 
             DeleteField deleteField = new DeleteField();
 
@@ -456,13 +478,13 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             bool forceContentVisible = ForceContentVisible;
-            
+
             if ( Page.IsPostBack )
             {
-                var postbackBtn = ( Page.FindControl( Page.Request.Params["__EVENTTARGET"] ) ) as LinkButton;
+                var postbackBtn = Page.FindControl( Page.Request.Params["__EVENTTARGET"] ) as LinkButton;
                 if ( postbackBtn != null && postbackBtn.CausesValidation )
                 {
-                    Group group = this.GetGroup();
+                    Group group = this.GetGroup( new RockContext() );
                     forceContentVisible = !group.IsValid || ForceContentVisible;
                 }
             }
@@ -514,7 +536,9 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <summary>
         /// Creates the group attribute controls.
         /// </summary>
-        public void CreateGroupAttributeControls( Group group )
+        /// <param name="group">The group.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void CreateGroupAttributeControls( Group group, RockContext rockContext )
         {
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
             CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
@@ -527,7 +551,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             if ( group.Attributes == null )
             {
-                group.LoadAttributes();
+                group.LoadAttributes( rockContext );
             }
 
             _phGroupAttributes.Controls.Clear();

@@ -116,7 +116,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "CheckinGroupTypeEditorScript", script, true );
 
-            CreateGroupTypeAttributeControls();
+            CreateGroupTypeAttributeControls( new RockContext() );
         }
 
         /// <summary>
@@ -280,8 +280,9 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <summary>
         /// Gets the type of the checkin group.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public GroupType GetCheckinGroupType()
+        public GroupType GetCheckinGroupType( RockContext rockContext )
         {
             EnsureChildControls();
             GroupType result = new GroupType();
@@ -296,14 +297,14 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             result.Name = _tbGroupTypeName.Text;
             result.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
 
-            result.LoadAttributes();
+            result.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( _phGroupTypeAttributes, result );
 
             result.ChildGroupTypes = new List<GroupType>();
             int childGroupTypeOrder = 0;
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
             {
-                GroupType childGroupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                GroupType childGroupType = checkinGroupTypeEditor.GetCheckinGroupType( rockContext );
                 childGroupType.Order = childGroupTypeOrder++;
                 result.ChildGroupTypes.Add( childGroupType );
             }
@@ -312,7 +313,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             int childGroupOrder = 0;
             foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
             {
-                Group childGroup = checkinGroupEditor.GetGroup();
+                Group childGroup = checkinGroupEditor.GetGroup( rockContext );
                 childGroup.Order = childGroupOrder++;
                 result.Groups.Add( childGroup );
             }
@@ -340,10 +341,11 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// Gets the checkin label attribute keys.
         /// </summary>
         /// <param name="groupTypeAttribute">The group type attribute.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute )
+        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute, RockContext rockContext )
         {
-            int labelFileTypeId = new BinaryFileTypeService( new RockContext() )
+            int labelFileTypeId = new BinaryFileTypeService( rockContext )
                     .Queryable()
                     .Where( f => f.Guid == new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
                     .Select( f => f.Id )
@@ -388,8 +390,12 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _ddlGroupTypeInheritFrom.SelectedIndexChanged += ddlGroupTypeInheritFrom_SelectedIndexChanged;
 
             _ddlGroupTypeInheritFrom.Items.Add( Rock.Constants.None.ListItem );
-            var qryGroupTypeCheckinFilter = new GroupTypeService( new RockContext() ).Queryable().Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) );
-            foreach ( var groupType in qryGroupTypeCheckinFilter.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            var groupTypeCheckinFilterList = new GroupTypeService( new RockContext() ).Queryable()
+                .Where( a => a.GroupTypePurposeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER ) )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name )
+                .Select( a => new { a.Id, a.Name } ).ToList();
+
+            foreach ( var groupType in groupTypeCheckinFilterList )
             {
                 _ddlGroupTypeInheritFrom.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
@@ -502,10 +508,12 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         {
             this.ForceContentVisible = true;
 
+            var rockContext = new RockContext();
+
             foreach ( var groupEditor in this.Controls.OfType<CheckinGroupEditor>().ToList() )
             {
-                Group group = groupEditor.GetGroup();
-                groupEditor.CreateGroupAttributeControls( group );
+                Group group = groupEditor.GetGroup( rockContext );
+                groupEditor.CreateGroupAttributeControls( group, rockContext );
             }
         }
 
@@ -525,7 +533,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel-title");
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             _lblGroupTypeName.Text = _tbGroupTypeName.Text;
             _lblGroupTypeName.RenderControl( writer );
@@ -603,7 +611,6 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.RenderEndTag();
 
             // groups
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-grouptype-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
@@ -634,18 +641,19 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <summary>
         /// Creates the group type attribute controls.
         /// </summary>
-        private void CreateGroupTypeAttributeControls()
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateGroupTypeAttributeControls( RockContext rockContext )
         {
             // make a fakeGroupType to use to get the Attribute Controls based on GroupType id and InheritedGroupTypeId
             GroupType fakeGroupType = new GroupType();
             fakeGroupType.Id = _hfGroupTypeId.ValueAsInt();
             fakeGroupType.InheritedGroupTypeId = this.InheritedGroupTypeId;
 
-            fakeGroupType.LoadAttributes();
+            fakeGroupType.LoadAttributes( rockContext );
             _phGroupTypeAttributes.Controls.Clear();
 
             // exclude checkin labels 
-            List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType.Attributes ).Select( a => a.Value.Name ).ToList();
+            List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType.Attributes, rockContext ).Select( a => a.Value.Name ).ToList();
             Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
         }
 
