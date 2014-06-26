@@ -31,6 +31,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CheckinGroupTypeEditor runat=server></{0}:CheckinGroupTypeEditor>" )]
     public class CheckinGroupTypeEditor : CompositeControl
     {
+        private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfGroupTypeGuid;
         private HiddenField _hfGroupTypeId;
         private Label _lblGroupTypeName;
@@ -47,33 +48,25 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbAddCheckinGroupType;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [force content visible].
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActivityTypeEditor"/> is expanded.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
         /// </value>
-        public bool ForceContentVisible
+        public bool Expanded
         {
-            private get
+            get
             {
-                return _forceContentVisible;
+                EnsureChildControls();
+                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
             }
 
             set
             {
-                _forceContentVisible = value;
-                if ( _forceContentVisible )
-                {
-                    CheckinGroupTypeEditor parentGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
-                    while ( parentGroupTypeEditor != null )
-                    {
-                        parentGroupTypeEditor.ForceContentVisible = true;
-                        parentGroupTypeEditor = parentGroupTypeEditor.Parent as CheckinGroupTypeEditor;
-                    }
-                }
+                EnsureChildControls();
+                _hfExpanded.Value = value.ToString();
             }
         }
-        private bool _forceContentVisible;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -87,6 +80,9 @@ namespace Rock.Web.UI.Controls
 // checkin-grouptype animation
 $('.checkin-grouptype > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
+
+    $expanded = $(this).children('input.filter-expanded');
+    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
     $('i.checkin-grouptype-state', this).toggleClass('fa-chevron-down');
     $('i.checkin-grouptype-state', this).toggleClass('fa-chevron-up');
@@ -110,6 +106,19 @@ $('.checkin-grouptype a.checkin-grouptype-add-sub-area').click(function (event) 
 // fix so that the Ad Check-in Group button will fire its event, but not the parent event 
 $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (event) {
     event.stopImmediatePropagation();
+});
+
+$('.checkin-grouptype > .panel-body').on('validation-error', function() {
+    var $header = $(this).siblings('header');
+    $(this).slideDown();
+
+    $expanded = $header.children('input.filter-expanded');
+    $expanded.val('True');
+
+    $('i.checkin-grouptype-state', $header).removeClass('fa-chevron-down');
+    $('i.checkin-grouptype-state', $header).addClass('fa-chevron-up');
+
+    return false;
 });
 
 ";
@@ -365,6 +374,12 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         {
             Controls.Clear();
 
+            _hfExpanded = new HiddenFieldWithClass();
+            Controls.Add( _hfExpanded );
+            _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.CssClass = "filter-expanded";
+            _hfExpanded.Value = "False";
+
             _hfGroupTypeGuid = new HiddenField();
             _hfGroupTypeGuid.ID = this.ID + "_hfGroupTypeGuid";
 
@@ -506,7 +521,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGroupTypeInheritFrom_SelectedIndexChanged( object sender, EventArgs e )
         {
-            this.ForceContentVisible = true;
+            this.Expanded = true;
 
             var rockContext = new RockContext();
 
@@ -531,6 +546,9 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
+            // Hidden Field to track expansion
+            _hfExpanded.RenderControl( writer );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-title" );
@@ -553,7 +571,8 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.WriteLine();
 
             writer.WriteLine( "<a class='btn btn-link btn-xs checkin-grouptype-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-link btn-xs'><i class='checkin-grouptype-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='checkin-grouptype-state fa {0}'></i></a>",
+                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
             if ( IsDeleteEnabled )
             {
@@ -573,7 +592,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
-            if ( !ForceContentVisible )
+            if ( !Expanded )
             {
                 writer.AddStyleAttribute( "display", "none" );
             }

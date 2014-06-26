@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.CheckIn
                         parentControl.Controls.Add( item );
                     }
 
-                    ( sortedGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+                    ( sortedGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
                 }
             }
         }
@@ -276,8 +276,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="groupType">Type of the group.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="forceGroupTypeEditorVisible">if set to <c>true</c> [force group type editor visible].</param>
-        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, RockContext rockContext, bool forceGroupTypeEditorVisible = false )
+        /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
+        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
@@ -288,7 +288,10 @@ namespace RockWeb.Blocks.CheckIn
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
             groupTypeEditor.DeleteGroupTypeClick += groupTypeEditor_DeleteGroupTypeClick;
             groupTypeEditor.CheckinLabels = null;
-            groupTypeEditor.ForceContentVisible = forceGroupTypeEditorVisible;
+            if ( createExpanded )
+            {
+                groupTypeEditor.Expanded = true;
+            }
 
             if ( GroupTypeCheckinLabelAttributesState.ContainsKey( groupType.Guid ) )
             {
@@ -415,7 +418,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             CheckinGroupTypeEditor parentEditor = sender as CheckinGroupTypeEditor;
-            parentEditor.ForceContentVisible = true;
+            parentEditor.Expanded = true;
 
             // CheckinArea is GroupType entity
             GroupType checkinArea = new GroupType();
@@ -427,7 +430,7 @@ namespace RockWeb.Blocks.CheckIn
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType( rockContext ) );
 
-            CreateGroupTypeEditorControls( checkinArea, parentEditor, rockContext );
+            CreateGroupTypeEditorControls( checkinArea, parentEditor, rockContext, true );
         }
 
         /// <summary>
@@ -438,7 +441,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupTypeEditor_AddGroupClick( object sender, EventArgs e )
         {
             CheckinGroupTypeEditor parentGroupTypeEditor = sender as CheckinGroupTypeEditor;
-            parentGroupTypeEditor.ForceContentVisible = true;
+            parentGroupTypeEditor.Expanded = true;
 
             Group checkinGroup = new Group();
             checkinGroup.Guid = Guid.NewGuid();
@@ -450,7 +453,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var rockContext = new RockContext();
 
-            CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor, rockContext );
+            CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor, rockContext, true );
         }
 
         /// <summary>
@@ -458,11 +461,17 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="group">The group.</param>
         /// <param name="parentControl">The parent control.</param>
-        /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
-        private void CreateGroupEditorControls( Group group, Control parentControl, RockContext rockContext, bool forceContentVisible = false )
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="createExpanded">if set to <c>true</c> [create expanded].</param>
+        private void CreateGroupEditorControls( Group group, Control parentControl, RockContext rockContext, bool createExpanded = false )
         {
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
+            if ( createExpanded )
+            {
+                groupEditor.Expanded = true;
+            }
+
             groupEditor.SetGroup( group, rockContext );
             var locationService = new LocationService( rockContext );
             var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
@@ -569,7 +578,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var label = checkinGroupTypeEditor.CheckinLabels.FirstOrDefault( a => a.AttributeKey == attributeKey );
             checkinGroupTypeEditor.CheckinLabels.Remove( label );
-            checkinGroupTypeEditor.ForceContentVisible = true;
+            checkinGroupTypeEditor.Expanded = true;
         }
 
         /// <summary>
@@ -580,7 +589,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void btnAddCheckinLabel_Click( object sender, EventArgs e )
         {
             var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
-            groupTypeEditor.ForceContentVisible = true;
+            groupTypeEditor.Expanded = true;
 
             var checkinLabelAttributeInfo = new CheckinGroupTypeEditor.CheckinLabelAttributeInfo();
             checkinLabelAttributeInfo.BinaryFileId = ddlCheckinLabel.SelectedValueAsInt() ?? 0;
@@ -611,7 +620,7 @@ namespace RockWeb.Blocks.CheckIn
         protected void btnCancelAddCheckinLabel_Click( object sender, EventArgs e )
         {
             var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
-            groupTypeEditor.ForceContentVisible = true;
+            groupTypeEditor.Expanded = true;
 
             pnlCheckinLabelPicker.Visible = false;
             pnlDetails.Visible = true;
@@ -632,8 +641,8 @@ namespace RockWeb.Blocks.CheckIn
 
             // set a hidden field value for the Group Guid so we know which Group to add the location to
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
             hfLocationPickerVisible.Value = true.ToString();
             mdLocationPicker.Show();
@@ -647,8 +656,8 @@ namespace RockWeb.Blocks.CheckIn
         protected void groupEditor_DeleteLocationClick( object sender, RowEventArgs e )
         {
             CheckinGroupEditor checkinGroupEditor = sender as CheckinGroupEditor;
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
             var location = checkinGroupEditor.Locations.FirstOrDefault( a => a.LocationId == e.RowKeyId );
             checkinGroupEditor.Locations.Remove( location );
@@ -685,8 +694,8 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            checkinGroupEditor.Expanded = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).Expanded = true;
 
             hfLocationPickerVisible.Value = false.ToString();
             mdLocationPicker.Hide();
@@ -785,7 +794,7 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         hasValidationErrors = true;
                         CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
-                        groupTypeEditor.ForceContentVisible = true;
+                        groupTypeEditor.Expanded = true;
 
                         return;
                     }
@@ -824,7 +833,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             hasValidationErrors = true;
                             CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
-                            groupTypeEditor.ForceContentVisible = true;
+                            groupTypeEditor.Expanded = true;
 
                             return;
                         }
@@ -883,7 +892,7 @@ namespace RockWeb.Blocks.CheckIn
                         hasValidationErrors = true;
                         hasValidationErrors = true;
                         CheckinGroupEditor groupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().First( a => a.GroupGuid == groupDB.Guid );
-                        groupEditor.ForceContentVisible = true;
+                        groupEditor.Expanded = true;
 
                         return;
                     }
