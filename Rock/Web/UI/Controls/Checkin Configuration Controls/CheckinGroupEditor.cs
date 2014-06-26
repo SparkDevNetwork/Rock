@@ -30,8 +30,9 @@ namespace Rock.Web.UI.Controls
     /// Report Filter control
     /// </summary>
     [ToolboxData( "<{0}:CheckinGroupEditor runat=server></{0}:CheckinGroupEditor>" )]
-    public class CheckinGroupEditor : CompositeControl
+    public class CheckinGroupEditor : CompositeControl, IHasValidationGroup
     {
+        private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfGroupGuid;
         private HiddenField _hfGroupId;
         private HiddenField _hfGroupTypeId;
@@ -43,33 +44,43 @@ namespace Rock.Web.UI.Controls
         private Grid _gLocations;
 
         /// <summary>
-        /// Gets or sets a value indicating whether [force content visible].
+        /// Gets or sets a value indicating whether this <see cref="WorkflowActionTypeEditor"/> is expanded.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        ///   <c>true</c> if expanded; otherwise, <c>false</c>.
         /// </value>
-        public bool ForceContentVisible
+        public bool Expanded
         {
-            private get
+            get
             {
-                return _forceContentVisible;
+                EnsureChildControls();
+                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
             }
 
             set
             {
-                _forceContentVisible = value;
-                if ( _forceContentVisible )
-                {
-                    CheckinGroupTypeEditor parentGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
-                    while ( parentGroupTypeEditor != null )
-                    {
-                        parentGroupTypeEditor.ForceContentVisible = true;
-                        parentGroupTypeEditor = parentGroupTypeEditor.Parent as CheckinGroupTypeEditor;
-                    }
-                }
+                EnsureChildControls();
+                _hfExpanded.Value = value.ToString();
             }
         }
-        private bool _forceContentVisible;
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+            set
+            {
+                ViewState["ValidationGroup"] = value;
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -84,6 +95,9 @@ namespace Rock.Web.UI.Controls
 $('.checkin-group > header').click(function () {
     $(this).siblings('.panel-body').slideToggle();
 
+    $expanded = $(this).children('input.filter-expanded');
+    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
+
     $('i.checkin-group-state', this).toggleClass('fa-chevron-down');
     $('i.checkin-group-state', this).toggleClass('fa-chevron-up');
 });
@@ -96,6 +110,17 @@ $('.checkin-group a.btn-danger').click(function (event) {
 // fix so that the Reorder button will fire its event, but not the parent event 
 $('.checkin-group a.checkin-group-reorder').click(function (event) {
     event.stopImmediatePropagation();
+});
+
+$('.checkin-group > .panel-body').on('validation-error', function() {
+    var $header = $(this).siblings('header');
+    $(this).slideDown();
+
+    $expanded = $header.children('input.filter-expanded');
+    $expanded.val('True');
+
+    $('i.checkin-group-state', $header).removeClass('fa-chevron-down');
+    $('i.checkin-group-state', $header).addClass('fa-chevron-up');
 });
 ";
 
@@ -325,6 +350,12 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             Controls.Clear();
 
+            _hfExpanded = new HiddenFieldWithClass();
+            Controls.Add( _hfExpanded );
+            _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.CssClass = "filter-expanded";
+            _hfExpanded.Value = "False";
+
             _hfGroupGuid = new HiddenField();
             _hfGroupGuid.ID = this.ID + "_hfGroupGuid";
 
@@ -446,6 +477,9 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
+            // Hidden Field to track expansion
+            _hfExpanded.RenderControl( writer );
+
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _lblGroupName.Text = _tbGroupName.Text;
@@ -456,7 +490,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.WriteLine( "<a class='btn btn-link btn-xs checkin-group-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-link btn-xs'><i class='checkin-group-state fa fa-chevron-down'></i></a>" );
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='checkin-group-state fa {0}'></i></a>",
+                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
             if ( IsDeleteEnabled )
             {
@@ -475,26 +510,13 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
-
-            bool forceContentVisible = ForceContentVisible;
-
-            if ( Page.IsPostBack )
-            {
-                var postbackBtn = Page.FindControl( Page.Request.Params["__EVENTTARGET"] ) as LinkButton;
-                if ( postbackBtn != null && postbackBtn.CausesValidation )
-                {
-                    Group group = this.GetGroup( new RockContext() );
-                    forceContentVisible = !group.IsValid || ForceContentVisible;
-                }
-            }
-
-            if ( !forceContentVisible )
+            if ( !Expanded )
             {
                 // hide details if the name has already been filled in
                 writer.AddStyleAttribute( "display", "none" );
             }
 
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // make two span6 columns: Left Column for Name and Attributes. Right Column for Locations Grid
