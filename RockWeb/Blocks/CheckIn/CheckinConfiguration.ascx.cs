@@ -275,7 +275,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
-            groupTypeEditor.SetGroupType( groupType );
+            groupTypeEditor.SetGroupType( groupType.Id, groupType.Guid, groupType.Name, groupType.InheritedGroupTypeId );
             groupTypeEditor.AddGroupClick += groupTypeEditor_AddGroupClick;
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
             groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
@@ -295,28 +295,29 @@ namespace RockWeb.Blocks.CheckIn
                 groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
 
                 groupType.LoadAttributes();
-                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
+                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType.Attributes ).Select( a => a.Key ).ToList();
                 BinaryFileService binaryFileService = new BinaryFileService( new RockContext() );
 
                 foreach ( string key in labelAttributeKeys )
                 {
                     var attributeValue = groupType.GetAttributeValue( key );
                     int binaryFileId = attributeValue.AsInteger();
-                    var binaryFile = binaryFileService.Get( binaryFileId );
-                    if ( binaryFile != null )
+                    var fileName = binaryFileService.Queryable().Where( a => a.Id == binaryFileId ).Select( a => a.FileName ).FirstOrDefault();
+                    if ( fileName != null )
                     {
-                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
+                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = fileName } );
                     }
                 }
             }
 
             parentControl.Controls.Add( groupTypeEditor );
 
+            // get the GroupType from the control just in case the InheritedFrom changed
+            var childGroupGroupType = groupTypeEditor.GetCheckinGroupType();
+
             foreach ( var childGroup in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                // get the GroupType from the control just in case it the InheritedFrom changed
-                childGroup.GroupType = groupTypeEditor.GetCheckinGroupType();
-
+                childGroup.GroupType = childGroupGroupType;
                 CreateGroupEditorControls( childGroup, groupTypeEditor, false );
             }
 
@@ -393,7 +394,6 @@ namespace RockWeb.Blocks.CheckIn
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentGroupType );
-            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes, true );
         }
@@ -417,7 +417,6 @@ namespace RockWeb.Blocks.CheckIn
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType() );
-            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, parentEditor );
         }
@@ -641,13 +640,14 @@ namespace RockWeb.Blocks.CheckIn
             CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
 
             // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
-            if ( locationPicker.Location != null )
+            var location = new LocationService( new RockContext() ).Get( locationPicker.SelectedValue.AsInteger() );
+            if ( location != null )
             {
-                if ( !checkinGroupEditor.Locations.Any( a => a.LocationId == locationPicker.Location.Id ) )
+                if ( !checkinGroupEditor.Locations.Any( a => a.LocationId == location.Id ) )
                 {
                     CheckinGroupEditor.LocationGridItem gridItem = new CheckinGroupEditor.LocationGridItem();
-                    gridItem.LocationId = locationPicker.Location.Id;
-                    gridItem.Name = locationPicker.Location.Name;
+                    gridItem.LocationId = location.Id;
+                    gridItem.Name = location.Name;
                     checkinGroupEditor.Locations.Add( gridItem );
                 }
             }
@@ -765,7 +765,7 @@ namespace RockWeb.Blocks.CheckIn
                     groupTypeDB = groupTypeService.Get( groupTypeDB.Guid );
 
                     // rebuild the CheckinLabel attributes from the UI (brute-force)
-                    foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB ) )
+                    foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB.Attributes ) )
                     {
                         var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
                         Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
@@ -1031,7 +1031,6 @@ namespace RockWeb.Blocks.CheckIn
             // Load the Controls
             foreach ( GroupType groupType in checkinGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                groupType.LoadAttributes();
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
             }
         }

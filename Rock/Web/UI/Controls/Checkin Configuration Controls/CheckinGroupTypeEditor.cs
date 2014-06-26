@@ -323,22 +323,25 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         /// <summary>
         /// Sets the type of the group.
         /// </summary>
-        /// <param name="value">The value.</param>
-        public void SetGroupType( GroupType value )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <param name="groupTypeName">Name of the group type.</param>
+        /// <param name="inheritedGroupTypeId">The inherited group type identifier.</param>
+        public void SetGroupType( int groupTypeId, Guid groupTypeGuid, string groupTypeName, int? inheritedGroupTypeId )
         {
             EnsureChildControls();
-            _hfGroupTypeId.Value = value.Id.ToString();
-            _hfGroupTypeGuid.Value = value.Guid.ToString();
-            _tbGroupTypeName.Text = value.Name;
-            _ddlGroupTypeInheritFrom.SetValue( value.InheritedGroupTypeId );
+            _hfGroupTypeId.Value = groupTypeId.ToString();
+            _hfGroupTypeGuid.Value = groupTypeGuid.ToString();
+            _tbGroupTypeName.Text = groupTypeName;
+            _ddlGroupTypeInheritFrom.SetValue( inheritedGroupTypeId );
         }
 
         /// <summary>
         /// Gets the checkin label attribute keys.
         /// </summary>
-        /// <param name="value">The value.</param>
+        /// <param name="groupTypeAttribute">The group type attribute.</param>
         /// <returns></returns>
-        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( GroupType value )
+        public static Dictionary<string, Rock.Web.Cache.AttributeCache> GetCheckinLabelAttributes( Dictionary<string, Rock.Web.Cache.AttributeCache> groupTypeAttribute )
         {
             int labelFileTypeId = new BinaryFileTypeService( new RockContext() )
                     .Queryable()
@@ -346,7 +349,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
                     .Select( f => f.Id )
                     .FirstOrDefault();
 
-            return value.Attributes
+            return groupTypeAttribute
                 .Where( a => a.Value.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ) )
                 .Where( a => a.Value.QualifierValues.ContainsKey( "binaryFileType" ) )
                 .Where( a => a.Value.QualifierValues["binaryFileType"].Value.Equals( labelFileTypeId.ToString() ) )
@@ -642,7 +645,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             _phGroupTypeAttributes.Controls.Clear();
 
             // exclude checkin labels 
-            List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType ).Select( a => a.Value.Name ).ToList();
+            List<string> checkinLabelAttributeNames = GetCheckinLabelAttributes( fakeGroupType.Attributes ).Select( a => a.Value.Name ).ToList();
             Rock.Attribute.Helper.AddEditControls( fakeGroupType, _phGroupTypeAttributes, true, string.Empty, checkinLabelAttributeNames );
         }
 
