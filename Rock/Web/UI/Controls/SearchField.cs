@@ -43,6 +43,8 @@ namespace Rock.Web.UI.Controls
 
             string script = string.Format( @"Rock.controls.searchField.initialize({{ controlId: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "search-field-" + this.ID, script, true );
+
+            this.CssClass = "searchinput";
         }
 
         /// <summary>
