@@ -101,16 +101,19 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         protected void LoadDropDowns()
         {
-            string groupId = this.GetAttributeValue( "ResidencyGraderSecurityRole" );
+            var graderRoleGuid = this.GetAttributeValue( "ResidencyGraderSecurityRole" ).AsGuidOrNull();
 
             List<Person> facilitatorList = new List<Person>();
 
-            Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( groupId.AsInteger() );
-            if ( residencyGraderSecurityRole != null )
+            if ( graderRoleGuid.HasValue )
             {
-                foreach ( var groupMember in residencyGraderSecurityRole.Members.ToList().OrderBy( a => a.Person.FullName ) )
+                Group residencyGraderSecurityRole = new GroupService( new Rock.Data.RockContext() ).Get( graderRoleGuid.Value );
+                if ( residencyGraderSecurityRole != null )
                 {
-                    facilitatorList.Add( groupMember.Person );
+                    foreach ( var groupMember in residencyGraderSecurityRole.Members.ToList().OrderBy( a => a.Person.FullName ) )
+                    {
+                        facilitatorList.Add( groupMember.Person );
+                    }
                 }
             }
 

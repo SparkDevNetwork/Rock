@@ -10,6 +10,7 @@
 
             <asp:HiddenField ID="hfProjectId" runat="server" />
             <asp:HiddenField ID="hfCompetencyId" runat="server" />
+            <asp:HiddenField ID="hfCloneFromProjectId" runat="server" />
 
             <div class="banner">
                 <h1>
@@ -24,7 +25,7 @@
 
                 <div class="row">
                     <div class="col-md-12">
-
+                        <Rock:NotificationBox ID="nbCloneMessage" runat="server" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="com.ccvonline.Residency.Model.Project, com.ccvonline.Residency" PropertyName="Description" TextMode="MultiLine" Rows="3" CssClass="input-xxlarge" />
                         <Rock:RockLiteral ID="lblPeriod" runat="server" Label="Period" />

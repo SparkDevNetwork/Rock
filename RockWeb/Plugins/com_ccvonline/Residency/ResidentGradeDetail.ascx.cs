@@ -195,7 +195,8 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
                 if ( competencyPersonProjectAssessmentPointOfAssessment.ProjectPointOfAssessment.IsPassFail )
                 {
-                    competencyPersonProjectAssessmentPointOfAssessment.Rating = ckPointOfAssessmentPassFail.Checked ? 5 : 1;
+                    // Pass = 4, Fail = 1 (even though 5 is the highest)
+                    competencyPersonProjectAssessmentPointOfAssessment.Rating = ckPointOfAssessmentPassFail.Checked ? 4 : 1;
                 }
                 else
                 {

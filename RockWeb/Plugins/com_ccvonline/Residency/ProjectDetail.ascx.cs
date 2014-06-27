@@ -173,6 +173,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             Project project;
             ResidencyService<Project> projectService = new ResidencyService<Project>( residencyContext );
+            ResidencyService<ProjectPointOfAssessment> projectPointOfAssessmentService = new ResidencyService<ProjectPointOfAssessment>( residencyContext );
 
             int projectId = int.Parse( hfProjectId.Value );
 
@@ -195,6 +196,23 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             {
                 // Controls will render the error messages
                 return;
+            }
+
+            if ( hfCloneFromProjectId.ValueAsInt() > 0 )
+            {
+                var cloneProject = projectService.Get( hfCloneFromProjectId.ValueAsInt() );
+                foreach ( var projectPointOfAssessment in cloneProject.ProjectPointOfAssessments )
+                {
+                    var newProjectPointOfAssessment = new ProjectPointOfAssessment
+                    {
+                        PointOfAssessmentTypeValueId = projectPointOfAssessment.PointOfAssessmentTypeValueId,
+                        AssessmentOrder = projectPointOfAssessment.AssessmentOrder,
+                        AssessmentText = projectPointOfAssessment.AssessmentText,
+                        IsPassFail = projectPointOfAssessment.IsPassFail
+                    };
+
+                    projectPointOfAssessmentService.Add( newProjectPointOfAssessment );
+                }
             }
 
             residencyContext.SaveChanges();
@@ -246,6 +264,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             }
 
             hfProjectId.Value = project.Id.ToString();
+            hfCloneFromProjectId.Value = ( PageParameter( "CloneFromProjectId" ).AsInteger() ).ToString();
             hfCompetencyId.Value = project.CompetencyId.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -285,7 +304,17 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         {
             if ( project.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( Project.FriendlyTypeName ).FormatAsHtmlTitle();
+                if ( hfCloneFromProjectId.ValueAsInt() > 0 )
+                {
+                    var cloneProject = new ResidencyService<Project>( new ResidencyContext() ).Get( hfCloneFromProjectId.ValueAsInt() );
+                    string title = string.Format( "Clone project from {0}", cloneProject.Name );
+                    nbCloneMessage.Text = string.Format( "This will add a new project, and copy all the points of assessments from {0}", cloneProject.Name );
+                    lReadOnlyTitle.Text = title.FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lReadOnlyTitle.Text = ActionTitle.Add( Project.FriendlyTypeName ).FormatAsHtmlTitle();
+                }
             }
             else
             {

@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using com.ccvonline.Residency.Data;
 using com.ccvonline.Residency.Model;
 using Rock;
@@ -106,6 +108,30 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         }
 
         /// <summary>
+        /// Handles the RowCommand event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewCommandEventArgs"/> instance containing the event data.</param>
+        protected void gList_RowCommand( object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e )
+        {
+            int? rowIndex = ( e.CommandArgument as string ).AsIntegerOrNull();
+            if ( rowIndex != null )
+            {
+                GridViewRow row = ( sender as Grid ).Rows[rowIndex.Value];
+                RowEventArgs rowEventArgs = new RowEventArgs( row );
+
+                if ( e.CommandName.Equals( "clone" ) )
+                {
+                    Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                    qryParams.Add( "ProjectId", "0" );
+                    qryParams.Add( "CompetencyId", hfCompetencyId.Value );
+                    qryParams.Add( "CloneFromProjectId", rowEventArgs.RowKeyId.ToString() );
+                    NavigateToLinkedPage( "DetailPage", qryParams );
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -185,5 +211,6 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         }
 
         #endregion
+        
     }
 }
