@@ -3981,6 +3981,9 @@ header .page-menu,
 header .login-status {
   float: right;
 }
+header .navbar {
+  background-color: #3a3a3a;
+}
 #announcement-rotator {
   margin: 0 -15px 30px;
 }
