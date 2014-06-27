@@ -37154,7 +37154,7 @@
             Field Attribute to select an activity type from a workflow type.
             </summary>
         </member>
-        <member name="M:Rock.Attribute.WorkflowActivityTypeAttribute.#ctor(System.String,System.String,System.Boolean,System.String,System.String,System.Int32,System.String,System.String)">
+        <member name="M:Rock.Attribute.WorkflowActivityTypeAttribute.#ctor(System.String,System.String,System.Boolean,System.String,System.String,System.Int32,System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:Rock.Attribute.WorkflowActivityTypeAttribute"/> class.
             </summary>
