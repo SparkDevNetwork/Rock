@@ -71,19 +71,17 @@ namespace Rock.Workflow.Action
                             if ( personAttribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid() ).Id )
                             {
                                 SetWorkflowAttributeValue( action, guid, personAlias.Guid.ToString() );
-                                return true;
                             }
                             else if ( personAttribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.TEXT.AsGuid() ).Id )
                             {
                                 SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
-                                return true;
                             }
                         }
                     }
                 }
             }
 
-            return false;
+            return true;
         }
 
     }
