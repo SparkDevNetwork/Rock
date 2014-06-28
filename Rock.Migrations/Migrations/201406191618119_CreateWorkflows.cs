@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -66,13 +66,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             RockMigrationHelper.AddBlockTypeAttribute( "83CB0C72-4F0A-44A7-98D0-260CE33788E9", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Workflow Entry Page", "WorkflowEntryPage", "", "", 0, @"", "031DD6B2-7131-4BC7-9609-4FEED6D8AEA1" );
 
             // Attrib Value for Block:Bio, Attribute:Actions Layout: PersonDetail, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "35F69669-48DE-4182-B828-4EC9C1C31B08", @"<li>
-    <a href='~/LaunchWorkflow/12?PersonId={0}' tabindex='0'>
-        <i class='fa fa-exclamation'></i>
-        Report Data Error
-    </a>
-</li>
-" );
+            RockMigrationHelper.AddBlockAttributeValue( "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "35F69669-48DE-4182-B828-4EC9C1C31B08", @"" );
             // Attrib Value for Block:Activate Workflow, Attribute:Workflow Entry Page Page: LaunchWorkflow, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "C0717EB6-80B2-48AF-AD86-EF46678F6780", "031DD6B2-7131-4BC7-9609-4FEED6D8AEA1", @"0550d2aa-a705-4400-81ff-ab124fdf83d7,f62c0ff5-7132-43da-a23b-a4fcd8077000" );
             // Attrib Value for Block:Workflow Entry, Attribute:Workflow Type Page: Contact Us, Site: Rock Solid Church
@@ -286,7 +280,7 @@ INSERT INTO [BinaryFileType]
             RockMigrationHelper.UpdateWorkflowType( false, true, "Person Data Error", "Used to report an issue with a person profile record.", "BBAE05FD-8192-4616-A71E-903A927E0D90", "Report", "fa fa-exclamation", 0, false, 0, "221BF486-A82C-40A7-85B7-BB44DA45582F" ); // Person Data Error
             RockMigrationHelper.UpdateWorkflowType( false, true, "External Inquiry", "Used on public website when visitor selects to \"Contact Us\"", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Inquiry", "fa fa-phone", 0, false, 0, "236AB611-EDE8-42B5-B559-6B6A88ADDDCB" ); // External Inquiry
             RockMigrationHelper.UpdateWorkflowType( false, true, "Facilities Request", "Request the maintenance team to fix a facilities issue.", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Work Request", "fa fa-building", 0, false, 0, "417D8016-92DC-4F25-ACFF-A071B591FA4F" ); // Facilities Request
-            RockMigrationHelper.UpdateWorkflowType( false, true, "IT Support", "Request the maintenance team to fix a facilities issue.", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Work Request", "fa fa-desktop", 0, false, 0, "51FE9641-FB8F-41BF-B09E-235900C3E53E" ); // IT Support
+            RockMigrationHelper.UpdateWorkflowType( false, true, "IT Support", "Request support for a computer hardware and/or software issue.", "78E38655-D951-41DB-A0FF-D6474775CFA1", "Work Request", "fa fa-desktop", 0, false, 0, "51FE9641-FB8F-41BF-B09E-235900C3E53E" ); // IT Support
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "221BF486-A82C-40A7-85B7-BB44DA45582F", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Person", "Person", "The person that the data error is being reported for.  If this issue was initiated directly from the person profile record (using 'Actions' option), this value will automatically be populated.", 0, @"", "FD89F2C8-CBC8-4ED1-96D1-891AB9616C9E" ); // Person Data Error:Person
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "221BF486-A82C-40A7-85B7-BB44DA45582F", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Reported By", "ReportedBy", "The person who reported the data error.", 1, @"", "C8FD97B5-ADC0-4EF0-B397-E4010850148C" ); // Person Data Error:Reported By
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "221BF486-A82C-40A7-85B7-BB44DA45582F", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Details ( Please be as specific as possible )", "Details", "Please enter as much information as possible regarding the details about the data error for the selected person.", 2, @"", "094C9A07-F5CB-49DB-8B67-9B7616356D2C" ); // Person Data Error:Details ( Please be as specific as possible )
@@ -313,7 +307,7 @@ INSERT INTO [BinaryFileType]
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "417D8016-92DC-4F25-ACFF-A071B591FA4F", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Details", "Details", "The details about the facilities issue", 2, @"", "0DCDB750-4789-4A5F-B673-4954E94A81B4" ); // Facilities Request:Details
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "1B71FEF4-201F-4D53-8C60-2DF21F1985ED", "Campus", "Campus", "", 0, @"", "9DEC1697-1ED6-4CC0-B054-F9E0D975DF12" ); // IT Support:Campus
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Title", "Summary", "Title of the request (please keep short)", 1, @"", "59F1FB67-F2B3-441E-ACE3-9B10AB7E674F" ); // IT Support:Title
-            RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Details", "Details", "The details about the facilities issue", 2, @"", "9C2E0B04-8319-4967-9E0A-DB062398566C" ); // IT Support:Details
+            RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Details", "Details", "Details about the hardware and/or software issue", 2, @"", "9C2E0B04-8319-4967-9E0A-DB062398566C" ); // IT Support:Details
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Requester", "Requester", "The person who made the request", 3, @"", "CE01E29E-4A9C-4BBF-BBCD-235713A81353" ); // IT Support:Requester
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "Worker", "Worker", "The person assigned to work on the request", 4, @"", "9D165825-21F2-4B5F-9A64-790A6EBD51AC" ); // IT Support:Worker
             RockMigrationHelper.UpdateWorkflowTypeAttribute( "51FE9641-FB8F-41BF-B09E-235900C3E53E", "E4EAB7B2-0B76-429B-AFE4-AD86D7428C70", "New Worker", "NewWorker", "If the request needs to be re-assigned to a different person, select the new person here.", 5, @"", "91D7D16C-F6A1-4B85-A7EE-A0D20B5A2BC5" ); // IT Support:New Worker
@@ -373,15 +367,15 @@ away, please call <strong>{{ GlobalAttribute.OrganizationPhone }}</strong> to sp
 <p>
 Complete the form below to request that the maintenance team address a facilities issue.  
 </p>
-<br/>", @"", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^Thank You. Your request has been forwarded to the maintenance team who will be following up with you soon.|", "", true, "", "445FD357-9948-421B-BB1C-1D1F589112CB" ); // Facilities Request:Request:Prompt User
+<br/>", @"", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^FCB5C4EC-E25B-45D2-88E1-51F525A073A4^Thank You. Your request has been forwarded to the maintenance team who will be following up with you soon.|", "", true, "", "445FD357-9948-421B-BB1C-1D1F589112CB" ); // Facilities Request:Request:Prompt User
             RockMigrationHelper.UpdateWorkflowActionForm( @"<h4>{{ Workflow.Title }}</h4>
 ", @"", "Save^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^The information you entered has been saved.|Done^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^|", "", true, "AFE0AC86-88E3-4145-8E0C-421458681A13", "EB869AA0-C81F-4BA0-9A76-A18A0A544BC6" ); // Facilities Request:Open:Capture Notes
             RockMigrationHelper.UpdateWorkflowActionForm( @"<h4>{{ Workflow.Title }}</h4>", @"<p>Select Submit to close this workflow and notify the requester.</p>", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^739CEAE9-4FAB-4FE5-A824-6D2E569D637C^Your information has been submitted succesfully.|Cancel^8cf6e927-4fa5-4241-991c-391038b79631^8226D12E-654A-41CF-B8B9-E4DFC6470402^|", "", true, "", "A08FC955-BB1A-4747-8FE3-88E3A2DB646E" ); // Facilities Request:Enter Resolution:Enter Resolution
             RockMigrationHelper.UpdateWorkflowActionForm( @"<h2>Request</h2>
 <p>
-Complete the form below to request that the maintenance team address a facilities issue.  
+Complete the form below to request support from the IT team. 
 </p>
-<br/>", @"", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^Thank You. Your request has been forwarded to the maintenance team who will be following up with you soon.|", "", true, "", "36D3F2F7-CDA9-4D56-BEF1-21DDAF4E89B3" ); // IT Support:Request:Prompt User
+<br/>", @"", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^9AC84ADE-DAD2-4045-B27D-232B248C9457^Thank You. Your request has been forwarded to the IT team who will be following up with you soon.|", "", true, "", "36D3F2F7-CDA9-4D56-BEF1-21DDAF4E89B3" ); // IT Support:Request:Prompt User
             RockMigrationHelper.UpdateWorkflowActionForm( @"<h4>{{ Workflow.Title }}</h4>
 ", @"", "Save^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^The information you entered has been saved.|Done^fdc397cd-8b4a-436e-bea1-bce2e6717c03^^|", "", true, "45E50ED8-6922-41BF-B88F-1960DCEAAE99", "B3C205F8-C917-4F45-8F73-CDC8E64B6CF8" ); // IT Support:Open:Capture Notes
             RockMigrationHelper.UpdateWorkflowActionForm( @"<h4>{{ Workflow.Title }}</h4>", @"<p>Select Submit to close this workflow and notify the requester.</p>", "Submit^fdc397cd-8b4a-436e-bea1-bce2e6717c03^CAB42A01-6430-42A1-B476-206B5930EA97^Your information has been submitted succesfully.|Cancel^8cf6e927-4fa5-4241-991c-391038b79631^70B8DEB8-D641-4E64-A327-79D96B8B6756^|", "", true, "", "6DE4BBEA-67A2-4B14-973F-6E699228620D" ); // IT Support:Enter Resolution:Enter Resolution
@@ -473,6 +467,7 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.UpdateWorkflowActionFormAttribute( "6DE4BBEA-67A2-4B14-973F-6E699228620D", "96F7BABE-49AA-46C5-8016-5E7246C97A48", 8, true, false, false, "7004FB2B-7468-441C-BF2C-43B95F9135FB" ); // IT Support:Enter Resolution:Enter Resolution:Resolution
             RockMigrationHelper.UpdateWorkflowActionType( "F238E2D8-AAE0-481F-BABF-955C0A3343CC", "Set the Reported By value", 0, "24B7D5E6-C30F-48F4-9D7E-AF45A342CF3A", true, false, "", "", 1, "", "D56341AE-7A81-445F-B2CC-21C84A767D6C" ); // Person Data Error:Entry:Set the Reported By value
             RockMigrationHelper.UpdateWorkflowActionType( "F238E2D8-AAE0-481F-BABF-955C0A3343CC", "Enter Details", 1, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "CB8C9C9D-C81D-4B31-92CA-3BCEAE1DBA87", "", 1, "", "341569AB-76F6-44E8-A033-CE29FDE8035F" ); // Person Data Error:Entry:Enter Details
+            RockMigrationHelper.UpdateWorkflowActionType( "F238E2D8-AAE0-481F-BABF-955C0A3343CC", "Persist the Workflow", 2, "F1A39347-6FE0-43D4-89FB-544195088ECF", true, false, "", "", 1, "", "5169CBED-08DF-4ABD-91AB-83A2637C5515" ); // Person Data Error:Entry:Persist the Workflow
             RockMigrationHelper.UpdateWorkflowActionType( "31D6A610-9F0B-4136-8FEA-8F4E192D75B8", "Assign Worker", 1, "FB2981B7-7922-42E1-8ACF-7F63BB7989E6", true, false, "", "", 1, "", "F6311295-5E9E-4521-A92D-71DAFCCDD4B6" ); // Person Data Error:Pending:Assign Worker
             RockMigrationHelper.UpdateWorkflowActionType( "31D6A610-9F0B-4136-8FEA-8F4E192D75B8", "Capture the Resolution", 2, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "FF998128-3917-4102-9F82-AD6B706DD173", "", 1, "", "6AF4C1E2-461A-432B-9184-068D08DF8F49" ); // Person Data Error:Pending:Capture the Resolution
             RockMigrationHelper.UpdateWorkflowActionType( "31D6A610-9F0B-4136-8FEA-8F4E192D75B8", "Rename the Workflow", 0, "36005473-BD5D-470B-B28D-98E6D7ED808D", true, false, "", "", 1, "", "D8E9AF9C-1280-4ABB-8F96-7BF62F516A5B" ); // Person Data Error:Pending:Rename the Workflow
@@ -502,6 +497,7 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.UpdateWorkflowActionType( "EC0C5563-00F8-4C3A-A085-BCC8D1926DBA", "Open", 1, "38907A90-1634-4A93-8017-619326A4A582", true, false, "", "", 1, "", "DB6A3EE9-9280-4CFB-BC9B-337946FA7A66" ); // External Inquiry:Missions Inquiry:Open
             RockMigrationHelper.UpdateWorkflowActionType( "074B237A-348C-4BD6-BE1E-0EDDC4F376E9", "Open", 1, "38907A90-1634-4A93-8017-619326A4A582", true, false, "", "", 1, "", "BDE13807-217D-4EC6-923E-8536EB5F3443" ); // External Inquiry:Pastoral Inquiry:Open
             RockMigrationHelper.UpdateWorkflowActionType( "074B237A-348C-4BD6-BE1E-0EDDC4F376E9", "Assign Worker", 0, "17962C23-2E94-4E06-8461-0FB8B94E2FEA", true, false, "", "", 1, "", "50D07904-5523-494C-BD11-62015C67CBE6" ); // External Inquiry:Pastoral Inquiry:Assign Worker
+            RockMigrationHelper.UpdateWorkflowActionType( "E9A017DF-EB72-4DC9-B2A4-5A424383C7E0", "Complete Workflow", 0, "EEDA4318-F014-4A46-9C76-4C052EF81AA1", true, false, "", "", 1, "", "63CD1086-3505-47C9-9A10-4CDDB99D06B1" ); // External Inquiry:Complete:Complete Workflow
             RockMigrationHelper.UpdateWorkflowActionType( "2B912003-91E7-43B6-8060-A5ED97C4EDEE", "Assign Activity to Worker", 0, "F100A31F-E93A-4C7A-9E55-0FAF41A101C4", true, false, "", "", 1, "", "5B37C3A6-5579-48DE-BDF7-C8F61C96A32A" ); // External Inquiry:Open:Assign Activity to Worker
             RockMigrationHelper.UpdateWorkflowActionType( "2B912003-91E7-43B6-8060-A5ED97C4EDEE", "Capture Notes", 1, "486DC4FA-FCBC-425F-90B0-E606DA8A9F68", true, false, "EB7034BA-6300-434F-832F-37983B9DF154", "", 1, "", "6261A690-CFFF-4CD6-9258-C9BCA78163F1" ); // External Inquiry:Open:Capture Notes
             RockMigrationHelper.UpdateWorkflowActionType( "2B912003-91E7-43B6-8060-A5ED97C4EDEE", "Assign New Worker", 2, "38907A90-1634-4A93-8017-619326A4A582", true, true, "", "56A33DB7-FAC1-41F9-B42D-CC24D7A20466", 64, "", "586D24C8-3BE0-4638-B32F-170C9853F51D" ); // External Inquiry:Open:Assign New Worker
@@ -638,7 +634,7 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "F46A76F8-BDB4-434F-8A31-88810F8CE2ED", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // External Inquiry:General Inquiry:Open:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "7CEC1D71-5676-441A-B499-4A1C63BF0146", "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC", @"" ); // Facilities Request:Assign Worker:Notify Worker:From
             RockMigrationHelper.AddActionTypeAttributeValue( "89FCD9D3-EB29-4111-8D09-C45CE58DA61B", "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC", @"" ); // IT Support:Assign Worker:Notify Worker:From
-            RockMigrationHelper.AddActionTypeAttributeValue( "89FCD9D3-EB29-4111-8D09-C45CE58DA61B", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"Facilities Request: {{ Workflow.Name }}" ); // IT Support:Assign Worker:Notify Worker:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "89FCD9D3-EB29-4111-8D09-C45CE58DA61B", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"IT Support Request: {{ Workflow.Name }}" ); // IT Support:Assign Worker:Notify Worker:Subject
             RockMigrationHelper.AddActionTypeAttributeValue( "7CEC1D71-5676-441A-B499-4A1C63BF0146", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"Facilities Request: {{ Workflow.Name }}" ); // Facilities Request:Assign Worker:Notify Worker:Subject
             RockMigrationHelper.AddActionTypeAttributeValue( "7CEC1D71-5676-441A-B499-4A1C63BF0146", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ GlobalAttribute.EmailHeader }}
 
@@ -652,7 +648,7 @@ Complete the form below to request that the maintenance team address a facilitie
 " ); // Facilities Request:Assign Worker:Notify Worker:Body
             RockMigrationHelper.AddActionTypeAttributeValue( "89FCD9D3-EB29-4111-8D09-C45CE58DA61B", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ GlobalAttribute.EmailHeader }}
 
-<p>The following Facilities Request has been submitted by {{ Workflow.Requester }}:</p>
+<p>The following IT Support Request has been submitted by {{ Workflow.Requester }}:</p>
 
 <h4><a href='{{ GlobalAttribute.InternalApplicationRoot }}WorkflowEntry/{{ Workflow.WorkflowTypeId }}?WorkflowGuid={{ Workflow.Guid }}'>{{ Workflow.Name }}</a></h4>
 <p>{{ Workflow.Details }}</p>
@@ -666,13 +662,15 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "7F8353CE-1F0C-4217-89D4-D478DA8BF9B1", "CE28B79D-FBC2-4894-9198-D923D0217549", @"False" ); // Facilities Request:Assign Worker:Clear New Worker:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "7F8353CE-1F0C-4217-89D4-D478DA8BF9B1", "7AC47975-71AC-4A2F-BF1F-115CF5578D6F", @"8f9e8196-087f-49d6-9879-aa139c7a1225" ); // Facilities Request:Assign Worker:Clear New Worker:Attribute
             RockMigrationHelper.AddActionTypeAttributeValue( "7F8353CE-1F0C-4217-89D4-D478DA8BF9B1", "18EF907D-607E-4891-B034-7AA379D77854", @"" ); // Facilities Request:Assign Worker:Clear New Worker:Order
+            RockMigrationHelper.AddActionTypeAttributeValue( "5169CBED-08DF-4ABD-91AB-83A2637C5515", "50B01639-4938-40D2-A791-AA0EB4F86847", @"False" ); // Person Data Error:Entry:Persist the Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "5169CBED-08DF-4ABD-91AB-83A2637C5515", "86F795B0-0CB6-4DA4-9CE4-B11D0922F361", @"" ); // Person Data Error:Entry:Persist the Workflow:Order
             RockMigrationHelper.AddActionTypePersonAttributeValue( "7F8353CE-1F0C-4217-89D4-D478DA8BF9B1", "5C803BD1-40FA-49B1-AE7E-68F43D3687BB", @"" ); // Facilities Request:Assign Worker:Clear New Worker:Person
             RockMigrationHelper.AddActionTypePersonAttributeValue( "1A86A352-EE93-4C6C-B752-9F977B8E84F7", "5C803BD1-40FA-49B1-AE7E-68F43D3687BB", @"" ); // IT Support:Assign Worker:Clear New Worker:Person
             RockMigrationHelper.AddActionTypeAttributeValue( "06DCFDC8-72DE-4C7D-B937-74FE07ED54F1", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // IT Support:Assign Worker:Activate Open Activity:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "06DCFDC8-72DE-4C7D-B937-74FE07ED54F1", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"4a8ff789-887c-4bd7-8761-6e7d8d59bb5f" ); // IT Support:Assign Worker:Activate Open Activity:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "06DCFDC8-72DE-4C7D-B937-74FE07ED54F1", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"70B8DEB8-D641-4E64-A327-79D96B8B6756" ); // IT Support:Assign Worker:Activate Open Activity:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "06DCFDC8-72DE-4C7D-B937-74FE07ED54F1", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // IT Support:Assign Worker:Activate Open Activity:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "566F71EC-2082-4813-AEB0-C6BA19C002D9", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // Facilities Request:Assign Worker:Activate Open Activity:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "566F71EC-2082-4813-AEB0-C6BA19C002D9", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"bbfd8cb9-e4b3-46fc-8923-a67fc995ef94" ); // Facilities Request:Assign Worker:Activate Open Activity:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "566F71EC-2082-4813-AEB0-C6BA19C002D9", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"8226D12E-654A-41CF-B8B9-E4DFC6470402" ); // Facilities Request:Assign Worker:Activate Open Activity:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "566F71EC-2082-4813-AEB0-C6BA19C002D9", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // Facilities Request:Assign Worker:Activate Open Activity:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "D0E5B32D-90EA-44DE-A5ED-CA78C6396B24", "E0F7AB7E-7761-4600-A099-CB14ACDBF6EF", @"False" ); // Facilities Request:Open:Assign Activity to Worker:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "D0E5B32D-90EA-44DE-A5ED-CA78C6396B24", "FBADD25F-D309-4512-8430-3CC8615DD60E", @"e0d71111-05f1-4cd3-959e-1d246613942e" ); // Facilities Request:Open:Assign Activity to Worker:Attribute
@@ -698,18 +696,18 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "49C04C16-D80C-4371-90FD-E065581F5780", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"074b237a-348c-4bd6-be1e-0eddc4f376e9" ); // External Inquiry:Login Inquiry:Open:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "49C04C16-D80C-4371-90FD-E065581F5780", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // External Inquiry:Login Inquiry:Open:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "92E64B7D-5F6D-4B89-9C2B-50038062EB8E", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // Facilities Request:Open:Done:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "92E64B7D-5F6D-4B89-9C2B-50038062EB8E", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"bbfd8cb9-e4b3-46fc-8923-a67fc995ef94" ); // Facilities Request:Open:Done:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "92E64B7D-5F6D-4B89-9C2B-50038062EB8E", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"EBE339D7-53AD-45E8-8610-19C01BA1A0AB" ); // Facilities Request:Open:Done:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "92E64B7D-5F6D-4B89-9C2B-50038062EB8E", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // Facilities Request:Open:Done:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "F90FEBD6-B1E0-445C-AC9F-F4D53EE09227", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // IT Support:Open:Done:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "F90FEBD6-B1E0-445C-AC9F-F4D53EE09227", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"4a8ff789-887c-4bd7-8761-6e7d8d59bb5f" ); // IT Support:Open:Done:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "F90FEBD6-B1E0-445C-AC9F-F4D53EE09227", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"60D58F02-1D58-40FF-AA40-1637CC8F8DC1" ); // IT Support:Open:Done:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "F90FEBD6-B1E0-445C-AC9F-F4D53EE09227", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // IT Support:Open:Done:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "6AF4C1E2-461A-432B-9184-068D08DF8F49", "234910F2-A0DB-4D7D-BAF7-83C880EF30AE", @"False" ); // Person Data Error:Pending:Capture the Resolution:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "6AF4C1E2-461A-432B-9184-068D08DF8F49", "C178113D-7C86-4229-8424-C6D0CF4A7E23", @"" ); // Person Data Error:Pending:Capture the Resolution:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "F6BCA594-3CBE-45F4-A13D-7CE380FF8C9C", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // IT Support:Open:Assign New Worker:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "F6BCA594-3CBE-45F4-A13D-7CE380FF8C9C", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"4a8ff789-887c-4bd7-8761-6e7d8d59bb5f" ); // IT Support:Open:Assign New Worker:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "F6BCA594-3CBE-45F4-A13D-7CE380FF8C9C", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"9AC84ADE-DAD2-4045-B27D-232B248C9457" ); // IT Support:Open:Assign New Worker:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "F6BCA594-3CBE-45F4-A13D-7CE380FF8C9C", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // IT Support:Open:Assign New Worker:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "477FEB2F-8B83-4D89-BAFC-6161678B2069", "E8ABD802-372C-47BE-82B1-96F50DB5169E", @"False" ); // Facilities Request:Open:Assign New Worker:Active
-            RockMigrationHelper.AddActionTypeAttributeValue( "477FEB2F-8B83-4D89-BAFC-6161678B2069", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"bbfd8cb9-e4b3-46fc-8923-a67fc995ef94" ); // Facilities Request:Open:Assign New Worker:Activity
+            RockMigrationHelper.AddActionTypeAttributeValue( "477FEB2F-8B83-4D89-BAFC-6161678B2069", "02D5A7A5-8781-46B4-B9FC-AF816829D240", @"FCB5C4EC-E25B-45D2-88E1-51F525A073A4" ); // Facilities Request:Open:Assign New Worker:Activity
             RockMigrationHelper.AddActionTypeAttributeValue( "477FEB2F-8B83-4D89-BAFC-6161678B2069", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // Facilities Request:Open:Assign New Worker:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "66F30491-F718-4DE9-90C6-2CB6F5F8C433", "A134F1A7-3824-43E0-9EB1-22C899B795BD", @"False" ); // Facilities Request:Open:Re-Activate This Activity:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "66F30491-F718-4DE9-90C6-2CB6F5F8C433", "5DA71523-E8B0-4C4D-89A4-B47945A22A0C", @"" ); // Facilities Request:Open:Re-Activate This Activity:Order
@@ -770,7 +768,7 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "6EC85180-3513-419A-AAA1-E4A37ECB94A1", "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC", @"" ); // Facilities Request:Complete:Notify Requester:From
             RockMigrationHelper.AddActionTypeAttributeValue( "15D058D6-81FC-449E-8090-DD8AAFF533C0", "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC", @"" ); // IT Support:Complete:Notify Requester:From
             RockMigrationHelper.AddActionTypeAttributeValue( "15D058D6-81FC-449E-8090-DD8AAFF533C0", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"IT Support Request Completed" ); // IT Support:Complete:Notify Requester:Subject
-            RockMigrationHelper.AddActionTypeAttributeValue( "6EC85180-3513-419A-AAA1-E4A37ECB94A1", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"IT Support Request Completed" ); // Facilities Request:Complete:Notify Requester:Subject
+            RockMigrationHelper.AddActionTypeAttributeValue( "6EC85180-3513-419A-AAA1-E4A37ECB94A1", "5D9B13B6-CD96-4C7C-86FA-4512B9D28386", @"Facilities Request Completed" ); // Facilities Request:Complete:Notify Requester:Subject
             RockMigrationHelper.AddActionTypeAttributeValue( "6EC85180-3513-419A-AAA1-E4A37ECB94A1", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ GlobalAttribute.EmailHeader }}
 
 <p>The following Facilities Request has been completed by {{ Workflow.Worker }}:</p>
@@ -786,7 +784,7 @@ Complete the form below to request that the maintenance team address a facilitie
 " ); // Facilities Request:Complete:Notify Requester:Body
             RockMigrationHelper.AddActionTypeAttributeValue( "15D058D6-81FC-449E-8090-DD8AAFF533C0", "4D245B9E-6B03-46E7-8482-A51FBA190E4D", @"{{ GlobalAttribute.EmailHeader }}
 
-<p>The following Facilities Request has been completed by {{ Workflow.Worker }}:</p>
+<p>The following IT Support Request has been completed by {{ Workflow.Worker }}:</p>
 
 <h4>{{ Workflow.Name }}</h4>
 <p>{{ Workflow.Details }}</p>
@@ -828,6 +826,8 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "586D24C8-3BE0-4638-B32F-170C9853F51D", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // External Inquiry:Open:Assign New Worker:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "3CB3F9B5-C1B5-4E4E-BBFB-0801521E62E1", "A134F1A7-3824-43E0-9EB1-22C899B795BD", @"False" ); // External Inquiry:Open:Re-Activate These Actions:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "3CB3F9B5-C1B5-4E4E-BBFB-0801521E62E1", "5DA71523-E8B0-4C4D-89A4-B47945A22A0C", @"" ); // External Inquiry:Open:Re-Activate These Actions:Order
+            RockMigrationHelper.AddActionTypeAttributeValue( "63CD1086-3505-47C9-9A10-4CDDB99D06B1", "0CA0DDEF-48EF-4ABC-9822-A05E225DE26C", @"False" ); // External Inquiry:Complete:Complete Workflow:Active
+            RockMigrationHelper.AddActionTypeAttributeValue( "63CD1086-3505-47C9-9A10-4CDDB99D06B1", "25CAD4BE-5A00-409D-9BAB-E32518D89956", @"" ); // External Inquiry:Complete:Complete Workflow:Order
             RockMigrationHelper.AddActionTypeAttributeValue( "0E268839-D6BD-43A7-BAAC-A2ADEA12C5F1", "D7EAA859-F500-4521-9523-488B12EAA7D2", @"False" ); // External Inquiry:Re-assign Worker:Set Worker:Active
             RockMigrationHelper.AddActionTypeAttributeValue( "0E268839-D6BD-43A7-BAAC-A2ADEA12C5F1", "44A0B977-4730-4519-8FF6-B0A01A95B212", @"04712fbd-715d-412e-96c3-10c748482d6e" ); // External Inquiry:Re-assign Worker:Set Worker:Attribute
             RockMigrationHelper.AddActionTypeAttributeValue( "0E268839-D6BD-43A7-BAAC-A2ADEA12C5F1", "57093B41-50ED-48E5-B72B-8829E62704C8", @"" ); // External Inquiry:Re-assign Worker:Set Worker:Order
@@ -841,6 +841,22 @@ Complete the form below to request that the maintenance team address a facilitie
             RockMigrationHelper.AddActionTypeAttributeValue( "4D4B2DF5-B4CD-4C1A-BEE1-3EBC63552349", "3809A78C-B773-440C-8E3F-A8E81D0DAE08", @"" ); // External Inquiry:Re-assign Worker:Re-Activate Open Activity:Order
 
             #endregion
+
+            Sql( @"
+-- Update the Action attribute on person bio block
+DECLARE @BlockId int = ( SELECT [Id] FROM [Block] WHERE [Guid] = 'B5C1FDB6-0224-43E4-8E26-6B2EAF86253A' )
+DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '35F69669-48DE-4182-B828-4EC9C1C31B08' )
+DECLARE @WorkflowTypeId int = (	SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '221BF486-A82C-40A7-85B7-BB44DA45582F' )
+UPDATE [AttributeValue] SET [Value] = '
+	<li>
+		<a href=''~/LaunchWorkflow/' + CONVERT(varchar, @WorkflowTypeId) + '?PersonId={0}'' tabindex=''0''>
+			<i class=''fa fa-exclamation''></i>
+			Report Data Error
+		</a>
+	</li>'
+WHERE [AttributeId] = @AttributeId
+AND [EntityId] = @BlockId
+" );
         }
 
         /// <summary>
