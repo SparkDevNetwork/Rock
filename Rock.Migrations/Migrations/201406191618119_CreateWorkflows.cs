@@ -844,9 +844,9 @@ Complete the form below to request support from the IT team.
 
             Sql( @"
 -- Update the Action attribute on person bio block
-SET @BlockId = ( SELECT [Id] FROM [Block] WHERE [Guid] = 'B5C1FDB6-0224-43E4-8E26-6B2EAF86253A' )
-SET @AttributeId = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '35F69669-48DE-4182-B828-4EC9C1C31B08' )
-SET @WorkflowTypeId = (	SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '221BF486-A82C-40A7-85B7-BB44DA45582F' )
+DECLARE @BlockId int = ( SELECT [Id] FROM [Block] WHERE [Guid] = 'B5C1FDB6-0224-43E4-8E26-6B2EAF86253A' )
+DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '35F69669-48DE-4182-B828-4EC9C1C31B08' )
+DECLARE @WorkflowTypeId int = (	SELECT [Id] FROM [WorkflowType] WHERE [Guid] = '221BF486-A82C-40A7-85B7-BB44DA45582F' )
 UPDATE [AttributeValue] SET [Value] = '
 	<li>
 		<a href=''~/LaunchWorkflow/' + CONVERT(varchar, @WorkflowTypeId) + '?PersonId={0}'' tabindex=''0''>
