@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 
 <!--
-   _______       _____           _   ____         _______ _             _____ _                   
+  _______       _____           _   ____         _______ _             _____ _                   
  |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |                  
     | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _  
     | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | | 
@@ -111,7 +111,7 @@
                                 <Rock:Zone Name="Footer" runat="server" />
                             </div>
                             <div class="col-md-4">
-                                <p class="text-center">
+                                <p class="text-center" style="color: #808080">
                                     <i class="fa fa-star"></i>Rock Beta <i class="fa fa-star"></i>
                                     <br />
                                     <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a>

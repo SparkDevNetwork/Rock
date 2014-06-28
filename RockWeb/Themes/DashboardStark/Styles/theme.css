@@ -484,6 +484,9 @@ ul.rocktree ul {
   height: 80px;
   padding: 15px;
 }
+.page-list-as-blocks ul li:hover {
+  background-color: #e2e2e2;
+}
 @media (min-width: 768px) {
   .page-list-as-blocks ul li {
     margin: 0 2.5% 15px;
