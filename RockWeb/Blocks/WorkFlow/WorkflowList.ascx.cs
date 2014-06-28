@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "workflowId", 0 );
+            NavigateToLinkedPage( "EntryPage", "WorkflowTypeId", _workflowType.Id );
         }
 
         /// <summary>
