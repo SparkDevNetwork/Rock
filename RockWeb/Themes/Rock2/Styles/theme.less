@@ -6,22 +6,11 @@
 @import "_variables.less";
 @import "_print.less";
 
-// Fonts
+/*#region  
+// Fonts                       */
 // -------------------------
 
-// regular (weight 'normal' aka 400)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-// light (weight 300)
+// light (weight 400 = 'normal')
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
@@ -29,11 +18,23 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
-    font-weight: 300;
+    font-weight: 400;
     font-style: normal;
 }
 
-// semi-bold (weight 600)
+// regular (weight 500)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 500;
+    font-style: normal;
+}
+
+// semi-bold (weight 700)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
@@ -41,11 +42,11 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
-    font-weight: 600;
+    font-weight: 700;
     font-style: normal;
 }
 
-// bold (weight 700)
+// bold (weight 900)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
@@ -53,31 +54,36 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
-    font-weight: 700;
+    font-weight: 900;
     font-style: normal;
 }
+/*#endregion */
 
 /*
     Rock Theme Styles
 
     1. Theme Variables
-    1. HTML Overrides
-    2. Bootstrap Overides
-    3. Rock Overrides
-    3. Theme Styling
-    4. Utilities
-    5. Responsive Overrides 
-    6. Navbar Utilities
+    2. HTML Overrides
+    3. Bootstrap Overides
+    4. Rock Overrides
+    5. Theme Styling
+    6. Utilities
+    7. Responsive Overrides 
+    8. Side Navbar
+    9. Person Details
 
 */
 
-// 1. Theme Variables
+/*#region  
+// 1. Theme Variables        */
 // -------------------------
 @sidebar-bg:     #3a3a3a;
 @sidebar-text-color: #bbb;
+/*#endregion */
 
 
-// 1. HTML Overrides
+/*#region  
+// 2. HTML Overrides         */
 // -------------------------
 
 main {
@@ -88,36 +94,72 @@ body {
     background-color: @sidebar-bg;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
     font-weight: @font-weight-light;
     letter-spacing: -1px;
 }
 
-// 2. Bootstrap Overrides 
+a:hover {
+    text-decoration: none;
+}
+
+/*#endregion */
+
+
+/*#region  
+// 3. Bootstrap Overrides    */
 // ------------------------- 
 
 // panel tweaks
 .panel-title {
     font-weight: @font-weight-light;
     letter-spacing: -1px;
+    font-size: 18px;
 }
 
 .panel {
     border-radius: 0;
-    
+    border-top-width: 0;
+    border-color: @gray-lighter;
+    border-top: 3px solid @gray-lighter;
+
     .panel-heading {
         padding: 6px 10px;
-        border-top: 3px solid #bbb;
+        border-color: @gray-lighter;
+        border-radius: 0;
+
+        i {
+            margin-right: 4px;
+        }
+    }
+
+    .panel-body {
+        
+        .grid {
+            margin: 0 -15px;
+
+            .grid-filter {
+                border-radius: 0;
+            }
+        }
+        
     }
 
     &.panel-default {
         .panel-heading {
-            background-color: #fff;
+            background-color: #efefef;
+
+            i {
+                color: #6a6a6a;
+            }
         }
     }
 }
+/*#endregion */
 
-// 3. Rock Overrides 
+
+/*#region  
+// 4. Rock Overrides         */
 // -------------------------
 
 .smartsearch {
@@ -151,87 +193,16 @@ h1, h2, h3 {
     display: inline;
     color: #6a6a6a;
 } 
+/*#endregion */
 
 
-// 3. Theme Styling 
+/*#region  
+// 5. Theme Styling          */
 // -------------------------
 
 #page-wrapper {
     width: 100%;
     overflow: hidden;
-}
-
-.navbar-static-side {
-    background-color: @sidebar-bg;
-    color: @sidebar-text-color;
-    display: none;
-    position: absolute;
-
-    .navbar-header {
-        height: 51px;
-        width: 100%;
-        background-color: darken(@sidebar-bg, 5%);
-
-        .logo {
-            background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
-            height: 35px;
-            width: 36px;
-            background-size: contain;
-            margin: 8px auto 0;
-        }
-    }
-
-    .navbar-side {
-        margin-top: 24px;
-        display: inline-block;
-        width: 100%;
-
-        & > li {
-            text-align: center;
-
-            &.open {
-                background-color: darken(@sidebar-bg, 5%);
-
-                > a {
-                    background-color: darken(@sidebar-bg, 5%);
-                }
-            }
-
-            a {
-                color: @sidebar-text-color;
-                
-                &:hover {
-                    background-color: darken(@sidebar-bg, 3%);
-                }
-            }
-
-            & > a {
-                i {
-                    font-size: 24px;
-                }
-            
-                span {
-                    display: none;
-                }
-            }
-
-            .nav-childpages {
-                display: none;
-
-                
-                li a {
-                    line-height: 1.1em;
-                    padding: 6px;
-                }
-
-                li.header {
-                    margin-top: 14px;
-                    color: darken(@sidebar-text-color, 20%);
-                    margin-left: 4px;
-                }
-            }
-        }
-    }
 }
 
 #content-wrapper {
@@ -241,8 +212,8 @@ h1, h2, h3 {
 
     header {
         .navbar-default {
-            background-color: #d4d4d4;
-            border-color: #bcbcbc;
+            background-color: @gray-lighter;
+            border-color: darken(@gray-lighter, 5%);
 
             .navbar-header {
                 padding: 8px 0 0 12px;
@@ -309,9 +280,11 @@ h1, h2, h3 {
         top: -12px;
     }
 }
+/*#endregion */
 
 
-// 4. Utilities 
+/*#region  
+// 6. Utilities              */
 // -------------------------
 
 .divided {
@@ -341,8 +314,11 @@ h1, h2, h3 {
     cursor: pointer;
     display: inline-block;
 }
+/*#endregion */
 
-// 5. Responsive Overrides 
+
+/*#region 
+// 7. Responsive Overrides  */
 // -------------------------
 
 // default styling should be for phones 767px or less
@@ -353,6 +329,89 @@ h1, h2, h3 {
 }
 
 // Medium devices (desktops, 992px and up) 
+@media (min-width: @screen-md-min) {
+
+    
+}
+
+// Large devices (large desktops, 1200px and up) 
+@media (min-width: @screen-lg-min) {
+
+}
+/*#endregion */
+
+
+/*#region  
+// 8. Side Navbar             */
+// ------------------------- 
+
+
+// base styles
+.navbar-static-side {
+    background-color: @sidebar-bg;
+    color: @sidebar-text-color;
+    display: none;
+    position: absolute;
+
+    .navbar-header {
+        height: 51px;
+        width: 100%;
+        background-color: darken(@sidebar-bg, 5%);
+
+        .logo {
+            background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+            height: 35px;
+            width: 36px;
+            background-size: contain;
+            margin: 8px auto 0;
+        }
+    }
+
+    .navbar-side {
+        margin-top: 24px;
+        display: inline-block;
+        width: 100%;
+
+        & > li {
+            text-align: center;
+
+            a {
+                color: @sidebar-text-color;
+                
+                &:hover {
+                    background-color: darken(@sidebar-bg, 3%);
+                }
+            }
+
+            & > a {
+                i {
+                    font-size: 24px;
+                }
+            
+                span {
+                    display: none;
+                }
+            }
+
+            .nav-childpages {
+                display: none;
+      
+                li a {
+                    line-height: 1.1em;
+                    padding: 6px;
+                }
+
+                li.header {
+                    margin-top: 14px;
+                    color: darken(@sidebar-text-color, 20%);
+                    margin-left: 4px;
+                }
+            }
+        }
+    }
+}
+
+// expanded view 
 @media (min-width: @screen-md-min) {
 
     .navbar-static-side {
@@ -374,6 +433,14 @@ h1, h2, h3 {
                 display: inline-block;
                 width: 100%;
                 margin-top: 0;
+
+                &.open {
+                    background-color: darken(@sidebar-bg, 5%);
+
+                    > a {
+                        background-color: darken(@sidebar-bg, 5%);
+                    }
+                }
 
                 & > a {
                     padding-left: 24px;
@@ -427,14 +494,7 @@ h1, h2, h3 {
     }
 }
 
-// Large devices (large desktops, 1200px and up) 
-@media (min-width: @screen-lg-min) {
-
-}
-
-
-// 6. Navbar Utilities (must be after responsive overrides) 
-// ----------------------------------------------------------
+// minimized view
 body.navbar-side-minimized {
 
     .navbar-static-side {
@@ -477,7 +537,7 @@ body.navbar-side-minimized {
                     top: 0;
                     left: 70px;
                     position: absolute;
-                    z-index: 20;
+                    z-index: 9999;
                     background-color: @sidebar-bg;
                     display: none;
                     font-size: 14px;
@@ -509,3 +569,29 @@ body.navbar-side-minimized {
         margin-left: 70px;
     }
 }
+/*#endregion */
+
+
+/*#region 
+// 9. Person Details  */
+// -------------------------
+
+.personprofile {
+
+    .personprofilebar-badge,
+    .personprofilebar-family,
+    .pagetabs,
+    .person-content {
+        padding: 0 15px;
+    }
+
+    .personprofilebar-bio {
+        margin-top: 12px;
+    }
+
+    .pagetabs {
+        margin-bottom: 12px;
+    }
+}
+
+/*#endregion */
