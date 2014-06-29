@@ -83,21 +83,7 @@
 
             <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
                 <Content>
-                    <div class="modal-body">
-                        <div id="preview-modal-scroll-container" class="scroll-container scroll-container-vertical">
-                            <div class="scrollbar">
-                                <div class="track">
-                                    <div class="thumb">
-                                        <div class="end"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="viewport">
-                                <div class="overview">
-                                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
-                                </div>
-                            </div>
-                        </div>
+                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
                 </Content>
             </Rock:ModalDialog>
 
