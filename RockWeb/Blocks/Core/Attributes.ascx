@@ -4,14 +4,6 @@
     function clearActiveDialog() {
         $('#<%=hfActiveDialog.ClientID %>').val('');
     }
-
-    Sys.Application.add_load(function () {
-        $('.js-grid-scroll').tinyscrollbar({ size: 150, sizethumb: 20 });
-        $find('<%=mdAttribute.BehaviorID %>').add_shown(function () {
-            $('.js-grid-scroll').tinyscrollbar_update('relative');
-        });
-    });
-
 </script>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
@@ -24,10 +16,10 @@
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
                 <Columns>
-                    <asp:BoundField 
-                        DataField="Id" 
-                        HeaderText="Id" 
-                        SortExpression="EntityType.FriendlyName" 
+                    <asp:BoundField
+                        DataField="Id"
+                        HeaderText="Id"
+                        SortExpression="EntityType.FriendlyName"
                         ItemStyle-Wrap="false"
                         ItemStyle-HorizontalAlign="Right"
                         HeaderStyle-HorizontalAlign="Right" />
@@ -66,37 +58,22 @@
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="mdAttribute" runat="server" Title="Attribute" OnCancelScript="clearActiveDialog();" ValidationGroup="Attribute" >
+        <Rock:ModalDialog ID="mdAttribute" runat="server" Title="Attribute" OnCancelScript="clearActiveDialog();" ValidationGroup="Attribute">
             <Content>
-
-    
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                <div class="scroll-container js-grid-scroll scroll-container-vertical" style="width: 720px">
-                    <div class="scrollbar">
-                        <div class="track">
-                            <div class="thumb">
-                                <div class="end"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="viewport" style="width: 690px">
-                        <div class="overview">
-                            <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" />
-                            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
-                            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
-                            <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" />
-                        </div>
-                    </div>
-                </div>
+                <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" />
+                <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+                <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" />
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="mdAttributeValue" runat="server" Title="Attribute Value" OnCancelScript="clearActiveDialog();" ValidationGroup="AttributeValue" >
+        <Rock:ModalDialog ID="mdAttributeValue" runat="server" Title="Attribute Value" OnCancelScript="clearActiveDialog();" ValidationGroup="AttributeValue">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue"  />
-                <fieldset id="fsEditControl" runat="server"/>
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AttributeValue" />
+                <fieldset id="fsEditControl" runat="server" />
             </Content>
         </Rock:ModalDialog>
 
