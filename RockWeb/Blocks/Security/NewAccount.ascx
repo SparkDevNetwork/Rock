@@ -103,7 +103,7 @@
             <asp:Literal ID="lFoundDuplicateCaption" runat="server" />
         </div>
 
-        <Rock:Grid ID="gDuplicates" runat="server">
+        <div class="grid"><Rock:Grid ID="gDuplicates" runat="server"></div>
         <Columns>
             <asp:TemplateField>
                 <HeaderTemplate>You?</HeaderTemplate>

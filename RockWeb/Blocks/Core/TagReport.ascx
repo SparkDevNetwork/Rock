@@ -7,7 +7,10 @@
 
             <h4><asp:Literal ID="lTaggedTitle" runat="server"></asp:Literal></h4>
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" />
+            
+            <div class="grid">
+                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" OnRowSelected="gReport_RowSelected" />
+            </div>
 
         </asp:Panel>
 

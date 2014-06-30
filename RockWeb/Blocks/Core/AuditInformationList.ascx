@@ -7,34 +7,39 @@
 
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-            <Rock:GridFilter ID="gfSettings" runat="server">
-                <Rock:EntityTypePicker ID="etpEntityTypeFilter" runat="server" Label="Entity Type" IncludeGlobalOption="false" />
-                <Rock:RockTextBox ID="tbEntityIdFilter" runat="server" Label="Entity Id" />
-                <Rock:PersonPicker ID="ppWhoFilter" runat="server" Label="Who" />
-            </Rock:GridFilter>
-            <Rock:Grid ID="gAuditInformationList" runat="server" AllowSorting="true" OnRowSelected="gAuditInformationList_Select">
-                <Columns>
-                    <Rock:EnumField DataField="AuditType" HeaderText="Action" SortExpression="AuditType" />
-                    <asp:BoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
-                    <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                    <Rock:RockBoundField DataField="Title" HeaderText="Entity Description" SortExpression="Title" TruncateLength="80" HtmlEncode="true" />
-                    <asp:BoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                    <Rock:DateTimeField DataField="DateTime" HeaderText="When" SortExpression="DateTime" />
-                    <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="PersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
-                </Columns>
-            </Rock:Grid>
+            <div class="grid">
+                <Rock:GridFilter ID="gfSettings" runat="server">
+                    <Rock:EntityTypePicker ID="etpEntityTypeFilter" runat="server" Label="Entity Type" IncludeGlobalOption="false" />
+                    <Rock:RockTextBox ID="tbEntityIdFilter" runat="server" Label="Entity Id" />
+                    <Rock:PersonPicker ID="ppWhoFilter" runat="server" Label="Who" />
+                </Rock:GridFilter>
+                <Rock:Grid ID="gAuditInformationList" runat="server" AllowSorting="true" OnRowSelected="gAuditInformationList_Select">
+                    <Columns>
+                        <Rock:EnumField DataField="AuditType" HeaderText="Action" SortExpression="AuditType" />
+                        <asp:BoundField DataField="EntityType" HeaderText="Entity Type" SortExpression="EntityType" />
+                        <asp:BoundField DataField="EntityId" HeaderText="Entity Id" SortExpression="EntityId" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                        <Rock:RockBoundField DataField="Title" HeaderText="Entity Description" SortExpression="Title" TruncateLength="80" HtmlEncode="true" />
+                        <asp:BoundField DataField="Properties" HeaderText="Properties Updated" SortExpression="Properties" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                        <Rock:DateTimeField DataField="DateTime" HeaderText="When" SortExpression="DateTime" />
+                        <asp:HyperLinkField DataTextField="PersonName" DataNavigateUrlFields="PersonId" SortExpression="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Who" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
         </asp:Panel>
 
         <Rock:ModalDialog ID="mdProperties" runat="server" Title="Properties Updated" >
             <Content>
-                <Rock:Grid ID="gProperties" runat="server" AllowSorting="false" EmptyDataText="No Properties" ShowActionRow="false" AllowPaging="false">
-                    <Columns>
-                        <asp:BoundField DataField="Property" HeaderText="Property" SortExpression="EntityType" />
-                        <asp:BoundField DataField="OriginalValue" HeaderText="Original Value" SortExpression="OriginalValue" />
-                        <asp:BoundField DataField="CurrentValue" HeaderText="New Value" SortExpression="CurrentValue" />
-                    </Columns>
-                </Rock:Grid>
+                
+                <div class="grid">
+                    <Rock:Grid ID="gProperties" runat="server" AllowSorting="false" EmptyDataText="No Properties" ShowActionRow="false" AllowPaging="false">
+                        <Columns>
+                            <asp:BoundField DataField="Property" HeaderText="Property" SortExpression="EntityType" />
+                            <asp:BoundField DataField="OriginalValue" HeaderText="Original Value" SortExpression="OriginalValue" />
+                            <asp:BoundField DataField="CurrentValue" HeaderText="New Value" SortExpression="CurrentValue" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
             </Content>
         </Rock:ModalDialog>
     </ContentTemplate>
