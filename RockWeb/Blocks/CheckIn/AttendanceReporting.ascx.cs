@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// Shows a graph of attendance statistics which can be configured for specific groups, date range, etc.
     /// </summary>
-    [DisplayName( "Attendance Reporting" )]
+    [DisplayName( "Attendance Analysis" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
 
@@ -185,6 +185,58 @@ namespace RockWeb.Blocks.CheckIn
                 dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
             }
 
+            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            lcAttendance.TooltipFormatter = null;
+            switch ( groupBy )
+            {
+                case AttendanceGroupBy.Week:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+                case AttendanceGroupBy.Month:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+                case AttendanceGroupBy.Year:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = itemDate.getFullYear();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+            }
+
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
@@ -232,6 +284,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
             }
+
             return selectedGroupIds;
         }
 
@@ -279,7 +332,6 @@ namespace RockWeb.Blocks.CheckIn
             {
                 foreach ( ListItem item in cblGroup.Items )
                 {
-
                     item.Selected = selectAll || groupIdList.Contains( item.Value );
                 }
             }
@@ -311,10 +363,14 @@ namespace RockWeb.Blocks.CheckIn
             if ( pnlGrid.Visible )
             {
                 pnlGrid.Visible = false;
+                lShowGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
+                lShowGrid.ToolTip = "Show Data";
             }
             else
             {
                 pnlGrid.Visible = true;
+                lShowGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
+                lShowGrid.ToolTip = "Hide Data";
                 BindGrid();
             }
         }
