@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Manager.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Manager" %>
 
-<asp:UpdatePanel ID="upnlContent" runat="server">
+<Rock:RockUpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <div class="checkin-manager">
@@ -22,44 +22,26 @@
 
             <div class="panel panel-default">
 
-                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading">
-                    <asp:LinkButton ID="lbNavHeading" runat="server" OnClick="lbNavigate_Click">
-                        <asp:PlaceHolder runat="server">
-                            <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
-                        </asp:PlaceHolder>
-                    </asp:LinkButton>
+                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable">
+                    <asp:PlaceHolder runat="server">
+                        <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
+                    </asp:PlaceHolder>
                 </asp:Panel>
 
                 <ul class="list-group">
                     <asp:Repeater ID="rptNavItems" runat="server">
                         <ItemTemplate>
-                            <li class="list-group-item">
-                                <asp:LinkButton ID="lbNavItem" runat="server" OnClick="lbNavigate_Click" CommandArgument='<%# Eval("TypeKey").ToString() + Eval("Id").ToString() %>'>
-                                    <asp:PlaceHolder runat="server">
-                                        <%# Eval("Name") %>
-                                        <span class="pull-right">
-                                            <span class="badge"><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
-                                            &nbsp;&nbsp;
-                                            <i class='fa fa-fw fa-chevron-right'></i>
-                                        </span>
-                                    </asp:PlaceHolder>
-                                </asp:LinkButton>
+                            <li id="liNavItem" runat="server" class="list-group-item clickable" >
+                                <asp:PlaceHolder runat="server">
+                                    <%# Eval("Name") %>
+                                    <span class="pull-right">
+                                        <span class="badge"><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
+                                        &nbsp;&nbsp;
+                                        <i class='fa fa-fw fa-chevron-right'></i>
+                                    </span>
+                                </asp:PlaceHolder>
                             </li>
                         </ItemTemplate>
-                        <AlternatingItemTemplate>
-                            <li class="list-group-item">
-                                <asp:LinkButton ID="lbNavItem" runat="server" OnClick="lbNavigate_Click" CommandArgument='<%# Eval("TypeKey").ToString() + Eval("Id").ToString() %>'>
-                                    <asp:PlaceHolder runat="server">
-                                        <%# Eval("Name") %>
-                                        <span class="pull-right">
-                                            <span class="badge"><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
-                                            &nbsp;&nbsp;
-                                            <i class="fa fa-fw"></i>
-                                        </span>
-                                    </asp:PlaceHolder>
-                                </asp:LinkButton>
-                            </li>
-                        </AlternatingItemTemplate>
                     </asp:Repeater>
                 </ul>
 
@@ -68,4 +50,4 @@
         </div>
 
     </ContentTemplate>
-</asp:UpdatePanel>
+</Rock:RockUpdatePanel>
