@@ -6,12 +6,12 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="pull-right">
-                    <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-table'></i>" ToolTip="Show Grid" OnClick="lShowGrid_Click" />
+                    <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-xs" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowGrid_Click" />
                 </div>
             </div>
         </div>
         <asp:Panel ID="pnlGrid" runat="server" Visible="false">
-            
+
             <div class="grid">
                 <Rock:Grid ID="gAttendance" runat="server" AllowSorting="true" DataKeyNames="DateTimeStamp,SeriesId" RowItemText="Attendance Summary">
                     <Columns>
@@ -22,6 +22,10 @@
                 </Rock:Grid>
             </div>
         </asp:Panel>
+
+        <div class="actions">
+            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the chart" OnClick="btnApply_Click" />
+        </div>
 
         <div class="row">
             <div class="col-md-6">
@@ -65,10 +69,6 @@
 
                 </ul>
             </div>
-        </div>
-
-        <div class="actions">
-            <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" OnClick="btnApply_Click" />
         </div>
 
         <script>
