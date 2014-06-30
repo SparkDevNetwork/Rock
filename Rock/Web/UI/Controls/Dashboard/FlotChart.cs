@@ -365,6 +365,35 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Javascript that will format the tooltip.  
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// function(item) { 
+        ///     var dateText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+        ///     var seriesLabel = item.series.label;
+        ///     var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+        ///     return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+        /// }
+        /// </code>
+        /// </example>
+        /// <value>
+        /// The tooltip formatter.
+        /// </value>
+        public string TooltipFormatter
+        {
+            get
+            {
+                return ViewState["TooltipFormatter"] as string;
+            }
+
+            set
+            {
+                ViewState["TooltipFormatter"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show debug].
         /// </summary>
         /// <value>
@@ -610,7 +639,7 @@ namespace Rock.Web.UI.Controls
                 _hfSeriesNameUrl.Value = null;
             }
 
-            string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}')", this.ClientID ) : null;
+            string tooltipScript = ShowTooltip ? string.Format( "Rock.controls.charts.bindTooltip('{0}', {1})", this.ClientID, this.TooltipFormatter ?? "null" ) : null;
             string chartClickScript = GetChartClickScript();
 
             string script = string.Format(
