@@ -128,12 +128,15 @@
             </fieldset>
 
             <br />
-            <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" ShowConfirmDeleteDialog="false" >
-                <Columns>
-                    <asp:BoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
-                    <Rock:DeleteField OnClick="gContactList_Delete" />
-                </Columns>
-            </Rock:Grid>
+            
+            <div class="grid">
+                <Rock:Grid ID="gContactList" runat="server" EmptyDataText="No Contacts Found" AllowSorting="true" ShowConfirmDeleteDialog="false" >
+                    <Columns>
+                        <asp:BoundField DataField="FullName" HeaderText="Contact Name" SortExpression="FullName" />
+                        <Rock:DeleteField OnClick="gContactList_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>

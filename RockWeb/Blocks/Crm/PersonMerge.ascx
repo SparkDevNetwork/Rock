@@ -9,7 +9,10 @@
             Text="You need to select at least two people to merge." />
 
         <asp:HiddenField ID="hfSelectedColumn" runat="server" />
-        <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
+        
+        <div class="grid">
+            <Rock:Grid ID="gValues" runat="server" AllowSorting="false" EmptyDataText="No Results" />
+        </div>
             
         <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Title="Account Hijack Possible:" Heading="Security Alert" 
             Text="Because there are two different emails associated with this merge, and at least one of the records has a login, be sure to proceed with caution.

@@ -21,13 +21,15 @@
         </div>
 
         <h4><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
-        <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
-            <Columns>
-                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                <asp:BoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
-            </Columns>
-        </Rock:Grid>
+        <div class="grid">
+            <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
+                <Columns>
+                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    <asp:BoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
+                </Columns>
+            </Rock:Grid>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

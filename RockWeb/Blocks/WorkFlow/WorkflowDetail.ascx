@@ -52,13 +52,15 @@
                     </div>
 
                     <div id="divLog" runat="server" class="tab-pane">
-                        <Rock:Grid ID="gLog" runat="server" AllowSorting="false" RowItemText="Entry">
-                            <Columns>
-                                <Rock:DateTimeField DataField="LogDateTime" HeaderText="When" FormatAsElapsedTime="true" />
-                                <asp:BoundField DataField="LogText" HeaderText="Message" />
-                                <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
-                            </Columns>
-                        </Rock:Grid>
+                        <div class="grid">
+                            <Rock:Grid ID="gLog" runat="server" AllowSorting="false" RowItemText="Entry">
+                                <Columns>
+                                    <Rock:DateTimeField DataField="LogDateTime" HeaderText="When" FormatAsElapsedTime="true" />
+                                    <asp:BoundField DataField="LogText" HeaderText="Message" />
+                                    <asp:BoundField DataField="CreatedByPersonAlias.Person.FullName" HeaderText="By" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </div>
 
                 </div>
