@@ -7,7 +7,7 @@
 
             <div id="pnlGroupMembers" runat="server">
 
-                <div class="panel panel-default">
+                <div class="panel panel-block">
                 
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
@@ -21,7 +21,7 @@
 
                         <Rock:NotificationBox ID="nbRoleWarning" runat="server" NotificationBoxType="Warning" Title="No roles!" Visible="false" />
 
-                        <div class="grid">
+                        <div class="grid grid-panel">
                             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
                                 <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                                 <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
