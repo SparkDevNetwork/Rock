@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -75,6 +76,9 @@ namespace RockWeb.Blocks.CheckIn
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            upnlContent.OnPostBack += upnlContent_OnPostBack;
+            rptNavItems.ItemDataBound += rptNavItems_ItemDataBound;
         }
 
         /// <summary>
@@ -121,14 +125,32 @@ namespace RockWeb.Blocks.CheckIn
         {
         }
 
-        protected void lbNavigate_Click( object sender, EventArgs e )
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptNavItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        void rptNavItems_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var lb = sender as LinkButton;
-            if (lb != null)
+            var li = e.Item.FindControl( "liNavItem" ) as HtmlGenericControl;
+            var navItem = e.Item.DataItem as NavigationItem;
+            if ( li != null && navItem != null )
             {
-                CurrentNavItem = lb.CommandArgument;
-                BuildNavigationControls();
+                li.Attributes["onClick"] = upnlContent.GetPostBackEventReference( navItem.TypeKey + navItem.Id.ToString() );
             }
+        }
+
+
+        /// <summary>
+        /// Handles the OnPostBack event of the upnlContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PostBackEventArgs"/> instance containing the event data.</param>
+        void upnlContent_OnPostBack( object sender, PostBackEventArgs e )
+        {
+            CurrentNavItem = e.EventArgument;
+            BuildNavigationControls();
         }
 
         #endregion
@@ -404,7 +426,8 @@ namespace RockWeb.Blocks.CheckIn
             pnlNavHeading.Visible = headerItem != null;
             if ( headerItem != null )
             {
-                lbNavHeading.CommandArgument = itemType + ( headerItem.ParentId.HasValue ? headerItem.ParentId.Value.ToString() : "" );
+                pnlNavHeading.Attributes["onClick"] = upnlContent.GetPostBackEventReference(
+                    itemType + ( headerItem.ParentId.HasValue ? headerItem.ParentId.Value.ToString() : "" ) );
                 lNavHeading.Text = headerItem.Name;
             }
 
