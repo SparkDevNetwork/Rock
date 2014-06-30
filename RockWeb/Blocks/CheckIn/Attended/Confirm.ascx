@@ -25,26 +25,28 @@
             <div class="row">
                 <asp:UpdatePanel ID="pnlSelectedGrid" runat="server">
                 <ContentTemplate>
-                    <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" 
-                        EmptyDataText="No People Selected" OnGridRebind="gPersonList_GridRebind">
-                        <Columns>
-                            <asp:BoundField DataField="PersonId" Visible="false" />                    
-                            <asp:BoundField DataField="Name" HeaderText="Name" />
-                            <asp:BoundField DataField="Location" HeaderText="Assigned To" />
-                            <asp:BoundField DataField="LocationId" Visible="false" />
-                            <asp:BoundField DataField="Schedule" HeaderText="Time" />
-                            <asp:BoundField DataField="ScheduleId" Visible="false" />
-                            <Rock:EditField HeaderText="Edit" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Edit" />
-                            <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Delete" />
-                            <asp:TemplateField HeaderText="Print">
-                                <ItemTemplate>
-                                    <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
-                                        <i class="fa fa-print"></i>
-                                    </asp:LinkButton>
-                                </ItemTemplate> 
-                            </asp:TemplateField>
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="grid">
+                        <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" 
+                            EmptyDataText="No People Selected" OnGridRebind="gPersonList_GridRebind">
+                            <Columns>
+                                <asp:BoundField DataField="PersonId" Visible="false" />                    
+                                <asp:BoundField DataField="Name" HeaderText="Name" />
+                                <asp:BoundField DataField="Location" HeaderText="Assigned To" />
+                                <asp:BoundField DataField="LocationId" Visible="false" />
+                                <asp:BoundField DataField="Schedule" HeaderText="Time" />
+                                <asp:BoundField DataField="ScheduleId" Visible="false" />
+                                <Rock:EditField HeaderText="Edit" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Edit" />
+                                <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-lg btn-primary" OnClick="gPersonList_Delete" />
+                                <asp:TemplateField HeaderText="Print">
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
+                                            <i class="fa fa-print"></i>
+                                        </asp:LinkButton>
+                                    </ItemTemplate> 
+                                </asp:TemplateField>
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
                 </asp:UpdatePanel>
             </div>

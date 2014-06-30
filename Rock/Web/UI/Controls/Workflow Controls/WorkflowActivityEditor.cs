@@ -43,7 +43,12 @@ namespace Rock.Web.UI.Controls
         private GroupPicker _gpAssignedToGroup;
         private RockDropDownList _ddlAssignedToRole;
 
+        private RockLiteral _lAssignedToPerson;
+        private RockLiteral _lAssignedToGroup;
+        private RockLiteral _lAssignedToRole;
+
         private RockCheckBox _cbActivityIsComplete;
+
         private Literal _lState;
 
         private PlaceHolder _phAttributes;
@@ -88,6 +93,24 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfExpanded.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanEdit
+        {
+            get
+            {
+                return ViewState["CanEdit"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["CanEdit"] = value;
             }
         }
 
@@ -258,16 +281,19 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             if (activity.AssignedPersonAlias != null && activity.AssignedPersonAlias.Person != null)
             {
                 _ppAssignedToPerson.SetValue( activity.AssignedPersonAlias.Person );
+                _lAssignedToPerson.Text = activity.AssignedPersonAlias.Person.FullName;
             }
             else if ( activity.AssignedGroup != null)
             {
                 if (activity.AssignedGroup.IsSecurityRole )
                 {
                     _ddlAssignedToRole.SetValue( activity.AssignedGroup.Id );
+                    _lAssignedToRole.Text = activity.AssignedGroup.Name;
                 }
                 else
                 {
                     _gpAssignedToGroup.SetValue( activity.AssignedGroup );
+                    _lAssignedToGroup.Text = activity.AssignedGroup.Name;
                 }
             }
 
@@ -289,7 +315,14 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _lState.Text = sbState.ToString();
 
             _phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( activity, _phAttributes, setValues, ValidationGroup );
+            if ( CanEdit )
+            {
+                Rock.Attribute.Helper.AddEditControls( activity, _phAttributes, setValues, ValidationGroup );
+            }
+            else
+            {
+                Rock.Attribute.Helper.AddDisplayControls( activity, _phAttributes );
+            }
         }
 
         /// <summary>
@@ -335,21 +368,39 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             _cbActivityIsComplete = new RockCheckBox { Text = "Complete" };
             Controls.Add( _cbActivityIsComplete );
             _cbActivityIsComplete.ID = this.ID + "_cbActivityTypeIsActive";
+            _cbActivityIsComplete.Label = "Activity Completed";
+            _cbActivityIsComplete.Text = "Yes";
 
             _ppAssignedToPerson = new PersonPicker();
             _ppAssignedToPerson.ID = this.ID + "_ppAssignedToPerson";
             Controls.Add( _ppAssignedToPerson );
             _ppAssignedToPerson.Label = "Assign to Person";
 
+            _lAssignedToPerson = new RockLiteral();
+            _lAssignedToPerson.ID = this.ID + "_lAssignedToPerson";
+            Controls.Add( _lAssignedToPerson );
+            _lAssignedToPerson.Label = "Assigned to Person";
+
             _gpAssignedToGroup = new GroupPicker();
             _gpAssignedToGroup.ID = this.ID + "_gpAssignedToGroup";
             Controls.Add( _gpAssignedToGroup );
             _gpAssignedToGroup.Label = "Assign to Group";
 
+            _lAssignedToGroup = new RockLiteral();
+            _lAssignedToGroup.ID = this.ID + "_lAssignedToGroup";
+            Controls.Add( _lAssignedToGroup );
+            _lAssignedToGroup.Label = "Assigned to Group";
+
             _ddlAssignedToRole = new RockDropDownList();
             Controls.Add( _ddlAssignedToRole );
             _ddlAssignedToRole.ID = this.ID + "_ddlAssignedToRole";
             _ddlAssignedToRole.Label = "Assign to Security Role";
+
+            _lAssignedToRole = new RockLiteral();
+            _lAssignedToRole.ID = this.ID + "_lAssignedToRole";
+            Controls.Add( _lAssignedToRole );
+            _lAssignedToRole.Label = "Assigned to Security Role";
+
             _lState = new Literal();
             Controls.Add( _lState );
             _lState.ID = this.ID + "_lState";
@@ -409,7 +460,7 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-activity-state fa {0}'></i></a>",
                 Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
 
-            if ( IsDeleteEnabled )
+            if ( CanEdit && IsDeleteEnabled )
             {
                 _lbDeleteActivityType.Visible = true;
                 _lbDeleteActivityType.RenderControl( writer );
@@ -441,16 +492,35 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _ppAssignedToPerson.ValidationGroup = ValidationGroup;
-            _ppAssignedToPerson.RenderControl( writer );
-            _gpAssignedToGroup.ValidationGroup = ValidationGroup;
-            _gpAssignedToGroup.RenderControl( writer );
-            _ddlAssignedToRole.ValidationGroup = ValidationGroup;
-            _ddlAssignedToRole.RenderControl( writer );
+            if ( CanEdit )
+            {
+                _ppAssignedToPerson.ValidationGroup = ValidationGroup;
+                _ppAssignedToPerson.RenderControl( writer );
+                _gpAssignedToGroup.ValidationGroup = ValidationGroup;
+                _gpAssignedToGroup.RenderControl( writer );
+                _ddlAssignedToRole.ValidationGroup = ValidationGroup;
+                _ddlAssignedToRole.RenderControl( writer );
+            }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( _lAssignedToPerson.Text ) )
+                {
+                    _lAssignedToPerson.RenderControl( writer );
+                }
+                if ( !string.IsNullOrWhiteSpace( _lAssignedToGroup.Text ) )
+                {
+                    _lAssignedToGroup.RenderControl( writer );
+                }
+                if ( !string.IsNullOrWhiteSpace( _lAssignedToRole.Text ) )
+                {
+                    _lAssignedToRole.RenderControl( writer );
+                }
+            }
             writer.RenderEndTag();  // col-md-4
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _cbActivityIsComplete.Enabled = CanEdit;
             _cbActivityIsComplete.ValidationGroup = ValidationGroup;
             _cbActivityIsComplete.RenderControl( writer );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );

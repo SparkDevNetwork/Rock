@@ -484,6 +484,9 @@ ul.rocktree ul {
   height: 80px;
   padding: 15px;
 }
+.page-list-as-blocks ul li:hover {
+  background-color: #e2e2e2;
+}
 @media (min-width: 768px) {
   .page-list-as-blocks ul li {
     margin: 0 2.5% 15px;
@@ -1962,6 +1965,12 @@ td.wrap-contents {
   -moz-hyphens: auto;
   -ms-hyphens: auto;
   hyphens: auto;
+}
+.table {
+  margin-bottom: 0;
+}
+.grid {
+  margin-bottom: 20px;
 }
 .grid-filter {
   background-color: #d5d5d5;

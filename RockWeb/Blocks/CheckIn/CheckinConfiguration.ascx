@@ -47,7 +47,7 @@
             <Content ID="mdLocationPickerContent">
                 <asp:HiddenField ID="hfLocationPickerVisible" runat="server" />
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-                <Rock:LocationPicker ID="locationPicker" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Check-in Location" ValidationGroup="Location" />
+                <Rock:LocationItemPicker ID="locationPicker" runat="server" Label="Check-in Location" ValidationGroup="Location" />
             </Content>
         </Rock:ModalDialog>
 

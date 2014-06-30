@@ -13,35 +13,37 @@
 
             <Rock:ModalAlert ID="maGridWarning" runat="server" />
 
-            <Rock:GridFilter ID="gfSettings" runat="server">
-                <Rock:RockTextBox ID="tbUserNameFilter" runat="server" Label="Username"></Rock:RockTextBox>
-                <Rock:ComponentPicker ID="compProviderFilter" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" />
-                <Rock:DateRangePicker ID="drpCreated" runat="server" Label="Created" />
-                <Rock:DateRangePicker ID="drpLastLogin" runat="server" Label="Last Login" />
-                <Rock:RockDropDownList ID="ddlIsConfirmedFilter" runat="server" Label="Is Confirmed" >
-                    <asp:ListItem Value="" Text="" />
-                    <asp:ListItem Value="true" Text="Yes" />
-                    <asp:ListItem Value="false" Text="No" />
-                </Rock:RockDropDownList>
-                <Rock:RockDropDownList ID="ddlLockedOutFilter" runat="server" Label="Is Locked Out" >
-                    <asp:ListItem Value="" Text="" />
-                    <asp:ListItem Value="true" Text="Yes" />
-                    <asp:ListItem Value="false" Text="No" />
-                </Rock:RockDropDownList>
-            </Rock:GridFilter>
+            <div class="grid">
+                <Rock:GridFilter ID="gfSettings" runat="server">
+                    <Rock:RockTextBox ID="tbUserNameFilter" runat="server" Label="Username"></Rock:RockTextBox>
+                    <Rock:ComponentPicker ID="compProviderFilter" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" />
+                    <Rock:DateRangePicker ID="drpCreated" runat="server" Label="Created" />
+                    <Rock:DateRangePicker ID="drpLastLogin" runat="server" Label="Last Login" />
+                    <Rock:RockDropDownList ID="ddlIsConfirmedFilter" runat="server" Label="Is Confirmed" >
+                        <asp:ListItem Value="" Text="" />
+                        <asp:ListItem Value="true" Text="Yes" />
+                        <asp:ListItem Value="false" Text="No" />
+                    </Rock:RockDropDownList>
+                    <Rock:RockDropDownList ID="ddlLockedOutFilter" runat="server" Label="Is Locked Out" >
+                        <asp:ListItem Value="" Text="" />
+                        <asp:ListItem Value="true" Text="Yes" />
+                        <asp:ListItem Value="false" Text="No" />
+                    </Rock:RockDropDownList>
+                </Rock:GridFilter>
 
-            <Rock:Grid ID="gUserLogins" runat="server" AllowSorting="true" RowItemText="Login">
-                <Columns>
-                    <asp:BoundField DataField="UserName" HeaderText="Username" SortExpression="Name" />
-                    <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Person" />
-                    <asp:BoundField DataField="ProviderName" HeaderText="Provider" SortExpression="EntityType.FriendlyName" />
-                    <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
-                    <Rock:DateField DataField="LastLoginDateTime" HeaderText="Last Login" SortExpression="LastLoginDateTime" />
-                    <Rock:BoolField DataField="IsConfirmed" HeaderText="Confirmed" SortExpression="IsConfirmed" />
-                    <Rock:BoolField DataField="IsLockedOut" HeaderText="Locked Out" SortExpression="IsLockedOut" />
-                    <Rock:DeleteField OnClick="gUserLogins_Delete" />
-                </Columns>
-            </Rock:Grid>
+                <Rock:Grid ID="gUserLogins" runat="server" AllowSorting="true" RowItemText="Login">
+                    <Columns>
+                        <asp:BoundField DataField="UserName" HeaderText="Username" SortExpression="Name" />
+                        <asp:HyperLinkField DataNavigateUrlFields="PersonId" DataTextField="PersonName" DataNavigateUrlFormatString="~/Person/{0}" HeaderText="Person" />
+                        <asp:BoundField DataField="ProviderName" HeaderText="Provider" SortExpression="EntityType.FriendlyName" />
+                        <Rock:DateField DataField="CreatedDateTime" HeaderText="Created" SortExpression="CreatedDateTime" />
+                        <Rock:DateField DataField="LastLoginDateTime" HeaderText="Last Login" SortExpression="LastLoginDateTime" />
+                        <Rock:BoolField DataField="IsConfirmed" HeaderText="Confirmed" SortExpression="IsConfirmed" />
+                        <Rock:BoolField DataField="IsLockedOut" HeaderText="Locked Out" SortExpression="IsLockedOut" />
+                        <Rock:DeleteField OnClick="gUserLogins_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
         </asp:Panel>
 

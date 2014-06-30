@@ -103,7 +103,7 @@
 
                     chartSeriesList = [];
                     var chartCombinedMeasurePoints = {
-                        label: xaxisLabelText + ' combined',
+                        label: xaxisLabelText + ' Total',
                         chartData: combinedChartData,
                         data: combinedData
                     };

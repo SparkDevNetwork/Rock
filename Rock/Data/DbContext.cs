@@ -206,7 +206,15 @@ namespace Rock.Data
                     }
                 }
 
-                GetAuditDetails( dbContext, contextItem, personAliasId );
+                try
+                {
+                    GetAuditDetails( dbContext, contextItem, personAliasId );
+                }
+                catch (SystemException ex)
+                {
+                    ExceptionLogService.LogException( ex, null );
+                }
+
                 updatedItems.Add( contextItem );
             }
 
@@ -220,12 +228,19 @@ namespace Rock.Data
         /// <param name="personAlias">The person alias.</param>
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
         {
-            var audits = updatedItems.Select( i => i.Audit ).ToList();
-            if ( audits.Any() )
+            try
             {
-                var transaction = new Rock.Transactions.AuditTransaction();
-                transaction.Audits = audits;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var audits = updatedItems.Select( i => i.Audit ).ToList();
+                if ( audits.Any() )
+                {
+                    var transaction = new Rock.Transactions.AuditTransaction();
+                    transaction.Audits = audits;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                ExceptionLogService.LogException( ex, null );
             }
 
             foreach ( var item in updatedItems )
