@@ -3,7 +3,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active" OffText="All" AutoPostBack="true" OnCheckedChanged="tglDisplay_CheckedChanged" />
+        <Rock:Toggle ID="tglRole" runat="server" OnText="Initiated By Me" OffText="Assigned To Me" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+        <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active Types" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
 
         <div class="page-list-as-blocks">
             <ul class="list-unstyled">
@@ -21,13 +22,15 @@
         </div>
 
         <h4><asp:Literal ID="lWorkflow" runat="server"></asp:Literal></h4>
-        <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
-            <Columns>
-                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                <asp:BoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
-            </Columns>
-        </Rock:Grid>
+        <div class="grid">
+            <Rock:Grid ID="gWorkflows" runat="server" OnRowSelected="gWorkflows_Edit" >
+                <Columns>
+                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
+                    <asp:BoundField DataField="ActiveActivityNames" HeaderText="Active Activities" HtmlEncode="false" />
+                </Columns>
+            </Rock:Grid>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

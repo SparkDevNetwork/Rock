@@ -39,13 +39,15 @@ namespace RockWeb.Blocks.WorkFlow
     [Category( "WorkFlow" )]
     [Description( "Block to display active workflow activities assigned to the current user that have a form entry action.  The display format is controlled by a liquid template." )]
 
-    [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 0 )]
-    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 1 )]
+    [CustomRadioListField("Role", "Display the active workflows that the current user Initiated, or is currently Assigned To.", "0:Assigned To,1:Initiated", true, "0", "", 0 )]
+    [CategoryField( "Categories", "Optional categories to limit display to.", true, "Rock.Model.WorkflowType", "", "", false, "", "", 1 )]
+    [BooleanField( "Include Child Categories", "Should descendent categories of the selected Categories be included?", true, "", 2 )]
     [CodeEditorField( "Contents", @"The Liquid template to use for displaying activities assigned to current user. 
 The following object model is available to the liquid template (Note: and workflow or activity attributes will also be available 
 as fields on the workflow or activity)...
 <pre>
 {
+  ""Role"": 0,
   ""Actions"": [
     {
       ""ActivityId"": 0,
@@ -172,21 +174,21 @@ as fields on the workflow or activity)...
 {% if Actions.size > 0 %}
     <div class='panel panel-info'> 
         <div class='panel-heading'>
-            <h4 class='panel-title'>My Tasks</h4>
+            <h4 class='panel-title'>My {% if Role == '0' %}Tasks{% else %}Requests{% endif %}</h4>
         </div>
         <div class='panel-body'>
             <ul class='fa-ul'>
                 {% for action in Actions %}
                     <li>
                         <i class='fa-li {{ action.Activity.Workflow.WorkflowType.IconCssClass }}'></i>
-                        <a href='~/WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
+                        <a href='~/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.WorkflowType.Name }}: {{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
                     </li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 {% endif %}
-", "", 2 )]
+", "", 3 )]
     public partial class MyWorkflowsLiquid : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -259,16 +261,72 @@ as fields on the workflow or activity)...
 
         private void BindData()
         {
+            string role = GetAttributeValue("Role");
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                role = "0";
+            }
+
             string contents = GetAttributeValue( "Contents" );
 
             string appRoot = ResolveRockUrl( "~/" );
             string themeRoot = ResolveRockUrl( "~~/" );
             contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
+            List<WorkflowAction> actions = null;
+            if (role == "1")
+            {
+                actions = GetWorkflows();
+            }
+            else
+            {
+                actions = GetActions();
+            }
+
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "Actions", GetActions() );
+            mergeFields.Add( "Role", role );
+            mergeFields.Add( "Actions", actions );
 
             lContents.Text = contents.ResolveMergeFields( mergeFields );
+        }
+
+        private List<WorkflowAction> GetWorkflows()
+        {
+            var actions = new List<WorkflowAction>();
+
+            if ( CurrentPerson != null )
+            {
+                var rockContext = new RockContext();
+
+                var categoryIds = GetCategories( rockContext );
+                
+                var qry = new WorkflowService( rockContext ).Queryable()
+                    .Where( w =>
+                        w.ActivatedDateTime.HasValue &&
+                        !w.CompletedDateTime.HasValue &&
+                        w.InitiatorPersonAlias.PersonId == CurrentPerson.Id );
+
+                if ( categoryIds.Any() )
+                {
+                    qry = qry
+                        .Where( w =>
+                            w.WorkflowType.CategoryId.HasValue &&
+                            categoryIds.Contains( w.WorkflowType.CategoryId.Value ) );
+                }
+
+                foreach ( var workflow in qry.OrderBy( w => w.ActivatedDateTime ) )
+                {
+                    var activity = new WorkflowActivity();
+                    activity.Workflow = workflow;
+
+                    var action = new WorkflowAction();
+                    action.Activity = activity;
+
+                    actions.Add( action );
+                }
+            }
+
+            return actions;
         }
 
         private List<WorkflowAction> GetActions()

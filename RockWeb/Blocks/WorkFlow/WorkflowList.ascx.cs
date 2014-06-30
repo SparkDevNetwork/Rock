@@ -179,6 +179,19 @@ namespace RockWeb.Blocks.WorkFlow
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
+                case "Initiator":
+                    {
+                        int? personId = e.Value.AsIntegerOrNull();
+                        if ( personId.HasValue )
+                        {
+                            var person = new PersonService( new RockContext() ).Get( personId.Value );
+                            if ( person != null )
+                            {
+                                e.Value = person.FullName;
+                            }
+                        }
+                        break;
+                    }
             }
         }
 
@@ -190,6 +203,9 @@ namespace RockWeb.Blocks.WorkFlow
             gfWorkflows.SaveUserPreference( "Name", tbName.Text );
             gfWorkflows.SaveUserPreference( "Status", tbStatus.Text );
 
+            int? personId = ppInitiator.SelectedValue;
+            gfWorkflows.SaveUserPreference( "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
+
             BindGrid();
         }
 
@@ -200,7 +216,7 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "workflowId", 0 );
+            NavigateToLinkedPage( "EntryPage", "WorkflowTypeId", _workflowType.Id );
         }
 
         /// <summary>
@@ -350,6 +366,16 @@ namespace RockWeb.Blocks.WorkFlow
             drpCompleted.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
             tbName.Text = gfWorkflows.GetUserPreference( "Name" );
             tbStatus.Text = gfWorkflows.GetUserPreference( "Status" );
+
+            int? personId = gfWorkflows.GetUserPreference( "Initiator" ).AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                ppInitiator.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+            }
+            else
+            {
+                ppInitiator.SetValue( null );
+            }
         }
 
         /// <summary>
@@ -400,6 +426,12 @@ namespace RockWeb.Blocks.WorkFlow
             if (!string.IsNullOrWhiteSpace(name))
             {
                 qry = qry.Where( w => w.Name.StartsWith(name));
+            }
+
+            int? personId = gfWorkflows.GetUserPreference( "Initiator" ).AsIntegerOrNull();
+            if (personId.HasValue)
+            {
+                qry = qry.Where( w => w.InitiatorPersonAlias.PersonId == personId.Value );
             }
 
             string status = gfWorkflows.GetUserPreference("Status");

@@ -38,24 +38,26 @@
                 </div>
             </div>
 
-            <Rock:GridFilter ID="fExceptionList" runat="server">
-                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
-                <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
-                <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
-                <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
-                <Rock:DatePicker ID="dpStartDate" runat="server" Label="Start Date" />
-                <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
-            </Rock:GridFilter>
-            <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
-                <Columns>
-                    <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
-                    <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
-                    <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
-                    <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                    <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                    <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                </Columns>
-            </Rock:Grid>
+            <div class="grid">
+                <Rock:GridFilter ID="fExceptionList" runat="server">
+                    <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                    <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
+                    <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
+                    <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
+                    <Rock:DatePicker ID="dpStartDate" runat="server" Label="Start Date" />
+                    <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
+                </Rock:GridFilter>
+                <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
+                    <Columns>
+                        <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
+                        <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
+                        <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
+                        <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                        <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
         </asp:Panel>
 
@@ -77,14 +79,17 @@
 
             <h4>Exception List</h4>
 
-            <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
-                <Columns>
-                    <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
-                    <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
-                    <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
-                    <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                </Columns>
-            </Rock:Grid>
+            <div class="grid">
+                <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
+                    <Columns>
+                        <Rock:DateField DataField="CreatedDateTime" HeaderText="Date" SortExpression="CreatedDateTime" />
+                        <Rock:TimeField DataField="CreatedDateTime" HeaderText="Time" SortExpression="CreatedDateTime" />
+                        <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
+                        <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
             <div class="row">
                 <div class="col-md-1">
                     <asp:LinkButton ID="btnReturnToList" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnReturnToList_Click" CausesValidation="false">

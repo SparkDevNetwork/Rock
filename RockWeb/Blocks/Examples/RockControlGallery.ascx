@@ -73,18 +73,21 @@
             <a id="Grid"></a>
             <h2 runat="server">Rock:Grid</h2>
             <div runat="server" class="r-example">
-                <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
-                    <Columns>
-                        <Rock:ColorField DataField="DefinedValueColor" ToolTipDataField="DefinedValueTypeName" HeaderText="" />
-                        <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
-                        <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
-                        <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
-                        <Rock:EditField />
-                        <Rock:SecurityField />
-                        <Rock:DeleteField />
-                    </Columns>
-                </Rock:Grid>
+                <div class="grid">
+                    <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
+                        <Columns>
+                            <Rock:ColorField DataField="DefinedValueColor" ToolTipDataField="DefinedValueTypeName" HeaderText="" />
+                            <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
+                            <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
+                            <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
+                            <Rock:EditField />
+                            <Rock:SecurityField />
+                            <Rock:DeleteField />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
             </div>
+            <div class="alert alert-info"><strong>Note</strong> An extra div is required around the grid to help wrap the grid and an optional grid filter for styling.</div>
 
 
             <a id="DropDowns"></a>

@@ -56,16 +56,18 @@
                 </Rock:PanelWidget>
 
                 <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Attributes" CssClass="attribute-panel">
-                    <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
-                        <Columns>
-                            <Rock:ReorderField />
-                            <asp:BoundField DataField="Name" HeaderText="Attribute" />
-                            <asp:BoundField DataField="Description" HeaderText="Description" />
-                            <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
-                            <Rock:EditField OnClick="gAttributes_Edit" />
-                            <Rock:DeleteField OnClick="gAttributes_Delete" />
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="grid">
+                        <Rock:Grid ID="gAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Attribute">
+                            <Columns>
+                                <Rock:ReorderField />
+                                <asp:BoundField DataField="Name" HeaderText="Attribute" />
+                                <asp:BoundField DataField="Description" HeaderText="Description" />
+                                <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                <Rock:EditField OnClick="gAttributes_Edit" />
+                                <Rock:DeleteField OnClick="gAttributes_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </Rock:PanelWidget>
 
                 <div class="workflow-section-activities">

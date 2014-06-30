@@ -13,13 +13,16 @@
                     <h4>Values</h4>
                     <asp:Panel ID="pnlValues" runat="server">
                         <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
-                        <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
-                            <Columns>
-                                <Rock:ReorderField/>
-                                <asp:BoundField DataField="Name" HeaderText="Value"/>
-                                <asp:BoundField DataField="Description" HeaderText="Description"/>
-                            </Columns>
-                        </Rock:Grid>
+                        
+                        <div class="grid">
+                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
+                                <Columns>
+                                    <Rock:ReorderField/>
+                                    <asp:BoundField DataField="Name" HeaderText="Value"/>
+                                    <asp:BoundField DataField="Description" HeaderText="Description"/>
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
 
                     </asp:Panel>
                 </div>

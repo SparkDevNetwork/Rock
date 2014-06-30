@@ -90,7 +90,7 @@
                 </div>
 
                 <h4>Results</h4>
-                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                <div class="grid"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
 
             </div>
 

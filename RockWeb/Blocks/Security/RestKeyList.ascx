@@ -7,24 +7,28 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
         <asp:Panel ID="pnlRestKeyList" runat="server">
-            <Rock:Grid ID="gRestKeyList" runat="server" EmptyDataText="No Rest Keys Found" AllowSorting="true" OnRowDataBound="gRestKeyList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gRestKeyList_RowSelected">
-                <Columns>
-                    <asp:BoundField DataField="LastName" HeaderText="Name" SortExpression="LastName" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Description</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Label ID="lblDescription" runat="server" />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <asp:TemplateField>
-                        <HeaderTemplate>Key</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Label ID="lblKey" runat="server" />
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <Rock:DeleteField OnClick="gRestKeyList_Delete" />
-                </Columns>
-            </Rock:Grid>
+            
+            <div class="grid">
+                <Rock:Grid ID="gRestKeyList" runat="server" EmptyDataText="No Rest Keys Found" AllowSorting="true" OnRowDataBound="gRestKeyList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gRestKeyList_RowSelected">
+                    <Columns>
+                        <asp:BoundField DataField="LastName" HeaderText="Name" SortExpression="LastName" />
+                        <asp:TemplateField>
+                            <HeaderTemplate>Description</HeaderTemplate>
+                            <ItemTemplate>
+                                <asp:Label ID="lblDescription" runat="server" />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField>
+                            <HeaderTemplate>Key</HeaderTemplate>
+                            <ItemTemplate>
+                                <asp:Label ID="lblKey" runat="server" />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <Rock:DeleteField OnClick="gRestKeyList_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
         </asp:Panel>
 
     </ContentTemplate>
