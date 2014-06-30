@@ -3,7 +3,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active" OffText="All" AutoPostBack="true" OnCheckedChanged="tglDisplay_CheckedChanged" />
+        <Rock:Toggle ID="tglRole" runat="server" OnText="Initiated By Me" OffText="Assigned To Me" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
+        <Rock:Toggle ID="tglDisplay" runat="server" OnText="Active Types" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
 
         <div class="page-list-as-blocks">
             <ul class="list-unstyled">
