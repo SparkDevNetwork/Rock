@@ -1966,6 +1966,12 @@ td.wrap-contents {
   -ms-hyphens: auto;
   hyphens: auto;
 }
+.table {
+  margin-bottom: 0;
+}
+.grid {
+  margin-bottom: 20px;
+}
 .grid-filter {
   background-color: #e0e0e0;
   border-radius: 4px;

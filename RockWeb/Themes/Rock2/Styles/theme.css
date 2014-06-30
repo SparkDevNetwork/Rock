@@ -1966,6 +1966,12 @@ td.wrap-contents {
   -ms-hyphens: auto;
   hyphens: auto;
 }
+.table {
+  margin-bottom: 0;
+}
+.grid {
+  margin-bottom: 20px;
+}
 .grid-filter {
   background-color: #bbbbbb;
   border-radius: 4px;
@@ -4044,17 +4050,31 @@ a:hover {
 .panel .panel-heading i {
   margin-right: 4px;
 }
-.panel .panel-body .grid {
-  margin: 0 -15px;
+.panel-block {
+  border-color: #bbbbbb;
 }
-.panel .panel-body .grid .grid-filter {
-  border-radius: 0;
+.panel-block > .panel-heading {
+  color: #6a6a6a;
+  background-color: #bbbbbb;
+  border-color: #bbbbbb;
 }
-.panel.panel-default .panel-heading {
+.panel-block > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #bbbbbb;
+}
+.panel-block > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #bbbbbb;
+}
+.panel-block .panel-heading {
   background-color: #efefef;
 }
-.panel.panel-default .panel-heading i {
+.panel-block .panel-heading i {
   color: #6a6a6a;
+}
+.panel-block .panel-body .grid.grid-panel {
+  margin: -15px;
+}
+.panel-block .panel-body .grid.grid-panel .grid-filter {
+  border-radius: 0;
 }
 /*#endregion */
 /*#region  

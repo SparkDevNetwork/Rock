@@ -132,29 +132,31 @@ a:hover {
             margin-right: 4px;
         }
     }
+}
+
+.panel-block {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-heading {
+        background-color: #efefef;
+
+        i {
+            color: #6a6a6a;
+        }
+    }
 
     .panel-body {
         
-        .grid {
-            margin: 0 -15px;
+        .grid.grid-panel {
+            margin: -15px;
 
             .grid-filter {
                 border-radius: 0;
             }
         }
-        
-    }
-
-    &.panel-default {
-        .panel-heading {
-            background-color: #efefef;
-
-            i {
-                color: #6a6a6a;
-            }
-        }
     }
 }
+
 /*#endregion */
 
 
@@ -314,6 +316,8 @@ a:hover {
     cursor: pointer;
     display: inline-block;
 }
+
+
 /*#endregion */
 
 

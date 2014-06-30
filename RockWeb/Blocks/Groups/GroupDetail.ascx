@@ -12,7 +12,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
 
-            <div class="panel panel-default">
+            <div class="panel panel-block">
                 
                 <div class="panel-heading clearfix">
                     <h1 class="panel-title pull-left">
