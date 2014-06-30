@@ -63,6 +63,8 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
+                <Rock:LineChart ID="lcMetricsChart" runat="server" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <asp:Literal ID="lblMainDetails" runat="server" />

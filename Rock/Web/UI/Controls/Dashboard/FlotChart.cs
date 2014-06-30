@@ -718,86 +718,89 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavaScript();
-
-            _pnlChartPlaceholder.Width = this.ChartWidth;
-            _pnlChartPlaceholder.Height = this.ChartHeight;
-
-            writer.AddAttribute( "id", this.ClientID );
-            writer.AddAttribute( "class", this.GetType().Name.SplitCase().ToLower().Replace( " ", "-" ) );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            _hfMetricId.RenderControl( writer );
-            _hfRestUrlParams.RenderControl( writer );
-            _hfRestUrl.RenderControl( writer );
-            _hfSeriesNameUrl.RenderControl( writer );
-            _hfXAxisLabel.RenderControl( writer );
-            _hfYAxisLabel.RenderControl( writer );
-
-            writer.AddAttribute( "class", "dashboard-title" );
-            if ( this.Options.customSettings != null && this.Options.customSettings.titleAlign != null )
+            if ( this.Visible )
             {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.titleAlign );
+                RegisterJavaScript();
+
+                _pnlChartPlaceholder.Width = this.ChartWidth;
+                _pnlChartPlaceholder.Height = this.ChartHeight;
+
+                writer.AddAttribute( "id", this.ClientID );
+                writer.AddAttribute( "class", this.GetType().Name.SplitCase().ToLower().Replace( " ", "-" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _hfMetricId.RenderControl( writer );
+                _hfRestUrlParams.RenderControl( writer );
+                _hfRestUrl.RenderControl( writer );
+                _hfSeriesNameUrl.RenderControl( writer );
+                _hfXAxisLabel.RenderControl( writer );
+                _hfYAxisLabel.RenderControl( writer );
+
+                writer.AddAttribute( "class", "dashboard-title" );
+                if ( this.Options.customSettings != null && this.Options.customSettings.titleAlign != null )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.titleAlign );
+                }
+
+                if ( this.Options.customSettings != null && this.Options.customSettings.titleFont != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.color ) )
+                    {
+                        _lblDashboardTitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.titleFont.color );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.family ) )
+                    {
+                        _lblDashboardTitle.Font.Name = this.Options.customSettings.titleFont.family;
+                    }
+
+                    if ( this.Options.customSettings.titleFont.size.HasValue )
+                    {
+                        _lblDashboardTitle.Font.Size = new FontUnit( this.Options.customSettings.titleFont.size.Value );
+                    }
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lblDashboardTitle.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "dashboard-subtitle" );
+                if ( this.Options.customSettings != null && this.Options.customSettings.subtitleAlign != null )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.subtitleAlign );
+                }
+
+                if ( this.Options.customSettings != null && this.Options.customSettings.subtitleFont != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.color ) )
+                    {
+                        _lblDashboardSubtitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.subtitleFont.color );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.family ) )
+                    {
+                        _lblDashboardSubtitle.Font.Name = this.Options.customSettings.subtitleFont.family;
+                    }
+
+                    if ( this.Options.customSettings.subtitleFont.size.HasValue )
+                    {
+                        _lblDashboardSubtitle.Font.Size = new FontUnit( this.Options.customSettings.subtitleFont.size.Value );
+                    }
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lblDashboardSubtitle.RenderControl( writer );
+                writer.RenderEndTag();
+
+                if ( this.ShowDebug )
+                {
+                    _hbChartOptions.RenderControl( writer );
+                }
+
+                _pnlChartPlaceholder.RenderControl( writer );
+
+                writer.RenderEndTag();
             }
-
-            if ( this.Options.customSettings != null && this.Options.customSettings.titleFont != null )
-            {
-                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.color ) )
-                {
-                    _lblDashboardTitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.titleFont.color );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.family ) )
-                {
-                    _lblDashboardTitle.Font.Name = this.Options.customSettings.titleFont.family;
-                }
-
-                if ( this.Options.customSettings.titleFont.size.HasValue )
-                {
-                    _lblDashboardTitle.Font.Size = new FontUnit( this.Options.customSettings.titleFont.size.Value );
-                }
-            }
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lblDashboardTitle.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( "class", "dashboard-subtitle" );
-            if ( this.Options.customSettings != null && this.Options.customSettings.subtitleAlign != null )
-            {
-                writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.subtitleAlign );
-            }
-
-            if ( this.Options.customSettings != null && this.Options.customSettings.subtitleFont != null )
-            {
-                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.color ) )
-                {
-                    _lblDashboardSubtitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.subtitleFont.color );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.family ) )
-                {
-                    _lblDashboardSubtitle.Font.Name = this.Options.customSettings.subtitleFont.family;
-                }
-
-                if ( this.Options.customSettings.subtitleFont.size.HasValue )
-                {
-                    _lblDashboardSubtitle.Font.Size = new FontUnit( this.Options.customSettings.subtitleFont.size.Value );
-                }
-            }
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lblDashboardSubtitle.RenderControl( writer );
-            writer.RenderEndTag();
-
-            if ( this.ShowDebug )
-            {
-                _hbChartOptions.RenderControl( writer );
-            }
-
-            _pnlChartPlaceholder.RenderControl( writer );
-
-            writer.RenderEndTag();
         }
     }
 }
