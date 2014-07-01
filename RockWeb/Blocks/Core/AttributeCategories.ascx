@@ -4,23 +4,25 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
-            </Rock:GridFilter>
-            <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
-                <Columns>
-                    <Rock:ReorderField />
-                    <asp:BoundField DataField="Name" HeaderText="Category" />
-                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                    <asp:TemplateField>
-                        <HeaderTemplate>Entity Type</HeaderTemplate>
-                        <ItemTemplate>
-                            <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <Rock:DeleteField OnClick="rGrid_Delete" />
-                </Columns>
-            </Rock:Grid>
+            <div class="grid">
+                <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                    <Rock:EntityTypePicker ID="entityTypeFilter" runat="server" Required="false" Label="Entity Type" IncludeGlobalOption="true" />
+                </Rock:GridFilter>
+                <Rock:Grid ID="rGrid" runat="server" RowItemText="Category" OnRowSelected="rGrid_Edit" TooltipField="Description">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <asp:BoundField DataField="Name" HeaderText="Category" />
+                        <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
+                        <asp:TemplateField>
+                            <HeaderTemplate>Entity Type</HeaderTemplate>
+                            <ItemTemplate>
+                                <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <Rock:DeleteField OnClick="rGrid_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
         </asp:Panel>
 
@@ -49,6 +51,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
                     </div>
 
                 </div>

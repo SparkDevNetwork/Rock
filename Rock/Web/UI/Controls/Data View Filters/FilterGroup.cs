@@ -30,8 +30,8 @@ namespace Rock.Web.UI.Controls
     public class FilterGroup : CompositeControl
     {
         Toggle toggleAllAny;
-        HtmlButton btnAddFilter;
-        HtmlButton btnAddGroup;
+        LinkButton btnAddFilter;
+        LinkButton btnAddGroup;
         LinkButton lbDelete;
 
         /// <summary>
@@ -126,14 +126,14 @@ namespace Rock.Web.UI.Controls
             toggleAllAny = new Toggle();
             Controls.Add( toggleAllAny );
             toggleAllAny.ID = this.ID + "_toggleAllAny";
-            toggleAllAny.AddCssClass( "switch-mini" );
+            toggleAllAny.ButtonSizeCssClass = "btn-xs";
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
 
-            btnAddGroup = new HtmlButton();
+            btnAddGroup = new LinkButton();
             Controls.Add( btnAddGroup );
             btnAddGroup.ID = this.ID + "_btnAddGroup";
-            btnAddGroup.ServerClick += btnAddGroup_ServerClick;
+            btnAddGroup.Click += btnAddGroup_ServerClick;
             btnAddGroup.AddCssClass( "btn btn-action" );
             btnAddGroup.CausesValidation = false;
 
@@ -142,10 +142,10 @@ namespace Rock.Web.UI.Controls
             btnAddGroup.Controls.Add( iAddGroup );
             btnAddGroup.Controls.Add( new LiteralControl( " Add Filter Group" ) );
 
-            btnAddFilter = new HtmlButton();
+            btnAddFilter = new LinkButton();
             Controls.Add( btnAddFilter );
             btnAddFilter.ID = this.ID + "_btnAddFilter";
-            btnAddFilter.ServerClick += btnAddFilter_ServerClick;
+            btnAddFilter.Click += btnAddFilter_ServerClick;
             btnAddFilter.AddCssClass( "btn btn-action" );
             btnAddFilter.CausesValidation = false;
 
@@ -183,6 +183,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "Show if" );
             writer.RenderEndTag();
+            toggleAllAny.CssClass = "pull-left";
             toggleAllAny.RenderControl( writer );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
             writer.Write( "of these are true" );

@@ -78,6 +78,24 @@ namespace Rock
                 }
             }
 
+            // Add any dll's in the Plugins folder
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null )
+            {
+                var pluginsDir = new DirectoryInfo( httpContext.Server.MapPath( "~/Plugins" ) );
+                if ( pluginsDir.Exists )
+                {
+                    foreach ( var file in pluginsDir.GetFiles( "*.dll", SearchOption.AllDirectories ) )
+                    {
+                        var assembly = Assembly.LoadFrom( file.FullName );
+                        if ( !assemblies.Keys.Contains( assembly.FullName.ToLower() ) )
+                        {
+                            assemblies.Add( assembly.FullName.ToLower(), assembly );
+                        }
+                    }
+                }
+            }
+
             foreach ( KeyValuePair<string, Assembly> assemblyEntry in assemblies )
             {
                 var typeEntries = SearchAssembly( assemblyEntry.Value, baseType );

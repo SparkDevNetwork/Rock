@@ -90,6 +90,8 @@ namespace Rock.Model
             
             // ignoring Campus,CreatedByPersonAliasId 
             
+            // ignoring Campus,LeaderPersonAliasId 
+            
             // ignoring Campus,ModifiedByPersonAliasId 
             
             // ignoring Category,CreatedByPersonAliasId 
@@ -300,6 +302,10 @@ namespace Rock.Model
             
             // ignoring PhoneNumber,ModifiedByPersonAliasId 
             
+            // ignoring PluginMigration,CreatedByPersonAliasId 
+            
+            // ignoring PluginMigration,ModifiedByPersonAliasId 
+            
             // ignoring PrayerRequest,CreatedByPersonAliasId 
             
             // ignoring PrayerRequest,ModifiedByPersonAliasId 
@@ -364,9 +370,19 @@ namespace Rock.Model
             
             // ignoring WorkflowAction,ModifiedByPersonAliasId 
             
+            // ignoring WorkflowActionForm,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionForm,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowActionFormAttribute,ModifiedByPersonAliasId 
+            
             // ignoring WorkflowActionType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActionType,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowActivity,AssignedPersonAliasId 
             
             // ignoring WorkflowActivity,CreatedByPersonAliasId 
             
@@ -375,6 +391,10 @@ namespace Rock.Model
             // ignoring WorkflowActivityType,CreatedByPersonAliasId 
             
             // ignoring WorkflowActivityType,ModifiedByPersonAliasId 
+            
+            // ignoring WorkflowLog,CreatedByPersonAliasId 
+            
+            // ignoring WorkflowLog,ModifiedByPersonAliasId 
             
             // ignoring WorkflowType,CreatedByPersonAliasId 
             

@@ -54,10 +54,10 @@ namespace RockWeb.Blocks.Groups
             base.OnInit( e );
 
             // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
-            int groupId = GetAttributeValue( "Group" ).AsInteger() ?? 0;
+            int groupId = GetAttributeValue( "Group" ).AsInteger();
             if ( groupId == 0 )
             {
-                groupId = PageParameter( "GroupId" ).AsInteger() ?? 0;
+                groupId = PageParameter( "GroupId" ).AsInteger();
                 if ( groupId != 0 )
                 {
                     string key = string.Format( "Group:{0}", groupId );
@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Groups
                         gGroupMembers.IsDeleteEnabled = true;
                         gGroupMembers.GridRebind += gGroupMembers_GridRebind;
                         gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                        gGroupMembers.ExportFilename = _group.Name;
 
                         // make sure they have Auth to the block AND Edit to the Group
                         bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );

@@ -256,7 +256,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( DefinedValue definedValueModel )
+        public static DefinedValueCache Read( DefinedValue definedValueModel, RockContext rockContext = null )
         {
             string cacheKey = DefinedValueCache.CacheKey( definedValueModel.Id );
 
@@ -265,11 +265,12 @@ namespace Rock.Web.Cache
 
             if ( definedValue != null )
             {
+                definedValue.CopyFromModel( definedValueModel );
                 return definedValue;
             }
             else
             {
-                definedValueModel.LoadAttributes();
+                definedValueModel.LoadAttributes( rockContext );
                 definedValue = new DefinedValueCache( definedValueModel );
 
                 var cachePolicy = new CacheItemPolicy();

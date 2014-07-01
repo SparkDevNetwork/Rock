@@ -195,7 +195,7 @@ namespace Rock.Apps.StatementGenerator
                     {
                        personResults.Add( new
                         {
-                            Id = node["Id"].InnerText.AsInteger() ?? 0,
+                            Id = node["Id"].InnerText.AsInteger(),
                             FullName = node["Name"].InnerText,
                             Age = node["Age"].InnerText == "-1" ? "" : node["Age"].InnerText,
                             Gender = node["Gender"].InnerText,

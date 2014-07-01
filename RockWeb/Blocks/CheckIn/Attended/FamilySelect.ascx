@@ -164,25 +164,27 @@
             <div class="row">
                 <asp:UpdatePanel ID="pnlPersonSearch" runat="server">
                 <ContentTemplate>
-                    <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson"
-                        OnGridRebind="rGridPersonResults_GridRebind" ShowActionRow="false" PageSize="4" DataKeyNames="Id" AllowSorting="true">
-                        <Columns>
-                            <asp:BoundField DataField="Id" Visible="false" />
-                            <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
-                            <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
-                            <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" DataFormatString="{0:MM/dd/yy}" HtmlEncode="false" />
-                            <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
-                            <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
-                            <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
-                            <asp:TemplateField>
-                                <ItemTemplate>
-                                    <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Add" 
-                                        Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>" CausesValidation="false"><i class="fa fa-plus"></i>
-                                    </asp:LinkButton>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="grid">
+                        <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson"
+                            OnGridRebind="rGridPersonResults_GridRebind" ShowActionRow="false" PageSize="4" DataKeyNames="Id" AllowSorting="true">
+                            <Columns>
+                                <asp:BoundField DataField="Id" Visible="false" />
+                                <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
+                                <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                                <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" DataFormatString="{0:MM/dd/yy}" HtmlEncode="false" />
+                                <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
+                                <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
+                                <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
+                                <asp:TemplateField>
+                                    <ItemTemplate>
+                                        <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-lg btn-primary" CommandName="Add" 
+                                            Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>" CausesValidation="false"><i class="fa fa-plus"></i>
+                                        </asp:LinkButton>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
                 </asp:UpdatePanel>
             </div>

@@ -33,7 +33,6 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Device Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of the given device." )]
-
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
     public partial class DeviceDetail : RockBlock, IDetailBlock
     {
@@ -94,7 +93,6 @@ namespace RockWeb.Blocks.Core
                 .ToList();
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
         }
 
         /// <summary>
@@ -138,6 +136,7 @@ namespace RockWeb.Blocks.Core
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
 
             SetPrinterVisibility();
+            SetPrinterSettingsVisibility();
 
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
             if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
@@ -244,9 +243,9 @@ namespace RockWeb.Blocks.Core
             Device.Location.GeoPoint = geopPoint.SelectedValue;
             Device.Location.GeoFence = geopFence.SelectedValue;
 
-            if ( !Device.IsValid )
+            if ( !Device.IsValid || !Page.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -271,17 +270,75 @@ namespace RockWeb.Blocks.Core
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
         }
 
-        #endregion
+        /// <summary>
+        /// Handles the ServerValidate event of the cvIpAddress control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
+        protected void cvIpAddress_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            args.IsValid = VerifyUniqueIpAddress();
+        }
 
+        /// <summary>
+        /// Handles when the Print To selection is changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlPrintTo_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetPrinterVisibility();
         }
 
+        /// <summary>
+        /// Verifies the ip address is unique.
+        /// </summary>
+        private bool VerifyUniqueIpAddress()
+        {
+            bool isValid = true;
+            int currentDeviceId = int.Parse( hfDeviceId.Value );
+            int? deviceTypeId = ddlDeviceType.SelectedValueAsInt().Value;
+            if ( !string.IsNullOrWhiteSpace( tbIpAddress.Text ) && deviceTypeId != null )
+            {
+                var rockContext = new RockContext();
+                bool ipExists = new DeviceService( rockContext ).Queryable()
+                    .Any( d => d.IPAddress.Equals( tbIpAddress.Text ) 
+                        && d.DeviceTypeValueId == deviceTypeId
+                        && d.Id != currentDeviceId );
+                isValid = !ipExists;
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Decide if the printer drop down list should be hidden.
+        /// </summary>
         private void SetPrinterVisibility()
         {
             var printTo = (PrintTo)System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
             ddlPrinter.Visible = printTo != PrintTo.Location;
         }
+
+        /// <summary>
+        /// Handles when the device type selection is changed.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlDeviceType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetPrinterSettingsVisibility();
+        }
+
+        /// <summary>
+        /// Decide if the printer settings section should be hidden.
+        /// </summary>
+        private void SetPrinterSettingsVisibility()
+        {
+            var checkinKioskDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            pnlPrinterSettings.Visible = ( ddlDeviceType.SelectedValue.AsIntegerOrNull() == checkinKioskDeviceTypeId );
+        }
+
+        #endregion
     }
 }

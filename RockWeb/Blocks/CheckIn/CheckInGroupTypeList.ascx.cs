@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewCommandEventArgs"/> instance containing the event data.</param>
         protected void gGroupType_RowCommand( object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e )
         {
-            int? rowIndex = ( e.CommandArgument as string ).AsInteger( false );
+            int? rowIndex = ( e.CommandArgument as string ).AsIntegerOrNull();
             if ( rowIndex != null )
             {
                 GridViewRow row = ( sender as Grid ).Rows[rowIndex.Value];

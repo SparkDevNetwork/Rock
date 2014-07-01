@@ -258,33 +258,45 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public override object ToLiquid()
-        {
-            return this.ToLiquid( false );
-        }
-
-        /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
         /// <returns>
         /// DotLiquid compatible dictionary.
         /// </returns>
-        public override object ToLiquid( bool debug = false )
+        public override object ToLiquid( bool debug )
         {
             Dictionary<string, object> dictionary = base.ToLiquid( debug ) as Dictionary<string, object>;
 
-            this.LoadAttributes();
-            foreach ( var attribute in this.Attributes )
+            // Should only load attributes if they've never been loaded since some entities may have attribute 
+            // values needed in liquid merge that have not yet been saved.
+            if (this.Attributes == null)
             {
-                if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                this.LoadAttributes();
+            }
+
+            if ( this.Attributes != null )
+            {
+                foreach ( var attribute in this.Attributes )
                 {
-                    string value = GetAttributeValue( attribute.Key );
-                    dictionary.Add( attribute.Key, attribute.Value.FieldType.Field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
-                    dictionary.Add( attribute.Key + "_unformatted", value );
+                    if ( attribute.Value.IsAuthorized( Authorization.VIEW, null ) )
+                    {
+                        int keySuffix = 0;
+                        string key = attribute.Key;
+                        while ( dictionary.ContainsKey( key ) )
+                        {
+                            key = string.Format( "{0}_{1}", attribute.Key, keySuffix++ );
+                        }
+
+                        var field = attribute.Value.FieldType.Field;
+                        string value = GetAttributeValue( attribute.Key );
+                        dictionary.Add( key, field.FormatValue( null, value, attribute.Value.QualifierValues, false ) );
+                        dictionary.Add( key + "_unformatted", value );
+                        if (field is Rock.Field.ILinkableFieldType)
+                        {
+                            dictionary.Add( key + "_url", ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.Value.QualifierValues ) );
+                        }
+                    }
                 }
             }
 

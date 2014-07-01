@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web;
 using Rock.Data;
 
 namespace Rock.Model
@@ -113,6 +113,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the initiator person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? InitiatorPersonAliasId { get; set; }
+        
         #endregion
 
         #region Virtual Properties
@@ -123,8 +132,15 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initiator person alias.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias.
+        /// </value>
+        public virtual PersonAlias InitiatorPersonAlias { get; set; }
 
         /// <summary>
         /// Gets a flag indicating whether this Workflow instance is active.
@@ -163,6 +179,7 @@ namespace Rock.Model
         /// <value>
         /// The active activities.
         /// </value>
+        [NotMapped]
         public virtual IEnumerable<WorkflowActivity> ActiveActivities
         {
             get
@@ -172,6 +189,22 @@ namespace Rock.Model
                     .OrderBy( a => a.ActivityType.Order );
             }
         }
+
+        /// <summary>
+        /// Gets the active activity names.
+        /// </summary>
+        /// <value>
+        /// The active activity names.
+        /// </value>
+        [NotMapped]
+        public virtual string ActiveActivityNames
+        {
+            get
+            {
+                return ActiveActivities.Select( a => a.ActivityType.Name ).ToList().AsDelimited( "<br/>" );
+            }
+        }
+
 
         /// <summary>
         /// Gets a flag indicating whether this instance has active activities.
@@ -193,7 +226,6 @@ namespace Rock.Model
         /// <value>
         /// A collection containing the <see cref="Rock.Model.WorkflowLog"/> entries for this Workflow instance.
         /// </value>
-        [DataMember]
         public virtual ICollection<WorkflowLog> LogEntries
         {
             get { return _logEntries ?? ( _logEntries = new Collection<WorkflowLog>() ); }
@@ -215,6 +247,27 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is persisted.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is persisted; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        [DataMember]
+        public virtual bool IsPersisted 
+        {
+            get
+            {
+                return _isPersisted || Id > 0;
+            }
+            set
+            {
+                _isPersisted = value;
+            }
+        }
+        private bool _isPersisted = false;
+
         #endregion
 
         #region Public Methods
@@ -222,32 +275,50 @@ namespace Rock.Model
         /// <summary>
         /// Processes this Workflow instance.
         /// </summary>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.</returns>
-        public virtual bool Process( out List<string> errorMessages)
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the Workflow processed successfully; otherwise <c>false</c>.
+        /// </returns>
+        public virtual bool Process( RockContext rockContext, out List<string> errorMessages)
         {
-            bool result = Process( null, out errorMessages );
-            return result;
+            if (!InitiatorPersonAliasId.HasValue &&
+                HttpContext.Current != null && 
+                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null )
+                {
+                    InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
+                }
+            }
+
+            return Process( rockContext, null, out errorMessages );
         }
 
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain and any error messages that occur
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> that will contain and any error messages that occur
         /// while the Workflow is being processed.</param>
-        /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the workflow processed sucessfully.</returns>
-        public virtual bool Process( Object entity, out List<string> errorMessages )
+        /// <returns>
+        /// A <see cref="System.Boolean" /> that is <c>true</c> if the workflow processed sucessfully.
+        /// </returns>
+        public virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
-            AddSystemLogEntry( "Processing..." );
+            AddSystemLogEntry( "Workflow Processing..." );
 
             DateTime processStartTime = RockDateTime.Now;
 
-            while ( ProcessActivity( processStartTime, entity, out errorMessages )
+            while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
                 && errorMessages.Count == 0 ) { }
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
-            AddSystemLogEntry( "Processing Complete" );
+            AddSystemLogEntry( "Workflow Processing Complete" );
 
             if ( !this.HasActiveActivities )
             {
@@ -276,7 +347,30 @@ namespace Rock.Model
         public virtual void MarkComplete()
         {
             CompletedDateTime = RockDateTime.Now;
+            Status = "Completed";
             AddSystemLogEntry( "Completed" );
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "WorkflowType", this.WorkflowType );
+            }
+
+            return mergeFields;
         }
 
         /// <summary>
@@ -297,12 +391,16 @@ namespace Rock.Model
         /// <summary>
         /// Processes the activity.
         /// </summary>
-        /// <param name="processStartTime">A <see cref="System.DateTime"/> that represents the process start time.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="processStartTime">A <see cref="System.DateTime" /> that represents the process start time.</param>
         /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> containing error messages for any 
-        ///  errors that occurred while the activity was being processed..</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the activity processed successfully; otherwise <c>false</c>.</returns>
-        private bool ProcessActivity( DateTime processStartTime, Object entity, out List<string> errorMessages )
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> containing error messages for any
+        /// errors that occurred while the activity was being processed..</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the activity processed successfully; otherwise <c>false</c>.
+        /// </returns>
+        private bool ProcessActivity( RockContext rockContext, DateTime processStartTime, Object entity, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {
@@ -311,7 +409,7 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        return activity.Process( entity, out errorMessages );
+                        return activity.Process( rockContext, entity, out errorMessages );
                     }
                 }
             }
@@ -348,9 +446,19 @@ namespace Rock.Model
         public static Workflow Activate( WorkflowType workflowType, string name )
         {
             var workflow = new Workflow();
+            workflow.WorkflowType = workflowType;
             workflow.WorkflowTypeId = workflowType.Id;
-            workflow.Name = name ?? workflowType.Name;
-            workflow.Status = "Activated";
+            
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                workflow.Name = name;
+            }
+            else
+            {
+                workflow.Name = workflowType.Name;
+            }
+
+            workflow.Status = "Active";
             workflow.IsProcessing = false;
             workflow.ActivatedDateTime = RockDateTime.Now;
             workflow.LoadAttributes();
@@ -384,7 +492,8 @@ namespace Rock.Model
         /// </summary>
         public WorkflowConfiguration()
         {
-            this.HasRequired( m => m.WorkflowType ).WithMany().HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( w => w.WorkflowType ).WithMany().HasForeignKey( w => w.WorkflowTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( w => w.InitiatorPersonAlias ).WithMany().HasForeignKey( w => w.InitiatorPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

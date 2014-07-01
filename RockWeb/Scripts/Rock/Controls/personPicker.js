@@ -17,7 +17,7 @@
 
             // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
             // Might be a good opportunity to break the dependency on jQueryUI.
-            $('#personPicker_' + controlId).autocomplete({
+            $('#' + controlId + '_personPicker').autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
                         url: restUrl + request.term + "/true",
@@ -25,7 +25,7 @@
                     });
 
                     promise.done(function (data) {
-                        $('#personPickerItems_' + controlId).first().html('');
+                        $('#' + controlId + '_personPickerItems').first().html('');
                         response($.map(data, function (item) {
                             return item;
                         }));
@@ -42,7 +42,7 @@
                 },
                 minLength: 3,
                 html: true,
-                appendTo: '#personPickerItems_' + controlId,
+                appendTo: '#' + controlId + '_personPickerItems',
                 pickerControlId: controlId,
                 messages: {
                     noResults: function () {},
@@ -56,11 +56,17 @@
                 exports.personPickers[controlId].updateScrollbar();
             });
 
-            $('.picker-select').on('click', '.picker-select-item', function () {
+            $('#' + controlId + ' .picker-select').on('click', '.picker-select-item', function (e) {
+                e.stopPropagation();
+
                 var $selectedItem = $(this).attr('data-person-id');
+                var alreadySelected = $(this).find('.picker-select-item-details:hidden').length == 0 && e.target.type != 'radio';
+                if (alreadySelected) {
+                    $('#' + controlId + '_btnSelect').get(0).click();
+                }
 
                 // hide other open details
-                $('.picker-select-item-details').each(function () {
+                $('#' + controlId + ' .picker-select-item-details').each(function () {
                     var $el = $(this),
                         $currentItem = $el.closest('.picker-select-item').attr('data-person-id');
 
@@ -78,25 +84,25 @@
                 function () {
 
                     // only show the X if there there is something picked
-                    if ($('#hfPersonId_' + controlId).val() || '0' !== '0') {
-                         $('#btnSelectNone_' + controlId).stop().show();
+                    if ($('#' + controlId + '_hfPersonId').val() || '0' !== '0') {
+                        $('#' + controlId + '_btnSelectNone').stop().show();
                     }
                 },
                 function () {
-                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                    $('#' + controlId + '_btnSelectNone').fadeOut(500);
                 });
 
-            $('#btnCancel_' + controlId).click(function () {
+            $('#' + controlId + '_btnCancel').click(function () {
                 $(this).closest('.picker-menu').slideUp();
             });
 
-            $('#btnSelectNone_' + controlId).click(function (e) {
+            $('#' + controlId + '_btnSelectNone').click(function (e) {
 
                 var selectedValue = '0',
                     selectedText = defaultText,
-                    $selectedItemLabel = $('#selectedItemLabel_' + controlId),
-                    $hiddenItemId = $('#hfPersonId_' + controlId),
-                    $hiddenItemName = $('#hfPersonName_' + controlId);
+                    $selectedItemLabel = $('#' + controlId + '_selectedItemLabel'),
+                    $hiddenItemId = $('#' + controlId + '_hfPersonId'),
+                    $hiddenItemName = $('#' + controlId + '_hfPersonName');
 
                 $hiddenItemId.val(selectedValue);
                 $hiddenItemName.val(selectedText);
@@ -104,16 +110,16 @@
                 $selectedItemLabel.text(selectedText);
             });
 
-            $('#btnSelect_' + controlId).click(function () {
+            $('#' + controlId + '_btnSelect').click(function () {
                 var radInput = $('#' + controlId).find('input:checked'),
 
                     selectedValue = radInput.val(),
                     selectedText = radInput.closest('.picker-select-item').find('label').text(),
 
-                    selectedPersonLabel = $('#selectedPersonLabel_' + controlId),
+                    selectedPersonLabel = $('#' + controlId + '_selectedPersonLabel'),
 
-                    hiddenPersonId = $('#hfPersonId_' + controlId),
-                    hiddenPersonName = $('#hfPersonName_' + controlId);
+                    hiddenPersonId = $('#' + controlId + '_hfPersonId'),
+                    hiddenPersonName = $('#' + controlId + '_hfPersonName');
 
                 hiddenPersonId.val(selectedValue);
                 hiddenPersonName.val(selectedText);

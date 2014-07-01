@@ -98,6 +98,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 return base.IsValid && _rangeValidator.IsValid;
             }
         }
@@ -133,8 +134,8 @@ namespace Rock.Web.UI.Controls
             _rangeValidator.MaximumValue = this.MaximumValue;
             string dataTypeText = string.Empty;
 
-            int minValue = MinimumValue.AsInteger() ?? int.MinValue;
-            int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
+            int minValue = MinimumValue.AsIntegerOrNull() ?? int.MinValue;
+            int maxValue = MaximumValue.AsIntegerOrNull() ?? int.MaxValue;
 
             string rangeMessageFormat = null;
 

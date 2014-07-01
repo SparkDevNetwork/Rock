@@ -162,6 +162,15 @@ namespace Rock.Web.Cache
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is grid column.
         /// </summary>
         /// <value>
@@ -238,8 +247,21 @@ namespace Rock.Web.Cache
                 return categories;
             }
         }
-        private List<int> categoryIds = null;
 
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds
+        {
+            get { return categoryIds; }
+            set { categoryIds = value; }
+        }
+
+        private List<int> categoryIds = null;
 
         #endregion
 
@@ -282,6 +304,7 @@ namespace Rock.Web.Cache
             this.Name = attribute.Name;
             this.Description = attribute.Description;
             this.Order = attribute.Order;
+            this.IconCssClass = attribute.IconCssClass;
             this.IsGridColumn = attribute.IsGridColumn;
             this.DefaultValue = attribute.DefaultValue;
             this.IsMultiValue = attribute.IsMultiValue;
@@ -306,7 +329,8 @@ namespace Rock.Web.Cache
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
-        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId)
+        /// <param name="required">The required.</param>
+        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null)
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( attributeControl != null )
@@ -324,7 +348,7 @@ namespace Rock.Web.Cache
 
                     rockControl.Label = this.Name;
                     rockControl.Help = this.Description;
-                    rockControl.Required = this.IsRequired;
+                    rockControl.Required = required.HasValue ? required.Value : this.IsRequired;
                     rockControl.ValidationGroup = validationGroup;
                 }
                 else
@@ -541,7 +565,11 @@ namespace Rock.Web.Cache
                 if ( attributeModel != null )
                 {
                     attribute = new AttributeCache( attributeModel );
-                    cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, attribute, cachePolicy );
+                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
                     return attribute;
                 }
                 else
@@ -551,6 +579,41 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static AttributeCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var attributeService = new AttributeService( new RockContext() );
+                var attributeModel = attributeService.Get( guid );
+                if ( attributeModel != null )
+                {
+                    var attribute = new AttributeCache( attributeModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
+                    cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
+                    return attribute;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+        
         /// <summary>
         /// Adds Attribute model to cache, and returns cached object
         /// </summary>
@@ -565,12 +628,17 @@ namespace Rock.Web.Cache
 
             if ( attribute != null )
             {
+                attribute.CopyFromModel( attributeModel );
                 return attribute;
             }
             else
             {
                 attribute = new AttributeCache( attributeModel );
-                cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, attribute, cachePolicy );
+                cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
+
                 return attribute;
             }
         }
@@ -588,7 +656,10 @@ namespace Rock.Web.Cache
             string cacheKey = AttributeCache.CacheKey( attributeModel.Id );
 
             ObjectCache cache = MemoryCache.Default;
-            cache.Set( cacheKey, attribute, new CacheItemPolicy() );
+
+            var cachePolicy = new CacheItemPolicy();
+            cache.Set( cacheKey, attribute, cachePolicy );
+            cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
 
             return attribute;
         }

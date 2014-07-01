@@ -96,6 +96,8 @@ namespace RockWeb.Blocks.Core
                     cbIncludeStats.Visible = true;
                     BindGrid();
                 }
+
+                RemoveOldRDeleteFiles();
             }
         }
         #endregion
@@ -199,7 +201,10 @@ namespace RockWeb.Blocks.Core
                 {
                     errors = NuGetService.UpdatePackage( update );
                 }
-                nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes).ConvertCrLfToHtmlBr();
+
+                CheckForManualFileMoves( version );
+
+                nbSuccess.Text = ConvertToHtmlLiWrappedUl( update.ReleaseNotes ).ConvertCrLfToHtmlBr();
                 lSuccessVersion.Text = update.Title;
 
                 // Record the current version to the database
@@ -254,7 +259,6 @@ namespace RockWeb.Blocks.Core
         private bool IsUpdateAvailable()
         {
             List<IPackage> verifiedPackages = new List<IPackage>();
-
             try
             {
                 // Get the installed package so we can check its version...
@@ -283,6 +287,7 @@ namespace RockWeb.Blocks.Core
                         // so we clear it out and keep processing.
                         if ( requiredVersion > _installedVersion )
                         {
+                            nbMoreUpdatesAvailable.Visible = true;
                             verifiedPackages.Clear();
                         }
                     }
@@ -382,6 +387,59 @@ namespace RockWeb.Blocks.Core
     </body>
 </html>
 " );
+        }
+
+        private void RemoveOldRDeleteFiles()
+        {
+            var rockDirectory = new DirectoryInfo( Server.MapPath( "~" ) );
+
+            foreach ( var file in rockDirectory.EnumerateFiles( "*.rdelete", SearchOption.AllDirectories ) )
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch
+                {
+                    //we'll try again later
+                }
+            }
+        }
+
+        private void CheckForManualFileMoves( string version )
+        {
+            var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
+            if ( versionDirectory.Exists )
+            {
+                foreach ( var file in versionDirectory.EnumerateFiles( "*", SearchOption.AllDirectories ) )
+                {
+                    ManuallyMoveFile( file, file.FullName.Replace( @"\App_Data\" + version, "" ) );
+                }
+
+                versionDirectory.Delete( true );
+            }
+        }
+
+        private void ManuallyMoveFile( FileInfo file, string newPath )
+        {
+            if ( newPath.EndsWith( ".dll" ) && !newPath.Contains( @"\bin\" ) )
+            {
+                int fileCount = 0;
+                if ( File.Exists( newPath ) )
+                {
+                    // generate a unique *.#.rdelete filename
+                    do
+                    {
+                        fileCount++;
+                    }
+                    while ( File.Exists( string.Format( "{0}.{1}.rdelete", newPath, fileCount ) ) );
+
+                    string fileToDelete = string.Format( "{0}.{1}.rdelete", newPath, fileCount );
+                    File.Move( newPath, fileToDelete );
+                }
+            }
+
+            file.CopyTo( newPath, true );
         }
 
         /// <summary>
@@ -545,7 +603,7 @@ namespace RockWeb.Blocks.Core
         public string State { get; set; }
         public string Zip { get; set; }
 
-        public ImpactLocation( Rock.Model.Location location)
+        public ImpactLocation( Rock.Model.Location location )
         {
             Street1 = location.Street1;
             Street2 = location.Street2;
@@ -554,4 +612,5 @@ namespace RockWeb.Blocks.Core
             Zip = location.Zip;
         }
     }
+
 }

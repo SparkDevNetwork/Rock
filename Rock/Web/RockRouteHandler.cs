@@ -39,7 +39,9 @@ namespace Rock.Web
         System.Web.IHttpHandler IRouteHandler.GetHttpHandler( RequestContext requestContext )
         {
             if ( requestContext == null )
+            {
                 throw new ArgumentNullException( "requestContext" );
+            }
 
             try
             {
@@ -89,7 +91,9 @@ namespace Rock.Web
                     }
 
                     if ( string.IsNullOrEmpty( pageId ) )
+                    {
                         throw new SystemException( "Invalid Site Configuration" );
+                    }
                 }
 
                 PageCache page = null;

@@ -15,14 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
+using System.Reflection;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -35,6 +38,12 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Detail Page" )]
     public partial class MetricValueList : RockBlock, ISecondaryBlock
     {
+        #region fields
+
+        private Dictionary<int, string> _entityNameLookup;
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -129,6 +138,42 @@ namespace RockWeb.Blocks.Reporting
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gMetricValues_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.DataItem != null )
+            {
+                var entityColumn = gMetricValues.Columns.OfType<BoundField>().FirstOrDefault( a => a.DataField == "EntityId" );
+                if ( entityColumn.Visible )
+                {
+                    e.Row.Cells[gMetricValues.Columns.IndexOf( entityColumn )].Text = GetSeriesName( e.Row.DataItem.GetPropertyValue( "EntityId" ) as int? );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the series.
+        /// </summary>
+        /// <param name="metricId">The metric identifier.</param>
+        /// <param name="seriesId">The series identifier.</param>
+        /// <returns></returns>
+        private string GetSeriesName( int? seriesId )
+        {
+            if ( _entityNameLookup != null && seriesId.HasValue )
+            {
+                if ( _entityNameLookup.ContainsKey( seriesId.Value ) )
+                {
+                    return _entityNameLookup[seriesId.Value];
+                }
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Internal Methods
@@ -138,22 +183,23 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
-            MetricValueService metricValueService = new MetricValueService( new RockContext() );
+            var rockContext = new RockContext();
+            MetricValueService metricValueService = new MetricValueService( rockContext );
             SortProperty sortProperty = gMetricValues.SortProperty;
             var qry = metricValueService.Queryable();
 
             // in case called normally
-            int? metricId = PageParameter( "MetricId" ).AsInteger( false );
+            int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
 
             // in case called from CategoryTreeView
-            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsInteger( false );
+            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
             MetricCategory metricCategory = null;
             if ( metricCategoryId.HasValue )
             {
                 if ( metricCategoryId.Value > 0 )
                 {
                     // editing a metric, but get the metricId from the metricCategory
-                    metricCategory = new MetricCategoryService( new RockContext() ).Get( metricCategoryId.Value );
+                    metricCategory = new MetricCategoryService( rockContext ).Get( metricCategoryId.Value );
                     if ( metricCategory != null )
                     {
                         metricId = metricCategory.MetricId;
@@ -162,7 +208,7 @@ namespace RockWeb.Blocks.Reporting
                 else
                 {
                     // adding a new metric. Block will (hopefully) not be shown
-                    metricId = 0; 
+                    metricId = 0;
                 }
             }
 
@@ -171,7 +217,51 @@ namespace RockWeb.Blocks.Reporting
 
             this.Visible = metricId.HasValue;
 
+            if ( !metricId.HasValue )
+            {
+                return;
+            }
+
             qry = qry.Where( a => a.MetricId == metricId );
+
+            var entityColumn = gMetricValues.Columns.OfType<BoundField>().FirstOrDefault( a => a.DataField == "EntityId" );
+            var metric = new MetricService( rockContext ).Get( metricId ?? 0 );
+            entityColumn.Visible = metric != null && metric.EntityTypeId.HasValue;
+
+            if ( metric != null )
+            {
+                _entityNameLookup = new Dictionary<int, string>();
+
+                var entityTypeCache = EntityTypeCache.Read( metric.EntityTypeId ?? 0 );
+                if ( entityTypeCache != null )
+                {
+                    entityColumn.HeaderText = entityTypeCache.FriendlyName;
+                    IQueryable<IEntity> entityQry = null;
+                    if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )
+                    {
+                        // special case for Group since there could be a very large number (especially if you include families), so limit to GroupType.ShowInGroupList
+                        entityQry = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.ShowInGroupList );
+                    }
+                    else
+                    {
+                        Type[] modelType = { entityTypeCache.GetEntityType() };
+                        Type genericServiceType = typeof( Rock.Data.Service<> );
+                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                        var serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+                        MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                        entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                    }
+
+                    if ( entityQry != null )
+                    {
+                        var entityList = entityQry.ToList();
+                        foreach ( var e in entityList )
+                        {
+                            _entityNameLookup.AddOrReplace( e.Id, e.ToString() );
+                        }
+                    }
+                }
+            }
 
             if ( sortProperty != null )
             {

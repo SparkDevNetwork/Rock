@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Crm
             {
                 lActionTitle.Text = ActionTitle.Add( PersonBadge.FriendlyTypeName ).FormatAsHtmlTitle();
 
-                PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger() ?? 0;
+                PersonBadgeId = PageParameter( "PersonBadgeId" ).AsInteger();
                 if ( PersonBadgeId != 0 )
                 {
                     var personBadge = new PersonBadgeService( new RockContext() ).Get( PersonBadgeId );

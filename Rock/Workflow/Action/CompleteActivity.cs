@@ -35,11 +35,12 @@ namespace Rock.Workflow.Action
         /// <summary>
         /// Executes the specified workflow action.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 

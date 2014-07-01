@@ -60,6 +60,7 @@
 
         <%-- Panel for active checkin --%>
         <asp:Panel ID="pnlActive" runat="server">
+
             <div class="row checkin-header">
                 <div class="col-md-12">
                     <h1>Check-in Kiosk</h1>
@@ -74,13 +75,6 @@
                 </div>
             </div>
 
-            <div class="row checkin-footer">
-                <div class="col-md-12 checkin-count">
-                    <h3>Current Counts</h3>
-            
-                    <asp:PlaceHolder ID="phCounts" runat="server"></asp:PlaceHolder>
-                </div>
-            </div>
         </asp:Panel>
 
 </ContentTemplate>

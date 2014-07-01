@@ -159,7 +159,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMultiValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag indicating if a value is required.
         /// </summary>
@@ -169,6 +169,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
 
         #endregion
 
@@ -239,7 +248,7 @@ namespace Rock.Model
 
                 if ( FieldTypeId == fieldTypeImage.Id || FieldTypeId == fieldTypeBinaryFile.Id )
                 {
-                    int? binaryFileId = DefaultValue.AsInteger();
+                    int? binaryFileId = DefaultValue.AsIntegerOrNull();
                     if ( binaryFileId.HasValue )
                     {
                         BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );

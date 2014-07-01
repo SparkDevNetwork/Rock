@@ -111,8 +111,8 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                int selectedTagId = selectionValues[1].AsInteger() ?? 0;
-                var selectedTag = new TagService( new RockContext() ).Get( selectedTagId );
+                Guid selectedTagGuid = selectionValues[1].AsGuid();
+                var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
                 if ( selectedTag != null )
                 {
                     result = string.Format( "Tagged as {0}", selectedTag.Name );
@@ -191,9 +191,9 @@ function() {
             _ddlTagList.Items.Clear();
             var tempTagList = tagQry.ToList();
 
-            foreach ( var tag in tagQry.Select( a => new { a.Id, a.Name } ) )
+            foreach ( var tag in tagQry.Select( a => new { a.Guid, a.Name } ) )
             {
-                _ddlTagList.Items.Add( new ListItem( tag.Name, tag.Id.ToString() ) );
+                _ddlTagList.Items.Add( new ListItem( tag.Name, tag.Guid.ToString() ) );
             }
         }
 
@@ -232,8 +232,8 @@ function() {
 
             if ( selectionValues.Length >= 2 )
             {
-                int tagType = selectionValues[0].AsInteger() ?? 0;
-                int selectedTagId = selectionValues[1].AsInteger() ?? 0;
+                int tagType = selectionValues[0].AsInteger();
+                Guid selectedTagGuid = selectionValues[1].AsGuid();
 
                 ( controls[0] as RadioButtonList ).SelectedValue = tagType.ToString();
 
@@ -241,14 +241,14 @@ function() {
 
                 RockDropDownList ddlTagList = controls[1] as RockDropDownList;
 
-                if ( ddlTagList.Items.FindByValue( selectedTagId.ToString() ) != null )
+                if ( ddlTagList.Items.FindByValue( selectedTagGuid.ToString() ) != null )
                 {
-                    ddlTagList.SelectedValue = selectedTagId.ToString();
+                    ddlTagList.SelectedValue = selectedTagGuid.ToString();
                 }
                 else
                 {
                     // if the selectedTag is a personal tag, but for a different Owner than the current logged in person, include it in the list 
-                    var selectedTag = new TagService( new RockContext() ).Get( selectedTagId );
+                    var selectedTag = new TagService( new RockContext() ).Get( selectedTagGuid );
                     if ( selectedTag != null )
                     {
                         if ( selectedTag.OwnerId != null )
@@ -259,7 +259,7 @@ function() {
                             }
 
                             string tagText = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.Owner );
-                            ListItem currentTagListItem = new ListItem( tagText, selectedTagId.ToString() );
+                            ListItem currentTagListItem = new ListItem( tagText, selectedTagGuid.ToString() );
                             currentTagListItem.Attributes["OptionGroup"] = "Current";
                             ddlTagList.Items.Insert( 0, currentTagListItem );
                         }
@@ -281,9 +281,9 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 2 )
             {
-                int tagId = selectionValues[1].AsInteger() ?? 0;
+                Guid tagGuid = selectionValues[1].AsGuid();
                 var tagItemQry = new TaggedItemService( (RockContext)serviceInstance.Context ).Queryable()
-                    .Where( x => x.TagId == tagId );
+                    .Where( x => x.Tag.Guid == tagGuid );
 
                 var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => tagItemQry.Any( x => x.EntityGuid == p.Guid ) );

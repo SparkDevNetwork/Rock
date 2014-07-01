@@ -168,7 +168,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    return this.ItemId.AsInteger( false );
+                    return this.ItemId.AsIntegerOrNull();
                 }
             }
         }
@@ -184,7 +184,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfPageRouteId.Value.AsInteger( false );
+                return _hfPageRouteId.Value.AsIntegerOrNull();
             }
 
             set
@@ -377,7 +377,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
             _hfPageRouteId = new HiddenField();
-            _hfPageRouteId.ClientIDMode = ClientIDMode.Static;
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
@@ -420,7 +419,7 @@ namespace Rock.Web.UI.Controls
             _rblSelectPageRoute.Visible = false;
 
             // pluck the selectedValueId of the Page Params in case the ViewState is shut off
-            int selectedValueId = this.Page.Request.Params[_rblSelectPageRoute.UniqueID].AsInteger() ?? 0;
+            int selectedValueId = this.Page.Request.Params[_rblSelectPageRoute.UniqueID].AsInteger();
             PageRoute pageRoute = new PageRouteService( new RockContext() ).Get( selectedValueId );
             SetValue( pageRoute );
         }

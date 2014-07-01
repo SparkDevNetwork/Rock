@@ -252,6 +252,11 @@
 
 // 3. Workflow
 // -------------------------
+
+.workflow-section-activities {
+    margin-top: 64px;
+}
+
 .workflow-activities-readonly-header
 {
 	color: #515151;
@@ -266,4 +271,91 @@
 	    text-decoration: none;
     }
 
+}
+
+.workflow-activity { 
+    
+    &.activated-with-workflow {
+        
+       & > .panel-heading {
+            background-color: @state-success-bg;
+            color: @state-success-text;
+           
+            a.btn-link {
+                color: @state-success-text;
+            }
+        }
+    }
+
+    .panel-title:before {
+        content: @fa-var-cubes;
+        font-family: FontAwesome;
+        font-weight: normal;
+    }
+}
+
+.workflow-action {
+    .workflow-action-name:before {
+        content: @fa-var-cube;
+        font-family: FontAwesome;
+        font-weight: normal;
+    }
+
+    .criteria-exists {
+        background-color: @btn-warning-bg;
+        color: @btn-warning-color;
+        border: 1px solid @btn-warning-border;
+    }
+
+    .conditional-run-criteria {
+        margin-top: -15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .form-action-rows .row {
+        margin-bottom: 12px;
+    }
+}
+
+// panel for workflow entry/navigation
+.panel-group {
+    .panel-workflowitem {
+        margin-bottom: 30px;
+
+        &:hover {
+            background-color: lighten(@accent-light-color, 1%);
+        }
+
+        .panel-heading {
+            padding: 30px;
+
+            a {
+                h3 {
+                    margin: 0;
+
+                    i {
+                        font-size: 35px;
+                        margin-right: 12px;
+                    }
+                }
+
+                i.panel-navigation:before {
+                    font-family: FontAwesome;
+                    content: @fa-var-chevron-up;
+                    font-size: 20px;
+                }
+
+                &.collapsed {
+                    i.panel-navigation:before {
+                        content: @fa-var-chevron-down;
+                    }
+                }
+            }
+
+            
+        }
+    }
 }

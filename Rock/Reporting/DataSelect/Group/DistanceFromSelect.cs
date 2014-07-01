@@ -135,14 +135,14 @@ namespace Rock.Reporting.DataSelect.Group
             string[] selectionValues = selection.Split( '|' );
 
             Location selectedLocation = null;
-            int? groupLocationTypeValueId = null;
+            Guid? groupLocationTypeValueGuid = null;
             if ( selectionValues.Count() >= 2 )
             {
                 // the selected Location 
-                selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
+                selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
 
                 // which group location type type () to use as the group's location
-                groupLocationTypeValueId = selectionValues[1].AsInteger( false );
+                groupLocationTypeValueGuid = selectionValues[1].AsGuid();
             }
 
             const double milesPerMeter = 1 / 1609.344;
@@ -153,7 +153,7 @@ namespace Rock.Reporting.DataSelect.Group
             {
                 groupLocationDistanceQuery = new GroupService( context ).Queryable()
                     .Select( p => p.GroupLocations
-                        .Where( gl => gl.GroupLocationTypeValueId == groupLocationTypeValueId)
+                        .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid)
                         .Where( gl => gl.Location.GeoPoint != null)
                         .Select( s => DbFunctions.Truncate( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * milesPerMeter, 2 ) ).FirstOrDefault() );
             }
@@ -184,7 +184,7 @@ namespace Rock.Reporting.DataSelect.Group
             locationTypeList.Items.Clear();
             foreach ( var value in DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                locationTypeList.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
+                locationTypeList.Items.Add( new ListItem( value.Name, value.Guid.ToString() ) );
             }
 
             locationTypeList.Items.Insert( 0, Rock.Constants.None.ListItem );
@@ -216,22 +216,22 @@ namespace Rock.Reporting.DataSelect.Group
         {
             if ( controls.Count() == 2 )
             {
-                int? locationId = null;
-                int? locationTypeId = null;
+                Guid? locationGuid = null;
+                Guid? locationTypeGuid = null;
                 LocationPicker locationPicker = controls[0] as LocationPicker;
                 Location location = locationPicker.Location;
                 if ( location != null )
                 {
-                    locationId = location.Id;
+                    locationGuid = location.Guid;
                 }
 
                 RockDropDownList dropDownList = controls[1] as RockDropDownList;
                 if ( dropDownList != null )
                 {
-                    locationTypeId = dropDownList.SelectedValueAsId();
+                    locationTypeGuid = dropDownList.SelectedValue.AsGuid();
                 }
 
-                return string.Format( "{0}|{1}", locationId, locationTypeId );
+                return string.Format( "{0}|{1}", locationGuid, locationTypeGuid );
             }
 
             return string.Empty;
@@ -250,7 +250,7 @@ namespace Rock.Reporting.DataSelect.Group
                 if ( selectionValues.Length >= 2 )
                 {
                     var locationPicker = controls[0] as LocationPicker;
-                    var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsInteger() ?? 0 );
+                    var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
                     locationPicker.CurrentPickerMode = locationPicker.GetBestPickerModeForLocation( selectedLocation );
                     locationPicker.Location = selectedLocation;
 

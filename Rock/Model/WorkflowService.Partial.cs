@@ -29,24 +29,6 @@ namespace Rock.Model
     public partial class WorkflowService 
     {
         /// <summary>
-        /// Activates a new <see cref="Rock.Model.Workflow" /> instance.
-        /// </summary>
-        /// <param name="workflowType">The <see cref="Rock.Model.WorkflowType" /> to be activated.</param>
-        /// <param name="name">A <see cref="System.String" /> representing the name of the <see cref="Rock.Model.Workflow" /> instance.</param>
-        /// <returns>
-        /// The activated <see cref="Rock.Model.Workflow" /> instance
-        /// </returns>
-        public Workflow Activate( WorkflowType workflowType, string name )
-        {
-            var workflow = Workflow.Activate( workflowType, name );
-
-            this.Add( workflow );
-            this.Context.SaveChanges();
-
-            return workflow;
-        }
-
-        /// <summary>
         /// Processes the specified <see cref="Rock.Model.Workflow" />
         /// </summary>
         /// <param name="workflow">The <see cref="Rock.Model.Workflow" /> instance to process.</param>
@@ -56,7 +38,20 @@ namespace Rock.Model
             workflow.IsProcessing = true;
             this.Context.SaveChanges();
 
-            workflow.Process(out errorMessages); 
+            var rockContext = (RockContext)this.Context;
+            workflow.LoadAttributes( rockContext );
+
+            workflow.Process( rockContext, out errorMessages );
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                this.Context.SaveChanges();
+                workflow.SaveAttributeValues( rockContext );
+                foreach ( var activity in workflow.Activities )
+                {
+                    activity.SaveAttributeValues( rockContext );
+                }
+            } );
 
             workflow.IsProcessing = false;
             this.Context.SaveChanges();

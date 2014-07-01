@@ -21,13 +21,15 @@
                         <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
                     </div>
                     <div class="span6">
-                        <Rock:Grid ID="gMarketingCampaignAdAttributeTypes" runat="server" AllowPaging="false" DisplayType="Light">
-                            <Columns>
-                                <asp:BoundField DataField="Name" HeaderText="Attribute Types" />
-                                <Rock:EditField OnClick="gMarketingCampaignAdAttributeType_Edit" />
-                                <Rock:DeleteField OnClick="gMarketingCampaignAdAttributeType_Delete" />
-                            </Columns>
-                        </Rock:Grid>
+                        <div class="grid">
+                            <Rock:Grid ID="gMarketingCampaignAdAttributeTypes" runat="server" AllowPaging="false" DisplayType="Light">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" HeaderText="Attribute Types" />
+                                    <Rock:EditField OnClick="gMarketingCampaignAdAttributeType_Edit" />
+                                    <Rock:DeleteField OnClick="gMarketingCampaignAdAttributeType_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </div>
                 </div>
             </fieldset>

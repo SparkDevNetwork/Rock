@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
@@ -23,7 +24,7 @@ namespace Rock.Model
     /// <summary>
     /// Data access/service class for <see cref="Rock.Model.GroupType"/> objects.
     /// </summary>
-    public partial class GroupTypeService 
+    public partial class GroupTypeService
     {
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupTypeRole"/>.
@@ -41,7 +42,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
         /// <returns></returns>
-        public IQueryable<GroupType> GetChildGroupTypes(int groupTypeId)
+        public IQueryable<GroupType> GetChildGroupTypes( int groupTypeId )
         {
             return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
         }
@@ -78,6 +79,19 @@ namespace Rock.Model
                 FROM [GroupType]
                 WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
                 ", parentGroupTypeId );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
+        /// WARNING: This will fail if their is a circular reference in the GroupTypeAssociation table.
+        /// </summary>
+        /// <param name="parentGroupTypeGuid">The parent group type unique identifier.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendents( Guid parentGroupTypeGuid )
+        {
+            return this.GetAllAssociatedDescendents( this.Get( parentGroupTypeGuid ).Id );
         }
 
         /// <summary>

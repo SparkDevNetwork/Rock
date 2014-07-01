@@ -9,20 +9,22 @@
 <asp:UpdatePanel ID="upMarketingCampaigns" runat="server">
     <ContentTemplate>
 
-        <Rock:Grid ID="gEntityTypes" runat="server" AllowSorting="true">
-            <Columns>
-                <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
-                <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
-                <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
-                <Rock:TemplateFieldUnselected>
-                    <HeaderStyle CssClass="span1" />
-                    <ItemStyle HorizontalAlign="Center"/>
-                    <ItemTemplate>
-                        <a id="aSecure" runat="server" class="btn btn-security btn-sm" height="500px"><i class="fa fa-lock"></i></a>
-                    </ItemTemplate>
-                </Rock:TemplateFieldUnselected>
-            </Columns>
-        </Rock:Grid>
+        <div class="grid">
+            <Rock:Grid ID="gEntityTypes" runat="server" AllowSorting="true">
+                <Columns>
+                    <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
+                    <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
+                    <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
+                    <Rock:TemplateFieldUnselected>
+                        <HeaderStyle CssClass="span1" />
+                        <ItemStyle HorizontalAlign="Center"/>
+                        <ItemTemplate>
+                            <a id="aSecure" runat="server" class="btn btn-security btn-sm" height="500px"><i class="fa fa-lock"></i></a>
+                        </ItemTemplate>
+                    </Rock:TemplateFieldUnselected>
+                </Columns>
+            </Rock:Grid>
+        </div>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 

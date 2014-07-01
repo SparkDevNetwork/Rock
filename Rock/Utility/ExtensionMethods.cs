@@ -167,8 +167,15 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type );
-                return entityType.FriendlyName ?? SplitCase( type.Name );
+                var entityType = Rock.Web.Cache.EntityTypeCache.Read( type, false );
+                if ( entityType != null && entityType.FriendlyName != null )
+                {
+                    return entityType.FriendlyName;
+                }
+                else
+                {
+                    return SplitCase( type.Name );
+                }
             }
             else
             {
@@ -435,21 +442,22 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to integer.  Returns null if unsuccessful.
+        /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
+        public static int AsInteger( this string str )
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
+            return str.AsIntegerOrNull() ?? 0;
+        }
 
+        /// <summary>
+        /// Attempts to convert string to an integer.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static int? AsIntegerOrNull( this string str )
+        {
             int value;
             if ( int.TryParse( str, out value ) )
             {
@@ -468,6 +476,16 @@ namespace Rock
         /// <returns></returns>
         public static Guid AsGuid( this string str )
         {
+            return str.AsGuidOrNull() ?? Guid.Empty;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to Guid.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static Guid? AsGuidOrNull( this string str )
+        {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
             {
@@ -475,7 +493,7 @@ namespace Rock
             }
             else
             {
-                return Guid.Empty;
+                return null;
             }
         }
 
@@ -490,21 +508,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to decimal.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static decimal AsDecimal( this string str )
+        {
+            return str.AsDecimalOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to decimal.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static decimal? AsDecimal( this string str, bool emptyStringAsZero = true )
+        public static decimal? AsDecimalOrNull( this string str )
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
@@ -523,21 +542,22 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to double.  Returns 0 if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static double AsDouble( this string str )
+        {
+            return str.AsDoubleOrNull() ?? 0;
+        }
+
+        /// <summary>
         /// Attempts to convert string to double.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
-        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static double? AsDouble( this string str, bool emptyStringAsZero = true )
+        public static double? AsDoubleOrNull( this string str )
         {
-            if ( !emptyStringAsZero )
-            {
-                if ( string.IsNullOrWhiteSpace( str ) )
-                {
-                    return null;
-                }
-            }
-
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
@@ -600,17 +620,29 @@ namespace Rock
         /// <returns></returns>
         public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
         {
-            if ( content == null )
-                return string.Empty;
+            try
+            {
+                if ( content == null )
+                    return string.Empty;
 
-            // If there's no merge codes, just return the content
-            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
-                return content;
+                // If there's no merge codes, just return the content
+                if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                    return content;
 
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( content );
+                //// NOTE: This means that template filters will also use CSharpNamingConvention
+                //// For example the dotliquid documentation says to do this for formatting dates: 
+                //// {{ some_date_value | date:"MMM dd, yyyy" }}
+                //// However, if CSharpNamingConvention is enabled, it needs to be: 
+                //// {{ some_date_value | Date:"MMM dd, yyyy" }}
+                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+                Template template = Template.Parse( content );
 
-            return template.Render( Hash.FromDictionary( mergeObjects ) );
+                return template.Render( Hash.FromDictionary( mergeObjects ) );
+            }
+            catch ( Exception ex )
+            {
+                return "Error resolving Liquid merge fields: " + ex.Message;
+            }
         }
 
         /// <summary>
@@ -770,6 +802,80 @@ namespace Rock
         {
             return !string.IsNullOrWhiteSpace( value ) ? value : nullValue;
         }
+
+        /// <summary>
+        /// Compares to.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="compareValue">The compare value.</param>
+        /// <param name="compareType">Type of the compare.</param>
+        /// <returns></returns>
+        public static bool CompareTo( this string value, string compareValue, ComparisonType compareType )
+        {
+            if ( compareType == ComparisonType.Contains )
+            {
+                return value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.DoesNotContain )
+            {
+                return !value.Contains( compareValue );
+            }
+
+            if ( compareType == ComparisonType.EndsWith )
+            {
+                return value.EndsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.EqualTo )
+            {
+                return value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.GreaterThan )
+            {
+                return value.CompareTo( compareValue ) > 0;
+            }
+
+            if ( compareType == ComparisonType.GreaterThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) >= 0;
+            }
+
+            if ( compareType == ComparisonType.IsBlank )
+            {
+                return string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.IsNotBlank )
+            {
+                return !string.IsNullOrWhiteSpace( value );
+            }
+
+            if ( compareType == ComparisonType.LessThan )
+            {
+                return value.CompareTo( compareValue ) < 0;
+            }
+
+            if ( compareType == ComparisonType.LessThanOrEqualTo )
+            {
+                return value.CompareTo( compareValue ) <= 0;
+            }
+
+            if ( compareType == ComparisonType.NotEqualTo )
+            {
+                return !value.Equals( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            if ( compareType == ComparisonType.StartsWith )
+            {
+                return value.StartsWith( compareValue, StringComparison.OrdinalIgnoreCase );
+            }
+
+            return false;
+
+        }
+
 
         #endregion
 
@@ -1095,9 +1201,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static long ToJavascriptMilliseconds( this DateTime dateTime)
+        public static long ToJavascriptMilliseconds( this DateTime dateTime )
         {
-            return (long)( dateTime - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+            return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }
 
         #endregion
@@ -1230,11 +1336,14 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void AddCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\b" + className + "\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
             if ( !Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css + " " + className, @"^\s+", "", RegexOptions.IgnoreCase );
+            {
+                css += " " + className;
+            }
+            webControl.CssClass = css.Trim();
         }
 
         /// <summary>
@@ -1244,11 +1353,15 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + @"\b";
+            string match = @"(^|\s+)" + className + @"($|\s+)";
             string css = webControl.CssClass;
 
-            if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
-                webControl.CssClass = Regex.Replace( css, match, "", RegexOptions.IgnoreCase );
+            while ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
+            {
+                css = Regex.Replace( css, match, " ", RegexOptions.IgnoreCase );
+            }
+
+            webControl.CssClass = css.Trim();
         }
 
         #endregion
@@ -1470,6 +1583,23 @@ namespace Rock
             return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
         }
 
+        /// <summary>
+        /// Selecteds the value as unique identifier.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public static Guid? SelectedValueAsGuid( this ListControl listControl )
+        {
+            if ( string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return listControl.SelectedValue.AsGuid();
+            }
+        }
+
         #endregion
 
         #region Enum Extensions
@@ -1551,6 +1681,25 @@ namespace Rock
             else
             {
                 return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+            }
+        }
+
+        /// <summary>
+        /// Converts to enum or null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumValue">The enum value.</param>
+        /// <returns></returns>
+        public static T? ConvertToEnumOrNull<T>( this String enumValue ) where T : struct // actually limited to enum, but struct is the closest we can do
+        {
+            T result;
+            if ( Enum.TryParse<T>( enumValue, out result ) )
+            {
+                return result;
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -1919,6 +2068,30 @@ namespace Rock
         public static string LiquidHelpText( this Dictionary<string, object> mergeFields )
         {
             return mergeFields.LiquidizeChildren().ToJson();
+        }
+
+        #endregion
+
+        #region Dictionary<TKey, TValue> extension methods
+
+        /// <summary>
+        /// Adds or Replaces an item in a Dictionary
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        {
+            if ( !dictionary.ContainsKey( key ) )
+            {
+                dictionary.Add( key, value );
+            }
+            else
+            {
+                dictionary[key] = value;
+            }
         }
 
         #endregion

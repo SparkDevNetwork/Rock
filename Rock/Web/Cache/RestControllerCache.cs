@@ -270,6 +270,7 @@ namespace Rock.Web.Cache
 
             if ( RestController != null )
             {
+                RestController.CopyFromModel( RestControllerModel );
                 return RestController;
             }
             else

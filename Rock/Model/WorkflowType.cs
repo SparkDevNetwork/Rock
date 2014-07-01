@@ -112,7 +112,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string WorkTerm { get; set; }
 
-
         /// <summary>
         /// Gets or sets the minimum length of time, in seconds, before a persisted <see cref="Rock.Model.Workflow"/> instance that implements this 
         /// WorkflowType can be re-executed.
@@ -146,6 +145,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public WorkflowLoggingLevel LoggingLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the icon CSS class. This property is only used for CSS based icons.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the name of the icon CSS class. This property will be null if a file based icon is being used.
+        /// </value>
+        [DataMember]
+        public string IconCssClass { get; set; }
 
         #endregion
 

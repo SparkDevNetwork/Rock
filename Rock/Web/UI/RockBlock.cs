@@ -181,7 +181,16 @@ namespace Rock.Web.UI
                         {
                             _contextTypesRequired.Add( entityType );
                         }
+                        else
+                        {
+                            if ( !contextAttribute.IsConfigurable )
+                            {
+                                // block support any ContextType of any entityType, and it isn't configurable in BlockPropties, so load all the ones that RockPage knows about
+                                _contextTypesRequired = RockPage.GetContextEntityTypes();
+                            }
+                        }
                     }
+                    
                 }
                 return _contextTypesRequired;
             }
@@ -203,15 +212,31 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public T ContextEntity<T>() where T : Rock.Data.IEntity
         {
-            string entityTypeName = typeof( T ).FullName;
-            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            IEntity entity = ContextEntity( typeof( T ).FullName );
+            if ( entity != null )
             {
-                var entity = ContextEntities[entityTypeName];
                 return (T)entity;
             }
             else
             {
                 return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Returns the ContextEntity of the entityType specified
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.  For example: Rock.Model.Campus </param>
+        /// <returns></returns>
+        public Rock.Data.IEntity ContextEntity(string entityTypeName)
+        {
+            if ( ContextEntities.ContainsKey( entityTypeName ) )
+            {
+                return ContextEntities[entityTypeName];
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -304,14 +329,30 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Flushes an object from the cache
+        /// Flushes an object from the cache.
         /// </summary>
-        /// <param name="key">A <see cref="System.String"/> representing the the key name for the item that will be flushed. This value 
+        /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value 
         /// defaults to an empty string.</param>
         protected virtual void FlushCacheItem( string key = "" )
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( ItemCacheKey( key ) );
+        }
+
+        /// <summary>
+        /// Flushes a block from all places in the cache (layouts, pages, etc.).
+        /// NOTE: Retrieving an enumerator for a MemoryCache instance is a resource-intensive and blocking operation. 
+        /// Therefore, it should not be used in production applications (if possible).
+        /// </summary>
+        /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
+        protected virtual void FlushSharedBlock( int blockId )
+        {
+            MemoryCache cache = MemoryCache.Default;
+            string blockKey = string.Format( ":RockBlock:{0}:", blockId );
+            foreach ( var keyValuePair in cache.Where( k => k.Key.Contains( blockKey ) ) )
+            {
+                cache.Remove( keyValuePair.Key);
+            }
         }
 
         /// <summary>
@@ -364,7 +405,7 @@ namespace Rock.Web.UI
                 Data.IEntity contextEntity = RockPage.GetCurrentContext( contextEntityType );
                 if ( contextEntity != null )
                 {
-                    ContextEntities.Add( contextEntityType.Name, contextEntity );
+                    ContextEntities.AddOrReplace( contextEntityType.Name, contextEntity );
                 }
             }
 

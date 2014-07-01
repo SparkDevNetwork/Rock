@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -91,6 +92,43 @@ namespace Rock.Model
         [DataMember]
         public bool IsActivityCompletedOnSuccess { get; set; }
 
+        /// <summary>
+        /// Gets or sets the workflow form identifier.
+        /// </summary>
+        /// <value>
+        /// The workflow form identifier.
+        /// </value>
+        [DataMember]
+        public int? WorkflowFormId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria attribute unique identifier.
+        /// </summary>
+        /// <value>
+        /// The criteria attribute unique identifier.
+        /// </value>
+        [DataMember]
+        public Guid? CriteriaAttributeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the criteria comparison.
+        /// </summary>
+        /// <value>
+        /// The type of the criteria comparison.
+        /// </value>
+        [DataMember]
+        public ComparisonType CriteriaComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the criteria value.
+        /// </summary>
+        /// <value>
+        /// The criteria value.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string CriteriaValue { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -139,6 +177,15 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or sets the workflow form.
+        /// </summary>
+        /// <value>
+        /// The workflow form.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowActionForm WorkflowForm { get; set; }
+
+        /// <summary>
         /// Gets the parent security authority for this ActionType.
         /// </summary>
         /// <value>
@@ -184,6 +231,7 @@ namespace Rock.Model
         public WorkflowActionTypeConfiguration()
         {
             this.HasRequired( m => m.ActivityType ).WithMany( m => m.ActionTypes ).HasForeignKey( m => m.ActivityTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( m => m.WorkflowForm ).WithMany().HasForeignKey( m => m.WorkflowFormId ).WillCascadeOnDelete( false );
         }
     }
 

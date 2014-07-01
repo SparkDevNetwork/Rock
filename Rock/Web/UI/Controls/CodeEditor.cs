@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -158,12 +160,23 @@ namespace Rock.Web.UI.Controls
             set
             {
                 base.ValidationGroup = value;
+                
+                EnsureChildControls();
+
                 if ( RequiredFieldValidator != null )
                 {
                     RequiredFieldValidator.ValidationGroup = value;
                 }
+
+                _mfpMergeFields.ValidationGroup = value;
             }
         }
+
+        #endregion
+
+        #region Controls
+
+        private MergeFieldPicker _mfpMergeFields;
 
         #endregion
 
@@ -254,6 +267,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the mergfields.
+        /// </summary>
+        /// <value>
+        /// The mergfields.
+        /// </value>
+        public List<string> MergeFields
+        {
+            get
+            {
+                EnsureChildControls();
+                return _mfpMergeFields.MergeFields;
+            }
+            set
+            {
+                EnsureChildControls();
+                _mfpMergeFields.MergeFields = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the javascript that will get executed when the codeeditor 'on change' event occurs
         /// </summary>
         /// <value>
@@ -270,6 +303,18 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["OnChangeScript"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the merge field help.
+        /// </summary>
+        /// <value>
+        /// The merge field help.
+        /// </value>
+        public string MergeFieldHelp
+        {
+            get { return ViewState["MergeFieldHelp"] as string ?? string.Empty; }
+            set { ViewState["MergeFieldHelp"] = value; }
         }
 
         #endregion
@@ -298,6 +343,7 @@ namespace Rock.Web.UI.Controls
                 // if the codeeditor is .Visible and this isn't an Async, add ace.js to the page (If the codeeditor is made visible during an Async Post, RenderBaseControl will take care of adding ace.js)
                 RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/ace/ace.js" ) );
             }
+
         }
 
         /// <summary>
@@ -308,6 +354,12 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
+
+            _mfpMergeFields = new MergeFieldPicker();
+            _mfpMergeFields.ID = string.Format( "mfpMergeFields_{0}", this.ID );
+            _mfpMergeFields.SelectItem += MergeFields_SelectItem;
+            Controls.Add( _mfpMergeFields );
+
         }
 
         /// <summary>
@@ -328,11 +380,21 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            int editorHeight = EditorHeight.AsIntegerOrNull() ?? 200;
+            
+            // Add merge field help
+            if ( MergeFields.Any() )
+            {
+                writer.Write( "<div class='codeeditor-header margin-b-md clearfix'>" );
+                _mfpMergeFields.RenderControl( writer );
+                writer.Write( "</div>" );
+
+                editorHeight = editorHeight - 40;
+            }
 
             // add editor div
-            string height = string.IsNullOrWhiteSpace( EditorHeight ) ? "200" : EditorHeight;
             string customDiv = @"<div class='code-editor-container' style='position:relative; height: {0}px'><pre id='codeeditor-div-{1}'>{2}</pre></div>";
-            writer.Write( string.Format( customDiv, height, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
+            writer.Write( string.Format( customDiv, editorHeight, this.ClientID, HttpUtility.HtmlEncode( this.Text ) ) );
 
             // write custom css for the code editor
             string customStyle = @"
@@ -371,7 +433,7 @@ namespace Rock.Web.UI.Controls
 ";
 
             string script = string.Format( scriptFormat, this.ClientID, EditorThemeAsString( this.EditorTheme ), EditorModeAsString( this.EditorMode ), this.OnChangeScript );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "codeeditor_" + this.ClientID, script, true );
 
             base.RenderControl( writer );
 
@@ -402,6 +464,16 @@ namespace Rock.Web.UI.Controls
             return themeValues[(int)theme];
         }
 
+        #region Events
+
+        void MergeFields_SelectItem( object sender, EventArgs e )
+        {
+            EnsureChildControls();
+            this.Text += _mfpMergeFields.SelectedMergeField;
+            _mfpMergeFields.SetValue( string.Empty );
+        }
+
+        #endregion
     }
 
     /// <summary>

@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( group != null )
                     {
                         GroupMember groupMember = null;
-                        int? groupMemberId = hfRoleId.Value.AsInteger( false );
+                        int? groupMemberId = hfRoleId.Value.AsIntegerOrNull();
                         if ( groupMemberId.HasValue )
                         {
                             groupMember = memberService.Queryable()

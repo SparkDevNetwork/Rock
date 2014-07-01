@@ -70,14 +70,16 @@
                 <h4><asp:Literal ID="lHeading" runat="server" Text="Transaction Details" /></h4>
                 <Rock:ModalAlert ID="maGridWarning" runat="server" />
                 <div class="row col-md-12">
-                    <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
-                        <Columns>
-                            <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="Account" />
-                            <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                            <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                            <Rock:DeleteField OnClick="gTransactionDetails_Delete" />
-                        </Columns>
-                    </Rock:Grid>
+                    <div class="grid">
+                        <Rock:Grid ID="gTransactionDetails" runat="server" EmptyDataText="No Transactions Details Found" OnRowSelected="gTransactionDetails_RowSelected" AllowSorting="true">
+                            <Columns>
+                                <asp:BoundField DataField="Account" HeaderText="Account" SortExpression="Account" />
+                                <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
+                                <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
+                                <Rock:DeleteField OnClick="gTransactionDetails_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
                 </div>
             </asp:Panel>
 
