@@ -24,6 +24,8 @@
     protected override void OnInit( EventArgs e )
     {
         base.OnInit( e );
+
+        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
     }    
     
 </script>
@@ -86,10 +88,15 @@
                                 <div class="navbar-minimize">
                                     <i class="fa fa-bars"></i>
                                 </div>
-			                </div>	
-                            <div>   
-                                <div class="pull-right"><Rock:Zone Name="Login" runat="server" /></div>
-                                <div class="pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
+			                </div>
+                        
+                            <div class="navbar-mobile-logo">
+                                <asp:Literal ID="lLogoSvg" runat="server" />		   
+                            </div>
+                        	
+                            <div class="navbar-content">   
+                                <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
+                                <div class="navbar-zone-header pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
 			                </div>
                     </nav>
 

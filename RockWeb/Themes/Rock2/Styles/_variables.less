@@ -11,10 +11,10 @@
 @font-weight-semibold:  700;
 
 // Standard Colors
-@accent-color: darken(@gray-lighter, 10%);
+@accent-color: #efefef;
 @accent-text-color: @text-color;
-@accent-light-color: @gray-lighter;
-@accent-light-text-color: @text-color;
+@accent-light-color: #c6dfec;
+@accent-light-text-color: #fff;
 @accent-semibold-color: @gray-light;
 @accent-semibold-text-color: #fff;
 @accent-bold-color: #ee7624;//#ff8400; // overrides brand color
@@ -110,8 +110,8 @@
 @tree-hover-color: @text-color;
 
 // Page List
-@pagelist-bg: #A59E8C;
-@pagelist-text-color: #fff;
+@pagelist-bg: #dbd5cb;
+@pagelist-text-color: #6a6a6a;
 
 // Tags
 @tag-bg: #c4ced6;
@@ -159,8 +159,8 @@
 @brand-primary:         @accent-bold-color;
 @brand-success:         #0abb63;
 @brand-warning:         #ffd34e;
-@brand-danger:          #F2385A;
-@brand-info:            #00eeff;
+@brand-danger:          #f23838;
+@brand-info:            #02c2eb;
 
 // Scaffolding
 // -------------------------
@@ -485,8 +485,8 @@
 
 @pagination-hover-bg:                  @gray-lighter;
 
-@pagination-active-bg:                 @brand-primary;
-@pagination-active-color:              #fff;
+@pagination-active-bg:                 @accent-light-color;
+@pagination-active-color:              @accent-light-text-color;
 
 @pagination-disabled-color:            @gray-light;
 
@@ -511,20 +511,20 @@
 // Form states and alerts
 // -------------------------
 
-@state-warning-text:             #d0a525;
-@state-warning-bg:               #fcf4db;
+@state-warning-text:             #c09853;
+@state-warning-bg:               #fcf8e3;
 @state-warning-border:           darken(spin(@state-warning-bg, -10), 3%);
 
-@state-danger-text:              #f2385a;
-@state-danger-bg:                #fde5ea;
+@state-danger-text:              #b94a48;
+@state-danger-bg:                #f2dede;
 @state-danger-border:            darken(spin(@state-danger-bg, -10), 3%);
 
-@state-success-text:             #0abb63;
-@state-success-bg:               #d7fcea;
+@state-success-text:             #468847;
+@state-success-bg:               #dff0d8;
 @state-success-border:           darken(spin(@state-success-bg, -10), 5%);
 
-@state-info-text:                #01b0bd;
-@state-info-bg:                  #cefbfe;
+@state-info-text:                #3a87ad;
+@state-info-bg:                  #d9edf7;
 @state-info-border:              darken(spin(@state-info-bg, -10), 7%);
 
 

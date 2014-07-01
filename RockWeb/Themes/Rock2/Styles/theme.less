@@ -18,7 +18,7 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
-    font-weight: 400;
+    font-weight: 300;
     font-style: normal;
 }
 
@@ -30,7 +30,7 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 500;
+    font-weight: 400;
     font-style: normal;
 }
 
@@ -120,7 +120,7 @@ a:hover {
 .panel {
     border-radius: 0;
     border-top-width: 0;
-    border-color: @gray-lighter;
+    border-color: darken(@accent-color, 10%);
     border-top: 3px solid @gray-lighter;
 
     .panel-heading {
@@ -135,7 +135,8 @@ a:hover {
 }
 
 .panel-block {
-    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
+    .panel-variant(darken(@accent-color, 5%); @accent-text-color; @accent-color; darken(@accent-color, 5%););
 
     .panel-heading {
         background-color: #efefef;
@@ -153,6 +154,14 @@ a:hover {
             .grid-filter {
                 border-radius: 0;
             }
+
+            .table-bordered {
+                border: 0;
+                
+                & > tfoot > tr > td {
+                    border: 0px;
+                }
+            }
         }
     }
 }
@@ -165,7 +174,7 @@ a:hover {
 // -------------------------
 
 .smartsearch {
-    margin-right: 8px;
+    margin: 12px 8px 12px 0;
     border: 0;
     background-color: transparent;
 
@@ -184,7 +193,7 @@ a:hover {
         font-family: FontAwesome;
         position: absolute;
         left: 0;
-        top: 12px;
+        top: 17px;
         font-size: 14px;
         margin-left: -12px;
         opacity: .5;
@@ -194,7 +203,20 @@ a:hover {
 .page-icon {
     display: inline;
     color: #6a6a6a;
-} 
+}
+
+.loginstatus {
+    .profile-photo {
+        height: 35px;
+        width: 35px;
+        float: left;
+        background-size: 100%;
+	    -webkit-border-radius: 17.5px;
+	    -moz-border-radius: 17.5px;
+        border-radius: 17.5px;
+        margin: -8px 4px 0 0;
+    }
+}
 /*#endregion */
 
 
@@ -211,6 +233,7 @@ a:hover {
     background-color: @body-bg;
     min-height: 1000px;
     z-index: 30;
+    min-width: 320px;
 
     header {
         .navbar-default {
@@ -219,6 +242,23 @@ a:hover {
 
             .navbar-header {
                 padding: 8px 0 0 12px;
+                float: left;
+            }
+
+            .navbar-mobile-logo {
+                float: left;
+                width: 95px;
+                height: 34px;
+                margin: 8px 0 0 6px;
+
+                svg {
+                    height: 100%;
+                    width: 100%;
+
+                    .rock-logo {
+                        fill: #999;
+                    }
+                }
             }
         }
     }
@@ -290,21 +330,8 @@ a:hover {
 // -------------------------
 
 .divided {
-    position: relative;    
-
-    &:after {
-        content: "";
-        display: inline-block;
-        width: 1px;
-        height: 30px;
-        background-color: rgba(0, 0, 0, 0.15);
-        margin-top: 7px;
-        margin-left: -3px;
-        vertical-align: top;
-        position: absolute;
-        top: 0;
-        right: 0;
-    }
+    position: relative;
+    margin-right: 6px;    
 }
 
 .navbar-minimize {
@@ -335,12 +362,41 @@ a:hover {
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
 
+    header {
+        .navbar-default {
+            
+            .navbar-mobile-logo {
+                display: none;
+            }
+        }
+    }
     
+    .smartsearch {
+        margin: 10px 8px 10px 0;
+    }
+
+    .divided {  
+
+        &:after {
+            content: "";
+            display: inline-block;
+            width: 1px;
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.15);
+            margin-top: 7px;
+            margin-left: -3px;
+            vertical-align: top;
+            position: absolute;
+            top: 6px;
+            right: 0;
+        }
+    }
+
 }
 
 // Large devices (large desktops, 1200px and up) 
 @media (min-width: @screen-lg-min) {
-
+    
 }
 /*#endregion */
 
@@ -419,7 +475,7 @@ a:hover {
 @media (min-width: @screen-md-min) {
 
     .navbar-static-side {
-        width: 220px;
+        width: 200px;
         display: block;
 
         .navbar-header {
@@ -494,7 +550,7 @@ a:hover {
     }
 
     #content-wrapper {
-        margin-left: 220px;
+        margin-left: 200px;
     }
 }
 
