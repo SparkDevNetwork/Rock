@@ -45,6 +45,7 @@
                     controlToValidate.parents('div.form-group').removeClass("has-error");
                 } else {
                     controlToValidate.parents('div.form-group').addClass("has-error");
+                    controlToValidate.trigger("validation-error");
                 }
             });
 
@@ -71,6 +72,7 @@
                     controlToValidate.parents('div.form-group').removeClass("has-error");
                 } else {
                     controlToValidate.parents('div.form-group').addClass("has-error");
+                    controlToValidate.trigger("validation-error");
                 }
             })
         }

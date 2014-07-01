@@ -28,6 +28,31 @@ namespace Rock.Field.Types
     public class GroupFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            string formattedValue = value;
+
+            int? groupId = value.AsIntegerOrNull();
+            if (groupId.HasValue)
+            {
+                var group = new GroupService( new RockContext() ).Get(groupId.Value);
+                if (group != null)
+                {
+                    formattedValue = group.Name;
+                }
+            }
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -84,7 +109,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public int? GetEditValueAsEntityId( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return GetEditValue( control, configurationValues ).AsInteger( false );
+            return GetEditValue( control, configurationValues ).AsIntegerOrNull();
         }
 
         /// <summary>

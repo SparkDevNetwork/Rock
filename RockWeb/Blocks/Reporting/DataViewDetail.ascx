@@ -77,27 +77,15 @@
 
                 <h4>Results</h4>
 
-                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                <div class="grid">
+                    <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+                </div>
 
             </div>
 
             <Rock:ModalDialog ID="modalPreview" runat="server" Title="Preview (top 15 rows )" ValidationGroup="Preview">
                 <Content>
-                    <div class="modal-body">
-                        <div id="preview-modal-scroll-container" class="scroll-container scroll-container-vertical">
-                            <div class="scrollbar">
-                                <div class="track">
-                                    <div class="thumb">
-                                        <div class="end"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="viewport">
-                                <div class="overview">
-                                    <Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" />
-                                </div>
-                            </div>
-                        </div>
+                    <div class="grid"><Rock:Grid ID="gPreview" runat="server" AllowSorting="true" EmptyDataText="No Results" ShowActionRow="false" DisplayType="Light" /></div>
                 </Content>
             </Rock:ModalDialog>
 

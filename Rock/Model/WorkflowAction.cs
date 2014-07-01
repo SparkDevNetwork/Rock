@@ -16,11 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
+using Rock.Web.Cache;
 using Rock.Workflow;
 
 namespace Rock.Model
@@ -71,6 +73,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
+        /// <summary>
+        /// If ActionType is a UserEntryForm Gets or sets the form action.
+        /// </summary>
+        /// <value>
+        /// The form action.
+        /// </value>
+        [MaxLength( 20 )]
+        [DataMember]
+        public string FormAction { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -89,7 +101,6 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
-        [DataMember]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -130,11 +141,14 @@ namespace Rock.Model
         /// <summary>
         /// Processes this WorkflowAction.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that the WorkflowAction is operating against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain any error messages that occur while processing the WorkflowAction.</param>
-        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the process completed successfully; otherwise <c>false</c>.</returns>
+        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that occur while processing the WorkflowAction.</param>
+        /// <returns>
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the process completed successfully; otherwise <c>false</c>.
+        /// </returns>
         /// <exception cref="System.SystemException"></exception>
-        internal virtual bool Process( Object entity, out List<string> errorMessages )
+        internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -146,26 +160,106 @@ namespace Rock.Model
 
             this.ActionType.LoadAttributes();
 
-            bool success = workflowAction.Execute( this, entity, out errorMessages );
-
-            AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
-
-            if ( success )
+            if ( TestCriteria() )
             {
-                if ( this.ActionType.IsActionCompletedOnSuccess )
+                bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
+
+                this.LastProcessedDateTime = RockDateTime.Now;
+
+                AddSystemLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
+
+                if ( success )
                 {
-                    this.MarkComplete();
+                    if ( this.ActionType.IsActionCompletedOnSuccess )
+                    {
+                        this.MarkComplete();
+                    }
+
+                    if ( this.ActionType.IsActivityCompletedOnSuccess )
+                    {
+                        this.Activity.MarkComplete();
+                    }
                 }
 
-                if ( this.ActionType.IsActivityCompletedOnSuccess )
+                return success;
+            }
+            else
+            {
+                errorMessages = new List<string>();
+
+                AddSystemLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Tests the criteria.
+        /// </summary>
+        /// <returns></returns>
+        private bool TestCriteria()
+        {
+            bool result = true;
+
+            if ( ActionType != null &&
+                ActionType.CriteriaAttributeGuid.HasValue )
+            {
+                result = false;
+
+                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                Guid guid = ActionType.CriteriaValue.AsGuid();
+                if ( guid.IsEmpty() )
                 {
-                    this.Activity.MarkComplete();
+                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                }
+                else
+                {
+                    string value = GetWorklowAttributeValue( guid );
+                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
                 }
             }
 
-            return success;
+            return result;
         }
 
+        /// <summary>
+        /// Gets a worklow attribute value.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="formatted">if set to <c>true</c> [formatted].</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public string GetWorklowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
+        {
+            var attribute = AttributeCache.Read( guid );
+            if ( attribute != null && Activity != null )
+            {
+                string value = string.Empty;
+
+                if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                {
+                    value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                }
+                else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                {
+                    value = Activity.GetAttributeValue( attribute.Key );
+                }
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    if (formatted)
+                    {
+                        value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, condensed );
+                    }
+
+                    return value;
+                }
+            }
+
+            return null;
+        }
+        
         /// <summary>
         /// Adds a <see cref="Rock.Model.WorkflowLog"/> entry.
         /// </summary>
@@ -175,7 +269,11 @@ namespace Rock.Model
             if ( this.Activity != null &&
                 this.Activity.Workflow != null )
             {
-                this.Activity.Workflow.AddLogEntry( string.Format( "'{0}' Action: {1}", this.ToString(), logEntry ) );
+                string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
+                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+
+                this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
+                    this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ) );
             }
         }
 
@@ -189,6 +287,81 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+
+            if ( debug )
+            {
+                mergeFields.Add( "Activity", Activity.ToLiquid( true ) );
+                mergeFields.Add( "ActionType", this.ActionType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Activity", Activity );
+                mergeFields.Add( "ActionType", this.ActionType );
+            }
+
+            mergeFields.Add( "FormAttributes", GetFormAttributesLiquid() );
+
+            return mergeFields;
+        }
+
+
+        private List<Dictionary<string, object>> GetFormAttributesLiquid()
+        {
+            var attributeList = new List<Dictionary<string, object>>();
+
+            if ( ActionType != null && ActionType.WorkflowForm != null )
+            {
+                foreach ( var formAttribute in ActionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
+                {
+                    var attribute = AttributeCache.Read( formAttribute.AttributeId );
+                    if ( attribute != null && Activity != null )
+                    {
+                        string value = string.Empty;
+
+                        if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                        {
+                            value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                        }
+                        else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                        {
+                            value = Activity.GetAttributeValue( attribute.Key );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( value ) )
+                        {
+                            var field = attribute.FieldType.Field;
+
+                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
+                            var attributeLiquid = new Dictionary<string, object>();
+                            attributeLiquid.Add( "Name", attribute.Name );
+                            attributeLiquid.Add( "Key", attribute.Key );
+                            attributeLiquid.Add( "Value", formattedValue );
+                            attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
+                            }
+
+                            attributeList.Add( attributeLiquid );
+                        }
+                    }
+                }
+            }
+
+            return attributeList;
+
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowAction.
         /// </summary>
         /// <returns>
@@ -196,7 +369,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActionType.ToStringSafe(), this.Id );
+            return this.ActionType.ToStringSafe();
         }
 
         #endregion

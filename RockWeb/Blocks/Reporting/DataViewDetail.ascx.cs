@@ -233,7 +233,7 @@ $(document).ready(function() {
         {
             if ( hfDataViewId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -644,6 +644,7 @@ $(document).ready(function() {
 
             if ( grid.DataSource != null )
             {
+                grid.ExportFilename = dataView.Name;
                 if ( errorMessages.Any() )
                 {
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the filters for this data view...<br/><br/> " + errorMessages.AsDelimited( "<br/>" );

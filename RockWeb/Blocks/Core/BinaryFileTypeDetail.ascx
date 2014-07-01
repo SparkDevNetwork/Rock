@@ -31,14 +31,16 @@
                         <p>
                             Attributes allow for providing different values for each binary file of this type.
                         </p>
-                        <Rock:Grid ID="gBinaryFileAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
-                            <Columns>
-                                <asp:BoundField DataField="Name" />
-                                <Rock:EditField OnClick="gBinaryFileAttributes_Edit" />
-                                <Rock:DeleteField OnClick="gBinaryFileAttributes_Delete" />
-                            </Columns>
-                        </Rock:Grid>
-
+                        
+                        <div class="grid">
+                            <Rock:Grid ID="gBinaryFileAttributes" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="false">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" />
+                                    <Rock:EditField OnClick="gBinaryFileAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gBinaryFileAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
                     </div>
                 </div>
                 <div class="row">

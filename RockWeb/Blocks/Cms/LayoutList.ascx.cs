@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Cms
         {
             pnlLayouts.Visible = false;
 
-            int siteId = PageParameter( "siteId" ).AsInteger() ?? 0;
+            int siteId = PageParameter( "siteId" ).AsInteger();
             if ( siteId == 0 )
             {
                 // quit if the siteId can't be determined

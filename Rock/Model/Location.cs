@@ -288,6 +288,15 @@ namespace Rock.Model
         [DataMember]
         public int? PrinterDeviceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image identifier.
+        /// </summary>
+        /// <value>
+        /// The image identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -362,6 +371,15 @@ namespace Rock.Model
         [DataMember]
         public virtual Device PrinterDevice { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image.
+        /// </summary>
+        /// <value>
+        /// The image.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Image { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -391,6 +409,24 @@ namespace Rock.Model
 
             return "http://maps.google.com/maps?q=" +
                 System.Web.HttpUtility.UrlEncode(qParm);
+        }
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( ImageId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                var binaryFile = binaryFileService.Get( ImageId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
         }
 
         /// <summary>
@@ -507,6 +543,7 @@ namespace Rock.Model
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.LocationTypeValue ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.Image ).WithMany().HasForeignKey( p => p.ImageId ).WillCascadeOnDelete( false );
         }
     }
 

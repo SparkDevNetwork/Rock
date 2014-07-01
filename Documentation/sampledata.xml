@@ -36,11 +36,12 @@
             <login userName="tdecker"/>
           </logins>
           <notes>
-            <note type="TimeLine" text="Ted celebrates his 4th year with the church." />
-            <note type="TimeLine" text="Left a message for Ted to follow up with Debbie Green
-               who is looking for financial assistance." date="4/1/2014"/>
-            <note type="TimeLine" text="Ted spoke with Debbie and transferred her into Pete's care." date="4/2/2014"/>
-
+            <note type="TimeLine" text="Talked to Ted today about starting a new Young Adults ministry"
+                  date="4/3/2014 2:23 PM" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="TimeLine" text="Called Ted and heard that his mother is in the hospital and could use prayer."
+                  date="4/2/2014 11:00 PM" byGuid="69DC0FDC-B451-4303-BD91-EF17C0015D23" />
+            <note type="TimeLine" text="Ted has strong leadership skills."
+                  byGuid="BE66C5D3-F43E-4F9A-BA62-B7C0103BF54C" isPrivate="true" />
           </notes>
         </person>
 

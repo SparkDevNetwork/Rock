@@ -109,7 +109,7 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsInteger() ?? 0 );
+                var groupType = Rock.Web.Cache.GroupTypeCache.Read( selectionValues[0].AsGuid() );
 
                 if ( groupType != null )
                 {
@@ -155,8 +155,15 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var value1 = ( controls[0] as GroupTypePicker ).SelectedValueAsId().ToString();
-            return value1;
+            int? groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId();
+            Guid? groupTypeGuid = null;
+            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId ?? 0 );
+            if ( groupType != null )
+            {
+                groupTypeGuid = groupType.Guid;
+            }
+
+            return groupTypeGuid.ToString();
         }
 
         /// <summary>
@@ -170,7 +177,11 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                ( controls[0] as GroupTypePicker ).SetValue( selectionValues[0].AsInteger() );
+                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid());
+                if ( groupType != null )
+                {
+                    ( controls[0] as GroupTypePicker ).SetValue( groupType.Id );
+                }
             }
         }
 
@@ -187,7 +198,12 @@ function() {
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
             {
-                int groupTypeId = selectionValues[0].AsInteger() ?? 0;
+                var groupType = new GroupTypeService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                int? groupTypeId = null;
+                if ( groupType != null )
+                {
+                    groupTypeId = groupType.Id;
+                }
 
                 var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
                     .Where( p => p.GroupTypeId == groupTypeId );

@@ -562,6 +562,49 @@
                 Value="12" />
     </Style>
 
+    <!-- Button Style -->
+    <Style x:Key="toggleButtonStyle"
+           TargetType="{x:Type ToggleButton}">
+        <Setter Property="Width"
+                Value="Auto" />
+        <Setter Property="Height"
+                Value="50" />
+        <Setter Property="Foreground"
+                Value="#fff" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border Name="buttonBorder"
+                            CornerRadius="4,4,4,4"
+                            BorderThickness="0"
+                            BorderBrush="#758ba1"
+                            Padding="8,2,8,2"
+                            Background ="#8498ab"
+                            >
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center">
+                        </ContentPresenter>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter Property="Cursor"
+                                    Value="Hand" />
+                        </Trigger>
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="buttonBorder"
+                                    Property="Background"
+                                    Value="#000000">
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- 
         Border Styles 
         -->

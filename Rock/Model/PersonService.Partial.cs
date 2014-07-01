@@ -310,8 +310,6 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased, bool includeBusinesses, bool allowFirstNameOnly, out bool reversed )
         {
-            var names = fullName.SplitDelimitedValues();
-
             string firstName = string.Empty;
             string lastName = string.Empty;
             string singleName = string.Empty;
@@ -319,12 +317,16 @@ namespace Rock.Model
             if ( fullName.Contains( ',' ) )
             {
                 reversed = true;
-                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
-                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+                // only split by comma if there is a comma present (for example if 'Smith Jones, Sally' is the search, last name would be 'Smith Jones')
+                var nameParts = fullName.Split( ',' );
+                lastName = nameParts.Length >= 1 ? nameParts[0].Trim() : string.Empty;
+                firstName = nameParts.Length >= 2 ? nameParts[1].Trim() : string.Empty;
             }
             else if ( fullName.Trim().Contains( ' ' ) )
             {
                 reversed = false;
+                // if no comma, assume the search is in 'firstname lastname' format (note: 'firstname lastname1 lastname2' isn't supported yet)
+                var names = fullName.Split( ' ' );
                 firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
                 lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
@@ -515,10 +517,10 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
-            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
-                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == groupTypeFamilyId )
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != personId )
                 .Distinct();
@@ -710,9 +712,10 @@ namespace Rock.Model
             // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
             // 2) Opposite Gender as Person
             // 3) Both Persons are Married
-            
+
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            int marriedDefinedValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()).Id;
+            int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
@@ -720,7 +723,7 @@ namespace Rock.Model
             }
 
             return GetFamilyMembers(person.Id)
-                .Where( m => m.GroupRole.Guid == adultGuid)
+                .Where( m => m.GroupRoleId == adultRoleId )
                 .Where( m => m.Person.Gender != person.Gender )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
                 .Select( m => m.Person )
@@ -757,6 +760,7 @@ namespace Rock.Model
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
+                attribute.IconCssClass = string.Empty;
                 attribute.DefaultValue = string.Empty;
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = false;

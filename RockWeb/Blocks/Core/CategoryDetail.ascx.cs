@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( hfCategoryId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsInteger( false );
+                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
@@ -230,6 +230,7 @@ namespace RockWeb.Blocks.Core
             category.Name = tbName.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
+            category.HighlightColor = tbHighlightColor.Text;
 
             List<int> orphanedBinaryFileIdList = new List<int>();
 
@@ -395,6 +396,7 @@ namespace RockWeb.Blocks.Core
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
             lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
+            tbHighlightColor.Text = category.HighlightColor;
         }
 
         /// <summary>

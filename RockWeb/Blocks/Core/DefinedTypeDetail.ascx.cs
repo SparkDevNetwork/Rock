@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Core
 
         #region Fields
 
-        // used for private variables
-        bool _isReadOnly = false;
+        // If block is being used on a stand alone page ( i.e. not navigated to through defined type list )
+        bool _isStandAlone = false;
 
         #endregion
 
@@ -115,8 +115,9 @@ namespace RockWeb.Blocks.Core
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( Guid.TryParse( GetAttributeValue( "DefinedType" ), out definedTypeGuid ) )
             {
-                _isReadOnly = true;
+                _isStandAlone = true;
                 // hide reorder, edit and delete
+
                 gDefinedTypeAttributes.Columns[0].Visible = false;
                 gDefinedTypeAttributes.Columns[2].Visible = false;
                 gDefinedTypeAttributes.Columns[3].Visible = false;
@@ -136,7 +137,7 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = true;
                 gDefinedTypeAttributes.Actions.ShowAdd = true;
 
-                itemId = PageParameter( "definedTypeId" ).AsInteger() ?? null;
+                itemId = PageParameter( "definedTypeId" ).AsIntegerOrNull();
             }
             return itemId;
         }
@@ -290,11 +291,15 @@ namespace RockWeb.Blocks.Core
                 rcHelpText.Visible = false;
             }
 
-            lblMainDetails.Text = new DescriptionList()
-                .Add("Category", definedType.Category)
-                .Html;
-
             definedType.LoadAttributes();
+
+            if (!_isStandAlone)
+            {
+                lblMainDetails.Text = new DescriptionList()
+                    .Add("Category", definedType.Category)
+                    .Html;
+            }
+
         }
 
         /// <summary>
@@ -381,26 +386,35 @@ namespace RockWeb.Blocks.Core
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
-            if ( _isReadOnly || !IsUserAuthorized( Authorization.EDIT ) )
+            if ( _isStandAlone )
             {
                 readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
             }
-
-            if ( definedType.IsSystem )
+            else
             {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
+                if ( !IsUserAuthorized( Authorization.EDIT ) )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
+                }
+
+                if ( definedType.IsSystem )
+                {
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
+                }
             }
 
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 ShowReadonlyDetails( definedType );
             }
             else
             {
                 btnEdit.Visible = true;
+                btnDelete.Visible = false;
                 if ( definedType.Id > 0 )
                 {
                     ShowReadonlyDetails( definedType );
@@ -411,7 +425,8 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            BindDefinedTypeAttributesGrid();            
+            BindDefinedTypeAttributesGrid();         
+  
         }
                 
         #endregion
@@ -462,6 +477,16 @@ namespace RockWeb.Blocks.Core
                 attribute = attributeService.Get( attributeGuid );
                 edtDefinedTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for defined type " + tbTypeName.Text );
             }
+
+            edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( new RockContext() )
+                .GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
+                    !a.Guid.Equals(attributeGuid) )
+                .Select( a => a.Key )
+                .Distinct()
+                .ToList();
 
             edtDefinedTypeAttributes.SetAttributeProperties( attribute, typeof( DefinedValue ) );
 
@@ -613,6 +638,9 @@ namespace RockWeb.Blocks.Core
 
             gDefinedTypeAttributes.DataSource = attributes;
             gDefinedTypeAttributes.DataBind();
+
+            pnlAttributeTypes.Visible = !_isStandAlone || attributes.Count > 0;
+
         }
 
         #endregion       

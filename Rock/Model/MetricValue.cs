@@ -29,7 +29,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>, IOrdered
+    public partial class MetricValue : Model<MetricValue>, IOrdered, IChartData
     {
         #region Entity Properties
 
@@ -48,8 +48,7 @@ namespace Rock.Model
         /// <value>
         /// The x value.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember( IsRequired = false )]
         public string XValue { get; set; }
 
         /// <summary>
@@ -125,6 +124,43 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
+        /// </summary>
+        /// <value>
+        /// The metric value javascript time stamp.
+        /// </value>
+        [DataMember]
+        public long DateTimeStamp
+        {
+            get
+            {
+                if ( this.MetricValueDateTime.HasValue )
+                {
+                    return this.MetricValueDateTime.Value.ToJavascriptMilliseconds();
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the series identifier.
+        /// </summary>
+        /// <value>
+        /// The series identifier.
+        /// </value>
+        [DataMember]
+        public string SeriesId
+        {
+            get
+            {
+                return string.Format( "{0}", this.EntityId ?? 0 );
+            }
+        }
 
         /// <summary>
         /// Gets the parent authority.

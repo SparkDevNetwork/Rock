@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -56,6 +56,24 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the is active.
+        /// </summary>
+        /// <value>
+        /// The is active.
+        /// </value>
+        [DataMember]
+        public bool? IsActive { get; set; }
+
+        /// <summary>
         /// Gets or sets an optional short code identifier for the campus.
         /// </summary>
         /// <value>
@@ -67,6 +85,15 @@ namespace Rock.Model
         public string ShortCode { get; set; }
 
         /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>
+        /// The URL.
+        /// </value>
+        [DataMember]
+        public string Url { get; set; }
+
+        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated with this campus. 
         /// </summary>
         /// <value>
@@ -74,6 +101,34 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the phone number of the campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the campus phone number.
+        /// </value>
+        [DataMember]
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is the leader of the campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> that represents the Id of the person who leads the campus.
+        /// </value>
+        [DataMember]
+        public int? LeaderPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the service times (Stored as a delimeted list)
+        /// </summary>
+        /// <value>
+        /// The service times.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string ServiceTimes { get; set; }
 
         #endregion
 
@@ -88,6 +143,15 @@ namespace Rock.Model
         [DataMember]
         public virtual Location Location { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Person"/> entity that is associated with the leader of the campus.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Person"/> that is associated as the leader of the campus.
+        /// </value>
+        [DataMember]
+        public virtual PersonAlias LeaderPersonAlias { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -101,6 +165,35 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+
+            var serviceTimes = new Dictionary<string, object>();
+
+            string[] KeyValues = ServiceTimes.Split( new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries );
+            foreach ( string keyValue in KeyValues )
+            {
+                var dayTime = keyValue.Split( new char[] { '^' } );
+                if ( dayTime.Length == 2 )
+                {
+                    var serviceTime = new Dictionary<string, string>();
+                    serviceTime.Add( "Day", dayTime[0] );
+                    serviceTime.Add( "Time", dayTime[1] );
+                    serviceTimes.Add( "ServiceTime", serviceTime );
+                }
+
+            }
+
+            mergeFields.Add( "ServiceTimes", serviceTimes );
+
+            return mergeFields;
         }
 
         #endregion
@@ -120,6 +213,7 @@ namespace Rock.Model
         public CampusConfiguration()
         {
             this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
+            this.HasOptional( c => c.LeaderPersonAlias ).WithMany().HasForeignKey( c => c.LeaderPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

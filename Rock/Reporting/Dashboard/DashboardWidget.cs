@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -26,12 +25,28 @@ namespace Rock.Reporting.Dashboard
     /// <summary>
     /// 
     /// </summary>
-    [TextField( "Title", "The title of the widget", false )]
-    [TextField( "Subtitle", "The subtitle of the widget", false )]
-    [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4" )]
-    [ContextAware()]
+    [TextField( "Title", "The title of the widget", false, Order = 0 )]
+    [TextField( "Subtitle", "The subtitle of the widget", false, Order = 1 )]
+    [CustomDropdownListField( "Column Width", "The width of the widget.", ",1,2,3,4,5,6,7,8,9,10,11,12", false, "4", Order = 2 )]
+    [ContextAware(IsConfigurable=false)]
     public abstract class DashboardWidget : RockBlock
     {
+        /// <summary>
+        /// Gets or sets the widget error message.
+        /// </summary>
+        /// <value>
+        /// The widget error message.
+        /// </value>
+        public string WidgetErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the widget error details.
+        /// </summary>
+        /// <value>
+        /// The widget error details.
+        /// </value>
+        public string WidgetErrorDetails { get; set; }
+
         /// <summary>
         /// Gets the Title attribute value
         /// </summary>
@@ -71,25 +86,54 @@ namespace Rock.Reporting.Dashboard
         {
             get
             {
-                return GetAttributeValue( "ColumnWidth" ).AsInteger(false);
+                return GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
             }
         }
-        
-        
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
-        {
-            base.OnPreRender( e );
 
-            int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsInteger( false );
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
+        {
+            List<string> widgetCssList = GetDivWidthCssClasses();
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, widgetCssList.AsDelimited( " " ) );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-dashboard" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( System.Web.UI.HtmlTextWriterAttribute.Class, "panel-body" );
+            writer.RenderBeginTag( System.Web.UI.HtmlTextWriterTag.Div );
+
+            if ( !string.IsNullOrWhiteSpace( WidgetErrorMessage ) )
+            {
+                var errorBox = new NotificationBox { ID = "nbWidgetError", NotificationBoxType = NotificationBoxType.Danger, Text = WidgetErrorMessage, Title = "Error", Dismissable = true, Details = WidgetErrorDetails };
+                errorBox.RenderControl( writer );
+            }
+
+            base.RenderControl( writer );
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Gets the div width CSS classes.
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetDivWidthCssClasses()
+        {
+            int? mediumColumnWidth = this.GetAttributeValue( "ColumnWidth" ).AsIntegerOrNull();
 
             // add additional css to the block wrapper (if mediumColumnWidth is specified)
+            List<string> widgetCssList = new List<string>();
             if ( mediumColumnWidth.HasValue )
             {
-
                 // Table to use to derive col-xs and col-sm from the selected medium width
                 /*
                 XS	SM	MD
@@ -131,7 +175,6 @@ namespace Rock.Reporting.Dashboard
                         break;
                 }
 
-                List<string> widgetCssList = new List<string>();
                 widgetCssList.Add( string.Format( "col-md-{0}", mediumColumnWidth ) );
                 if ( xsmallColumnWidth.HasValue )
                 {
@@ -142,28 +185,9 @@ namespace Rock.Reporting.Dashboard
                 {
                     widgetCssList.Add( string.Format( "col-sm-{0}", smallColumnWidth ) );
                 }
-
-                // find the Block Wrapper div that RockPage creates and add additional our special css classes to it 
-                var parent = this.Parent;
-                while ( parent != null )
-                {
-                    if ( parent is HtmlGenericContainer )
-                    {
-                        HtmlGenericContainer container = parent as HtmlGenericContainer;
-                        if ( container.ID == string.Format( "bid_{0}", this.BlockId ) )
-                        {
-                            foreach ( var widgetCss in widgetCssList )
-                            {
-                                container.AddCssClass( widgetCss );
-                            }
-
-                            break;
-                        }
-                    }
-
-                    parent = parent.Parent;
-                }
             }
+
+            return widgetCssList;
         }
     }
 }

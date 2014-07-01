@@ -20,53 +20,59 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
     /// <summary>
     /// Activates a new activity for a given activity type
     /// </summary>
-    [Description( "Activates a new activity for a given activity type" )]
+    [Description( "Activates a new activity instance and all of its actions." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Activate Activity" )]
-    [IntegerField( "Activity Type", "The activity type Id to activate" )]
+
+    [WorkflowActivityType( "Activity", "The activity type to activate", true, "", "", 0 )]
     public class ActivateActivity : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action.</param>
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
-            string activityTypeId = GetAttributeValue( action, "ActivityType" );
-            if ( String.IsNullOrWhiteSpace( activityTypeId ) )
+            Guid guid = GetAttributeValue( action, "Activity" ).AsGuid();
+            if ( guid.IsEmpty() )
             {
-                action.AddLogEntry( "Invalid Activity Type Property" );
+                action.AddLogEntry( "Invalid Activity Property" );
                 return false;
             }
 
             var workflow = action.Activity.Workflow;
 
-            var activityType = workflow.WorkflowType.ActivityTypes
-                .Where( a => a.Id.ToString() == activityTypeId).FirstOrDefault();
+            var activityType = new WorkflowActivityTypeService( rockContext ).Queryable()
+                .Where( a => a.Guid.Equals( guid ) ).FirstOrDefault();
 
-            if (activityType != null)
+            if ( activityType == null )
             {
-                WorkflowActivity.Activate( activityType, workflow );
-                action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
-                return true;
+                action.AddLogEntry( "Invalid Activity Property" );
+                return false;
             }
 
-            action.AddLogEntry( string.Format( "Could Not activate new '{0}' activity!", activityType.ToString() ) );
-            return false;
+            WorkflowActivity.Activate( activityType, workflow );
+            action.AddLogEntry( string.Format( "Activated new '{0}' activity", activityType.ToString() ) );
+
+            return true;
         }
+
     }
 }

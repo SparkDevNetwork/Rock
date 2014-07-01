@@ -45,5 +45,10 @@ namespace Rock.SystemGuid
         /// The guid for the filesystem storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
+
+        /// <summary>
+        /// The guid for the Rock.Model.MetricCategory entity
+        /// </summary>
+        public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
     }
 }

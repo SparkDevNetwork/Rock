@@ -100,6 +100,7 @@ namespace Rock.Model
             target.DefaultValue = source.DefaultValue;
             target.IsMultiValue = source.IsMultiValue;
             target.IsRequired = source.IsRequired;
+            target.IconCssClass = source.IconCssClass;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

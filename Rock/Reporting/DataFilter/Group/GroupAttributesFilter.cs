@@ -109,7 +109,7 @@ namespace Rock.Reporting.DataFilter.Group
 
             if ( selectionValues.Count > 1 )
             {
-                groupTypeId = selectionValues[0].AsInteger();
+                groupTypeId = GetGroupTypeIdFromSelection( selectionValues );
             }
 
             string entityFieldName = propertyFilterValues[0];
@@ -123,6 +123,24 @@ namespace Rock.Reporting.DataFilter.Group
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the group type identifier from selection.
+        /// </summary>
+        /// <param name="selectionValues">The selection values.</param>
+        /// <returns></returns>
+        private static int? GetGroupTypeIdFromSelection( List<string> selectionValues )
+        {
+            Guid groupTypeGuid = selectionValues[0].AsGuid();
+            
+            var groupType = new GroupTypeService( new RockContext() ).Get( groupTypeGuid );
+            if ( groupType != null )
+            {
+                return groupType.Id;
+            }
+            
+            return null;
         }
 
         /// <summary>
@@ -145,7 +163,7 @@ namespace Rock.Reporting.DataFilter.Group
             pnlGroupAttributeFilterControls.Controls.Add( groupTypePicker );
 
             // set the GroupTypePicker selected value now so we can create the other controls the depending on know the groupTypeid
-            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsInteger();
+            int? groupTypeId = filterControl.Page.Request.Params[groupTypePicker.UniqueID].AsIntegerOrNull();
             groupTypePicker.SelectedGroupTypeId = groupTypeId;
             groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
 
@@ -222,7 +240,16 @@ namespace Rock.Reporting.DataFilter.Group
 
             // note: since this datafilter creates additional controls outside of CreateChildControls(), we'll use our _controlsToRender instead of the controls parameter
             GroupTypePicker groupTypePicker = pnlGroupAttributeFilterControls.Controls[0] as GroupTypePicker;
-            values.Add( groupTypePicker.SelectedGroupTypeId.ToString() );
+
+            int? groupTypeId = groupTypePicker.SelectedGroupTypeId;
+            Guid groupTypeGuid = Guid.Empty;
+            var groupType = new GroupTypeService(new RockContext()).Get( groupTypeId ?? 0 );
+            if (groupType != null)
+            {
+                groupTypeGuid = groupType.Guid;
+            }
+
+            values.Add( groupTypeGuid.ToString() );
 
             if ( pnlGroupAttributeFilterControls.Controls.Count == 1 )
             {
@@ -261,7 +288,7 @@ namespace Rock.Reporting.DataFilter.Group
                 {
                     pnlGroupAttributeFilterControls = controls[0] as Panel;
 
-                    int? groupTypeId = selectionValues[0].AsInteger();
+                    int? groupTypeId = GetGroupTypeIdFromSelection( selectionValues );
                     GroupTypePicker groupTypePicker = pnlGroupAttributeFilterControls.Controls[0] as GroupTypePicker;
                     groupTypePicker.SelectedGroupTypeId = groupTypeId;
                     groupTypePicker_SelectedIndexChanged( groupTypePicker, new EventArgs() );
@@ -295,7 +322,7 @@ namespace Rock.Reporting.DataFilter.Group
 
                 if ( values.Count >= 3 )
                 {
-                    int? groupTypeId = values[0].AsInteger();
+                    int? groupTypeId = GetGroupTypeIdFromSelection( values );
                     string selectedProperty = values[1];
 
                     var entityField = GetGroupAttributes( groupTypeId ).Where( p => p.Name == selectedProperty ).FirstOrDefault();

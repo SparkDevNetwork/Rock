@@ -24,16 +24,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlMetricValueType" runat="server" Label="Type" />
-                        <Rock:DataTextBox ID="tbXValue" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="XValue" />
-                        <Rock:NumberBox ID="tbYValue" runat="server" Label="Y Value" NumberType="Double" />
-                        <Rock:DataTextBox ID="tbNote" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Note" TextMode="MultiLine" Rows="3" />
                         <Rock:DateTimePicker ID="dtpMetricValueDateTime" runat="server" Label="Value Date/Time" />
+                        <Rock:NumberBox ID="tbYValue" runat="server" Label="Value" NumberType="Double" />
+                        <Rock:DataTextBox ID="tbXValue" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="XValue" />
+                    </div>
+                    <div class="col-md-6">
                         <asp:PlaceHolder ID="phEntityTypeEntityIdValue" runat="server" />
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbNote" runat="server" SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Note" TextMode="MultiLine" Rows="3" />
                     </div>
                 </div>
 

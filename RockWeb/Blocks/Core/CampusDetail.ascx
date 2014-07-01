@@ -18,12 +18,45 @@
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="row">
-                    <div class="col-md-6"><Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" /></div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                    </div>
                 </div>
+
+                <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
 
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                        <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
+                        <Rock:KeyValueList ID="kvlServiceTimes" runat="server" label="Service Times" KeyPrompt="Day" ValuePrompt="Time" Help="A list of days and times that this campus has services." />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Url" />
+                        <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
+                        <Rock:RockTextBox ID="tbStreet" runat="server" Label="Address"></Rock:RockTextBox>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <Rock:RockTextBox ID="tbCity" runat="server" Label="City" />
+                            </div>
+                            <div class="col-md-2">
+                                <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" Label="State" />
+                            </div>
+                            <div class="col-md-3">
+                                <Rock:RockTextBox  ID="tbZip" runat="server" Label="Zip" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="attributes">
+                            <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                        </div>
                     </div>
                 </div>
 

@@ -105,6 +105,11 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// Guid for countries
+        /// </summary>
+        public const string LOCATION_COUNTRIES = "D7979EA1-44E9-46E2-BF37-DDAF7F741378";
+
+        /// <summary>
         /// Guid for the types of States that can be tied to a Location's address.
         /// </summary>
         public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
@@ -178,6 +183,21 @@ namespace Rock.SystemGuid
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
+
+        /// <summary>
+        /// Guid for the types of chart styles
+        /// </summary>
+        public const string CHART_STYLES = "FC684FD7-FE68-493F-AF38-1656FBF67E6B";
+
+        /// <summary>
+        /// Guid for the button html
+        /// </summary>
+        public const string BUTTON_HTML = "407A3A73-A3EF-4970-B856-2A33F62AC72E";
+
+        /// <summary>
+        /// The resource t_ ap i_ allowe d_ domains
+        /// </summary>
+        public const string REST_API_ALLOWED_DOMAINS = "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8";
 
     }
 }

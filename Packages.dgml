@@ -3,19 +3,22 @@
   <Nodes>
     <Node Id="RockWeb" Label="RockWeb" Category="Project" />
     <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Package" />
-    <Node Id="ImageResizer 3.4.2" Label="ImageResizer 3.4.2" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.Cors 5.1.2" Label="Microsoft.AspNet.Cors 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Label="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Package" />
     <Node Id="Microsoft.AspNet.Web.Optimization 1.1.3" Label="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Cors 5.1.2" Label="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" />
     <Node Id="Microsoft.Bcl 1.1.8" Label="Microsoft.Bcl 1.1.8" Category="Package" />
     <Node Id="Microsoft.Bcl.Build 1.0.14" Label="Microsoft.Bcl.Build 1.0.14" Category="Package" />
     <Node Id="Microsoft.Net.Http 2.2.20" Label="Microsoft.Net.Http 2.2.20" Category="Package" />
+    <Node Id="Microsoft.SqlServer.Types 11.0.1" Label="Microsoft.SqlServer.Types 11.0.1" Category="Package" />
     <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Label="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" />
     <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
-    <Node Id="Newtonsoft.Json 6.0.2" Label="Newtonsoft.Json 6.0.2" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
     <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
     <Node Id="UAParser 1.0.2.0" Label="UAParser 1.0.2.0" Category="Package" />
     <Node Id="WebActivatorEx 2.0.5" Label="WebActivatorEx 2.0.5" Category="Package" />
@@ -23,15 +26,17 @@
     <Node Id="YamlDotNet 3.0.0" Label="YamlDotNet 3.0.0" Category="Package" />
     <Node Id="Rock.Rest" Label="Rock.Rest" Category="Project" />
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
-    <Node Id="ImageResizer 3.4.2" Label="ImageResizer 3.4.2" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.Cors 5.1.2" Label="Microsoft.AspNet.Cors 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
+    <Node Id="Microsoft.AspNet.WebApi.Cors 5.1.2" Label="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.OData 5.1.2" Label="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.WebHost 5.1.2" Label="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package" />
     <Node Id="Microsoft.Data.Edm 5.6.1" Label="Microsoft.Data.Edm 5.6.1" Category="Package" />
     <Node Id="Microsoft.Data.OData 5.6.1" Label="Microsoft.Data.OData 5.6.1" Category="Package" />
-    <Node Id="Newtonsoft.Json 6.0.2" Label="Newtonsoft.Json 6.0.2" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
     <Node Id="System.Spatial 5.6.1" Label="System.Spatial 5.6.1" Category="Package" />
     <Node Id="UAParser 1.0.2.0" Label="UAParser 1.0.2.0" Category="Package" />
     <Node Id="YamlDotNet 3.0.0" Label="YamlDotNet 3.0.0" Category="Package" />
@@ -45,7 +50,7 @@
     <Node Id="EntityFramework 6.1.0" Label="EntityFramework 6.1.0" Category="Package" />
     <Node Id="Facebook 6.4.2" Label="Facebook 6.4.2" Category="Package" />
     <Node Id="HtmlAgilityPack 1.4.6" Label="HtmlAgilityPack 1.4.6" Category="Package" />
-    <Node Id="ImageResizer 3.4.2" Label="ImageResizer 3.4.2" Category="Package" />
+    <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Core 5.1.2" Label="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package" />
@@ -55,7 +60,7 @@
     <Node Id="Microsoft.Data.Services.Client 5.6.1" Label="Microsoft.Data.Services.Client 5.6.1" Category="Package" />
     <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
     <Node Id="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Label="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package" />
-    <Node Id="Newtonsoft.Json 6.0.2" Label="Newtonsoft.Json 6.0.2" Category="Package" />
+    <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
     <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
     <Node Id="RestSharp 104.4.0" Label="RestSharp 104.4.0" Category="Package" />
     <Node Id="System.Spatial 5.6.1" Label="System.Spatial 5.6.1" Category="Package" />
@@ -66,10 +71,12 @@
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Microsoft.Net.Http 2.2.20" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.Cors 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.Bcl 1.1.8" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" />
     <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl 1.1.8" Category="Package Dependency" />
@@ -78,18 +85,22 @@
     <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" />
     <Link Source="WebActivatorEx 2.0.5" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
     <Link Source="WebGrease 1.6.0" Target="Antlr 3.5.0.2" Category="Package Dependency" />
-    <Link Source="WebGrease 1.6.0" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
-    <Link Source="RockWeb" Target="ImageResizer 3.4.2" Category="Installed Package" />
+    <Link Source="WebGrease 1.6.0" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="RockWeb" Target="ImageResizer 3.4.3" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.SqlServer.Types 11.0.1" Category="Installed Package" />
     <Link Source="RockWeb" Target="NuGet.Core 2.8.1" Category="Installed Package" />
     <Link Source="RockWeb" Target="UAParser 1.0.2.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="WebActivatorEx 2.0.5" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Cors 5.1.2" Target="Microsoft.AspNet.Cors 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.OData 5.1.2" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" />
@@ -98,8 +109,9 @@
     <Link Source="Microsoft.Data.OData 5.6.1" Target="Microsoft.Data.Edm 5.6.1" Category="Package Dependency" />
     <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" />
     <Link Source="Rock.Rest" Target="EntityFramework 6.1.0" Category="Installed Package" />
-    <Link Source="Rock.Rest" Target="ImageResizer 3.4.2" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="ImageResizer 3.4.3" Category="Installed Package" />
     <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
+    <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Installed Package" />
     <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 5.1.2" Category="Installed Package" />
     <Link Source="Rock.Rest" Target="UAParser 1.0.2.0" Category="Installed Package" />
     <Link Source="Rock.Migrations" Target="EntityFramework 6.1.0" Category="Installed Package" />
@@ -107,8 +119,8 @@
     <Link Source="AjaxControlToolkit 7.1213" Target="HtmlAgilityPack 1.4.6" Category="Package Dependency" />
     <Link Source="AjaxControlToolkit 7.1213" Target="WindowsAzure.Storage 3.1.0.1" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
-    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.WebApi.Client 5.1.2" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.Core 5.1.2" Target="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi.WebHost 5.1.2" Target="Microsoft.AspNet.WebApi.Core 5.1.2" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.6.1" Target="System.Spatial 5.6.1" Category="Package Dependency" />
@@ -117,7 +129,7 @@
     <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" />
     <Link Source="Twilio 3.6.11" Target="RestSharp 104.4.0" Category="Package Dependency" />
     <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.OData 5.6.1" Category="Package Dependency" />
-    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Newtonsoft.Json 6.0.2" Category="Package Dependency" />
+    <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.Data.Services.Client 5.6.1" Category="Package Dependency" />
     <Link Source="WindowsAzure.Storage 3.1.0.1" Target="Microsoft.WindowsAzure.ConfigurationManager 2.0.3" Category="Package Dependency" />
     <Link Source="Rock" Target="AjaxControlToolkit 7.1213" Category="Installed Package" />
@@ -125,7 +137,7 @@
     <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" />
     <Link Source="Rock" Target="EntityFramework 6.1.0" Category="Installed Package" />
     <Link Source="Rock" Target="Facebook 6.4.2" Category="Installed Package" />
-    <Link Source="Rock" Target="ImageResizer 3.4.2" Category="Installed Package" />
+    <Link Source="Rock" Target="ImageResizer 3.4.3" Category="Installed Package" />
     <Link Source="Rock" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
     <Link Source="Rock" Target="NuGet.Core 2.8.1" Category="Installed Package" />
     <Link Source="Rock" Target="Twilio 3.6.11" Category="Installed Package" />

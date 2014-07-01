@@ -43,12 +43,12 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static List<EntityField> GetEntityFields( Type entityType, bool includeOnlyReportingFields = true )
         {
-            if (_entityFields == null)
+            if ( _entityFields == null )
             {
                 _entityFields = new Dictionary<Type, List<EntityField>>();
             }
-            
-            if (_entityFields.ContainsKey(entityType) && _entityFields[entityType] != null)
+
+            if ( _entityFields.ContainsKey( entityType ) && _entityFields[entityType] != null )
             {
                 return _entityFields[entityType];
             }
@@ -102,7 +102,7 @@ namespace Rock.Reporting
                             var definedType = DefinedTypeCache.Read( ( (Rock.Data.DefinedValueAttribute)definedValueAttribute ).DefinedTypeGuid );
                             entityProperty.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
                             entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
-                            entityProperty.DefinedTypeId = definedType.Id;
+                            entityProperty.DefinedTypeGuid = definedType.Guid;
                         }
                         else
                         {
@@ -133,22 +133,22 @@ namespace Rock.Reporting
             // Get Attributes
             int entityTypeId = EntityTypeCache.Read( entityType ).Id;
             var rockContext = new RockContext();
-            var qryAttributes = new AttributeService( rockContext ).Queryable().Where(a=> a.EntityTypeId == entityTypeId);
-            if (entityType == typeof(Group))
+            var qryAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeId );
+            if ( entityType == typeof( Group ) )
             {
                 // in the case of Group, show attributes that are entity global, but also ones that are qualified by GroupTypeId
                 qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty || a.EntityTypeQualifierColumn == "GroupTypeId" );
             }
             else
             {
-                qryAttributes = qryAttributes.Where( a=> a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty);
+                qryAttributes = qryAttributes.Where( a => a.EntityTypeQualifierColumn == string.Empty && a.EntityTypeQualifierValue == string.Empty );
             }
-            
+
             var attributeList = qryAttributes.ToList();
 
             foreach ( var attribute in attributeList )
             {
-                AddEntityFieldForAttribute( entityFields, AttributeCache.Read(attribute.Id) );
+                AddEntityFieldForAttribute( entityFields, AttributeCache.Read( attribute.Id ) );
             }
 
             int index = 1;
@@ -180,68 +180,68 @@ namespace Rock.Reporting
 
             EntityField entityProperty = null;
 
-            var fieldType =FieldTypeCache.Read( attribute.FieldTypeId );
-            string fieldTypeUpperGuid =fieldType.Guid.ToString().ToUpper();
+            var fieldType = FieldTypeCache.Read( attribute.FieldTypeId );
+            string fieldTypeUpperGuid = fieldType.Guid.ToString().ToUpper();
 
             switch ( fieldTypeUpperGuid )
             {
                 case SystemGuid.FieldType.BOOLEAN:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
                     break;
 
                 case SystemGuid.FieldType.DATE:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.DATE;
                     break;
 
                 case SystemGuid.FieldType.TIME:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.TIME;
                     break;
 
                 case SystemGuid.FieldType.INTEGER:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.INTEGER;
                     break;
 
                 case SystemGuid.FieldType.DECIMAL:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.DECIMAL;
                     break;
 
                 case SystemGuid.FieldType.DAY_OF_WEEK:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.DAY_OF_WEEK;
                     break;
 
                 case SystemGuid.FieldType.MULTI_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
                     break;
 
                 case SystemGuid.FieldType.SINGLE_SELECT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.MULTI_SELECT;
                     break;
 
                 case SystemGuid.FieldType.TEXT:
-                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Id );
+                    entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 2, attribute.Guid );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.TEXT;
                     break;
             }
 
             if ( entityProperty != null )
             {
-                if (attribute.EntityTypeId == EntityTypeCache.GetId(typeof(Group)) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Group ) ) && attribute.EntityTypeQualifierColumn == "GroupTypeId" )
                 {
-                    var groupType = new GroupTypeService(new RockContext()).Get(attribute.EntityTypeQualifierValue.AsInteger() ?? 0);
+                    var groupType = new GroupTypeService( new RockContext() ).Get( attribute.EntityTypeQualifierValue.AsInteger() );
                     if ( groupType != null )
                     {
                         entityProperty.Title = string.Format( "{0} ({1})", attribute.Name.SplitCase(), groupType.Name );
                     }
                 }
-                
+
                 entityFields.Add( entityProperty );
             }
         }
@@ -329,7 +329,7 @@ namespace Rock.Reporting
         /// <value>
         /// The attribute identifier.
         /// </value>
-        public int? AttributeId { get; set; }
+        public Guid? AttributeGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the filter field.
@@ -345,7 +345,7 @@ namespace Rock.Reporting
         /// <value>
         /// The defined type identifier.
         /// </value>
-        public int? DefinedTypeId { get; set; }
+        public Guid? DefinedTypeGuid { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [is previewable].
@@ -356,21 +356,21 @@ namespace Rock.Reporting
         public bool IsPreviewable { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityField"/> class.
+        /// Initializes a new instance of the <see cref="EntityField" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="fieldKind">Kind of the field.</param>
         /// <param name="propertyType">Type of the property.</param>
         /// <param name="controlCount">The control count.</param>
-        /// <param name="attributeId">The attribute identifier.</param>
-        public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, int? attributeId = null )
+        /// <param name="attributeGuid">The attribute unique identifier.</param>
+        public EntityField( string name, FieldKind fieldKind, Type propertyType, int controlCount, Guid? attributeGuid = null )
         {
             Name = name;
             Title = name.SplitCase();
             FieldKind = fieldKind;
             PropertyType = propertyType;
             ControlCount = controlCount;
-            AttributeId = attributeId;
+            AttributeGuid = attributeGuid;
         }
 
         /// <summary>
@@ -381,13 +381,13 @@ namespace Rock.Reporting
         /// </returns>
         public override string ToString()
         {
-            if (this.FieldKind == Reporting.FieldKind.Attribute)
+            if ( this.FieldKind == Reporting.FieldKind.Attribute )
             {
-                return string.Format( "Attribute:{0} (Id:{1})", this.Name, this.AttributeId );
+                return string.Format( "Attribute:{0} (Guid:{1})", this.Name, this.AttributeGuid );
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(this.Name))
+                if ( !string.IsNullOrWhiteSpace( this.Name ) )
                 {
                     return string.Format( "Property:{0}", this.Name );
                 }

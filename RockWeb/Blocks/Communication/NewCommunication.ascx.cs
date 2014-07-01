@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Communication
                 if ( communication == null )
                 {
                     // If not, check page parameter for existing communiciaton
-                    int? communicationId = PageParameter( "CommunicationId" ).AsInteger( false );
+                    int? communicationId = PageParameter( "CommunicationId" ).AsIntegerOrNull();
                     if ( communicationId.HasValue )
                     {
                         communication = new CommunicationService( new RockContext() ).Get( communicationId.Value );
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Communication
 
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            int? templateId = ddlTemplate.SelectedValue.AsInteger( false );
+            int? templateId = ddlTemplate.SelectedValue.AsIntegerOrNull();
             if ( templateId.HasValue )
             {
                 GetTemplateData( templateId.Value );
@@ -303,56 +303,52 @@ namespace RockWeb.Blocks.Communication
                         string textClass = string.Empty;
                         string textTooltip = string.Empty;
 
-                        if ( string.IsNullOrWhiteSpace( recipient.Email ) )
-                        {
-                            textClass = "text-danger";
-                            textTooltip = "No Email." + recipient.EmailNote;
-                        }
 
-                        else
+                        if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
                         {
-                            if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
+                            if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                             {
-                                if ( !recipient.IsEmailActive )
+                                textClass = "text-danger";
+                                textTooltip = "No Email." + recipient.EmailNote;
+                            }
+                            else if ( !recipient.IsEmailActive )
+                            {
+                                // if email is not active, show reason why as tooltip
+                                textClass = "text-danger";
+                                textTooltip = "Email is Inactive. " + recipient.EmailNote;
+                            }
+                            else
+                            {
+                                // Email is active
+                                if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
                                 {
-                                    // if email is not active, show reason why as tooltip
-                                    textClass = "text-danger";
-                                    textTooltip = "Email is Inactive. " + recipient.EmailNote;
-                                }
-                                else
-                                {
-                                    // Email is active
-                                    if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
+                                    textTooltip = Recipient.PreferenceMessage( recipient );
+
+                                    if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                     {
-                                        textTooltip = Recipient.PreferenceMessage( recipient );
-
-                                        if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
+                                        textClass = "js-no-bulk-email";
+                                        var channelData = ChannelData;
+                                        if ( cbBulk.Checked )
                                         {
-                                            textClass = "js-no-bulk-email";
-                                            var channelData = ChannelData;
-                                            if ( cbBulk.Checked )
-                                            {
-                                                // This is a bulk email and user does not want bulk emails
-                                                textClass += " text-danger";
-                                            }
+                                            // This is a bulk email and user does not want bulk emails
+                                            textClass += " text-danger";
                                         }
-                                        else
-                                        {
-                                            // Email preference is 'Do Not Email'
-                                            textClass = "text-danger";
-                                        }
-
+                                    }
+                                    else
+                                    {
+                                        // Email preference is 'Do Not Email'
+                                        textClass = "text-danger";
                                     }
                                 }
                             }
-                            else if (ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
+                        }
+                        else if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
+                        {
+                            if ( !recipient.HasSmsNumber )
                             {
-                                if (!recipient.HasSmsNumber)
-                                {
-                                    // No SMS Number
-                                    textClass = "text-danger";
-                                    textTooltip = "No phone number with SMS enabled.";
-                                }
+                                // No SMS Number
+                                textClass = "text-danger";
+                                textTooltip = "No phone number with SMS enabled.";
                             }
                         }
 
@@ -513,7 +509,7 @@ namespace RockWeb.Blocks.Communication
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
 
-                int? personId = PageParameter( "Person" ).AsInteger( false );
+                int? personId = PageParameter( "Person" ).AsIntegerOrNull();
                 if ( personId.HasValue )
                 {
                     communication.IsBulkCommunication = false;
@@ -679,6 +675,7 @@ namespace RockWeb.Blocks.Communication
 
             // The component to load control for
             ChannelComponent component = null;
+            string channelName = string.Empty;
 
             // Get the current channel type
             EntityTypeCache entityType = null;
@@ -689,12 +686,13 @@ namespace RockWeb.Blocks.Communication
 
             foreach ( var serviceEntry in ChannelContainer.Instance.Components )
             {
-                var channelComponent = serviceEntry.Value.Value;
-
+                var channelComponent = serviceEntry.Value;
+    
                 // Default to first component
                 if ( component == null )
                 {
-                    component = channelComponent;
+                    component = channelComponent.Value;
+                    channelName = channelComponent.Metadata.ComponentName + " ";
                 }
 
                 // If invalid entity type, exit (and use first component found)
@@ -702,9 +700,10 @@ namespace RockWeb.Blocks.Communication
                 {
                     break;
                 }
-                else if ( entityType.Id == channelComponent.EntityType.Id )
+                else if ( entityType.Id == channelComponent.Value.EntityType.Id )
                 {
-                    component = channelComponent;
+                    component = channelComponent.Value;
+                    channelName = channelComponent.Metadata.ComponentName + " ";
                     break;
                 }
             }
@@ -725,6 +724,16 @@ namespace RockWeb.Blocks.Communication
                 
                 // Set the channel in case it wasn't already set or the previous component type was not found
                 ChannelEntityTypeId = component.EntityType.Id;
+
+                if (component.Transport == null || !component.Transport.IsActive)
+                {
+                    nbInvalidTransport.Text = string.Format( "The {0}channel does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.", channelName );
+                    nbInvalidTransport.Visible = true;
+                }
+                else
+                {
+                    nbInvalidTransport.Visible = false;
+                }
 
                 return channelControl;
             }

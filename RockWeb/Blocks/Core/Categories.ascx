@@ -4,17 +4,19 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
-                <Columns>
-                    <Rock:ReorderField />
-                    <asp:BoundField DataField="Name" HeaderText="Category" />
-                    <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
-                    <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                    <Rock:EditField OnClick="gCategories_Edit"/>
-                    <Rock:SecurityField />
-                    <Rock:DeleteField OnClick="gCategories_Delete" />
-                </Columns>
-            </Rock:Grid>
+            <div class="grid">
+                <Rock:Grid ID="gCategories" runat="server" RowItemText="Category" OnRowSelected="gCategories_Select" TooltipField="Description">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <asp:BoundField DataField="Name" HeaderText="Category" />
+                        <asp:BoundField DataField="IconCssClass" HeaderText="Icon Class" />
+                        <asp:BoundField DataField="ChildCount" HeaderText="Child Categories" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                        <Rock:EditField OnClick="gCategories_Edit"/>
+                        <Rock:SecurityField />
+                        <Rock:DeleteField OnClick="gCategories_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
 
         </asp:Panel>
 
@@ -43,6 +45,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
+                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
                     </div>
 
                 </div>

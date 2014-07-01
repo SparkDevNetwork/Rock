@@ -88,20 +88,6 @@ namespace RockWeb.Blocks.Finance
             {
                 case "Business Name":
                     break;
-
-                case "Owner":
-                    int personId = 0;
-                    if ( int.TryParse( e.Value, out personId ) && personId != 0 )
-                    {
-                        var personService = new PersonService( new RockContext() );
-                        var person = personService.Get( personId );
-                        if ( person != null )
-                        {
-                            e.Value = person.FullName;
-                        }
-                    }
-
-                    break;
             }
         }
 
@@ -113,7 +99,6 @@ namespace RockWeb.Blocks.Finance
         private void gfBusinessFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             gfBusinessFilter.SaveUserPreference( "Business Name", tbBusinessName.Text );
-            gfBusinessFilter.SaveUserPreference( "Owner", ppBusinessOwner.PersonId.ToString() );
             BindGrid();
         }
 
@@ -156,30 +141,16 @@ namespace RockWeb.Blocks.Finance
                     .Select( r => r.Id )
                     .FirstOrDefault();
 
-                var groupMemberService = new GroupMemberService( rockContext );
-                var knownRelationshipBusinessGroupMember = groupMemberService.Queryable()
-                    .Where( g =>
-                        g.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_BUSINESS ) ) &&
-                        g.PersonId == business.Id )
-                    .FirstOrDefault();
-
-                if ( knownRelationshipBusinessGroupMember != null )
+                if ( business.PhoneNumbers.Count > 0 )
                 {
-                    var inverseGroupMember = groupMemberService.GetInverseRelationship( knownRelationshipBusinessGroupMember, false, CurrentPersonAlias );
-                    if ( inverseGroupMember != null )
+                    var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
+                    if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
                     {
-                        Label lblOwner = e.Row.FindControl( "lblOwner" ) as Label;
-                        lblOwner.Text = inverseGroupMember.Person.FullName;
-                    }
-                }
-
-                var phoneNumber = business.PhoneNumbers.FirstOrDefault().NumberFormatted;
-                if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
-                {
-                    Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
-                    if ( lblPhoneNumber != null )
-                    {
-                        lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
+                        Label lblPhoneNumber = e.Row.FindControl( "lblPhoneNumber" ) as Label;
+                        if ( lblPhoneNumber != null )
+                        {
+                            lblPhoneNumber.Text = string.Format( "{0}</br>", phoneNumber );
+                        }
                     }
                 }
 
@@ -192,31 +163,34 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
-                if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
+                if ( business.GivingGroup.GroupLocations.Count > 0 )
                 {
-                    Label lblStreet1 = e.Row.FindControl( "lblStreet1" ) as Label;
-                    if ( lblStreet1 != null )
+                    var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
+                    if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
                     {
-                        lblStreet1.Text = string.Format( "{0}</br>", location.Street1 );
+                        Label lblStreet1 = e.Row.FindControl( "lblStreet1" ) as Label;
+                        if ( lblStreet1 != null )
+                        {
+                            lblStreet1.Text = string.Format( "{0}</br>", location.Street1 );
+                        }
                     }
-                }
 
-                if ( !string.IsNullOrWhiteSpace( location.Street2 ) )
-                {
-                    Label lblStreet2 = e.Row.FindControl( "lblStreet2" ) as Label;
-                    if ( lblStreet2 != null )
+                    if ( !string.IsNullOrWhiteSpace( location.Street2 ) )
                     {
-                        lblStreet2.Text = string.Format( "{0}</br>", location.Street2 );
+                        Label lblStreet2 = e.Row.FindControl( "lblStreet2" ) as Label;
+                        if ( lblStreet2 != null )
+                        {
+                            lblStreet2.Text = string.Format( "{0}</br>", location.Street2 );
+                        }
                     }
-                }
 
-                if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.State ) || !string.IsNullOrWhiteSpace( location.Zip ) )
-                {
-                    Label lblCityStateZip = e.Row.FindControl( "lblCityStateZip" ) as Label;
-                    if ( lblCityStateZip != null )
+                    if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.Zip ) )
                     {
-                        lblCityStateZip.Text = string.Format( "{0}, {1} {2}", location.City, location.State, location.Zip );
+                        Label lblCityStateZip = e.Row.FindControl( "lblCityStateZip" ) as Label;
+                        if ( lblCityStateZip != null )
+                        {
+                            lblCityStateZip.Text = string.Format( "{0}, {1} {2}", location.City, location.State, location.Zip );
+                        }
                     }
                 }
             }
@@ -280,18 +254,6 @@ namespace RockWeb.Blocks.Finance
 
             // Business Name Filter
             tbBusinessName.Text = gfBusinessFilter.GetUserPreference( "Business Name" );
-
-            // Owner Filter
-            int businessId = 0;
-            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out businessId ) )
-            {
-                var businessService = new PersonService( rockContext );
-                var business = businessService.Get( businessId );
-                if ( business != null )
-                {
-                    ppBusinessOwner.SetValue( business );
-                }
-            }
         }
 
         /// <summary>
@@ -315,25 +277,6 @@ namespace RockWeb.Blocks.Finance
             if ( !string.IsNullOrWhiteSpace( businessName ) )
             {
                 queryable = queryable.Where( a => a.FirstName.Contains( businessName ) );
-            }
-
-            // Owner Filter
-            int ownerId = 0;
-            if ( int.TryParse( gfBusinessFilter.GetUserPreference( "Owner" ), out ownerId ) && ownerId != 0 )
-            {
-                var members = queryable.SelectMany( a => a.Members ).ToList();
-                foreach ( var member in members )
-                {
-                    if ( member.GroupRoleId == businessRoleId )
-                    {
-                        var groupMemberService = new GroupMemberService( rockContext );
-                        var owner = groupMemberService.GetInverseRelationship( member, false, CurrentPersonAlias );
-                        if ( owner.PersonId != ownerId )
-                        {
-                            queryable = queryable.Where( a => a.Id != member.PersonId );
-                        }
-                    }
-                }
             }
 
             SortProperty sortProperty = gBusinessList.SortProperty;

@@ -161,8 +161,8 @@ namespace Rock.Field.Types
                             if ( keyValueArray.Length > 0 )
                             {
                                 ListItem li = new ListItem();
-                                li.Value = keyValueArray[0];
-                                li.Text = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
+                                li.Value = keyValueArray[0].Trim();
+                                li.Text = keyValueArray.Length > 1 ? keyValueArray[1].Trim() : keyValueArray[0].Trim();
                                 editControl.Items.Add( li );
                             }
                         }

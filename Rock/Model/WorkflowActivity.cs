@@ -55,6 +55,24 @@ namespace Rock.Model
         public int ActivityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the assigned person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group identifier.
+        /// </summary>
+        /// <value>
+        /// The assigned group identifier.
+        /// </value>
+        [DataMember]
+        public int? AssignedGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time that this WorkflowActivity was activated.
         /// </summary>
         /// <value>
@@ -99,8 +117,23 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [DataMember]
         public virtual WorkflowActivityType ActivityType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned person alias.
+        /// </summary>
+        /// <value>
+        /// The assigned person alias.
+        /// </value>
+        public virtual PersonAlias AssignedPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assigned group.
+        /// </summary>
+        /// <value>
+        /// The assigned group.
+        /// </value>
+        public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this WorkflowActivity instance is active.
@@ -144,7 +177,7 @@ namespace Rock.Model
             get
             {
                 return this.Actions
-                    .Where( a => a.IsActive )
+                    .Where( a => a.IsActive && !a.CompletedDateTime.HasValue )
                     .OrderBy( a => a.ActionType.Order );
             }
         }
@@ -167,26 +200,27 @@ namespace Rock.Model
 
         #region Public Methods
 
-
         /// <summary>
         /// Processes this WorkflowAction
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="entity">The entity that work is being performed against.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that will contain any error messages that are 
+        /// <param name="errorMessages">A 
+        /// <see cref="System.Collections.Generic.List{String}" /> that will contain any error messages that are
         /// returned while processing this WorkflowActivity</param>
-        /// <returns>A <see cref="System.Boolean"/> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.</returns>
-        internal virtual bool Process( Object entity, out List<string> errorMessages )
+        /// <returns>
+        /// A <see cref="System.Boolean" /> vlaue that is <c>true</c> if the WorkflowActivity processes successfully; otherwise <c>false</c>.
+        /// </returns>
+        internal virtual bool Process( RockContext rockContext, Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
-
-            this.LastProcessedDateTime = RockDateTime.Now;
 
             errorMessages = new List<string>();
 
             foreach ( var action in this.ActiveActions )
             {
                 List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( entity, out actionErrorMessages );
+                bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
                 errorMessages.AddRange( actionErrorMessages );
 
                 // If action was not successful, exit
@@ -208,7 +242,14 @@ namespace Rock.Model
                 }
             }
 
+            this.LastProcessedDateTime = RockDateTime.Now;
+
             AddSystemLogEntry( "Processing Complete" );
+
+            if (!this.ActiveActions.Any())
+            {
+                MarkComplete();
+            }
 
             return errorMessages.Count == 0;
         }
@@ -221,7 +262,8 @@ namespace Rock.Model
         {
             if ( this.Workflow != null )
             {
-                this.Workflow.AddLogEntry( string.Format( "'{0}' Activity: {1}", this.ToString(), logEntry ) );
+                string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ) );
             }
         }
 
@@ -235,6 +277,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object.
+        /// </summary>
+        /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
+        /// <returns>
+        /// DotLiquid compatible dictionary.
+        /// </returns>
+        public override object ToLiquid( bool debug )
+        {
+            var mergeFields = base.ToLiquid( debug ) as Dictionary<string, object>;
+            if ( debug )
+            {
+                mergeFields.Add( "Workflow", Workflow.ToLiquid( true ) );
+                mergeFields.Add( "ActivityType", this.ActivityType.ToLiquid( true ) );
+            }
+            else
+            {
+                mergeFields.Add( "Workflow", Workflow );
+                mergeFields.Add( "ActivityType", this.ActivityType );
+            }
+
+            return mergeFields;
+        }       
+        
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this WorkflowActivity.
         /// </summary>
         /// <returns>
@@ -242,7 +308,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}[{1}]", this.ActivityType.ToStringSafe(), this.Id );
+            return this.ActivityType.ToStringSafe();
         }
 
         #endregion
@@ -310,8 +376,10 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( m => m.Workflow ).WithMany( m => m.Activities).HasForeignKey( m => m.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( m => m.ActivityType ).WithMany().HasForeignKey( m => m.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
         }
     }
 
