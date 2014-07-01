@@ -100,9 +100,19 @@ namespace Rock.Rest.Controllers
 
             if ( userLoginWithPlainTextPassword != null )
             {
+                // if a UserLoginWithPlainTextPassword was posted, and PlainTextPassword was specified, encrypt it and set UserLogin.Password
                 if ( !string.IsNullOrWhiteSpace( userLoginWithPlainTextPassword.PlainTextPassword ) )
                 {
                     ( this.Service as UserLoginService ).SetPassword( value, userLoginWithPlainTextPassword.PlainTextPassword );
+                }
+            }
+            else
+            {
+                // since REST doesn't serialize Password, get the existing Password from the database so that it doesn't get NULLed out
+                var existingUserLoginRecord = this.Get( value.Id );
+                if (existingUserLoginRecord != null)
+                {
+                    value.Password = existingUserLoginRecord.Password;
                 }
             }
         }
