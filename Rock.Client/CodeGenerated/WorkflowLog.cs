@@ -40,6 +40,18 @@ namespace Rock.Client
         public string LogText { get; set; }
 
         /// <summary />
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary />
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary />
+        public int? CreatedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? ModifiedByPersonAliasId { get; set; }
+
+        /// <summary />
         public int Id { get; set; }
 
         /// <summary />

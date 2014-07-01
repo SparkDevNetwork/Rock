@@ -31,6 +31,9 @@ namespace Rock.Client
     public partial class WorkflowActionType
     {
         /// <summary />
+        public int? WorkflowFormId { get; set; }
+
+        /// <summary />
         public int ActivityTypeId { get; set; }
 
         /// <summary />
@@ -47,6 +50,15 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsActivityCompletedOnSuccess { get; set; }
+
+        /// <summary />
+        public Guid? CriteriaAttributeGuid { get; set; }
+
+        /// <summary />
+        public int /* ComparisonType*/ CriteriaComparisonType { get; set; }
+
+        /// <summary />
+        public string CriteriaValue { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

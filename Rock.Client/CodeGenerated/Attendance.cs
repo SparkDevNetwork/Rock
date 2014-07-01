@@ -34,6 +34,9 @@ namespace Rock.Client
         public int? LocationId { get; set; }
 
         /// <summary />
+        public int? CampusId { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
 
         /// <summary />

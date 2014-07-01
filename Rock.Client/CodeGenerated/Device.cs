@@ -31,13 +31,13 @@ namespace Rock.Client
     public partial class Device
     {
         /// <summary />
-        public int DeviceTypeValueId { get; set; }
-
-        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public int DeviceTypeValueId { get; set; }
 
         /// <summary />
         public int? LocationId { get; set; }

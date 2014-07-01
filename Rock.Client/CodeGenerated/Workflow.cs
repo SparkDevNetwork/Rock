@@ -55,6 +55,9 @@ namespace Rock.Client
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
+        public int? InitiatorPersonAliasId { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

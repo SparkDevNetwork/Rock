@@ -37,10 +37,28 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string Description { get; set; }
+
+        /// <summary />
+        public bool? IsActive { get; set; }
+
+        /// <summary />
         public string ShortCode { get; set; }
 
         /// <summary />
+        public string Url { get; set; }
+
+        /// <summary />
         public int? LocationId { get; set; }
+
+        /// <summary />
+        public string PhoneNumber { get; set; }
+
+        /// <summary />
+        public int? LeaderPersonAliasId { get; set; }
+
+        /// <summary />
+        public string ServiceTimes { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

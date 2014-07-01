@@ -31,13 +31,13 @@ namespace Rock.Client
     public partial class FinancialScheduledTransaction
     {
         /// <summary />
-        public int TransactionFrequencyValueId { get; set; }
-
-        /// <summary />
         public int? GatewayEntityTypeId { get; set; }
 
         /// <summary />
         public int AuthorizedPersonId { get; set; }
+
+        /// <summary />
+        public int TransactionFrequencyValueId { get; set; }
 
         /// <summary />
         public DateTime StartDate { get; set; }

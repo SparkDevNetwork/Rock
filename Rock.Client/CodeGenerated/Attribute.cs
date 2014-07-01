@@ -70,6 +70,9 @@ namespace Rock.Client
         public bool IsRequired { get; set; }
 
         /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

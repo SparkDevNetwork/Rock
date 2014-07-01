@@ -31,6 +31,9 @@ namespace Rock.Client
     public partial class Location
     {
         /// <summary />
+        public int? PrinterDeviceId { get; set; }
+
+        /// <summary />
         public int? ParentLocationId { get; set; }
 
         /// <summary />
@@ -97,7 +100,7 @@ namespace Rock.Client
         public bool? IsGeoPointLocked { get; set; }
 
         /// <summary />
-        public int? PrinterDeviceId { get; set; }
+        public int? ImageId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

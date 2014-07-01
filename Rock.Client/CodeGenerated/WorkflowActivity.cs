@@ -37,6 +37,12 @@ namespace Rock.Client
         public int ActivityTypeId { get; set; }
 
         /// <summary />
+        public int? AssignedPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? AssignedGroupId { get; set; }
+
+        /// <summary />
         public DateTime? ActivatedDateTime { get; set; }
 
         /// <summary />
