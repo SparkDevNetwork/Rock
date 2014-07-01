@@ -1,3 +1,7 @@
+// Custom Theme Variables
+@accent-blue: #567d8c;
+
+
 //
 // Rock 1.0 Variables
 // --------------------------------------------------
@@ -7,22 +11,31 @@
 
 // Font Weights
 @font-weight-light:     300;
-@font-weight-bold:      700;
+@font-weight-bold:      900;
 @font-weight-semibold:  700;
 
 // Standard Colors
-@accent-color: #efefef;
-@accent-text-color: @text-color;
-@accent-light-color: #c6dfec;
-@accent-light-text-color: #fff;
-@accent-semibold-color: @gray-light;
-@accent-semibold-text-color: #fff;
-@accent-bold-color: #ee7624;//#ff8400; // overrides brand color
-@accent-bold-text-color: #ecf0f3;
+@accent-color: #dbd5cb;
+@accent-text-color: #231f20;
+@accent-light-color: #e3ded7;
+@accent-light-text-color: #817b72;
+@accent-semibold-color: #c2b8a7;
+@accent-semibold-text-color: #616161;
+@accent-bold-color: #282526;
+@accent-bold-text-color: #d3cec5;
 
 @text-light-color: lighten(@text-color, 20%);
 @text-selection-color: #5279a0;
 @text-selection-text-color: #fff;
+
+@persondetails-bio-bg: @accent-color;
+@persondetails-bio-color: @accent-text-color;
+@persondetails-badge-bg: @accent-light-color;
+@persondetails-badge-color: @accent-light-text-color;
+@persondetails-familybar-bg: @body-bg;
+@persondetails-familybar-color: @text-color;
+
+@help-color: #86b8cc;
 
 // spacing multipliers / used to multiply by the grid-gutter-width to get spacing sizes
 @spacing-sm: 0.25;
@@ -35,8 +48,8 @@
 
 @pagetitle-bg: #c7cacd;
 
-@header-bg:     #2f4050;
-@header-text-color: #bbb;
+@header-bg:     #c2b8a7;
+@header-text-color: #231f20;
 
 @footer-bg: @header-bg;
 @footer-text-color: @header-text-color;
@@ -44,7 +57,7 @@
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
 @modal-body-text-color: @text-color;
-@modal-dropshadow-color: #464646;
+@modal-dropshadow-color: rgba(0,0,0,0.6);
 // see bootstrap variables for additional modal styles
 
 // Components
@@ -53,20 +66,21 @@
 // Grid
 @grid-filter-bg: @accent-color;
 
-@grid-column-header-bg: #9d9d9d;
-@grid-column-header-text-color: @accent-bold-text-color;
+@grid-column-header-bg: #fff;
+@grid-column-header-text-color: @accent-text-color;
 @grid-column-header-font-size: 14px;
-@grid-column-header-font-weight: @font-weight-light;
+@grid-column-header-font-weight: @font-weight-semibold;
 
 @grid-hover-bg: @accent-light-color;
 
-@grid-filter-bg: @accent-color;
-@grid-footer-bg: @accent-color;
+@grid-filter-bg: @gray-lighter;
+@grid-footer-bg: #fff;
 @grid-footer-text-color: @accent-text-color;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
-@grid-footer-button-bg: @accent-semibold-color;
-@grid-footer-button-text-color: @accent-semibold-text-color;
+@grid-footer-button-bg: #fff;
+@grid-footer-button-text-color: #999999;
+@grid-footer-button-border: #d4d4d4;
 
 @pagination-bg: @accent-light-color;
 @pagination-hover-bg: lighten(@accent-light-color, 5%);
@@ -74,8 +88,8 @@
 @pagination-active-bg: @accent-semibold-color;
 
 // Admin Bar
-@adminbar-bg: #d9cb9e;
-@adminbar-text-color: darken(@adminbar-bg, 35%);
+@adminbar-bg: @accent-semibold-color;
+@adminbar-text-color: @accent-semibold-text-color;
 
 // Tooltip
 @tooltip-header-bg: @accent-color;
@@ -110,15 +124,15 @@
 @tree-hover-color: @text-color;
 
 // Page List
-@pagelist-bg: #dbd5cb;
-@pagelist-text-color: #6a6a6a;
+@pagelist-bg: @body-bg;
+@pagelist-text-color: @text-color;
 
 // Tags
-@tag-bg: #c4ced6;
-@tag-text-color: @accent-bold-text-color;
+@tag-bg: #c2b8a7;
+@tag-text-color: #231f20;
 @tag-border-radius: @border-radius-base;
-@tag-dot-color: #d6d6d6;
-@tag-bg-alt: #aec2d4;
+@tag-dot-color: #dbd5cb;
+@tag-bg-alt: #d0c6b4;
 
 // Smart Search
 @smartsearch-bg: rgba(255, 255, 255, .1);
@@ -133,13 +147,13 @@
 @label-type-bg: #567D8C;
 
 // Custom Buttons
-@btn-action-color:              @accent-semibold-text-color;
-@btn-action-bg:                 @accent-semibold-color;
-@btn-action-border:             darken(@accent-semibold-color, 5%);
+@btn-action-color:              #fff;
+@btn-action-bg:                 @accent-blue;
+@btn-action-border:             darken(@accent-blue, 5%);
 
-@btn-security-color:            @accent-semibold-text-color;
-@btn-security-bg:               @accent-semibold-color;
-@btn-security-border:           darken(@accent-semibold-color, 5%);
+@btn-security-color:            @gray;
+@btn-security-bg:               @gray-lighter;
+@btn-security-border:           darken(@gray-lighter, 5%);
 
 @btn-authenication-color:       @accent-text-color;
 @btn-authenication-bg:          @accent-color;
@@ -163,22 +177,22 @@
 @gray-darker:            lighten(#000, 13.5%); // #222
 @gray-dark:              lighten(#000, 20%);   // #333
 @gray:                   lighten(#000, 33.5%); // #555
-@gray-light:             lighten(#000, 60%);   // #999
-@gray-lighter:           #d4d4d4; // #eee 
+@gray-light:             #f3f3f4;   // #999
+@gray-lighter:           #efefef; // #eee 
 
 // Brand colors
 // -------------------------
 
-@brand-primary:         @accent-bold-color;
-@brand-success:         #0abb63;
-@brand-warning:         #ffd34e;
-@brand-danger:          #f23838;
-@brand-info:            #02c2eb;
+@brand-primary:         #ee7624;
+@brand-success:         #43be81;
+@brand-warning:         #f3d066;
+@brand-danger:          #c84b4b;
+@brand-info:            #3bc2df;
 
 // Scaffolding
 // -------------------------
 
-@body-bg:               #f3f3f4;
+@body-bg:               @gray-light;
 @text-color:            #6a6a6a;
 
 // Links
@@ -267,9 +281,9 @@
 
 @btn-font-weight:                normal;
 
-@btn-default-color:              @accent-semibold-text-color;//#333;
-@btn-default-bg:                 @accent-semibold-color;
-@btn-default-border:             darken(@accent-semibold-color, 10%);
+@btn-default-color:              @accent-text-color;
+@btn-default-bg:                 #fff;
+@btn-default-border:             @accent-color;
 
 @btn-primary-color:              #fff;
 @btn-primary-bg:                 @brand-primary;
@@ -465,7 +479,7 @@
 // -------------------------
 
 @nav-link-padding:                          10px 15px;
-@nav-link-hover-bg:                         lighten(@navbar-inverse-bg, 3%);
+@nav-link-hover-bg:                         spin(lighten(@accent-semibold-color, 15%), 10%);
 
 @nav-disabled-link-color:                   @gray-light;
 @nav-disabled-link-hover-color:             @gray-light;
@@ -486,8 +500,8 @@
 @nav-tabs-justified-active-link-border-color:     @body-bg;
 
 // Pills
-@nav-pills-active-link-hover-bg:            @accent-bold-color;
-@nav-pills-active-link-hover-color:         @accent-bold-text-color;
+@nav-pills-active-link-hover-bg:            @accent-semibold-color;
+@nav-pills-active-link-hover-color:         @accent-semibold-text-color;
 
 
 // Pagination

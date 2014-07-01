@@ -109,11 +109,11 @@ td.wrap-contents { // keep cells from scrolling off screen
 .table thead th  {
     background-color: @grid-column-header-bg;
 	font-size: @grid-column-header-font-size;
-	color: @accent-bold-text-color;
+	color: @grid-column-header-text-color;
     font-weight: @grid-column-header-font-weight;
 
     a {
-        color: @accent-bold-text-color;
+        color: @grid-column-header-text-color;
         display: block;
     }
 
@@ -172,6 +172,7 @@ td.grid-col-actions {
         margin-left: 8px;
         background-color: @grid-footer-button-bg;
         color: @grid-footer-button-text-color;
+        border-color: @grid-footer-button-border;
 
         &:hover {
             background-color: darken(@grid-footer-button-bg, 10%);

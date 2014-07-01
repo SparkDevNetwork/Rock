@@ -186,7 +186,7 @@ img.jcrop-preview {
     7. Pagelist Nav - Pill nav of pages
     8. Tags - component that allows you to tag entities
     9. Switch - uses the Bootstrap Switch component
-    10. Smart Searh - search at th top of the page for searching people, groups, etc.
+    10. Smart Search - search at th top of the page for searching people, groups, etc.
     11. Fieldset Actions - styling for the button actions on field sets
     12. Title - markup for styling header titles
     13. Code Editor - styling for code editor
@@ -552,7 +552,6 @@ div.tagsinput {
   text-align: center;
 }
 .taglist .tag {
-  --float: left;
   display: inline-block;
   height: 22px;
   line-height: 18px;
@@ -669,7 +668,7 @@ div.tagsinput .tags_clear {
   z-index: 90;
   list-style: none;
   padding: 12px;
-  background-color: #eeeeee;
+  background-color: #428bca;
   border: 1px solid #d5d5d5;
   min-width: 200px;
   border-radius: 0 0 4px 4px;
@@ -685,14 +684,14 @@ div.tagsinput .tags_clear {
   margin-bottom: 0;
 }
 .tag-wrap .ui-autocomplete li a {
-  color: #333333;
+  color: #ecf0f3;
   text-decoration: none;
   cursor: pointer;
   padding: 4px;
   display: block;
 }
 .tag-wrap .ui-autocomplete li a:hover {
-  background: #e2e2e2;
+  background: #357ebd;
   border-radius: 4px;
 }
 .tag-letterlist {
@@ -870,17 +869,29 @@ div.tagsinput .tags_clear {
 .smartsearch {
   width: 290px;
   margin-top: 6px;
-  font-size: 11px;
-  height: 16px;
   font-size: 12px;
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid #2c2c2c;
-  height: 30px;
   border-radius: 4px;
   padding: 2px 6px;
+  position: relative;
 }
 .smartsearch:focus {
   border-color: #595959;
+}
+.smartsearch .twitter-typeahead {
+  display: block !important;
+  margin-right: 120px;
+}
+.smartsearch .smartsearch-type {
+  width: 120px;
+}
+.smartsearch i {
+  font-size: 16px;
+  margin-top: 6px;
+  float: left;
+  opacity: .6;
+  position: absolute;
 }
 .smartsearch input {
   border: 0;
@@ -888,20 +899,43 @@ div.tagsinput .tags_clear {
   color: #bbbbbb;
   border-radius: 0;
   width: 150px;
-  margin: 0 0 0 6px;
+  margin: 0;
   font-size: 14px;
 }
 .smartsearch input:focus {
   box-shadow: 0 0 0 0;
   outline: 0;
 }
-.smartsearch .dropdown-menu {
-  font-size: 11px;
+.smartsearch .tt-hint {
+  padding: 4px 4px 4px 25px;
+}
+.smartsearch .tt-dropdown-menu {
+  min-width: 290px;
+  margin-left: -6px;
+  border: 0;
+}
+.smartsearch input.searchinput {
+  padding: 4px 4px 4px 25px;
+  color: #bbbbbb;
+  width: 100%;
+}
+.smartsearch .dropdown .navbar-link {
+  text-align: right;
+}
+.smartsearch .dropdown .navbar-link span {
+  padding-right: 4px;
+}
+.smartsearch .dropdown .navbar-link:hover,
+.smartsearch .dropdown .navbar-link:focus {
+  background-color: transparent;
+}
+.smartsearch .dropdown.open .navbar-link {
+  background-color: transparent;
+}
+.smartsearch .dropdown .dropdown-menu {
+  font-size: 12px;
   right: 0;
   left: auto;
-}
-.smartsearch .dropdown-toggle span {
-  padding-right: 4px;
 }
 .smartsearch input:-moz-placeholder {
   color: #7b7b7b;
@@ -1346,15 +1380,15 @@ ul.groupmembers li.member {
   float: left;
   margin-right: 15px;
   margin-bottom: 15px;
-  min-width: 130px;
+  min-width: 140px;
 }
 ul.groupmembers li.member .person-image {
   border: 1px solid #999999;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
-  width: 70px;
-  height: 70px;
+  width: 60px;
+  height: 60px;
 }
 ul.groupmembers li.member h4 {
   font-size: 16px;
@@ -1418,9 +1452,8 @@ ul.rocklist .rocklist-item.selected {
 }
 .tt-dropdown-menu {
   min-width: 200px;
-  margin-top: 2px;
   padding: 12px;
-  background-color: #eeeeee;
+  background-color: #fff;
   border: 1px solid #d5d5d5;
   border-radius: 0 0 4px 4px;
   color: #333333;
@@ -2067,6 +2100,7 @@ td.grid-col-actions {
   margin-left: 8px;
   background-color: #999999;
   color: #ffffff;
+  border-color: #ffffff;
 }
 .grid-actions .btn:hover {
   background-color: #808080;
@@ -2204,21 +2238,21 @@ td.grid-col-actions {
 
 */
 .panel-note {
-  border-color: #d5d5d5;
+  border-color: #e2e2e2;
 }
 .panel-note > .panel-heading {
   color: #333333;
   background-color: #eeeeee;
-  border-color: #eeeeee;
+  border-color: #e2e2e2;
 }
 .panel-note > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #d5d5d5;
+  border-top-color: #e2e2e2;
 }
 .panel-note > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #d5d5d5;
+  border-bottom-color: #e2e2e2;
 }
 .panel-note .panel-body {
-  background-color: #ffffff;
+  background-color: #fffs;
 }
 .panel-note .panel-heading h3 {
   float: left;
@@ -2230,10 +2264,10 @@ td.grid-col-actions {
 }
 .panel-note article {
   border-radius: 4px;
-  border: 1px solid #d5d5d5;
+  border: 1px solid #808080;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #eeeeee;
+  background-color: #999999;
   position: relative;
 }
 .panel-note article .date {
@@ -2243,7 +2277,7 @@ td.grid-col-actions {
 }
 .panel-note article > i {
   position: absolute;
-  color: #d5d5d5;
+  color: #808080;
   width: 28px;
   font-size: 28px;
   margin: 0 12px 0 4px;
@@ -2592,17 +2626,20 @@ table.attribute-grid tr th:nth-child(3) {
   margin-top: -15px;
 }
 .personprofile small {
-  color: #808080;
+  color: #74676a;
 }
 .personprofilebar-bio {
-  background-color: #eeeeee;
-  border-bottom: 1px solid #d5d5d5;
+  background-color: #dbd5cb;
+  border-bottom: 1px solid #c6bdad;
   padding: 15px 15px 0 15px;
+  color: #231f20;
 }
 .personprofilebar-bio .name {
   text-align: center;
+  margin-top: 0;
 }
 .personprofilebar-bio .name .full-name {
+  font-size: 18px;
   display: none;
 }
 .personprofilebar-bio .labels {
@@ -2616,9 +2653,14 @@ table.attribute-grid tr th:nth-child(3) {
   z-index: 10;
   margin-right: -52px;
 }
+.personprofilebar-bio .actions a.btn-action {
+  color: #ecf0f3;
+  background-color: #428bca;
+  border-color: #357ebd;
+}
 .personprofilebar-bio .photo {
   padding: 5px 5px 5px 5px;
-  background-color: #fff;
+  background-color: #999999;
   border: 1px solid #bdbdbd;
   display: table;
   max-width: 200px;
@@ -2628,20 +2670,20 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .photo .following-status {
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   cursor: pointer;
   width: 40px;
   height: 40px;
   z-index: 500;
   border-top: 70px solid #428bca;
-  border-left: 70px solid transparent;
+  border-right: 70px solid transparent;
   transition: 1s;
   opacity: .4;
 }
 .personprofilebar-bio .photo .following-status i {
   position: absolute;
   top: -60px;
-  right: 10px;
+  left: 10px;
   color: #fff;
   font-size: 24px;
   transition: 1s;
@@ -2679,7 +2721,7 @@ table.attribute-grid tr th:nth-child(3) {
   display: inline-block;
 }
 .personprofilebar-bio .social-icons .icon a {
-  color: #ecf0f3;
+  color: #fff;
 }
 .personprofilebar-bio .social-icons .icon a:hover {
   opacity: .6;
@@ -2724,9 +2766,10 @@ table.attribute-grid tr th:nth-child(3) {
   color: #f0ad4e;
 }
 .personprofilebar-badge {
-  background-color: #d5d5d5;
+  background-color: #e3ded7;
   min-height: 64px;
-  border-bottom: 1px solid #bbbbbb;
+  border-bottom: 1px solid #cec5b9;
+  color: #817b72;
 }
 .personprofilebar-badge .badge-group {
   margin: 7.5px 0;
@@ -2768,7 +2811,7 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .badge-attendance ul.badge-attendance-chart li span {
   display: block;
-  background: #428bca;
+  background: #817b72;
   position: absolute;
   bottom: 0;
   width: 8px;
@@ -2909,20 +2952,31 @@ table.attribute-grid tr th:nth-child(3) {
   }
 }
 .personprofilebar-family {
-  background: #d5d5d5;
+  background: #ffffff;
   padding: 12px 0;
-  border-bottom: 1px solid #bbbbbb;
+  border-bottom: 1px solid #e6e6e6;
+  color: #333333;
+  margin-top: 12px;
 }
-.personprofilebar-family .actions {
-  position: absolute;
-  right: 12px;
-  z-index: 999;
+.personprofilebar-family a {
+  color: #333333;
 }
-.personprofilebar-family header {
-  font-size: 16px;
-  margin-bottom: 7.5px;
+.personprofilebar-family .groupmembers .member a {
+  border-radius: 4px;
+  padding: 8px;
+  display: block;
 }
-.personprofilebar-family .person-image {
+.personprofilebar-family .groupmembers .member a:before,
+.personprofilebar-family .groupmembers .member a:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.personprofilebar-family .groupmembers .member a:after {
+  clear: both;
+}
+.personprofilebar-family .groupmembers .member .person-image {
   -webkit-filter: grayscale(100%);
   -moz-filter: grayscale(100%);
   filter: gray;
@@ -2930,10 +2984,28 @@ table.attribute-grid tr th:nth-child(3) {
   filter: url('../../Assets/Images/(desaturate.svg#grayscale');
   transition: .5s;
 }
-.personprofilebar-family .person-image:hover {
+.personprofilebar-family .groupmembers .member:hover {
+  background-color: #ebebeb;
+  border-radius: 4px;
+}
+.personprofilebar-family .groupmembers .member:hover .person-image {
   -webkit-filter: grayscale(0%);
   -moz-filter: grayscale(0%);
   filter: grayscale(0%);
+}
+.personprofilebar-family .actions {
+  position: absolute;
+  right: 12px;
+  z-index: 999;
+}
+.personprofilebar-family .actions a.btn-action {
+  color: #333333;
+  background-color: #d5d5d5;
+  border-color: #c8c8c8;
+}
+.personprofilebar-family header {
+  font-size: 16px;
+  margin-bottom: 7.5px;
 }
 .personprofilebar-family .addresses ul {
   list-style: none;
@@ -3595,7 +3667,7 @@ small {
 a.help {
   margin-left: 6px;
   outline: 0;
-  color: #bbbbbb;
+  color: #86b8cc;
 }
 .control-label {
   font-weight: 700;
@@ -3695,24 +3767,24 @@ a.help {
   background-color: #ffffff;
 }
 .panel-persondetails {
-  border-color: #d5d5d5;
+  border-color: #e2e2e2;
 }
 .panel-persondetails > .panel-heading {
   color: #333333;
   background-color: #eeeeee;
-  border-color: #eeeeee;
+  border-color: #e2e2e2;
 }
 .panel-persondetails > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #d5d5d5;
+  border-top-color: #e2e2e2;
 }
 .panel-persondetails > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #d5d5d5;
+  border-bottom-color: #e2e2e2;
 }
 .panel-persondetails .panel-heading .actions a {
   margin-left: 4px;
 }
 .panel-persondetails .panel-body {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .panel-persondetails .panel-body .form-group.static-control {
   margin-bottom: 2px;
@@ -3739,6 +3811,39 @@ a.help {
   padding-top: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.panel-block {
+  border-color: #e2e2e2;
+  border-top-color: #d5d5d5;
+}
+.panel-block > .panel-heading {
+  color: #333333;
+  background-color: #eeeeee;
+  border-color: #e2e2e2;
+}
+.panel-block > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #e2e2e2;
+}
+.panel-block > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #e2e2e2;
+}
+.panel-block .panel-heading {
+  background-color: #eeeeee;
+}
+.panel-block .panel-heading i {
+  color: #6a6a6a;
+}
+.panel-block .panel-body .grid.grid-panel {
+  margin: -15px;
+}
+.panel-block .panel-body .grid.grid-panel .grid-filter {
+  border-radius: 0;
+}
+.panel-block .panel-body .grid.grid-panel .table-bordered {
+  border: 1px 0 0 0;
+}
+.panel-block .panel-body .grid.grid-panel .table-bordered > tfoot > tr > td {
+  border: 0px;
 }
 .btn.aspNetDisabled {
   cursor: not-allowed;

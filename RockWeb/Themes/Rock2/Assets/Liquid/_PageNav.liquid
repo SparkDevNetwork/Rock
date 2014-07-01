@@ -6,11 +6,12 @@
 			{% else %}
 				<li>
 			{% endif %}
-				<a href="{{ childPage.url }}"><i class="{{ childPage.icon-css-class }}"></i> <span>{{ childPage.title }}</span></a>
+				<i class="{{ childPage.icon-css-class }}"></i>
 
 				{% if childPage.display-child-pages == 'true' and childPage.pages != empty %}
                     <ul class="nav nav-childpages">
-                        {% for grandchildPage in childPage.pages %}
+                        <li class="title">{{ childPage.title }}</li>
+						{% for grandchildPage in childPage.pages %}
                             <li class="header">{{ grandchildPage.title }}</li>
                             {% if grandchildPage.display-child-pages == 'true' %}
                                 {% for greatgrandchildPage in grandchildPage.pages %}
@@ -18,7 +19,6 @@
                                         <a role="menu-item" href="{{ greatgrandchildPage.url }}">{{ greatgrandchildPage.title }}</a>
                                     </li>
                                 {% endfor %}
-                                <li class="divider"></li>
                             {% endif %}
                         {% endfor %}
                     </ul>

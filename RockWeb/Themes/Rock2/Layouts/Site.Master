@@ -39,6 +39,7 @@
     
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js", true) %>"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -154,34 +155,41 @@
     </form>
 
     <script>
+        Sys.Application.add_load( function () {
+            $('.navbar-side > li').hover(function () {
+                $(this).doTimeout('hover', 250, 'addClass', 'open');
+            }, function () {
+                $(this).doTimeout('hover', 250, 'removeClass', 'open');
+            });
+        });
+
+
         $(document).ready(function () {
 
-            // minimize sidebar nav button
+            // enable sidbar sub menus
+            $('.navbar-side li').click(function () {
+                $('.navbar-side li').removeClass('open');
+                $(this).addClass('open');
+            });
+
+            
+            
+
+            
+            $('#content-wrapper').click(function () {
+                $('.navbar-side li').removeClass('open');
+            });
+            
+
+            // show/hide sidebar nav 
             $('.navbar-minimize').click(function () {
-                $('body').toggleClass('navbar-side-minimized');
-                $('.navbar-side > li .nav-childpages').removeAttr('style');
-                $('.navbar-side > li').removeClass('open');
+                if ($('body').hasClass('navbar-side-open') || $('body').hasClass('navbar-side-close')) {
+                    $('body').toggleClass('navbar-side-open navbar-side-close');
+                } else {
+                    $('body').addClass('navbar-side-close');
+                }  
             });
 
-            // show child menus
-            $('.navbar-side > li > a').click(function () {
-
-                if (!$('body').hasClass('navbar-side-minimized')) {
-                    var selectedItem = $(this).closest('li');
-
-                    if ($(selectedItem).hasClass('open')) {
-                        $(selectedItem).removeClass('open');
-                        $(selectedItem).find('.nav-childpages').slideUp();
-                    } else {
-                        $(".navbar-side > li.open  .nav-childpages").slideUp();
-                        $(".navbar-side > li").removeClass('open');
-
-                        $(selectedItem).addClass('open');
-                        $(selectedItem).find('.nav-childpages').slideDown();
-                    }
-                }
-                return false;
-            });
 
         });
     </script>
