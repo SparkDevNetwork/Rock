@@ -10,7 +10,7 @@
     7. Pagelist Nav - Pill nav of pages
     8. Tags - component that allows you to tag entities
     9. Switch - uses the Bootstrap Switch component
-    10. Smart Searh - search at th top of the page for searching people, groups, etc.
+    10. Smart Search - search at th top of the page for searching people, groups, etc.
     11. Fieldset Actions - styling for the button actions on field sets
     12. Title - markup for styling header titles
     13. Code Editor - styling for code editor
@@ -502,7 +502,6 @@ div.tagsinput
     text-align: center;
 
     .tag {
-        --float: left;
         display: inline-block;
         height: 22px;
         line-height: 18px;
@@ -643,7 +642,7 @@ div.tagsinput
         z-index: 90;
         list-style: none;
         padding: 12px;
-        background-color: @accent-light-color;
+        background-color: @accent-bold-color;
         border: 1px solid darken(@accent-light-color, 10%);
         min-width: 200px;
         border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -660,14 +659,14 @@ div.tagsinput
             }
             
             a {
-                color:@accent-light-text-color;
+                color:@accent-bold-text-color;
                 text-decoration: none;
                 cursor: pointer;
                 padding: 4px;
                 display: block;
 
                 &:hover {
-                    background: darken(@accent-light-color, 5%);
+                    background: darken(@accent-bold-color, 5%);
                     border-radius: 4px;
                 }
             }  
@@ -888,17 +887,32 @@ div.tagsinput
 .smartsearch {
 	width: 290px;
 	margin-top: 6px;
-	font-size: 11px;
-	height: 16px;
 	font-size: 12px;
 	background-color: @smartsearch-bg;
 	border: 1px solid @smartsearch-border-color;
-    height: 30px;
     border-radius: @border-radius-base;
     padding: 2px 6px;
+    position: relative;
 
     &:focus {
         border-color: #595959;
+    }
+
+    .twitter-typeahead {
+        display: block !important;
+        margin-right: 120px;
+    }
+
+    .smartsearch-type {
+        width: 120px;
+    }
+
+    i {
+        font-size: 16px;
+        margin-top: 6px;
+        float: left;
+        opacity: .6;
+        position: absolute;
     }
 
     input {
@@ -907,7 +921,7 @@ div.tagsinput
 	    color: @smartsearch-input-text-color;
 	    border-radius: 0;
 	    width: 150px;
-        margin: 0 0 0 6px;
+        margin: 0;
         font-size: 14px;
 
         &:focus {
@@ -916,15 +930,50 @@ div.tagsinput
         }
     }
     
-    .dropdown-menu { // smart search type menu
-        font-size: 11px;
-        right: 0;
-        left: auto;
+    .tt-hint {
+        padding: 4px 4px 4px 25px;
     }
 
-    .dropdown-toggle span {
-        padding-right: 4px;
+    .tt-dropdown-menu {
+        min-width: 290px;
+        margin-left: -6px;
+        border: 0;
     }
+
+    input.searchinput {
+        padding: 4px 4px 4px 25px;
+        color: @header-text-color;
+        width: 100%;
+    }
+
+    .dropdown {
+        
+        .navbar-link {
+            text-align: right;
+            
+            span {
+                padding-right: 4px;
+            }
+
+            &:hover,
+            &:focus {
+                background-color: transparent;
+            }
+        }
+
+        &.open {
+            .navbar-link {
+                background-color: transparent;
+            }
+        }
+
+        .dropdown-menu { // smart search type menu
+            font-size: 12px;
+            right: 0;
+            left: auto;
+        }
+    }
+    
 }
 
 .smartsearch input:-moz-placeholder {
@@ -1463,15 +1512,15 @@ ul.groupmembers {
         float: left;
         margin-right: @spacing-md-px;
         margin-bottom: @spacing-md-px;
-        min-width: 130px;
+        min-width: 140px;
 
         .person-image {
             border: 1px solid @accent-semibold-color;
             float: left;
             margin-right: 7.5px;
             display: inline-block;
-            width: 70px;
-            height: 70px; 
+            width: 60px;
+            height: 60px; 
         }
 
         h4 {
@@ -1568,9 +1617,8 @@ ul.rocklist {
 
 .tt-dropdown-menu {
   min-width: 200px;
-  margin-top: 2px;
   padding: 12px;
-  background-color: @accent-light-color;
+  background-color: #fff;
   border: 1px solid darken(@accent-light-color, 10%);
   border-radius: 0 0 @border-radius-base @border-radius-base;
   color: @accent-light-text-color;

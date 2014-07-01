@@ -62,7 +62,7 @@
 /*
     Rock Theme Styles
 
-    1. Theme Variables
+    1. 
     2. HTML Overrides
     3. Bootstrap Overides
     4. Rock Overrides
@@ -75,10 +75,9 @@
 */
 
 /*#region  
-// 1. Theme Variables        */
+// 1.         */
 // -------------------------
-@sidebar-bg:     #3a3a3a;
-@sidebar-text-color: #bbb;
+
 /*#endregion */
 
 
@@ -91,7 +90,7 @@ main {
 }
 
 body {
-    background-color: @sidebar-bg;
+    background-color: @accent-bold-color;
 }
 
 h1, h2, h3, h4 {
@@ -120,48 +119,16 @@ a:hover {
 .panel {
     border-radius: 0;
     border-top-width: 0;
-    border-color: darken(@accent-color, 10%);
-    border-top: 3px solid @gray-lighter;
+    border-color: darken(@gray-lighter, 10%);
+    border-top: 3px solid @accent-color;
 
     .panel-heading {
         padding: 6px 10px;
-        border-color: @gray-lighter;
+        border-color: darken(@gray-lighter, 5%);
         border-radius: 0;
 
-        i {
+        h3 > i {
             margin-right: 4px;
-        }
-    }
-}
-
-.panel-block {
-    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
-    .panel-variant(darken(@accent-color, 5%); @accent-text-color; @accent-color; darken(@accent-color, 5%););
-
-    .panel-heading {
-        background-color: #efefef;
-
-        i {
-            color: #6a6a6a;
-        }
-    }
-
-    .panel-body {
-        
-        .grid.grid-panel {
-            margin: -15px;
-
-            .grid-filter {
-                border-radius: 0;
-            }
-
-            .table-bordered {
-                border: 0;
-                
-                & > tfoot > tr > td {
-                    border: 0px;
-                }
-            }
         }
     }
 }
@@ -174,38 +141,19 @@ a:hover {
 // -------------------------
 
 .smartsearch {
-    margin: 12px 8px 12px 0;
+    margin: 12px 4%;
     border: 0;
-    background-color: transparent;
+    background-color: lighten(@accent-bold-color, 5%);
+    width: 92%;
 
     input.searchinput {
-        padding: 4px;
-        color: @header-text-color;
+        color: @accent-bold-text-color;
     }
-
-    input.searchinput:hover,
-    input.searchinput:focus {
-        background-color: rgba(255, 255, 255, 0.15) !important;
-    }
-
-    &:before {
-        content: @fa-var-search;
-        font-family: FontAwesome;
-        position: absolute;
-        left: 0;
-        top: 17px;
-        font-size: 14px;
-        margin-left: -12px;
-        opacity: .5;
-    }
-}
-
-.page-icon {
-    display: inline;
-    color: #6a6a6a;
 }
 
 .loginstatus {
+    margin-right: 2px;
+    
     .profile-photo {
         height: 35px;
         width: 35px;
@@ -217,6 +165,25 @@ a:hover {
         margin: -8px 4px 0 0;
     }
 }
+
+.rock-modal { 
+    .modal-header {
+        background-color: @accent-bold-color;
+        color: @accent-bold-text-color;
+
+        small, 
+        .close {
+            color: darken(@accent-bold-text-color, 20%);
+        }
+    }
+}
+
+.personprofilebar-bio .actions a.btn-action {
+    background-color: @accent-blue;
+    color: #fff;
+    border: 1px solid darken(@accent-blue, 5%);
+}
+
 /*#endregion */
 
 
@@ -237,8 +204,9 @@ a:hover {
 
     header {
         .navbar-default {
-            background-color: @gray-lighter;
-            border-color: darken(@gray-lighter, 5%);
+            background-color: @accent-bold-color;
+            border-color: darken(@accent-bold-color, 5%);
+            color: @accent-bold-text-color;
 
             .navbar-header {
                 padding: 8px 0 0 12px;
@@ -256,15 +224,37 @@ a:hover {
                     width: 100%;
 
                     .rock-logo {
-                        fill: #999;
+                        fill: #d3cec5;
                     }
                 }
             }
+
+            .navbar-zone-header {
+                width: 100%;
+            }
+
+            .navbar-nav > .open > a, 
+            .navbar-nav > .open > a:hover, 
+            .navbar-nav > .open > a:focus {
+                background-color: lighten(@accent-bold-color, 5%);
+            }
+
+            .navbar-nav > li > a {
+                color: @accent-bold-text-color;
+            }
+
+            .dropdown-menu {
+                li.divider {
+                    background-color: lighten(@accent-bold-color, 5%);
+                }
+            }
+
         }
     }
 
     #page-title {
-        background-color: #fff;
+        background-color: @accent-color;
+        color: @accent-text-color;
         padding: 15px;
 
         h1 {
@@ -272,12 +262,26 @@ a:hover {
             font-size: 24px;
             font-weight: @font-weight-light;
             letter-spacing: -1px;
+
+            .page-icon {
+                display: inline;
+                color: lighten(@accent-text-color, 10%);
+            }
+
         }
 
         .breadcrumb {
             background: none;
             padding: 0;
-            margin: 0 0 0 34px;
+            margin: 0;
+
+            > .active {
+                color: lighten(@accent-text-color, 30%);
+            }
+
+            li + li:before {
+                color: lighten(@accent-text-color, 30%);
+            }
         }
     }
 
@@ -329,15 +333,10 @@ a:hover {
 // 6. Utilities              */
 // -------------------------
 
-.divided {
-    position: relative;
-    margin-right: 6px;    
-}
-
 .navbar-minimize {
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
-    border: 1px solid darken(@accent-bold-color, 5%);
+    background-color: @btn-primary-bg;
+    color: @btn-primary-color;
+    border: none;
     padding: 4px 12px;
     border-radius: 4px;
     cursor: pointer;
@@ -362,33 +361,48 @@ a:hover {
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
 
-    header {
-        .navbar-default {
-            
-            .navbar-mobile-logo {
-                display: none;
+    #content-wrapper {
+        header {
+            .navbar-default {
+                height: @navbar-height;
+                background-color: @header-bg;
+                border-color: darken(@header-bg, 5%);
+                color: @header-text-color;
+
+                .navbar-mobile-logo {
+                    display: none;
+                }
+
+                .navbar-zone-header {
+                    width: inherit;
+                }
+
+                & .navbar-nav > .open > a, 
+                & .navbar-nav > .open > a:hover, 
+                & .navbar-nav > .open > a:focus {
+                    background-color: darken(@accent-semibold-color, 5%);
+                }
+
+                & .navbar-nav > li > a {
+                    color: @accent-semibold-text-color;
+                }
+
+                .dropdown-menu {
+                    li.divider {
+                        background-color: @gray-light;
+                    }
+                }
             }
         }
-    }
     
-    .smartsearch {
-        margin: 10px 8px 10px 0;
-    }
+        .smartsearch {
+            margin: 9px 8px 9px 0;
+            width: 290px;
+            background-color: darken(@header-bg, 3%);
 
-    .divided {  
-
-        &:after {
-            content: "";
-            display: inline-block;
-            width: 1px;
-            height: 30px;
-            background-color: rgba(0, 0, 0, 0.15);
-            margin-top: 7px;
-            margin-left: -3px;
-            vertical-align: top;
-            position: absolute;
-            top: 6px;
-            right: 0;
+            input.searchinput {
+                color: @header-text-color;
+            }
         }
     }
 
@@ -408,15 +422,16 @@ a:hover {
 
 // base styles
 .navbar-static-side {
-    background-color: @sidebar-bg;
-    color: @sidebar-text-color;
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
     display: none;
     position: absolute;
+    width: 70px;
 
     .navbar-header {
-        height: 51px;
+        height: @navbar-height;
         width: 100%;
-        background-color: darken(@sidebar-bg, 5%);
+        background-color: darken(@accent-bold-color, 5%);
 
         .logo {
             background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
@@ -430,204 +445,114 @@ a:hover {
     .navbar-side {
         margin-top: 24px;
         display: inline-block;
-        width: 100%;
+        width: 100%;    
 
         & > li {
             text-align: center;
+            margin-top: 0;
 
-            a {
-                color: @sidebar-text-color;
+            > i {
+                padding: 11px 0;
+                font-size: 24px;
+                color: @accent-bold-text-color;
+                display: block;
                 
                 &:hover {
-                    background-color: darken(@sidebar-bg, 3%);
+                    background-color: lighten(@accent-bold-color, 5%);
                 }
             }
 
-            & > a {
-                i {
-                    font-size: 24px;
-                }
-            
-                span {
-                    display: none;
-                }
+            &.open {
+                background-color: lighten(@accent-bold-color, 5%);
             }
 
             .nav-childpages {
+                top: 0;
+                left: 70px;
+                position: absolute;
+                z-index: 9999;
+                background-color: lighten(@accent-bold-color, 5%);
                 display: none;
-      
+                font-size: 14px;
+                width: 220px;
+                text-align: left;
+                padding: 9px 12px;
+
                 li a {
                     line-height: 1.1em;
                     padding: 6px;
+                    color: @accent-bold-text-color;
+
+                    &:hover {
+                        background-color: darken(@accent-bold-color, 5%);
+                    } 
+                }
+
+                li.title {
+                    font-size: 18px;
+                    font-weight: @font-weight-bold;
                 }
 
                 li.header {
                     margin-top: 14px;
-                    color: darken(@sidebar-text-color, 20%);
+                    color: darken(@accent-bold-text-color, 20%);
                     margin-left: 4px;
+                    font-weight: @font-weight-semibold;
+                    padding-bottom: 2px;
+                    border-bottom: 1px solid lighten(@accent-bold-color, 10%);
+                }
+
+                li.header:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        > li.open {
+            .nav-childpages {
+                display: block;
+
+                li.header {
+                    padding-left: 0;
                 }
             }
         }
     }
+   
 }
 
 // expanded view 
 @media (min-width: @screen-md-min) {
 
     .navbar-static-side {
-        width: 200px;
         display: block;
-
-        .navbar-header {
-            .logo {
-                background: url(../../../Assets/Images/rock-logo.svg) no-repeat top left;
-                width: 95px;
-                background-size: contain;
-            }
-        }
-
-        .navbar-side {
-
-            & > li {
-                text-align: left;
-                display: inline-block;
-                width: 100%;
-                margin-top: 0;
-
-                &.open {
-                    background-color: darken(@sidebar-bg, 5%);
-
-                    > a {
-                        background-color: darken(@sidebar-bg, 5%);
-                    }
-                }
-
-                & > a {
-                    padding-left: 24px;
-
-                    i {
-                        font-size: 14px;
-                        margin-right: 4px;
-                    }
-            
-                    span {
-                        display: inline;
-                    }
-
-                    &:after {
-                        content: @fa-var-chevron-left;//@fa-var-chevron-down;
-                        font-family: FontAwesome;
-                        position: absolute;
-                        right: 12px;
-                        top: 12px;
-                        font-size: 10px;
-                    }
-                }
-
-                &.open {
-                    & > a {
-                        &:after {
-                            content: @fa-var-chevron-down;
-                        }
-                    }
-                }
-
-                .nav-childpages {
-                    margin-bottom: 12px;
-
-                    li.header {
-                        margin-left: 24px;
-                    }
-
-                    li a {
-                        padding-left: 24px;
-                    }
-                }
-            }
-
-            
-        }
-    }
-
-    #content-wrapper {
-        margin-left: 200px;
-    }
-}
-
-// minimized view
-body.navbar-side-minimized {
-
-    .navbar-static-side {
-        width: 70px;
-        display: block;
-
-        .navbar-header {
-
-            .logo {
-                background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
-                height: 35px;
-                width: 36px;
-                background-size: contain;
-                margin: 8px auto 0;
-            }
-        }
-
-        .navbar-side {
-
-            & > li {
-                text-align: center;
-
-                & > a {
-                    padding: 10px 0;
-
-                    i {
-                        font-size: 24px;
-                    }
-            
-                    span {
-                        display: none;
-                    }
-
-                    &:after {
-                        content: none;
-                    }
-                }
-
-                .nav-childpages {
-                    top: 0;
-                    left: 70px;
-                    position: absolute;
-                    z-index: 9999;
-                    background-color: @sidebar-bg;
-                    display: none;
-                    font-size: 14px;
-                    width: 220px;
-                    text-align: left;
-                    padding: 9px 12px;
-
-                    li.header:first-child {
-                        margin-top: 0;
-                    }
-                }
-            }
-
-            & > li:hover {
-                .nav-childpages {
-                    display: block;
-
-                    li.header {
-                        padding-left: 0;
-                    }
-                }
-            }
-
-            
-        }
     }
 
     #content-wrapper {
         margin-left: 70px;
     }
+}
+
+// minimized view
+body.navbar-side-open {
+    .navbar-static-side {
+        width: 70px;
+        display: block;
+    }
+
+    #content-wrapper {
+        margin-left: 70px;
+    } 
+}
+
+body.navbar-side-close {
+    .navbar-static-side {
+        display: none;
+    }
+
+    #content-wrapper {
+        margin-left: 0;
+    } 
 }
 /*#endregion */
 

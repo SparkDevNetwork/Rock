@@ -87,7 +87,7 @@ small
 a.help {
     margin-left: 6px;
     outline: 0;
-    color: @header-text-color;
+    color: @help-color;
 }
 
 // 4. Bootstrap Overrides
@@ -213,7 +213,7 @@ a.help {
 }
 
 .panel-persondetails {
-    .panel-variant(darken(@accent-light-color, 10%) ; @accent-light-text-color; @accent-light-color; @accent-light-color;);
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
 
     .panel-heading {
         .actions {
@@ -224,7 +224,7 @@ a.help {
     }
 
     .panel-body {
-        background-color: @body-bg;
+        background-color: #fff;
 
         .form-group.static-control {
             .clearfix();
@@ -243,6 +243,40 @@ a.help {
                 padding-top: 0;
                 overflow: hidden;
                 text-overflow: ellipsis;
+            }
+        }
+    }
+}
+
+.panel-block {
+    //.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;)
+    .panel-variant(darken(@gray-lighter, 5%); @text-color; @gray-lighter; darken(@gray-lighter, 5%););
+
+    border-top-color: @accent-color;
+
+    .panel-heading {
+        background-color: @gray-lighter;
+
+        i {
+            color: #6a6a6a;
+        }
+    }
+
+    .panel-body {
+        
+        .grid.grid-panel {
+            margin: -15px;
+
+            .grid-filter {
+                border-radius: 0;
+            }
+
+            .table-bordered {
+                border: 1px 0 0 0;
+                
+                & > tfoot > tr > td {
+                    border: 0px;
+                }
             }
         }
     }

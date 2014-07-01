@@ -140,7 +140,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
                     else
                     {
-                        lName.Text = String.Format( "{0} <span class='full-name'>({1})</span> {2}", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
+                        lName.Text = String.Format( "{0} {2} <span class='full-name'>({1})</span>", Person.NickName.FormatAsHtmlTitle(), Person.FirstName, Person.LastName );
                     }
 
                     // Setup Image

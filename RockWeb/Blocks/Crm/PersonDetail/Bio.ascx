@@ -27,7 +27,7 @@
                         <span>Actions</span>
                         <b class="caret"></b>
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu dropdown-menu-right">
                         <asp:Literal ID="lActions" runat="server" />
                     </ul>
                 </li>
