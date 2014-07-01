@@ -61,6 +61,9 @@ namespace Rock.Client
         public int /* WorkflowLoggingLevel*/ LoggingLevel { get; set; }
 
         /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

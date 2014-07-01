@@ -31,10 +31,13 @@ namespace Rock.Client
     public partial class FinancialTransactionDetail
     {
         /// <summary />
-        public int TransactionId { get; set; }
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public int AccountId { get; set; }
+
+        /// <summary />
+        public int TransactionId { get; set; }
 
         /// <summary />
         public bool IsNonCash { get; set; }
@@ -44,9 +47,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Summary { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public int? EntityId { get; set; }

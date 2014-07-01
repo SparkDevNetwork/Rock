@@ -31,9 +31,6 @@ namespace Rock.Client
     public partial class Page
     {
         /// <summary />
-        public int LayoutId { get; set; }
-
-        /// <summary />
         public string InternalName { get; set; }
 
         /// <summary />
@@ -47,6 +44,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int LayoutId { get; set; }
 
         /// <summary />
         public bool RequiresEncryption { get; set; }

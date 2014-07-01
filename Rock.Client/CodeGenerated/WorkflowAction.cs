@@ -43,6 +43,9 @@ namespace Rock.Client
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
+        public string FormAction { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

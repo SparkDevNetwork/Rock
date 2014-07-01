@@ -26,33 +26,27 @@ using System;
 namespace Rock.Client
 {
     /// <summary>
-    /// Data Transfer Object for History object
+    /// Data Transfer Object for WorkflowActionForm object
     /// </summary>
-    public partial class History
+    public partial class WorkflowActionForm
     {
         /// <summary />
-        public int EntityTypeId { get; set; }
+        public int? NotificationSystemEmailId { get; set; }
 
         /// <summary />
-        public int? RelatedEntityTypeId { get; set; }
+        public bool IncludeActionsInNotification { get; set; }
 
         /// <summary />
-        public bool IsSystem { get; set; }
+        public string Header { get; set; }
 
         /// <summary />
-        public int CategoryId { get; set; }
+        public string Footer { get; set; }
 
         /// <summary />
-        public int EntityId { get; set; }
+        public string Actions { get; set; }
 
         /// <summary />
-        public string Caption { get; set; }
-
-        /// <summary />
-        public string Summary { get; set; }
-
-        /// <summary />
-        public int? RelatedEntityId { get; set; }
+        public Guid? ActionAttributeGuid { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

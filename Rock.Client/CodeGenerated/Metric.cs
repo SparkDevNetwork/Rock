@@ -31,6 +31,9 @@ namespace Rock.Client
     public partial class Metric
     {
         /// <summary />
+        public int? EntityTypeId { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -74,9 +77,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? LastRunDateTime { get; set; }
-
-        /// <summary />
-        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public DateTime? CreatedDateTime { get; set; }

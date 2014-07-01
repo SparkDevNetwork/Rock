@@ -58,6 +58,9 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public string HighlightColor { get; set; }
+
+        /// <summary />
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary />

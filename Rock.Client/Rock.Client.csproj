@@ -103,6 +103,7 @@
     <Compile Include="CodeGenerated\PersonBadge.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
     <Compile Include="CodeGenerated\PhoneNumber.cs" />
+    <Compile Include="CodeGenerated\PluginMigration.cs" />
     <Compile Include="CodeGenerated\PrayerRequest.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />
@@ -119,6 +120,8 @@
     <Compile Include="CodeGenerated\UserLogin.cs" />
     <Compile Include="CodeGenerated\Workflow.cs" />
     <Compile Include="CodeGenerated\WorkflowAction.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionForm.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormAttribute.cs" />
     <Compile Include="CodeGenerated\WorkflowActionType.cs" />
     <Compile Include="CodeGenerated\WorkflowActivity.cs" />
     <Compile Include="CodeGenerated\WorkflowActivityType.cs" />
