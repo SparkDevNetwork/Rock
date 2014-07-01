@@ -69,6 +69,8 @@ namespace RockWeb.Blocks.Security
                 var currentUser = CurrentUser;
                 phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
                 lbLoginLogout.Text = "Logout";
+
+                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", currentPerson.PhotoUrl ) );
             }
             else
             {
