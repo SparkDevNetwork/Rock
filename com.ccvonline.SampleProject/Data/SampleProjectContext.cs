@@ -44,6 +44,9 @@ namespace com.ccvonline.SampleProject.Data
         /// </remarks>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+            // we don't want this context to create a database or look for EF Migrations, do set the Initializer to null
+            Database.SetInitializer<SampleProjectContext>( new NullDatabaseInitializer<SampleProjectContext>() );
+
             Rock.Data.ContextHelper.AddConfigurations( modelBuilder );
             modelBuilder.Configurations.AddFromAssembly( System.Reflection.Assembly.GetExecutingAssembly() );
         }
