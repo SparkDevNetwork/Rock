@@ -388,6 +388,16 @@ namespace Rock.Rest.Controllers
 
             return result;
         }
+
+        /// <summary>
+        /// Deletes the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public override void Delete( int id )
+        {
+            // we don't want to support DELETE on a Person in ROCK (especially from REST).  So, return a MethodNotAllowed.
+            throw new HttpResponseException( System.Net.HttpStatusCode.MethodNotAllowed );
+        }
     }
 
     /// <summary>
