@@ -98,6 +98,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             _configuredMode = GetAttributeValue( "Mode" );
 
+            Page.Form.DefaultButton = lbSearch.UniqueID;
+            Page.Form.DefaultFocus = tbSearch.UniqueID;
+
             RegisterStartupScript();
         }
 
@@ -118,7 +121,19 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( !Page.IsPostBack )
             {
-                CurrentNavPath = GetUserPreference( "CurrentNavPath" );
+                // Check for requested location/group
+                int? locationId = PageParameter( "Location" ).AsIntegerOrNull();
+                int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
+                if (locationId.HasValue && groupId.HasValue)
+                {
+                    CurrentNavPath = BuildCurrentPath( locationId.Value, groupId.Value );
+                }
+
+                if ( string.IsNullOrWhiteSpace( CurrentNavPath ) )
+                {
+                    CurrentNavPath = GetUserPreference( "CurrentNavPath" );
+                }
+
                 SetChartOptions();
                 BuildNavigationControls();
             }
@@ -157,7 +172,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var activeScheduleIds = new List<int>();
             foreach (var schedule in schedules)
             {
-                if (  schedule.IsScheduleActive || schedule.IsCheckInActive )
+                if (  schedule.IsScheduleOrCheckInActive )
                 {
                     activeScheduleIds.Add( schedule.Id );
                 }
@@ -204,7 +219,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     Name = "",
                     PhotoId = null,
                     LastCheckin = g.Max( a => a.StartDateTime ),
-                    CheckedInNow = false
+                    CheckedInNow = false,
+                    GroupName = ""
                 } );
 
             // Do the person search
@@ -226,7 +242,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     p.NickName + " " + p.LastName ),
                                 PhotoId = p.PhotoId,
                                 LastCheckin = c.LastCheckin,
-                                CheckedInNow = currentAttendeeIds.Contains( p.Id )
+                                CheckedInNow = currentAttendeeIds.Contains( p.Id ),
+                                GroupName = ""
                             } )
                         .DefaultIfEmpty(
                             new PersonResult
@@ -238,10 +255,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     p.NickName + " " + p.LastName ),
                                 PhotoId = p.PhotoId,
                                 LastCheckin = null,
-                                CheckedInNow = false
+                                CheckedInNow = false,
+                                GroupName = ""
                             } ) )
                 .SelectMany( a => a )
-                .OrderBy( a => a.CheckedInNow )
+                .OrderByDescending( a => a.CheckedInNow )
                 .ThenByDescending( a => a.LastCheckin )
                 .ThenBy( a => a.Name )
                 .ToList();
@@ -398,6 +416,59 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
+        private string BuildCurrentPath(int locationId, int groupId)
+        {
+            var location = NavData.Locations.Where( l => l.Id == locationId ).FirstOrDefault();
+            var group = NavData.Groups.Where( g => g.Id == groupId ).FirstOrDefault();
+
+            if ( location != null && group != null )
+            {
+                var pathParts = new List<string>();
+
+                if ( _configuredMode == "T" )
+                {
+                    pathParts.Add( "L" + location.Id.ToString() );
+                    pathParts.Add( "G" + group.Id.ToString() );
+                    var groupType = NavData.GroupTypes.Where( t => t.Id == group.GroupTypeId ).FirstOrDefault();
+                    while ( groupType != null )
+                    {
+                        pathParts.Add( "T" + groupType.Id.ToString() );
+                        if ( groupType.ParentId.HasValue )
+                        {
+                            groupType = NavData.GroupTypes.Where( t => t.Id == groupType.ParentId.Value ).FirstOrDefault();
+                        }
+                        else
+                        {
+                            groupType = null;
+                        }
+                    }
+                }
+                else
+                {
+                    while ( location != null )
+                    {
+                        pathParts.Add( "L" + location.Id.ToString() );
+                        if ( location.ParentId.HasValue )
+                        {
+                            location = NavData.Locations.Where( l => l.Id == location.ParentId.Value ).FirstOrDefault();
+                        }
+                        else
+                        {
+                            location = null;
+                        }
+                    }
+                }
+
+                if (pathParts.Any())
+                {
+                    pathParts.Reverse();
+                    return pathParts.AsDelimited( "|" );
+                }
+            }
+
+            return string.Empty;
+        }
+
         private void SetChartOptions()
         {
             var options = new ChartOptions();
@@ -534,7 +605,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     var activeSchedules = new List<int>();
                     foreach ( var schedule in schedules )
                     {
-                        if ( schedule.WasScheduleActive(timeOffset) || schedule.WasCheckInActive(timeOffset) )
+                        if ( schedule.WasScheduleOrCheckInActive(timeOffset) )
                         {
                             activeSchedules.Add( schedule.Id );
                         }
@@ -835,7 +906,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         foreach ( var schedule in new ScheduleService( rockContext ).Queryable()
                             .Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                         {
-                            if ( schedule.IsScheduleActive || schedule.IsCheckInActive )
+                            if ( schedule.IsScheduleOrCheckInActive )
                             {
                                 activeSchedules.Add( schedule.Id );
                             }
@@ -843,7 +914,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                         var dayStart = RockDateTime.Today;
                         var now = RockDateTime.Now;
-                        var attendees = new AttendanceService( rockContext ).Queryable()
+                        var attendees = new AttendanceService( rockContext ).Queryable( "Group" )
                             .Where( a =>
                                 a.ScheduleId.HasValue &&
                                 a.GroupId.HasValue &&
@@ -865,7 +936,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 Guid = a.Person.Guid,
                                 Name = a.Person.FullName,
                                 Gender = a.Person.Gender,
-                                PhotoId = a.Person.PhotoId
+                                PhotoId = a.Person.PhotoId,
+                                GroupName = a.Group.Name
                             } );
 
                         rptPeople.Visible = true;
@@ -1020,6 +1092,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public int? PhotoId { get; set; }
             public DateTime? LastCheckin { get; set; }
             public bool CheckedInNow { get; set; }
+            public string GroupName { get; set; }
         }
 
         #endregion

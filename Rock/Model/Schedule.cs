@@ -226,6 +226,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a value indicating whether this schedule (or it's check-in window) is currently active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsScheduleOrCheckInActive
+        {
+            get
+            {
+                return WasScheduleOrCheckInActive( DateTimeOffset.Now );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -509,6 +523,57 @@ namespace Rock.Model
                 if ( checkInEndDateCompare == 0 && time.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds )
                 {
                     // Same day, but end time has passed
+                    return false;
+                }
+
+                var occurrences = calEvent.GetOccurrences( time.Date );
+                return occurrences.Count > 0;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns value indicating if check-in was active at a current time for this schedule.
+        /// </summary>
+        /// <param name="time">The time.</param>
+        /// <returns></returns>
+        public bool WasScheduleOrCheckInActive( DateTimeOffset time )
+        {
+            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( time.DateTime ) > 0 )
+            {
+                return false;
+            }
+
+            if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( time.DateTime ) < 0 )
+            {
+                return false;
+            }
+
+            var calEvent = this.GetCalenderEvent();
+
+            if ( calEvent != null && calEvent.DTStart != null )
+            {
+                var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                
+                var startSeconds = time.TimeOfDay.TotalSeconds;
+                if ( startSeconds < checkInStart.TimeOfDay.TotalSeconds &&
+                    startSeconds < calEvent.DTStart.TimeOfDay.TotalSeconds )
+                {
+                    return false;
+                }
+
+                var checkInEnd = calEvent.DTEnd;
+                if ( CheckInEndOffsetMinutes.HasValue )
+                {
+                    checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
+                }
+
+                int checkInEndDateCompare = checkInEnd.Date.CompareTo( checkInStart.Date );
+                if ( time.TimeOfDay.TotalSeconds > calEvent.DTEnd.TimeOfDay.TotalSeconds &&
+                    ( checkInEndDateCompare < 0 || 
+                    ( checkInEndDateCompare == 0 && time.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds ) ) )
+                {
                     return false;
                 }
 

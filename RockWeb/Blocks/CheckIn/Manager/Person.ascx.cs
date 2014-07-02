@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -33,6 +35,8 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Person Profile" )]
     [Category( "Check-in > Manager" )]
     [Description( "Displays person and details about recent check-ins." )]
+
+    [LinkedPage("Manager Page", "Page used to manage check-in locations")]
     public partial class Stark : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -62,6 +66,8 @@ namespace RockWeb.Blocks.Utility
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
+
+            gHistory.RowDataBound += gHistory_RowDataBound;
         }
 
         /// <summary>
@@ -101,6 +107,23 @@ namespace RockWeb.Blocks.Utility
 
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gHistory_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                var attendanceInfo = e.Row.DataItem as AttendanceInfo;
+                if ( attendanceInfo != null && attendanceInfo.IsActive )
+                {
+                    e.Row.AddCssClass( "success" );
+                }
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -112,7 +135,7 @@ namespace RockWeb.Blocks.Utility
             
             var person = personService.Get( personGuid );
 
-            if (person != null)
+            if ( person != null )
             {
                 lName.Text = person.FullName;
 
@@ -159,13 +182,21 @@ namespace RockWeb.Blocks.Utility
                 rptrPhones.DataBind();
 
                 var schedules = new ScheduleService( rockContext ).Queryable()
-                        .Where( s => s.CheckInStartOffsetMinutes.HasValue ) 
-                        .Select( s => s.Id)
+                        .Where( s => s.CheckInStartOffsetMinutes.HasValue )
                         .ToList();
 
-                var startDate = RockDateTime.Now.AddYears(-2);
+                var scheduleIds = schedules.Select( s => s.Id ).ToList();
 
-                var attendance = new AttendanceService( rockContext )
+                var activeScheduleIds = new List<int>();
+                foreach ( var schedule in schedules )
+                {
+                    if ( schedule.IsScheduleOrCheckInActive )
+                    {
+                        activeScheduleIds.Add( schedule.Id );
+                    }
+                }
+
+                var attendances = new AttendanceService( rockContext )
                     .Queryable( "Schedule,Group,Location" )
                     .Where( a =>
                         a.PersonId.HasValue &&
@@ -173,23 +204,54 @@ namespace RockWeb.Blocks.Utility
                         a.ScheduleId.HasValue &&
                         a.GroupId.HasValue &&
                         a.LocationId.HasValue &&
-                        a.StartDateTime > startDate &&
                         a.DidAttend &&
-                        schedules.Contains( a.ScheduleId.Value ) )
-                    .OrderByDescending( a =>
-                        a.StartDateTime )
-                    .Select( a => new
+                        scheduleIds.Contains( a.ScheduleId.Value ) )
+                    .OrderByDescending( a => a.StartDateTime )
+                    .Take( 20 )
+                    .Select( a => new AttendanceInfo
                     {
                         Date = a.StartDateTime,
+                        GroupId = a.Group.Id,
                         Group = a.Group.Name,
+                        LocationId = a.LocationId.Value,
                         Location = a.Location.Name,
-                        Schedule = a.Schedule.Name
+                        Schedule = a.Schedule.Name,
+                        IsActive = 
+                            a.StartDateTime > DateTime.Today &&
+                            activeScheduleIds.Contains(a.ScheduleId.Value)
                     } ).ToList();
 
-                rcwCheckinHistory.Visible = attendance.Any();
-                gHistory.DataSource = attendance;
+                // Set active locations to be a link to the room in manager page
+                var qryParam = new Dictionary<string, string>();
+                qryParam.Add( "Group", "" );
+                qryParam.Add( "Location", "" );
+                foreach ( var attendance in attendances.Where( a => a.IsActive ) )
+                {
+                    qryParam["Group"] = attendance.GroupId.ToString();
+                    qryParam["Location"] = attendance.LocationId.ToString();
+                    attendance.Location = string.Format( "<a href='{0}'>{1}</a>",
+                        LinkedPageUrl( "ManagerPage", qryParam ), attendance.Location );
+                }
+
+                rcwCheckinHistory.Visible = attendances.Any();
+                gHistory.DataSource = attendances;
                 gHistory.DataBind();
             }
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        public class AttendanceInfo
+        {
+            public DateTime Date { get; set; }
+            public int GroupId { get; set; }
+            public string Group { get; set; }
+            public int LocationId { get; set; }
+            public string Location { get; set; }
+            public string Schedule { get; set; }
+            public bool IsActive { get; set; }
         }
 
         #endregion

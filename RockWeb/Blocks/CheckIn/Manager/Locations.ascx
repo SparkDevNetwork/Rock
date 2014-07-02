@@ -59,11 +59,10 @@
                         <ItemTemplate>
                             <li id="liNavItem" runat="server" class="list-group-item clickable" >
                                 <asp:PlaceHolder runat="server">
-                                    <asp:Literal ID="imgPerson" runat="server" /> 
-                                    &nbsp; 
+                                    <asp:Literal ID="imgPerson" runat="server" />
                                     <%# Eval("Name") %>
                                     <span class="pull-right">
-                                        <asp:Literal ID="lStatus" runat="server" />
+                                        <%# Eval("GroupName") %><asp:Literal ID="lStatus" runat="server" />
                                     </span>
                                 </asp:PlaceHolder>
                             </li>
