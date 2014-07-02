@@ -104,6 +104,13 @@ namespace RockWeb.Blocks.Core
             Campus campus = campusService.Get( (int)e.RowKeyValue );
             if ( campus != null )
             {
+                // Don't allow deleting the last campus
+                if ( !campusService.Queryable().Where( c => c.Id != campus.Id ).Any() )
+                {
+                    mdGridWarning.Show( campus.Name + " is the only campus and cannot be deleted (Rock requires at least one campus).", ModalAlertType.Information );
+                    return;
+                }
+
                 string errorMessage;
                 if ( !campusService.CanDelete( campus, out errorMessage ) )
                 {
