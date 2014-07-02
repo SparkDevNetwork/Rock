@@ -3,9 +3,9 @@
 <Rock:RockUpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="checkin-manager">
+        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a Check-in type in the block settings." Dismissable="true" />
 
-            <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a Check-in type in the block settings." Dismissable="true" />
+        <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
             <asp:HiddenField ID="hfChartData" runat="server" />
             <asp:HiddenField ID="hfChartOptions" runat="server" />
@@ -28,7 +28,7 @@
 
             <div class="panel panel-default">
 
-                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable">
+                <asp:Panel ID="pnlNavHeading" runat="server" CssClass="panel-heading clickable" >
                     <asp:PlaceHolder runat="server">
                         <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
                         <span class="pull-right">
@@ -73,7 +73,7 @@
 
             </div>
 
-        </div>
+        </asp:Panel>
 
     </ContentTemplate>
 </Rock:RockUpdatePanel>

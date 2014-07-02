@@ -100,8 +100,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             Page.Form.DefaultButton = lbSearch.UniqueID;
             Page.Form.DefaultFocus = tbSearch.UniqueID;
-
-            RegisterStartupScript();
         }
 
         /// <summary>
@@ -514,12 +512,38 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private NavigationData GetNavigationData()
         {
-            var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            var rockContext = new RockContext();
+
+            var groupTypeTemplateGuid = PageParameter( "Area" ).AsGuidOrNull();
+            if ( !groupTypeTemplateGuid.HasValue )
+            {
+                groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
+            }
+
+            if (!groupTypeTemplateGuid.HasValue)
+            {
+                // Check to see if a specific group was specified
+                Guid? guid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
+                if (groupId.HasValue && guid.HasValue)
+                {
+                    var group = new GroupService( rockContext ).Get( groupId.Value );
+                    if (group != null && group.GroupType != null)
+                    {
+                        var groupType =  GetParentPurposeGroupType(group.GroupType, guid.Value);
+                        if (groupType != null)
+                        {
+                            groupTypeTemplateGuid = groupType.Guid;
+                        }
+                    }
+                }
+            }
+
             if ( groupTypeTemplateGuid.HasValue )
             {
-                NavData = new NavigationData();
+                pnlContent.Visible = true;
 
-                var rockContext = new RockContext();
+                NavData = new NavigationData();
 
                 var chartTimes = GetChartTimes();
 
@@ -640,10 +664,32 @@ namespace RockWeb.Blocks.CheckIn.Manager
             else
             {
                 nbGroupTypeWarning.Visible = true;
+                pnlContent.Visible = false;
             }
 
             return null;
 
+        }
+
+        public GroupType GetParentPurposeGroupType( GroupType groupType, Guid purposeGuid )
+        {
+            if ( groupType != null &&
+                groupType.GroupTypePurposeValue != null &&
+                groupType.GroupTypePurposeValue.Guid.Equals( purposeGuid ) )
+            {
+                return groupType;
+            }
+
+            foreach ( var parentGroupType in groupType.ParentGroupTypes )
+            {
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid );
+                if ( testGroupType != null )
+                {
+                    return testGroupType;
+                }
+            }
+
+            return null;
         }
 
         private List<DateTime> GetChartTimes()
@@ -957,6 +1003,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     .ThenBy( i => i.Order )
                     .ThenBy( i => i.Name );
                 rptNavItems.DataBind();
+
+                RegisterStartupScript();
+
             }
         }
 
