@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlList" runat="server">
     <ContentTemplate>
-        <h4><asp:Literal ID="lControllerName" runat="server"/></asp:Literal></h4>
+        <h4><asp:Literal ID="lControllerName" runat="server"/></h4>
         
         <div class="grid">
             <Rock:Grid ID="gActions" runat="server" AllowSorting="true">
