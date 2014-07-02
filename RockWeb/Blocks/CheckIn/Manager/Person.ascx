@@ -33,12 +33,12 @@
         <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
 
         <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Checkin History">
-            <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" CssClass="table-condensed">
+            <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
                 <Columns>
-                    <asp:BoundField DataField="Date" DataFormatString="{0:MM/dd/yy}" />
-                    <asp:BoundField DataField="Group" />
-                    <asp:BoundField DataField="Location" />
-                    <asp:BoundField DataField="Schedule" />
+                    <asp:BoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yy}" />
+                    <asp:BoundField DataField="Group" HeaderText="Group"  />
+                    <asp:BoundField DataField="Location" HeaderText="Location" HtmlEncode="false" />
+                    <asp:BoundField DataField="Schedule" HeaderText="Schedule" />
                 </Columns>
             </Rock:Grid>
         </Rock:RockControlWrapper>
