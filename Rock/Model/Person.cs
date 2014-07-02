@@ -1027,7 +1027,55 @@ namespace Rock.Model
             user.Person = this;
             return user;
         }
-        
+
+        /// <summary>
+        /// Gets an anchor tag to send person a communication 
+        /// </summary>
+        /// <value>
+        /// The email tag.
+        /// </value>
+        public string GetEmailTag( string rockUrlRoot )
+        {
+            if ( !string.IsNullOrWhiteSpace( Email ) )
+            {
+                if ( !IsEmailActive.HasValue || IsEmailActive.Value )
+                {
+                    rockUrlRoot.EnsureTrailingBackslash();
+
+                    switch ( EmailPreference )
+                    {
+                        case EmailPreference.EmailAllowed:
+                            {
+                                return string.Format(
+                                    "<a href='{0}Communication?person={1}'>{2}</a>",
+                                    rockUrlRoot, Id, Email );
+                            }
+                        case EmailPreference.NoMassEmails:
+                            {
+                                return string.Format(
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a href='{0}Communication?person={1}'>{2}</a> <i class='fa fa-exchange'></i></span>",
+                                    rockUrlRoot, Id, Email );
+                            }
+                        case EmailPreference.DoNotEmail:
+                            {
+                                return string.Format(
+                                    "<span class='js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{0} <i class='fa fa-ban'></i></span>",
+                                    Email );
+                            }
+                    }
+                }
+                else
+                {
+                    return string.Format(
+                        "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
+                        EmailNote, Email );
+                }
+            }
+
+            return string.Empty;
+        }
+
+
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
