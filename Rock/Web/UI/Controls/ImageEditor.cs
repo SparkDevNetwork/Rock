@@ -471,8 +471,8 @@ namespace Rock.Web.UI.Controls
 
             _lbShowModal = new LinkButton();
             _lbShowModal.ID = this.ID + "_lbShowModal";
-            _lbShowModal.CssClass = ButtonCssClass;
-            _lbShowModal.Text = ButtonText;
+            _lbShowModal.CssClass = this.ButtonCssClass;
+            _lbShowModal.Text = this.ButtonText;
             _lbShowModal.Click += _lbShowModal_Click;
             Controls.Add( _lbShowModal );
 
@@ -486,8 +486,8 @@ namespace Rock.Web.UI.Controls
 
             _lbUploadImage = new LinkButton();
             _lbUploadImage.ID = this.ID + "_lbUploadImage";
-            _lbUploadImage.CssClass = ButtonCssClass;
-            _lbUploadImage.Text = ButtonText;
+            _lbUploadImage.CssClass = this.ButtonCssClass;
+            _lbUploadImage.Text = this.ButtonText;
             Controls.Add( _lbUploadImage );
 
             _fileUpload = new FileUpload();
@@ -761,6 +761,8 @@ namespace Rock.Web.UI.Controls
             }
 
             _lbShowModal.RenderControl( writer );
+            _lbUploadImage.Text = this.ButtonText;
+            _lbUploadImage.CssClass = this.ButtonCssClass;
             _lbUploadImage.RenderControl( writer );
 
             writer.WriteLine();
