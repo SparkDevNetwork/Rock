@@ -46,6 +46,84 @@ namespace RockWeb.Blocks.Groups
 
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
+    [CodeEditorField( "Group Window Contents", "Liquid template for the group window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
+<div class='clearfix'>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
+    <span class='label label-campus pull-right'>{{GroupCampus}}</span>
+</div>
+
+<div class='clearfix'>
+    <div class='pull-left' style='padding-right: 24px'>
+        <strong>{{GroupLocation.Name}}</strong><br>
+        {{GroupLocation.Street1}}
+        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
+        {% for attribute in Attributes %}
+            {% if forloop.first %}<br/>{% endif %}
+            <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
+        {% endfor %}
+    </div>
+    <div class='pull-left'>
+        <strong>{{GroupMemberTerm}}s</strong><br>
+        {% for GroupMember in GroupMembers -%}
+            {% if PersonProfilePage != '' %}
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+            {% else %}
+                {{GroupMember.NickName}} {{GroupMember.LastName}}
+            {% endif %}
+            - {{GroupMember.Email}}
+            {% for PhoneType in GroupMember.PhoneTypes %}
+                <br>{{PhoneType.Name}}: {{PhoneType.Number}}
+            {% endfor %}
+            <br>
+        {% endfor -%}
+    </div>
+</div>
+
+{% if GroupDetailPage != '' %}
+    <br>
+    <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
+{% endif %}
+
+", "", 9 )]
+    [CodeEditorField( "Group Member Contents", "   Liquid template for the group window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
+<div class='clearfix'>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
+    <span class='label label-campus pull-right'>{{GroupCampus}}</span>
+</div>
+
+<div class='clearfix'>
+    <div class='pull-left' style='padding-right: 24px'>
+        <strong>{{GroupLocation.Name}}</strong><br>
+        {{GroupLocation.Street1}}
+        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
+        {% for attribute in Attributes %}
+            {% if forloop.first %}<br/>{% endif %}
+            <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
+        {% endfor %}
+    </div>
+    <div class='pull-left'>
+        <strong>{{GroupMemberTerm}}s</strong><br>
+        {% for GroupMember in GroupMembers -%}
+            {% if PersonProfilePage != '' %}
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+            {% else %}
+                {{GroupMember.NickName}} {{GroupMember.LastName}}
+            {% endif %}
+            - {{GroupMember.Email}}
+            {% for PhoneType in GroupMember.PhoneTypes %}
+                <br>{{PhoneType.Name}}: {{PhoneType.Number}}
+            {% endfor %}
+            <br>
+        {% endfor -%}
+    </div>
+</div>
+
+{% if GroupDetailPage != '' %}
+    <br>
+    <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
+{% endif %}
+
+", "", 9 )]
     public partial class GroupMap : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -120,53 +198,6 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            var rockContext = new RockContext();
-            var group = new GroupService( rockContext ).Queryable( "GroupLocations.Location" )
-                .Where( g => g.Id == groupId.Value )
-                .FirstOrDefault();
-
-            if ( group == null )
-            {
-                pnlMap.Visible = false;
-                lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> The requested does not exists.</div>";
-                return;
-            }
-
-            var points = new List<string>();
-            foreach ( var point in group.GroupLocations
-                .Where( g => g.Location.GeoPoint != null )
-                .Select( g => g.Location.GeoPoint ) )
-            {
-                if ( point.Latitude.HasValue && point.Longitude.HasValue )
-                {
-                    points.Add( string.Format( @"{{ ""latitude"":""{0}"", ""longitude"":""{1}"" }}", point.Latitude, point.Longitude ) );
-                }
-            }
-
-            var polygons = new List<string>();
-            foreach ( var polygon in group.GroupLocations
-                .Where( g => g.Location.GeoFence != null )
-                .Select( g => g.Location.GeoFence ) )
-            {
-                string coordinates = polygon.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
-                string[] longSpaceLat = coordinates.Split( ',' );
-
-                var polygonPoints = new List<string>();
-                for ( int i = 0; i < longSpaceLat.Length; i++ )
-                {
-                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
-                    if ( longLat.Length == 2 )
-                    {
-                        polygonPoints.Add( string.Format( @"{{ ""latitude"":""{0}"", ""longitude"":""{1}"" }}", longLat[1], longLat[0] ) );
-                    }
-                }
-
-                polygons.Add( string.Format( "[ {0} ]", polygonPoints.AsDelimited( ", " ) ) );
-            }
-
-            string groupJson = string.Format( @"{{ ""name"":""{0}"", ""points"": [ {1} ], ""polygons"": [ {2} ] }}",
-                group.Name, points.AsDelimited(", "), polygons.AsDelimited(", ") );
-
             pnlMap.Visible = true;
 
             string mapStylingFormat = @"
@@ -200,9 +231,9 @@ namespace RockWeb.Blocks.Groups
 
     Sys.Application.add_load(function () {{
 
-        var groupId = {0};
-
         var map;
+        var markers = [];
+        var polygons = [];
         var bounds = new google.maps.LatLngBounds();
         var mapStyle = {1};
         var pinColor = '{2}';
@@ -215,8 +246,6 @@ namespace RockWeb.Blocks.Groups
             new google.maps.Point(0, 0),
             new google.maps.Point(12, 35));
 
-        var groupData = JSON.parse('{3}'); 
-
         initializeMap();
 
         function initializeMap() {{
@@ -224,55 +253,77 @@ namespace RockWeb.Blocks.Groups
             var mapOptions = {{
                  mapTypeId: 'roadmap'
                 ,styles: mapStyle
+                ,center: new google.maps.LatLng(39.8282, -98.5795)
+                ,zoom: 4
             }};
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
             map.setTilt(45);
 
-            // Loop through our array of markers & place each one on the map
-            $.each(groupData.points, function (i, point) {{
+            addMarker('test', 39.8282, -98.5795); 
 
-                var position = new google.maps.LatLng(point.latitude, point.longitude);
-                bounds.extend(position);
-
-                marker = new google.maps.Marker({{
-                    position: position,
-                    map: map,
-                    title: htmlDecode(groupData.name),
-                    icon: pinImage,
-                    shadow: pinShadow
-                }});
-
-            }});
-
-            $.each(groupData.polygons, function (i, polygon) {{
-
-                var polygon;
-
-                var polyPoints = [];
-
-                $.each(polygon, function(j, point) {{
-                    var position = new google.maps.LatLng(point.latitude, point.longitude);
-                    bounds.extend(position);
-                    polyPoints.push(position);
-                }});
-
-                polygon = new google.maps.Polygon({{
-                    paths: polyPoints,
-                    map: map,
-                    strokeColor: pinColor,
-                    fillColor: pinColor
-                }});
-
-            }});
-
-            map.fitBounds(bounds);
-                       
-            var boundsListener = google.maps.event.addListener((map), 'bounds_changed', addMapItems );
+            getGroup();
 
         }}
 
+        function getGroup() {{
+
+            $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}', function( mapItems ) {{
+
+                // Loop through array of map items
+                $.each(mapItems, function (i, item) {{
+
+                    if (item.Point) {{ 
+                        addMarker(item.Name, item.Point.latitude, item.Point.longitude); 
+                    }}
+
+                    if (typeof item.PolygonPoints !== 'undefined' && item.PolygonPoints.length > 0) {{
+
+                        var polygon;
+                        var polygonPoints = [];
+
+                        $.each(item.PolygonPoints, function(j, point) {{
+                            var position = new google.maps.LatLng(point.latitude, point.longitude);
+                            bounds.extend(position);
+                            polygonPoints.push(position);
+                        }});
+
+                        polygon = new google.maps.Polygon({{
+                            paths: polygonPoints,
+                            map: map,
+                            strokeColor: pinColor,
+                            fillColor: pinColor
+                        }});
+
+                    }}
+
+                }});
+
+                // map.fitBounds(bounds);
+                       
+                // var boundsListener = google.maps.event.addListener((map), 'bounds_changed', addMapItems );
+
+            }});        
+
+        }}
+
+        function addMarker( name, latitude, longitude ) {{
+
+            var position = new google.maps.LatLng(latitude, longitude);
+            bounds.extend(position);
+
+            marker = new google.maps.Marker({{
+                position: position,
+                map: map,
+                title: htmlDecode(name),
+                icon: pinImage,
+                shadow: pinShadow
+            }});
+
+            markers.push(marker);
+        }}
+        
         function htmlDecode(input) {{
             var e = document.createElement('div');
             e.innerHTML = input;
@@ -281,10 +332,11 @@ namespace RockWeb.Blocks.Groups
 
         function addMapItems() {{
         }}
+
     }});
 </script>";
 
-            string mapScript = string.Format( mapScriptFormat, groupId.Value, styleCode, markerColor, groupJson );
+            string mapScript = string.Format( mapScriptFormat, groupId.Value, styleCode, markerColor );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
 
