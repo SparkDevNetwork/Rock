@@ -1,17 +1,20 @@
 ﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-
-    <main class="container">
                 
-        <!-- Content Area -->
-
+    <!-- Start Content Area -->
+        
+    <!-- Page Title -->
+    <section id="page-title">
+        <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
         <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                    
+    </section>
+        
+    <section id="page-content">            
         <!-- Ajax Error -->
         <div class="alert alert-danger ajax-error" style="display:none">
             <p><strong>Error</strong></p>
-            <span class="ajax-error-message" / ></span>
+            <span class="ajax-error-message"></span>
         </div>
 
         <div class="row">
@@ -20,19 +23,12 @@
             </div>
         </div>
 
-        
-        <div class="panel panel-default">
-            <div class="panel-body">
-
-                <div class="row">
-                    <div class="col-md-3">
-                        <Rock:Zone Name="Sidebar 1" runat="server" />
-                    </div>
-                    <div class="col-md-9">
-                        <Rock:Zone Name="Main" runat="server" />               
-                    </div>
-                </div>
-
+        <div class="row">
+            <div class="col-md-3">
+                <Rock:Zone Name="Sidebar 1" runat="server" />
+            </div>
+            <div class="col-md-9">
+                <Rock:Zone Name="Main" runat="server" />
             </div>
         </div>
 
@@ -53,9 +49,9 @@
                 <Rock:Zone Name="Section D" runat="server" />
             </div>
         </div>
+    </section>
+    <!-- End Content Area -->
 
-        <!-- End Content Area -->
 
-    </main>
 
 </asp:Content>
