@@ -977,6 +977,10 @@
     <Compile Include="Migrations\201406281300035_WorkflowInitiator.Designer.cs">
       <DependentUpon>201406281300035_WorkflowInitiator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407022144136_PhotoRequestUpload.cs" />
+    <Compile Include="Migrations\201407022144136_PhotoRequestUpload.Designer.cs">
+      <DependentUpon>201407022144136_PhotoRequestUpload.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1690,6 +1694,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201406281300035_WorkflowInitiator.resx">
       <DependentUpon>201406281300035_WorkflowInitiator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407022144136_PhotoRequestUpload.resx">
+      <DependentUpon>201407022144136_PhotoRequestUpload.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
