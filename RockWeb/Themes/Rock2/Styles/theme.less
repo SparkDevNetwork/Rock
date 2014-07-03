@@ -102,6 +102,23 @@ a:hover {
     text-decoration: none;
 }
 
+input[type=text], 
+textarea,
+.form-control {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+}
+ 
+input[type=text]:focus, 
+textarea:focus,
+.form-control:focus {
+  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
+  border: 1px solid rgba(238, 118, 36, .6);
+}
+
+
 /*#endregion */
 
 
@@ -129,6 +146,34 @@ a:hover {
 
         h3 > i {
             margin-right: 4px;
+        }
+    }
+}
+
+.tag-letterlist a {
+    color: @brand-primary;
+}
+
+.nav.nav-pagelist {
+    background-color: @accent-blue-light;
+    border: 1px solid darken(@accent-blue-light, 10%);
+
+    .pill-help {
+        a {
+            color: @accent-blue;
+        }
+    }
+
+    .nav.nav-pills {
+
+        li a:hover {
+            background-color: lighten(@accent-blue, 30%);
+        }
+
+        li.active a {
+            background-color: @accent-blue;
+            color: #fff;
+            border-color: darken(@accent-blue, 5%);
         }
     }
 }
@@ -182,6 +227,12 @@ a:hover {
     background-color: @accent-blue;
     color: #fff;
     border: 1px solid darken(@accent-blue, 5%);
+}
+
+.updateprogress-status {
+    .spinner > div {
+        background-color: #fff;
+    }
 }
 
 /*#endregion */
@@ -490,7 +541,9 @@ a:hover {
 
                 li.title {
                     font-size: 18px;
-                    font-weight: @font-weight-bold;
+                    font-weight: @font-weight-light;
+                    color: #ee7624;
+                    margin-bottom: -8px;
                 }
 
                 li.header {

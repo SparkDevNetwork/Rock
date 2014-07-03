@@ -163,13 +163,6 @@ a.help {
         }
     }
 
-    // adjust the background color of pickers on a panel
-    .picker .picker-label {
-        background-color: @accent-color;
-        color: @accent-text-color;
-        border-color: darken(@accent-color, 10%)
-    }
-
     .panel-body {
         border-radius: 0 0 4px 4px;
 
@@ -256,9 +249,19 @@ a.help {
 
     .panel-heading {
         background-color: @gray-lighter;
+        .clearfix();
 
-        i {
-            color: #6a6a6a;
+        .panel-title {
+            float: left;
+
+            i {
+                color: #6a6a6a;
+            }
+        }
+
+        span.label {
+            float: right;
+            margin-top: 2px;
         }
     }
 

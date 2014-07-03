@@ -83,9 +83,9 @@ td.wrap-contents { // keep cells from scrolling off screen
 
      // adjust the background color of pickers in the filters
     .picker .picker-label {
-        background-color: @accent-light-color;
-        color: @accent-light-text-color;
-        border-color: darken(@accent-light-color, 10%)
+        background-color: @grid-filter-bg;
+        color: @grid-filter-color;
+        border-color: darken(@grid-filter-bg, 10%)
     }
 }
 
@@ -136,7 +136,8 @@ td.wrap-contents { // keep cells from scrolling off screen
 
 // pagination
 .grid-paging {
-    
+    background-color: @gray-lighter;
+
     .pagination {
         margin-top: 0;
         margin-bottom: 0;
@@ -241,6 +242,16 @@ td.grid-col-actions {
     // future add this: http://webdesign.tutsplus.com/tutorials/quick-tip-easy-css3-checkboxes-and-radio-buttons--webdesign-8953
 }
 
+.table > tbody > tr > th, 
+.table > tbody > tr > td { // get buttons and text columns to look good together
+
+    padding: 12px;
+
+    &.grid-columncommand {
+         padding: 6px;
+    }
+}
+
 .table .color-field {
     padding: 0;
     width: 4px;
@@ -258,8 +269,15 @@ td.grid-col-actions {
 
 // 6. Row Types
 // -------------------------
-.table > tbody > tr.grid-section-header > td
-{
-    background-color: @accent-light-color;
-    color: @accent-light-text-color;
-}
+.table > tbody > tr.grid-section-header {
+    
+    > td {
+        background-color: @accent-light-color;
+        color: @accent-light-text-color;
+    }
+
+    &:hover > td {
+        background-color: @accent-light-color !important;
+    }
+    
+ }

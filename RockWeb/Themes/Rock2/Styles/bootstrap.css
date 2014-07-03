@@ -1916,7 +1916,7 @@ cite {
   font-style: normal;
 }
 .text-muted {
-  color: #f3f3f4;
+  color: #9d9d9d;
 }
 .text-primary {
   color: #ee7624;
@@ -3114,16 +3114,16 @@ output {
   vertical-align: middle;
 }
 .form-control:-moz-placeholder {
-  color: #f3f3f4;
+  color: #d0d0d0;
 }
 .form-control::-moz-placeholder {
-  color: #f3f3f4;
+  color: #d0d0d0;
 }
 .form-control:-ms-input-placeholder {
-  color: #f3f3f4;
+  color: #d0d0d0;
 }
 .form-control::-webkit-input-placeholder {
-  color: #f3f3f4;
+  color: #d0d0d0;
 }
 .form-control {
   display: block;
@@ -5785,11 +5785,11 @@ textarea.input-group-sm > .input-group-btn > .btn {
   display: none;
 }
 .label-default {
-  background-color: #f3f3f4;
+  background-color: #c2b8a7;
 }
 .label-default[href]:hover,
 .label-default[href]:focus {
-  background-color: #d8d8dc;
+  background-color: #ada089;
 }
 .label-primary {
   background-color: #ee7624;
@@ -6504,7 +6504,7 @@ body.modal-open,
   bottom: 0;
   left: 0;
   z-index: 1030;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.5);
 }
 .modal-backdrop.fade {
   opacity: 0;
