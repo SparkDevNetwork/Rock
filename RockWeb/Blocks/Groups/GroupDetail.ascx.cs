@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 4 )]
+    [LinkedPage("Group Map Page", "The page to display detailed group map.")]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -999,6 +1000,10 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    var pageParams = new Dictionary<string, string>();
+                    pageParams.Add("GroupId", group.Id.ToString());
+                    string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
+
                     if ( points.Any() )
                     {
                         foreach ( var groupLocation in points )
@@ -1010,8 +1015,9 @@ namespace RockWeb.Blocks.Groups
                             var literalcontrol = new Literal()
                             {
                                 Text = string.Format(
-                                "<div class='group-location-map'>{0}<img src='{1}'/></div>",
+                                "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
                                 groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
+                                groupMapUrl,
                                 mapLink ),
                                 Mode = LiteralMode.PassThrough
                             };
@@ -1029,8 +1035,9 @@ namespace RockWeb.Blocks.Groups
                             mapLink += "&sensor=false&size=350x200&format=png";
                             phMaps.Controls.Add(
                                 new LiteralControl( string.Format(
-                                    "<div class='group-location-map'>{0}<img src='{1}'/></div>",
+                                    "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
+                                    groupMapUrl,
                                     mapLink ) ) );
                         }
                     }
