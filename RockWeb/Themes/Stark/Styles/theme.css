@@ -185,7 +185,7 @@ img.jcrop-preview {
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Pagelist Nav - Pill nav of pages
     8. Tags - component that allows you to tag entities
-    9. Switch - uses the Bootstrap Switch component
+    9. 
     10. Smart Search - search at th top of the page for searching people, groups, etc.
     11. Fieldset Actions - styling for the button actions on field sets
     12. Title - markup for styling header titles
@@ -695,7 +695,7 @@ div.tagsinput .tags_clear {
   border-radius: 4px;
 }
 .tag-letterlist {
-  color: #b3b3b3;
+  color: #666666;
 }
 .tag-letterlist li {
   margin-right: 12px;
@@ -714,157 +714,6 @@ div.tagsinput .tags_clear {
   div.tagsinput input {
     margin: 0;
   }
-}
-.switch {
-  display: inline-block;
-  cursor: pointer;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-  border: 1px solid;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-  background: #e6e6e6;
-  position: relative;
-  text-align: left;
-  overflow: hidden;
-  line-height: 8px;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  min-width: 100px;
-}
-.switch.switch-mini {
-  min-width: 70px;
-}
-.switch.switch-small {
-  min-width: 80px;
-}
-.switch.switch-large {
-  min-width: 120px;
-}
-.switch.deactivate {
-  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
-  opacity: 0.5;
-  cursor: default !important;
-}
-.switch.deactivate label,
-.switch.deactivate span {
-  cursor: default !important;
-}
-.switch > div {
-  display: inline-block;
-  width: 150%;
-  position: relative;
-  top: 0;
-}
-.switch > div.switch-animate {
-  -webkit-transition: left 0.5s;
-  -moz-transition: left 0.5s;
-  -o-transition: left 0.5s;
-  transition: left 0.5s;
-}
-.switch > div.switch-off {
-  left: -49.5%;
-}
-.switch > div.switch-on {
-  left: 0%;
-}
-.switch input[type=checkbox] {
-  display: none;
-}
-.switch span,
-.switch label {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  cursor: pointer;
-  position: relative;
-  display: inline-block;
-  height: 100%;
-  padding-bottom: 4px;
-  padding-top: 4px;
-  font-size: 14px;
-  line-height: 20px;
-}
-.switch span.switch-mini,
-.switch label.switch-mini {
-  padding-bottom: 4px;
-  padding-top: 4px;
-  font-size: 10px;
-  line-height: 9px;
-}
-.switch span.switch-small,
-.switch label.switch-small {
-  padding-bottom: 3px;
-  padding-top: 3px;
-  font-size: 12px;
-  line-height: 18px;
-}
-.switch span.switch-large,
-.switch label.switch-large {
-  padding-bottom: 9px;
-  padding-top: 9px;
-  font-size: 16px;
-  line-height: normal;
-}
-.switch label {
-  background: white;
-  margin-top: -1px;
-  margin-bottom: -1px;
-  z-index: 100;
-  width: 34%;
-  border-left: 1px solid #e6e6e6;
-  border-right: 1px solid #e6e6e6;
-  background-image: none;
-}
-.switch span {
-  color: white;
-  text-align: center;
-  z-index: 1;
-  width: 33%;
-}
-.switch span.switch-left {
-  -moz-border-radius-topleft: 4px;
-  -webkit-border-top-left-radius: 4px;
-  border-top-left-radius: 4px;
-  -moz-border-radius-bottomleft: 4px;
-  -webkit-border-bottom-left-radius: 4px;
-  border-bottom-left-radius: 4px;
-}
-.switch span.switch-right {
-  color: black;
-  -moz-border-radius-topright: 4px;
-  -webkit-border-top-right-radius: 4px;
-  border-top-right-radius: 4px;
-  -moz-border-radius-bottomright: 4px;
-  -webkit-border-bottom-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-.switch span.switch-primary,
-.switch span.switch-left {
-  color: #ecf0f3;
-  background: #428bca;
-}
-.switch span.switch-info {
-  color: white;
-  background: #5bc0de;
-}
-.switch span.switch-success {
-  color: white;
-  background: #5cb85c;
-}
-.switch span.switch-warning {
-  color: white;
-  background: #f0ad4e;
-}
-.switch span.switch-danger {
-  color: white;
-  background: #d9534f;
 }
 .smartsearch {
   width: 290px;
@@ -1299,7 +1148,7 @@ fieldset .actions {
 .updateprogress-status {
   position: fixed;
   padding: 50px;
-  color: #ecf0f3;
+  color: #ffffff;
   left: 40%;
   top: 40%;
   opacity: 1;
@@ -2040,9 +1889,9 @@ td.wrap-contents {
   margin-bottom: 12px;
 }
 .grid-filter .picker .picker-label {
-  background-color: #eeeeee;
+  background-color: #d5d5d5;
   color: #333333;
-  border-color: #d5d5d5;
+  border-color: #bbbbbb;
 }
 .grid-filter + div .grid-table {
   margin-top: -12px;
@@ -2072,6 +1921,9 @@ td.wrap-contents {
   padding-right: 5px;
   content: "\f0d7";
   font-family: FontAwesome;
+}
+.grid-paging {
+  background-color: #eeeeee;
 }
 .grid-paging .pagination {
   margin-top: 0;
@@ -2142,6 +1994,14 @@ td.grid-col-actions {
 .grid-select-field .radio:last-child {
   margin-bottom: 0px;
 }
+.table > tbody > tr > th,
+.table > tbody > tr > td {
+  padding: 12px;
+}
+.table > tbody > tr > th.grid-columncommand,
+.table > tbody > tr > td.grid-columncommand {
+  padding: 6px;
+}
 .table .color-field {
   padding: 0;
   width: 4px;
@@ -2156,6 +2016,9 @@ td.grid-col-actions {
 .table > tbody > tr.grid-section-header > td {
   background-color: #eeeeee;
   color: #333333;
+}
+.table > tbody > tr.grid-section-header:hover > td {
+  background-color: #eeeeee !important;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3122,27 +2985,33 @@ span.field-value {
   }
 }
 /* Large devices (large desktops, 1200px and up) */
-.merge-personselect {
+.table thead th.merge-personselect {
+  background-color: #428bca;
+  color: #ecf0f3;
+  border-color: #5697d0;
   vertical-align: top !important;
 }
-.merge-personselect .merge-header-summary {
+.table thead th.merge-personselect .merge-header-summary {
   margin-left: 20px;
 }
-.merge-personselect .merge-header-summary i {
+.table thead th.merge-personselect .merge-header-summary i {
   margin-right: 12px;
   float: left;
 }
-.merge-personselect small {
+.table thead th.merge-personselect .btn-danger {
+  color: #fff;
+}
+.table thead th.merge-personselect small {
   color: #bdcbd5;
 }
-.merge-personselect .merge-heading-family {
+.table thead th.merge-personselect .merge-heading-family {
   margin-bottom: 12px;
 }
-.merge-personselect .merge-heading-family span {
+.table thead th.merge-personselect .merge-heading-family span {
   display: block;
 }
 .merge-photo {
-  border: 3px solid #428bca;
+  border: 3px solid #999999;
 }
 .panel-widget.pageviewsession .panel-heading small {
   color: #428bca;
@@ -3723,11 +3592,6 @@ a.help {
 .panel .panel-title small {
   color: #e0e0e0;
 }
-.panel .picker .picker-label {
-  background-color: #d5d5d5;
-  color: #333333;
-  border-color: #bbbbbb;
-}
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
 }
@@ -3830,8 +3694,25 @@ a.help {
 .panel-block .panel-heading {
   background-color: #eeeeee;
 }
-.panel-block .panel-heading i {
+.panel-block .panel-heading:before,
+.panel-block .panel-heading:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.panel-block .panel-heading:after {
+  clear: both;
+}
+.panel-block .panel-heading .panel-title {
+  float: left;
+}
+.panel-block .panel-heading .panel-title i {
   color: #6a6a6a;
+}
+.panel-block .panel-heading span.label {
+  float: right;
+  margin-top: 2px;
 }
 .panel-block .panel-body .grid.grid-panel {
   margin: -15px;

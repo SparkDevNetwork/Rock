@@ -1,6 +1,6 @@
 // Custom Theme Variables
-@accent-blue: #567d8c;
-
+@accent-blue: #567d8c; //5e99a9
+@accent-blue-light: #eaf7fc;
 
 //
 // Rock 1.0 Variables
@@ -319,7 +319,7 @@
 @input-border-radius:            @border-radius-base;
 @input-border-focus:             #66afe9;
 
-@input-color-placeholder:        @gray-light;
+@input-color-placeholder:        lighten(@text-color, 40%);
 
 @input-height-base:              (@line-height-computed + (@padding-base-vertical * 2) + 2);
 @input-height-large:             (floor(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 2);
@@ -585,7 +585,7 @@
 // Labels
 // -------------------------
 
-@label-default-bg:            @gray-light;
+@label-default-bg:            @accent-semibold-color;
 @label-primary-bg:            @brand-primary;
 @label-success-bg:            @brand-success;
 @label-info-bg:               @brand-info;
@@ -607,7 +607,7 @@
 @modal-content-border-color:                   rgba(0,0,0,.2);
 @modal-content-fallback-border-color:          #999;
 
-@modal-backdrop-bg:           rgba(0,0,0,0.3);
+@modal-backdrop-bg:           rgba(255,255,255,0.5);
 @modal-header-border-color:   #e5e5e5;
 @modal-footer-border-color:   @modal-header-border-color;
 
@@ -767,7 +767,7 @@
 
 // Type
 // ------------------------
-@text-muted:                  @gray-light;
+@text-muted:                  lighten(@text-color, 20%);
 @abbr-border-color:           @gray-light;
 @headings-small-color:        @gray-light;
 @blockquote-small-color:      @gray-light;

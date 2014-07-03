@@ -690,7 +690,11 @@ span.field-value {
 // 11. Person Merge
 // -------------------------
 
-.merge-personselect {
+
+.table thead th.merge-personselect {
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+    border-color: lighten(@accent-bold-color, 5%);
     
     vertical-align: top !important;
 
@@ -701,6 +705,10 @@ span.field-value {
             margin-right: 12px;
             float: left;
         }
+    }
+
+    .btn-danger {
+        color: #fff;
     }
 
     small {
@@ -717,7 +725,7 @@ span.field-value {
 }
 
 .merge-photo {
-    border: 3px solid @accent-bold-color;
+    border: 3px solid @accent-semibold-color;
 }
 
 // 12. Person Page Views
