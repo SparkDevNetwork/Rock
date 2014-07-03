@@ -549,4 +549,68 @@ namespace Rock.Model
 
     #endregion
 
+    #region Map Helper Classes
+
+    public class MapCoordinate
+    {
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
+        public MapCoordinate()
+        {
+
+        }
+
+        public MapCoordinate( double? latitude, double? longitude ) 
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+    }
+
+    public class MapItem
+    {
+        public int EntityTypeId { get; set; }
+        public int EntityId { get; set; }
+        public int LocationId { get; set; }
+        public string Name { get; set; }
+        public MapCoordinate Point { get; set; }
+        public List<MapCoordinate> PolygonPoints { get; set; }
+
+        public MapItem() 
+        { 
+        }
+
+        public MapItem( Location location )
+        {
+            PolygonPoints = new List<MapCoordinate>();
+
+            if (location != null)
+            {
+                LocationId = location.Id;
+                if (location.GeoPoint != null)
+                {
+                    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                }
+
+                if (location.GeoFence != null)
+                {
+                    string coordinates = location.GeoFence.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
+                    string[] longSpaceLat = coordinates.Split( ',' );
+
+                    for ( int i = 0; i < longSpaceLat.Length; i++ )
+                    {
+                        string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
+                        if (longLat.Length == 2)
+                        {
+                            PolygonPoints.Add( new MapCoordinate( double.Parse( longLat[1] ), double.Parse( longLat[0] ) ) );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    #endregion
 }

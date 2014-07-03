@@ -45,6 +45,15 @@ namespace Rock.Rest.Controllers
                     controller = "Groups",
                     action = "GetChildren"
                 } );
+
+            routes.MapHttpRoute(
+                name: "GroupsMapInfo",
+                routeTemplate: "api/Groups/GetMapInfo/{Groupid}",
+                defaults: new
+                {
+                    controller = "Groups",
+                    action = "GetMapInfo"
+                } );
         }
 
         /// <summary>
@@ -102,6 +111,52 @@ namespace Rock.Rest.Controllers
 
             return groupNameList.AsQueryable();
         }
+
+        /// <summary>
+        /// Gets the map information.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        public IQueryable<MapItem> GetMapInfo( int groupId )
+        {
+            var group = ( (GroupService)Service ).Queryable("GroupLocations.Location")
+                .Where(g => g.Id == groupId)
+                .FirstOrDefault();
+
+            if (group != null)
+            {
+                var person = GetPerson();
+
+                if (group.IsAuthorized( Rock.Security.Authorization.VIEW, person ))
+                {
+                    var mapItems = new List<MapItem>();
+                    foreach ( var location in group.GroupLocations
+                        .Where( l => l.Location.GeoPoint != null || l.Location.GeoFence != null )
+                        .Select( l => l.Location ) )
+                    {
+                        var mapItem = new MapItem( location );
+                        if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
+                        {
+                            mapItems.Add( mapItem );
+                        }
+                    }
+
+                    return mapItems.AsQueryable();
+                }
+                else
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+        }
+    
     }
 }
 
