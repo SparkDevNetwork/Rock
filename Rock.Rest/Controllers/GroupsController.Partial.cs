@@ -19,9 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
-
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
@@ -53,6 +53,15 @@ namespace Rock.Rest.Controllers
                 {
                     controller = "Groups",
                     action = "GetMapInfo"
+                } );
+
+            routes.MapHttpRoute(
+                name: "GroupsChildMapInfo",
+                routeTemplate: "api/Groups/GetMapInfo/{Groupid}/Children",
+                defaults: new
+                {
+                    controller = "Groups",
+                    action = "GetChildMapInfo"
                 } );
         }
 
@@ -138,6 +147,9 @@ namespace Rock.Rest.Controllers
                         .Select( l => l.Location ) )
                     {
                         var mapItem = new MapItem( location );
+                        mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                        mapItem.EntityId = group.Id;
+                        mapItem.Name = group.Name;
                         if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
                         {
                             mapItems.Add( mapItem );
@@ -156,7 +168,39 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
         }
-    
+
+        [Authenticate, Secured]
+        public IQueryable<MapItem> GetChildMapInfo( int groupId )
+        {
+            var person = GetPerson();
+
+            var mapItems = new List<MapItem>();
+
+            foreach ( var group in ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
+                .Where( g => g.ParentGroupId == groupId ))
+            {
+                if ( group != null && group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    foreach ( var location in group.GroupLocations
+                        .Where( l => l.Location.GeoPoint != null || l.Location.GeoFence != null )
+                        .Select( l => l.Location ) )
+                    {
+                        var mapItem = new MapItem( location );
+                        mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                        mapItem.EntityId = group.Id;
+                        mapItem.Name = group.Name;
+                        if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
+                        {
+                            mapItems.Add( mapItem );
+                        }
+                    }
+
+                }
+            }
+
+            return mapItems.AsQueryable();
+        }
+
     }
 }
 

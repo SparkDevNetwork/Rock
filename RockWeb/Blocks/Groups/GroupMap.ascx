@@ -5,6 +5,34 @@
         
         <asp:Literal ID="lMapStyling" runat="server" />
         
+        <div class="form-inline">
+
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="cbShowGroup" checked="checked" /> <span id="lGroupName">Show Group</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="cbShowChildGroups" /> Child Groups
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="cbShowGroupMembers" /> Group Members
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
         <asp:Panel ID="pnlMap" runat="server">
             <div id="map_wrapper">
                 <div id="map_canvas" class="mapping"></div>

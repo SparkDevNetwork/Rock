@@ -189,7 +189,6 @@ namespace RockWeb.Blocks.Groups
 
         private void Map()
         {
-
             int? groupId = PageParameter( "GroupId" ).AsIntegerOrNull();
             if ( !groupId.HasValue )
             {
@@ -231,10 +230,13 @@ namespace RockWeb.Blocks.Groups
 
     Sys.Application.add_load(function () {{
 
+        var groupId = {0};
+        var groupItems = [];
+        var childGroupItems;
+
         var map;
-        var markers = [];
-        var polygons = [];
         var bounds = new google.maps.LatLngBounds();
+
         var mapStyle = {1};
         var pinColor = '{2}';
         var pinImage = new google.maps.MarkerImage('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + pinColor,
@@ -261,46 +263,18 @@ namespace RockWeb.Blocks.Groups
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
             map.setTilt(45);
 
-            addMarker('test', 39.8282, -98.5795); 
-
-            getGroup();
-
-        }}
-
-        function getGroup() {{
-
             $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}', function( mapItems ) {{
 
                 // Loop through array of map items
-                $.each(mapItems, function (i, item) {{
-
-                    if (item.Point) {{ 
-                        addMarker(item.Name, item.Point.latitude, item.Point.longitude); 
+                $.each(mapItems, function (i, mapItem) {{
+                    $('#lGroupName').text(mapItem.Name);
+                    var items = addMapItem(i, mapItem);
+                    for (var i = 0; i < items.length; i++) {{
+                        groupItems.push(items[i]);
                     }}
-
-                    if (typeof item.PolygonPoints !== 'undefined' && item.PolygonPoints.length > 0) {{
-
-                        var polygon;
-                        var polygonPoints = [];
-
-                        $.each(item.PolygonPoints, function(j, point) {{
-                            var position = new google.maps.LatLng(point.latitude, point.longitude);
-                            bounds.extend(position);
-                            polygonPoints.push(position);
-                        }});
-
-                        polygon = new google.maps.Polygon({{
-                            paths: polygonPoints,
-                            map: map,
-                            strokeColor: pinColor,
-                            fillColor: pinColor
-                        }});
-
-                    }}
-
                 }});
 
-                // map.fitBounds(bounds);
+                map.fitBounds(bounds);
                        
                 // var boundsListener = google.maps.event.addListener((map), 'bounds_changed', addMapItems );
 
@@ -308,20 +282,50 @@ namespace RockWeb.Blocks.Groups
 
         }}
 
-        function addMarker( name, latitude, longitude ) {{
+        function addMapItem( i, mapItem ) {{
 
-            var position = new google.maps.LatLng(latitude, longitude);
-            bounds.extend(position);
+            var items = [];
 
-            marker = new google.maps.Marker({{
-                position: position,
-                map: map,
-                title: htmlDecode(name),
-                icon: pinImage,
-                shadow: pinShadow
-            }});
+            if (mapItem.Point) {{ 
 
-            markers.push(marker);
+                var position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
+                bounds.extend(position);
+
+                marker = new google.maps.Marker({{
+                    position: position,
+                    map: map,
+                    title: htmlDecode(mapItem.Name),
+                    icon: pinImage,
+                    shadow: pinShadow
+                }});
+    
+                items.push(marker);
+
+            }}
+
+            if (typeof mapItem.PolygonPoints !== 'undefined' && mapItem.PolygonPoints.length > 0) {{
+
+                var polygon;
+                var polygonPoints = [];
+
+                $.each(mapItem.PolygonPoints, function(j, point) {{
+                    var position = new google.maps.LatLng(point.Latitude, point.Longitude);
+                    bounds.extend(position);
+                    polygonPoints.push(position);
+                }});
+
+                polygon = new google.maps.Polygon({{
+                    paths: polygonPoints,
+                    map: map,
+                    strokeColor: pinColor,
+                    fillColor: pinColor
+                }});
+
+                items.push(polygon);
+            }}
+
+            return items;
+
         }}
         
         function htmlDecode(input) {{
@@ -331,6 +335,46 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function addMapItems() {{
+        }}
+
+        // Show/Hide group
+        $('#cbShowGroup').click( function() {{
+            if ($(this).prop('checked')) {{
+                setAllMap(groupItems, map);
+            }} else {{
+                setAllMap(groupItems, null);
+            }} 
+        }});
+
+        // Show/Hide child groups
+        $('#cbShowChildGroups').click( function() {{
+            if ($(this).prop('checked')) {{
+                if (typeof childGroupItems !== 'undefined') {{
+                    setAllMap(childGroupItems, map);
+                }} else {{
+                    childGroupItems = [];
+                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
+                        $.each(mapItems, function (i, mapItem) {{
+                            var items = addMapItem(i, mapItem);
+                            for (var i = 0; i < items.length; i++) {{
+                                childGroupItems.push(items[i]);
+                            }}
+                        }});
+                        map.fitBounds(bounds);
+                    }});
+                }}
+            }} else {{
+                if (typeof childGroupItems !== 'undefined') {{
+                    setAllMap(childGroupItems, null);
+                }} 
+            }}
+        }});
+
+
+        function setAllMap(markers, map) {{
+            for (var i = 0; i < markers.length; i++) {{
+                markers[i].setMap(map);
+            }}
         }}
 
     }});
