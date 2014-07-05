@@ -365,11 +365,21 @@ namespace RockWeb.Blocks.Core
         {
             if ( category.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                if ( !string.IsNullOrEmpty(category.IconCssClass)  )
+                {
+                    lIcon.Text = String.Format("<i class='{0}'></i>", category.IconCssClass);
+                }
+                else
+                {
+                    lIcon.Text = "<i class='fa fa-square-o'></i>";
+                }
             }
 
             SetEditMode( true );
@@ -411,7 +421,15 @@ namespace RockWeb.Blocks.Core
                 categoryIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", category.IconCssClass ) : "";
 
             hfCategoryId.SetValue( category.Id );
-            lReadOnlyTitle.Text = category.Name.FormatAsHtmlTitle();
+            lTitle.Text = category.Name.FormatAsHtmlTitle();
+            if ( !string.IsNullOrEmpty( category.IconCssClass ) )
+            {
+                lIcon.Text = String.Format( "<i class='{0}'></i>", category.IconCssClass );
+            }
+            else
+            {
+                lIcon.Text = "<i class='fa fa-square-o'></i>";
+            }
 
             lblMainDetails.Text = new DescriptionList()
                 .Add("Entity Type", category.EntityType.Name)

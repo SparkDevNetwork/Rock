@@ -3594,9 +3594,9 @@ a.help {
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
-}
-.panel .panel-body .well {
-  background-color: #dbd5cb;
+  /*.well {
+            background-color: @accent-color;
+        }*/
 }
 .panel-widget {
   border-color: #dbd5cb;
@@ -4031,11 +4031,6 @@ textarea:focus,
 /*#endregion */
 /*#region  
 // 3. Bootstrap Overrides    */
-.panel-title {
-  font-weight: 300;
-  letter-spacing: -1px;
-  font-size: 18px;
-}
 .panel {
   border-radius: 0;
   border-top-width: 0;
@@ -4047,8 +4042,20 @@ textarea:focus,
   border-color: #e2e2e2;
   border-radius: 0;
 }
+.panel .panel-heading .panel-title {
+  font-weight: 300;
+  letter-spacing: -1px;
+  font-size: 18px;
+}
 .panel .panel-heading h3 > i {
   margin-right: 4px;
+}
+.panel.panel-primary .panel-heading {
+  background-color: #ee7624;
+}
+.well.well-message {
+  background-color: #eaf7fc;
+  border-color: #d4eef9;
 }
 .tag-letterlist a {
   color: #ee7624;
@@ -4067,6 +4074,9 @@ textarea:focus,
   background-color: #567d8c;
   color: #fff;
   border-color: #4c6f7c;
+}
+.rock-modal-frame {
+  border: 1px solid #282526;
 }
 /*#endregion */
 /*#region  
