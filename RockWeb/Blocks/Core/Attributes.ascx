@@ -10,51 +10,62 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <div class="grid">
-                <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                    <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                    <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
-                </Rock:GridFilter>
-                <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
-                    <Columns>
-                        <asp:BoundField
-                            DataField="Id"
-                            HeaderText="Id"
-                            SortExpression="EntityType.FriendlyName"
-                            ItemStyle-Wrap="false"
-                            ItemStyle-HorizontalAlign="Right"
-                            HeaderStyle-HorizontalAlign="Right" />
-                        <asp:TemplateField ItemStyle-Wrap="false">
-                            <HeaderTemplate>Qualifier</HeaderTemplate>
-                            <ItemTemplate>
-                                <asp:Literal ID="lEntityQualifier" runat="server"></asp:Literal>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
-                        <asp:TemplateField ItemStyle-Wrap="false">
-                            <HeaderTemplate>Categories</HeaderTemplate>
-                            <ItemTemplate>
-                                <asp:Literal ID="lCategories" runat="server"></asp:Literal>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField>
-                            <HeaderTemplate>Default Value</HeaderTemplate>
-                            <ItemTemplate>
-                                <asp:Literal ID="lDefaultValue" runat="server"></asp:Literal>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField>
-                            <HeaderTemplate>Value</HeaderTemplate>
-                            <ItemTemplate>
-                                <asp:Literal ID="lValue" runat="server"></asp:Literal>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <Rock:EditField OnClick="rGrid_Edit" />
-                        <Rock:SecurityField TitleField="Name" />
-                        <Rock:DeleteField OnClick="rGrid_Delete" />
-                    </Columns>
-                </Rock:Grid>
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute List</h1>
+                </div>
+                <div class="panel-body">
+
+                    <div class="grid grid-panel">
+                        <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                            <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                            <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
+                        </Rock:GridFilter>
+                        <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
+                            <Columns>
+                                <asp:BoundField
+                                    DataField="Id"
+                                    HeaderText="Id"
+                                    SortExpression="EntityType.FriendlyName"
+                                    ItemStyle-Wrap="false"
+                                    ItemStyle-HorizontalAlign="Right"
+                                    HeaderStyle-HorizontalAlign="Right" />
+                                <asp:TemplateField ItemStyle-Wrap="false">
+                                    <HeaderTemplate>Qualifier</HeaderTemplate>
+                                    <ItemTemplate>
+                                        <asp:Literal ID="lEntityQualifier" runat="server"></asp:Literal>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
+                                <asp:TemplateField ItemStyle-Wrap="false">
+                                    <HeaderTemplate>Categories</HeaderTemplate>
+                                    <ItemTemplate>
+                                        <asp:Literal ID="lCategories" runat="server"></asp:Literal>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField>
+                                    <HeaderTemplate>Default Value</HeaderTemplate>
+                                    <ItemTemplate>
+                                        <asp:Literal ID="lDefaultValue" runat="server"></asp:Literal>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField>
+                                    <HeaderTemplate>Value</HeaderTemplate>
+                                    <ItemTemplate>
+                                        <asp:Literal ID="lValue" runat="server"></asp:Literal>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <Rock:EditField OnClick="rGrid_Edit" />
+                                <Rock:SecurityField TitleField="Name" />
+                                <Rock:DeleteField OnClick="rGrid_Delete" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+
+                </div>
             </div>
+
+            
 
         </asp:Panel>
 

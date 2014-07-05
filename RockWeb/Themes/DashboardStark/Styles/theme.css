@@ -3594,9 +3594,9 @@ a.help {
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
-}
-.panel .panel-body .well {
-  background-color: #d5d5d5;
+  /*.well {
+            background-color: @accent-color;
+        }*/
 }
 .panel-widget {
   border-color: #d5d5d5;
