@@ -2,13 +2,14 @@
 
 <asp:UpdatePanel ID="upnlDevice" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-default" Visible="false">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
             
             <asp:HiddenField ID="hfDeviceId" runat="server" />
 
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-desktop"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+            </div>
             <div class="panel-body">
-
-                <div class="banner"><h1><asp:Literal ID="lActionTitle" runat="server" /></h1></div>
 
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
@@ -69,7 +70,9 @@
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
+
             </div>
+
         </asp:Panel>
 
     </ContentTemplate>

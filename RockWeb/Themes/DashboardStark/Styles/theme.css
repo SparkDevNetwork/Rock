@@ -767,6 +767,8 @@ div.tagsinput .tags_clear {
   padding: 4px 4px 4px 25px;
   color: #bbbbbb;
   width: 100%;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 .smartsearch .dropdown .navbar-link {
   text-align: right;
@@ -3537,6 +3539,15 @@ a.help {
   margin-left: 6px;
   outline: 0;
   color: #86b8cc;
+}
+.photo img {
+  width: 100%;
+}
+.well > h1,
+.well > h2,
+.well > h3,
+.well > h4 {
+  margin-top: 0;
 }
 .control-label {
   font-weight: 700;
