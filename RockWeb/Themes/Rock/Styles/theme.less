@@ -1,4 +1,9 @@
-﻿
+﻿// Inspired By
+// http://tattek.com/minimal/#
+// http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
+// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html#
+
+
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/_rock-core.less";
@@ -251,6 +256,30 @@ textarea:focus,
 .updateprogress-status {
     .spinner > div {
         background-color: #fff;
+    }
+}
+
+.page-list-as-blocks {
+
+    ul {
+
+        li {
+
+            a {
+                -webkit-transition: background-color 200ms linear;
+                -moz-transition: background-color 200ms linear;
+                -o-transition: background-color 200ms linear;
+                -ms-transition: background-color 200ms linear;
+                transition: background-color 200ms linear;
+
+                &:hover {
+                    background-color: @accent-blue;
+                    border-color: darken(@accent-blue, %5);
+                    color: #fff;
+                }
+
+            }
+        }
     }
 }
 
