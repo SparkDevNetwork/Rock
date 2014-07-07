@@ -2,11 +2,15 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
+        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-block">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-clock-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+            </div>
             <div class="panel-body">
 
                 <asp:HiddenField ID="hfId" runat="server" />
-                <div class="banner"><h1><asp:Literal ID="lActionTitle" runat="server"></asp:Literal></h1></div>
+                
                 <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 
