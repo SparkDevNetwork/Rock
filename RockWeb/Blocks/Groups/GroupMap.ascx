@@ -5,7 +5,7 @@
         
         <asp:Literal ID="lMapStyling" runat="server" />
         
-        <div class="form-inline">
+        <div class="form-inline js-show-hide-options">
 
             <div class="form-group">
                 <div class="checkbox">
@@ -31,6 +31,18 @@
                 </div>
             </div>
 
+            <asp:Repeater ID="rptStatus" runat="server">
+                <ItemTemplate>
+                    <div class="form-group" style="display:none">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' /> <%# Eval("Name") %>
+                            </label>
+                        </div>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+            
         </div>
 
         <asp:Panel ID="pnlMap" runat="server">
