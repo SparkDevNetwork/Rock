@@ -4236,15 +4236,6 @@ textarea:focus,
   -o-transition-duration: 0.5s;
   transition-duration: 0.5s;
 }
-#splash.error {
-  background-color: #efefef;
-}
-#splash.error #content {
-  margin-top: 20px;
-  background-color: #f3f3f4;
-  border-radius: 4px;
-  padding: 20px;
-}
 .not-found h2 {
   font-size: 200px;
   font-weight: 900;
@@ -4256,6 +4247,43 @@ textarea:focus,
   font-size: 210px;
   position: relative;
   top: -12px;
+}
+body#splash {
+  background-color: #dbd5cb;
+  border-top: 36px solid #282526;
+}
+body#splash #content {
+  max-width: 400px;
+  margin: 24px auto 0;
+  padding: 15px;
+}
+body#splash #content #logo {
+  width: 100px;
+  height: 100px;
+  display: block;
+  margin: 0 auto;
+}
+body#splash #content #logo svg {
+  width: 100%;
+  height: 100%;
+}
+body#splash #content #logo .rock-logo {
+  fill: #d1c9bc;
+}
+body#splash.error #content {
+  margin: 12px auto 0;
+  max-width: 800px;
+}
+body#splash.error #content #logo {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+body#splash.error #content .error-icon i {
+  background-color: #fff;
+  border-radius: 24px;
+  padding: 18px;
+  border: 3px solid #c6bdad;
 }
 /*#endregion */
 /*#region  
@@ -4272,6 +4300,17 @@ textarea:focus,
 /*#endregion */
 /*#region 
 // 7. Responsive Overrides  */
+@media (min-width: 768px) {
+  body#splash #content {
+    margin: 36px auto 0;
+  }
+  body#splash #content #logo {
+    width: 150px;
+    height: 150px;
+    display: block;
+    margin: 0 auto 12px;
+  }
+}
 @media (min-width: 992px) {
   #content-wrapper header .navbar-default {
     height: 50px;
