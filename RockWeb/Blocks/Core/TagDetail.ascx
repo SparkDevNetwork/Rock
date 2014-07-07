@@ -3,14 +3,15 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-tag"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
-            </div>
-            <div class="panel-body">
 
-                <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+            <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" Visible="false">
+                    
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-tag"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                    <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
+                </div>
+                <div class="panel-body">
+                    
                     <asp:HiddenField ID="hfId" runat="server" />
 
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
@@ -22,13 +23,13 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-                                 </div>
+                                    </div>
                             </div>
                     
                             <div class="row">
                                 <div class="col-md-12">
                                     <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
-                               </div>
+                                </div>
                             </div>
                     
                             <div class="row">
@@ -44,7 +45,7 @@
                                     <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                     <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
-                               </div>
+                                </div>
                             </div>
 
                             <Rock:NotificationBox ID="nbEditError" runat="server" NotificationBoxType="Danger" Visible="false"></Rock:NotificationBox>
@@ -71,13 +72,8 @@
                         </div>
 
                     </fieldset>
-
-                </asp:Panel>
-
-            </div>
-        </div>
-
-        
+                </div>
+            </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
