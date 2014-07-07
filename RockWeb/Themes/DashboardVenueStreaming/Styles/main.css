@@ -1,0 +1,178 @@
+/* ----------  fonts ---------- */
+
+@font-face {
+    font-family: DINWebCondensedBlack;
+    src: url('../assets/fonts/DINWeb-CondBlack.eot');
+}
+@font-face {
+    font-family: DINWebCondensedBlack;
+    src: url('../assets/fonts/DINWeb-CondBlack.woff') format('woff'), url('../assets/fonts/DINWeb-CondBlack.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: DINWebCondensedBold;
+    src: url('../assets/fonts/DINWeb-CondBold.eot');
+}
+@font-face {
+    font-family: DINWebCondensedBold;
+    src: url('../assets/fonts/DINWeb-CondBold.woff') format('woff'), url('../assets/fonts/DINWeb-CondBold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: DINWebCondensedMedium;
+    src: url('../assets/fonts/DINWeb-CondMedium.eot');
+}
+@font-face {
+    font-family: DINWebCondensedMedium;
+    src: url('../assets/fonts/DINWeb-CondMedium.woff') format('woff'), url('../assets/fonts/DINWeb-CondMedium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: DINWebCondensedRegular;
+    src: url('../assets/fonts/DINWeb-CondRegular.eot');
+}
+@font-face {
+    font-family: DINWebCondensedRegular;
+    src: url('../assets/fonts/DINWeb-CondRegular.woff') format('woff'), url('../assets/fonts/DINWeb-CondRegular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: DINWebCondensed;
+    src: url('../assets/fonts/DINWeb-Cond.eot');
+}
+@font-face {
+    font-family: DINWebCondensed;
+    src: url('../assets/fonts/DINWeb-Cond.woff') format('woff'), url('../assets/fonts/DINWeb-Cond.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: DINWebCondensedLight;
+    src: url('../assets/fonts/DINWeb-CondLight.eot');
+}
+@font-face {
+    font-family: DINWebCondensedLight;
+    src: url('../assets/fonts/DINWeb-CondLight.woff') format('woff'), url('../assets/fonts/DINWeb-CondLight.ttf') format('truetype');
+}
+
+/* ----------  page defaults ---------- */
+
+body {
+	font-size: 100%;
+	font-family: Arial, Verdana, Helvetica, sans-serif;
+	background: #1c1c1c;
+	background-image: url('../assets/images/dark-fabric.png');
+	color: #fff;
+}
+
+p {
+	font-size: 1.4em;
+	margin-bottom: 12px;
+}
+
+
+h1 {
+	text-transform: uppercase;
+	font-family: DINWebCondensedBold, Helvetica, Arial, sans-serif;
+	font-weight: normal;
+	font-size: 20px;
+}
+
+li {
+	margin: 6px 0;
+}
+		
+/* ----------  primary layout ---------- */
+
+body > header #logo {
+	width: 55%;
+	max-width: 450px;
+	height: 36px;
+	margin-top: 6px;
+}
+
+body > header nav {
+	float: right;
+	height: 100%;
+	margin: 4px 12px;
+}
+
+#content {
+	width: 100%;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+body > footer nav {
+	text-align: center;
+}
+
+body > footer nav .btn {
+	width: 120px;
+	min-width: 120px;
+}
+
+
+/* stiching */
+.stich { 
+	background-image: url('../assets/images/stich.gif');
+	background-repeat: repeat-x;
+	width: 100%;
+	height: 100%;
+}
+
+header .stich { 
+	background-position: left 90%;
+}
+
+footer .stich { 
+	background-position: left 10%;
+}
+
+		
+/* ----------  page specific styles ---------- */
+
+body.select-campus #content div {
+	width: 310px;
+	text-align: center;
+	margin: 0 auto;
+}
+
+/* home page */
+.feature {
+	overflow: hidden;
+	background-color: transparent;
+	max-width: 100%;
+	margin: 0 .25%;
+}
+
+.feature-image {	
+	 max-width: auto;
+    background: url('../assets/images/feature-blank.gif') no-repeat left center; /* using background-position doesn't seem to work on the iOS device */
+    height: 260px;
+    -webkit-transition: background 0.5s linear;
+	-moz-transition: background 0.5s linear;
+	transition: background 0.5s linear; 
+}
+
+.feature-image.campus-1 {
+	background-image: url('../assets/images/campus-1.jpg') !important;
+}
+
+.feature-image.campus-5 {
+	background-image: url('../assets/images/campus-5.jpg') !important;
+}
+
+.feature-image.campus-6 {
+	background-image: url('../assets/images/campus-6.jpg') !important;
+}
+
+/* ----------  component override styles ---------- */
+.btn {
+	font-family: DINWebCondensedBold, Helvetica, Arial, sans-serif;
+	font-weight: normal;
+	text-transform: uppercase;
+}
+
+.btn.small {
+	font-family: DINWebCondensedLight, Helvetica, Arial, sans-serif;
+}
