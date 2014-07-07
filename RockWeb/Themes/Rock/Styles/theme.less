@@ -1,7 +1,7 @@
 ﻿// Inspired By
 // http://tattek.com/minimal/#
 // http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
-// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html#
+// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
 
 
 // Load Master Styles
@@ -400,18 +400,6 @@ textarea:focus,
     transition-duration: 0.5s;
 }
 
-#splash.error {
-    
-    background-color: @gray-lighter;
-    
-    #content {
-        margin-top: 20px;
-        background-color: @body-bg;
-        border-radius: @border-radius-base;
-        padding: 20px;
-    }
-}
-
 .not-found h2 {
     font-size: 200px;
     font-weight: @font-weight-bold;
@@ -425,6 +413,55 @@ textarea:focus,
         top: -12px;
     }
 }
+
+body#splash {
+    background-color: @accent-color;
+    border-top: 36px solid @accent-bold-color;
+
+    #content {
+        max-width: 400px;
+        margin: 24px auto 0;
+        padding: 15px;
+
+        #logo {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto;
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .rock-logo {
+                fill: darken(@accent-color, 5%);
+            }
+        }
+    }
+
+
+    &.error #content {
+        margin: 12px auto 0;
+        max-width: 800px;
+
+        #logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+        .error-icon {
+            i {
+                background-color: #fff;
+                border-radius: 24px;
+                padding: 18px;
+                border: 3px solid darken(@accent-color, 10%);
+            }
+        }
+    }
+}
+
 /*#endregion */
 
 
@@ -455,6 +492,20 @@ textarea:focus,
 // Small devices (tablets, 768px and up)
 @media (min-width: @screen-sm-min) {
     
+    body#splash {
+
+        #content {
+            margin: 36px auto 0;
+
+            #logo {
+                width: 150px;
+                height: 150px;
+                display: block;
+                margin: 0 auto 12px;
+            }
+        }
+    }
+
 }
 
 // Medium devices (desktops, 992px and up) 
