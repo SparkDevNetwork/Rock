@@ -981,6 +981,10 @@
     <Compile Include="Migrations\201407022144136_PhotoRequestUpload.Designer.cs">
       <DependentUpon>201407022144136_PhotoRequestUpload.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407072148278_UpdatesForNewTheme.cs" />
+    <Compile Include="Migrations\201407072148278_UpdatesForNewTheme.Designer.cs">
+      <DependentUpon>201407072148278_UpdatesForNewTheme.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1697,6 +1701,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407022144136_PhotoRequestUpload.resx">
       <DependentUpon>201407022144136_PhotoRequestUpload.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407072148278_UpdatesForNewTheme.resx">
+      <DependentUpon>201407072148278_UpdatesForNewTheme.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
