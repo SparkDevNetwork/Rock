@@ -79,11 +79,6 @@ namespace RockWeb.Blocks.Finance
             {
                 DisplayError( "You are not authorized to edit these transactions" );
             }
-
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "Title" ) ) )
-            {
-                lTitle.Text = "<h4>" + GetAttributeValue( "Title" ) + "</h4>";
-            }
         }
 
         /// <summary>
