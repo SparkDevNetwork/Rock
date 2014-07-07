@@ -467,25 +467,28 @@ ul.rocktree ul {
   font-size: 14px;
   margin: 6px 0;
 }
+.page-list-as-blocks ul {
+  padding: 0;
+}
 .page-list-as-blocks ul li {
-  background-color: #f3f3f4;
   border-radius: 4px;
   border: 1px solid #bbb;
   float: left;
   margin: 0 1.25% 15px;
   width: 47.5%;
   overflow: hidden;
-  color: #6a6a6a;
   text-align: center;
 }
 .page-list-as-blocks ul li a {
+  background-color: #f3f3f4;
   display: block;
-  color: inherit;
+  color: #6a6a6a;
   height: 80px;
   padding: 15px;
 }
-.page-list-as-blocks ul li:hover {
-  background-color: #ffffff;
+.page-list-as-blocks ul li a:hover {
+  background-color: #282526;
+  color: #d3cec5;
 }
 @media (min-width: 768px) {
   .page-list-as-blocks ul li {
@@ -2361,10 +2364,13 @@ td.grid-col-actions {
   margin-bottom: 30px;
 }
 .panel-group .panel-workflowitem:hover {
-  background-color: #e5e0da;
+  background-color: #fff;
 }
 .panel-group .panel-workflowitem .panel-heading {
   padding: 30px;
+}
+.panel-group .panel-workflowitem .panel-heading .panel-title {
+  width: 100%;
 }
 .panel-group .panel-workflowitem .panel-heading a h3 {
   margin: 0;
@@ -4129,6 +4135,18 @@ textarea:focus,
 }
 .updateprogress-status .spinner > div {
   background-color: #fff;
+}
+.page-list-as-blocks ul li a {
+  -webkit-transition: background-color 200ms linear;
+  -moz-transition: background-color 200ms linear;
+  -o-transition: background-color 200ms linear;
+  -ms-transition: background-color 200ms linear;
+  transition: background-color 200ms linear;
+}
+.page-list-as-blocks ul li a:hover {
+  background-color: #567d8c;
+  border-color: #NaNNaNNaN;
+  color: #fff;
 }
 /*#endregion */
 /*#region  

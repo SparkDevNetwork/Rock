@@ -374,8 +374,6 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _hfChecked.RenderControl( writer );
-
             if ( this.Checked )
             {
                 _btnOn.AddCssClass( this.ActiveButtonCssClass + " active" );
@@ -388,6 +386,9 @@ namespace Rock.Web.UI.Controls
             }
 
             _btnOn.RenderControl( writer );
+
+            _hfChecked.RenderControl( writer );
+            
             _btnOff.RenderControl( writer );
 
             writer.RenderEndTag();
