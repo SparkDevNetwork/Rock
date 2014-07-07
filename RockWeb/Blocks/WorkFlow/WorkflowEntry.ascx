@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlForm" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> </h1>
+                <h1 class="panel-title"><i class="fa fa-gear"></i> Workflow Entry</h1>
             </div>
             <div class="panel-body">
 

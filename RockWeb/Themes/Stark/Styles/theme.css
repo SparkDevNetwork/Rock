@@ -1718,18 +1718,18 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
-dl {
+dl:not(.dl-horizontal) {
   margin-bottom: 0;
 }
-dl dt {
+dl:not(.dl-horizontal) dt {
   font-weight: 700;
   margin-top: 16px;
   margin-bottom: 2px;
 }
-dl dt:first-child {
+dl:not(.dl-horizontal) dt:first-child {
   margin-top: 0;
 }
-dl dd {
+dl:not(.dl-horizontal) dd {
   margin-left: 0;
 }
 .form-control.input-width-xs,
@@ -4051,6 +4051,16 @@ footer .footer-address {
   font-size: 210px;
   position: relative;
   top: -12px;
+}
+/* hide block panels */
+.panel-block {
+  border: 0;
+}
+.panel-block > .panel-heading {
+  display: none;
+}
+.panel-block > .panel-body {
+  padding: 0;
 }
 @media (min-width: 768px) {
   #announcement-rotator {
