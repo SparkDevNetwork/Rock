@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -48,7 +50,7 @@ namespace Rock.Rest.Controllers
 
             routes.MapHttpRoute(
                 name: "GroupsMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{Groupid}",
+                routeTemplate: "api/Groups/GetMapInfo/{groupId}",
                 defaults: new
                 {
                     controller = "Groups",
@@ -57,11 +59,29 @@ namespace Rock.Rest.Controllers
 
             routes.MapHttpRoute(
                 name: "GroupsChildMapInfo",
-                routeTemplate: "api/Groups/GetMapInfo/{Groupid}/Children",
+                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Children",
                 defaults: new
                 {
                     controller = "Groups",
                     action = "GetChildMapInfo"
+                } );
+
+            routes.MapHttpRoute(
+                name: "GroupsMemberMapInfo",
+                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Members",
+                defaults: new
+                {
+                    controller = "Groups",
+                    action = "GetMemberMapInfo"
+                } );
+
+            routes.MapHttpRoute(
+                name: "GroupsFamiliesMapInfo",
+                routeTemplate: "api/Groups/GetMapInfo/{groupId}/Families/{statusId}",
+                defaults: new
+                {
+                    controller = "Groups",
+                    action = "GetFamiliesMapInfo"
                 } );
         }
 
@@ -201,6 +221,122 @@ namespace Rock.Rest.Controllers
             return mapItems.AsQueryable();
         }
 
+        [Authenticate, Secured]
+        public IQueryable<MapItem> GetMemberMapInfo( int groupId )
+        {
+            var group = ( (GroupService)Service ).Queryable( "Members" )
+                .Where( g => g.Id == groupId )
+                .FirstOrDefault();
+
+            if ( group != null )
+            {
+                var person = GetPerson();
+
+                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    var mapItems = new List<MapItem>();
+
+                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    var memberIds = group.Members.Select( m => m.PersonId ).Distinct().ToList();
+                    var families = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
+                        .Where( g => 
+                            g.GroupType.Guid == familyGuid &&
+                            g.Members.Any( m => memberIds.Contains(m.PersonId)))
+                        .Distinct();
+
+                    foreach ( var family in families )
+                    {
+                        foreach ( var location in family.GroupLocations
+                            .Where( g => g.IsMappedLocation && g.Location.GeoPoint != null )
+                            .Select( g => g.Location ) )
+                        {
+                            var mapItem = new MapItem( location );
+                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityId = family.Id;
+                            mapItem.Name = family.Name;
+                            if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
+                            {
+                                mapItems.Add( mapItem );
+                            }
+                        }
+                    }
+
+                    return mapItems.AsQueryable();
+                }
+                else
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+        }
+
+        [Authenticate, Secured]
+        public IQueryable<MapItem> GetFamiliesMapInfo( int groupId, int statusId )
+        {
+            var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
+                .Where( g => g.Id == groupId )
+                .FirstOrDefault();
+
+            if ( group != null )
+            {
+                var person = GetPerson();
+
+                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    var mapItems = new List<MapItem>();
+
+                    foreach ( var location in group.GroupLocations
+                        .Where( l => l.Location.GeoFence != null )
+                        .Select( l => l.Location ) )
+                    {
+                        var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
+                            .Where( l =>
+                                l.Group.GroupType.Guid.Equals( familyGuid ) &&
+                                l.Location.GeoPoint.Intersects( location.GeoFence ) &&
+                                l.Group.Members.Any( m =>
+                                    m.Person.ConnectionStatusValueId.HasValue &&
+                                    m.Person.ConnectionStatusValueId.Value == statusId ) )
+                            .Select( l => new
+                            {
+                                l.Location,
+                                l.Group.Id,
+                                l.Group.Name,
+                                MinStatus = l.Group.Members
+                                    .OrderBy( m => m.Person.ConnectionStatusValue.Order )
+                                    .Select( m => m.Person.ConnectionStatusValue.Id )
+                                    .FirstOrDefault()
+                            } );
+                            
+                        foreach( var family in families.Where( f => f.MinStatus == statusId ))
+                        {
+                            var mapItem = new MapItem( family.Location );
+                            mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                            mapItem.EntityId = family.Id;
+                            mapItem.Name = family.Name;
+                            if ( mapItem.Point != null || mapItem.PolygonPoints.Any() )
+                            {
+                                mapItems.Add( mapItem );
+                            }
+                        }
+                    }
+
+                    return mapItems.AsQueryable();
+                }
+                else
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+        }
     }
 }
 

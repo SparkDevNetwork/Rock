@@ -46,84 +46,7 @@ namespace RockWeb.Blocks.Groups
 
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
-    [CodeEditorField( "Group Window Contents", "Liquid template for the group window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
-<div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
-    <span class='label label-campus pull-right'>{{GroupCampus}}</span>
-</div>
-
-<div class='clearfix'>
-    <div class='pull-left' style='padding-right: 24px'>
-        <strong>{{GroupLocation.Name}}</strong><br>
-        {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
-        {% for attribute in Attributes %}
-            {% if forloop.first %}<br/>{% endif %}
-            <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
-        {% endfor %}
-    </div>
-    <div class='pull-left'>
-        <strong>{{GroupMemberTerm}}s</strong><br>
-        {% for GroupMember in GroupMembers -%}
-            {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
-            {% else %}
-                {{GroupMember.NickName}} {{GroupMember.LastName}}
-            {% endif %}
-            - {{GroupMember.Email}}
-            {% for PhoneType in GroupMember.PhoneTypes %}
-                <br>{{PhoneType.Name}}: {{PhoneType.Number}}
-            {% endfor %}
-            <br>
-        {% endfor -%}
-    </div>
-</div>
-
-{% if GroupDetailPage != '' %}
-    <br>
-    <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
-{% endif %}
-
-", "", 9 )]
-    [CodeEditorField( "Group Member Contents", "   Liquid template for the group window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
-<div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4> 
-    <span class='label label-campus pull-right'>{{GroupCampus}}</span>
-</div>
-
-<div class='clearfix'>
-    <div class='pull-left' style='padding-right: 24px'>
-        <strong>{{GroupLocation.Name}}</strong><br>
-        {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
-        {% for attribute in Attributes %}
-            {% if forloop.first %}<br/>{% endif %}
-            <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
-        {% endfor %}
-    </div>
-    <div class='pull-left'>
-        <strong>{{GroupMemberTerm}}s</strong><br>
-        {% for GroupMember in GroupMembers -%}
-            {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
-            {% else %}
-                {{GroupMember.NickName}} {{GroupMember.LastName}}
-            {% endif %}
-            - {{GroupMember.Email}}
-            {% for PhoneType in GroupMember.PhoneTypes %}
-                <br>{{PhoneType.Name}}: {{PhoneType.Number}}
-            {% endfor %}
-            <br>
-        {% endfor -%}
-    </div>
-</div>
-
-{% if GroupDetailPage != '' %}
-    <br>
-    <a class='btn btn-xs btn-action' href='{{GroupDetailPage}}'>View Group</a>
-{% endif %}
-
-", "", 9 )]
+    [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. F71E22,E75C1F,E7801,F7A11F).", true, "F71E22,E75C1F,E7801,F7A11F" )]
     public partial class GroupMap : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -162,6 +85,17 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                rptStatus.DataSource = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Name )
+                    .Select( v => new
+                    {
+                        v.Id,
+                        Name = v.Name.Pluralize()
+                    } )
+                    .ToList();
+                rptStatus.DataBind();
+
                 Map();
             }
         }
@@ -196,7 +130,7 @@ namespace RockWeb.Blocks.Groups
                 lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Group ID is required to display the map.</div>";
                 return;
             }
-
+            
             pnlMap.Visible = true;
 
             string mapStylingFormat = @"
@@ -224,6 +158,9 @@ namespace RockWeb.Blocks.Groups
                 markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", string.Empty );
             }
 
+            var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            string polygonColors = "\"" + polygonColorList.AsDelimited( "\", \"" ) + "\"";
+
             // write script to page
             string mapScriptFormat = @"
 <script> 
@@ -233,9 +170,12 @@ namespace RockWeb.Blocks.Groups
         var groupId = {0};
         var groupItems = [];
         var childGroupItems;
+        var groupMemberItems
+        var familyItems = {{}};
 
         var map;
         var bounds = new google.maps.LatLngBounds();
+        var infoWindow = new google.maps.InfoWindow();
 
         var mapStyle = {1};
         var pinColor = '{2}';
@@ -247,6 +187,9 @@ namespace RockWeb.Blocks.Groups
             new google.maps.Size(40, 37),
             new google.maps.Point(0, 0),
             new google.maps.Point(12, 35));
+
+        var polygonColorIndex = 0;
+        var polygonColors = [{3}];
 
         initializeMap();
 
@@ -268,17 +211,22 @@ namespace RockWeb.Blocks.Groups
                 // Loop through array of map items
                 $.each(mapItems, function (i, mapItem) {{
                     $('#lGroupName').text(mapItem.Name);
-                    var items = addMapItem(i, mapItem);
+                    var items = addMapItem(i, mapItem, {0});
                     for (var i = 0; i < items.length; i++) {{
                         groupItems.push(items[i]);
                     }}
                 }});
 
-                map.fitBounds(bounds);
-                       
-                // var boundsListener = google.maps.event.addListener((map), 'bounds_changed', addMapItems );
+                if (groupItems.length == 0) {{
+                    getChildGroups();
+                    $('.js-show-hide-options').hide();
+                }}
 
-            }});        
+                if (!bounds.isEmpty()) {{
+                    map.fitBounds(bounds);
+                }}
+                       
+            }});    
 
         }}
 
@@ -301,6 +249,13 @@ namespace RockWeb.Blocks.Groups
     
                 items.push(marker);
 
+                google.maps.event.addListener(marker, 'click', (function (marker, i) {{
+                    return function () {{
+                        infoWindow.setContent(mapItem.Name);
+                        infoWindow.open(map, marker);
+                    }}
+                }})(marker, i));
+
             }}
 
             if (typeof mapItem.PolygonPoints !== 'undefined' && mapItem.PolygonPoints.length > 0) {{
@@ -314,29 +269,41 @@ namespace RockWeb.Blocks.Groups
                     polygonPoints.push(position);
                 }});
 
+                var polygonColor = getNextPolygonColor();
+
                 polygon = new google.maps.Polygon({{
                     paths: polygonPoints,
                     map: map,
-                    strokeColor: pinColor,
-                    fillColor: pinColor
+                    strokeColor: polygonColor,
+                    fillColor: polygonColor
                 }});
 
                 items.push(polygon);
+
+                // Get Center
+                var polyBounds = new google.maps.LatLngBounds();
+                for ( j = 0; j < polygonPoints.length; j++) {{
+                    polyBounds.extend(polygonPoints[j]);
+                }}
+
+                google.maps.event.addListener(polygon, 'click', (function (polygon, i) {{
+                    return function () {{
+                        infoWindow.setContent(mapItem.Name);
+                        infoWindow.setPosition(polyBounds.getCenter());
+                        infoWindow.open(map);
+                    }}
+                }})(polygon, i));
+
+                if ( mapItem.EntityId == {0} ) {{
+                    $('.js-connection-status-cb').closest('.form-group').show();
+                }}
+        
             }}
 
             return items;
 
         }}
         
-        function htmlDecode(input) {{
-            var e = document.createElement('div');
-            e.innerHTML = input;
-            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
-        }}
-
-        function addMapItems() {{
-        }}
-
         // Show/Hide group
         $('#cbShowGroup').click( function() {{
             if ($(this).prop('checked')) {{
@@ -352,16 +319,7 @@ namespace RockWeb.Blocks.Groups
                 if (typeof childGroupItems !== 'undefined') {{
                     setAllMap(childGroupItems, map);
                 }} else {{
-                    childGroupItems = [];
-                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
-                        $.each(mapItems, function (i, mapItem) {{
-                            var items = addMapItem(i, mapItem);
-                            for (var i = 0; i < items.length; i++) {{
-                                childGroupItems.push(items[i]);
-                            }}
-                        }});
-                        map.fitBounds(bounds);
-                    }});
+                    getChildGroups();
                 }}
             }} else {{
                 if (typeof childGroupItems !== 'undefined') {{
@@ -370,6 +328,67 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
+        function getChildGroups() {{
+            childGroupItems = [];
+            $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Children', function( mapItems ) {{
+                $.each(mapItems, function (i, mapItem) {{
+                    var items = addMapItem(i, mapItem);
+                    for (var i = 0; i < items.length; i++) {{
+                        childGroupItems.push(items[i]);
+                    }}
+                }});
+                map.fitBounds(bounds);
+            }});
+        }}
+
+        // Show/Hide group members
+        $('#cbShowGroupMembers').click( function() {{
+            if ($(this).prop('checked')) {{
+                if (typeof groupMemberItems !== 'undefined') {{
+                    setAllMap(groupMemberItems, map);
+                }} else {{
+                    groupMemberItems = [];
+                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Members', function( mapItems ) {{
+                        $.each(mapItems, function (i, mapItem) {{
+                            var items = addMapItem(i, mapItem);
+                            for (var i = 0; i < items.length; i++) {{
+                                groupMemberItems.push(items[i]);
+                            }}
+                        }});
+                        map.fitBounds(bounds);
+                    }});
+                }}
+            }} else {{
+                if (typeof groupMemberItems !== 'undefined') {{
+                    setAllMap(groupMemberItems, null);
+                }} 
+            }}
+        }});
+
+        // Show/Hide families
+        $('.js-connection-status-cb').click( function() {{
+            var statusId = $(this).attr('data-item');
+            if ($(this).prop('checked')) {{
+                if (typeof familyItems[statusId] !== 'undefined') {{
+                    setAllMap(familyItems[statusId], map);
+                }} else {{
+                    familyItems[statusId] = [];
+                    $.get( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Families/' + statusId, function( mapItems ) {{
+                        $.each(mapItems, function (i, mapItem) {{
+                            var items = addMapItem(i, mapItem);
+                            for (var i = 0; i < items.length; i++) {{
+                                familyItems[statusId].push(items[i]);
+                            }}
+                        }});
+                        map.fitBounds(bounds);
+                    }});
+                }}
+            }} else {{
+                if (typeof familyItems[statusId] !== 'undefined') {{
+                    setAllMap(familyItems[statusId], null);
+                }} 
+            }}
+        }});
 
         function setAllMap(markers, map) {{
             for (var i = 0; i < markers.length; i++) {{
@@ -377,10 +396,28 @@ namespace RockWeb.Blocks.Groups
             }}
         }}
 
+        function htmlDecode(input) {{
+            var e = document.createElement('div');
+            e.innerHTML = input;
+            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+        }}
+
+        function getNextPolygonColor() {{
+            var color = 'FE7569';
+            if ( polygonColors.length > polygonColorIndex ) {{
+                color = polygonColors[polygonColorIndex];
+                polygonColorIndex++;
+            }} else {{
+                color = polygonColors[0];
+                polygonColorIndex = 1;
+            }}
+            return color;
+        }}
+
     }});
 </script>";
 
-            string mapScript = string.Format( mapScriptFormat, groupId.Value, styleCode, markerColor );
+            string mapScript = string.Format( mapScriptFormat, groupId.Value, styleCode, markerColor, polygonColors );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );
 

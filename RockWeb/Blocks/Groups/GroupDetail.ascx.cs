@@ -1041,6 +1041,14 @@ namespace RockWeb.Blocks.Groups
                                     mapLink ) ) );
                         }
                     }
+
+                    if (phMaps.Controls.Count == 0)
+                    {
+                        phMaps.Controls.Add(
+                            new LiteralControl( string.Format(
+                                    "<div class='group-location-map'><a href='{0}'>Map</a></div>",
+                                    groupMapUrl ) ) );
+                    }
                 }
             }
 
