@@ -145,16 +145,17 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                rptStatus.DataSource = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
+                var statuses = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
                     .ThenBy( v => v.Name )
                     .Select( v => new
                     {
                         v.Id,
                         Name = v.Name.Pluralize(),
-                        Color = ( v.GetAttributeValue( "Color" ) ?? "FE7569" ).Replace( "#", "" )
+                        Color = ( v.GetAttributeValue( "Color" ) ?? "" ).Replace( "#", "" )
                     } )
                     .ToList();
+                rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
 
                 Map();
