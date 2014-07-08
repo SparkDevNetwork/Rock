@@ -543,8 +543,12 @@ namespace Rock.Model
 
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
                 {
-                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
-                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
+                    try
+                    {
+                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
+                    }
+                    catch { }
                 }
 
                 return birthdayDayOfWeek;
@@ -568,8 +572,12 @@ namespace Rock.Model
 
                 if ( BirthMonth.HasValue && BirthDay.HasValue )
                 {
-                    DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
-                    birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
+                    try
+                    {
+                        DateTime thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                        birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
+                    }
+                    catch { }
                 }
 
                 return birthdayDayOfWeek;

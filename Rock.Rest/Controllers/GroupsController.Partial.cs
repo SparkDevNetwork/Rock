@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -23,6 +24,7 @@ using System.Web.Http;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -83,6 +85,15 @@ namespace Rock.Rest.Controllers
                     controller = "Groups",
                     action = "GetFamiliesMapInfo"
                 } );
+
+            routes.MapHttpRoute(
+               name: "GroupsMapInfoWindow",
+               routeTemplate: "api/Groups/GetMapInfoWindow/{groupId}/{locationId}",
+               defaults: new
+               {
+                   controller = "Groups",
+                   action = "GetMapInfoWindow"
+               } );
         }
 
         /// <summary>
@@ -307,6 +318,7 @@ namespace Rock.Rest.Controllers
                                 l.Group.Id,
                                 l.Group.Name,
                                 MinStatus = l.Group.Members
+                                    .Where( m => m.Person.ConnectionStatusValueId.HasValue )
                                     .OrderBy( m => m.Person.ConnectionStatusValue.Order )
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
                                     .FirstOrDefault()
@@ -337,6 +349,83 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
         }
+
+        [Authenticate, Secured]
+        [HttpPost]
+        public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
+        {
+            // Use new service with new context so properties can be navigated by liquid
+            var group = new GroupService( new RockContext() ).Queryable( "GroupLocations.Location" )
+                .Where( g => g.Id == groupId )
+                .FirstOrDefault();
+
+            if ( group != null )
+            {
+                var person = GetPerson();
+
+                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    string infoWindow = group.Name;
+
+                    if ( infoWindowDetails != null )
+                    {
+                        var groupPageParams = new Dictionary<string, string>();
+                        groupPageParams.Add( "GroupId", group.Id.ToString() );
+                        var groupDetailUrl = new PageReference( infoWindowDetails.GroupPage, groupPageParams ).BuildUrl();
+
+                        var personPageParams = new Dictionary<string, string>();
+                        personPageParams.Add( "PersonId", string.Empty );
+                        var personProfileUrl = new PageReference( infoWindowDetails.PersonProfilePage, personPageParams ).BuildUrl();
+
+                        var mapPageParams = new Dictionary<string, string>();
+                        mapPageParams.Add( "GroupId", group.Id.ToString() );
+                        var groupMapUrl = new PageReference( infoWindowDetails.MapPage, mapPageParams ).BuildUrl();
+
+                        var grouplocation = group.GroupLocations
+                            .Where( g => g.LocationId == locationId )
+                            .FirstOrDefault();
+
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "GroupDetailUrl", groupDetailUrl );
+                        mergeFields.Add( "PersonProfileUrl", personProfileUrl );
+                        mergeFields.Add( "GroupMapUrl", groupMapUrl );
+                        mergeFields.Add( "Group", group );
+                        mergeFields.Add( "GroupLocation", grouplocation );
+
+                        infoWindow = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template as string );
+                        infoWindow = infoWindow.ResolveMergeFields( mergeFields );
+                    }
+
+                    return new InfoWindowResult( infoWindow );
+                }
+                else
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+            }
+            else
+            {
+                throw new HttpResponseException( HttpStatusCode.BadRequest );
+            }
+        }
+
+        public class InfoWindowRequest
+        {
+            public string GroupPage { get; set; }
+            public string PersonProfilePage { get; set; }
+            public string MapPage { get; set; }
+            public string Template { get; set; }
+        }
+
+        public class InfoWindowResult
+        {
+            public string Result { get; set; }
+            public InfoWindowResult(string result)
+            {
+                Result = result;
+            }
+        }
+
     }
 }
 
