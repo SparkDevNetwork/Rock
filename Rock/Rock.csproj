@@ -215,6 +215,7 @@
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\IChartData.cs" />
+    <Compile Include="Data\IgnoreLiquid.cs" />
     <Compile Include="Data\IMigration.cs" />
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
