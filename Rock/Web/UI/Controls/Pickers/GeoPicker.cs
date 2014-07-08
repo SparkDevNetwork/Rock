@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.Spatial;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -641,7 +642,11 @@ namespace Rock.Web.UI.Controls
                 if ( dvcMapStyle != null )
                 {
                     mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
-                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", "" );
+                    var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] {'|'}, StringSplitOptions.RemoveEmptyEntries).ToList();
+                    if ( colors.Any() )
+                    {
+                        markerColor = colors.First().Replace( "#", "" );
+                    }
                 }
             }
             catch { } // oh well...
