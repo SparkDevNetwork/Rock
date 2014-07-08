@@ -308,6 +308,7 @@ namespace Rock.Rest.Controllers
                         var activeGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
                         var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
                             .Where( l =>
+                                l.IsMappedLocation &&
                                 l.Group.GroupType.Guid.Equals( familyGuid ) &&
                                 l.Location.GeoPoint.Intersects( location.GeoFence ) &&
                                 l.Group.Members.Any( m =>
