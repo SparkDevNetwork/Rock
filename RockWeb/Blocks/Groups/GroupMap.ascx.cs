@@ -51,43 +51,38 @@ namespace RockWeb.Blocks.Groups
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 4 )]
     [TextField( "Polygon Colors", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. F71E22,E75C1F,E7801,F7A11F).", true, "F71E22,E75C1F,E7801,F7A11F", "", 5 )]
     [CodeEditorField( "Info Window Contents", "Liquid template for the info window. To suppress the window provide a blank template.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 600, false, @"
-{% assign groupTypeGuid = Group.GroupType.Guid | Upcase %}
 <div style='width:250px'>
 
     <div class='clearfix'>
-        <h4 class='pull-left' style='margin-top: 0;'>{{Group.Name}}</h4> 
-        <span class='label label-campus pull-right'>{{Group.Campus.Name}}</span>
+        <h4 class='pull-left' style='margin-top: 0;'>{{ GroupName }}</h4> 
+        <span class='label label-campus pull-right'>{{ Campus.Name }}</span>
     </div>
     
     <div class='clearfix'>
-		{% if GroupLocation.Location.Street1 and GroupLocation.Location.Street1 != '' %}
-			<strong>{{GroupLocation.GroupLocationTypeValue.Name}}</strong>
-			<br>{{GroupLocation.Location.Street1}}
-			<br>{{GroupLocation.Location.City}}, {{GroupLocation.Location.State}} {{GroupLocation.Location.Zip}}
+		{% if Location.Street1 and Location.Street1 != '' %}
+			<strong>{{ Location.Type }}</strong>
+			<br>{{ Location.Street1 }}
+			<br>{{ Location.City }}, {{ Location.State }} {{ Location.Zip }}
 		{% endif %}
-		{% if Group.Members.size > 0 %}
+		{% if Members.size > 0 %}
 			<br>
-			<br><strong>{{Group.GroupType.GroupMemberTerm}}s</strong><br>
-			{% for GroupMember in Group.Members -%}
+			<br><strong>{{ GroupType.GroupMemberTerm }}s</strong><br>
+			{% for GroupMember in Members -%}
 				<div class='clearfix'>
-					{% if GroupMember.Person.PhotoId %}
+					{% if GroupMember.PhotoUrl != '' %}
 						<div class='pull-left' style='padding: 0 5px 2px 0'>
-							<img src='{{ GroupMember.Person.PhotoUrl }}&maxheight=50&maxwidth=50'>
+							<img src='{{ GroupMember.PhotoUrl }}&maxheight=50&maxwidth=50'>
 						</div>
 					{% endif %}
-					{% if PersonProfileUrl != '' %}
-						<a href='{{PersonProfileUrl}}{{GroupMember.PersonId}}'>{{GroupMember.Person.NickName}} {{GroupMember.Person.LastName}}</a>
-					{% else %}
-						{{GroupMember.Person.NickName}} {{GroupMember.Person.LastName}}
+					<a href='{{ GroupMember.ProfilePageUrl }}'>{{ GroupMember.NickName }} {{ GroupMember.LastName }}</a> - {{ GroupMember.Role }}
+                    {% if groupTypeGuid != '790E3215-3B10-442B-AF69-616C0DCB998E' and GroupMember.ConnectionStatus != '' %}
+				        <br>{{ GroupMember.ConnectionStatus }}
 					{% endif %}
-					{% if GroupMember.Person.ConnectionStatusValue %}
-						- {{GroupMember.Person.ConnectionStatusValue.Name}}
-					{% endif %}
-					{% if GroupMember.Person.Email != '' %}
-						<br>{{GroupMember.Person.Email}}
+					{% if GroupMember.Email != '' %}
+						<br>{{ GroupMember.Email }}
 					{% endif %}
 					{% for Phone in GroupMember.Person.PhoneNumbers %}
-						<br>{{Phone.NumberTypeValue.Name}}: {{Phone.NumberFormatted}}
+						<br>{{ Phone.NumberTypeValue.Name }}: {{ Phone.NumberFormatted }}
 					{% endfor %}
 				</div>
 				<br>
@@ -95,10 +90,10 @@ namespace RockWeb.Blocks.Groups
 		{% endif %}
     </div>
     
-    {% if GroupDetailUrl != '' and groupTypeGuid != '790E3215-3B10-442B-AF69-616C0DCB998E' %}
+    {% if GroupType.Guid != '790E3215-3B10-442B-AF69-616C0DCB998E' %}
 		<br>
-		<a class='btn btn-xs btn-action' href='{{GroupDetailUrl}}'>View {{ Group.GroupType.GroupTerm }}</a>
-		<a class='btn btn-xs btn-action' href='{{GroupMapUrl}}'>View Map</a>
+		<a class='btn btn-xs btn-action' href='{{ DetailPageUrl }}'>View {{ GroupType.GroupTerm }}</a>
+		<a class='btn btn-xs btn-action' href='{{ MapPageUrl }}'>View Map</a>
 	{% endif %}
 
 </div>

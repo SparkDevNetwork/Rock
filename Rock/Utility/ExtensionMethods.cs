@@ -618,7 +618,7 @@ namespace Rock
         /// <param name="content">The content.</param>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
-        public static string ResolveMergeFields( this string content, Dictionary<string, object> mergeObjects )
+        public static string ResolveMergeFields( this string content, IDictionary<string, object> mergeObjects )
         {
             try
             {

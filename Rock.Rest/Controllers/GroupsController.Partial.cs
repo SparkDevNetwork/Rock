@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -107,7 +107,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public IQueryable<TreeViewItem> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, string groupTypeIds )
         {
-            var qry = ((GroupService)Service).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
+            var qry = ( (GroupService)Service ).GetNavigationChildren( id, rootGroupId, limitToSecurityRoleGroups, groupTypeIds );
 
             List<Group> groupList = new List<Group>();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
@@ -138,8 +138,8 @@ namespace Rock.Rest.Controllers
             List<int> resultIds = groupList.Select( a => a.Id ).ToList();
 
             var qryHasChildren = from x in Get().Select( a => a.ParentGroupId )
-                                    where resultIds.Contains( x.Value )
-                                    select x.Value;
+                                 where resultIds.Contains( x.Value )
+                                 select x.Value;
 
             var qryHasChildrenList = qryHasChildren.ToList();
 
@@ -162,15 +162,15 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         public IQueryable<MapItem> GetMapInfo( int groupId )
         {
-            var group = ( (GroupService)Service ).Queryable("GroupLocations.Location")
-                .Where(g => g.Id == groupId)
+            var group = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
+                .Where( g => g.Id == groupId )
                 .FirstOrDefault();
 
-            if (group != null)
+            if ( group != null )
             {
                 var person = GetPerson();
 
-                if (group.IsAuthorized( Rock.Security.Authorization.VIEW, person ))
+                if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
                     var mapItems = new List<MapItem>();
                     foreach ( var location in group.GroupLocations
@@ -208,7 +208,7 @@ namespace Rock.Rest.Controllers
             var mapItems = new List<MapItem>();
 
             foreach ( var group in ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
-                .Where( g => g.ParentGroupId == groupId ))
+                .Where( g => g.ParentGroupId == groupId ) )
             {
                 if ( group != null && group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
@@ -250,9 +250,9 @@ namespace Rock.Rest.Controllers
                     Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
                     var memberIds = group.Members.Select( m => m.PersonId ).Distinct().ToList();
                     var families = ( (GroupService)Service ).Queryable( "GroupLocations.Location" )
-                        .Where( g => 
+                        .Where( g =>
                             g.GroupType.Guid == familyGuid &&
-                            g.Members.Any( m => memberIds.Contains(m.PersonId)))
+                            g.Members.Any( m => memberIds.Contains( m.PersonId ) ) )
                         .Distinct();
 
                     foreach ( var family in families )
@@ -323,8 +323,8 @@ namespace Rock.Rest.Controllers
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
                                     .FirstOrDefault()
                             } );
-                            
-                        foreach( var family in families.Where( f => f.MinStatus == statusId ))
+
+                        foreach ( var family in families.Where( f => f.MinStatus == statusId ) )
                         {
                             var mapItem = new MapItem( family.Location );
                             mapItem.EntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
@@ -355,7 +355,7 @@ namespace Rock.Rest.Controllers
         public InfoWindowResult GetMapInfoWindow( int groupId, int locationId, [FromBody] InfoWindowRequest infoWindowDetails )
         {
             // Use new service with new context so properties can be navigated by liquid
-            var group = new GroupService( new RockContext() ).Queryable( "GroupLocations.Location" )
+            var group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Location,Campus,Members.Person" )
                 .Where( g => g.Id == groupId )
                 .FirstOrDefault();
 
@@ -385,15 +385,68 @@ namespace Rock.Rest.Controllers
                             .Where( g => g.LocationId == locationId )
                             .FirstOrDefault();
 
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "GroupDetailUrl", groupDetailUrl );
-                        mergeFields.Add( "PersonProfileUrl", personProfileUrl );
-                        mergeFields.Add( "GroupMapUrl", groupMapUrl );
-                        mergeFields.Add( "Group", group );
-                        mergeFields.Add( "GroupLocation", grouplocation );
+                        dynamic dynGroup = new ExpandoObject();
+                        dynGroup.GroupId = group.Id;
+                        dynGroup.GroupName = group.Name;
+                        dynGroup.DetailPageUrl = groupDetailUrl;
+                        dynGroup.MapPageUrl = groupMapUrl;
 
-                        infoWindow = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template as string );
-                        infoWindow = infoWindow.ResolveMergeFields( mergeFields );
+                        var dictCampus = new Dictionary<string, object>();
+                        dictCampus.Add( "Name", group.Campus != null ? group.Campus.Name : "" );
+                        dynGroup.Campus = dictCampus;
+
+                        var dictGroupType = new Dictionary<string, object>();
+                        dictGroupType.Add( "Id", group.GroupType.Id );
+                        dictGroupType.Add( "Guid", group.GroupType.Guid.ToString().ToUpper() );
+                        dictGroupType.Add( "GroupTerm", group.GroupType.GroupTerm );
+                        dictGroupType.Add( "GroupMemberTerm", group.GroupType.GroupMemberTerm );
+                        dynGroup.GroupType = dictGroupType;
+
+                        var dictLocation = new Dictionary<string, object>();
+                        dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Name );
+                        dictLocation.Add( "Street1", grouplocation.Location.Street1 );
+                        dictLocation.Add( "Street2", grouplocation.Location.Street2 );
+                        dictLocation.Add( "City", grouplocation.Location.City );
+                        dictLocation.Add( "State", grouplocation.Location.State );
+                        dictLocation.Add( "Zip", grouplocation.Location.Zip );
+                        dictLocation.Add( "Country", grouplocation.Location.Country );
+                        dynGroup.Location = dictLocation;
+
+                        var members = new List<Dictionary<string, object>>();
+                        foreach ( var member in group.Members.OrderBy( m => m.GroupRole.Order ).ThenBy( m => m.Person.BirthDate ) )
+                        {
+                            var dictMember = new Dictionary<string, object>();
+                            dictMember.Add( "PersonId", member.Person.Id );
+                            dictMember.Add( "ProfilePageUrl", personProfileUrl + member.Person.Id.ToString() );
+                            dictMember.Add( "Role", member.GroupRole.Name );
+                            dictMember.Add( "NickName", member.Person.NickName );
+                            dictMember.Add( "LastName", member.Person.LastName );
+                            dictMember.Add( "PhotoUrl", member.Person.PhotoId.HasValue ? member.Person.PhotoUrl : "" );
+                            dictMember.Add( "PhotoId", member.Person.PhotoId );
+                            dictMember.Add( "ConnectionStatus", member.Person.ConnectionStatusValue != null ?
+                                member.Person.ConnectionStatusValue.Name : "" );
+                            dictMember.Add( "Email", member.Person.Email );
+
+                            var phoneTypes = new List<Dictionary<string, object>>();
+                            foreach ( PhoneNumber p in member.Person.PhoneNumbers )
+                            {
+                                var dictPhoneNumber = new Dictionary<string, object>();
+                                dictPhoneNumber.Add( "Name", p.NumberTypeValue.Name );
+                                dictPhoneNumber.Add( "Number", p.ToString() );
+                                phoneTypes.Add( dictPhoneNumber );
+                            }
+
+                            dictMember.Add( "PhoneTypes", phoneTypes );
+
+                            members.Add( dictMember );
+                        }
+
+                        dynGroup.Members = members;
+
+                        var groupDict = dynGroup as IDictionary<string, object>;
+                        string result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict );
+
+                        return new InfoWindowResult( result );
                     }
 
                     return new InfoWindowResult( infoWindow );
@@ -420,7 +473,7 @@ namespace Rock.Rest.Controllers
         public class InfoWindowResult
         {
             public string Result { get; set; }
-            public InfoWindowResult(string result)
+            public InfoWindowResult( string result )
             {
                 Result = result;
             }
@@ -429,4 +482,4 @@ namespace Rock.Rest.Controllers
     }
 }
 
-    
+

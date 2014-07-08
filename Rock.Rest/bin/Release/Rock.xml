@@ -1754,6 +1754,11 @@
             The series identifier.
             </value>
         </member>
+        <member name="T:Rock.Data.IgnoreLiquidAttribute">
+            <summary>
+            Attribute so that the dotLiquid knows to ignore this column ( Only used when [DataMember] needs to be used for serialization )
+            </summary>
+        </member>
         <member name="T:Rock.Data.IMigration">
             <summary>
             Represents a class for migrations
@@ -54561,7 +54566,7 @@
             <param name="str">The string.</param>
             <returns></returns>
         </member>
-        <member name="M:Rock.ExtensionMethods.ResolveMergeFields(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+        <member name="M:Rock.ExtensionMethods.ResolveMergeFields(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
             Use DotLiquid to resolve any merge codes within the content using the values
             in the mergeObjects.
