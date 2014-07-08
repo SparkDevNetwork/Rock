@@ -305,11 +305,14 @@ namespace Rock.Rest.Controllers
                         .Select( l => l.Location ) )
                     {
                         var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                        var activeGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
                         var families = new GroupLocationService( (RockContext)Service.Context ).Queryable()
                             .Where( l =>
                                 l.Group.GroupType.Guid.Equals( familyGuid ) &&
                                 l.Location.GeoPoint.Intersects( location.GeoFence ) &&
                                 l.Group.Members.Any( m =>
+                                    m.Person.RecordStatusReasonValue != null &&
+                                    m.Person.RecordStatusReasonValue.Guid.Equals(activeGuid) &&
                                     m.Person.ConnectionStatusValueId.HasValue &&
                                     m.Person.ConnectionStatusValueId.Value == statusId ) )
                             .Select( l => new
@@ -318,7 +321,10 @@ namespace Rock.Rest.Controllers
                                 l.Group.Id,
                                 l.Group.Name,
                                 MinStatus = l.Group.Members
-                                    .Where( m => m.Person.ConnectionStatusValueId.HasValue )
+                                    .Where( m =>
+                                        m.Person.RecordStatusReasonValue != null &&
+                                        m.Person.RecordStatusReasonValue.Guid.Equals( activeGuid ) &&
+                                        m.Person.ConnectionStatusValueId.HasValue )
                                     .OrderBy( m => m.Person.ConnectionStatusValue.Order )
                                     .Select( m => m.Person.ConnectionStatusValue.Id )
                                     .FirstOrDefault()
