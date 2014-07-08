@@ -1,0 +1,75 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Rock.Data;
+
+namespace Rock.Model
+{
+    /// <summary>
+    /// Data access/service class for <see cref="Rock.Model.PhoneNumber"/> entities.
+    /// </summary>
+    public partial class PhoneNumberService 
+    {
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that belong to a <see cref="Rock.Model.Person"/>.
+        /// </summary>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to retrieve phone numbers for.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> that belong to the specified <see cref="Rock.Model.Person"/>.</returns>
+        public IQueryable<PhoneNumber> GetByPersonId( int personId )
+        {
+            return Queryable().Where( t => t.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Returns a list of phone numbers that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="System.String"/> phone numbers (as strings)</returns>
+        public IQueryable<string> GetNumbersBySearchterm( string searchterm )
+        {
+            return GetBySearchterm( searchterm ).OrderBy( n => n.Number ).
+                Select( n => n.Number ).Distinct();
+        }
+
+        /// <summary>
+        /// Returns a list of PersonIds <see cref="System.Int32"/> of people who have a phone number that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="System.Int32"/> PersonIds</returns>
+        public IQueryable<int> GetPersonIdsByNumber( string searchterm )
+        {
+            return GetBySearchterm( searchterm ).Select( n => n.PersonId ).Distinct();
+        }
+
+        /// <summary>
+        /// Returns a querable set of <see cref="Rock.Model.PhoneNumber">Phone Numbers</see> that match the given search term.
+        /// </summary>
+        /// <param name="searchterm">A partial phone number search string (everything but digits will be removed before attempting the search).</param>
+        /// <returns>A querable list of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see></returns>
+        public IQueryable<PhoneNumber> GetBySearchterm( string searchterm )
+        {
+            // remove everything but numbers
+            Regex rgx = new Regex( @"[^\d]" );
+            searchterm = rgx.Replace( searchterm, "" );
+
+            return Queryable().
+                Where( n => n.Number.Contains( searchterm ) );
+        }
+    }
+}

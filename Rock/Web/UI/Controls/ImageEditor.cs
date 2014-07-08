@@ -1,0 +1,782 @@
+﻿// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
+using Rock.Data;
+using Rock.Model;
+
+namespace Rock.Web.UI.Controls
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    [ToolboxData( "<{0}:ImageEditor runat=server></{0}:ImageEditor>" )]
+    public class ImageEditor : CompositeControl, IRockControl
+    {
+        #region IRockControl implementation
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region OnLoad
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( this.Page.Request.Params["__EVENTTARGET"] == _lbUploadImage.UniqueID )
+            {
+                // manually wire up to _lblUploadImage_Click since we want the fileUpload dialog javascript to happen first, then this
+                _lbUploadImage_Click( _lbUploadImage, e );
+            }
+        }
+
+        #endregion
+
+        #region UI Controls
+
+        private HiddenField _hfBinaryFileId;
+        private HiddenField _hfBinaryFileTypeGuid;
+        private FileUpload _fileUpload;
+        private HtmlAnchor _aRemove;
+        private LinkButton _lbShowModal;
+        private LinkButton _lbUploadImage;
+
+        private HiddenField _hfCropBinaryFileId;
+        private ModalDialog _mdImageDialog;
+        private Panel _pnlCropContainer;
+        private NotificationBox _nbImageWarning;
+        private Image _imgCropSource;
+        private HiddenField _hfCropCoords;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ImageEditor"/> class.
+        /// </summary>
+        public ImageEditor()
+            : base()
+        {
+            HelpBlock = new HelpBlock();
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The BinaryFileId of the image displayed on in the main image (not necessarily the one being cropped in the Modal)
+        /// </summary>
+        /// <value>
+        /// The binary file identifier.
+        /// </value>
+        public int? BinaryFileId
+        {
+            get
+            {
+                EnsureChildControls();
+                int? result = _hfBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfBinaryFileId.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// The BinaryFileId of the BinaryFile that in the process of being cropped (not necessarily the one shown in the base image)
+        /// </summary>
+        /// <value>
+        /// The uploaded binary file identifier.
+        /// </value>
+        public int? CropBinaryFileId
+        {
+            get
+            {
+                EnsureChildControls();
+                int? result = _hfCropBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfCropBinaryFileId.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the binary file type GUID.
+        /// </summary>
+        /// <value>
+        /// The binary file type GUID.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Data" ),
+        DefaultValue( "" ),
+        Description( "BinaryFileType Guid" )
+        ]
+        public Guid BinaryFileTypeGuid
+        {
+            get
+            {
+                EnsureChildControls();
+                Guid guid;
+                return Guid.TryParse( _hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfBinaryFileTypeGuid.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum height of the image.
+        /// </summary>
+        /// <value>
+        /// The maximum height of the image.
+        /// </value>
+        public int? MaxImageHeight
+        {
+            get
+            {
+                return ViewState["MaxImageHeight"] as int?;
+            }
+
+            set
+            {
+                ViewState["MaxImageHeight"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum width of the image.
+        /// </summary>
+        /// <value>
+        /// The maximum width of the image.
+        /// </value>
+        public int? MaxImageWidth
+        {
+            get
+            {
+                return ViewState["MaxImageWidth"] as int?;
+            }
+
+            set
+            {
+                ViewState["MaxImageWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the picture URL to use when there is no image selected
+        /// </summary>
+        /// <value>
+        /// The no picture URL.
+        /// </value>
+        public string NoPictureUrl
+        {
+            get
+            {
+                string nopictureUrl = ViewState["NoPictureUrl"] as string;
+                if ( string.IsNullOrWhiteSpace( nopictureUrl ) )
+                {
+                    return System.Web.VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-male.svg" );
+                }
+                else
+                {
+                    return nopictureUrl;
+                }
+            }
+
+            set
+            {
+                ViewState["NoPictureUrl"] = value;
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            _hfBinaryFileId = new HiddenField();
+            _hfBinaryFileId.ID = this.ID + "_hfBinaryFileId";
+            Controls.Add( _hfBinaryFileId );
+
+            _hfCropBinaryFileId = new HiddenField();
+            _hfCropBinaryFileId.ID = this.ID + "_hfCropBinaryFileId";
+            Controls.Add( _hfCropBinaryFileId );
+
+            _hfBinaryFileTypeGuid = new HiddenField();
+            _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
+            Controls.Add( _hfBinaryFileTypeGuid );
+
+            _aRemove = new HtmlAnchor();
+            _aRemove.ID = "rmv";
+            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
+            Controls.Add( _aRemove );
+
+            _lbShowModal = new LinkButton();
+            _lbShowModal.ID = this.ID + "_lbShowModal";
+            _lbShowModal.Text = "<i class='fa fa-pencil'></i>";
+            _lbShowModal.Click += _lbShowModal_Click;
+            Controls.Add( _lbShowModal );
+
+            _lbUploadImage = new LinkButton();
+            _lbUploadImage.ID = this.ID + "_lbUploadImage";
+            _lbUploadImage.Text = "<i class='fa fa-pencil'></i>";
+            Controls.Add( _lbUploadImage );
+
+            _fileUpload = new FileUpload();
+            _fileUpload.ID = this.ID + "_fu";
+            Controls.Add( _fileUpload );
+
+            _mdImageDialog = new ModalDialog();
+            _mdImageDialog.ID = this.ID + "_mdImageDialog";
+            _mdImageDialog.Title = "Image";
+            _mdImageDialog.SaveButtonText = "Crop";
+            _mdImageDialog.SaveClick += _mdImageDialog_SaveClick;
+
+            _pnlCropContainer = new Panel();
+            _pnlCropContainer.CssClass = "crop-container image-editor-crop-container clearfix";
+            _nbImageWarning = new NotificationBox();
+            _nbImageWarning.ID = this.ID + "_nbImageWarning";
+            _nbImageWarning.NotificationBoxType = NotificationBoxType.Warning;
+            _nbImageWarning.Text = "SVG image cropping is not supported.";
+
+            _imgCropSource = new Image();
+            _imgCropSource.ID = this.ID + "_imgCropSource";
+            _imgCropSource.CssClass = "image-editor-crop-source";
+
+            _pnlCropContainer.Controls.Add( _imgCropSource );
+
+            _mdImageDialog.Content.Controls.Add( _nbImageWarning );
+            _mdImageDialog.Content.Controls.Add( _pnlCropContainer );
+
+            _hfCropCoords = new HiddenField();
+            _hfCropCoords.ID = this.ID + "_hfCropCoords";
+            _pnlCropContainer.Controls.Add( _hfCropCoords );
+
+            Controls.Add( _mdImageDialog );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the _mdImageDialog control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _mdImageDialog_SaveClick( object sender, EventArgs e )
+        {
+            try
+            {
+                var rockContext = new RockContext();
+                BinaryFileService binaryFileService = new BinaryFileService(rockContext);
+
+                // load image from database
+                var binaryFile = binaryFileService.Get( CropBinaryFileId ?? 0 );
+                if ( binaryFile != null )
+                {
+                    byte[] croppedImage = CropImage( binaryFile.Data.Content, binaryFile.MimeType );
+
+                    BinaryFile croppedBinaryFile = new BinaryFile();
+                    croppedBinaryFile.IsTemporary = true;
+                    croppedBinaryFile.BinaryFileTypeId = binaryFile.BinaryFileTypeId;
+                    croppedBinaryFile.MimeType = binaryFile.MimeType;
+                    croppedBinaryFile.FileName = binaryFile.FileName;
+                    croppedBinaryFile.Description = binaryFile.Description;
+                    croppedBinaryFile.Data = new BinaryFileData();
+                    croppedBinaryFile.Data.Content = croppedImage;
+
+                    binaryFileService.Add( croppedBinaryFile );
+                    rockContext.SaveChanges();
+
+                    this.BinaryFileId = croppedBinaryFile.Id;
+                }
+
+                _mdImageDialog.Hide();
+            }
+            catch ( ImageResizer.Plugins.Basic.SizeLimits.SizeLimitException )
+            {
+                // shouldn't happen because we resize it below the limit in CropImage(), but just in case
+                var sizeLimits = new ImageResizer.Plugins.Basic.SizeLimits();
+                _nbImageWarning.Visible = true;
+                _nbImageWarning.Text = string.Format( "The image size exceeds the maximum resolution of {0}x{1}. Press cancel and try selecting a smaller image.", sizeLimits.TotalSize.Width, sizeLimits.TotalSize.Height );
+                _mdImageDialog.Show();
+            }
+        }
+
+        /// <summary>
+        /// Crops the image.
+        /// </summary>
+        /// <param name="bitmapContent">Content of the bitmap.</param>
+        /// <param name="mimeType">Type of the MIME.</param>
+        /// <returns></returns>
+        private byte[] CropImage( byte[] bitmapContent, string mimeType )
+        {
+            if ( mimeType == "image/svg+xml" )
+            {
+                return bitmapContent;
+            }
+
+            int[] photoCoords = _hfCropCoords.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => (int)a.AsDecimal() ).ToArray();
+            int x = photoCoords[0];
+            int y = photoCoords[1];
+            int width = photoCoords[2];
+            int height = photoCoords[3];
+            int x2 = x + width;
+            int y2 = y + height;
+
+            System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap( new MemoryStream( bitmapContent ) );
+
+            // intentionally tell imageResizer to ignore the 3200x3200 size limit so that we can crop it first before limiting the size.
+            var sizingPlugin = ImageResizer.Configuration.Config.Current.Plugins.Get<ImageResizer.Plugins.Basic.SizeLimiting>();
+            var origLimit = sizingPlugin.Limits.TotalBehavior;
+            sizingPlugin.Limits.TotalBehavior = ImageResizer.Plugins.Basic.SizeLimits.TotalSizeBehavior.IgnoreLimits;
+            MemoryStream croppedStream = new MemoryStream();
+            ImageResizer.ResizeSettings resizeCropSettings = new ImageResizer.ResizeSettings( string.Format( "crop={0},{1},{2},{3}", x, y, x2, y2 ) );
+            MemoryStream imageStream = new MemoryStream();
+            bitmap.Save( imageStream, bitmap.RawFormat );
+            imageStream.Seek( 0, SeekOrigin.Begin );
+
+            // set the size limit behavior back to what it was
+            try
+            {
+                ImageResizer.ImageBuilder.Current.Build( imageStream, croppedStream, resizeCropSettings );
+            }
+            finally
+            {
+                sizingPlugin.Limits.TotalBehavior = origLimit;
+            }
+
+            // Make sure Image is no bigger than maxwidth/maxheight.  Default to whatever imageresizer's limits are set to
+            int maxWidth = this.MaxImageWidth ?? sizingPlugin.Limits.TotalSize.Width;
+            int maxHeight = this.MaxImageHeight ?? sizingPlugin.Limits.TotalSize.Height;
+            croppedStream.Seek( 0, SeekOrigin.Begin );
+            System.Drawing.Bitmap croppedBitmap = new System.Drawing.Bitmap( croppedStream );
+
+            if ( ( croppedBitmap.Width > maxWidth ) || ( croppedBitmap.Height > maxHeight ) )
+            {
+                string resizeParams = string.Format( "width={0}&height={1}", maxWidth, maxHeight );
+                MemoryStream croppedAndResizedStream = new MemoryStream();
+                ImageResizer.ResizeSettings resizeSettings = new ImageResizer.ResizeSettings( resizeParams );
+                croppedStream.Seek( 0, SeekOrigin.Begin );
+                ImageResizer.ImageBuilder.Current.Build( croppedStream, croppedAndResizedStream, resizeSettings );
+                return croppedAndResizedStream.GetBuffer();
+            }
+            else
+            {
+                return croppedStream.GetBuffer();
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbUploadImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbUploadImage_Click( object sender, EventArgs e )
+        {
+            _lbShowModal_Click( _lbUploadImage, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _lbShowModal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _lbShowModal_Click( object sender, EventArgs e )
+        {
+            if ( !BinaryFileId.HasValue )
+            {
+                // no image to crop. they probably cancelled the image upload dialog
+                return;
+            }
+
+            CropBinaryFileId = BinaryFileId;
+
+            if ( sender == _lbUploadImage )
+            {
+                // we are uploading a new file and might cancel cropping it, so set the base ImageId to null
+                BinaryFileId = null;
+            }
+
+            _nbImageWarning.Visible = false;
+            _imgCropSource.ImageUrl = "~/GetImage.ashx?id=" + CropBinaryFileId;
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( CropBinaryFileId ?? 0 );
+            if ( binaryFile != null )
+            {
+                if ( binaryFile.MimeType != "image/svg+xml" )
+                {
+                    if ( binaryFile.Data != null && binaryFile.Data.Content != null )
+                    {
+                        var bitMap = new System.Drawing.Bitmap( new MemoryStream( binaryFile.Data.Content ) );
+                        _imgCropSource.Width = bitMap.Width;
+                        _imgCropSource.Height = bitMap.Height;
+                    }
+                }
+                else
+                {
+                    _imgCropSource.Width = Unit.Empty;
+                    _imgCropSource.Height = Unit.Empty;
+                    _nbImageWarning.Visible = true;
+                    _nbImageWarning.Text = "SVG image cropping is not supported.";
+                }
+            }
+
+            _mdImageDialog.Show();
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "class", "image-editor-group imageupload-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "image-editor-photo" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.Write( @"
+                <div class='js-upload-progress' style='display:none'>
+                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+                </div>" );
+
+            string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1});background-size:cover;background-position:50%'></div>";
+            string imageDivHtml = "";
+
+            if ( BinaryFileId != null )
+            {
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150" ) );
+            }
+            else
+            {
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.NoPictureUrl);
+            }
+
+            writer.Write( imageDivHtml );
+            writer.WriteLine();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            if ( ( BinaryFileId ?? 0 ) > 0 )
+            {
+                _lbShowModal.Style[HtmlTextWriterStyle.Display] = string.Empty;
+                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = "none";
+            }
+            else
+            {
+                _lbShowModal.Style[HtmlTextWriterStyle.Display] = "none";
+                _lbUploadImage.Style[HtmlTextWriterStyle.Display] = string.Empty;
+            }
+
+            _lbShowModal.RenderControl( writer );
+            _lbUploadImage.RenderControl( writer );
+
+            writer.WriteLine();
+            _aRemove.RenderControl( writer );
+            writer.WriteLine();
+            writer.RenderEndTag();
+            writer.WriteLine();
+
+            _hfBinaryFileId.RenderControl( writer );
+            writer.WriteLine();
+            _hfCropBinaryFileId.RenderControl( writer );
+            writer.WriteLine();
+            _hfBinaryFileTypeGuid.RenderControl( writer );
+            writer.WriteLine();
+
+            writer.AddAttribute( "class", "image-editor-fileinput" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
+            _fileUpload.RenderControl( writer );
+            writer.RenderEndTag();
+            writer.WriteLine();
+
+            writer.RenderEndTag(); // image-editor-photo
+            writer.WriteLine();
+
+            writer.RenderEndTag(); // image-editor-group
+
+            _mdImageDialog.RenderControl( writer );
+
+            RegisterStartupScript();
+        }
+
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
+        private void RegisterStartupScript()
+        {
+            var script = string.Format(
+@"
+Rock.controls.imageUploader.initialize({{
+    controlId: '{0}',
+    fileId: '{1}',
+    fileTypeGuid: '{2}',
+    hfFileId: '{3}',
+    imgThumbnail: '{4}',
+    aRemove: '{5}',
+    fileType: 'image',
+    setImageUrlOnUpload: false,
+    noPictureUrl: '{11}',
+    doneFunction: function (e, data) {{
+        // toggle the edit/upload buttons
+        $('#{8}').hide();
+        $('#{9}').show();
+
+        // postback to show Modal after uploading new image
+        {10}
+    }}
+}});
+
+$('#{6}').Jcrop({{
+    aspectRatio:1,
+    setSelect: [ 0,0,300,300 ],
+    boxWidth:480,
+    boxHeight:480,
+    onSelect: function(c) {{
+        $('#{7}').val(c.x + ',' + c.y + ',' + c.w + ',' +c.h + ',');
+    }}
+}});
+
+// prompt to upload image
+$('#{8}').click( function (e, data) {{
+    $('#{0}').click();
+}});
+
+// hide/show buttons when remove is clicked (note: imageUploader.js also does stuff when remove is clicked)
+$('#{5}').click(function () {{
+    $('#{8}').show();
+    $('#{9}').hide();
+}});
+
+",
+                _fileUpload.ClientID,
+                this.BinaryFileId,
+                this.BinaryFileTypeGuid,
+                _hfBinaryFileId.ClientID,
+                this.ClientID + "_divPhoto",
+                _aRemove.ClientID,
+                _imgCropSource.ClientID,
+                _hfCropCoords.ClientID,
+                _lbUploadImage.ClientID,
+                _lbShowModal.ClientID,
+                Page.ClientScript.GetPostBackEventReference( _lbUploadImage, string.Empty ),
+                this.NoPictureUrl);
+
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Web server control is enabled.
+        /// </summary>
+        /// <returns>true if control is enabled; otherwise, false. The default is true.</returns>
+        public override bool Enabled
+        {
+            get
+            {
+                return base.Enabled;
+            }
+
+            set
+            {
+                base.Enabled = value;
+                _fileUpload.Visible = value;
+                _aRemove.Visible = value;
+            }
+        }
+    }
+}

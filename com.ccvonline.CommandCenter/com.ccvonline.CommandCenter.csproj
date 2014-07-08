@@ -54,12 +54,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Rock">
-      <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
-    </Reference>
-    <Reference Include="Rock.Rest">
-      <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -115,6 +109,14 @@
     <ProjectReference Include="..\com.ccvonline\com.ccvonline.csproj">
       <Project>{c61f05c4-f947-4a32-84c1-413bdfa912fa}</Project>
       <Name>com.ccvonline</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
+      <Project>{b89dfd33-ce93-44e1-8616-c31acdfe89cb}</Project>
+      <Name>Rock.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock\Rock.csproj">
+      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
+      <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
