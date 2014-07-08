@@ -2728,6 +2728,80 @@
             <param name="configurationValues"></param>
             <param name="value">The value.</param>
         </member>
+        <member name="T:Rock.Field.Types.ValueListFieldType">
+            <summary>
+            Field used to save and display a key/value list
+            </summary>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.FormatValue(System.Web.UI.Control,System.String,System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue},System.Boolean)">
+            <summary>
+            Returns the field's current value(s)
+            </summary>
+            <param name="parentControl">The parent control.</param>
+            <param name="value">Information about the value</param>
+            <param name="configurationValues"></param>
+            <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.ConfigurationKeys">
+            <summary>
+            Returns a list of the configuration keys
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.ConfigurationControls">
+            <summary>
+            Creates the HTML controls required to configure this type of field
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.ConfigurationValues(System.Collections.Generic.List{System.Web.UI.Control})">
+            <summary>
+            Gets the configuration value.
+            </summary>
+            <param name="controls">The controls.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.SetConfigurationValues(System.Collections.Generic.List{System.Web.UI.Control},System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue})">
+            <summary>
+            Sets the configuration value.
+            </summary>
+            <param name="controls"></param>
+            <param name="configurationValues"></param>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.EditControl(System.String)">
+            <summary>
+            Edits the control.
+            </summary>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.EditControl(System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue},System.String)">
+            <summary>
+            Creates the control(s) neccessary for prompting user for a new value
+            </summary>
+            <param name="configurationValues">The configuration values.</param>
+            <param name="id"></param>
+            <returns>
+            The control
+            </returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.GetEditValue(System.Web.UI.Control,System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue})">
+            <summary>
+            Reads new values entered by the user for the field
+            </summary>
+            <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+            <param name="configurationValues"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Field.Types.ValueListFieldType.SetEditValue(System.Web.UI.Control,System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue},System.String)">
+            <summary>
+            Sets the value.
+            </summary>
+            <param name="control">The control.</param>
+            <param name="configurationValues"></param>
+            <param name="value">The value.</param>
+        </member>
         <member name="T:Rock.Field.Types.SlidingDateRangeFieldType">
             <summary>
             Field used to save a sliding date range. Last X (Hours, Days, etc)
@@ -19294,6 +19368,13 @@
             <param name="controls"></param>
             <param name="configurationValues"></param>
         </member>
+        <member name="M:Rock.Field.Types.KeyValueListFieldType.EditControl(System.String)">
+            <summary>
+            Edits the control.
+            </summary>
+            <param name="id">The identifier.</param>
+            <returns></returns>
+        </member>
         <member name="M:Rock.Field.Types.KeyValueListFieldType.EditControl(System.Collections.Generic.Dictionary{System.String,Rock.Field.ConfigurationValue},System.String)">
             <summary>
             Creates the control(s) neccessary for prompting user for a new value
@@ -27224,6 +27305,130 @@
             </summary>
             <returns>true if control is enabled; otherwise, false. The default is true.</returns>
         </member>
+        <member name="T:Rock.Web.UI.Controls.ValueList">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ValueList.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.ValueList"/> class.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ValueList.CreateChildControls">
+            <summary>
+            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+            </summary>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ValueList.RenderControl(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+            </summary>
+            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        </member>
+        <member name="M:Rock.Web.UI.Controls.ValueList.RenderBaseControl(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders the base control.
+            </summary>
+            <param name="writer">The writer.</param>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.Label">
+            <summary>
+            Gets or sets the label text.
+            </summary>
+            <value>
+            The label text.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.Help">
+            <summary>
+            Gets or sets the help text.
+            </summary>
+            <value>
+            The help text.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.Required">
+            <summary>
+            Gets or sets a value indicating whether this <see cref="T:Rock.Web.UI.Controls.RockTextBox"/> is required.
+            </summary>
+            <value>
+              <c>true</c> if required; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.RequiredErrorMessage">
+            <summary>
+            Gets or sets the required error message.  If blank, the LabelName name will be used
+            </summary>
+            <value>
+            The required error message.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.IsValid">
+            <summary>
+            Gets a value indicating whether this instance is valid.
+            </summary>
+            <value>
+              <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.HelpBlock">
+            <summary>
+            Gets or sets the help block.
+            </summary>
+            <value>
+            The help block.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.RequiredFieldValidator">
+            <summary>
+            Gets or sets the required field validator.
+            </summary>
+            <value>
+            The required field validator.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.ValidationGroup">
+            <summary>
+            Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
+            </summary>
+            <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.ValuePrompt">
+            <summary>
+            Gets or sets the value prompt.
+            </summary>
+            <value>
+            The value prompt.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.CustomValues">
+            <summary>
+            Gets or sets custom values.  If custom values are used, the value control will
+            render as a DropDownList with the selected values.
+            </summary>
+            <value>
+            The custom values.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.DefinedTypeId">
+            <summary>
+            Gets or sets the defined type id.  If a defined type id is used, the value control
+            will render as a DropDownList of values from that defined type.  If a DefinedTypeId is not specified
+            the values will be rendered as free-form text fields.
+            </summary>
+            <value>
+            The defined type id.
+            </value>
+        </member>
+        <member name="P:Rock.Web.UI.Controls.ValueList.Value">
+            <summary>
+            Gets or sets the value.
+            </summary>
+            <value>
+            The value.
+            </value>
+        </member>
         <member name="T:Rock.Web.UI.Controls.NoteContainer">
             <summary>
             Note Editor control
@@ -33564,89 +33769,11 @@
             
             </summary>
         </member>
-        <member name="M:Rock.Web.UI.Controls.KeyValueList.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:Rock.Web.UI.Controls.KeyValueList"/> class.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.KeyValueList.CreateChildControls">
-            <summary>
-            Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-            </summary>
-        </member>
-        <member name="M:Rock.Web.UI.Controls.KeyValueList.RenderControl(System.Web.UI.HtmlTextWriter)">
-            <summary>
-            Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-            </summary>
-            <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        </member>
         <member name="M:Rock.Web.UI.Controls.KeyValueList.RenderBaseControl(System.Web.UI.HtmlTextWriter)">
             <summary>
             Renders the base control.
             </summary>
             <param name="writer">The writer.</param>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.Label">
-            <summary>
-            Gets or sets the label text.
-            </summary>
-            <value>
-            The label text.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.Help">
-            <summary>
-            Gets or sets the help text.
-            </summary>
-            <value>
-            The help text.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.Required">
-            <summary>
-            Gets or sets a value indicating whether this <see cref="T:Rock.Web.UI.Controls.RockTextBox"/> is required.
-            </summary>
-            <value>
-              <c>true</c> if required; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.RequiredErrorMessage">
-            <summary>
-            Gets or sets the required error message.  If blank, the LabelName name will be used
-            </summary>
-            <value>
-            The required error message.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.IsValid">
-            <summary>
-            Gets a value indicating whether this instance is valid.
-            </summary>
-            <value>
-              <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.HelpBlock">
-            <summary>
-            Gets or sets the help block.
-            </summary>
-            <value>
-            The help block.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.RequiredFieldValidator">
-            <summary>
-            Gets or sets the required field validator.
-            </summary>
-            <value>
-            The required field validator.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.ValidationGroup">
-            <summary>
-            Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
-            </summary>
-            <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
         </member>
         <member name="P:Rock.Web.UI.Controls.KeyValueList.KeyPrompt">
             <summary>
@@ -33654,41 +33781,6 @@
             </summary>
             <value>
             The key prompt.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.ValuePrompt">
-            <summary>
-            Gets or sets the value prompt.
-            </summary>
-            <value>
-            The value prompt.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.CustomValues">
-            <summary>
-            Gets or sets custom values.  If custom values are used, the value portion of this control will
-            render as a DropDownList with the selected values.
-            </summary>
-            <value>
-            The custom values.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.DefinedTypeId">
-            <summary>
-            Gets or sets the defined type id.  If a defined type id is used, the value portion of this control
-            will render as a DropDownList of values from that defined type.  If a DefinedTypeId is not specified
-            the values will be rendered as free-form text fields.
-            </summary>
-            <value>
-            The defined type id.
-            </value>
-        </member>
-        <member name="P:Rock.Web.UI.Controls.KeyValueList.Value">
-            <summary>
-            Gets or sets the value.
-            </summary>
-            <value>
-            The value.
             </value>
         </member>
         <member name="T:Rock.Web.UI.Controls.ToggleField">
