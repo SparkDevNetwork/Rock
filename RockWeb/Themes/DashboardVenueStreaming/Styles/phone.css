@@ -1,0 +1,29 @@
+/* ----------  page defaults ---------- */
+
+
+		
+/* ----------  primary layout ---------- */
+
+		
+
+		
+/* ----------  page specific styles ---------- */
+
+
+/* ----------  component styles ---------- */
+.grid-block {
+	width: 100%;
+	float: none;
+    height: 100px;
+    border-width: 1px 0 0 0; 
+    overflow: hidden;
+    margin: 0;
+}
+
+.block-anchor:last-child .grid-block {
+	border-width: 1px;
+}
+
+.grid-block h2 {
+	margin-top: 6px;
+}

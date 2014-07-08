@@ -1,0 +1,28 @@
+/* home page */
+.feature-image {
+    height: 415px;
+}
+
+.grid-block {
+	width: 32.83%;
+}
+
+
+
+
+
+.ad {
+	max-width: 46%;	
+}
+
+.ad.feature {
+	display: none;	
+}
+
+.ad:nth-child(even) {
+	float:right;
+}
+
+.ad:nth-child(odd) {
+	float: left;
+}

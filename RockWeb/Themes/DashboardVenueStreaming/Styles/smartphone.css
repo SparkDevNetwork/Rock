@@ -1,0 +1,61 @@
+.ui-content {
+    padding: 8px 10px 8px 5px;
+}
+
+
+
+div[data-role=header] .logo {
+	width: 56%;
+    margin-top: 12px;	
+}
+
+.feature {
+    margin: 0;
+}
+
+.feature-image {
+    background-size: 641px 270px;
+    background-repeat: no-repeat;
+    height: 202px;
+}
+
+.grid-block {
+	width: 100%;
+	float: none;
+    margin: 0 0 12px 0;
+    height: 100px;
+}
+
+.grid-block h2 {
+	margin-top: 6px;
+}
+
+div#group-map #map-canvas {
+	width: 100%;
+	height: 200px;
+}
+
+div[data-role=footer] .right {
+    display: none;
+}
+
+div[data-role=footer] .cell {
+    width: 100%;
+}
+
+div[data-role=footer] div[data-role=controlgroup] {
+    float: none;
+    text-align: center; /* center align phone and website buttons */
+}
+
+/* group finder */
+.address-wrap input[id=city] {
+	width: 40%;	
+}
+.address-wrap span.state {
+	margin: 10px 12px 0 12px;
+}
+
+.address-wrap input[id=zipcode] {
+	width: 30%;	
+}
