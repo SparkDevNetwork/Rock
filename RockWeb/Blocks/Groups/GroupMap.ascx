@@ -10,7 +10,7 @@
             <div class="form-group">
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" id="cbShowGroup" checked="checked" /> <span id="lGroupName">Show Group</span>
+                        <input type="checkbox" id="cbShowGroup" checked="checked" /> <i class="fa fa-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
                     </label>
                 </div>
             </div>
@@ -18,7 +18,7 @@
             <div class="form-group">
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" id="cbShowChildGroups" /> Child Groups
+                        <input type="checkbox" id="cbShowChildGroups" /> <i class="fa fa-circle" style="color:#<%=_childGroupColor %>"></i> Child Groups
                     </label>
                 </div>
             </div>
@@ -26,7 +26,7 @@
             <div class="form-group">
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" id="cbShowGroupMembers" /> Group Members
+                        <input type="checkbox" id="cbShowGroupMembers" /> <i class="fa fa-circle" style="color:#<%=_memberColor %>"></i> Group Members
                     </label>
                 </div>
             </div>
@@ -36,7 +36,7 @@
                     <div class="form-group" style="display:none">
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' /> <%# Eval("Name") %>
+                                <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' data-color='<%# Eval("Color") %>' /> <i class="fa fa-circle" style='color:#<%# Eval("Color") %>'></i> <%# Eval("Name") %>
                             </label>
                         </div>
                     </div>
