@@ -24,7 +24,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     [CategoryField("Command Center > Live Stream")]
     [Description("Used for viewing live streams.")]
 
-    //todo: choose stream type block setting
+    //todo: choose stream type block setting and add campus picker
 
     public partial class LiveStream : RockBlock
     {
@@ -32,29 +32,33 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            CampusService campusService = new CampusService( new RockContext() );
-            List<Campus> campuses = new List<Campus>();
+            var rockContext = new RockContext();
+            var campusService = new CampusService( rockContext );
 
-            List<string[]> dataSource = new List<string[]>();
+            var theCampuses = campusService.Queryable().ToList();
+            theCampuses.ForEach( c => c.LoadAttributes( rockContext ) );                
 
-            foreach ( var campus in campusService.Queryable().OrderBy( c => c.Name ) )
+            rptvideostreams.DataSource = theCampuses.Select( c => new {
+                Id = "campus-" + c.Id.ToString(),
+                Name = c.Name,
+                Stream = GetStream(c.GetAttributeValue("VenueStreams"))
+            }).ToList();
+            rptvideostreams.DataBind();
+        }
+
+        private string GetStream(string value)
+        {
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                 campus.LoadAttributes();
-                string attributeValue = campus.GetAttributeValue( "VenueStreams" );
-                if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+                string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                foreach ( string nameValue in nameValues )
                 {
-                    string[] nameValues = attributeValue.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                    foreach ( string nameValue in nameValues )
-                    {
-                        string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-
-                        dataSource.Add( new string[] { campus.Name.ToString(), nameAndValue[1].ToString() } );                        
-                    }
+                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                    return nameAndValue[1];
                 }
             }
 
-            rptvideostreams.DataSource = dataSource.ToList();
-            rptvideostreams.DataBind();
+            return string.Empty;
         }
 
         #endregion
