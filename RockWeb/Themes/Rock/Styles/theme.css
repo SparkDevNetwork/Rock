@@ -3518,11 +3518,11 @@ a.cke_dialog_ui_button_ok:active {
   height: 50px;
 }
 ::selection {
-  background: #5279a0;
+  background: #afd074;
   color: #ffffff;
 }
 ::-moz-selection {
-  background: #5279a0;
+  background: #afd074;
   color: #ffffff;
 }
 small {
@@ -4133,8 +4133,19 @@ textarea:focus,
   color: #fff;
   border: 1px solid #4c6f7c;
 }
+.updateprogress-status {
+  left: 45%;
+  padding: 30px 20px;
+  border-radius: 120px;
+  box-shadow: 5px 5px 12px 3px rgba(0, 0, 0, 0.1);
+}
+.updateprogress-status .spinner {
+  width: 80px;
+  height: 60px;
+}
 .updateprogress-status .spinner > div {
   background-color: #fff;
+  width: 10px;
 }
 .page-list-as-blocks ul li a {
   -webkit-transition: background-color 200ms linear;
