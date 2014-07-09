@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Properties
 
+        public string CurrentCampusId { get; set; }
         public string CurrentNavPath { get; set; }
         public NavigationData NavData { get; set; }
 
@@ -71,6 +72,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.LoadViewState( savedState );
 
+            CurrentCampusId = ViewState["CurrentCampusId"] as string;
             CurrentNavPath = ViewState["CurrentNavPath"] as string;
             NavData = ViewState["NavData"] as NavigationData;
         }
@@ -110,30 +112,53 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnLoad( e );
 
-            nbGroupTypeWarning.Visible = false;
+            nbWarning.Visible = false;
 
-            if (NavData == null)
+            var campusEntityType = EntityTypeCache.Read( "Rock.Model.Campus" );
+            var campus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
+            if (campus == null)
             {
-                NavData = GetNavigationData();
+                campus = GetDefaultCampus();
             }
 
-            if ( !Page.IsPostBack )
+            if ( campus != null )
             {
-                // Check for requested location/group
-                int? locationId = PageParameter( "Location" ).AsIntegerOrNull();
-                int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
-                if (locationId.HasValue && groupId.HasValue)
+                if ( campus.Id.ToString() != CurrentCampusId )
                 {
-                    CurrentNavPath = BuildCurrentPath( locationId.Value, groupId.Value );
+                    NavData = GetNavigationData( campus );
+                    CurrentCampusId = campus.Id.ToString();
+
+                    if (Page.IsPostBack)
+                    {
+                        CurrentNavPath = string.Empty;
+                        BuildNavigationControls();
+                    }
                 }
 
-                if ( string.IsNullOrWhiteSpace( CurrentNavPath ) )
+                if ( !Page.IsPostBack )
                 {
-                    CurrentNavPath = GetUserPreference( "CurrentNavPath" );
-                }
+                    // Check for requested location/group
+                    int? locationId = PageParameter( "Location" ).AsIntegerOrNull();
+                    int? groupId = PageParameter( "Group" ).AsIntegerOrNull();
+                    if ( locationId.HasValue && groupId.HasValue )
+                    {
+                        CurrentNavPath = BuildCurrentPath( locationId.Value, groupId.Value );
+                    }
 
-                SetChartOptions();
-                BuildNavigationControls();
+                    if ( string.IsNullOrWhiteSpace( CurrentNavPath ) )
+                    {
+                        CurrentNavPath = GetUserPreference( "CurrentNavPath" );
+                    }
+
+                    SetChartOptions();
+                    BuildNavigationControls();
+                }
+            }
+            else
+            {
+                nbWarning.Text = "Check-in Manager requires that a valid campus exists.";
+                nbWarning.Visible = true;
+                pnlContent.Visible = false;
             }
         }
 
@@ -147,6 +172,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             ViewState["NavData"] = NavData;
             ViewState["CurrentNavPath"] = CurrentNavPath;
+            ViewState["CurrentCampusId"] = CurrentCampusId;
 
             return base.SaveViewState();
         }
@@ -414,6 +440,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Methods
 
+        private Campus GetDefaultCampus()
+        {
+            return new CampusService(new RockContext()).Queryable().OrderBy( a => a.Name ).FirstOrDefault();
+        }
+
         private string BuildCurrentPath(int locationId, int groupId)
         {
             var location = NavData.Locations.Where( l => l.Id == locationId ).FirstOrDefault();
@@ -510,9 +541,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Get Navigation Data
 
-        private NavigationData GetNavigationData()
+        private NavigationData GetNavigationData( Campus campus )
         {
             var rockContext = new RockContext();
+
+            var validLocationids = new List<int>();
+            if ( campus.LocationId.HasValue )
+            {
+                var locationService = new LocationService( rockContext );
+                AddChildLocations( locationService, campus.LocationId.Value, validLocationids );
+            }
 
             var groupTypeTemplateGuid = PageParameter( "Area" ).AsGuidOrNull();
             if ( !groupTypeTemplateGuid.HasValue )
@@ -564,10 +602,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         groupTypeIds.Contains( g.GroupTypeId ) &&
                         g.IsActive ) )
                 {
-                    if ( group.GroupLocations.Any() )
+                    var childLocationIds = group.GroupLocations
+                        .Where( l => validLocationids.Contains( l.LocationId ) )
+                        .Select( l => l.LocationId)
+                        .ToList();
+
+                    if ( childLocationIds.Any() )
                     {
                         var navGroup = new NavigationGroup( group, chartTimes );
-                        navGroup.ChildLocationIds = group.GroupLocations.Select( g => g.LocationId ).ToList();
+                        navGroup.ChildLocationIds = childLocationIds;
                         NavData.Groups.Add( navGroup );
                         NavData.GroupTypes.Where( g => g.Id == group.GroupTypeId ).ToList()
                             .ForEach( g => g.ChildGroupIds.Add( group.Id ) );
@@ -615,7 +658,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         a.StartDateTime > dayStart &&
                         a.StartDateTime < now &&
                         a.DidAttend &&
-                        groupIds.Contains( a.GroupId.Value ) )
+                        groupIds.Contains( a.GroupId.Value ) &&
+                        locationIds.Contains( a.LocationId.Value ) )
                     .ToList();
 
                 var schedules = new ScheduleService( rockContext ).Queryable()
@@ -663,12 +707,22 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                nbGroupTypeWarning.Visible = true;
+                nbWarning.Text = "Please select a Check-in type in the block settings.";
+                nbWarning.Visible = true;
                 pnlContent.Visible = false;
             }
 
             return null;
 
+        }
+
+        private void AddChildLocations( LocationService service, int locationId, List<int> ids )
+        {
+            foreach ( var location in service.Queryable().Where( l => l.ParentLocationId == locationId ) )
+            {
+                ids.Add( location.Id );
+                AddChildLocations( service, location.Id, ids );
+            }
         }
 
         public GroupType GetParentPurposeGroupType( GroupType groupType, Guid purposeGuid )
@@ -995,6 +1049,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         tglHeadingRoom.Visible = false;
                         rptPeople.Visible = false;
                     }
+                }
+                else
+                {
+                    rptPeople.Visible = false;
                 }
 
                 rptNavItems.Visible = navItems.Any();

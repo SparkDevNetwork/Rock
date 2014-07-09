@@ -3,7 +3,7 @@
 <Rock:RockUpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a Check-in type in the block settings." Dismissable="true" />
+        <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
 
         <asp:Panel ID="pnlContent" runat="server" CssClass="checkin-manager">
 
