@@ -36,14 +36,6 @@
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Scripts/video-js/video-js.css", true) %>"/>
     <script src="<%# ResolveRockUrl("~~/Scripts/video-js/video.js", true) %>"></script>
 
-    <%-- Command Center Components --%>
-   <%-- <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/font-awesome.css", true) %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/mobile.css", true) %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Scripts/jquery-mobile/ccv-mobile-bw.css", true) %>"/>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Scripts/jquery-mobile/jquery.mobile-1.1.0.min.css", true) %>"/>--%>
-    <%--<script src="<%# ResolveRockUrl("~~/Scripts/jquery-mobile/jquery-1.7.1.min.js", true) %>"></script>
-    <script src="<%# ResolveRockUrl("~~/Scripts/jquery-mobile/jquery.mobile-1.1.0.min.js", true) %>"></script>--%>
-
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
