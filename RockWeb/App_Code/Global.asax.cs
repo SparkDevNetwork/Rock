@@ -840,18 +840,18 @@ namespace RockWeb
 
             // DT: When running with production CCV Data, this is taking a considerable amount of time 
             // Cache all tha Defined Types
-            //var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
-            //foreach ( var definedType in definedTypeService.Queryable().ToList() )
-            //{
-            //    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-            //}
+            var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
+            foreach ( var definedType in definedTypeService.Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+            }
 
             // Cache all the Defined Values
-            //var definedValueService = new Rock.Model.DefinedValueService( rockContext );
-            //foreach ( var definedValue in definedValueService.Queryable().ToList() )
-            //{
-            //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-            //}
+            var definedValueService = new Rock.Model.DefinedValueService( rockContext );
+            foreach ( var definedValue in definedValueService.Queryable().ToList() )
+            {
+                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+            }
         }
 
         private void Error66( Exception ex )
