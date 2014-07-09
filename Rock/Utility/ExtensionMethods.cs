@@ -527,7 +527,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             decimal value;
@@ -561,7 +561,7 @@ namespace Rock
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
                 // strip off non numeric and characters (for example, currency symbols)
-                str = Regex.Replace( str, @"[^0-9\.]", "" );
+                str = Regex.Replace( str, @"[^0-9\.-]", "" );
             }
 
             double value;
@@ -2095,5 +2095,44 @@ namespace Rock
         }
 
         #endregion
+
+        #region Geography extension methods
+
+        /// <summary>
+        /// Coordinateses the specified geography.
+        /// </summary>
+        /// <param name="geography">The geography.</param>
+        /// <returns></returns>
+        public static List<MapCoordinate> Coordinates (this System.Data.Entity.Spatial.DbGeography geography)
+        {
+            var coordinates = new List<MapCoordinate>();
+
+            var match = Regex.Match( geography.AsText(), @"(?<=POLYGON \(\()[^\)]*(?=\)\))" );
+            if (match.Success)
+            {
+                string[] longSpaceLat = match.ToString().Split( ',' );
+
+                for ( int i = 0; i < longSpaceLat.Length; i++ )
+                {
+                    string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
+                    if ( longLat.Length == 2 )
+                    {
+                        double? lat = longLat[1].AsDoubleOrNull();
+                        double? lon = longLat[0].AsDoubleOrNull();
+                        if ( lat.HasValue && lon.HasValue )
+                        {
+                            coordinates.Add( new MapCoordinate( lat, lon ) );
+                        }
+                    }
+                }
+
+            }
+
+            return coordinates;
+
+        }
+
+        #endregion
+
     }
 }
