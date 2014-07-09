@@ -595,17 +595,7 @@ namespace Rock.Model
 
                 if (location.GeoFence != null)
                 {
-                    string coordinates = location.GeoFence.AsText().Replace( "POLYGON ((", "" ).Replace( "))", "" );
-                    string[] longSpaceLat = coordinates.Split( ',' );
-
-                    for ( int i = 0; i < longSpaceLat.Length; i++ )
-                    {
-                        string[] longLat = longSpaceLat[i].Trim().Split( ' ' );
-                        if (longLat.Length == 2)
-                        {
-                            PolygonPoints.Add( new MapCoordinate( double.Parse( longLat[1] ), double.Parse( longLat[0] ) ) );
-                        }
-                    }
+                    PolygonPoints = location.GeoFence.Coordinates();
                 }
             }
         }
