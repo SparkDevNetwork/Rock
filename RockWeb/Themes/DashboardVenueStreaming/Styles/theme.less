@@ -24,6 +24,80 @@ main {
     display:block;
 }
 
+html {
+    background-color: #1A1A1A;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+}
+
+.panel {
+    background: -webkit-linear-gradient(top, #404040 0%,#323232 100%);
+    border-radius: 10px;
+    border: 1px solid #6f6f6f;
+    padding: 6px 24px 12px 24px;
+}
+
+.panel-body {
+    padding: 0;
+}
+
+.panel-body h3 {
+    color: white;
+}
+
+.btn-default {
+color: #333;
+background-color: #fff;
+border-color: #ccc;
+}
+
+.btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open>.dropdown-toggle.btn-default {
+color: #333;
+background-color: #e6e6e6;
+border-color: #adadad;
+}
+
+.btn-primary {
+color: #fff;
+background-color: #428bca;
+border-color: #357ebd;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
+color: #fff;
+background-color: #3071a9;
+border-color: #285e8e;
+}
+.b
+
+.btn i {
+	font-size: 16px;
+	margin-right: 14px;
+}
+
+.audio-toggle i:before {
+	content: "\f026"; 
+}
+
+.audio-toggle.enabled i:before {
+	content: "\f028";
+}
+
+.audio-toggle span:before, .audio-toggle.muted span:before {
+	content: "Listen";
+}
+
+.audio-toggle.enabled span:before {
+	content: "Mute";
+}
+
+.fullscreen-toggle i:before {
+	content: "\f065"; 
+}
+
 
 // 2. Bootstrap Overrides 
 // ------------------------- 
@@ -33,22 +107,22 @@ main {
 // -------------------------
 
 header {
-    background-color: @header-bg;
+    background-image: linear-gradient(#3c3c3c,#111);
     color: @header-text-color;
-    min-height: 80px;
+    min-height: 36px;
 }
 
 main {
-   
+   background-color: #1A1A1A;
 }
 
 footer {
     position: absolute;
     bottom: 0;
     width: 100%;
-    background-color: @footer-bg;
+    background-image: linear-gradient(#3c3c3c,#111);
     color: @footer-text-color;
-    min-height: 80px;
+    min-height: 50px;
     padding-top: 24px;
 }
 

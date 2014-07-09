@@ -46,6 +46,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             rptvideostreams.DataBind();
         }
 
+        #endregion
+
         private string GetStream(string value)
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
@@ -60,8 +62,5 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             return string.Empty;
         }
-
-        #endregion
-        
     }
 }
