@@ -985,6 +985,10 @@
     <Compile Include="Migrations\201407072148278_UpdatesForNewTheme.Designer.cs">
       <DependentUpon>201407072148278_UpdatesForNewTheme.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407091948108_GroupMap.cs" />
+    <Compile Include="Migrations\201407091948108_GroupMap.Designer.cs">
+      <DependentUpon>201407091948108_GroupMap.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1704,6 +1708,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407072148278_UpdatesForNewTheme.resx">
       <DependentUpon>201407072148278_UpdatesForNewTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407091948108_GroupMap.resx">
+      <DependentUpon>201407091948108_GroupMap.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
