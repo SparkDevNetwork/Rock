@@ -99,6 +99,12 @@
                         downloadSuccessful = DownloadFile( "Install.aspx", serverUrl, serverPath );
                     }
 
+                    // download files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "Complete.aspx", serverUrl, serverPath );
+                    }
+
                     // signalr bin files
                     if ( downloadSuccessful )
                     {
