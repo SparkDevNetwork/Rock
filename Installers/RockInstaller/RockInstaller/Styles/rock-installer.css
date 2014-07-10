@@ -151,13 +151,13 @@ h1 {
   width: 5%;
 }
 #console ol > li.highlight {
-  color: #5bc0de;
+  color: #446e73;
 }
 #console ol > li.warning {
-  color: #f0ad4e;
+  color: #f3d066;
 }
 #console ol > li.critical {
-  color: #d9534f;
+  color: #c84b4b;
 }
 .content-narrow {
   max-width: 400px;
@@ -185,6 +185,9 @@ h1 {
   position: relative;
   width: 280px;
   margin: 0 auto;
+}
+#pnlError {
+  text-align: center;
 }
 .progress-header div {
   text-align: center;

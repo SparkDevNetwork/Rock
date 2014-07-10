@@ -387,13 +387,6 @@ namespace RockInstaller
             result.Success = true;
 
             string tempWebConfig = serverPath + @"\webconfig.xml";
-            string tempGlobalConfig = serverPath + @"\installer-hold\Global.asax";
-
-            // create hold directory for files that would restart the application
-            if ( !Directory.Exists( serverPath + @"\installer-hold" ) )
-            {
-                Directory.CreateDirectory( serverPath + @"\installer-hold" );
-            }
 
             string passwordKey = RockInstallUtilities.GeneratePasswordKey(); ;
             string dataEncryptionKey = RockInstallUtilities.GenerateRandomDataEncryptionKey();
@@ -488,31 +481,6 @@ namespace RockInstaller
                     result.Success = false;
                     result.Message = ex.Message;
                 }
-
-                /* pull out Global.asax from zip file 
-                try
-                {
-                    using ( FileStream fsZipFile = File.Create( tempGlobalConfig ) )
-                    {
-                        using ( ZipFile zip = ZipFile.Read( rockZipFile ) )
-                        {
-                            ZipEntry globalConfigEntry = zip["Global.asax"];
-                            globalConfigEntry.Extract( fsZipFile );
-
-                            // remove file from zip
-                            zip.RemoveEntry( "Global.asax" );
-                            zip.Save();
-                        }
-                    }
-
-                    this.SendConsoleMessage( "Extracted Global.asax to ./installer-hold/Global.asax." );
-                    this.UpdateProgressBar( 60 );
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }*/
             }
 
             // edit web.config
@@ -520,44 +488,18 @@ namespace RockInstaller
 
             // update timezone
             var node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "OrgTimeZone" ).FirstOrDefault();
-            node.Value = installData.HostingInfo.Timezone;
+            node.SetAttributeValue( "value", installData.HostingInfo.Timezone );
 
             // update password key
             node = document.Descendants( "appSettings" ).Elements("add").Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
-            node.Value = passwordKey;
+            node.SetAttributeValue( "value", passwordKey );
             
             // update machine key
             node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
-            node.Value = dataEncryptionKey;
+            node.SetAttributeValue( "value", dataEncryptionKey );
 
             document.Save( tempWebConfig );
 
-            this.UpdateProgressBar( 80 );
-
-            // insert web.config back into rock zip
-            /*
-             * eliminating this as we'll rename the webconfig.xml to web.config ourseleves at the end to
-             * keep IIS from recycling themselves
-             * 
-             * if ( result.Success )
-            {
-                this.SendConsoleMessage( "Preparing to insert webconfig.xml back into rock zip file as web.config." );
-                try
-                {
-                    string content = System.IO.File.ReadAllText( tempWebConfig ); ;
-                    using ( ZipFile zip = ZipFile.Read( rockZipFile ) )
-                    {
-                        zip.AddEntry( "web.config", content );
-                        zip.Save();
-                    }
-                    this.SendConsoleMessage( "The file webconfig.xml inserted into rock zip file as web.config." );
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }*/
             this.UpdateProgressBar( 100 );
             return result;
         }
@@ -585,72 +527,6 @@ namespace RockInstaller
                     UpdateProgressBar( i );
                     Thread.Sleep( 100 ); // nap time...
                 }
-            }
-
-            return result;
-        }
-
-        private ActivityResult DeleteInstaller( InstallData installData )
-        {
-            this.SendConsoleMessage( "Deleting installer and moving Rock into place. If successful this will be the last message." );
-            
-            ActivityResult result = new ActivityResult();
-            result.Success = true;
-
-            // let's not delete the installer if we're in development, source control is nice but no use pressing our luck...
-            if ( !installData.InstallerProperties.IsDebug )
-            {
-
-                try
-                {
-                    
-                    
-                    File.Delete( serverPath + @"Start.aspx" );
-                    File.Delete( serverPath + @"Install.aspx" );
-                    //File.Move(serverPath + @"web.config", )
-
-                    /* keep SignalR as Rock needs it
-                    File.Delete( serverPath + @"Startup.cs" );
-
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
-                    File.Delete( serverPath + @"bin\Owin.dll" );
-                     */
-
-                    File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
-                    File.Delete( serverPath + @"bin\RockInstaller.dll" );
-                    File.Delete( serverPath + @"bin\RockInstallTools.dll" );
-                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );  
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }
-            else
-            {
-                // if it is a debug session let's do delete the connection string file
-                File.Delete( serverPath + @"web.ConnectionStrings.config" );
-            }
-
-            // these files should be deleted even in the developer environment
-            try
-            {
-                File.Delete( serverPath + @"\rock-install-latest.zip" );
-                File.Delete( serverPath + @"\sql-config.sql" );
-                File.Delete( serverPath + @"\sql-install.sql" );
-                File.Delete( serverPath + @"\sql-latest.zip" );
-                File.Delete( serverPath + @"\webconfig.xml" );
-            }
-            catch ( Exception ex )
-            {
-                result.Success = false;
-                result.Message = ex.Message;
             }
 
             return result;

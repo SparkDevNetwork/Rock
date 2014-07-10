@@ -23,7 +23,7 @@
         $(document).ready(function () {
 
             var baseVersion = '<%=baseVersion %>';
-            var isDebug = <%=isDebug %>;
+            var isDebug = <%=isDebug.ToString().ToLower() %>;
 
             // connect to the install controller signalr hub
             var installcontroller = $.connection.installController; var installcontroller = $.connection.installController;

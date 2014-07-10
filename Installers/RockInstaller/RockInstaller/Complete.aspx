@@ -30,22 +30,25 @@
                 <div id="content-box">
                     <!-- welcome panel -->
                     <div id="pnlComplete">
-                        
-                        <div class="content-narrow">
-                            <img src="<%=storageUrl %>Images/laptop.png" />
 
                             <asp:Panel ID="pnlSuccess" runat="server" Visible="true">
-                                <h1>Success</h1>
+                                <div class="content-narrow">
+                                    <img src="<%=storageUrl %>Images/laptop.png" />
+                                
+                                    <h1>Success</h1>
 
-                                <p>
-                                    Rock RMS has been successfully installed on your server. All that's
-                                    left is to login and get started.
-                                </p>
+                                    <p>
+                                        Rock RMS has been successfully installed on your server. All that's
+                                        left is to login and get started.
+                                    </p>
 
-                                <a href="/" class="btn btn-primary"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                    <a href="/" class="btn btn-primary"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                </div>
                             </asp:Panel>
 
                             <asp:Panel ID="pnlError" runat="server" Visible="false">
+                                <img src="<%=storageUrl %>Images/laptop.png" />
+                                
                                 <h1>An Error Occurred Moving Rock Into Place</h1>
 
                                 <asp:Literal ID="lErrorMessage" runat="server" />
@@ -94,40 +97,29 @@
             isDebug = Convert.ToBoolean( Request["Debug"] );
         }
 
-
-        if ( !isDebug )
+        try
         {
+            
+            // remove installer data files
+            File.Delete( serverPath + @"\rock-install-latest.zip" );
+            File.Delete( serverPath + @"\sql-config.sql" );
+            File.Delete( serverPath + @"\sql-install.sql" );
+            File.Delete( serverPath + @"\sql-latest.zip" );
 
-            try
+            if ( !isDebug )
             {
                 // remove installer files
+                
                 File.Delete( serverPath + @"Start.aspx" );
                 File.Delete( serverPath + @"Install.aspx" );
-                File.Delete( serverPath + @"\rock-install-latest.zip" );
-                File.Delete( serverPath + @"\sql-config.sql" );
-                File.Delete( serverPath + @"\sql-install.sql" );
-                File.Delete( serverPath + @"\sql-latest.zip" );
-
-                /* keep SignalR as Rock needs it
-                File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
-                File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll" );
-                File.Delete( serverPath + @"bin\Microsoft.Owin.dll" );
-                File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
-                File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
-                File.Delete( serverPath + @"bin\Owin.dll" );
-                */
-
-                File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
-                File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
-                File.Delete( serverPath + @"bin\RockInstaller.dll" );
-                File.Delete( serverPath + @"bin\RockInstallTools.dll" );
-                File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );
+                
+                DeleteDirectory( serverPath + @"\bin" );
 
                 // move the rock application into place
                 DirectoryCopy( serverPath + @"\rock", serverPath, true );
 
                 // delete rock install directory
-                Directory.Delete( serverPath + @"\rock" );
+                Directory.Delete( serverPath + @"\rock", true );
 
                 // delete this page
                 File.Delete( serverPath + @"Complete.aspx" );
@@ -135,21 +127,46 @@
                 // move the web.config into place
                 File.Move( serverPath + @"\webconfig.xml", serverPath + @"\web.config" );
             }
-            catch ( Exception ex )
+            else
             {
-                cleanupSuccessful = false;
-                errorMessage = ex.Message;
+                File.Delete( serverPath + @"\webconfig.xml" );
             }
             
-            if (!cleanupSuccessful) {
-                pnlSuccess.Visible = false;
-                pnlError.Visible = true;
+            
+        }
+        catch ( Exception ex )
+        {
+            cleanupSuccessful = false;
+            errorMessage = ex.Message;
+        }
+            
+        if (!cleanupSuccessful) {
+            pnlSuccess.Visible = false;
+            pnlError.Visible = true;
 
-                lErrorMessage.Text = String.Format( "<div class='alert alert-danger'><strong>Error Details</strong> {0}</div>", errorMessage );
-            }
+            lErrorMessage.Text = String.Format( "<div class='alert alert-danger'><strong>Error Details</strong> {0}</div>", errorMessage );
         }
     }
 
+    private void DeleteDirectory( string target_dir )
+    {
+        string[] files = Directory.GetFiles( target_dir );
+        string[] dirs = Directory.GetDirectories( target_dir );
+
+        foreach ( string file in files )
+        {
+            File.SetAttributes( file, FileAttributes.Normal );
+            File.Delete( file );
+        }
+
+        foreach ( string dir in dirs )
+        {
+            DeleteDirectory( dir );
+        }
+
+        Directory.Delete( target_dir, false );
+    }
+    
     private void DirectoryCopy(
             string sourceDirName, string destDirName, bool copySubDirs )
     {
