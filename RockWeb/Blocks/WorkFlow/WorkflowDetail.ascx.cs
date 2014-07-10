@@ -40,6 +40,12 @@ namespace RockWeb.Blocks.WorkFlow
     [Description( "Displays the details of a workflow instance." )]
     public partial class WorkflowDetail : RockBlock
     {
+
+        #region Fields
+
+        private bool _canEdit = false;
+
+        #endregion
         #region Properties
 
         private Rock.Model.Workflow Workflow { get; set; }
@@ -100,6 +106,10 @@ namespace RockWeb.Blocks.WorkFlow
             BuildControls( false );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -109,8 +119,9 @@ namespace RockWeb.Blocks.WorkFlow
             gLog.IsDeleteEnabled = false;
             gLog.GridRebind += gLog_GridRebind;
 
-
+            _canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -118,6 +129,8 @@ namespace RockWeb.Blocks.WorkFlow
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            nbNotAuthorized.Visible = false;
 
             if ( !Page.IsPostBack )
             {
@@ -133,13 +146,26 @@ namespace RockWeb.Blocks.WorkFlow
         /// </returns>
         protected override object SaveViewState()
         {
-            var jsonSetting = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-            ViewState["Workflow"] = JsonConvert.SerializeObject( Workflow, Formatting.None, jsonSetting );
-            ViewState["LogEntries"] = Workflow.LogEntries.Where( l => l.Id == 0 ).Select( l => l.LogText ).ToList();
-            ViewState["ExpandedActivities"] = ExpandedActivities;
+            var jsonSetting = new JsonSerializerSettings 
+            { 
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            if ( Workflow != null )
+            {
+                ViewState["Workflow"] = JsonConvert.SerializeObject( Workflow, Formatting.None, jsonSetting );
+                ViewState["LogEntries"] = Workflow.LogEntries.Where( l => l.Id == 0 ).Select( l => l.LogText ).ToList();
+                ViewState["ExpandedActivities"] = ExpandedActivities;
+            }
+
             return base.SaveViewState();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -166,10 +192,10 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            ParseControls( true );
-
             var rockContext = new RockContext();
             var service = new WorkflowService( rockContext );
+
+            ParseControls( rockContext, true );
 
             Workflow dbWorkflow = null;
 
@@ -200,6 +226,15 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         dbWorkflow.AddLogEntry( string.Format( "Workflow status manually changed from '{0}' to '{0}'.", dbWorkflow.Status, tbStatus.Text ) );
                         dbWorkflow.Status = Workflow.Status;
+                    }
+
+                    if ( !dbWorkflow.InitiatorPersonAliasId.Equals(Workflow.InitiatorPersonAliasId))
+                    {
+                        dbWorkflow.AddLogEntry( string.Format( "Workflow status manually changed from '{0}' to '{0}'.",
+                            dbWorkflow.InitiatorPersonAlias != null ? dbWorkflow.InitiatorPersonAlias.Person.FullName : "",
+                            Workflow.InitiatorPersonAlias != null ? Workflow.InitiatorPersonAlias.Person.FullName : "" ) );
+                        dbWorkflow.InitiatorPersonAlias = Workflow.InitiatorPersonAlias;
+                        dbWorkflow.InitiatorPersonAliasId = Workflow.InitiatorPersonAliasId;
                     }
 
                     if ( !Page.IsValid || !dbWorkflow.IsValid )
@@ -452,7 +487,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             int? workflowId = PageParameter( "workflowId" ).AsIntegerOrNull();
             if ( workflowId.HasValue )
-            {
+            { 
                 Workflow = new WorkflowService( rockContext )
                     .Queryable( "WorkflowType, Activities")
                     .Where( w => w.Id == workflowId.Value )
@@ -464,30 +499,54 @@ namespace RockWeb.Blocks.WorkFlow
                 pnlDetails.Visible = false;
                 return;
             }
-            pnlDetails.Visible = true;
 
-            // render UI based on Authorized and IsSystem
-            bool readOnly = !IsUserAuthorized( Authorization.EDIT );
-            btnSave.Visible = !readOnly;
-
-            ddlActivateNewActivity.Items.Clear();
-            ddlActivateNewActivity.Items.Add( new ListItem( "Activate New Activity", "0" ) );
-            foreach( var activityType in Workflow.WorkflowType.ActivityTypes.OrderBy( a => a.Order))
+            if ( IsUserAuthorized( Authorization.VIEW ) && Workflow.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
-                ddlActivateNewActivity.Items.Add( new ListItem( activityType.Name, activityType.Id.ToString() ) );
+                pnlDetails.Visible = true;
+
+                tbName.Visible = _canEdit;
+                ppInitiator.Visible = _canEdit;
+                tbStatus.Visible = _canEdit;
+
+                lName.Visible = !_canEdit;
+                lInitiator.Visible = !_canEdit;
+                lStatus.Visible = !_canEdit;
+
+                cbIsCompleted.Enabled = _canEdit;
+
+                ddlActivateNewActivity.Visible = _canEdit;
+
+                btnSave.Visible = _canEdit;
+                btnCancel.Visible = _canEdit;
+
+                if ( _canEdit )
+                {
+                    ddlActivateNewActivity.Items.Clear();
+                    ddlActivateNewActivity.Items.Add( new ListItem( "Activate New Activity", "0" ) );
+                    foreach ( var activityType in Workflow.WorkflowType.ActivityTypes.OrderBy( a => a.Order ) )
+                    {
+                        ddlActivateNewActivity.Items.Add( new ListItem( activityType.Name, activityType.Id.ToString() ) );
+                    }
+                }
+
+
+                ExpandedActivities = new List<Guid>();
+
+                Workflow.LoadAttributes( rockContext );
+                foreach ( var activity in Workflow.Activities )
+                {
+                    activity.LoadAttributes();
+                }
+
+                BuildControls( true );
+
+                BindLog();
             }
-
-            ExpandedActivities = new List<Guid>();
-
-            Workflow.LoadAttributes( rockContext );
-            foreach (var activity in Workflow.Activities)
+            else
             {
-                activity.LoadAttributes();
+                nbNotAuthorized.Visible = true;
+                pnlDetails.Visible = false;
             }
-
-            BuildControls( true );
-
-            BindLog();
         }
 
         private void BindLog()
@@ -517,8 +576,24 @@ namespace RockWeb.Blocks.WorkFlow
             hlType.Text = Workflow.WorkflowType.Name;
 
             tbName.Text = Workflow.Name;
+            lName.Text = Workflow.Name;
+
             tbStatus.Text = Workflow.Status;
+            lStatus.Text = Workflow.Status;
+
+            if ( Workflow.InitiatorPersonAlias != null && Workflow.InitiatorPersonAlias.Person != null)
+            {
+                ppInitiator.SetValue( Workflow.InitiatorPersonAlias.Person );
+                lInitiator.Text = Workflow.InitiatorPersonAlias.Person.FullName;
+            }
+            else
+            {
+                ppInitiator.SetValue( null );
+                lInitiator.Text = string.Empty;
+            }
+
             cbIsCompleted.Checked = Workflow.CompletedDateTime.HasValue;
+            lIsCompleted.Text = Workflow.CompletedDateTime.HasValue ? "Yes" : "No";
 
             var sbState = new StringBuilder();
             if ( Workflow.ActivatedDateTime.HasValue )
@@ -538,7 +613,14 @@ namespace RockWeb.Blocks.WorkFlow
             lState.Text = sbState.ToString();
 
             phAttributes.Controls.Clear();
-            Helper.AddEditControls( Workflow, phAttributes, setValues, btnSave.ValidationGroup );
+            if ( _canEdit )
+            {
+                Helper.AddEditControls( Workflow, phAttributes, setValues, btnSave.ValidationGroup );
+            }
+            else
+            {
+                Helper.AddDisplayControls( Workflow, phAttributes );
+            }
 
             phActivities.Controls.Clear();
             foreach ( var activity in Workflow.Activities.OrderBy( a => a.ActivatedDateTime ) )
@@ -546,6 +628,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var activityEditor = new WorkflowActivityEditor();
                 activityEditor.ID = "WorkflowActivityEditor_" + activity.Guid.ToString( "N" );
                 phActivities.Controls.Add( activityEditor );
+                activityEditor.CanEdit = _canEdit;
                 activityEditor.ValidationGroup = btnSave.ValidationGroup;
                 activityEditor.IsDeleteEnabled = !activity.LastProcessedDateTime.HasValue;
                 activityEditor.DeleteActivityTypeClick += workflowActivityEditor_DeleteActivityClick;
@@ -556,11 +639,12 @@ namespace RockWeb.Blocks.WorkFlow
                     var actionEditor = new WorkflowActionEditor();
                     actionEditor.ID = "WorkflowActionEditor_" + action.Guid.ToString( "N" );
                     activityEditor.Controls.Add( actionEditor );
+                    actionEditor.CanEdit = _canEdit;
                     actionEditor.ValidationGroup = activityEditor.ValidationGroup;
                     actionEditor.SetWorkflowAction( action, setValues );
                 }
 
-                if ( setValues )
+                if ( _canEdit && setValues )
                 {
                     activityEditor.Expanded = ExpandedActivities.Contains( activity.Guid );
 
@@ -581,8 +665,13 @@ namespace RockWeb.Blocks.WorkFlow
         /// <summary>
         /// Parses the controls.
         /// </summary>
-        private void ParseControls( bool expandInvalid = false )
+        private void ParseControls( RockContext rockContext = null, bool expandInvalid = false )
         {
+            if (rockContext == null)
+            {
+                rockContext = new RockContext();
+            }
+
             if ( Workflow.CompletedDateTime.HasValue && !cbIsCompleted.Checked )
             {
                 Workflow.CompletedDateTime = null;
@@ -594,6 +683,22 @@ namespace RockWeb.Blocks.WorkFlow
 
             Workflow.Name = tbName.Text;
             Workflow.Status = tbStatus.Text;
+
+            int? initiatorPersonId = ppInitiator.PersonId;
+            if ( initiatorPersonId.HasValue )
+            {
+                var personAlias = new PersonAliasService( rockContext ).GetByAliasId( initiatorPersonId.Value );
+                if ( personAlias != null )
+                {
+                    Workflow.InitiatorPersonAlias = personAlias;
+                    Workflow.InitiatorPersonAliasId = personAlias.Id;
+                }
+                else
+                {
+                    Workflow.InitiatorPersonAlias = null;
+                    Workflow.InitiatorPersonAliasId = null;
+                }
+            }
 
             Helper.GetEditValues( phAttributes, Workflow );
 

@@ -12,5 +12,5 @@
 /// <reference path="bootstrap-datepicker.js" />
 /// <reference path="bootstrap-timepicker.js" />
 /// <reference path="ckeditor/ckeditor.js" />
-/// <reference path="https://maps.googleapis.com/maps/api/js?key=&sensor=false&libraries=drawing" />
+/// <reference path="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=drawing" />
 /// <reference path="flot/jquery.flot.js" />

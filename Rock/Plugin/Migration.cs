@@ -37,6 +37,25 @@ namespace Rock.Plugin
         public abstract void Down();
 
         /// <summary>
+        /// Gets the rock migration helper.
+        /// </summary>
+        /// <value>
+        /// The rock migration helper.
+        /// </value>
+        public Rock.Data.MigrationHelper RockMigrationHelper
+        {
+            get
+            {
+                if ( _migrationHelper == null )
+                {
+                    _migrationHelper = new Rock.Data.MigrationHelper( this );
+                }
+                return _migrationHelper;
+            }
+        }
+        private Rock.Data.MigrationHelper _migrationHelper = null;
+
+        /// <summary>
         /// Executes a sql statement
         /// </summary>
         /// <param name="sql">The SQL.</param>

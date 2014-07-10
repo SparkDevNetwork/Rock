@@ -31,7 +31,8 @@ namespace Rock.Workflow.Action
     /// </summary>
     [Description( "Email the configured recipient the name of the thing being operated against." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata("ComponentName", "Send Email")]
+    [ExportMetadata("ComponentName", "Send Email Template")]
+
     [EmailTemplateField( "EmailTemplate", "The email template to send" )]
     [TextField( "Recipient", "The email address to send to" )]
     public class SendEmailTemplate : ActionComponent

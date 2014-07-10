@@ -63,12 +63,12 @@ namespace Rock.Workflow.Action
                         Guid? personAliasGuid = action.GetWorklowAttributeValue(guid).AsGuidOrNull();
                         if ( personAliasGuid.HasValue )
                         {
-                            var personAlias = new PersonAliasService( new RockContext() ).Queryable( "Person" )
+                            var personAlias = new PersonAliasService( rockContext ).Queryable( "Person" )
                                 .Where( a => a.Guid.Equals( personAliasGuid.Value ) )
                                 .FirstOrDefault();
                             if (personAlias != null)
                             {
-                                action.Activity.AssignedPersonAlias = null;
+                                action.Activity.AssignedPersonAlias = personAlias;
                                 action.Activity.AssignedPersonAliasId = personAlias.Id;
                                 action.Activity.AssignedGroup = null;
                                 action.Activity.AssignedGroupId = null;
@@ -84,12 +84,12 @@ namespace Rock.Workflow.Action
                         int? groupId = action.GetWorklowAttributeValue( guid ).AsIntegerOrNull();
                         if ( groupId.HasValue )
                         {
-                            var group = new GroupService( new RockContext() ).Get( groupId.Value );
+                            var group = new GroupService( rockContext ).Get( groupId.Value );
                             if ( group != null )
                             {
                                 action.Activity.AssignedPersonAlias = null;
                                 action.Activity.AssignedPersonAliasId = null;
-                                action.Activity.AssignedGroup = null;
+                                action.Activity.AssignedGroup = group;
                                 action.Activity.AssignedGroupId = group.Id;
                                 action.AddLogEntry( string.Format( "Assigned activity to '{0}' group ({1})", group.Name, group.Id ) );
                                 return true;

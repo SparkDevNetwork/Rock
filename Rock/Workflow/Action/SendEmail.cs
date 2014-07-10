@@ -77,7 +77,7 @@ namespace Rock.Workflow.Action
                                     Guid personAliasGuid = toValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        string to = new PersonAliasService( new RockContext() ).Queryable()
+                                        string to = new PersonAliasService( rockContext ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
                                             .Select( a => a.Person.Email )
                                             .FirstOrDefault();
@@ -108,7 +108,9 @@ namespace Rock.Workflow.Action
                 var channelData = new Dictionary<string, string>();
                 channelData.Add( "From", GetAttributeValue( action, "From" ) );
                 channelData.Add( "Subject", GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields ) );
-                channelData.Add( "Body", GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields ) );
+
+                string body = GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields );
+                channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
                 var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
                 if ( channelEntity != null )
@@ -119,7 +121,8 @@ namespace Rock.Workflow.Action
                         var transport = channel.Transport;
                         if ( transport != null && transport.IsActive )
                         {
-                            transport.Send( channelData, recipients, string.Empty, string.Empty );
+                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
+                            transport.Send( channelData, recipients, appRoot, string.Empty );
                         }
                     }
                 }

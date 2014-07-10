@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more DefinedValues for the given DefinedType id.
+    /// Field Attribute to select 0 or more DefinedValues for the given DefinedType Guid.  Stored as DefinedValue.Guid.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DefinedValueFieldAttribute : FieldAttribute

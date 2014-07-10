@@ -237,7 +237,7 @@
 <body>
     <form id="form1" runat="server">
         <div id="content">
-	        <asp:Literal ID="lLogo" runat="server" Visible="false"><h1>Rock RMS</h1></asp:Literal>
+	        <asp:Literal ID="lLogo" runat="server" Visible="false"><h1 id="logo">Rock RMS</h1></asp:Literal>
 
             <div id="content-box">
             
@@ -254,8 +254,9 @@
                 </asp:Literal>
 
                 <asp:Panel runat="server" ID="pnlRedirect" Visible="false"> 
+
                     <div id="divNoJavascript">
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger" style="margin-top: 24px;">
                             <strong>JavaScript Required</strong> To enable a robust installation experience we require JavaScript to be enabled.
                     
                             <p><em>If you are running this locally on a server, consider completing the install on a client machine or temporarily 
@@ -272,6 +273,7 @@
                 </asp:Panel>
 
                 <asp:Label ID="lEnvironmentErrors" runat="server">
+                    
                     <h1>Before We Get Started...</h1>
                     <p>Before we can get started we have some work to do. Your system's environment does not meet all of the
                         specs for Rock. Read through our <a href='http://www.rockrms.com/Rock/Learn' target="_blank"> install guides</a> for details on preparing your server for install.

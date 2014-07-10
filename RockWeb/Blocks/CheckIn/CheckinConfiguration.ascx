@@ -2,52 +2,62 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-        <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
+        
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
-        <asp:Panel ID="pnlDetails" runat="server">
-
-            <div class="banner">
-                <h1>
-                    <asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" /></h1>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> <asp:Literal ID="lCheckinAreasTitle" runat="server" Text="Check-in Areas" /></h1>
             </div>
+            <div class="panel-body">
 
-            <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
 
-            <div class="clearfix">
-                <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Check-in Area</asp:LinkButton>
+                <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
+                <div class="clearfix">
+                    <asp:LinkButton ID="lbAddCheckinArea" runat="server" CssClass="btn btn-action btn-xs pull-right" OnClick="lbAddCheckinArea_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Check-in Area</asp:LinkButton>
+                </div>
+
+                <div class="checkin-grouptype-list">
+                    <h4>Check-in Areas</h4>
+                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
+                </div>
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                </div>
+
+                <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this check-in configuration that have not yet been saved." Enabled="false" />
+
             </div>
-
-            <div class="checkin-grouptype-list">
-                <h4>Check-in Areas</h4>
-                <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
-            </div>
-
-            <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
-            </div>
-
-            <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this check-in configuration that have not yet been saved." Enabled="false" />
-
         </asp:Panel>
 
-        <asp:Panel ID="pnlCheckinLabelPicker" runat="server" Visible="false">
-            <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
-            <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
-
-            <div class="actions">
-                <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddCheckinLabel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancelAddCheckinLabel_Click"></asp:LinkButton>
+        <asp:Panel ID="pnlCheckinLabelPicker" CssClass="panel panel-block" runat="server" Visible="false">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Label Picker</h1>
             </div>
+            <div class="panel-body">
+            
+                <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
+                <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
+
+                <div class="actions">
+                    <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancelAddCheckinLabel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancelAddCheckinLabel_Click"></asp:LinkButton>
+                </div>
+            </div>
+
         </asp:Panel>
 
         <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location" ValidationGroup="Location">
             <Content ID="mdLocationPickerContent">
                 <asp:HiddenField ID="hfLocationPickerVisible" runat="server" />
                 <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-                <Rock:LocationPicker ID="locationPicker" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Check-in Location" ValidationGroup="Location" />
+                <Rock:LocationItemPicker ID="locationPicker" runat="server" Label="Check-in Location" ValidationGroup="Location" />
             </Content>
         </Rock:ModalDialog>
 

@@ -362,7 +362,6 @@ namespace Rock.Web.UI.Controls
             this.Controls.Add( _btnPickerLabel );
 
             _btnSelectNone = new HtmlAnchor();
-            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";

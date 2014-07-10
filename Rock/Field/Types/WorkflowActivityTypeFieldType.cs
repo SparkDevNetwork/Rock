@@ -109,7 +109,7 @@ namespace Rock.Field.Types
             {
                 foreach ( var activityType in activityTypes.OrderBy( a => a.Order ) )
                 {
-                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString() ) );
+                    editControl.Items.Add( new ListItem( activityType.Name ?? "[New Activity]", activityType.Guid.ToString().ToUpper() ) );
                 }
             }
 
@@ -144,7 +144,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is RockDropDownList )
                 {
-                    ( (RockDropDownList)control ).SetValue( value );
+                    ( (RockDropDownList)control ).SetValue( value.ToUpper() );
                 }
             }
         }

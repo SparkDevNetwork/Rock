@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
-    public class KeyValueListFieldType : FieldType
+    public class KeyValueListFieldType : ValueListFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -64,7 +64,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "definedtype" );
+            configKeys.Insert(0, "keyprompt" );
             return configKeys;
         }
 
@@ -76,17 +76,13 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.DataTextField = "Name";
-            ddl.DataValueField = "Id";
-            ddl.DataSource = new Rock.Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
-            ddl.DataBind();
-            ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
-            ddl.Label = "Defined Type";
-            ddl.Help = "Optional Defined Type to select values from, otherwise values will be free-form text fields.";
+            var tbKeyPrompt = new RockTextBox();
+            controls.Insert(0, tbKeyPrompt );
+            tbKeyPrompt.AutoPostBack = true;
+            tbKeyPrompt.TextChanged += OnQualifierUpdated;
+            tbKeyPrompt.Label = "Key Prompt";
+            tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
+
             return controls;
         }
 
@@ -98,13 +94,31 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "keyprompt", new ConfigurationValue( "Key Prompt", "The text to display as a prompt in the key textbox.", "" ) );
+            configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
+            configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.", "" ) );
 
-            if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DropDownList )
+            if ( controls != null )
             {
-                configurationValues["definedtype"].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox   )
+                {
+                    configurationValues["keyprompt"].Value = ( (RockTextBox)controls[0] ).Text;
+                }
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox  )
+                {
+                    configurationValues["valueprompt"].Value = ( (RockTextBox)controls[1] ).Text;
+                }
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList  )
+                {
+                    configurationValues["definedtype"].Value = ( (RockDropDownList)controls[2] ).SelectedValue;
+                }
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox )
+                {
+                    configurationValues["customvalues"].Value = ( (RockTextBox)controls[3] ).Text;
+                }
             }
+
 
             return configurationValues;
         }
@@ -116,11 +130,35 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "definedtype" ) )
+            if ( controls != null && configurationValues != null )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
+                if ( controls.Count > 0 && controls[0] != null && controls[0] is RockTextBox && configurationValues.ContainsKey( "keyprompt" ) )
+                {
+                    ( (RockTextBox)controls[0] ).Text = configurationValues["keyprompt"].Value;
+                }
+                if ( controls.Count > 1 && controls[1] != null && controls[1] is RockTextBox && configurationValues.ContainsKey( "valueprompt" ) )
+                {
+                    ( (RockTextBox)controls[1] ).Text = configurationValues["valueprompt"].Value;
+                }
+                if ( controls.Count > 2 && controls[2] != null && controls[2] is RockDropDownList && configurationValues.ContainsKey( "definedtype" ) )
+                {
+                    ( (RockDropDownList)controls[2] ).SelectedValue = configurationValues["definedtype"].Value;
+                }
+                if ( controls.Count > 3 && controls[3] != null && controls[3] is RockTextBox && configurationValues.ContainsKey( "customvalues" ) )
+                {
+                   ( (RockTextBox)controls[3] ).Text = configurationValues["customvalues"].Value;
+                }
             }
+        }
+
+        /// <summary>
+        /// Edits the control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override ValueList EditControl( string id )
+        {
+            return new KeyValueList { ID = id };
         }
 
         /// <summary>
@@ -133,14 +171,13 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var control = new KeyValueList { ID = id }; 
+            var control = base.EditControl( configurationValues, id ) as KeyValueList;
 
-            if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
+            if ( configurationValues != null )
             {
-                int definedTypeId = 0;
-                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
+                if ( configurationValues.ContainsKey( "keyprompt" ) )
                 {
-                    control.DefinedTypeId = definedTypeId;
+                    control.KeyPrompt = configurationValues["keyprompt"].Value;
                 }
             }
 

@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
     public class WorkflowActionTypeEditor : CompositeControl, IHasValidationGroup
     {
-        private HiddenField _hfExpanded;
+        private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
         private LinkButton _lbDeleteActionType;
@@ -61,14 +61,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-
-                bool expanded = false;
-                if ( !bool.TryParse( _hfExpanded.Value, out expanded ) )
-                {
-                    expanded = false;
-                }
-
-                return expanded;
+                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
             }
 
             set
@@ -254,7 +247,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             var entityType = EntityTypeCache.Read( result.EntityTypeId );
             if ( entityType != null && entityType.Name == typeof( Rock.Workflow.Action.UserEntryForm ).FullName )
             {
-                result.WorkflowForm = _formEditor.Form;
+                result.WorkflowForm = _formEditor.GetForm();
                 if ( result.WorkflowForm == null )
                 {
                     result.WorkflowForm = new WorkflowActionForm();
@@ -287,7 +280,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="workflowTypeAttributes">The workflow type attributes.</param>
-        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, string> workflowTypeAttributes )
+        public void SetWorkflowActionType(WorkflowActionType value, Dictionary<Guid, Rock.Model.Attribute> workflowTypeAttributes )
         {
             EnsureChildControls();
             _hfActionTypeGuid.Value = value.Guid.ToString();
@@ -299,11 +292,11 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem() );
             foreach ( var attribute in workflowTypeAttributes )
             {
-                var li = new ListItem( attribute.Value, attribute.Key.ToString() );
+                var li = new ListItem( attribute.Value.Name, attribute.Key.ToString() );
                 li.Selected = value.CriteriaAttributeGuid.HasValue && value.CriteriaAttributeGuid.Value.ToString() == li.Value; 
                 _ddlCriteriaAttribute.Items.Add( li );
 
-                _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value, attribute.Key.ToString() ) );
+                _tbddlCriteriaValue.DropDownList.Items.Add( new ListItem( attribute.Value.Name, attribute.Key.ToString() ) );
             }
 
             _ddlCriteriaComparisonType.SetValue( value.CriteriaComparisonType.ConvertToInt() );
@@ -326,13 +319,13 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                         value.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
                     }
                 }
-                _formEditor.Form = value.WorkflowForm;
+                _formEditor.SetForm( value.WorkflowForm, workflowTypeAttributes );
                 _cbIsActionCompletedOnSuccess.Checked = true;
                 _cbIsActionCompletedOnSuccess.Enabled = false;
             }
             else
             {
-                _formEditor.Form = null;
+                _formEditor.SetForm( null, workflowTypeAttributes );
                 _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 _cbIsActionCompletedOnSuccess.Enabled = true;
             }
@@ -348,9 +341,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         {
             Controls.Clear();
 
-            _hfExpanded = new HiddenField();
+            _hfExpanded = new HiddenFieldWithClass();
             Controls.Add( _hfExpanded );
             _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.CssClass = "filter-expanded";
             _hfExpanded.Value = "False";
 
             _hfActionTypeGuid = new HiddenField();
@@ -487,7 +481,6 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( "header" );
 
             // Hidden Field to track expansion
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left workflow-action-name" );

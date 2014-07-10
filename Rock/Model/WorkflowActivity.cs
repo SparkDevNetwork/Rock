@@ -277,35 +277,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether the specified current person is assigned.
-        /// </summary>
-        /// <param name="currentPerson">The current person.</param>
-        /// <param name="includeNotAssigned">if set to <c>true</c> includes activities not assigned to anyone</param>
-        /// <returns></returns>
-        public bool IsAssigned ( Person currentPerson, bool includeNotAssigned )
-        {
-            if ( !AssignedGroupId.HasValue && !AssignedPersonAliasId.HasValue )
-            {
-                return includeNotAssigned;
-            }
-
-            if ( currentPerson != null )
-            {
-                if ( AssignedPersonAlias != null && AssignedPersonAlias.PersonId == currentPerson.Id )
-                {
-                    return true;
-                }
-
-                if ( AssignedGroup != null && AssignedGroup.Members.Any( m => m.PersonId == currentPerson.Id ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object.
         /// </summary>
         /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>

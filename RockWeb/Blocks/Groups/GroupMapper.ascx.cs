@@ -396,7 +396,11 @@ namespace RockWeb.Blocks.Groups
                 if ( dvcMapStyle != null )
                 {
                     styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
-                    markerColor = dvcMapStyle.GetAttributeValue( "MarkerColor" ).Replace( "#", string.Empty );
+                    var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    if ( colors.Any() )
+                    {
+                        markerColor = colors.First().Replace( "#", "" );
+                    }
                 }
 
                 // write script to page
