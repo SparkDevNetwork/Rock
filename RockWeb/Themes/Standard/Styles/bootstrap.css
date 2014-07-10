@@ -1824,7 +1824,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.428571429;
   color: #333333;
@@ -1969,7 +1969,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-weight: 500;
   line-height: 1.1;
   color: inherit;
@@ -5631,8 +5631,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
   padding: 6px 12px;
   line-height: 1.428571429;
   text-decoration: none;
-  background-color: #eeeeee;
-  border: 1px solid #d5d5d5;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
   margin-left: -1px;
 }
 .pagination > li:first-child > a,
@@ -5650,7 +5650,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pagination > li > span:hover,
 .pagination > li > a:focus,
 .pagination > li > span:focus {
-  background-color: #fbfbfb;
+  background-color: #eeeeee;
 }
 .pagination > .active > a,
 .pagination > .active > span,
@@ -5671,8 +5671,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pagination > .disabled > a:hover,
 .pagination > .disabled > a:focus {
   color: #999999;
-  background-color: #eeeeee;
-  border-color: #d5d5d5;
+  background-color: #ffffff;
+  border-color: #dddddd;
   cursor: not-allowed;
 }
 .pagination-lg > li > a,
@@ -5738,14 +5738,14 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pager li > span {
   display: inline-block;
   padding: 5px 14px;
-  background-color: #eeeeee;
-  border: 1px solid #d5d5d5;
+  background-color: #ffffff;
+  border: 1px solid #dddddd;
   border-radius: 15px;
 }
 .pager li > a:hover,
 .pager li > a:focus {
   text-decoration: none;
-  background-color: #fbfbfb;
+  background-color: #eeeeee;
 }
 .pager .next > a,
 .pager .next > span {
@@ -5760,7 +5760,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .pager .disabled > a:focus,
 .pager .disabled > span {
   color: #999999;
-  background-color: #eeeeee;
+  background-color: #ffffff;
   cursor: not-allowed;
 }
 .label {
@@ -6615,7 +6615,7 @@ body.modal-open,
   color: #ffffff;
   text-align: center;
   text-decoration: none;
-  background-color: #ffffff;
+  background-color: #000000;
   border-radius: 4px;
 }
 .tooltip-arrow {
@@ -6630,52 +6630,52 @@ body.modal-open,
   left: 50%;
   margin-left: -5px;
   border-width: 5px 5px 0;
-  border-top-color: #ffffff;
+  border-top-color: #000000;
 }
 .tooltip.top-left .tooltip-arrow {
   bottom: 0;
   left: 5px;
   border-width: 5px 5px 0;
-  border-top-color: #ffffff;
+  border-top-color: #000000;
 }
 .tooltip.top-right .tooltip-arrow {
   bottom: 0;
   right: 5px;
   border-width: 5px 5px 0;
-  border-top-color: #ffffff;
+  border-top-color: #000000;
 }
 .tooltip.right .tooltip-arrow {
   top: 50%;
   left: 0;
   margin-top: -5px;
   border-width: 5px 5px 5px 0;
-  border-right-color: #ffffff;
+  border-right-color: #000000;
 }
 .tooltip.left .tooltip-arrow {
   top: 50%;
   right: 0;
   margin-top: -5px;
   border-width: 5px 0 5px 5px;
-  border-left-color: #ffffff;
+  border-left-color: #000000;
 }
 .tooltip.bottom .tooltip-arrow {
   top: 0;
   left: 50%;
   margin-left: -5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #ffffff;
+  border-bottom-color: #000000;
 }
 .tooltip.bottom-left .tooltip-arrow {
   top: 0;
   left: 5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #ffffff;
+  border-bottom-color: #000000;
 }
 .tooltip.bottom-right .tooltip-arrow {
   top: 0;
   right: 5px;
   border-width: 0 5px 5px;
-  border-bottom-color: #ffffff;
+  border-bottom-color: #000000;
 }
 .popover {
   position: absolute;
