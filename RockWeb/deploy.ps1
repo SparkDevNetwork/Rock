@@ -1,9 +1,9 @@
 # This script is run by AppVeyor's deploy agent after the deploy
 Import-Module WebAdministration
  
-# start website
-Write-Host "Starting IIS website"
-Start-WebSite 'RockRMS'
+# start web publishing service
+Write-Host "Starting Web Publishing Service"
+start-service -servicename w3svc
 
 # move content directory back from temp
 Write-Host "Moving Contents folder back from temp directory"
