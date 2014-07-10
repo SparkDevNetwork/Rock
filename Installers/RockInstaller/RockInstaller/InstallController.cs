@@ -30,13 +30,11 @@ namespace RockInstaller
         private static string sqlConfigureScript = "sql-config.sql";
         private static string baseStorageUrl = "http://storage.rockrms.com/install/";
 
-
-        
         static InstallController()
         {
             serverPath = (System.Web.HttpContext.Current == null)
                     ? System.Web.Hosting.HostingEnvironment.MapPath( "~/" )
-                    : System.Web.HttpContext.Current.Server.MapPath( "~/" ); ;
+                    : System.Web.HttpContext.Current.Server.MapPath( "~/" );
         }
 
 
@@ -82,9 +80,9 @@ namespace RockInstaller
             Clients.Caller.ReportError( errorMessage );
         }
 
-        public void ShowSuccess( )
+        public void RedirectToComplete( )
         {
-            Clients.Caller.ShowSuccess( );
+            Clients.Caller.RedirectToComplete();
         }
 
         #endregion
@@ -274,19 +272,8 @@ namespace RockInstaller
 
             Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
-            // delete the installer
-            result = DeleteInstaller( installData );
-            if ( !result.Success )
-            {
-                this.SendConsoleMessage( new ConsoleMessage( "Error deleting the installer:" + result.Message, ConsoleMessageType.Critical ) );
-                this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred while while deleting the installer. At this point you may need to restart the install if Rock does not start. Message: {0}</div>", result.Message ) );
-                return;
-            }
-
-            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
-
-            // show install success, goodbye
-            this.ShowSuccess();
+            // redirect to the final complete page
+            this.RedirectToComplete();
         }
 
         #region Install Steps
@@ -400,6 +387,14 @@ namespace RockInstaller
             result.Success = true;
 
             string tempWebConfig = serverPath + @"\webconfig.xml";
+            string tempGlobalConfig = serverPath + @"\installer-hold\Global.asax";
+
+            // create hold directory for files that would restart the application
+            if ( !Directory.Exists( serverPath + @"\installer-hold" ) )
+            {
+                Directory.CreateDirectory( serverPath + @"\installer-hold" );
+            }
+
             string passwordKey = RockInstallUtilities.GeneratePasswordKey(); ;
             string dataEncryptionKey = RockInstallUtilities.GenerateRandomDataEncryptionKey();
 
@@ -493,6 +488,31 @@ namespace RockInstaller
                     result.Success = false;
                     result.Message = ex.Message;
                 }
+
+                /* pull out Global.asax from zip file 
+                try
+                {
+                    using ( FileStream fsZipFile = File.Create( tempGlobalConfig ) )
+                    {
+                        using ( ZipFile zip = ZipFile.Read( rockZipFile ) )
+                        {
+                            ZipEntry globalConfigEntry = zip["Global.asax"];
+                            globalConfigEntry.Extract( fsZipFile );
+
+                            // remove file from zip
+                            zip.RemoveEntry( "Global.asax" );
+                            zip.Save();
+                        }
+                    }
+
+                    this.SendConsoleMessage( "Extracted Global.asax to ./installer-hold/Global.asax." );
+                    this.UpdateProgressBar( 60 );
+                }
+                catch ( Exception ex )
+                {
+                    result.Success = false;
+                    result.Message = ex.Message;
+                }*/
             }
 
             // edit web.config
@@ -515,7 +535,11 @@ namespace RockInstaller
             this.UpdateProgressBar( 80 );
 
             // insert web.config back into rock zip
-            if ( result.Success )
+            /*
+             * eliminating this as we'll rename the webconfig.xml to web.config ourseleves at the end to
+             * keep IIS from recycling themselves
+             * 
+             * if ( result.Success )
             {
                 this.SendConsoleMessage( "Preparing to insert webconfig.xml back into rock zip file as web.config." );
                 try
@@ -533,7 +557,7 @@ namespace RockInstaller
                     result.Success = false;
                     result.Message = ex.Message;
                 }
-            }
+            }*/
             this.UpdateProgressBar( 100 );
             return result;
         }
@@ -579,12 +603,11 @@ namespace RockInstaller
 
                 try
                 {
-                    // move rock in place
-                    Directory.Move( serverPath + @"rock", serverPath );
+                    
                     
                     File.Delete( serverPath + @"Start.aspx" );
                     File.Delete( serverPath + @"Install.aspx" );
-                    File.Delete( serverPath + @"InstallController.cs" );
+                    //File.Move(serverPath + @"web.config", )
 
                     /* keep SignalR as Rock needs it
                     File.Delete( serverPath + @"Startup.cs" );

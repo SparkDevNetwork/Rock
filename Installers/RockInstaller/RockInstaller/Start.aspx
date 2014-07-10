@@ -99,16 +99,6 @@
                         downloadSuccessful = DownloadFile( "Install.aspx", serverUrl, serverPath );
                     }
 
-                    if ( downloadSuccessful )
-                    {
-                        downloadSuccessful = DownloadFile( "InstallController.cs", serverUrl, serverPath );
-                    }
-
-                    if ( downloadSuccessful )
-                    {
-                        downloadSuccessful = DownloadFile( "Startup.cs", serverUrl, serverPath );
-                    }
-
                     // signalr bin files
                     if ( downloadSuccessful )
                     {

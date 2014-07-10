@@ -5,6 +5,7 @@
     2. UI Wigets
     3. Install Panels
     4. Boostrap Overrides
+    5. Waiting Annimation
 
 */
 
@@ -46,7 +47,7 @@ h1 {
 	    display: block;
 	    height: 100px;
         width: 100px !important;
-	    margin: 20px auto 12px;
+	    margin: 20px auto 18px;
 	    text-indent: -9999px;
 	    width: 163.369px;
     }
@@ -200,26 +201,44 @@ h1 {
     }
 }
 
+.content-narrow {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
 // 3. Install Panels
 // -------------------------
 
-#pnlWelcome {
+#pnlWelcome,
+#pnlComplete {
     img {
         margin: 0 auto;
         max-width: 100%;
         display: block;
     }
 
-    width: 400px;
-    margin: 0 auto;
-    text-align: center;
 
     h1 {
         line-height: .9em;
         font-size: 48px;
         margin-top: 6px;
-        margin-bottom: 36px;
+        margin-bottom: 24px;
     }
+
+    .ssl-alert {
+        margin-top: 24px;
+    }
+}
+
+#pnlInstallWatch {
+
+    #installer-working {
+        position: relative;
+        width: 280px;
+        margin: 0 auto;
+    }
+
 }
 
 // panel watch
@@ -289,3 +308,65 @@ label {
         background-color: #afd074;
     }
 }
+
+// 5. Waiting Annimation
+// -------------------------
+.spinner {
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    font-size: 10px;
+    margin: 0;
+    position: absolute;
+    top: 28px;
+    left: 100px;
+    background: #ee7624;
+    z-index: 4;
+    border-radius: 120px;
+    padding: 25px 10px;
+}
+
+    .spinner > div {
+      background-color: #fff;
+      height: 100%;
+      width: 6px;
+      display: inline-block;
+      
+      -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+      animation: stretchdelay 1.2s infinite ease-in-out;
+    }
+
+    .spinner .rect2 {
+      -webkit-animation-delay: -1.1s;
+      animation-delay: -1.1s;
+    }
+
+    .spinner .rect3 {
+      -webkit-animation-delay: -1.0s;
+      animation-delay: -1.0s;
+    }
+
+    .spinner .rect4 {
+      -webkit-animation-delay: -0.9s;
+      animation-delay: -0.9s;
+    }
+
+    .spinner .rect5 {
+      -webkit-animation-delay: -0.8s;
+      animation-delay: -0.8s;
+    }
+
+    @-webkit-keyframes stretchdelay {
+      0%, 40%, 100% { -webkit-transform: scaleY(0.4) }  
+      20% { -webkit-transform: scaleY(1.0) }
+    }
+
+    @keyframes stretchdelay {
+      0%, 40%, 100% { 
+        transform: scaleY(0.4);
+        -webkit-transform: scaleY(0.4);
+      } 20% {
+        transform: scaleY(1.0);
+        -webkit-transform: scaleY(1.0);
+      }
+    }
