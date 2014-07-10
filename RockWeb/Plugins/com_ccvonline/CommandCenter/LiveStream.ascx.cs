@@ -1,30 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 {
     /// <summary>
     /// 
-    /// </summary>
-    
+    /// </summary>   
     [DisplayName("Live Stream")]
     [Category( "CCV" )]
     [CategoryField("Command Center > Live Stream")]
-    [Description("Used for viewing live streams.")]
+    [Description("Used for viewing live venue streams.")]
 
-    //todo: choose stream type block setting and add campus picker
+    //todo: need to wire up
+    [CampusField("Campus", "Only show streams from a specific campus", false)]
+
+    [TextField("Venue Type", "Only shows streams for a specfic venue. i.e. Command Center", false)]
 
     public partial class LiveStream : RockBlock
     {
@@ -32,35 +30,66 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            var rockContext = new RockContext();
-            var campusService = new CampusService( rockContext );
-
-            var theCampuses = campusService.Queryable().ToList();
-            theCampuses.ForEach( c => c.LoadAttributes( rockContext ) );                
-
-            rptvideostreams.DataSource = theCampuses.Select( c => new {
-                Id = "campus-" + c.Id.ToString(),
-                Name = c.Name,
-                Stream = GetStream(c.GetAttributeValue("VenueStreams"))
-            }).ToList();
+            rptvideostreams.DataSource = GetDatasource();
             rptvideostreams.DataBind();
+
+            if ( rptvideostreams.Items.Count < 1)
+            {
+                ntbAlert.Visible = true;
+            }
+
+            
         }
 
         #endregion
 
-        private string GetStream(string value)
+        private List<string[]> GetDatasource()
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            var datasource = new List<string[]>();
+            var rockContext = new RockContext();
+            var campusService = new CampusService( rockContext );
+
+            var theCampuses = campusService.Queryable().ToList();
+            theCampuses.ForEach( c => c.LoadAttributes( rockContext ) );
+
+            var campusStreams = theCampuses.Select( c => new
+                {
+                    Id = c.Id.ToString(),
+                    Streams = c.GetAttributeValue( "VenueStreams" ).ToString()
+                } ).ToList();
+
+            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Campus" ) ) )
             {
-                string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-                foreach ( string nameValue in nameValues )
+                campusStreams = theCampuses.Where( c => c.Id == Int32.Parse( GetAttributeValue( "Campus" ) ) ).Select( c => new
+                {
+                    Id = c.Id.ToString(),
+                    Streams = c.GetAttributeValue( "VenueStreams" ).ToString()
+                } ).ToList();
+            }
+
+            foreach ( var campusStream in campusStreams )
+            {
+                string[] nameValues = campusStream.Streams.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+
+                foreach (var nameValue in nameValues )
                 {
                     string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                    return nameAndValue[1];
+                    string[] videoOptions = new string[] { nameAndValue[1] + "-" + nameAndValue[0] + "-" + campusStream.Id , nameAndValue[1], nameAndValue[2] };
+
+                    if ( GetAttributeValue( "VenueType" ) != null && GetAttributeValue( "VenueType" ) == nameAndValue[0] )
+                    {
+                        datasource.Add( videoOptions );
+                    }
+
+                    if ( String.IsNullOrWhiteSpace(GetAttributeValue( "VenueType" ) ) )
+                    {
+                        datasource.Add( videoOptions );
+                    }
                 }
             }
 
-            return string.Empty;
+            return datasource;
         }
     }
 }
