@@ -85,6 +85,7 @@ namespace Rock.Address
                     if (candidates.Any())
                     {
                         var candidate = candidates.FirstOrDefault();
+                        verified = true;
                         result = string.Format( "record_type: {0}; dpv_match_code: {1}; precision {2}",
                             candidate.metadata.record_type, candidate.analysis.dpv_match_code, candidate.metadata.precision );
 
@@ -97,7 +98,10 @@ namespace Rock.Address
                             location.State = candidate.components.state_abbreviation;
                             location.Zip = candidate.components.zipcode + "-" + candidate.components.plus4_code;
                             location.StandardizedDateTime = RockDateTime.Now;
-                            verified = true;
+                        }
+                        else
+                        {
+                            verified = false;
                         }
 
                         location.GeocodeAttemptedResult = candidate.metadata.precision;
@@ -106,6 +110,11 @@ namespace Rock.Address
                             location.SetLocationPointFromLatLong( candidate.metadata.latitude, candidate.metadata.longitude );
                             location.GeocodedDateTime = RockDateTime.Now;
                         }
+                        else
+                        {
+                            verified = false;
+                        }
+
                     }
                     else
                     {
