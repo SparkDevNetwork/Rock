@@ -3962,6 +3962,22 @@ div.aspNetDisabled {
     4. Responsive Overrides 
 
 */
+@font-face {
+  font-family: DINWebCondensedLight;
+  src: url('../Assets/fonts/DINWeb-CondLight.eot');
+}
+@font-face {
+  font-family: DINWebCondensedLight;
+  src: url('../Assets/fonts/DINWeb-CondLight.woff') format('woff'), url('../Assets/fonts/DINWeb-CondLight.ttf') format('truetype');
+}
+@font-face {
+  font-family: DINWebCondensedBold;
+  src: url('../Assets/fonts/DINWeb-CondBold.eot');
+}
+@font-face {
+  font-family: DINWebCondensedBold;
+  src: url('../Assets/fonts/DINWeb-CondBold.woff') format('woff'), url('../Assets/fonts/DINWeb-CondBold.ttf') format('truetype');
+}
 main {
   display: block;
 }
@@ -3969,8 +3985,18 @@ html {
   background-color: #1A1A1A;
 }
 h1 {
+  font-family: DINWebCondensedBold, Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  text-transform: uppercase;
   text-align: center;
   color: white;
+}
+h3 {
+  margin: 0;
+  text-transform: uppercase;
+  font-family: DINWebCondensedLight, Helvetica, Arial, sans-serif;
+  font-weight: normal;
+  text-align: center;
 }
 .panel {
   background: -webkit-linear-gradient(top, #404040 0%, #323232 100%);
@@ -3983,6 +4009,48 @@ h1 {
 }
 .panel-body h3 {
   color: white;
+}
+.btn {
+  display: inline-block;
+  margin-bottom: 0;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding: 6px 12px;
+}
+.btn:hover,
+.btn:focus {
+  color: #333;
+  text-decoration: none;
+}
+.btn:active,
+.btn.active {
+  outline: 0;
+  background-image: none;
+  -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+}
+.btn.disabled,
+.btn[disabled],
+fieldset[disabled] .btn {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: .65;
+  filter: alpha(opacity=65);
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
 .btn-default {
   color: #333;
@@ -3998,6 +4066,28 @@ h1 {
   background-color: #e6e6e6;
   border-color: #adadad;
 }
+.btn-default.disabled,
+.btn-default[disabled],
+fieldset[disabled] .btn-default,
+.btn-default.disabled:hover,
+.btn-default[disabled]:hover,
+fieldset[disabled] .btn-default:hover,
+.btn-default.disabled:focus,
+.btn-default[disabled]:focus,
+fieldset[disabled] .btn-default:focus,
+.btn-default.disabled:active,
+.btn-default[disabled]:active,
+fieldset[disabled] .btn-default:active,
+.btn-default.disabled.active,
+.btn-default[disabled].active,
+fieldset[disabled] .btn-default.active {
+  background-color: #fff;
+  border-color: #ccc;
+}
+.btn-default .badge {
+  color: #fff;
+  background-color: #333;
+}
 .btn-primary {
   color: #fff;
   background-color: #428bca;
@@ -4012,7 +4102,25 @@ h1 {
   background-color: #3071a9;
   border-color: #285e8e;
 }
-.b .btn i {
+.btn-primary.disabled,
+.btn-primary[disabled],
+fieldset[disabled] .btn-primary,
+.btn-primary.disabled:hover,
+.btn-primary[disabled]:hover,
+fieldset[disabled] .btn-primary:hover,
+.btn-primary.disabled:focus,
+.btn-primary[disabled]:focus,
+fieldset[disabled] .btn-primary:focus,
+.btn-primary.disabled:active,
+.btn-primary[disabled]:active,
+fieldset[disabled] .btn-primary:active,
+.btn-primary.disabled.active,
+.btn-primary[disabled].active,
+fieldset[disabled] .btn-primary.active {
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+.btn i {
   font-size: 16px;
   margin-right: 14px;
 }
