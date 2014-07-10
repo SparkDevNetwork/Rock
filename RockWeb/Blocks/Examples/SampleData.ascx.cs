@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Examples
 
             //// First delete any sample data that might exist already 
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // First we'll clean up by deleting any previously created data such as
                 // families, addresses, people, photos, attendance data, etc.
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Examples
 
             // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // Now we can add the families (and people) and then groups.
                 AddFamilies( elemFamilies, rockContext );

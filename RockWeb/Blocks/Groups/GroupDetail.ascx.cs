@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( group.Id.Equals( 0 ) )
                 {

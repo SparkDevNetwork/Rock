@@ -514,7 +514,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // need WrapTransaction due to Attribute saves    
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 

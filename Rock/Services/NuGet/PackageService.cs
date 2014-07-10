@@ -184,7 +184,7 @@ namespace Rock.Services.NuGet
 
                 // Find new block types and save them prior to scrubbing data...
                 var newBlockTypes = FindNewBlockTypes( page, new BlockTypeService( rockContext ).Queryable() ).ToList();
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                     {
                         try
                         {

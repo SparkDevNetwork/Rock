@@ -217,7 +217,7 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
 

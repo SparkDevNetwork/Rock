@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             // do a WrapTransaction since we are doing multiple SaveChanges()
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var schedule = scheduleService.Get( metric.ScheduleId ?? 0 );

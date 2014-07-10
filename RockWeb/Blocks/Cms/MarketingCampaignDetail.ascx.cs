@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 /* Save MarketingCampaignAudiences to db */
                 if ( marketingCampaign.MarketingCampaignAudiences == null )
