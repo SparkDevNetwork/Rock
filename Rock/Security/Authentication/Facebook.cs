@@ -133,10 +133,10 @@ namespace Rock.Security.ExternalAuthentication
 
                     UserLogin user = null;
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    var rockContext = new RockContext();
+                    rockContext.WrapTransaction( () =>
                     {
                         // query for matching id in the user table 
-                        var rockContext = new RockContext();
                         var userLoginService = new UserLoginService( rockContext );
                         user = userLoginService.GetByUserName( facebookId );
 

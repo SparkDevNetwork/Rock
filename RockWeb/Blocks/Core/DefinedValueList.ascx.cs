@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Core
             Rock.Web.Cache.DefinedTypeCache.Flush( definedValue.DefinedTypeId );
             Rock.Web.Cache.DefinedValueCache.Flush( definedValue.Id );
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( definedValue.Id.Equals( 0 ) )
                 {

@@ -681,9 +681,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 confirmExit.Enabled = true;
 
-                RockTransactionScope.WrapTransaction( () =>
+                var rockContext = new RockContext();
+                rockContext.WrapTransaction( () =>
                 {
-                    var rockContext = new RockContext();
                     var familyService = new GroupService( rockContext );
                     var familyMemberService = new GroupMemberService( rockContext );
                     var personService = new PersonService( rockContext );

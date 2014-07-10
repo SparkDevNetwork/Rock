@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // using WrapTransaction because there are two Saves
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     if ( groupMember.Id.Equals( 0 ) )
                     {
