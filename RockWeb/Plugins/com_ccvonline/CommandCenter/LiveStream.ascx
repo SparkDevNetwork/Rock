@@ -12,7 +12,7 @@
                 <div class="panel-body videocontent">   
                     <h3><%# Eval("[1]") %></h3>                 
                     <video id='<%# Eval("[0]") %>' class="video-js vjs-default-skin vjs-live vjs-big-play-centered" controls autoplay
-                            preload="none" width="auto" height="330" poster="<%# ResolveRockUrl("~~/Assets/images/poster.jpg") %>" data-setup='{ "techOrder": ["flash"] }'>
+                            preload="none" width="auto" height="330" poster="<%# ResolveRockUrl("~~/Assets/images/poster.jpg") %>" data-setup='{ "techOrder": ["html5", "flash", "other supported tech"] }'>
                         <source src='<%# Eval("[2]") %>' type='rtmp/mp4'>
                         <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
                     </video>

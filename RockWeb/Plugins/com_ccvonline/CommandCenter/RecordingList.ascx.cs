@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -34,6 +35,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName( "Recording List" )]
+    [Category( "CCV > Command Center" )]
+    [Description( "Lists all of the Command Center recordings." )]
     [LinkedPage("Detail Page")]
     public partial class RecordingList : RockBlock
     {

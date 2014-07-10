@@ -15,8 +15,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     /// 
     /// </summary>   
     [DisplayName("Live Stream")]
-    [Category( "CCV" )]
-    [CategoryField("Command Center > Live Stream")]
+    [Category( "CCV > Command Center" )]
     [Description("Used for viewing live venue streams.")]
 
     //todo: need to wire up

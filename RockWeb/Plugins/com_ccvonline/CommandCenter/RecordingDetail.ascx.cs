@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
@@ -33,6 +34,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     /// <summary>
     /// 
     /// </summary>
+    [DisplayName( "Recording Detail" )]
+    [Category( "CCV > Command Center" )]
+    [Description( "Displays the details of a recording." )]
     public partial class RecordingDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
