@@ -481,7 +481,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // Save the entity field changes to workflow type
                 if ( workflowType.Id.Equals( 0 ) )

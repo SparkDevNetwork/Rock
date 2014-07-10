@@ -335,7 +335,7 @@ namespace Rock.Model
 
                     userLoginService.Add( user );
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
 

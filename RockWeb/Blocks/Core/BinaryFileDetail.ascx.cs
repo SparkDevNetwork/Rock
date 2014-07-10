@@ -319,7 +319,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 foreach ( var id in OrphanedBinaryFileIdList )
                 {

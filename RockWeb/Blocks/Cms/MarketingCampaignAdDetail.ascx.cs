@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( marketingCampaignAd.Id.Equals( 0 ) )
                 {

@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 AttributeService attributeService = new AttributeService( rockContext );
                 AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
