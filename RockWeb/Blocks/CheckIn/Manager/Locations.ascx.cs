@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 if ( campus.Id.ToString() != CurrentCampusId )
                 {
-                    NavData = GetNavigationData( campus );
+                    NavData = GetNavigationData( CampusCache.Read(campus) );
                     CurrentCampusId = campus.Id.ToString();
 
                     if (Page.IsPostBack)
@@ -309,7 +309,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             rptPeople.Visible = true;
             rptPeople.DataSource = results;
             rptPeople.DataBind();
-                
+
+            RegisterStartupScript();
         }
 
         /// <summary>
@@ -411,16 +412,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             tbSearch.Text = string.Empty;
 
-            if ( e.EventArgument.StartsWith( "P" ) )
+            if ( e.EventArgument == "R" )
             {
-                var parms = new Dictionary<string, string>();
-                parms.Add("Person", e.EventArgument.Substring(1));
-                NavigateToLinkedPage( "PersonPage", parms );
+                int? campusId = CurrentCampusId.AsIntegerOrNull();
+                if ( campusId.HasValue )
+                {
+                    NavData = GetNavigationData( CampusCache.Read( campusId.Value ) );
+                }
+                BuildNavigationControls();
             }
             else
             {
-                CurrentNavPath = e.EventArgument;
-                BuildNavigationControls();
+                if ( e.EventArgument.StartsWith( "P" ) )
+                {
+                    var parms = new Dictionary<string, string>();
+                    parms.Add( "Person", e.EventArgument.Substring( 1 ) );
+                    NavigateToLinkedPage( "PersonPage", parms );
+                }
+                else
+                {
+                    CurrentNavPath = e.EventArgument;
+                    BuildNavigationControls();
+                }
             }
         }
 
@@ -557,7 +570,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         #region Get Navigation Data
 
-        private NavigationData GetNavigationData( Campus campus )
+        private NavigationData GetNavigationData( CampusCache campus )
         {
             var rockContext = new RockContext();
 
@@ -768,24 +781,23 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var now = DateTime.Now;
             now = new DateTime( now.Year, now.Month, now.Day, now.Hour, now.Minute, 0 );
 
-            // Find the previous 5 min mark
-            var prevTime = now.AddMinutes( -1 );
-            while ( prevTime.Minute % 5 != 0 )
+            // Find the end mark
+            var endTime = now.AddMinutes( 1 );
+            while ( endTime.Minute % 5 != 0 )
             {
-                prevTime = prevTime.AddMinutes( -1 );
+                endTime = endTime.AddMinutes( 1 );
             }
 
             // Get the start time
-            var time = prevTime.AddHours( -2 );
+            var time = endTime.AddHours( -2 );
 
             // Get 5 min increments
             var times = new List<DateTime>();
-            while ( time <= prevTime )
+            while ( time <= endTime )
             {
                 times.Add( time );
                 time = time.AddMinutes( 5 );
             }
-            times.Add( now );
 
             return times;
         }
@@ -1002,6 +1014,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     chartData.Add( string.Format( "[{0}, {1}]", ticks, kv.Value ) );
                 }
                 hfChartData.Value = string.Format( "[ [ {0} ] ]", chartData.AsDelimited( ", " ) );
+                pnlChart.Attributes["onClick"] = upnlContent.GetPostBackEventReference("R");
 
                 pnlNavHeading.Visible = item != null;
                 if ( item != null )

@@ -9,19 +9,16 @@
 
             <asp:HiddenField ID="hfChartData" runat="server" />
             <asp:HiddenField ID="hfChartOptions" runat="server" />
-            <asp:Panel ID="pnlChart" runat="server" style="width:100%;height:170px" />
+            <asp:Panel ID="pnlChart" runat="server" style="width:100%;height:170px" CssClass="clickable" />
+
 
             <br />
 
-            <div class="row">
-                <div class="col-xs-8 col-sm-9 col-md-10 col-lg-11">
-                    <Rock:RockTextBox ID="tbSearch" runat="server" Placeholder="Person Search..." />
-                </div>
-                <div class="col-xs-4 col-sm-3 col-md-2 col-lg-1">
-                    <span class="pull-right">
-                        <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-default" OnClick="lbSearch_Click"><i class="fa fa-search"></i> Search</asp:LinkButton>
-                    </span>
-                </div>
+            <div class="input-group">
+                <Rock:RockTextBox ID="tbSearch" runat="server" Placeholder="Person Search..." />
+                <span class="input-group-btn">
+                    <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-default" OnClick="lbSearch_Click"><i class="fa fa-search"></i> Search</asp:LinkButton>
+                </span>
             </div>
 
             <br />
