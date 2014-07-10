@@ -546,8 +546,12 @@ namespace RockInstaller
             // if we're not in development unzip the file, otherwise we'll fake it... (for that full experience)
             if ( !installData.InstallerProperties.IsDebug )
             {
+                this.SendConsoleMessage( "Preparing to unzip the rock application file." );
+                
                 // unzip the rock zip
-                result = UnzipFile( serverPath + @"\" + rockSource, serverPath, 10, 1, 100, 0 );
+                result = UnzipFile( serverPath + @"\" + rockSource, serverPath + @"\rock", 10, 1, 100, 0 );
+
+                this.SendConsoleMessage( "Unzip complete." );
             }
             else
             {
@@ -564,6 +568,8 @@ namespace RockInstaller
 
         private ActivityResult DeleteInstaller( InstallData installData )
         {
+            this.SendConsoleMessage( "Deleting installer and moving Rock into place. If successful this will be the last message." );
+            
             ActivityResult result = new ActivityResult();
             result.Success = true;
 
@@ -573,9 +579,14 @@ namespace RockInstaller
 
                 try
                 {
+                    // move rock in place
+                    Directory.Move( serverPath + @"rock", serverPath );
+                    
                     File.Delete( serverPath + @"Start.aspx" );
                     File.Delete( serverPath + @"Install.aspx" );
                     File.Delete( serverPath + @"InstallController.cs" );
+
+                    /* keep SignalR as Rock needs it
                     File.Delete( serverPath + @"Startup.cs" );
 
                     File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
@@ -584,12 +595,13 @@ namespace RockInstaller
                     File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
                     File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
                     File.Delete( serverPath + @"bin\Owin.dll" );
+                     */
 
                     File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
                     File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
                     File.Delete( serverPath + @"bin\RockInstaller.dll" );
                     File.Delete( serverPath + @"bin\RockInstallTools.dll" );
-                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );
+                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );  
                 }
                 catch ( Exception ex )
                 {
@@ -914,8 +926,9 @@ namespace RockInstaller
                             }
                             else if ( currentPercentile >= unzipNextProgressbarPercentile )
                             {
-                                this.UpdateProgressBar( (int)(currentPercentile * (percentOfStep * .01)) + startPercent );
-                                unzipNextConsolePercentile = currentPercentile + progressbarEventFrequency;
+                                int progressbarState = (int)(currentPercentile * (percentOfStep * .01)) + startPercent;
+                                this.UpdateProgressBar( progressbarState );
+                                unzipNextProgressbarPercentile = currentPercentile + progressbarEventFrequency;
                             }
                         }
                     } 

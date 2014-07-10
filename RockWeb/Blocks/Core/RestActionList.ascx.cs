@@ -51,9 +51,17 @@ namespace RockWeb.Blocks.Administration
             gActions.GridRebind += gActions_GridRebind;
             gActions.Actions.ShowAdd = false;
             gActions.IsDeleteEnabled = false;
+            gActions.RowSelected += gActions_RowSelected;
            
             SecurityField securityField = gActions.Columns[2] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
+        }
+
+        protected void gActions_RowSelected( object sender, RowEventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "RestActionId", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>

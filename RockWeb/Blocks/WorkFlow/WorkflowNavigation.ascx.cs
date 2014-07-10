@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.WorkFlow
         private void BuildCategoryControl( Control parentControl, WorkflowNavigationCategory category )
         {
             var divPanel = new HtmlGenericContainer( "div" );
-            divPanel.AddCssClass( "panel panel-default panel-workflowitem" );
+            divPanel.AddCssClass( "panel panel-workflowitem" );
             parentControl.Controls.Add( divPanel );
 
             var divPanelHeading = new HtmlGenericControl( "div" );
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.WorkFlow
                 foreach ( var workflowType in category.WorkflowTypes )
                 {
                     var li = new HtmlGenericControl( "li" );
-                    li.AddCssClass( "xlist-group-item" );
+                    li.AddCssClass( "margin-b-sm" );
                     ulGroup.Controls.Add( li );
 
                     var qryParms = new Dictionary<string, string>();
@@ -279,6 +279,14 @@ namespace RockWeb.Blocks.WorkFlow
         public string IconCssClass { get; set; }
 
         /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        public string HighlightColor { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowNavigationItem"/> class.
         /// </summary>
         public WorkflowNavigationItem()
@@ -326,6 +334,7 @@ namespace RockWeb.Blocks.WorkFlow
             Name = category.Name;
             Description = category.Description;
             IconCssClass = category.IconCssClass;
+            HighlightColor = category.HighlightColor;
         }
     }
 
@@ -361,6 +370,7 @@ namespace RockWeb.Blocks.WorkFlow
             Description = workflowType.Description;
             IconCssClass = workflowType.IconCssClass;
             WorkTerm = workflowType.WorkTerm;
+            HighlightColor = string.Empty;
         }
     }
 }

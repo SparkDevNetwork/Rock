@@ -71,7 +71,7 @@ Please confirm the information below. Once you have confirmed that the informati
 
     [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
+By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to transfer the amount above from my account. I acknowledge that I may
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]

@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute to Current Person" )]
 
-    [WorkflowAttribute( "Person Attribute", "The attribute to set to the currently logged in person.", false, "", "", 0 )]
+    [WorkflowAttribute( "Person Attribute", "The attribute to set to the currently logged in person." )]
     public class SetAttributeToCurrentPerson : ActionComponent
     {
         /// <summary>
@@ -71,19 +71,17 @@ namespace Rock.Workflow.Action
                             if ( personAttribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid() ).Id )
                             {
                                 SetWorkflowAttributeValue( action, guid, personAlias.Guid.ToString() );
-                                return true;
                             }
                             else if ( personAttribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.TEXT.AsGuid() ).Id )
                             {
                                 SetWorkflowAttributeValue( action, guid, currentPerson.FullName );
-                                return true;
                             }
                         }
                     }
                 }
             }
 
-            return false;
+            return true;
         }
 
     }

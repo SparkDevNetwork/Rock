@@ -288,6 +288,15 @@ namespace Rock.Model
         [DataMember]
         public int? PrinterDeviceId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image identifier.
+        /// </summary>
+        /// <value>
+        /// The image identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -362,6 +371,15 @@ namespace Rock.Model
         [DataMember]
         public virtual Device PrinterDevice { get; set; }
 
+        /// <summary>
+        /// Gets or sets the image.
+        /// </summary>
+        /// <value>
+        /// The image.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile Image { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -391,6 +409,24 @@ namespace Rock.Model
 
             return "http://maps.google.com/maps?q=" +
                 System.Web.HttpUtility.UrlEncode(qParm);
+        }
+
+        /// <summary>
+        /// Pres the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        {
+            if ( ImageId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( (RockContext)dbContext );
+                var binaryFile = binaryFileService.Get( ImageId.Value );
+                if ( binaryFile != null && binaryFile.IsTemporary )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
         }
 
         /// <summary>
@@ -507,9 +543,64 @@ namespace Rock.Model
             this.HasOptional( l => l.ParentLocation ).WithMany( l => l.ChildLocations ).HasForeignKey( l => l.ParentLocationId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.PrinterDevice ).WithMany().HasForeignKey( l => l.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( l => l.LocationTypeValue ).WithMany().HasForeignKey( l => l.LocationTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( l => l.Image ).WithMany().HasForeignKey( p => p.ImageId ).WillCascadeOnDelete( false );
         }
     }
 
     #endregion
 
+    #region Map Helper Classes
+
+    public class MapCoordinate
+    {
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+
+        public MapCoordinate()
+        {
+
+        }
+
+        public MapCoordinate( double? latitude, double? longitude ) 
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
+    }
+
+    public class MapItem
+    {
+        public int EntityTypeId { get; set; }
+        public int EntityId { get; set; }
+        public int LocationId { get; set; }
+        public string Name { get; set; }
+        public MapCoordinate Point { get; set; }
+        public List<MapCoordinate> PolygonPoints { get; set; }
+
+        public MapItem() 
+        { 
+        }
+
+        public MapItem( Location location )
+        {
+            PolygonPoints = new List<MapCoordinate>();
+
+            if (location != null)
+            {
+                LocationId = location.Id;
+                if (location.GeoPoint != null)
+                {
+                    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                }
+
+                if (location.GeoFence != null)
+                {
+                    PolygonPoints = location.GeoFence.Coordinates();
+                }
+            }
+        }
+    }
+
+
+    #endregion
 }

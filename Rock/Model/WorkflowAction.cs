@@ -204,22 +204,19 @@ namespace Rock.Model
             if ( ActionType != null &&
                 ActionType.CriteriaAttributeGuid.HasValue )
             {
-                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value );
-                if ( !string.IsNullOrWhiteSpace( criteria ) )
+                result = false;
+
+                string criteria = GetWorklowAttributeValue( ActionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+
+                Guid guid = ActionType.CriteriaValue.AsGuid();
+                if ( guid.IsEmpty() )
                 {
-                    result = false;
-
-                    Guid guid = ActionType.CriteriaValue.AsGuid();
-                    if ( guid.IsEmpty() )
-                    {
-                        return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
-                    }
-                    else
-                    {
-                        string value = GetWorklowAttributeValue( guid );
-                        return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
-                    }
-
+                    return criteria.CompareTo( ActionType.CriteriaValue, ActionType.CriteriaComparisonType );
+                }
+                else
+                {
+                    string value = GetWorklowAttributeValue( guid );
+                    return criteria.CompareTo( value, ActionType.CriteriaComparisonType );
                 }
             }
 
@@ -341,12 +338,18 @@ namespace Rock.Model
 
                         if ( !string.IsNullOrWhiteSpace( value ) )
                         {
-                            value = attribute.FieldType.Field.FormatValue( null, value, attribute.QualifierValues, false );
+                            var field = attribute.FieldType.Field;
+
+                            string formattedValue = field.FormatValue( null, value, attribute.QualifierValues, false );
                             var attributeLiquid = new Dictionary<string, object>();
                             attributeLiquid.Add( "Name", attribute.Name );
                             attributeLiquid.Add( "Key", attribute.Key );
-                            attributeLiquid.Add( "Value", value );
+                            attributeLiquid.Add( "Value", formattedValue );
                             attributeLiquid.Add( "IsRequired", formAttribute.IsRequired );
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                attributeLiquid.Add( "Url", "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues ) );
+                            }
 
                             attributeList.Add( attributeLiquid );
                         }

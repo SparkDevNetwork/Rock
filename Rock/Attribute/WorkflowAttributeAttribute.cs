@@ -27,10 +27,8 @@ namespace Rock.Attribute
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class WorkflowAttributeAttribute : FieldAttribute
     {
-        private const string WORKFLOW_TYPE_KEY = "workflowtype";
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute" /> class.
+        /// Initializes a new instance of the <see cref="WorkflowAttributeAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -39,19 +37,9 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
-        public WorkflowAttributeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string workflowTypeGuid = "" )
+        public WorkflowAttributeAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.WorkflowAttributeFieldType ).FullName )
         {
-            if ( !string.IsNullOrWhiteSpace( workflowTypeGuid ) )
-            {
-                var workflowType = Rock.Web.Cache.DefinedTypeCache.Read( workflowTypeGuid.AsGuid() );
-                if ( workflowType != null )
-                {
-                    var workflowTypeConfigValue = new Field.ConfigurationValue( workflowType.Id.ToString() );
-                    FieldConfigurationValues.Add( WORKFLOW_TYPE_KEY, workflowTypeConfigValue );
-                }
-            }
         }
     }
 }

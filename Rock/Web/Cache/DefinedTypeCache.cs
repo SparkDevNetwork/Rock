@@ -132,11 +132,12 @@ namespace Rock.Web.Cache
                 {
                     definedValueIds = new List<int>();
 
-                    var definedValueService = new Model.DefinedValueService( new RockContext() );
+                    var rockContext = new RockContext();
+                    var definedValueService = new Model.DefinedValueService( rockContext );
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( this.Id ) )
                     {
                         definedValueIds.Add( definedValue.Id );
-                        definedValues.Add( DefinedValueCache.Read( definedValue ) );
+                        definedValues.Add( DefinedValueCache.Read( definedValue, rockContext ) );
                     }
 
                 }
@@ -280,7 +281,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
         /// <returns></returns>
-        public static DefinedTypeCache Read( DefinedType definedTypeModel )
+        public static DefinedTypeCache Read( DefinedType definedTypeModel, RockContext rockContext = null )
         {
             string cacheKey = DefinedTypeCache.CacheKey( definedTypeModel.Id );
 
@@ -294,7 +295,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                definedTypeModel.LoadAttributes();
+                definedTypeModel.LoadAttributes( rockContext );
                 definedType = new DefinedTypeCache( definedTypeModel );
 
                 var cachePolicy = new CacheItemPolicy();

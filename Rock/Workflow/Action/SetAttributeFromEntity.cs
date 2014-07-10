@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Set Attribute From Entity" )]
 
-    [WorkflowAttribute( "Attribute", "The person attribute to set the value of.", false, "", "", 0 )]
+    [WorkflowAttribute( "Attribute", "The attribute to set the value of.")]
     public class SetAttributeToEntity : ActionComponent
     {
         /// <summary>

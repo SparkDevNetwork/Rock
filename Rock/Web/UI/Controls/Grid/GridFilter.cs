@@ -55,7 +55,13 @@ namespace Rock.Web.UI.Controls
                     _userPreferences.Add( userPreference.Key.Replace( keyPrefix, string.Empty ), userPreference.Value );
                 }
             }
+        }
 
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
             const string scriptKey = "grid-filter-script";
             const string script = @"
 Sys.Application.add_load(function () {
@@ -208,6 +214,8 @@ Sys.Application.add_load(function () {
                     SaveUserPreferences();
                     _isDirty = false;
                 }
+
+                RegisterJavaScript();
             }
         }
 

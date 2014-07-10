@@ -40,6 +40,24 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
+        /// Gets or sets the notification system email identifier.
+        /// </summary>
+        /// <value>
+        /// The notification system email identifier.
+        /// </value>
+        [DataMember]
+        public int? NotificationSystemEmailId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include actions in notification].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [include actions in notification]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeActionsInNotification { get; set; }
+        
+        /// <summary>
         /// Gets or sets the header.
         /// </summary>
         /// <value>
@@ -58,15 +76,6 @@ namespace Rock.Model
         public string Footer { get; set; }
 
         /// <summary>
-        /// Gets or sets the inactive message.
-        /// </summary>
-        /// <value>
-        /// The inactive message.
-        /// </value>
-        [DataMember]
-        public string InactiveMessage { get; set; }
-
-        /// <summary>
         /// Gets or sets the delimited list of action buttons and actions.
         /// </summary>
         /// <value>
@@ -77,22 +86,13 @@ namespace Rock.Model
         public string Actions { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification system email identifier.
+        /// An optional text attribute that will be updated with the action that was selected
         /// </summary>
         /// <value>
-        /// The notification system email identifier.
+        /// The action attribute unique identifier.
         /// </value>
         [DataMember]
-        public int? NotificationSystemEmailId { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [include actions in notification].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [include actions in notification]; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IncludeActionsInNotification { get; set; }
+        public Guid? ActionAttributeGuid { get; set; }
 
         #endregion
 

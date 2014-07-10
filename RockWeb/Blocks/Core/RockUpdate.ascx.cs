@@ -96,6 +96,8 @@ namespace RockWeb.Blocks.Core
                     cbIncludeStats.Visible = true;
                     BindGrid();
                 }
+
+                RemoveOldRDeleteFiles();
             }
         }
         #endregion
@@ -257,7 +259,6 @@ namespace RockWeb.Blocks.Core
         private bool IsUpdateAvailable()
         {
             List<IPackage> verifiedPackages = new List<IPackage>();
-
             try
             {
                 // Get the installed package so we can check its version...
@@ -286,6 +287,7 @@ namespace RockWeb.Blocks.Core
                         // so we clear it out and keep processing.
                         if ( requiredVersion > _installedVersion )
                         {
+                            nbMoreUpdatesAvailable.Visible = true;
                             verifiedPackages.Clear();
                         }
                     }
@@ -387,6 +389,23 @@ namespace RockWeb.Blocks.Core
 " );
         }
 
+        private void RemoveOldRDeleteFiles()
+        {
+            var rockDirectory = new DirectoryInfo( Server.MapPath( "~" ) );
+
+            foreach ( var file in rockDirectory.EnumerateFiles( "*.rdelete", SearchOption.AllDirectories ) )
+            {
+                try
+                {
+                    file.Delete();
+                }
+                catch
+                {
+                    //we'll try again later
+                }
+            }
+        }
+
         private void CheckForManualFileMoves( string version )
         {
             var versionDirectory = new DirectoryInfo( Server.MapPath( "~/App_Data/" + version ) );
@@ -399,7 +418,6 @@ namespace RockWeb.Blocks.Core
 
                 versionDirectory.Delete( true );
             }
-
         }
 
         private void ManuallyMoveFile( FileInfo file, string newPath )

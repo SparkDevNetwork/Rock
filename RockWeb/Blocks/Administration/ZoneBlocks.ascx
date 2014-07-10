@@ -13,35 +13,43 @@
     <asp:Panel ID="pnlLists" runat="server" CssClass="tab-content">
 
         <div id="divPage" runat="server" class="tab-pane" >
-            <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnRowSelected="gPageBlocks_Edit">
-                <Columns>
-                    <Rock:ReorderField />
-                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                    <asp:TemplateField HeaderText="Type" >
-                        <ItemTemplate>
-                            <%# Eval("BlockType.Name") %><br />
-                            <small><%# Eval("BlockType.Path") %></small>
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <Rock:DeleteField OnClick="gPageBlocks_Delete" />
-                </Columns>
-            </Rock:Grid>
+            
+            <div class="grid">
+                <Rock:Grid ID="gPageBlocks" runat="server" AllowPaging="false" EmptyDataText="No Page Blocks Found" RowItemText="block" OnRowSelected="gPageBlocks_Edit">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <asp:BoundField DataField="Name" HeaderText="Name" />
+                        <asp:TemplateField HeaderText="Type" >
+                            <ItemTemplate>
+                                <%# Eval("BlockType.Name") %><br />
+                                <small><%# Eval("BlockType.Path") %></small>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <Rock:DeleteField OnClick="gPageBlocks_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
         </div>
 
         <div id="divLayout" runat="server" class="tab-pane" >
-            <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
-                <Columns>
-                    <Rock:ReorderField />
-                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                    <asp:TemplateField HeaderText="Type" >
-                        <ItemTemplate>
-                            <%# Eval("BlockType.Name") %><br />
-                            <small><%# Eval("BlockType.Path") %></small>
-                        </ItemTemplate>
-                    </asp:TemplateField>
-                    <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
-                </Columns>
-            </Rock:Grid>
+            
+            <div class="grid">
+                <Rock:Grid ID="gLayoutBlocks" runat="server" AllowPaging="false" EmptyDataText="No Layout Blocks Found" OnRowSelected="gLayoutBlocks_Edit">
+                    <Columns>
+                        <Rock:ReorderField />
+                        <asp:BoundField DataField="Name" HeaderText="Name" />
+                        <asp:TemplateField HeaderText="Type" >
+                            <ItemTemplate>
+                                <%# Eval("BlockType.Name") %><br />
+                                <small><%# Eval("BlockType.Path") %></small>
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
+                    </Columns>
+                </Rock:Grid>
+            </div>
+
         </div>
 
     </asp:Panel>
