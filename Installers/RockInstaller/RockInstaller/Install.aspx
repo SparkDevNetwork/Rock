@@ -23,6 +23,7 @@
         $(document).ready(function () {
 
             var baseVersion = '<%=baseVersion %>';
+            var isDebug = <%=isDebug %>;
 
             // connect to the install controller signalr hub
             var installcontroller = $.connection.installController; var installcontroller = $.connection.installController;
@@ -60,11 +61,13 @@
                 $('#error-message').html(errorMessage);
             }
 
-            // report errors
-            installcontroller.client.showSuccess = function () {
-                $('#pnlInstallWatch').fadeOut(function () {
-                    $('#pnlSuccess').fadeIn();
-                });
+            // redirect to complete page
+            installcontroller.client.redirectToComplete = function () {
+                if (isDebug) {
+                    window.location = 'Complete.aspx?Debug=true';
+                } else {
+                    window.location = 'Complete.aspx';
+                }
             }
 
             //
@@ -191,14 +194,27 @@
                 <div id="content-box">
                     <!-- welcome panel -->
                     <div id="pnlWelcome">
-                        <img src="<%=storageUrl %>Images/welcome.png" />
+                        
+                        <div class="content-narrow">
+                            <img src="<%=storageUrl %>Images/laptop.png" />
 
-                        <h1>It's Time For Something New...</h1>
+                            <h1>It's Time For Something New...</h1>
 
-                        <div class="btn-list clearfix">
-						    <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Install Video</a>
-                            <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class='fa fa-chevron-right'></i></a>
-					    </div>
+                        
+
+                            <div class="btn-list clearfix">
+						        <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fa fa-desktop"></i> Install Video</a>
+                                <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class='fa fa-chevron-right'></i></a>
+					        </div>
+                        </div>
+
+                        <asp:Literal ID="lSslWarning" runat="server">
+                            <div class="alert alert-warning ssl-alert">
+                                <strong>Just A Thought...</strong></p>
+                                        Looks like you're not running over an encrypted connection (SSL).  Since you will be providing passwords for configuring
+                                        your database and Rock install you may wish to run the install over an encrypted connection.
+                            </div>
+                        </asp:Literal>
 
                         <script>
                             $('body').on('click', '#btnWelcomeNext', function (e) {
@@ -536,6 +552,19 @@
                     <!-- install watch -->
                     <div id="pnlInstallWatch" style="display: none;">
 
+                        <div id="installer-working">
+                            <img src="<%=storageUrl %>Images/laptop-sm.png" />
+
+                            <div class="spinner">
+                                <div class="rect1"></div>
+                                <div class="rect2"></div>
+                                <div class="rect3"></div>
+                                <div class="rect4"></div>
+                                <div class="rect5"></div>
+                            </div>
+                        </div>
+
+
                         <!-- progress bar -->
                         
                         <div class="row progress-header">
@@ -583,40 +612,11 @@
                     </div>
 
                     <!-- show success -->
-                    <div id="pnlSuccess" style="display: none;">
-                        <h1>Success!</h1>
-                    
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div id="pnlDone">
-                                    <%=String.Format("<img src='{0}images/done.svg' style='width: 100%; max-width: 400px;' />", storageUrl) %>
-                                </div>
-                                <script>
-                                    // toggle console
-                                    $("#pnlDone").click(function () {
-                                        $('#pnlVideo').slideToggle();
-                                        return false;
-                                    });
-                                </script>
+                    <div id="pnlRedirect" style="display: none;">
+                        
+                        <script>
 
-                            </div>
-                            <div class="col-md-8">
-                                <p>Congratulations, this install is in the bag. All that's left is to startup Rock and login.</p>
-
-                                <div class="alert alert-info">
-                                    <strong>Be Aware</strong> Rock can take a minute or two to start, that's normal. See you on the other side.
-                                </div>
-
-                                <div id="pnlVideo" style="display: none;">
-                                    <iframe src="//www.youtube.com/embed/lc4TnopiuzQ?start=60" frameborder="0" width="420" height="315"></iframe>
-                                </div>
-
-                                <div class="btn-list clearfix">
-						            <a class="btn btn-primary pull-right" href="/">Start Rock <i class='fa fa-chevron-right'></i></a>
-					            </div>
-                            </div>
-                        </div>
-
+                        </script>
                     
                     </div>
                 </div>
@@ -627,7 +627,7 @@
 
 <script language="CS" runat="server">
     
-    const string baseStorageUrl = "http://storage.rockrms.com/install/";
+    const string baseStorageUrl = "//storage.rockrms.com/install/";
     const string baseVersion = "2_0_0";
 
     string storageUrl = string.Empty;
@@ -635,6 +635,9 @@
     
     void Page_Init( object sender, EventArgs e )
     {
+        // toggle the SSL warning
+        lSslWarning.Visible = !Request.IsSecureConnection;
+        
         if ( Request["Version"] != null )
         {
             storageUrl = String.Format( "{0}{1}/", baseStorageUrl, Request["Version"] );
