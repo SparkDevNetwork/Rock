@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
                 var changes = new List<string>();

@@ -200,7 +200,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
                 var rockContext = new RockContext();
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     var changes = new List<string>();
 

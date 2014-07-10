@@ -207,6 +207,11 @@ namespace Rock.Model
                         log.Success = success;
                         logService.Add( log );
                     }
+
+                    if (success)
+                    {
+                        break;
+                    }
                 }
             }
 

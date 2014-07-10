@@ -312,6 +312,64 @@ namespace Rock.Data
 
         #endregion
 
+        #region Site Methods
+
+        /// <summary>
+        /// Adds a new Layout to the given site.
+        /// </summary>
+        /// <param name="siteGuid">The site GUID.</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddSite( string name, string description, string theme, string guid  )
+        {
+            Migration.Sql( string.Format( @"
+
+                IF NOT EXISTS (
+                    SELECT [Id] 
+                    FROM [Site] 
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [Site] (
+                        [IsSystem],[Name],[Description],[Theme],[Guid])
+                    VALUES(1,'{0}','{1}','{2}','{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [Site] SET
+                        [Name] = '{0}',
+                        [Description] = '{1}',
+                        [Theme] = '{2}'
+                    WHERE [Guid] = '{3}'
+
+                END
+",
+                    name,
+                    description.Replace( "'", "''" ),
+                    theme,
+                    guid
+                    ) );
+        }
+
+        /// <summary>
+        /// Deletes the Layout.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSite( string guid )
+        {
+            Migration.Sql( string.Format( @"
+                DELETE [Site] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
         #region Layout Methods
 
         /// <summary>
@@ -373,8 +431,11 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @ParentPageId int
-                SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+                DECLARE @ParentPageId int = null
+                IF '{0}' <> '' 
+                BEGIN                    
+                    SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+                END
 
                 DECLARE @LayoutId int
                 SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}')

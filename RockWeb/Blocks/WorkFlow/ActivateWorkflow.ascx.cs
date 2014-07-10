@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.WorkFlow
                                 var workflowService = new Rock.Model.WorkflowService( rockContext );
                                 workflowService.Add( workflow );
 
-                                RockTransactionScope.WrapTransaction( () =>
+                                rockContext.WrapTransaction( () =>
                                 {
                                     rockContext.SaveChanges();
                                     workflow.SaveAttributeValues( rockContext );

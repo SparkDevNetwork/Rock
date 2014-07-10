@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Finance
         protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
                 var changes = new List<string>();

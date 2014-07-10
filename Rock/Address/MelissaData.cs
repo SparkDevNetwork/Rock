@@ -42,7 +42,6 @@ namespace Rock.Address
         /// </returns>
         public override bool VerifyLocation( Rock.Model.Location location, bool reVerify, out string result )
         {
-            bool verified = false;
             result = string.Empty;
 
             if ( location != null && 
@@ -83,7 +82,6 @@ namespace Rock.Address
                             location.Street2 = responseAddress.Suite;
 
                         location.StandardizedDateTime = RockDateTime.Now;
-                        verified = true;
                     }
                 }
                 else
@@ -96,7 +94,9 @@ namespace Rock.Address
                 location.StandardizeAttemptedResult = result;
             }
 
-            return verified;
+            // MelissaData only standardizes addresses, it does not geocode, therefore
+            // always return false so that next verifcation service will run
+            return false;
         }
     }
 }

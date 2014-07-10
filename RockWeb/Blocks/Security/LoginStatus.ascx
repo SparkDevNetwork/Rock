@@ -17,6 +17,12 @@
                 </li>
             </asp:PlaceHolder>
             <li class="divider"></li>
+            <asp:PlaceHolder ID="phMyProfile" runat="server">
+                <li>
+                    <asp:HyperLink ID="hlMyProfile" runat="server" Text="My Profile" />
+                </li>
+            </asp:PlaceHolder>
+            <li class="divider"></li>
             <li><asp:LinkButton ID="lbLoginLogout" runat="server" OnClick="lbLoginLogout_Click" CausesValidation="false"></asp:LinkButton></li>
         </ul>
 

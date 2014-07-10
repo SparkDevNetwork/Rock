@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Crm
 
             var rockContext = new RockContext();
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
                 var userLoginService = new UserLoginService( rockContext );

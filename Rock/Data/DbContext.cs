@@ -50,6 +50,23 @@ namespace Rock.Data
         /// </value>
         public virtual List<string> SaveErrorMessages { get; private set; }
 
+        public void WrapTransaction( Action action )
+        {
+            using (var dbContextTransaction = this.Database.BeginTransaction())
+            {
+                try
+                {
+                    action.Invoke();
+                    dbContextTransaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    dbContextTransaction.Rollback();
+                    throw ( ex );
+                }
+            }
+        }
+
         /// <summary>
         /// Saves all changes made in this context to the underlying database.
         /// </summary>

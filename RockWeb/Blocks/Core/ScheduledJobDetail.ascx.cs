@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 
