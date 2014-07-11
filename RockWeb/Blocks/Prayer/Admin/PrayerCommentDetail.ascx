@@ -45,8 +45,8 @@
                                     </div>
                                 </div>
                                 <div class="actions">
-                                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="lbSave_Click" />
-                                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-default btn-sm" CausesValidation="false" OnClick="lbCancel_Click" />
+                                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="lbCancel_Click" />
                                 </div>
                         </div>
 
