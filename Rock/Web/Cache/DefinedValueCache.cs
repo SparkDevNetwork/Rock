@@ -166,7 +166,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static DefinedValueCache Read( int id )
+        public static DefinedValueCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = DefinedValueCache.CacheKey( id );
 
@@ -179,7 +179,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService( new RockContext() );
+                var definedValueService = new DefinedValueService( rockContext ?? new RockContext() );
                 var definedValueModel = definedValueService.Get( id );
                 if ( definedValueModel != null )
                 {
@@ -220,7 +220,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( Guid guid )
+        public static DefinedValueCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -231,7 +231,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService( new RockContext() );
+                var definedValueService = new DefinedValueService( rockContext ?? new RockContext() );
                 var definedValueModel = definedValueService.Get( guid );
                 if ( definedValueModel != null )
                 {

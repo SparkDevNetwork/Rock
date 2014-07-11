@@ -183,7 +183,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static CampusCache Read( int id )
+        public static CampusCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CampusCache.CacheKey( id );
 
@@ -196,7 +196,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                CampusService campusService = new CampusService( new RockContext() );
+                CampusService campusService = new CampusService( rockContext ?? new RockContext() );
                 Campus campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
@@ -221,7 +221,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static CampusCache Read( Guid guid )
+        public static CampusCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -232,7 +232,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var campusService = new CampusService( new RockContext() );
+                var campusService = new CampusService( rockContext ?? new RockContext() );
                 var campusModel = campusService.Get( guid );
                 if ( campusModel != null )
                 {
