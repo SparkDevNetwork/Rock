@@ -63,17 +63,20 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 } )
                 .ToList();
 
+            int uniqueVideoId = 1;
+
             foreach ( var campusStream in campusStreams )
             {
                 string[] nameValues = campusStream.Streams.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
                 foreach ( var nameValue in nameValues )
                 {
+                    uniqueVideoId += 1;
                     string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
                     if ( String.IsNullOrWhiteSpace( configuredVenueType ) || configuredVenueType.Equals( nameAndValue[0], StringComparison.OrdinalIgnoreCase ) )
                     {
-                        string[] videoOptions = new string[] { nameAndValue[1] + "-" + nameAndValue[0] + "-" + campusStream.Id, nameAndValue[1], nameAndValue.Length > 2 ? nameAndValue[2] : ""};
+                        string[] videoOptions = new string[] { campusStream.CampusName + "-" + nameAndValue[0] + "-" + uniqueVideoId, campusStream.CampusName, nameAndValue.Length > 1 ? nameAndValue[1] : ""};
 
                         datasource.Add( videoOptions );
                     }
