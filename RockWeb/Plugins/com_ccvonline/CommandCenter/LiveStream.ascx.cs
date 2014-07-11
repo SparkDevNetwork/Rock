@@ -18,11 +18,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     [Category( "CCV > Command Center" )]
     [Description("Used for viewing live venue streams.")]
 
-    //todo: need to wire up
-    [CampusField("Campus", "Only show streams from a specific campus", false)]
-
-    [TextField("Venue Type", "Only shows streams for a specfic venue. i.e. Command Center", false)]
-
+    [CampusField("Campus", "Only show streams from a specific campus", false, order: 0)]
+    [TextField("Venue Type", "Only shows streams for a specfic venue. i.e. Command Center", false, order: 1)]
     public partial class LiveStream : RockBlock
     {
         #region Base Control Methods
@@ -44,6 +41,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         private List<string[]> GetDatasource()
         {
+            string configuredVenueType = GetAttributeValue( "VenueType" );
+            int? campusId = GetAttributeValue( "Campus" ).AsIntegerOrNull();
+
             var datasource = new List<string[]>();
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
@@ -51,38 +51,30 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             var theCampuses = campusService.Queryable().ToList();
             theCampuses.ForEach( c => c.LoadAttributes( rockContext ) );
 
-            var campusStreams = theCampuses.Select( c => new
+            var campusStreams = theCampuses
+                .Where( c => 
+                    !campusId.HasValue || 
+                    c.Id == campusId.Value )
+                .Select( c => new
                 {
                     Id = c.Id.ToString(),
+                    CampusName = c.Name,
                     Streams = c.GetAttributeValue( "VenueStreams" ).ToString()
-                } ).ToList();
-
-            if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Campus" ) ) )
-            {
-                campusStreams = theCampuses.Where( c => c.Id == Int32.Parse( GetAttributeValue( "Campus" ) ) ).Select( c => new
-                {
-                    Id = c.Id.ToString(),
-                    Streams = c.GetAttributeValue( "VenueStreams" ).ToString()
-                } ).ToList();
-            }
+                } )
+                .ToList();
 
             foreach ( var campusStream in campusStreams )
             {
                 string[] nameValues = campusStream.Streams.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
-
-                foreach (var nameValue in nameValues )
+                foreach ( var nameValue in nameValues )
                 {
                     string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
-                    string[] videoOptions = new string[] { nameAndValue[1] + "-" + nameAndValue[0] + "-" + campusStream.Id , nameAndValue[1], nameAndValue[2] };
 
-                    if ( GetAttributeValue( "VenueType" ) != null && GetAttributeValue( "VenueType" ) == nameAndValue[0] )
+                    if ( String.IsNullOrWhiteSpace( configuredVenueType ) || configuredVenueType.Equals( nameAndValue[0], StringComparison.OrdinalIgnoreCase ) )
                     {
-                        datasource.Add( videoOptions );
-                    }
+                        string[] videoOptions = new string[] { nameAndValue[1] + "-" + nameAndValue[0] + "-" + campusStream.Id, nameAndValue[1], nameAndValue.Length > 2 ? nameAndValue[2] : ""};
 
-                    if ( String.IsNullOrWhiteSpace(GetAttributeValue( "VenueType" ) ) )
-                    {
                         datasource.Add( videoOptions );
                     }
                 }
