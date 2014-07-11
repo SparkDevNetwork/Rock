@@ -1845,7 +1845,7 @@ dl:not(.dl-horizontal) dd {
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
   cursor: pointer;
-  background-color: rgba(0, 0, 0, 0.03) !important;
+  background-color: rgba(0, 0, 0, 0.03);
 }
 td.wrap-contents {
   -ms-word-break: break-all;
@@ -2076,16 +2076,16 @@ td.grid-col-actions {
   margin-bottom: 24px;
 }
 /* data views */
-.filter-toogle > span {
+.filter-toggle {
+  margin-top: 5px;
+}
+.filter-toggle > span {
   float: left;
 }
-.filter-toogle .panel-title {
+.filter-toggle .panel-title {
   margin-top: 4px;
 }
-.filter-toogle .controls {
-  float: left;
-}
-.filter-toogle .controls .switch {
+.filter-toggle .btn-toggle {
   margin: 0 6px;
 }
 .filter-item-select span {
