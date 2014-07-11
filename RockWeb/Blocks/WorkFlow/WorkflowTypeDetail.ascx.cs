@@ -294,6 +294,7 @@ namespace RockWeb.Blocks.WorkFlow
                     var newAttribute = attribute.Clone( false );
                     newAttribute.Id = 0;
                     newAttribute.Guid = Guid.NewGuid();
+                    newAttribute.IsSystem = false;
                     newAttributesState.Add( newAttribute );
 
                     guidXref.Add( attribute.Guid, newAttribute.Guid );
@@ -319,6 +320,7 @@ namespace RockWeb.Blocks.WorkFlow
                         var newAttribute = attribute.Clone( false );
                         newAttribute.Id = 0;
                         newAttribute.Guid = Guid.NewGuid();
+                        newAttribute.IsSystem = false;
                         newActivityAttributes.Add( newAttribute );
 
                         guidXref.Add( attribute.Guid, newAttribute.Guid );
