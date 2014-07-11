@@ -176,7 +176,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static FieldTypeCache Read( int id )
+        public static FieldTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = FieldTypeCache.CacheKey( id );
 
@@ -189,7 +189,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                var fieldTypeService = new FieldTypeService( rockContext ?? new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
@@ -213,9 +213,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( string guid )
+        public static FieldTypeCache Read( string guid, RockContext rockContext = null )
         {
-            return Read( new Guid( guid ) );
+            return Read( new Guid( guid ), rockContext );
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( Guid guid )
+        public static FieldTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -234,7 +234,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                var fieldTypeService = new FieldTypeService( rockContext ?? new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( guid );
                 if ( fieldTypeModel != null )
                 {

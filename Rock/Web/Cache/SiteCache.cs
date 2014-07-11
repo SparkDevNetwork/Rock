@@ -428,7 +428,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static SiteCache Read( int id )
+        public static SiteCache Read( int id, RockContext rockContext = null  )
         {
             string cacheKey = SiteCache.CacheKey( id );
 
@@ -441,7 +441,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var siteService = new SiteService( new RockContext() );
+                var siteService = new SiteService( rockContext ?? new RockContext() );
                 var siteModel = siteService.Get( id );
                 if ( siteModel != null )
                 {
@@ -466,7 +466,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static SiteCache Read( Guid guid )
+        public static SiteCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -477,7 +477,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var siteService = new SiteService( new RockContext() );
+                var siteService = new SiteService( rockContext ?? new RockContext() );
                 var siteModel = siteService.Get( guid );
                 if ( siteModel != null )
                 {

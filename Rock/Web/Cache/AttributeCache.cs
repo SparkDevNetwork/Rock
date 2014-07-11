@@ -546,7 +546,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The id of the Attribute to read</param>
         /// <returns></returns>
-        public static AttributeCache Read( int id )
+        public static AttributeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = AttributeCache.CacheKey( id );
 
@@ -559,8 +559,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var rockContext = new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
+                var attributeService = new Rock.Model.AttributeService( rockContext ?? new RockContext() );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
@@ -584,7 +583,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static AttributeCache Read( Guid guid )
+        public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -595,7 +594,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var attributeService = new AttributeService( new RockContext() );
+                var attributeService = new AttributeService( rockContext ?? new RockContext() );
                 var attributeModel = attributeService.Get( guid );
                 if ( attributeModel != null )
                 {

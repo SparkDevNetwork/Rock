@@ -264,7 +264,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public static BlockCache Read( int id )
+        public static BlockCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = BlockCache.CacheKey( id );
 
@@ -277,7 +277,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockService = new BlockService( new RockContext() );
+                var blockService = new BlockService( rockContext ?? new RockContext() );
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
@@ -302,7 +302,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static BlockCache Read( Guid guid )
+        public static BlockCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -313,7 +313,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockService = new BlockService( new RockContext() );
+                var blockService = new BlockService( rockContext ?? new RockContext() );
                 var blockModel = blockService.Get( guid );
                 if ( blockModel != null )
                 {
