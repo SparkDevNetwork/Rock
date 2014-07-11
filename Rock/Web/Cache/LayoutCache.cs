@@ -163,7 +163,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static LayoutCache Read( int id )
+        public static LayoutCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = LayoutCache.CacheKey( id );
 
@@ -176,7 +176,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var LayoutService = new LayoutService( new RockContext() );
+                var LayoutService = new LayoutService( rockContext ?? new RockContext() );
                 var LayoutModel = LayoutService.Get( id );
                 if ( LayoutModel != null )
                 {
@@ -201,7 +201,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static LayoutCache Read( Guid guid )
+        public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -212,7 +212,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var LayoutService = new LayoutService( new RockContext() );
+                var LayoutService = new LayoutService( rockContext ?? new RockContext() );
                 var LayoutModel = LayoutService.Get( guid );
                 if ( LayoutModel != null )
                 {

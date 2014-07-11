@@ -147,7 +147,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static RestControllerCache Read( int id )
+        public static RestControllerCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestControllerCache.CacheKey( id );
 
@@ -160,7 +160,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService( new RockContext() );
+                var RestControllerService = new RestControllerService( rockContext ?? new RockContext() );
                 var RestControllerModel = RestControllerService.Get( id );
                 if ( RestControllerModel != null )
                 {
@@ -184,7 +184,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static RestControllerCache Read( Guid guid )
+        public static RestControllerCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -195,7 +195,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService( new RockContext() );
+                var RestControllerService = new RestControllerService( rockContext ?? new RockContext() );
                 var RestControllerModel = RestControllerService
                     .Queryable( "RestActions" )
                     .Where( t => t.Guid == guid )
