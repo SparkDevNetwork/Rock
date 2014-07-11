@@ -3090,6 +3090,11 @@ iframe.email-body {
 .error-wrap .error-icon.danger {
   color: #d9534f;
 }
+.error-details pre {
+  background-color: transparent;
+  border: 0;
+  color: #b94a48;
+}
 .rock-blank {
   background-color: #ffffff;
 }

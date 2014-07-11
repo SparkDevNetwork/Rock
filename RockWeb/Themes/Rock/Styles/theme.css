@@ -3090,6 +3090,11 @@ iframe.email-body {
 .error-wrap .error-icon.danger {
   color: #c84b4b;
 }
+.error-details pre {
+  background-color: transparent;
+  border: 0;
+  color: #b94a48;
+}
 .rock-blank {
   background-color: #f3f3f4;
 }
@@ -4290,8 +4295,8 @@ body#splash.error #content #logo {
   height: 100px;
   margin: 0 auto;
 }
-.error-icon.warning {
-  color: #f3d066;
+.error-wrap .error-icon.warning {
+  color: #dab751;
 }
 /*#endregion */
 /*#region  
