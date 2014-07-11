@@ -478,7 +478,7 @@
 
                 <a id="CssRollovers"></a>
                 <h2 runat="server">CSS Rollovers</h2>
-                You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toogles you can use the
+                You often run across situiations where you would like buttons or links to apprear when you hover over a selection of code. Instead of using jQuery toggles you can use the
                 CSS classes below. These classes can be applied to any tags.  In order to support nested rollovers the actions must be direct decendents of their containers.  On touch enabled
                 devices the rollover-items will always be displayed.
                 <div runat="server" class="r-example">
