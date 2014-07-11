@@ -199,7 +199,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static DefinedTypeCache Read( int id )
+        public static DefinedTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = DefinedTypeCache.CacheKey( id );
 
@@ -212,7 +212,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedTypeService = new DefinedTypeService( new RockContext() );
+                var definedTypeService = new DefinedTypeService( rockContext ?? new RockContext() );
                 var definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Id == id )
@@ -241,7 +241,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static DefinedTypeCache Read( Guid guid )
+        public static DefinedTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -252,7 +252,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedTypeService = new DefinedTypeService( new RockContext() );
+                var definedTypeService = new DefinedTypeService( rockContext ?? new RockContext() );
                 var definedTypeModel = definedTypeService
                     .Queryable( "DefinedValues" )
                     .Where( t => t.Guid == guid )

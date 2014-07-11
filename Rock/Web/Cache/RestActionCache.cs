@@ -156,7 +156,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static RestActionCache Read( int id )
+        public static RestActionCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestActionCache.CacheKey( id );
 
@@ -169,7 +169,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService( new RockContext() );
+                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
                 var RestActionModel = RestActionService.Get( id );
                 if ( RestActionModel != null )
                 {
@@ -193,7 +193,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static RestActionCache Read( Guid guid )
+        public static RestActionCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -204,7 +204,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService( new RockContext() );
+                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
                 var RestActionModel = RestActionService.Get( guid );
                 if ( RestActionModel != null )
                 {

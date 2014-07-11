@@ -416,7 +416,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static GroupTypeCache Read( int id )
+        public static GroupTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = GroupTypeCache.CacheKey( id );
 
@@ -429,7 +429,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var groupTypeService = new GroupTypeService( new RockContext() );
+                var groupTypeService = new GroupTypeService( rockContext ?? new RockContext() );
                 var groupTypeModel = groupTypeService.Get( id );
                 if ( groupTypeModel != null )
                 {
@@ -464,7 +464,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public static GroupTypeCache Read( Guid guid )
+        public static GroupTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -475,7 +475,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var groupTypeService = new GroupTypeService( new RockContext() );
+                var groupTypeService = new GroupTypeService( rockContext ?? new RockContext() );
                 var groupTypeModel = groupTypeService.Get( guid );
                 if ( groupTypeModel != null )
                 {
