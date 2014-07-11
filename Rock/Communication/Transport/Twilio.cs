@@ -155,7 +155,49 @@ namespace Rock.Communication.Transport
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var globalAttributes = GlobalAttributesCache.Read();
+
+                string fromPhone = string.Empty;
+                string fromValue = string.Empty;
+                channelData.TryGetValue( "FromValue", out fromValue );
+                if (!string.IsNullOrWhiteSpace(fromValue))
+                {
+                    fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Name;
+                    if ( !string.IsNullOrWhiteSpace( fromPhone ) )
+                    {
+                        string accountSid = GetAttributeValue( "SID" );
+                        string authToken = GetAttributeValue( "Token" );
+                        var twilio = new TwilioRestClient( accountSid, authToken );
+
+                        string message = string.Empty;
+                        channelData.TryGetValue( "Message", out message );
+
+                        if ( !string.IsNullOrWhiteSpace( themeRoot ) )
+                        {
+                            message = message.Replace( "~~/", themeRoot );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( appRoot ) )
+                        {
+                            message = message.Replace( "~/", appRoot );
+                            message = message.Replace( @" src=""/", @" src=""" + appRoot );
+                            message = message.Replace( @" href=""/", @" href=""" + appRoot );
+                        }
+
+                        foreach (var recipient in recipients)
+                        {
+                            var response = twilio.SendMessage( fromPhone, recipient, message );
+                        }
+                    }
+                }
+            }
+
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
         }
 
     }
