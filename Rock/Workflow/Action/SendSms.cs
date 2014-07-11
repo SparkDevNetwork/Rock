@@ -56,7 +56,7 @@ namespace Rock.Workflow.Action
             Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
             if (fromGuid.HasValue)
             {
-                var fromValue = DefinedValueCache.Read(fromGuid.Value);
+                var fromValue = DefinedValueCache.Read(fromGuid.Value, rockContext);
                 if (fromValue != null)
                 {
                     fromId = fromValue.Id;
@@ -68,7 +68,7 @@ namespace Rock.Workflow.Action
             Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
                     string toAttributeValue = action.GetWorklowAttributeValue( guid );
@@ -120,7 +120,7 @@ namespace Rock.Workflow.Action
             Guid messageGuid = message.AsGuid();
             if ( !messageGuid.IsEmpty() )
             {
-                var attribute = AttributeCache.Read( messageGuid );
+                var attribute = AttributeCache.Read( messageGuid, rockContext );
                 if ( attribute != null )
                 {
                     string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid );
@@ -142,7 +142,7 @@ namespace Rock.Workflow.Action
                 channelData.Add( "FromValue", fromId.Value.ToString());
                 channelData.Add( "Message", message.ResolveMergeFields( mergeFields ) );
 
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_SMS.AsGuid() );
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_SMS.AsGuid(), rockContext );
                 if ( channelEntity != null )
                 {
                     var channel = ChannelContainer.GetComponent( channelEntity.Name );
@@ -151,7 +151,7 @@ namespace Rock.Workflow.Action
                         var transport = channel.Transport;
                         if ( transport != null && transport.IsActive )
                         {
-                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
+                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
                             transport.Send( channelData, recipients, appRoot, string.Empty );
                         }
                     }
