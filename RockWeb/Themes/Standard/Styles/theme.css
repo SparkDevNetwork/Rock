@@ -4400,6 +4400,10 @@ input:focus {
 .pager .disabled > span {
   background-color: #3be6c4;
 }
+.pagination > li > a,
+.pagination > li > span {
+  color: #fff;
+}
 .close {
   color: #fff;
   text-decoration: none;
