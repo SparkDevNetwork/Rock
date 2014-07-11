@@ -35,11 +35,10 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Send Email" )]
 
-    [WorkflowTextOrAttribute("Send To Email Address", "Attribute Value", "The email address or an attribute that contains the person or email address that email should be sent to", true, "", "", 0, "To")]
-    [TextField( "From", "The From address that email should be sent from  (will default to organization email).", false, "", "", 1 )]
-    [TextField( "Subject", "The subject that should be used when sending email.", false, "", "", 2 )]
-    [CodeEditorField( "Body", "The body of the email that should be sent", Web.UI.Controls.CodeEditorMode.Html, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, "", "", 3 )]
-    public class SendEmail : ActionComponent
+    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The phone number to send message from", true, false, "", "", 0 )]
+    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to", true, "", "", 1, "To" )]
+    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent", true, "", "", 2, "Message" )]
+    public class SendSms : ActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -53,37 +52,54 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var recipients = new List<string>();
+            int? fromId = null;
+            Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
+            if (fromGuid.HasValue)
+            {
+                var fromValue = DefinedValueCache.Read(fromGuid.Value, rockContext);
+                if (fromValue != null)
+                {
+                    fromId = fromValue.Id;
+                }
+            }
 
-            string nameValue = GetAttributeValue( action, "To" );
-            Guid guid = nameValue.AsGuid();
+            var recipients = new List<string>();
+            string toValue = GetAttributeValue( action, "To" );
+            Guid guid = toValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
                 var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
-                    string toValue = action.GetWorklowAttributeValue( guid );
-                    if ( !string.IsNullOrWhiteSpace( toValue ) )
+                    string toAttributeValue = action.GetWorklowAttributeValue( guid );
+                    if ( !string.IsNullOrWhiteSpace( toAttributeValue ) )
                     {
                         switch ( attribute.FieldType.Class )
                         {
                             case "Rock.Field.Types.TextFieldType":
                                 {
-                                    recipients.Add( toValue );
+                                    recipients.Add( toAttributeValue );
                                     break;
                                 }
                             case "Rock.Field.Types.PersonFieldType":
                                 {
-                                    Guid personAliasGuid = toValue.AsGuid();
+                                    Guid personAliasGuid = toAttributeValue.AsGuid();
                                     if ( !personAliasGuid.IsEmpty() )
                                     {
-                                        string to = new PersonAliasService( rockContext ).Queryable()
+                                        var phoneNumber = new PersonAliasService( rockContext ).Queryable()
                                             .Where( a => a.Guid.Equals( personAliasGuid ) )
-                                            .Select( a => a.Person.Email )
+                                            .SelectMany( a => a.Person.PhoneNumbers )
+                                            .Where( p => p.IsMessagingEnabled)
                                             .FirstOrDefault();
-                                        if ( !string.IsNullOrWhiteSpace( to ) )
+
+                                        if (phoneNumber != null)
                                         {
-                                            recipients.Add( to );
+                                            string smsNumber = phoneNumber.Number;
+                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+                                            {
+                                                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                            }
+                                            recipients.Add( smsNumber );
                                         }
                                     }
                                     break;
@@ -94,25 +110,39 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                string to = GetAttributeValue( action, "To" );
-                if ( !string.IsNullOrWhiteSpace( to ) )
+                if ( !string.IsNullOrWhiteSpace( toValue ) )
                 {
-                    recipients.Add( to );
+                    recipients.Add( toValue );
                 }
             }
 
-            if ( recipients.Any() )
+            string message = GetAttributeValue( action, "Message" );
+            Guid messageGuid = message.AsGuid();
+            if ( !messageGuid.IsEmpty() )
+            {
+                var attribute = AttributeCache.Read( messageGuid, rockContext );
+                if ( attribute != null )
+                {
+                    string messageAttributeValue = action.GetWorklowAttributeValue( messageGuid );
+                    if ( !string.IsNullOrWhiteSpace( messageAttributeValue ) )
+                    {
+                        if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
+                        {
+                            message = messageAttributeValue;
+                        }
+                    }
+                }
+            }
+
+            if ( recipients.Any() && fromId.HasValue && !string.IsNullOrWhiteSpace(message) )
             {
                 var mergeFields = GetMergeFields( action );
 
                 var channelData = new Dictionary<string, string>();
-                channelData.Add( "From", GetAttributeValue( action, "From" ) );
-                channelData.Add( "Subject", GetAttributeValue( action, "Subject" ).ResolveMergeFields( mergeFields ) );
+                channelData.Add( "FromValue", fromId.Value.ToString());
+                channelData.Add( "Message", message.ResolveMergeFields( mergeFields ) );
 
-                string body = GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields );
-                channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
-
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid(), rockContext );
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_SMS.AsGuid(), rockContext );
                 if ( channelEntity != null )
                 {
                     var channel = ChannelContainer.GetComponent( channelEntity.Name );

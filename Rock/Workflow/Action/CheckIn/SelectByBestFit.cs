@@ -144,7 +144,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( location == null )
                                     {
                                         // this works when a group is only meeting at one location per campus
-                                        int primaryGroupLocationId = new GroupLocationService( new RockContext() ).Queryable().Where( gl => gl.GroupId == group.Group.Id )
+                                        int primaryGroupLocationId = new GroupLocationService( rockContext ).Queryable().Where( gl => gl.GroupId == group.Group.Id )
                                             .Select( gl => gl.LocationId ).ToList().FirstOrDefault();
                                         location = group.Locations.Where( l => l.Location.Id == primaryGroupLocationId ).FirstOrDefault();
                                     }
