@@ -3891,28 +3891,28 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-success a {
   color: #ffffff;
-  border-bottom: 1px dotted #ffffff;
+  border-bottom: none;
 }
 .alert-success a.help {
   border-bottom: 0;
 }
 .alert-info a {
   color: #ffffff;
-  border-bottom: 1px dotted #ffffff;
+  border-bottom: none;
 }
 .alert-info a.help {
   border-bottom: 0;
 }
 .alert-warning a {
   color: #ffffff;
-  border-bottom: 1px dotted #ffffff;
+  border-bottom: none;
 }
 .alert-warning a.help {
   border-bottom: 0;
 }
 .alert-danger a {
   color: #ffffff;
-  border-bottom: 1px dotted #ffffff;
+  border-bottom: none;
 }
 .alert-danger a.help {
   border-bottom: 0;
