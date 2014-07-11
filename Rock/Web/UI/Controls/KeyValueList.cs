@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public void RenderBaseControl( HtmlTextWriter writer )
+        public override void RenderBaseControl( HtmlTextWriter writer )
         {
             Dictionary<string, string> values = null;
             if ( DefinedTypeId.HasValue )
