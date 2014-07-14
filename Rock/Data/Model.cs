@@ -195,12 +195,13 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Rock.Model.Person person )
+        public virtual bool IsAuthorized( string action, Rock.Model.Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -219,12 +220,13 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext  );
         }
 
         /// <summary>
@@ -232,9 +234,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -242,9 +245,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakeUnPrivate( this, action, person );
+            Security.Authorization.MakeUnPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -252,9 +256,10 @@ namespace Rock.Data
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void AllowPerson( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.AllowPerson( this, action, person );
+            Security.Authorization.AllowPerson( this, action, person, rockContext );
         }
 
         /// <summary>
