@@ -156,10 +156,8 @@ datetimeformat of the xaxis and yaxis supports the following specifiers.  for ex
 %p: am/pm (uppercase version of %p)
 %w: weekday as number (0-6, 0 being sunday)
 </pre>
-</div>'
+</div>' WHERE [Guid] = 'FC684FD7-FE68-493F-AF38-1656FBF67E6B'
 " );
-
-
         }
         
         /// <summary>
