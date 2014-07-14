@@ -31,6 +31,8 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        private bool _transactionInProgress = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
@@ -56,18 +58,30 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         public void WrapTransaction( Action action )
         {
-            using (var dbContextTransaction = this.Database.BeginTransaction())
+            if ( !_transactionInProgress )
             {
-                try
+                _transactionInProgress = true;
+                using ( var dbContextTransaction = this.Database.BeginTransaction() )
                 {
-                    action.Invoke();
-                    dbContextTransaction.Commit();
+                    try
+                    {
+                        action.Invoke();
+                        dbContextTransaction.Commit();
+                    }
+                    catch ( Exception ex )
+                    {
+                        dbContextTransaction.Rollback();
+                        throw ( ex );
+                    }
+                    finally
+                    {
+                        _transactionInProgress = false;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    dbContextTransaction.Rollback();
-                    throw ( ex );
-                }
+            }
+            else
+            {
+                action.Invoke();
             }
         }
 

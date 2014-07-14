@@ -1526,7 +1526,7 @@ namespace RockWeb.Blocks.Examples
                 // person attributes
                 if ( personElem.Elements( "attributes" ).Any() )
                 {
-                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
+                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ), rockContext );
                 }
 
                 // person logins
@@ -1600,7 +1600,7 @@ namespace RockWeb.Blocks.Examples
             if ( isPrivate.AsBoolean() )
             {
                 rockContext.SaveChanges( disablePrePostProcessing: true );
-                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()] );
+                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
             }
 
         }
@@ -1641,10 +1641,10 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
-        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes )
+        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes, RockContext rockContext )
         {
             // In order to add attributes to the person, you have to first load them all
-            groupMember.Person.LoadAttributes();
+            groupMember.Person.LoadAttributes( rockContext );
 
             foreach ( var personAttribute in attributes.Elements( "attribute" ) )
             {
