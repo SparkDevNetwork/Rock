@@ -1108,52 +1108,6 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Adds or Updates the block attribute value
-        /// </summary>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="value">The value.</param>
-        public void UpdateBlockAttributeValue( string blockGuid, string attributeKey, string value )
-        {
-            Migration.Sql( string.Format( @"
-                
-                DECLARE @BlockId int
-                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
-
-                DECLARE @BlockEntityTypeId int                
-                SET @BlockEntityTypeId = (SELECT [Id] from [EntityType] where [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
-                
-                DECLARE @BlockTypeId int
-                SET @BlockTypeId = (SELECT [BlockTypeId] FROM [Block] WHERE [Guid] = '{0}')
-
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] 
-                    WHERE [EntityTypeId] = @BlockEntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
-                    AND [Key] = '{1}')
-
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @BlockId
-
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@BlockId,
-                    0,'{2}',
-                    NEWID())
-",
-                       blockGuid,
-                       attributeKey,
-                       value.Replace( "'", "''" )
-                   )
-               );
-        }
-
-        /// <summary>
         /// Deletes the block attribute value.
         /// </summary>
         /// <param name="blockGuid">The block GUID.</param>
