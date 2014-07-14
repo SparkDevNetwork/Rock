@@ -118,10 +118,8 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         /// <summary>
-        /// Shows the detail.
+        /// Bind the grid
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
         public void BindGrid()
         {
             int controllerId = int.MinValue;

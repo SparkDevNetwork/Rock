@@ -92,24 +92,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "LocationId" );
-                string parentLocationId = PageParameter( "ParentLocationId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( parentLocationId ) )
-                    {
-                        ShowDetail( "LocationId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "LocationId", int.Parse( itemId ), int.Parse( parentLocationId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "LocationId" ).AsInteger(), PageParameter( "ParentLocationId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -369,48 +352,36 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="locationId">The location identifier.</param>
+        public void ShowDetail( int locationId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( locationId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The location id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentLocationId )
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="parentLocationId">The parent location identifier.</param>
+        public void ShowDetail( int locationId, int? parentLocationId )
         {
             pnlDetails.Visible = false;
-
-            if ( !itemKey.Equals( "LocationId" ) )
-            {
-                return;
-            }
 
             bool editAllowed = true;
 
             Location location = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !locationId.Equals( 0 ) )
             {
-                location = new LocationService( new RockContext() ).Get( itemKeyValue );
-                if ( location != null )
-                {
-                    editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                }
-            }
-            else
-            {
-                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
+                location = new LocationService( new RockContext() ).Get( locationId );
             }
 
             if ( location == null )
             {
-                return;
+                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
             }
+
+            editAllowed = location.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             pnlDetails.Visible = true;
             hfLocationId.Value = location.Id.ToString();

@@ -120,39 +120,48 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            if ( Person != null && Person.Id != 0 )
             {
-                BindAttributes();
+                upKeyAttributes.Visible = true;
+
+                if ( !Page.IsPostBack )
+                {
+                    BindAttributes();
+                }
+                else
+                {
+                    // If dialog is active, save the current selection
+                    if ( !string.IsNullOrWhiteSpace( hfActiveDialog.Value ) )
+                    {
+                        for ( int i = 0; i < cblAttributes.Items.Count; i++ )
+                        {
+                            ListItem li = cblAttributes.Items[i];
+                            int attributeId = int.Parse( li.Value );
+
+                            // Check form value for checkbox list since "selected" seems to be lost on postback for unselected items
+                            string value = Request.Form[cblAttributes.UniqueID + "$" + i.ToString()];
+                            if ( value != null )
+                            {
+                                li.Selected = true;
+                                if ( !SelectedAttributes.Contains( attributeId ) )
+                                {
+                                    SelectedAttributes.Add( attributeId );
+                                }
+                            }
+                            else
+                            {
+                                li.Selected = false;
+                                SelectedAttributes.Remove( attributeId );
+                            }
+                        }
+                    }
+
+                    ShowDialog();
+                }
             }
             else
             {
-                // If dialog is active, save the current selection
-                if ( !string.IsNullOrWhiteSpace( hfActiveDialog.Value ) )
-                {
-                    for ( int i = 0; i < cblAttributes.Items.Count; i++ )
-                    {
-                        ListItem li = cblAttributes.Items[i];
-                        int attributeId = int.Parse( li.Value );
-
-                        // Check form value for checkbox list since "selected" seems to be lost on postback for unselected items
-                        string value = Request.Form[cblAttributes.UniqueID + "$" + i.ToString()];
-                        if (value != null)
-                        {
-                            li.Selected = true;
-                            if (!SelectedAttributes.Contains( attributeId ))
-                            {
-                                SelectedAttributes.Add( attributeId );
-                            }
-                        }
-                        else
-                        {
-                            li.Selected = false;
-                            SelectedAttributes.Remove( attributeId );
-                        }
-                    }
-                }
-
-                ShowDialog();
+                upKeyAttributes.Visible = false;
             }
         }
 

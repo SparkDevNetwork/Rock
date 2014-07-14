@@ -47,15 +47,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "campusId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "campusId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "campusId" ).AsInteger() );
             }
             else
             {
@@ -187,29 +179,24 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="campusId">The campus identifier.</param>
+        public void ShowDetail( int campusId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "campusId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             // Load depending on Add(0) or Edit
             Campus campus = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+
+            if ( !campusId.Equals( 0 ) )
             {
-                campus = new CampusService( new RockContext() ).Get( itemKeyValue );
+                campus = new CampusService( new RockContext() ).Get( campusId );
                 lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
-            else
+
+            if ( campus == null )
             {
                 campus = new Campus { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add(Campus.FriendlyTypeName).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             hfCampusId.Value = campus.Id.ToString();

@@ -102,15 +102,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "marketingCampaignId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "marketingCampaignId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "marketingCampaignId" ).AsInteger() );
             }
         }
 
@@ -357,23 +349,18 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="marketingCampaignId">The marketing campaign identifier.</param>
+        public void ShowDetail( int marketingCampaignId )
         {
-            if ( !itemKey.Equals( "marketingCampaignId" ) )
-            {
-                return;
-            }
-
             MarketingCampaign marketingCampaign = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !marketingCampaignId.Equals( 0 ) )
             {
                 MarketingCampaignService marketingCampaignService = new MarketingCampaignService( new RockContext() );
-                marketingCampaign = marketingCampaignService.Get( itemKeyValue );
+                marketingCampaign = marketingCampaignService.Get( marketingCampaignId );
             }
-            else
+
+            if (marketingCampaign == null)
             {
                 marketingCampaign = new MarketingCampaign { Id = 0 };
                 marketingCampaign.MarketingCampaignAds = new List<MarketingCampaignAd>();

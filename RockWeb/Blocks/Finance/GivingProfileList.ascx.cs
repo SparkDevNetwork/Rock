@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Finance
 
     [LinkedPage( "Edit Page" )]
     [LinkedPage( "Add Page" )]
-    [ContextAware( typeof( Person ) )]
+    [ContextAware]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -207,19 +207,32 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             bool includeInactive = !string.IsNullOrWhiteSpace( gfSettings.GetUserPreference( "Include Inactive" ) );
-
             int? personId = null;
             int? givingGroupId = null;
+
+            bool validRequest = false;
+
             if ( TargetPerson != null )
             {
                 personId = TargetPerson.Id;
                 givingGroupId = TargetPerson.GivingGroupId;
+                validRequest = true;
+            }
+            else
+            {
+                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                if ( !ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
+                {
+                    validRequest = true;
+                }
             }
 
-            rGridGivingProfile.DataSource = new FinancialScheduledTransactionService( new RockContext() )
-                .Get( personId, givingGroupId, includeInactive ).ToList();
-
-            rGridGivingProfile.DataBind();
+            if ( validRequest )
+            {
+                rGridGivingProfile.DataSource = new FinancialScheduledTransactionService( new RockContext() )
+                    .Get( personId, givingGroupId, includeInactive ).ToList();
+                rGridGivingProfile.DataBind();
+            }
         }
 
         /// <summary>
