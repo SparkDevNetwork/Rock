@@ -2,27 +2,30 @@
 // Rock 1.0 Variables
 // --------------------------------------------------
 
-// orange
-// @main-color: #ea5800;
+// Colors
+@gray-darker:            lighten(#000, 13.5%);
+@gray-dark:              #7b8a8b;
+@gray:                   #95a5a6;
+@gray-light:             #b4bcc2;
+@gray-lighter:           #ecf0f1;
 
-// blue
-@main-color: #00afea;
-
-// red
-// @main-color: #d12f32;
-
-// green
-// @main-color: #47b356;
-
+@brand-primary:         #2C3E50;
+@brand-success:         #18BC9C;
+@brand-info:            #3498DB;
+@brand-warning:         #F39C12;
+@brand-danger:          #E74C3C;
+@text-color:            @brand-primary;
+@link-color:            @brand-success;
+@link-hover-color:      @link-color;
 
 // Standard Colors
 @accent-color: lighten(@accent-bold-color, 40%);
 @accent-text-color: @accent-semibold-color;
 @accent-light-color: @gray-lighter;
 @accent-light-text-color: darken(@gray-lighter, 50%);
-@accent-semibold-color: darken(@accent-bold-color, 15%);
+@accent-semibold-color: @brand-primary;
 @accent-semibold-text-color: #fff;
-@accent-bold-color: @main-color; // overrides brand color
+@accent-bold-color: @brand-success; // overrides brand color
 @accent-bold-text-color: #fff;
 
 
@@ -36,10 +39,6 @@
 
 // Bootstrap Overrides 
 // -------------------------
-
-@brand-primary:         @accent-bold-color;
-
-@brand-info:         	@accent-semibold-color;
 
 @font-family-sans-serif:  "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
@@ -60,21 +59,6 @@
 
 // Flatly
 // -------------------------
-
-@gray-darker:            lighten(#000, 13.5%);
-@gray-dark:              #7b8a8b;
-@gray:                   #95a5a6;
-@gray-light:             #b4bcc2;
-@gray-lighter:           #ecf0f1;
-
-@brand-primary:         #2C3E50;
-@brand-success:         #18BC9C;
-@brand-info:            #3498DB;
-@brand-warning:         #F39C12;
-@brand-danger:          #E74C3C;
-@text-color:            @brand-primary;
-@link-color:            @brand-success;
-@link-hover-color:      @link-color;
 
 // @font-family-sans-serif:  "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
 @font-size-base:          15px;

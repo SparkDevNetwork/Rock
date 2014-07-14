@@ -37,11 +37,17 @@ main {
 
     // using fontawesome nav toggle button instead of the BS default
     .navbar-toggle {
-        padding: 6px 10px;
-        i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
+      padding: 6px 10px;
+      i.fa-bars { color: @navbar-inverse-toggle-icon-bar-bg; }
     }
 
-    .navbar-brand { font-family: @headings-font-family; text-transform: uppercase; }
+    .navbar-brand {
+      font-family: @headings-font-family;
+      text-transform: uppercase;
+      @media (max-width: @screen-xs-max) {
+        font-size: 97%
+      }
+    }
 }
 
 a:hover i.fs
@@ -116,7 +122,10 @@ header {
             .transition(opacity .3s);
             &:hover { .opacity(.75); }
 
-            img { width: 100%; }
+            img {
+              border-radius: 5px;
+              width: 100%;
+            }
         }
     }
 }
