@@ -38,9 +38,11 @@ namespace Rock.Web.UI.Controls
     /// immediately with the image.  The PhotoRequest's Upload block uses this feature.
     /// <example>
     /// <code>
+    /// <![CDATA[
     ///     <Rock:ImageEditor ID="imgedPhoto" runat="server" ButtonText="<i class='fa fa-pencil'></i> Select Photo" 
     ///             ButtonCssClass="btn btn-primary margin-t-sm" CommandArgument='<%# Eval("Id") %>' 
     ///             OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false" />
+    /// ]]>
     /// </code>
     /// </example>
     /// 
@@ -443,6 +445,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when [file saved].
+        /// </summary>
         public event EventHandler FileSaved;
 
         #endregion

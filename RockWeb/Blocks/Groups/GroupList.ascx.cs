@@ -45,7 +45,6 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Display Active Status Column", "Should the Active Status column be displayed?", false, "", 6 )]
     [BooleanField( "Display System Column", "Should the System column be displayed?", true, "", 6 )]
     [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 7 )]
-    [BooleanField( "Display Filter", "Should filter be displayed to allow filtering by group type?", false, "", 7 )]
     [ContextAware]
     public partial class GroupList : RockBlock
     {

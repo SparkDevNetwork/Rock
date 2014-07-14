@@ -551,16 +551,40 @@ namespace Rock.Model
 
     #region Map Helper Classes
 
+    /// <summary>
+    /// Helper class to store map coordinates
+    /// </summary>
     public class MapCoordinate
     {
+        /// <summary>
+        /// Gets or sets the latitude.
+        /// </summary>
+        /// <value>
+        /// The latitude.
+        /// </value>
         public double? Latitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets the longitude.
+        /// </summary>
+        /// <value>
+        /// The longitude.
+        /// </value>
         public double? Longitude { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
+        /// </summary>
         public MapCoordinate()
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapCoordinate"/> class.
+        /// </summary>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
         public MapCoordinate( double? latitude, double? longitude ) 
         {
             Latitude = latitude;
@@ -568,19 +592,70 @@ namespace Rock.Model
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class MapItem
     {
+        /// <summary>
+        /// Gets or sets the entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier.
+        /// </value>
         public int EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity identifier.
+        /// </summary>
+        /// <value>
+        /// The entity identifier.
+        /// </value>
         public int EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
         public int LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the point.
+        /// </summary>
+        /// <value>
+        /// The point.
+        /// </value>
         public MapCoordinate Point { get; set; }
+
+        /// <summary>
+        /// Gets or sets the polygon points.
+        /// </summary>
+        /// <value>
+        /// The polygon points.
+        /// </value>
         public List<MapCoordinate> PolygonPoints { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapItem"/> class.
+        /// </summary>
         public MapItem() 
         { 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MapItem"/> class.
+        /// </summary>
+        /// <param name="location">The location.</param>
         public MapItem( Location location )
         {
             PolygonPoints = new List<MapCoordinate>();

@@ -250,6 +250,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static EntityTypeCache Read( Type type, bool createIfNotFound = true, RockContext rockContext = null )
         {
@@ -289,6 +290,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="createNew">if set to <c>true</c> [create new].</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static EntityTypeCache Read( string name, bool createNew, RockContext rockContext = null )
         {
@@ -323,7 +325,8 @@ namespace Rock.Web.Cache
         /// Returns EntityType object from cache.  If entityBlockType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static EntityTypeCache Read( int id, RockContext rockContext = null )
         {
@@ -361,6 +364,7 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static EntityTypeCache Read( Guid guid, RockContext rockContext = null )
         {

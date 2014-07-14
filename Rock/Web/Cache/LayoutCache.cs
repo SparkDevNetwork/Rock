@@ -161,7 +161,8 @@ namespace Rock.Web.Cache
         /// Returns Layout object from cache.  If Layout does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static LayoutCache Read( int id, RockContext rockContext = null )
         {
@@ -200,6 +201,7 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static LayoutCache Read( Guid guid, RockContext rockContext = null )
         {

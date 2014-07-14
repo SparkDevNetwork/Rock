@@ -197,7 +197,8 @@ namespace Rock.Web.Cache
         /// Returns DefinedType object from cache.  If definedType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static DefinedTypeCache Read( int id, RockContext rockContext = null )
         {
@@ -240,6 +241,7 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static DefinedTypeCache Read( Guid guid, RockContext rockContext = null )
         {
@@ -280,6 +282,7 @@ namespace Rock.Web.Cache
         /// Reads the specified defined type model.
         /// </summary>
         /// <param name="definedTypeModel">The defined type model.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static DefinedTypeCache Read( DefinedType definedTypeModel, RockContext rockContext = null )
         {

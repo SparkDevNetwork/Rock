@@ -263,6 +263,7 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static BlockCache Read( int id, RockContext rockContext = null )
         {
@@ -301,6 +302,7 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static BlockCache Read( Guid guid, RockContext rockContext = null )
         {
