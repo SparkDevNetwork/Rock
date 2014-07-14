@@ -97,12 +97,6 @@
                                     <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" TabIndex="12" />
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <legend>Contribution Info</legend>
-                                    <Rock:RockDropDownList ID="ddlGivingGroup" runat="server" Label="Combine Giving With" Help="The business or person that this businesses gifts should be combined with for contribution statements and reporting." TabIndex="13" /> 
-                                </div>
-                            </div>
                             <div class="actions">
                                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" TabIndex="14" />
                                 <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" TabIndex="15" />

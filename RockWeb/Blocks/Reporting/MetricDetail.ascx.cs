@@ -110,14 +110,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( metricId.HasValue )
                 {
-                    if ( parentCategoryId.HasValue )
-                    {
-                        ShowDetail( "MetricId", metricId.Value, parentCategoryId );
-                    }
-                    else
-                    {
-                        ShowDetail( "MetricId", metricId.Value );
-                    }
+                    ShowDetail( metricId.Value, parentCategoryId );
                 }
                 else
                 {
@@ -422,36 +415,31 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="metricId">The metric identifier.</param>
+        public void ShowDetail( int metricId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( metricId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="metricId">The metric identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int metricId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "MetricId" ) )
-            {
-                return;
-            }
 
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
             Metric metric = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !metricId.Equals( 0 ) )
             {
-                metric = metricService.Get( itemKeyValue );
+                metric = metricService.Get( metricId );
             }
-            else
+
+            if ( metric == null )
             {
                 metric = new Metric { Id = 0, IsSystem = false };
                 metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
@@ -464,7 +452,7 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            if ( metric == null || !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }

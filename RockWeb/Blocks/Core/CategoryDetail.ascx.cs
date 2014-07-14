@@ -78,18 +78,10 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "CategoryId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string categoryIdParam = PageParameter( "CategoryId" );
+                if ( !string.IsNullOrEmpty( categoryIdParam ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "CategoryId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "CategoryId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( categoryIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -271,35 +263,30 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="categoryId">The category identifier.</param>
+        public void ShowDetail( int categoryId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( categoryId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="categoryId">The category identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int categoryId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "CategoryId" ) )
-            {
-                return;
-            }
 
             var categoryService = new CategoryService( new RockContext() );
             Category category = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !categoryId.Equals( 0 ) )
             {
-                category = categoryService.Get( itemKeyValue );
+                category = categoryService.Get( categoryId );
             }
-            else
+
+            if ( category == null )
             {
                 category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
                 category.EntityTypeId = entityTypeId;
@@ -307,8 +294,9 @@ namespace RockWeb.Blocks.Core
                 category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
 
-            if ( category == null || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if (category.EntityTypeId != entityTypeId || !category.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
+                pnlDetails.Visible = false;
                 return;
             }
 

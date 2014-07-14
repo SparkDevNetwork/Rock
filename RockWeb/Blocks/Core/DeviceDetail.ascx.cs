@@ -61,16 +61,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "DeviceId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "DeviceId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
-            }
+                ShowDetail( PageParameter( "DeviceId" ).AsInteger() );
+             }
         }
 
         #endregion
@@ -98,26 +90,22 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="DeviceId">The device identifier.</param>
+        public void ShowDetail( int DeviceId )
         {
-            if ( !itemKey.Equals( "DeviceId" ) )
-            {
-                return;
-            }
 
             pnlDetails.Visible = true;
             Device Device = null;
 
             var rockContext = new RockContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !DeviceId.Equals( 0 ) )
             {
-                Device = new DeviceService( rockContext ).Get( itemKeyValue );
+                Device = new DeviceService( rockContext ).Get( DeviceId );
                 lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( Device == null )
             {
                 Device = new Device { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( Device.FriendlyTypeName ).FormatAsHtmlTitle();

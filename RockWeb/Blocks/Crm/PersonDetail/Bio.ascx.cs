@@ -130,7 +130,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( !Page.IsPostBack )
             {
-                if ( Person != null )
+                if ( Person != null && Person.Id != 0 )
                 {
                     var rockContext = new RockContext();
 
@@ -233,6 +233,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                             Person = person;
                         }
                     }
+                }
+                else
+                {
+                    nbInvalidPerson.Visible = true;
+                    phContent.Visible = false;
                 }
             }
         }

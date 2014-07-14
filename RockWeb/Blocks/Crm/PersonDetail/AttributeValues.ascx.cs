@@ -96,9 +96,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( Person != null && Person.Id != 0 )
             {
-                BindData();
+                upnlAttributeValues.Visible = true;
+
+                if ( !Page.IsPostBack )
+                {
+                    BindData();
+                }
+            }
+            else
+            {
+                upnlAttributeValues.Visible = false;
             }
         }
 

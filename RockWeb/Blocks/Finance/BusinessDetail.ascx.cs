@@ -71,37 +71,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-                string itemId = PageParameter( "businessId" );
-
-                // Load the Giving Group drop down
-                ddlGivingGroup.Items.Clear();
-                ddlGivingGroup.Items.Add( new ListItem( None.Text, None.IdValue ) );
-                if ( int.Parse( itemId ) > 0 )
-                {
-                    var businessService = new PersonService( rockContext );
-                    var business = businessService.Get( int.Parse( itemId ) );
-                    ddlGivingGroup.Items.Add( new ListItem( business.FirstName, business.Id.ToString() ) );
-                }
-
-                // Load the Campus drop down
-                ddlCampus.Items.Clear();
-                ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
-                var campusService = new CampusService( new RockContext() );
-                foreach ( Campus campus in campusService.Queryable() )
-                {
-                    ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
-                    ddlCampus.Items.Add( li );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "businessId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "businessId" ).AsInteger() );
             }
 
             if ( !string.IsNullOrWhiteSpace( hfModalOpen.Value ) )
@@ -258,15 +228,6 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 rockContext.SaveChanges();
-
-                // Giving Group
-                int? newGivingGroupId = ddlGivingGroup.SelectedValueAsId();
-                if ( business.GivingGroupId != newGivingGroupId )
-                {
-                    string oldGivingGroupName = business.GivingGroup != null ? business.GivingGroup.Name : string.Empty;
-                    string newGivingGroupName = newGivingGroupId.HasValue ? ddlGivingGroup.Items.FindByValue( newGivingGroupId.Value.ToString() ).Text : string.Empty;
-                    History.EvaluateChange( changes, "Giving Group", oldGivingGroupName, newGivingGroupName );
-                }
 
                 business.GivingGroup = businessGroup;
 
@@ -521,38 +482,36 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="businessId">The business identifier.</param>
+        public void ShowDetail( int businessId )
         {
             var rockContext = new RockContext();
-            pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "businessId" ) )
+            // Load the Campus drop down
+            ddlCampus.Items.Clear();
+            ddlCampus.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            var campusService = new CampusService( new RockContext() );
+            foreach ( Campus campus in campusService.Queryable() )
             {
-                return;
+                ListItem li = new ListItem( campus.Name, campus.Id.ToString() );
+                ddlCampus.Items.Add( li );
             }
-
-            bool editAllowed = true;
 
             Person business = null;     // A business is a person
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !businessId.Equals( 0 ) )
             {
-                business = new PersonService( rockContext ).Get( itemKeyValue );
-                editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );
-            }
-            else
-            {
-                business = new Person { Id = 0 };
+                business = new PersonService( rockContext ).Get( businessId );
             }
 
             if ( business == null )
             {
-                return;
+                business = new Person { Id = 0, Guid = Guid.NewGuid() };
             }
 
-            pnlDetails.Visible = true;
+            bool editAllowed = business.IsAuthorized( Authorization.EDIT, CurrentPerson );
+
+
             hfBusinessId.Value = business.Id.ToString();
 
             bool readOnly = false;
@@ -680,7 +639,6 @@ namespace RockWeb.Blocks.Finance
                         g.PersonId == business.Id )
                     .FirstOrDefault();
 
-                ddlGivingGroup.SelectedValue = business.Id.ToString();
                 ddlRecordStatus.SelectedValue = business.RecordStatusValueId.HasValue ? business.RecordStatusValueId.Value.ToString() : string.Empty;
                 ddlReason.SelectedValue = business.RecordStatusReasonValueId.HasValue ? business.RecordStatusReasonValueId.Value.ToString() : string.Empty;
                 ddlReason.Visible = business.RecordStatusReasonValueId.HasValue &&

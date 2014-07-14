@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Relationships.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Relationships" %>
-<asp:UpdatePanel ID="upEditFamily" runat="server">
+<asp:UpdatePanel ID="upRelationships" runat="server">
     <ContentTemplate>
 
         <section class="panel panel-persondetails">

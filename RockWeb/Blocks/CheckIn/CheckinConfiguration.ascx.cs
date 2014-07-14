@@ -64,15 +64,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
             }
             else
             {
@@ -1026,22 +1018,16 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void ShowDetail( int groupTypeId )
         {
             // hide the details panel until we verify the page params are good and that the user has edit access
             pnlDetails.Visible = false;
 
-            if ( itemKey != "groupTypeId" )
-            {
-                return;
-            }
-
             var rockContext = new RockContext();
 
             GroupTypeService groupTypeService = new GroupTypeService( rockContext );
-            GroupType parentGroupType = groupTypeService.Get( itemKeyValue );
+            GroupType parentGroupType = groupTypeService.Get( groupTypeId );
 
             if ( parentGroupType == null )
             {
