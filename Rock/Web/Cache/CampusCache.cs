@@ -181,7 +181,8 @@ namespace Rock.Web.Cache
         /// Returns Campus object from cache.  If campus does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static CampusCache Read( int id, RockContext rockContext = null )
         {
@@ -220,6 +221,7 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static CampusCache Read( Guid guid, RockContext rockContext = null )
         {

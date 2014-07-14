@@ -50,6 +50,10 @@ namespace Rock.Data
         /// </value>
         public virtual List<string> SaveErrorMessages { get; private set; }
 
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// </summary>
+        /// <param name="action">The action.</param>
         public void WrapTransaction( Action action )
         {
             using (var dbContextTransaction = this.Database.BeginTransaction())

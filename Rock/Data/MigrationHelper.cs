@@ -317,10 +317,9 @@ namespace Rock.Data
         /// <summary>
         /// Adds a new Layout to the given site.
         /// </summary>
-        /// <param name="siteGuid">The site GUID.</param>
-        /// <param name="fileName">Name of the file.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="theme">The theme.</param>
         /// <param name="guid">The GUID.</param>
         public void AddSite( string name, string description, string theme, string guid  )
         {

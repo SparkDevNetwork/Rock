@@ -158,6 +158,9 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
+        /// <summary>
+        /// The _HF value
+        /// </summary>
         public HiddenField _hfValue;
 
         #endregion

@@ -66,6 +66,7 @@ namespace Rock.Web.Cache
         /// Gets the Global Attribute values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public string GetValue( string key, RockContext rockContext = null )
         {
@@ -96,6 +97,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
+        /// <param name="rockContext">The rock context.</param>
         public void SetValue( string key, string value, bool saveValue, RockContext rockContext = null )
         {
             if ( saveValue )
