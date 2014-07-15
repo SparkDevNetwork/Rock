@@ -3623,8 +3623,11 @@ a.help {
 .panel legend {
   border-color: #d5d5d5;
 }
-.panel .panel-title small {
+.panel .panel-heading .panel-title small {
   color: #e0e0e0;
+}
+.panel .panel-heading .panel-actions {
+  margin-top: 4px;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
