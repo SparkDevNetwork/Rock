@@ -4449,6 +4449,7 @@ body#splash.error #content #logo {
   font-weight: 700;
   padding-bottom: 2px;
   border-bottom: 1px solid #423e3f;
+  font-weight: 400;
 }
 .navbar-static-side .navbar-side > li .nav-childpages li.header:first-child {
   margin-top: 0;
