@@ -2942,7 +2942,7 @@ span.field-value {
   margin-top: 0;
 }
 #fluidbox-overlay {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.3);
 }
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px), print {
