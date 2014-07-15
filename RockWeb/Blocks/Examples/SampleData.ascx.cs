@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Examples
 
             //// First delete any sample data that might exist already 
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // First we'll clean up by deleting any previously created data such as
                 // families, addresses, people, photos, attendance data, etc.
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Examples
 
             // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // Now we can add the families (and people) and then groups.
                 AddFamilies( elemFamilies, rockContext );
@@ -1472,7 +1472,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
-                            Number = personElem.Attribute( "homePhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1486,7 +1486,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
-                            Number = personElem.Attribute( "mobilePhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "mobilePhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1500,7 +1500,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
-                            Number = personElem.Attribute( "workPhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "workPhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1526,7 +1526,7 @@ namespace RockWeb.Blocks.Examples
                 // person attributes
                 if ( personElem.Elements( "attributes" ).Any() )
                 {
-                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
+                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ), rockContext );
                 }
 
                 // person logins
@@ -1600,7 +1600,7 @@ namespace RockWeb.Blocks.Examples
             if ( isPrivate.AsBoolean() )
             {
                 rockContext.SaveChanges( disablePrePostProcessing: true );
-                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()] );
+                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
             }
 
         }
@@ -1641,10 +1641,10 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
-        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes )
+        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes, RockContext rockContext )
         {
             // In order to add attributes to the person, you have to first load them all
-            groupMember.Person.LoadAttributes();
+            groupMember.Person.LoadAttributes( rockContext );
 
             foreach ( var personAttribute in attributes.Elements( "attribute" ) )
             {

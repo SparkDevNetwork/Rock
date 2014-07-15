@@ -48,6 +48,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the child group types.
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public IQueryable<GroupType> GetChildGroupTypes( Guid groupTypeGuid )
+        {
+            return Queryable().Where( t => t.ParentGroupTypes.Select( p => p.Guid ).Contains( groupTypeGuid ) );
+        }
+
+        /// <summary>
         /// Gets the parent group types.
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>

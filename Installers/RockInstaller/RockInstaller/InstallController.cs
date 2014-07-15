@@ -30,13 +30,11 @@ namespace RockInstaller
         private static string sqlConfigureScript = "sql-config.sql";
         private static string baseStorageUrl = "http://storage.rockrms.com/install/";
 
-
-        
         static InstallController()
         {
             serverPath = (System.Web.HttpContext.Current == null)
                     ? System.Web.Hosting.HostingEnvironment.MapPath( "~/" )
-                    : System.Web.HttpContext.Current.Server.MapPath( "~/" ); ;
+                    : System.Web.HttpContext.Current.Server.MapPath( "~/" );
         }
 
 
@@ -82,9 +80,9 @@ namespace RockInstaller
             Clients.Caller.ReportError( errorMessage );
         }
 
-        public void ShowSuccess( )
+        public void RedirectToComplete( )
         {
-            Clients.Caller.ShowSuccess( );
+            Clients.Caller.RedirectToComplete();
         }
 
         #endregion
@@ -274,19 +272,8 @@ namespace RockInstaller
 
             Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
 
-            // delete the installer
-            result = DeleteInstaller( installData );
-            if ( !result.Success )
-            {
-                this.SendConsoleMessage( new ConsoleMessage( "Error deleting the installer:" + result.Message, ConsoleMessageType.Critical ) );
-                this.ReportError( String.Format( "<div class='alert alert-danger'><strong>That Wasn't Suppose To Happen</strong> An error occurred while while deleting the installer. At this point you may need to restart the install if Rock does not start. Message: {0}</div>", result.Message ) );
-                return;
-            }
-
-            Thread.Sleep( 1000 ); // slow the process to let progress bars catchup
-
-            // show install success, goodbye
-            this.ShowSuccess();
+            // redirect to the final complete page
+            this.RedirectToComplete();
         }
 
         #region Install Steps
@@ -400,6 +387,7 @@ namespace RockInstaller
             result.Success = true;
 
             string tempWebConfig = serverPath + @"\webconfig.xml";
+
             string passwordKey = RockInstallUtilities.GeneratePasswordKey(); ;
             string dataEncryptionKey = RockInstallUtilities.GenerateRandomDataEncryptionKey();
 
@@ -500,40 +488,18 @@ namespace RockInstaller
 
             // update timezone
             var node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "OrgTimeZone" ).FirstOrDefault();
-            node.Value = installData.HostingInfo.Timezone;
+            node.SetAttributeValue( "value", installData.HostingInfo.Timezone );
 
             // update password key
             node = document.Descendants( "appSettings" ).Elements("add").Where( e => e.Attribute( "key" ).Value == "PasswordKey" ).FirstOrDefault();
-            node.Value = passwordKey;
+            node.SetAttributeValue( "value", passwordKey );
             
             // update machine key
             node = document.Descendants( "appSettings" ).Elements( "add" ).Where( e => e.Attribute( "key" ).Value == "DataEncryptionKey" ).FirstOrDefault();
-            node.Value = dataEncryptionKey;
+            node.SetAttributeValue( "value", dataEncryptionKey );
 
             document.Save( tempWebConfig );
 
-            this.UpdateProgressBar( 80 );
-
-            // insert web.config back into rock zip
-            if ( result.Success )
-            {
-                this.SendConsoleMessage( "Preparing to insert webconfig.xml back into rock zip file as web.config." );
-                try
-                {
-                    string content = System.IO.File.ReadAllText( tempWebConfig ); ;
-                    using ( ZipFile zip = ZipFile.Read( rockZipFile ) )
-                    {
-                        zip.AddEntry( "web.config", content );
-                        zip.Save();
-                    }
-                    this.SendConsoleMessage( "The file webconfig.xml inserted into rock zip file as web.config." );
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }
             this.UpdateProgressBar( 100 );
             return result;
         }
@@ -561,73 +527,6 @@ namespace RockInstaller
                     UpdateProgressBar( i );
                     Thread.Sleep( 100 ); // nap time...
                 }
-            }
-
-            return result;
-        }
-
-        private ActivityResult DeleteInstaller( InstallData installData )
-        {
-            this.SendConsoleMessage( "Deleting installer and moving Rock into place. If successful this will be the last message." );
-            
-            ActivityResult result = new ActivityResult();
-            result.Success = true;
-
-            // let's not delete the installer if we're in development, source control is nice but no use pressing our luck...
-            if ( !installData.InstallerProperties.IsDebug )
-            {
-
-                try
-                {
-                    // move rock in place
-                    Directory.Move( serverPath + @"rock", serverPath );
-                    
-                    File.Delete( serverPath + @"Start.aspx" );
-                    File.Delete( serverPath + @"Install.aspx" );
-                    File.Delete( serverPath + @"InstallController.cs" );
-
-                    /* keep SignalR as Rock needs it
-                    File.Delete( serverPath + @"Startup.cs" );
-
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.Core.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Host.SystemWeb.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.Owin.Security.dll" );
-                    File.Delete( serverPath + @"bin\Owin.dll" );
-                     */
-
-                    File.Delete( serverPath + @"bin\Ionic.Zip.dll" );
-                    File.Delete( serverPath + @"bin\Microsoft.ApplicationBlocks.Data.dll" );
-                    File.Delete( serverPath + @"bin\RockInstaller.dll" );
-                    File.Delete( serverPath + @"bin\RockInstallTools.dll" );
-                    File.Delete( serverPath + @"bin\Subtext.Scripting.dll" );  
-                }
-                catch ( Exception ex )
-                {
-                    result.Success = false;
-                    result.Message = ex.Message;
-                }
-            }
-            else
-            {
-                // if it is a debug session let's do delete the connection string file
-                File.Delete( serverPath + @"web.ConnectionStrings.config" );
-            }
-
-            // these files should be deleted even in the developer environment
-            try
-            {
-                File.Delete( serverPath + @"\rock-install-latest.zip" );
-                File.Delete( serverPath + @"\sql-config.sql" );
-                File.Delete( serverPath + @"\sql-install.sql" );
-                File.Delete( serverPath + @"\sql-latest.zip" );
-                File.Delete( serverPath + @"\webconfig.xml" );
-            }
-            catch ( Exception ex )
-            {
-                result.Success = false;
-                result.Message = ex.Message;
             }
 
             return result;

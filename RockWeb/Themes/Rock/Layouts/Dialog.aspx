@@ -90,7 +90,7 @@
                         </div>
                         <div class="viewport">
                             <div class="overview">
-                                <Rock:Zone name="Main" runat="server" />
+                                <Rock:Zone Name="Main" runat="server" />
                             </div>
                         </div>
                     </div>
@@ -115,10 +115,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-

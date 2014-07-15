@@ -45,6 +45,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Limit to Security Role Groups", "", false, "", 2 )]
     [BooleanField( "Limit to Group Types that are shown in navigation", "", false, "", 3, "LimitToShowInNavigationGroupTypes" )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The style of maps to use", false, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK, "", 4 )]
+    [LinkedPage("Group Map Page", "The page to display detailed group map.")]
     public partial class GroupDetail : RockBlock, IDetailBlock
     {
         #region Constants
@@ -184,24 +185,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "GroupId" );
-                string parentGroupId = PageParameter( "ParentGroupId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( parentGroupId ) )
-                    {
-                        ShowDetail( "GroupId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "GroupId", int.Parse( itemId ), int.Parse( parentGroupId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "GroupId" ).AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -440,7 +424,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( group.Id.Equals( 0 ) )
                 {
@@ -651,51 +635,38 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupId">The group identifier.</param>
+        public void ShowDetail( int groupId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( groupId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentGroupId )
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        public void ShowDetail( int groupId, int? parentGroupId )
         {
-            pnlDetails.Visible = false;
-
-            if ( !itemKey.Equals( "GroupId" ) )
-            {
-                return;
-            }
+            Group group = null;
 
             bool editAllowed = true;
 
-            Group group = null;
-
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !groupId.Equals( 0 ) )
             {
-                group = GetGroup( itemKeyValue );
-                if ( group != null )
+                group = GetGroup( groupId );
+                if (group != null)
                 {
                     editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
             }
-            else
-            {
-                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
-                wpGeneral.Expanded = true;
-            }
 
             if ( group == null )
             {
-                return;
+                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
+                wpGeneral.Expanded = true;
             }
 
-            pnlDetails.Visible = true;
             hfGroupId.Value = group.Id.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -921,8 +892,12 @@ namespace RockWeb.Blocks.Groups
             SetEditMode( false );
             var rockContext = new RockContext();
 
-            string groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
-                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+            string groupIconHtml = string.Empty;
+            if ( group.GroupType != null )
+            {
+                groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
+                    groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+            }
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
@@ -999,6 +974,10 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    var pageParams = new Dictionary<string, string>();
+                    pageParams.Add("GroupId", group.Id.ToString());
+                    string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
+
                     if ( points.Any() )
                     {
                         foreach ( var groupLocation in points )
@@ -1010,8 +989,9 @@ namespace RockWeb.Blocks.Groups
                             var literalcontrol = new Literal()
                             {
                                 Text = string.Format(
-                                "<div class='group-location-map'>{0}<img src='{1}'/></div>",
+                                "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
                                 groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
+                                groupMapUrl,
                                 mapLink ),
                                 Mode = LiteralMode.PassThrough
                             };
@@ -1029,10 +1009,19 @@ namespace RockWeb.Blocks.Groups
                             mapLink += "&sensor=false&size=350x200&format=png";
                             phMaps.Controls.Add(
                                 new LiteralControl( string.Format(
-                                    "<div class='group-location-map'>{0}<img src='{1}'/></div>",
+                                    "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
+                                    groupMapUrl,
                                     mapLink ) ) );
                         }
+                    }
+
+                    if (phMaps.Controls.Count == 0)
+                    {
+                        phMaps.Controls.Add(
+                            new LiteralControl( string.Format(
+                                    "<div class='group-location-map'><a href='{0}'>Map</a></div>",
+                                    groupMapUrl ) ) );
                     }
                 }
             }

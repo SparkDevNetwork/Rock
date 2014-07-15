@@ -72,9 +72,11 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void SetPassword( UserLogin user, string password )
         {
-            var authenticationComponent = AuthenticationContainer.GetComponent( user.EntityType.Name );
+            var entityType = EntityTypeCache.Read( user.EntityTypeId ?? 0);
+
+            var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.EntityType.FriendlyName ) );
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ) );
 
             if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
                 throw new Exception( "Cannot change password on external service type" );
@@ -333,7 +335,7 @@ namespace Rock.Model
 
                     userLoginService.Add( user );
 
-                    RockTransactionScope.WrapTransaction( () =>
+                    rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
 

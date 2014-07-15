@@ -325,7 +325,7 @@
           email="jenny@rocksolidchurchdemo.com" emailIsActive="true" emailDoNotEmail="false" recordType="person"
           recordStatus="active" connectionStatus="member"  maritalStatus="single" familyRole="adult"
           photoUrl="http://storage.rockrms.com/sampledata/person-images/michaels_jenny.jpg"
-          homePhone="602-555-9659" mobilePhone="" workPhone="">
+          homePhone="6025559659" mobilePhone="" workPhone="">
           <attributes>
             <attribute Employer="Honeywell"/>
             <attribute Position="Systems Engineer"/>

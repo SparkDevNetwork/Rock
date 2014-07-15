@@ -51,7 +51,7 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    var service = new GroupMemberService( new RockContext() );
+                    var service = new GroupMemberService( rockContext );
                     foreach ( var groupMember in service.GetByGroupId( family.Group.Id ).ToList() )
                     {
                         if ( !family.People.Any( p => p.Person.Id == groupMember.PersonId ) )

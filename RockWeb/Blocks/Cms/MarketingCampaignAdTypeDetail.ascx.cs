@@ -89,15 +89,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "marketingCampaignAdTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "marketingCampaignAdTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "marketingCampaignAdTypeId" ).AsInteger() );
             }
         }
 
@@ -270,7 +262,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 AttributeService attributeService = new AttributeService( rockContext );
                 AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
@@ -325,26 +317,21 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="marketingCampaignAdTypeId">The marketing campaign ad type identifier.</param>
+        public void ShowDetail( int marketingCampaignAdTypeId )
         {
-            if ( !itemKey.Equals( "marketingCampaignAdTypeId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
             MarketingCampaignAdType marketingCampaignAdType = null;
 
             var rockContext = new RockContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !marketingCampaignAdTypeId.Equals( 0 ) )
             {
-                marketingCampaignAdType = new MarketingCampaignAdTypeService( rockContext ).Get( itemKeyValue );
+                marketingCampaignAdType = new MarketingCampaignAdTypeService( rockContext ).Get( marketingCampaignAdTypeId );
                 lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();
             }
-            else
+
+            if ( marketingCampaignAdType == null )
             {
                 marketingCampaignAdType = new MarketingCampaignAdType { Id = 0 };
                 lActionTitle.Text = "Ad Type Detail".FormatAsHtmlTitle();

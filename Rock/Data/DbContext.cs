@@ -31,6 +31,8 @@ namespace Rock.Data
     /// </summary>
     public abstract class DbContext : System.Data.Entity.DbContext
     {
+        private bool _transactionInProgress = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
@@ -49,6 +51,39 @@ namespace Rock.Data
         /// The save error messages.
         /// </value>
         public virtual List<string> SaveErrorMessages { get; private set; }
+
+        /// <summary>
+        /// Wraps code in a BeginTransaction and CommitTransaction
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public void WrapTransaction( Action action )
+        {
+            if ( !_transactionInProgress )
+            {
+                _transactionInProgress = true;
+                using ( var dbContextTransaction = this.Database.BeginTransaction() )
+                {
+                    try
+                    {
+                        action.Invoke();
+                        dbContextTransaction.Commit();
+                    }
+                    catch ( Exception ex )
+                    {
+                        dbContextTransaction.Rollback();
+                        throw ( ex );
+                    }
+                    finally
+                    {
+                        _transactionInProgress = false;
+                    }
+                }
+            }
+            else
+            {
+                action.Invoke();
+            }
+        }
 
         /// <summary>
         /// Saves all changes made in this context to the underlying database.
@@ -206,7 +241,15 @@ namespace Rock.Data
                     }
                 }
 
-                GetAuditDetails( dbContext, contextItem, personAliasId );
+                try
+                {
+                    GetAuditDetails( dbContext, contextItem, personAliasId );
+                }
+                catch (SystemException ex)
+                {
+                    ExceptionLogService.LogException( ex, null );
+                }
+
                 updatedItems.Add( contextItem );
             }
 
@@ -220,12 +263,19 @@ namespace Rock.Data
         /// <param name="personAlias">The person alias.</param>
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias )
         {
-            var audits = updatedItems.Select( i => i.Audit ).ToList();
-            if ( audits.Any() )
+            try
             {
-                var transaction = new Rock.Transactions.AuditTransaction();
-                transaction.Audits = audits;
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                var audits = updatedItems.Select( i => i.Audit ).ToList();
+                if ( audits.Any() )
+                {
+                    var transaction = new Rock.Transactions.AuditTransaction();
+                    transaction.Audits = audits;
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                }
+            }
+            catch ( SystemException ex )
+            {
+                ExceptionLogService.LogException( ex, null );
             }
 
             foreach ( var item in updatedItems )

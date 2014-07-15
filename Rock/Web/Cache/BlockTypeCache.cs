@@ -151,9 +151,10 @@ namespace Rock.Web.Cache
         /// Returns Block Type object from cache.  If block does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static BlockTypeCache Read( int id )
+        public static BlockTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = BlockTypeCache.CacheKey( id );
 
@@ -166,7 +167,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockTypeService = new BlockTypeService( new RockContext() );
+                var blockTypeService = new BlockTypeService( rockContext ?? new RockContext() );
                 var blockTypeModel = blockTypeService.Get( id );
                 if ( blockTypeModel != null )
                 {
@@ -194,8 +195,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static BlockTypeCache Read( Guid guid )
+        public static BlockTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -206,7 +208,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var blockTypeService = new BlockTypeService( new RockContext() );
+                var blockTypeService = new BlockTypeService( rockContext ?? new RockContext() );
                 var blockTypeModel = blockTypeService.Get( guid );
                 if ( blockTypeModel != null )
                 {

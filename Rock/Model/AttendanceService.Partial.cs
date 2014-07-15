@@ -109,48 +109,48 @@ namespace Rock.Model
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 
-            var summaryQry = qry.Select( a => new
+            //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
+            
+            var qryWithSundayDate = qry.Select( a => new
             {
-                //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
-
-                // Build a CASE statement to group by week, or month, or year
-                SummaryDateTime = (DateTime)(
-                    
-                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
-                    groupBy == AttendanceGroupBy.Week ? SqlFunctions.DateAdd(
+                Attendance = a,
+                SundayDate = SqlFunctions.DateAdd(
                         "day",
                         SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "weekday", a.StartDateTime ) + 1 + 1 + 6, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+                        "1900-01-01" )
+            } );
 
-                   // GroupBy Month 
-                   groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd(
-                        "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+            var summaryQry = qryWithSundayDate.Select( a => new
+            {
+                // Build a CASE statement to group by week, or month, or year
+                SummaryDateTime = (DateTime)(
+
+                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
+                    groupBy == AttendanceGroupBy.Week ? a.SundayDate :
+
+                    // GroupBy Month 
+                    groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ) :
 
                     // GroupBy Year
-                    groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd(
-                        "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+                    groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.SundayDate ) + 1, a.SundayDate ) :
 
                     // shouldn't happen
                     null
                 ),
                 Campus = new
                 {
-                    Id = a.CampusId,
-                    Name = a.Campus.Name
+                    Id = a.Attendance.CampusId,
+                    Name = a.Attendance.Campus.Name
                 },
                 Group = new
                 {
-                    Id = a.GroupId,
-                    Name = a.Group.Name
+                    Id = a.Attendance.GroupId,
+                    Name = a.Attendance.Group.Name
                 },
                 Schedule = new
                 {
-                    Id = a.ScheduleId,
-                    Name = a.Schedule.Name
+                    Id = a.Attendance.ScheduleId,
+                    Name = a.Attendance.Schedule.Name
                 }
             } );
 

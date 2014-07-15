@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -51,7 +52,34 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual PersonAlias GetByAliasId( int aliasPersonId )
         {
-            return Queryable( "Person" ).Where( a => a.AliasPersonId == aliasPersonId ).FirstOrDefault();
+            var personAlias = Queryable( "Person" ).Where( a => a.AliasPersonId == aliasPersonId ).FirstOrDefault();
+            if ( personAlias != null )
+            {
+                return personAlias;
+            }
+            else
+            {
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // to that personId.  If there isn't for some reason, create it now.
+                var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonId );
+                if ( person != null )
+                {
+                    personAlias = new PersonAlias();
+                    personAlias.Guid = Guid.NewGuid();
+                    personAlias.AliasPersonId = person.Id;
+                    personAlias.AliasPersonGuid = person.Guid;
+                    personAlias.PersonId = person.Id;
+
+                    // Use a different context so calling method's changes are not yet saved
+                    var rockContext = new RockContext();
+                    new PersonAliasService( rockContext ).Add( personAlias );
+                    rockContext.SaveChanges();
+
+                    return Get( personAlias.Id );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -61,7 +89,34 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual PersonAlias GetByAliasGuid( Guid aliasPersonGuid )
         {
-            return Queryable( "Person" ).Where( a => a.AliasPersonGuid == aliasPersonGuid ).FirstOrDefault();
+            var personAlias = Queryable( "Person" ).Where( a => a.AliasPersonGuid == aliasPersonGuid ).FirstOrDefault();
+            if ( personAlias != null )
+            {
+                return personAlias;
+            }
+            else
+            {
+                // If the personId is valid, there should be a personAlias with the AliasPersonID equal 
+                // to that personId.  If there isn't for some reason, create it now.
+                var person = new PersonService( (RockContext)this.Context ).Get( aliasPersonGuid );
+                if ( person != null )
+                {
+                    personAlias = new PersonAlias();
+                    personAlias.Guid = Guid.NewGuid();
+                    personAlias.AliasPersonId = person.Id;
+                    personAlias.AliasPersonGuid = person.Guid;
+                    personAlias.PersonId = person.Id;
+
+                    // Use a different context so calling method's changes are not yet saved
+                    var rockContext = new RockContext();
+                    new PersonAliasService( rockContext ).Add( personAlias );
+                    rockContext.SaveChanges();
+
+                    return Get( personAlias.Id );
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

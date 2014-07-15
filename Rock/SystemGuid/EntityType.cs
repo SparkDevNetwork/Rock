@@ -37,6 +37,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
 
         /// <summary>
+        /// The guid for the email communication channel
+        /// </summary>
+        public const string COMMUNICATION_CHANNEL_SMS = "4BC02764-512A-4A10-ACDE-586F71D8A8BD";
+
+        /// <summary>
         /// The guid for the database storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";

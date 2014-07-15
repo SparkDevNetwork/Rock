@@ -202,8 +202,8 @@ namespace Rock.Field.Types
                         {
                             editControl.Items.Add( new ListItem( definedValue.Name, definedValue.Id.ToString() ) );
                         }
-                        return editControl;
                     }
+                    return editControl;
                 }
             }
 

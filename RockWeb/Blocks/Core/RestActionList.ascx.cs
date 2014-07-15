@@ -51,9 +51,17 @@ namespace RockWeb.Blocks.Administration
             gActions.GridRebind += gActions_GridRebind;
             gActions.Actions.ShowAdd = false;
             gActions.IsDeleteEnabled = false;
+            gActions.RowSelected += gActions_RowSelected;
            
             SecurityField securityField = gActions.Columns[2] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
+        }
+
+        protected void gActions_RowSelected( object sender, RowEventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "RestActionId", e.RowKeyValue.ToString() );
+            NavigateToLinkedPage( "DetailPage", queryParams );
         }
 
         /// <summary>
@@ -110,10 +118,8 @@ namespace RockWeb.Blocks.Administration
         #region Methods
 
         /// <summary>
-        /// Shows the detail.
+        /// Bind the grid
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
         public void BindGrid()
         {
             int controllerId = int.MinValue;

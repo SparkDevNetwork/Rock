@@ -59,7 +59,7 @@ namespace Rock.Workflow.Action
             Guid guid = nameValue.AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
                     string toValue = action.GetWorklowAttributeValue( guid );
@@ -112,7 +112,7 @@ namespace Rock.Workflow.Action
                 string body = GetAttributeValue( action, "Body" ).ResolveMergeFields( mergeFields );
                 channelData.Add( "Body", System.Text.RegularExpressions.Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty ) );
 
-                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid(), rockContext );
                 if ( channelEntity != null )
                 {
                     var channel = ChannelContainer.GetComponent( channelEntity.Name );
@@ -121,7 +121,7 @@ namespace Rock.Workflow.Action
                         var transport = channel.Transport;
                         if ( transport != null && transport.IsActive )
                         {
-                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
+                            var appRoot = GlobalAttributesCache.Read( rockContext ).GetValue( "InternalApplicationRoot" );
                             transport.Send( channelData, recipients, appRoot, string.Empty );
                         }
                     }

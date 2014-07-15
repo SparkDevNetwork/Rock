@@ -103,19 +103,21 @@
             <asp:Literal ID="lFoundDuplicateCaption" runat="server" />
         </div>
 
-        <Rock:Grid ID="gDuplicates" runat="server">
-        <Columns>
-            <asp:TemplateField>
-                <HeaderTemplate>You?</HeaderTemplate>
-                <ItemTemplate>
-                    <input type="radio" value='<%# Eval("Id") %>' name="DuplicatePerson" />
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:BoundField DataField="FullName" HeaderText="Name" />
-            <asp:BoundField DataField="Gender" HeaderText="Gender" />
-            <asp:BoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="{0:MMMM d}" />
-        </Columns>
-        </Rock:Grid>
+        <div class="grid">
+            <Rock:Grid ID="gDuplicates" runat="server">
+                <Columns>
+                    <asp:TemplateField>
+                        <HeaderTemplate>You?</HeaderTemplate>
+                        <ItemTemplate>
+                            <input type="radio" value='<%# Eval("Id") %>' name="DuplicatePerson" />
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:BoundField DataField="FullName" HeaderText="Name" />
+                    <asp:BoundField DataField="Gender" HeaderText="Gender" />
+                    <asp:BoundField DataField="BirthDate" HeaderText="Birth Day" DataFormatString="{0:MMMM d}" />
+                </Columns>
+            </Rock:Grid>
+        </div>
 
         <div class="inputs-list not-me">
             <label>

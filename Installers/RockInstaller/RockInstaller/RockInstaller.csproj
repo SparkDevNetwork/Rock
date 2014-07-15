@@ -91,7 +91,8 @@
   <ItemGroup>
     <Content Include="images\done.svg" />
     <Content Include="images\favicon.ico" />
-    <Content Include="images\welcome.jpg" />
+    <Content Include="images\laptop.png" />
+    <Content Include="Complete.aspx" />
     <Content Include="Styles\rock-installer.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

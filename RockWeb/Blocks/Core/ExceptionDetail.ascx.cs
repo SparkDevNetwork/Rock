@@ -53,18 +53,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                int exceptionId = 0;
-
-                //if ExceptionId is not null and is an integer
-                if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
-                {
-                    //show the detail
-                    ShowDetail( "ExceptionId", exceptionId );
-                }
-                else
-                {
-                    pnlSummary.Visible = false;
-                }
+                //show the detail
+                ShowDetail( PageParameter( "ExceptionId" ).AsInteger() );
             }
         }
         #endregion
@@ -147,22 +137,20 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail of the exception
         /// </summary>
-        /// <param name="itemKey">Item Key (should be ExceptionId in this instance).</param>
-        /// <param name="itemKeyValue">Item key value (should be ExceptionId).</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="exceptionId">The exception identifier.</param>
+        public void ShowDetail( int exceptionId )
         {
-            //if item key is not ExceptionId return
-            if ( !itemKey.Equals( "ExceptionId" ) )
-            {
-                return;
-            }
+            ExceptionLog baseException = null;
 
-            //Get exception
-            var baseException = new ExceptionLogService( new RockContext() ).Get( itemKeyValue );
+            if ( exceptionId != 0 )
+            {
+                baseException = new ExceptionLogService( new RockContext() ).Get( exceptionId );
+            }
 
             //set fields
             if ( baseException == null )
             {
+                pnlSummary.Visible = false;
                 return;
             }
 
