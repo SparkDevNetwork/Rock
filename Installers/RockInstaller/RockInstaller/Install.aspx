@@ -24,6 +24,7 @@
 
             var baseVersion = '<%=baseVersion %>';
             var isDebug = <%=isDebug.ToString().ToLower() %>;
+            var queryString = '<%=Request.Url.PathAndQuery %>';
 
             // connect to the install controller signalr hub
             var installcontroller = $.connection.installController; var installcontroller = $.connection.installController;
@@ -63,11 +64,7 @@
 
             // redirect to complete page
             installcontroller.client.redirectToComplete = function () {
-                if (isDebug) {
-                    window.location = 'Complete.aspx?Debug=true';
-                } else {
-                    window.location = 'Complete.aspx';
-                }
+                window.location = queryString.replace('Install.aspx', 'Complete.aspx');
             }
 
             //
