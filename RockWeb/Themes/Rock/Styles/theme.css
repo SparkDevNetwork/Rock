@@ -3062,6 +3062,18 @@ iframe.email-body {
   }
 }
 /*
+    Used to manage styles for check-in administration.
+
+    1. Group / Location
+    2. 
+*/
+.panel.panel-widget.checkin-group {
+  border-top-color: #afd074;
+}
+.panel.panel-widget.checkin-grouptype {
+  border-top-color: #5593a4;
+}
+/*
     Used to manage styles for specific blocks.
 
     1. Error Page - styles for the error page.
@@ -4068,6 +4080,7 @@ textarea:focus,
   font-weight: 300;
   letter-spacing: -1px;
   font-size: 18px;
+  margin: 0 12px 4px 0;
 }
 .panel .panel-heading h3 > i {
   margin-right: 4px;
