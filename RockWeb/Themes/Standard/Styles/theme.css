@@ -3988,6 +3988,37 @@ div.aspNetDisabled {
     border-bottom-left-radius: 5px;
   }
 }
+.slide-control .tipper {
+  opacity: 0;
+  filter: alpha(opacity=0);
+  display: inline-block;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #ecf0f1;
+}
+@media (max-width: 991px) {
+  .slide-control .tipper {
+    display: none !important;
+  }
+  tr.slide-control .tipper {
+    display: none !important;
+  }
+  th.slide-control .tipper,
+  td.slide-control .tipper {
+    display: none !important;
+  }
+}
+.slide-control .tipper.loaded {
+  opacity: 1;
+  filter: alpha(opacity=100);
+  -webkit-transition: opacity .25s ease-in,left .5s;
+  transition: opacity .25s ease-in,left .5s;
+}
 .slide-control li {
   text-align: center;
   padding: 0 15px;

@@ -24,6 +24,25 @@
 	@media (min-width: @screen-sm-min) {
 		.border-bottom-radius(5px);
 	}
+	.tipper {
+		@media (max-width: @screen-sm-max) { .responsive-invisibility(); }
+		.opacity(0);
+		display: inline-block;
+		position: absolute;
+		left: 0;
+		bottom: 0;
+
+		width: 0; 
+		height: 0; 
+		border-left: 10px solid transparent;
+		border-right: 10px solid transparent;
+		border-bottom: 10px solid @gray-lighter;
+		
+		&.loaded {
+			.opacity(1);
+			.transition(~'opacity .25s ease-in,left .5s');
+		}
+	}
 	li {
 		text-align: center;
 		padding: 0 @grid-gutter-width*@spacing-md;
