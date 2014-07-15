@@ -4065,6 +4065,11 @@ textarea:focus,
   box-shadow: 0 0 5px rgba(238, 118, 36, 0.6);
   border: 1px solid rgba(238, 118, 36, 0.6);
 }
+pre {
+  background-color: #e3ded7;
+  border-color: #c3b9aa;
+  color: #817b72;
+}
 /*#endregion */
 /*#region  
 // 3. Bootstrap Overrides    */
