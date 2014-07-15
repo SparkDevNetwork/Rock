@@ -3697,7 +3697,7 @@ a.help {
 }
 .panel-block {
   border-color: #dde4e6;
-  border-top-color: #acf4e6;
+  border-top-color: none;
 }
 .panel-block > .panel-heading {
   color: #2c3e50;
