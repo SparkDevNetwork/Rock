@@ -30,7 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
-    public class KeyValueListFieldType : FieldType
+    public class KeyValueListFieldType : ValueListFieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -64,10 +64,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "keyprompt" );
-            configKeys.Add( "valueprompt" );
-            configKeys.Add( "definedtype" );
-            configKeys.Add( "customvalues" );
+            configKeys.Insert(0, "keyprompt" );
             return configKeys;
         }
 
@@ -80,39 +77,11 @@ namespace Rock.Field.Types
             var controls = base.ConfigurationControls();
 
             var tbKeyPrompt = new RockTextBox();
-            controls.Add( tbKeyPrompt );
+            controls.Insert(0, tbKeyPrompt );
             tbKeyPrompt.AutoPostBack = true;
             tbKeyPrompt.TextChanged += OnQualifierUpdated;
             tbKeyPrompt.Label = "Key Prompt";
             tbKeyPrompt.Help = "The text to display as a prompt in the key textbox.";
-
-            var tbValuePrompt = new RockTextBox();
-            controls.Add( tbValuePrompt );
-            tbValuePrompt.AutoPostBack = true;
-            tbValuePrompt.TextChanged += OnQualifierUpdated;
-            tbValuePrompt.Label = "Label Prompt";
-            tbValuePrompt.Help = "The text to display as a prompt in the label textbox.";
-
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.DataTextField = "Name";
-            ddl.DataValueField = "Id";
-            ddl.DataSource = new Rock.Model.DefinedTypeService( new RockContext() ).Queryable().OrderBy( d => d.Order ).ToList();
-            ddl.DataBind();
-            ddl.Items.Insert(0, new ListItem(string.Empty, string.Empty));
-            ddl.Label = "Defined Type";
-            ddl.Help = "Optional Defined Type to select values from, otherwise values will be free-form text fields.";
-
-            var tbCustomValues = new RockTextBox();
-            controls.Add( tbCustomValues );
-            tbCustomValues.TextMode = TextBoxMode.MultiLine;
-            tbCustomValues.Rows = 3;
-            tbCustomValues.AutoPostBack = true;
-            tbCustomValues.TextChanged += OnQualifierUpdated;
-            tbCustomValues.Label = "Custom Values";
-            tbCustomValues.Help = "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1:text1,value2:text2,value3:text3,...'.";
 
             return controls;
         }
@@ -183,6 +152,16 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Edits the control.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        public override ValueList EditControl( string id )
+        {
+            return new KeyValueList { ID = id };
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -192,48 +171,13 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var control = new KeyValueList { ID = id };
+            var control = base.EditControl( configurationValues, id ) as KeyValueList;
 
             if ( configurationValues != null )
             {
                 if ( configurationValues.ContainsKey( "keyprompt" ) )
                 {
                     control.KeyPrompt = configurationValues["keyprompt"].Value;
-                }
-                if ( configurationValues.ContainsKey( "valueprompt" ) )
-                {
-                    control.ValuePrompt = configurationValues["valueprompt"].Value;
-                }
-                if ( configurationValues.ContainsKey( "definedtype" ) )
-                {
-                    int definedTypeId = 0;
-                    if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
-                    {
-                        control.DefinedTypeId = definedTypeId;
-                    }
-                }
-                if ( configurationValues.ContainsKey( "customvalues" ) )
-                {
-                    string listSource = configurationValues["customvalues"].Value;
-                    var keyValues = listSource.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                    if ( keyValues.Length > 0 )
-                    {
-                        control.CustomValues = new Dictionary<string, string>();
-                        foreach ( string keyvalue in keyValues )
-                        {
-                            var keyValueArray = keyvalue.Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
-                            if ( keyValueArray.Length > 0 )
-                            {
-                                string key = keyValueArray[0];
-                                string name = keyValueArray.Length > 1 ? keyValueArray[1] : keyValueArray[0];
-
-                                if ( !control.CustomValues.ContainsKey( key ) )
-                                {
-                                    control.CustomValues.Add( key, name );
-                                }
-                            }
-                        }
-                    }
                 }
             }
 

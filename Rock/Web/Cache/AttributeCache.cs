@@ -479,12 +479,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsAuthorized( string action, Person person )
+        public virtual bool IsAuthorized( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.Authorized( this, action, person );
+            return Security.Authorization.Authorized( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -503,12 +504,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        public virtual bool IsPrivate( string action, Person person )
+        public virtual bool IsPrivate( string action, Person person, RockContext rockContext = null )
         {
-            return Security.Authorization.IsPrivate( this, action, person );
+            return Security.Authorization.IsPrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -516,9 +518,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakePrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }
 
         /// <summary>
@@ -526,9 +529,10 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
-        public virtual void MakeUnPrivate( string action, Person person )
+        /// <param name="rockContext">The rock context.</param>
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
-            Security.Authorization.MakePrivate( this, action, person );
+            Security.Authorization.MakePrivate( this, action, person, rockContext );
         }        
         
         #endregion
@@ -545,8 +549,9 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id of the Attribute to read</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static AttributeCache Read( int id )
+        public static AttributeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = AttributeCache.CacheKey( id );
 
@@ -559,8 +564,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var rockContext = new RockContext();
-                var attributeService = new Rock.Model.AttributeService( rockContext );
+                var attributeService = new Rock.Model.AttributeService( rockContext ?? new RockContext() );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
@@ -583,8 +587,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static AttributeCache Read( Guid guid )
+        public static AttributeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -595,7 +600,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var attributeService = new AttributeService( new RockContext() );
+                var attributeService = new AttributeService( rockContext ?? new RockContext() );
                 var attributeModel = attributeService.Get( guid );
                 if ( attributeModel != null )
                 {

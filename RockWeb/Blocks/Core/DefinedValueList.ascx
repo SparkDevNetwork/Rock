@@ -3,28 +3,40 @@
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlContent" runat="server">
+        <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
-            <asp:Panel ID="pnlList" runat="server" Visible="false">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-file-o"></i> Define Value List</h1>
+            </div>
+            <div class="panel-body">
 
-                <div class="row-fluid">
-                    <h4>Values</h4>
-                    <asp:Panel ID="pnlValues" runat="server">
-                        <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
-                        <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
-                            <Columns>
-                                <Rock:ReorderField/>
-                                <asp:BoundField DataField="Name" HeaderText="Value"/>
-                                <asp:BoundField DataField="Description" HeaderText="Description"/>
-                            </Columns>
-                        </Rock:Grid>
+                <asp:Panel ID="pnlList" runat="server" Visible="false">
 
-                    </asp:Panel>
-                </div>
+                    <div class="row-fluid">
+                        <h4>Values</h4>
+                        <asp:Panel ID="pnlValues" runat="server">
+                            <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
+                        
+                            <div class="grid">
+                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
+                                    <Columns>
+                                        <Rock:ReorderField/>
+                                        <asp:BoundField DataField="Name" HeaderText="Value"/>
+                                        <asp:BoundField DataField="Description" HeaderText="Description"/>
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
 
-            </asp:Panel>
+                        </asp:Panel>
+                    </div>
+
+                </asp:Panel>
+
+            </div>
+
+            
 
             <Rock:ModalDialog ID="modalValue" runat="server" Title="Defined Value" ValidationGroup="Value" >
                 <Content>

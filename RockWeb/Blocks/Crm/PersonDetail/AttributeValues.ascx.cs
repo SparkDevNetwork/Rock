@@ -96,9 +96,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( Person != null && Person.Id != 0 )
             {
-                BindData();
+                upnlAttributeValues.Visible = true;
+
+                if ( !Page.IsPostBack )
+                {
+                    BindData();
+                }
+            }
+            else
+            {
+                upnlAttributeValues.Visible = false;
             }
         }
 
@@ -200,7 +209,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 int personEntityTypeId = EntityTypeCache.Read( typeof( Person ) ).Id;
 
                 var rockContext = new RockContext();
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     var changes = new List<string>();
 

@@ -78,20 +78,15 @@ namespace Rock.Rest.Controllers
         [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
         public IQueryable<MetricValue> GetByMetricId( int metricId, MetricValueType? metricValueType = null )
         {
-            var person = GetPerson();
             var metric = new MetricService( new RockContext() ).Get( metricId );
-            if (metric != null)
-            {
 
-            }
-            
             var result = Get().Where( a => a.MetricId == metricId );
             if ( metricValueType.HasValue )
             {
                 result = result.Where( a => a.MetricValueType == metricValueType );
             }
 
-            return result;
+            return result.OrderBy( a => a.MetricValueDateTime );
         }
 
         /// <summary>

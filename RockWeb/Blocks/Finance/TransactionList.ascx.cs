@@ -79,11 +79,6 @@ namespace RockWeb.Blocks.Finance
             {
                 DisplayError( "You are not authorized to edit these transactions" );
             }
-
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "Title" ) ) )
-            {
-                lTitle.Text = "<h4>" + GetAttributeValue( "Title" ) + "</h4>";
-            }
         }
 
         /// <summary>
@@ -320,6 +315,18 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && _person == null )
+            {
+                return;
+            }
+
+            int batchEntityTypeId = EntityTypeCache.Read( "Rock.Model.FinancialBatch" ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == batchEntityTypeId ) && _batch == null )
+            {
+                return;
+            }
+
             var queryable = new FinancialTransactionService( new RockContext() ).Queryable();
 
             // Set up the selection filter

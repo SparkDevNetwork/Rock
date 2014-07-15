@@ -28,11 +28,23 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "DashboardWidget using flotcharts" )]
     public partial class LineChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
         public override Rock.Web.UI.Controls.FlotChart FlotChartControl
         {
             get { return lcChart; }
         }
 
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
         public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
             get { return nbMetricWarning; }

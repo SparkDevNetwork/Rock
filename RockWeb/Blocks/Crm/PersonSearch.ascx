@@ -4,29 +4,32 @@
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbNotice" runat="server" NotificationBoxType="Info" Visible="false"></Rock:NotificationBox>
-        <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
-            <Columns>
-                <Rock:SelectField />
-                <asp:BoundField 
-                    DataField="FullNameReversed"  
-                    HeaderText="Person"  
-                    SortExpression="LastName,FirstName" />
-                <asp:BoundField 
-                    ItemStyle-HorizontalAlign="Right"
-                    HeaderStyle-HorizontalAlign="Right"
-                    DataField="Age"  
-                    HeaderText="Age"  
-                    SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" />
-                <Rock:DefinedValueField
-                    DataField="ConnectionStatusValueId"
-                    HeaderText="Connection Status"
-                    SortExpression="ConnectionStatusValue.Name" />
-                <Rock:DefinedValueField
-                    DataField="RecordStatusValueId"
-                    HeaderText="Record Status"
-                    SortExpression="RecordStatusValue.Name" />
-            </Columns>
-        </Rock:Grid>
+        
+        <div class="grid">
+            <Rock:Grid ID="gPeople" runat="server" EmptyDataText="No People Found" AllowSorting="true" OnRowSelected="gPeople_RowSelected">
+                <Columns>
+                    <Rock:SelectField />
+                    <asp:BoundField 
+                        DataField="FullNameReversed"  
+                        HeaderText="Person"  
+                        SortExpression="LastName,FirstName" />
+                    <asp:BoundField 
+                        ItemStyle-HorizontalAlign="Right"
+                        HeaderStyle-HorizontalAlign="Right"
+                        DataField="Age"  
+                        HeaderText="Age"  
+                        SortExpression="BirthYear desc,BirthMonth desc,BirthDay desc" />
+                    <Rock:DefinedValueField
+                        DataField="ConnectionStatusValueId"
+                        HeaderText="Connection Status"
+                        SortExpression="ConnectionStatusValue.Name" />
+                    <Rock:DefinedValueField
+                        DataField="RecordStatusValueId"
+                        HeaderText="Record Status"
+                        SortExpression="RecordStatusValue.Name" />
+                </Columns>
+            </Rock:Grid>
+        </div>
 
     </ContentTemplate>
 </asp:UpdatePanel>

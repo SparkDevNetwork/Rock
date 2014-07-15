@@ -249,8 +249,9 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id of the Category to read</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CategoryCache Read( int id )
+        public static CategoryCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CategoryCache.CacheKey( id );
 
@@ -263,7 +264,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var categoryService = new Rock.Model.CategoryService( new RockContext() );
+                var categoryService = new Rock.Model.CategoryService( rockContext ?? new RockContext() );
                 var categoryModel = categoryService.Get( id );
                 if ( categoryModel != null )
                 {
@@ -286,8 +287,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static CategoryCache Read( Guid guid )
+        public static CategoryCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -298,7 +300,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var categoryService = new CategoryService( new RockContext() );
+                var categoryService = new CategoryService( rockContext ?? new RockContext() );
                 var categoryModel = categoryService.Get(guid);
 
                 if ( categoryModel != null )

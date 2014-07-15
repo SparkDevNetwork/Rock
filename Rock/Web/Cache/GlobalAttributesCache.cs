@@ -66,8 +66,9 @@ namespace Rock.Web.Cache
         /// Gets the Global Attribute values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public string GetValue( string key )
+        public string GetValue( string key, RockContext rockContext = null )
         {
             if ( AttributeValues.Keys.Contains( key ) )
             {
@@ -79,8 +80,7 @@ namespace Rock.Web.Cache
                 var attributeCache = Attributes.FirstOrDefault(a => a.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
                 if ( attributeCache != null )
                 {
-                    var rockContext = new RockContext();
-                    var attributeValue = new AttributeValueService( rockContext ).GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
+                    var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
                     AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
 
@@ -97,11 +97,15 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="saveValue">if set to <c>true</c> [save value].</param>
-        public void SetValue( string key, string value, bool saveValue )
+        /// <param name="rockContext">The rock context.</param>
+        public void SetValue( string key, string value, bool saveValue, RockContext rockContext = null )
         {
             if ( saveValue )
             {
-                var rockContext = new RockContext();
+                if ( rockContext == null )
+                {
+                    rockContext = new RockContext();
+                }
 
                 // Save new value
                 var attributeValueService = new AttributeValueService( rockContext );
@@ -168,7 +172,7 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <returns></returns>
-        public static GlobalAttributesCache Read()
+        public static GlobalAttributesCache Read( RockContext rockContext = null )
         {
             string cacheKey = GlobalAttributesCache.CacheKey();
 
@@ -185,7 +189,11 @@ namespace Rock.Web.Cache
                 globalAttributes.Attributes = new List<AttributeCache>();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
-                var rockContext = new RockContext();
+                if ( rockContext == null )
+                {
+                    rockContext = new RockContext();
+                } 
+                
                 var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 

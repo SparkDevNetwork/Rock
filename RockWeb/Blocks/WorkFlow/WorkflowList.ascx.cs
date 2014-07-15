@@ -179,6 +179,19 @@ namespace RockWeb.Blocks.WorkFlow
                         e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
+                case "Initiator":
+                    {
+                        int? personId = e.Value.AsIntegerOrNull();
+                        if ( personId.HasValue )
+                        {
+                            var person = new PersonService( new RockContext() ).Get( personId.Value );
+                            if ( person != null )
+                            {
+                                e.Value = person.FullName;
+                            }
+                        }
+                        break;
+                    }
             }
         }
 
@@ -189,6 +202,9 @@ namespace RockWeb.Blocks.WorkFlow
             gfWorkflows.SaveUserPreference( "Completed", drpCompleted.DelimitedValues );
             gfWorkflows.SaveUserPreference( "Name", tbName.Text );
             gfWorkflows.SaveUserPreference( "Status", tbStatus.Text );
+
+            int? personId = ppInitiator.SelectedValue;
+            gfWorkflows.SaveUserPreference( "Initiator", personId.HasValue ? personId.Value.ToString() : "" );
 
             BindGrid();
         }
@@ -350,6 +366,16 @@ namespace RockWeb.Blocks.WorkFlow
             drpCompleted.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
             tbName.Text = gfWorkflows.GetUserPreference( "Name" );
             tbStatus.Text = gfWorkflows.GetUserPreference( "Status" );
+
+            int? personId = gfWorkflows.GetUserPreference( "Initiator" ).AsIntegerOrNull();
+            if ( personId.HasValue )
+            {
+                ppInitiator.SetValue( new PersonService( new RockContext() ).Get( personId.Value ) );
+            }
+            else
+            {
+                ppInitiator.SetValue( null );
+            }
         }
 
         /// <summary>
@@ -357,68 +383,83 @@ namespace RockWeb.Blocks.WorkFlow
         /// </summary>
         private void BindGrid()
         {
-            var rockContext = new RockContext();
-            var workflowService = new WorkflowService( rockContext );
+            if ( _workflowType != null )
+            {
+                pnlWorkflowList.Visible = true;
 
-            var qry = workflowService.Queryable( "Activities" )
-                .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
+                var rockContext = new RockContext();
+                var workflowService = new WorkflowService( rockContext );
 
-            // Activated Date Range Filter
-            var drp = new DateRangePicker();
-            drp.DelimitedValues = gfWorkflows.GetUserPreference( "Activated" );
-            if ( drp.LowerValue.HasValue )
-            {
-                qry = qry.Where( w => w.ActivatedDateTime >= drp.LowerValue.Value );
-            }
-            if ( drp.UpperValue.HasValue )
-            {
-                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( w => w.ActivatedDateTime.Value < upperDate );
-            }
+                var qry = workflowService.Queryable( "Activities" )
+                    .Where( w => w.WorkflowTypeId.Equals( _workflowType.Id ) );
 
-            // State Filter
-            int? state = gfWorkflows.GetUserPreference( "State" ).AsIntegerOrNull();
-            if ( state.HasValue )
-            {
-                qry = qry.Where( w => w.CompletedDateTime.HasValue == ( state == 1 ) );
-            }
+                // Activated Date Range Filter
+                var drp = new DateRangePicker();
+                drp.DelimitedValues = gfWorkflows.GetUserPreference( "Activated" );
+                if ( drp.LowerValue.HasValue )
+                {
+                    qry = qry.Where( w => w.ActivatedDateTime >= drp.LowerValue.Value );
+                }
+                if ( drp.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                    qry = qry.Where( w => w.ActivatedDateTime.Value < upperDate );
+                }
 
-            // Completed Date Range Filter
-            var drp2 = new DateRangePicker();
-            drp2.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
-            if ( drp2.LowerValue.HasValue )
-            {
-                qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value >= drp2.LowerValue.Value );
-            }
-            if ( drp2.UpperValue.HasValue )
-            {
-                DateTime upperDate = drp2.UpperValue.Value.Date.AddDays( 1 );
-                qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
-            }
+                // State Filter
+                int? state = gfWorkflows.GetUserPreference( "State" ).AsIntegerOrNull();
+                if ( state.HasValue )
+                {
+                    qry = qry.Where( w => w.CompletedDateTime.HasValue == ( state == 1 ) );
+                }
 
-            string name = gfWorkflows.GetUserPreference("Name");
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                qry = qry.Where( w => w.Name.StartsWith(name));
-            }
+                // Completed Date Range Filter
+                var drp2 = new DateRangePicker();
+                drp2.DelimitedValues = gfWorkflows.GetUserPreference( "Completed" );
+                if ( drp2.LowerValue.HasValue )
+                {
+                    qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value >= drp2.LowerValue.Value );
+                }
+                if ( drp2.UpperValue.HasValue )
+                {
+                    DateTime upperDate = drp2.UpperValue.Value.Date.AddDays( 1 );
+                    qry = qry.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
+                }
 
-            string status = gfWorkflows.GetUserPreference("Status");
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                qry = qry.Where( w => w.Status.StartsWith(status));
-            }
+                string name = gfWorkflows.GetUserPreference( "Name" );
+                if ( !string.IsNullOrWhiteSpace( name ) )
+                {
+                    qry = qry.Where( w => w.Name.StartsWith( name ) );
+                }
 
-            var sortProperty = gWorkflows.SortProperty;
-            if ( sortProperty != null )
-            {
-                gWorkflows.DataSource = qry.Sort( sortProperty ).ToList();
+                int? personId = gfWorkflows.GetUserPreference( "Initiator" ).AsIntegerOrNull();
+                if ( personId.HasValue )
+                {
+                    qry = qry.Where( w => w.InitiatorPersonAlias.PersonId == personId.Value );
+                }
+
+                string status = gfWorkflows.GetUserPreference( "Status" );
+                if ( !string.IsNullOrWhiteSpace( status ) )
+                {
+                    qry = qry.Where( w => w.Status.StartsWith( status ) );
+                }
+
+                var sortProperty = gWorkflows.SortProperty;
+                if ( sortProperty != null )
+                {
+                    gWorkflows.DataSource = qry.Sort( sortProperty ).ToList();
+                }
+                else
+                {
+                    gWorkflows.DataSource = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
+                }
+
+                gWorkflows.DataBind();
             }
             else
             {
-                gWorkflows.DataSource = qry.OrderByDescending( s => s.CreatedDateTime ).ToList();
+                pnlWorkflowList.Visible = false;
             }
-
-            gWorkflows.DataBind();
         }
 
         #endregion

@@ -64,78 +64,82 @@
             </div>
 
             <div class="panel-body">
-                <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
-                    <Columns>
-                        <asp:TemplateField HeaderText="Type">
-                            <ItemTemplate>
-                                <%# Eval("LocationTypeName") %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Name" DataValueField="Id" />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Street">
-                            <ItemTemplate>
-                                <%# Eval("Street1") %><br />
-                                <%# Eval("Street2") %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <Rock:RockTextBox ID="tbStreet1" runat="server" Text='<%# Eval("Street1") %>' /><br />
-                                <Rock:RockTextBox ID="tbStreet2" runat="server" Text='<%# Eval("Street2") %>' />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="City">
-                            <ItemTemplate>
-                                <%# Eval("City") %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <Rock:RockTextBox ID="tbCity" runat="server" Text='<%# Eval("City") %>' />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="State">
-                            <ItemTemplate>
-                                <%# Eval("State") %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Zip">
-                            <ItemTemplate>
-                                <%# Eval("Zip") %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <Rock:RockTextBox ID="tbZip" runat="server" Text='<%# Eval("Zip") %>' CssClass="input-small" />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
-                            <ItemTemplate>
-                                <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
-                            <ItemTemplate>
-                                <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
-                            <ItemTemplate>
-                                <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
-                            </ItemTemplate>
-                            <EditItemTemplate>
-                                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
-                                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="fa fa-minus"></i></asp:LinkButton>
-                            </EditItemTemplate>
-                        </asp:TemplateField>
-                        <Rock:DeleteField OnClick="gLocation_RowDelete" />
-                    </Columns>
-                </Rock:Grid>
+                
+                <div class="grid">
+                    <Rock:Grid ID="gLocations" runat="server" AllowSorting="true" AllowPaging="false" DisplayType="Light">
+                        <Columns>
+                            <asp:TemplateField HeaderText="Type">
+                                <ItemTemplate>
+                                    <%# Eval("LocationTypeName") %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <Rock:RockDropDownList ID="ddlLocType" runat="server" DataTextField="Name" DataValueField="Id" />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Street">
+                                <ItemTemplate>
+                                    <%# Eval("Street1") %><br />
+                                    <%# Eval("Street2") %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <Rock:RockTextBox ID="tbStreet1" runat="server" Text='<%# Eval("Street1") %>' /><br />
+                                    <Rock:RockTextBox ID="tbStreet2" runat="server" Text='<%# Eval("Street2") %>' />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="City">
+                                <ItemTemplate>
+                                    <%# Eval("City") %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <Rock:RockTextBox ID="tbCity" runat="server" Text='<%# Eval("City") %>' />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="State">
+                                <ItemTemplate>
+                                    <%# Eval("State") %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Zip">
+                                <ItemTemplate>
+                                    <%# Eval("Zip") %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <Rock:RockTextBox ID="tbZip" runat="server" Text='<%# Eval("Zip") %>' CssClass="input-small" />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                <ItemTemplate>
+                                    <%# ((bool)Eval("IsMailing")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <asp:CheckBox ID="cbMailing" runat="server" Checked='<%# Eval("IsMailing") %>' />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Map Location" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
+                                <ItemTemplate>
+                                    <%# ((bool)Eval("IsLocation")) ? "<i class=\"fa fa-check\"></i>" : "" %>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <asp:CheckBox ID="cbLocation" runat="server" Checked='<%# Eval("IsLocation") %>' />
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField ItemStyle-HorizontalAlign="Center" HeaderStyle-CssClass="span1" ItemStyle-Wrap="false">
+                                <ItemTemplate>
+                                    <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CommandName="Edit" CssClass="btn btn-default btn-sm" CausesValidation="false"><i class="fa fa-pencil"></i></asp:LinkButton>
+                                </ItemTemplate>
+                                <EditItemTemplate>
+                                    <asp:LinkButton ID="lbSave" runat="server" Text="Save" CommandName="Update" CssClass="btn btn-sm btn-success"><i class="fa fa-check"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CommandName="Cancel" CssClass="btn btn-sm btn-warning" CausesValidation="false"><i class="fa fa-minus"></i></asp:LinkButton>
+                                </EditItemTemplate>
+                            </asp:TemplateField>
+                            <Rock:DeleteField OnClick="gLocation_RowDelete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
             </div>
         </div>
 

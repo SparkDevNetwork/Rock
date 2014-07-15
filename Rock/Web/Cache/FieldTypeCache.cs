@@ -174,9 +174,10 @@ namespace Rock.Web.Cache
         /// Returns FieldType object from cache.  If fieldType does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( int id )
+        public static FieldTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = FieldTypeCache.CacheKey( id );
 
@@ -189,7 +190,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                var fieldTypeService = new FieldTypeService( rockContext ?? new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( id );
                 if ( fieldTypeModel != null )
                 {
@@ -212,18 +213,20 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( string guid )
+        public static FieldTypeCache Read( string guid, RockContext rockContext = null )
         {
-            return Read( new Guid( guid ) );
+            return Read( new Guid( guid ), rockContext );
         }
 
         /// <summary>
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static FieldTypeCache Read( Guid guid )
+        public static FieldTypeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -234,7 +237,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var fieldTypeService = new FieldTypeService( new RockContext() );
+                var fieldTypeService = new FieldTypeService( rockContext ?? new RockContext() );
                 var fieldTypeModel = fieldTypeService.Get( guid );
                 if ( fieldTypeModel != null )
                 {

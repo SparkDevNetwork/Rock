@@ -52,15 +52,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "WorkflowTriggerId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "WorkflowTriggerId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "WorkflowTriggerId" ).AsInteger() );
             }
         }
 
@@ -100,26 +92,21 @@ namespace RockWeb.Blocks.WorkFlow
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="workflowTriggerId">The workflow trigger identifier.</param>
+        public void ShowDetail( int workflowTriggerId )
         {
-            if ( !itemKey.Equals( "WorkflowTriggerId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
             WorkflowTrigger WorkflowTrigger = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !workflowTriggerId.Equals( 0 ) )
             {
-                WorkflowTrigger = new WorkflowTriggerService( new RockContext() ).Get( itemKeyValue );
+                WorkflowTrigger = new WorkflowTriggerService( new RockContext() ).Get( workflowTriggerId );
                 lActionTitle.Text = ActionTitle.Edit( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( WorkflowTrigger == null )
             {
-                WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave, IsActive=true };
+                WorkflowTrigger = new WorkflowTrigger { Id = 0, WorkflowTriggerType = WorkflowTriggerType.PostSave, IsActive = true };
                 lActionTitle.Text = ActionTitle.Add( WorkflowTrigger.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 

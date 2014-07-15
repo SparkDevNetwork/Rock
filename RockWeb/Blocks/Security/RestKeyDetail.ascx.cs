@@ -47,13 +47,7 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-                var rockContext = new RockContext();
-                string itemId = PageParameter( "restUserId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "restUserId", int.Parse( itemId ) );
-                }
+                ShowDetail( PageParameter( "restUserId" ).AsInteger() );
             }
         }
 
@@ -80,7 +74,7 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
                 var changes = new List<string>();
@@ -225,35 +219,24 @@ namespace RockWeb.Blocks.Security
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="restUserId">The rest user identifier.</param>
+        public void ShowDetail( int restUserId )
         {
             var rockContext = new RockContext();
 
-            if ( !itemKey.Equals( "restUserId" ) )
-            {
-                return;
-            }
-
-            bool editAllowed = true;
-
             Person restUser = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !restUserId.Equals( 0 ) )
             {
-                restUser = new PersonService( rockContext ).Get( itemKeyValue );
-                editAllowed = restUser.IsAuthorized( Authorization.EDIT, CurrentPerson );
-            }
-            else
-            {
-                restUser = new Person { Id = 0 };
+                restUser = new PersonService( rockContext ).Get( restUserId );
             }
 
             if ( restUser == null )
             {
-                return;
+                restUser = new Person { Id = 0 };
             }
+
+            bool editAllowed = restUser.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             hfRestUserId.Value = restUser.Id.ToString();
             lTitle.Text = ActionTitle.Edit( "REST Key" ).FormatAsHtmlTitle();

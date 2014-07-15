@@ -594,7 +594,7 @@ namespace RockWeb
                                     .ToList();
 
                                 // Wrap the migrations for each assembly in a transaction so that if an error with one migration, none of the migrations are persisted
-                                RockTransactionScope.WrapTransaction( () =>
+                                rockContext.WrapTransaction( () =>
                                 {
                                     // Iterate each migration in the assembly in MigrationNumber order 
                                     foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )

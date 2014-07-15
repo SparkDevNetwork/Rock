@@ -92,17 +92,9 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "reportId" );
-                string parentCategoryId = PageParameter( "ParentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
-                    {
-                        ShowDetail( "reportId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "reportId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
-                    }
+                    ShowDetail( PageParameter( "reportId" ).AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -578,42 +570,32 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="reportId">The report identifier.</param>
+        public void ShowDetail( int reportId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( reportId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="reportId">The report identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int reportId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "reportId" ) )
-            {
-                return;
-            }
 
             var reportService = new ReportService( new RockContext() );
             Report report = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !reportId.Equals( 0 ) )
             {
-                report = reportService.Get( itemKeyValue );
-            }
-            else
-            {
-                report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
+                report = reportService.Get( reportId );
             }
 
             if ( report == null )
             {
-                return;
+                report = new Report { Id = 0, IsSystem = false, CategoryId = parentCategoryId };
             }
 
             pnlDetails.Visible = true;

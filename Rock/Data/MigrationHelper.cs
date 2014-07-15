@@ -312,6 +312,63 @@ namespace Rock.Data
 
         #endregion
 
+        #region Site Methods
+
+        /// <summary>
+        /// Adds a new Layout to the given site.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="theme">The theme.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddSite( string name, string description, string theme, string guid  )
+        {
+            Migration.Sql( string.Format( @"
+
+                IF NOT EXISTS (
+                    SELECT [Id] 
+                    FROM [Site] 
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [Site] (
+                        [IsSystem],[Name],[Description],[Theme],[Guid])
+                    VALUES(1,'{0}','{1}','{2}','{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [Site] SET
+                        [Name] = '{0}',
+                        [Description] = '{1}',
+                        [Theme] = '{2}'
+                    WHERE [Guid] = '{3}'
+
+                END
+",
+                    name,
+                    description.Replace( "'", "''" ),
+                    theme,
+                    guid
+                    ) );
+        }
+
+        /// <summary>
+        /// Deletes the Layout.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSite( string guid )
+        {
+            Migration.Sql( string.Format( @"
+                DELETE [Site] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
         #region Layout Methods
 
         /// <summary>
@@ -373,8 +430,11 @@ namespace Rock.Data
         {
             Migration.Sql( string.Format( @"
 
-                DECLARE @ParentPageId int
-                SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+                DECLARE @ParentPageId int = null
+                IF '{0}' <> '' 
+                BEGIN                    
+                    SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+                END
 
                 DECLARE @LayoutId int
                 SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}')
@@ -1045,52 +1105,6 @@ namespace Rock.Data
                     value.Replace( "'", "''" )
                 )
             );
-        }
-
-        /// <summary>
-        /// Adds or Updates the block attribute value
-        /// </summary>
-        /// <param name="blockGuid">The block unique identifier.</param>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="value">The value.</param>
-        public void UpdateBlockAttributeValue( string blockGuid, string attributeKey, string value )
-        {
-            Migration.Sql( string.Format( @"
-                
-                DECLARE @BlockId int
-                SET @BlockId = (SELECT [Id] FROM [Block] WHERE [Guid] = '{0}')
-
-                DECLARE @BlockEntityTypeId int                
-                SET @BlockEntityTypeId = (SELECT [Id] from [EntityType] where [Guid] = 'D89555CA-9AE4-4D62-8AF1-E5E463C1EF65')
-                
-                DECLARE @BlockTypeId int
-                SET @BlockTypeId = (SELECT [BlockTypeId] FROM [Block] WHERE [Guid] = '{0}')
-
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] 
-                    WHERE [EntityTypeId] = @BlockEntityTypeId
-                    AND [EntityTypeQualifierColumn] = 'BlockTypeId' 
-                    AND [Key] = '{1}')
-
-                -- Delete existing attribute value first (might have been created by Rock system)
-                DELETE [AttributeValue]
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @BlockId
-
-                INSERT INTO [AttributeValue] (
-                    [IsSystem],[AttributeId],[EntityId],
-                    [Order],[Value],
-                    [Guid])
-                VALUES(
-                    1,@AttributeId,@BlockId,
-                    0,'{2}',
-                    NEWID())
-",
-                       blockGuid,
-                       attributeKey,
-                       value.Replace( "'", "''" )
-                   )
-               );
         }
 
         /// <summary>

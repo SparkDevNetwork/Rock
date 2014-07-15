@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( familyMembers.Any() )
                     {
                         var rockContext = new RockContext();
-                        RockTransactionScope.WrapTransaction( () =>
+                        rockContext.WrapTransaction( () =>
                         {
                             var familyGroup = GroupService.SaveNewFamily( rockContext, familyMembers, cpCampus.SelectedValueAsInt(), true );
                             if ( familyGroup != null )
