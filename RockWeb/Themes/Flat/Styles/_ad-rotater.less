@@ -34,9 +34,9 @@
 
 		width: 0; 
 		height: 0; 
-		border-left: 10px solid transparent;
-		border-right: 10px solid transparent;
-		border-bottom: 10px solid @gray-lighter;
+		border-left: 8px solid transparent;
+		border-right: 8px solid transparent;
+		border-bottom: 8px solid @gray-lighter;
 		
 		&.loaded {
 			.opacity(1);
@@ -49,6 +49,10 @@
 		margin: @grid-gutter-width*@spacing-md 0;
 		height: 100%;
 		cursor: pointer;
+		font-size: .8em;
+		@media (min-width: @screen-sm-min) {
+			font-size: .9em;
+		}
 
 		span {
 			.transition(opacity .6s); // matches default flexslider animation time

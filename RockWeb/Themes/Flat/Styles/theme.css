@@ -3064,6 +3064,18 @@ iframe.email-body {
   }
 }
 /*
+    Used to manage styles for check-in administration.
+
+    1. Group / Location
+    2. 
+*/
+.panel.panel-widget.checkin-group {
+  border-top-color: #afd074;
+}
+.panel.panel-widget.checkin-grouptype {
+  border-top-color: #5593a4;
+}
+/*
     Used to manage styles for specific blocks.
 
     1. Error Page - styles for the error page.
@@ -3091,6 +3103,11 @@ iframe.email-body {
 }
 .error-wrap .error-icon.danger {
   color: #e74c3c;
+}
+.error-details pre {
+  background-color: transparent;
+  border: 0;
+  color: #ffffff;
 }
 .rock-blank {
   background-color: #ffffff;
@@ -3608,8 +3625,11 @@ a.help {
 .panel legend {
   border-color: #acf4e6;
 }
-.panel .panel-title small {
+.panel .panel-heading .panel-title small {
   color: #e0e0e0;
+}
+.panel .panel-heading .panel-actions {
+  margin-top: 4px;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
@@ -3997,9 +4017,9 @@ div.aspNetDisabled {
   bottom: 0;
   width: 0;
   height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid #ecf0f1;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #ecf0f1;
 }
 @media (max-width: 991px) {
   .slide-control .tipper {
@@ -4025,6 +4045,12 @@ div.aspNetDisabled {
   margin: 15px 0;
   height: 100%;
   cursor: pointer;
+  font-size: .8em;
+}
+@media (min-width: 768px) {
+  .slide-control li {
+    font-size: .9em;
+  }
 }
 .slide-control li span {
   -webkit-transition: opacity 0.6s;

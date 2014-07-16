@@ -6,13 +6,17 @@ $(document).ready(function() {
 		directionNav: false,
 		pauseOnAction: false,
 		pauseOnHover: true,
-		start: function(s) { moveTipper(s, 'loaded') },
-		before: function(s) { moveTipper(s) }
+		start: function(s) { moveTipper($('.slide-control li').eq(s.animatingTo), 'loaded') },
+		before: function(s) { moveTipper($('.slide-control li').eq(s.animatingTo)) }
 	})
 
-	var moveTipper = function(slider, addedClass) {
-		var $current = $('.slide-control li').eq(slider.animatingTo)
+	var moveTipper = function($current, addedClass) {
 		var left = ($current.position().left) + ($current.width() / 2) - ($('.tipper').width() / 2)
 		$('.tipper').css({ 'left': left+'px' }).addClass(addedClass)
 	}
+
+	$(window).resize(function(){
+		var $current = $('ul.slide-control > li.flex-active')
+		moveTipper($current)
+	})
 })
