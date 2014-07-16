@@ -141,7 +141,10 @@ namespace Rock.CheckIn
             {
                 var rockContext = new RockContext();
                 var workflowTypeService = new WorkflowTypeService( rockContext );
-                var workflowType = workflowTypeService.Get( workflowTypeId );
+                var workflowType = workflowTypeService.Queryable( "ActivityTypes" )
+                    .Where( w => w.Id == workflowTypeId )
+                    .FirstOrDefault();
+
                 if ( workflowType != null )
                 {
                     if ( CurrentWorkflow == null )
