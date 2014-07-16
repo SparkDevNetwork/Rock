@@ -1256,6 +1256,9 @@ ul.groupmembers li.member small {
   line-height: 16px;
   margin: 0;
 }
+ul.groupmembers li.member .btn {
+  margin-top: 6px;
+}
 .loginstatus > li {
   min-width: 160px;
   text-align: right;
