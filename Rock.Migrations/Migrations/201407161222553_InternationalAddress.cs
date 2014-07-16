@@ -52,6 +52,10 @@ namespace Rock.Migrations
     SET [DefaultValue] = 'Province'
     WHERE [Guid] = 'A4E00B14-8CFF-4719-A43F-462851C7BBEF'
 
+    UPDATE [Attribute]
+    SET [DefaultValue] = 'Postal Code'
+    WHERE [Guid] = '7D785A5D-53CA-4FEC-BC88-DFBD7439B547'
+
     -- Update the default address format
     DECLARE @crlf varchar(2) = char(13) + char(10)
     UPDATE [Attribute]
