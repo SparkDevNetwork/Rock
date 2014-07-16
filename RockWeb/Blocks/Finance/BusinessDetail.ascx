@@ -23,40 +23,40 @@
                         </div>
                         <div class="col-md-9">
 
-                            <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" TabIndex="1" SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
+                            <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
                             
                             <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                             
 
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone Number" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="7"  />
+                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone Number" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' />
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="row">
                                         <div class="col-xs-6">
-                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="Sms" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="8" />
+                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="Sms" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' />
                                         </div>
                                         <div class="col-xs-6">
-                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Label="&nbsp;" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="9" />
+                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Label="&nbsp;" Checked='<%# (bool)Eval("IsUnlisted") %>' />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="10" />
+                            <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" />
 
-                            <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="11">
+                            <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" >
                                 <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
                                 <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                 <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
                             </Rock:RockRadioButtonList>
 
-                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" TabIndex="12" />
+                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
 
                             <div class="actions">
-                                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" TabIndex="14" />
-                                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" TabIndex="15" />
+                                <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                                <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                             </div>
                         </div>
                     </div>
@@ -92,9 +92,6 @@
                 </div>
 
             </div>
-
-
-           
 
             <Rock:ModalDialog ID="mdAddContact" runat="server" Title="Add Contact" ValidationGroup="AddContact">
                 <Content>

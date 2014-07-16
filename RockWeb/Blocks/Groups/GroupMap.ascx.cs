@@ -59,10 +59,9 @@ namespace RockWeb.Blocks.Groups
     </div>
     
     <div class='clearfix'>
-		{% if Location.Street1 and Location.Street1 != '' %}
+		{% if Location.Address && Location.Address != '' %}
 			<strong>{{ Location.Type }}</strong>
-			<br>{{ Location.Street1 }}
-			<br>{{ Location.City }}, {{ Location.State }} {{ Location.Zip }}
+			<br>{{ Location.Address }}
 		{% endif %}
 		{% if Members.size > 0 %}
 			<br>

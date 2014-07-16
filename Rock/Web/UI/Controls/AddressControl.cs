@@ -608,6 +608,11 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
+            if (string.IsNullOrWhiteSpace(_ddlCountry.SelectedValue))
+            {
+                _ddlCountry.SelectedIndex = 0;
+            }
+
             string selectedState = State;
 
             BindStates( _ddlCountry.SelectedValue );
@@ -692,6 +697,8 @@ namespace Rock.Web.UI.Controls
 
         private void BindCountries()
         {
+            _ddlCountry.Items.Clear();
+
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) );
             var countryValues = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() )
                 .DefinedValues
@@ -700,7 +707,6 @@ namespace Rock.Web.UI.Controls
                 .ToList();
             
             // Move default country to the top of the list
-            var reorderedCountryList = new List<DefinedValueCache>();
             string defaultCountryCode = GetDefaultCountry();
             if (!string.IsNullOrWhiteSpace(defaultCountryCode))
             {
@@ -709,21 +715,14 @@ namespace Rock.Web.UI.Controls
                     .FirstOrDefault();
                 if (defaultCountry != null)
                 {
-                    reorderedCountryList.Add(defaultCountry);
+                    _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Name : defaultCountry.Description, defaultCountry.Name ) );
+                    _ddlCountry.Items.Add( new ListItem( "------------------------", "" ) );
                 }
             }
-            countryValues
-                .Where( v => !v.Name.Equals(defaultCountryCode, StringComparison.OrdinalIgnoreCase))
-                .ToList()
-                .ForEach( v => reorderedCountryList.Add(v));
-
-            var countryList = reorderedCountryList
-                .Select( v => new { Id = v.Name, Value = v.Description } )
-                .ToList();
-
-            _ddlCountry.DataTextField = UseCountryAbbreviation ? "Id" : "Value";
-            _ddlCountry.DataSource = countryList;
-            _ddlCountry.DataBind();
+            foreach ( var country in countryValues )
+            {
+                _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Name : country.Description, country.Name ) );
+            }
 
             bool? showCountry = GlobalAttributesCache.Read().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull();
             _ddlCountry.Visible = showCountry.HasValue && showCountry.Value;
