@@ -411,6 +411,7 @@ namespace Rock.Rest.Controllers
 
                         var dictLocation = new Dictionary<string, object>();
                         dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Name );
+                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
                         dictLocation.Add( "Street1", grouplocation.Location.Street1 );
                         dictLocation.Add( "Street2", grouplocation.Location.Street2 );
                         dictLocation.Add( "City", grouplocation.Location.City );

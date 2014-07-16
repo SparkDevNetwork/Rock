@@ -172,9 +172,9 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the Zip/Postal Code component of the Location's Street/Mailing Address. If this Location does not have 
         /// Street/Mailing Address, this value will be null.
         /// </value>
-        [MaxLength( 10 )]
+        [MaxLength( 50 )]
         [DataMember]
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary>
         /// Gets or sets the Local Assessor's parcel identification value that is linked to the location.

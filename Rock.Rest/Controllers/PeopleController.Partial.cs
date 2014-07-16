@@ -232,18 +232,8 @@ namespace Rock.Rest.Controllers
 
                     if ( location != null )
                     {
-                        string streetInfo;
-                        if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                        {
-                            streetInfo = location.Street1 + " " + location.Street2;
-                        }
-                        else
-                        {
-                            streetInfo = location.Street2;
-                        }
-
-                        string addressHtml = string.Format( "<h5>Address</h5>{0} <br />{1}, {2}, {3}", streetInfo, location.City, location.State, location.Zip );
-                        personSearchResult.Address = location.ToString();
+                        string addressHtml = "<h5>Address</h5>" + location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                        personSearchResult.Address = location.GetFullStreetAddress();
                         personInfo += addressHtml;
                     }
 

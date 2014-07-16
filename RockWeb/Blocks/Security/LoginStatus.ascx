@@ -16,7 +16,6 @@
                     <asp:HyperLink ID="hlMyAccount" runat="server" Text="My Account" />
                 </li>
             </asp:PlaceHolder>
-            <li class="divider"></li>
             <asp:PlaceHolder ID="phMyProfile" runat="server">
                 <li>
                     <asp:HyperLink ID="hlMyProfile" runat="server" Text="My Profile" />
