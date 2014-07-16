@@ -497,6 +497,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 bool showAddressLine2 = ShowAddressLine2;
+                string cityLabel = "City";
                 string stateLabel = "Region";
                 string postalCodeLabel = "Postal Code";
 
@@ -506,7 +507,8 @@ namespace Rock.Web.UI.Controls
                     .FirstOrDefault();
                 if (countryValue != null)
                 {
-                    stateLabel = countryValue.GetAttributeValue("StateLabel");
+                    cityLabel = countryValue.GetAttributeValue( "CityLabel" );
+                    stateLabel = countryValue.GetAttributeValue( "StateLabel" );
                     postalCodeLabel = countryValue.GetAttributeValue("PostalCodeLabel");
                 }
                 
@@ -544,7 +546,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                 writer.AddAttribute( HtmlTextWriterAttribute.For, _tbStreet1.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                writer.Write( "City" );
+                writer.Write( cityLabel );
                 writer.RenderEndTag();  // label
                 _tbCity.RenderControl( writer );
                 writer.RenderEndTag();  // div.form-group
