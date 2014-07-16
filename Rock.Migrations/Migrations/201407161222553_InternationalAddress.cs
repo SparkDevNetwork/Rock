@@ -29,6 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+
             RockMigrationHelper.AddGlobalAttribute( "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Support International Addresses", "Should user's be able to select a country when entering addresses?", 0, "False", "14D56DC9-7A64-4210-97D9-BF1ABE409DC7" );
 
             Sql( @"
@@ -384,6 +385,22 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateDefinedValueByName( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "YE", "Yemen", 249, false ); // Yemen
             RockMigrationHelper.UpdateDefinedValueByName( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "ZM", "Zambia", 250, false ); // Zambia
             RockMigrationHelper.UpdateDefinedValueByName( "D7979EA1-44E9-46E2-BF37-DDAF7F741378", "ZW", "Zimbabwe", 251, false ); // Zimbabwe
+
+
+            // From Migration Rollup List
+            Sql( @"
+    -- Add icon to following page
+    UPDATE [Page] SET [IconCssClass] = 'fa fa-flag' WHERE [Guid] = 'A6AE67F7-0B46-4F9A-9C96-054E1E82F784'
+
+    -- Change icon for 'Childhood Information' 
+    UPDATE [Category] SET [IconCssClass] = 'fa fa-child' WHERE [Guid] = '752DC692-836E-4A3E-B670-4325CD7724BF'
+
+    -- Change the sites for check-in to be non-system so themes can be changed
+    UPDATE [Site] SET [IsSystem] = 0 WHERE [Guid] IN ('15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A', '30FB46F7-4814-4691-852A-04FB56CC07F0', 'A5FA7C3C-A238-4E0B-95DE-B540144321EC')
+" );
+
+
+
         }
         
         /// <summary>
