@@ -213,6 +213,7 @@ namespace RockWeb.Blocks.Core
                 location.City = addrLocation.City;
                 location.State = addrLocation.State;
                 location.Zip = addrLocation.Zip;
+                location.Country = addrLocation.Country;
             }
 
             location.GeoPoint = geopPoint.SelectedValue;
@@ -545,7 +546,7 @@ namespace RockWeb.Blocks.Core
                 descriptionList.Add( "Printer", location.PrinterDevice.Name );
             }
 
-            string fullAddress = location.GetFullStreetAddress();
+            string fullAddress = location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
             if ( !string.IsNullOrWhiteSpace( fullAddress ) )
             {
                 descriptionList.Add( "Address", fullAddress );

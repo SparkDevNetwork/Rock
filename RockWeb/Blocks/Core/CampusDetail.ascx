@@ -38,18 +38,7 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Url" />
                             <Rock:DataTextBox ID="tbPhoneNumber" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="PhoneNumber" />
-                            <Rock:RockTextBox ID="tbStreet" runat="server" Label="Address"></Rock:RockTextBox>
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <Rock:RockTextBox ID="tbCity" runat="server" Label="City" />
-                                </div>
-                                <div class="col-md-2">
-                                    <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" Label="State" />
-                                </div>
-                                <div class="col-md-3">
-                                    <Rock:RockTextBox  ID="tbZip" runat="server" Label="Zip" />
-                                </div>
-                            </div>
+                            <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                         </div>
                     </div>
 

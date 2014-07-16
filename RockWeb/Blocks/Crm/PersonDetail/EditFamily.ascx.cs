@@ -531,10 +531,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
                         }
 
-                        var ddlState = e.Row.FindControl( "ddlState" ) as StateDropDownList;
-                        if ( ddlState != null )
+                        var acAddress = e.Row.FindControl( "acAddress" ) as AddressControl;
+                        if ( acAddress != null )
                         {
-                            ddlState.SelectedValue = familyAddress.State;
+                            acAddress.UseStateAbbreviation = true;
+                            acAddress.UseCountryAbbreviation = false;
+                            acAddress.Country = familyAddress.Country;
+                            acAddress.Street1 = familyAddress.Street1;
+                            acAddress.Street2 = familyAddress.Street2;
+                            acAddress.City = familyAddress.City;
+                            acAddress.State = familyAddress.State;
+                            acAddress.PostalCode = familyAddress.Zip;
                         }
                     }
                 }
@@ -582,21 +589,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 var row = gLocations.Rows[e.RowIndex];
                 DropDownList ddlLocType = row.FindControl( "ddlLocType" ) as DropDownList;
-                TextBox tbStreet1 = row.FindControl( "tbStreet1" ) as TextBox;
-                TextBox tbStreet2 = row.FindControl( "tbStreet2" ) as TextBox;
-                TextBox tbCity = row.FindControl( "tbCity" ) as TextBox;
-                DropDownList ddlState = row.FindControl( "ddlState" ) as DropDownList;
-                TextBox tbZip = row.FindControl( "tbZip" ) as TextBox;
+                AddressControl acAddress = row.FindControl( "acAddress" ) as AddressControl;
                 CheckBox cbMailing = row.FindControl( "cbMailing" ) as CheckBox;
                 CheckBox cbLocation = row.FindControl( "cbLocation" ) as CheckBox;
 
                 familyAddress.LocationTypeId = ddlLocType.SelectedValueAsInt() ?? 0;
                 familyAddress.LocationTypeName = ddlLocType.SelectedItem != null ? ddlLocType.SelectedItem.Text : string.Empty;
-                familyAddress.Street1 = tbStreet1.Text;
-                familyAddress.Street2 = tbStreet2.Text;
-                familyAddress.City = tbCity.Text;
-                familyAddress.State = ddlState.SelectedValue;
-                familyAddress.Zip = tbZip.Text;
+                familyAddress.Street1 = acAddress.Street1;
+                familyAddress.Street2 = acAddress.Street2;
+                familyAddress.City = acAddress.City;
+                familyAddress.State = acAddress.State;
+                familyAddress.Zip = acAddress.PostalCode;
+                familyAddress.Country = acAddress.Country;
                 familyAddress.IsMailing = cbMailing.Checked;
 
                 // If setting this location to be a map location, unselect all the other loctions
@@ -943,7 +947,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             updatedAddress = new LocationService( rockContext ).Get(
                                 familyAddress.Street1, familyAddress.Street2, familyAddress.City,
-                                familyAddress.State, familyAddress.Zip );
+                                familyAddress.State, familyAddress.Zip, familyAddress.Country );
                         }
 
                         GroupLocation groupLocation = null;
@@ -1207,6 +1211,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public string City { get; set; }
         public string State { get; set; }
         public string Zip { get; set; }
+        public string Country { get; set; }
         public bool IsMailing { get; set; }
         public bool IsLocation { get; set; }
 
@@ -1231,6 +1236,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     City = groupLocation.Location.City;
                     State = groupLocation.Location.State;
                     Zip = groupLocation.Location.Zip;
+                    Country = groupLocation.Location.Country;
                 }
 
                 IsMailing = groupLocation.IsMailingLocation;
@@ -1244,7 +1250,48 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             LocationIsDirty = true;
 
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+        }
 
+        public string FormattedValue
+        {
+            get
+            {
+                string result = string.Format( "{0} {1} {2}, {3} {4}",
+                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+
+                var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                    .DefinedValues
+                    .Where( v => v.Name.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+                if ( countryValue != null )
+                {
+                    string format = countryValue.GetAttributeValue( "AddressFormat" );
+                    if ( !string.IsNullOrWhiteSpace( format ) )
+                    {
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Street1", Street1 );
+                        mergeFields.Add( "Street2", Street2 );
+                        mergeFields.Add( "City", City );
+                        mergeFields.Add( "State", State );
+                        mergeFields.Add( "Zip", Zip );
+                        mergeFields.Add( "Country", countryValue.Description );
+
+                        result = format.ResolveMergeFields( mergeFields );
+                    }
+                }
+
+                while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
+                {
+                    result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
+                }
+
+                if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
+                {
+                    return string.Empty;
+                }
+
+                return result.ConvertCrLfToHtmlBr();
+            }
         }
     }
 }

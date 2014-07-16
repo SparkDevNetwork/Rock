@@ -346,19 +346,21 @@ namespace Rock.Model
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
         /// <param name="zip">The zip.</param>
-        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip )
+        public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
+            string street1, string street2, string city, string state, string zip, string country )
         {
             if ( !String.IsNullOrWhiteSpace( street1 ) ||
                  !String.IsNullOrWhiteSpace( street2 ) ||
                  !String.IsNullOrWhiteSpace( city ) ||
-                 !String.IsNullOrWhiteSpace( zip ) )
+                 !String.IsNullOrWhiteSpace( zip ) || 
+                 !string.IsNullOrWhiteSpace( country ) )
             {
                 string addressChangeField = "Location";
 
                 var groupLocation = new GroupLocation();
 
                 // Get new or existing location and associate it with group
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip, country );
                 groupLocation.Location = location;
                 groupLocation.IsMailingLocation = true;
                 groupLocation.IsMappedLocation = true;
