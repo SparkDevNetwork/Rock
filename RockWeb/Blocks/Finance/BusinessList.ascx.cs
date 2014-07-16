@@ -163,35 +163,14 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                if ( business.GivingGroup.GroupLocations.Count > 0 )
+                if ( business.GivingGroup.GroupLocations.Any() )
                 {
-                    var location = business.GivingGroup.GroupLocations.FirstOrDefault().Location;
-                    if ( !string.IsNullOrWhiteSpace( location.Street1 ) )
-                    {
-                        Label lblStreet1 = e.Row.FindControl( "lblStreet1" ) as Label;
-                        if ( lblStreet1 != null )
-                        {
-                            lblStreet1.Text = string.Format( "{0}</br>", location.Street1 );
-                        }
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( location.Street2 ) )
-                    {
-                        Label lblStreet2 = e.Row.FindControl( "lblStreet2" ) as Label;
-                        if ( lblStreet2 != null )
-                        {
-                            lblStreet2.Text = string.Format( "{0}</br>", location.Street2 );
-                        }
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( location.City ) || !string.IsNullOrWhiteSpace( location.Zip ) )
-                    {
-                        Label lblCityStateZip = e.Row.FindControl( "lblCityStateZip" ) as Label;
-                        if ( lblCityStateZip != null )
-                        {
-                            lblCityStateZip.Text = string.Format( "{0}, {1} {2}", location.City, location.State, location.Zip );
-                        }
-                    }
+                    Label lblAddress = e.Row.FindControl( "lblAddress" ) as Label;
+                    lblAddress.Text = business.GivingGroup.GroupLocations
+                        .Select( gl => gl.Location )
+                        .FirstOrDefault()
+                        .GetFullStreetAddress()
+                        .ConvertCrLfToHtmlBr();
                 }
             }
         }

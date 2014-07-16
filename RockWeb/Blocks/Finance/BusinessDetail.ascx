@@ -22,81 +22,38 @@
                             </fieldset>
                         </div>
                         <div class="col-md-9">
+
+                            <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" TabIndex="1" SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
+                            
+                            <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
+                            
+
                             <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" TabIndex="1" 
-                                        SourceTypeName="Rock.Model.Person, Rock" PropertyName="BusinessName" ValidationGroup="businessDetail" />
+                                <div class="col-sm-6">
+                                    <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone Number" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="7"  />
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" TabIndex="2" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" TabIndex="3" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-sm-6">
                                     <div class="row">
-                                        <div class="col-lg-7">
-                                            <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" TabIndex="4" />
+                                        <div class="col-xs-6">
+                                            <Rock:RockCheckBox ID="cbSms" runat="server" Text="Sms" Label="&nbsp;" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="8" />
                                         </div>
-                                        <div class="col-lg-2">
-                                            <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" TabIndex="5" />
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <Rock:RockTextBox ID="tbZipCode" Label="Zip Code" runat="server" CssClass="input-small" TabIndex="6" />
+                                        <div class="col-xs-6">
+                                            <Rock:RockCheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Label="&nbsp;" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="9" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="control-label">Phone Number</div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="row">
-                                        <div class="col-sm-7">
-                                            <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode") %>' Number='<%# Eval("NumberFormatted")  %>' TabIndex="7" />
-                                        </div>
-                                        <div class="col-sm-2">
-                                            <div class="row">
-                                                <div class="col-xs-6">
-                                                    <asp:CheckBox ID="cbSms"  runat="server" Text="Sms" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' TabIndex="8" />
-                                                </div>
-                                                <div class="col-xs-6">
-                                                    <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' TabIndex="9" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-3"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="10" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="11">
-                                        <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
-                                        <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
-                                        <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
-                                    </Rock:RockRadioButtonList>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" TabIndex="12" />
-                                </div>
-                            </div>
+
+                            <Rock:RockTextBox ID="tbEmail" runat="server" PrependText="<i class='fa fa-envelope'></i>" Label="Email Address" TabIndex="10" />
+
+                            <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference" TabIndex="11">
+                                <asp:ListItem Text="Email Allowed" Value="EmailAllowed" Selected="True" />
+                                <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
+                                <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
+                            </Rock:RockRadioButtonList>
+
+                            <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" TabIndex="12" />
+
                             <div class="actions">
                                 <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" TabIndex="14" />
                                 <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" TabIndex="15" />

@@ -31,9 +31,7 @@
                             <asp:TemplateField>
                                 <HeaderTemplate>Address</HeaderTemplate>
                                 <ItemTemplate>
-                                    <asp:Label ID="lblStreet1" runat="server" />
-                                    <asp:Label ID="lblStreet2" runat="server" />
-                                    <asp:Label ID="lblCityStateZip" runat="server" />
+                                    <asp:Label ID="lblAddress" runat="server" />
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <Rock:EditField OnClick="gBusinessList_Edit" />

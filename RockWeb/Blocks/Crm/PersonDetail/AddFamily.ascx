@@ -43,19 +43,7 @@
                         </div>
 
                         <div class="col-md-8">
-                            <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
-                            <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
-                            <div class="row">
-                                <div class="col-lg-7">
-                                    <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" />
-                                </div>
-                                <div class="col-lg-2">
-                                    <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
-                                </div>
-                                <div class="col-lg-3">
-                                    <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
-                                </div>
-                            </div>
+                            <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="false" UseCountryAbbreviation="false" />
                         </div>
 
                     </div>
