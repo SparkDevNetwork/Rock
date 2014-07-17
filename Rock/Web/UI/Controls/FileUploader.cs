@@ -523,7 +523,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 _aFileName.AddCssClass( "file-exists" );
-                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
             }
             else
             {
@@ -540,7 +540,7 @@ namespace Rock.Web.UI.Controls
                 _hfBinaryFileId.RenderControl( writer );
                 _hfBinaryFileTypeGuid.RenderControl( writer );
                 _aFileName.RenderControl( writer );
-                writer.RenderEndTag();
+                
 
                 writer.AddAttribute( "class", "fileupload-remove" );
                 if ( !ShowDeleteButton )
@@ -550,6 +550,8 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _aRemove.RenderControl( writer );
+                writer.RenderEndTag();
+
                 writer.RenderEndTag();
             }
 
@@ -572,7 +574,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                writer.Write( "drop / click to upload" );
+                writer.Write( "Upload" );
             }
 
             writer.RenderEndTag();
