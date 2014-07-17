@@ -17,7 +17,7 @@
         <Setter Property="Label.FontSize"
                 Value="14"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#6a6a6a"></Setter>
     </Style>
 
     <!-- Label style: Bold -->
@@ -69,7 +69,7 @@
         <Setter Property="Label.FontSize"
                 Value="21"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#6a6a6a"></Setter>
     </Style>
 
     
@@ -80,7 +80,7 @@
            TargetType="{x:Type StackPanel}" >
         <Setter 
             Property="Background"
-            Value="#8498ab"
+            Value="#dbd5cb"
             />
         <Setter 
             Property="Margin"
@@ -100,7 +100,7 @@
         <Setter Property="Label.FontSize"
                 Value="28"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#ecf0f3"></Setter>
+                Value="#6a6a6a"></Setter>
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
         <Setter Property="Margin"
@@ -118,7 +118,7 @@
         <Setter Property="Label.FontSize"
                 Value="28"></Setter>
         <Setter Property="Label.Foreground"
-                Value="#ecf0f3"></Setter>
+                Value="#6a6a6a"></Setter>
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
     </Style>
@@ -130,7 +130,7 @@
            TargetType="{x:Type Grid}">
         <Setter 
             Property="Background"
-            Value="#e7ecf0" 
+            Value="#ffffff" 
             />
     </Style>
 
@@ -332,7 +332,7 @@
             <Setter Property="Label.FontSize"
                 Value="14"></Setter>
             <Setter Property="Label.Foreground"
-                Value="#515151"></Setter>
+                Value="#6a6a6a"></Setter>
     </Style>
 
     <!-- Textblock Style: Grid Data  -->
@@ -692,6 +692,13 @@
         <Setter 
                Property="Background"
                Value="#dbd5cb"
+               />
+    </Style>
+    <Style x:Key="pageBackgroundGrey"
+           TargetType="{x:Type Page}" >
+        <Setter 
+               Property="Background"
+               Value="#f3f3f4"
                />
     </Style>
     <Style x:Key="pageBackgroundLogin"
