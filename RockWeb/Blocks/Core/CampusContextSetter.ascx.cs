@@ -57,10 +57,10 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var campusService =new CampusService( new RockContext() );
+            var campusService = new CampusService( new RockContext() );
+            Campus defaultCampus = null;
 
             // default campus to the whatever the context cookie has for it
-            string defaultCampusPublicKey = string.Empty;
             var contextCookie = Request.Cookies["Rock:context"];
             if ( contextCookie != null )
             {
@@ -70,16 +70,15 @@ namespace RockWeb.Blocks.Core
                 string[] contextItemParts = contextItem.Split( '|' );
                 if ( contextItemParts.Length == 2 )
                 {
-                    defaultCampusPublicKey = contextItemParts[1];
+                    defaultCampus = campusService.GetByPublicKey( contextItemParts[1] );
                 }
             }
 
-            var defaultCampus = campusService.GetByPublicKey( defaultCampusPublicKey );
             var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
             foreach ( var campus in campuses )
             {
                 var listItem = new ListItem( campus.Name, HttpUtility.UrlDecode( campus.ContextKey ) );
-                listItem.Selected = campus.Guid == defaultCampus.Guid;
+                listItem.Selected = ( defaultCampus != null && campus.Guid == defaultCampus.Guid );
                 ddlCampus.Items.Add( listItem );
             }
         }
