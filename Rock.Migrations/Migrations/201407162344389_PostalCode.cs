@@ -563,6 +563,17 @@ END
     -- Update check-in kiosks to default to Print From Server (instead of Client) 
     DECLARE @KioskDeviceType int = (SELECT [Id] FROM [DefinedValue] WHERE [Guid] = 'BC809626-1389-4543-B8BB-6FAC79C27AFD') 
     UPDATE [Device] SET [PrintFrom] = 1 WHERE [DeviceTypeValueId] = @KioskDeviceType
+
+    -- Update filter to select members and attendees
+    DECLARE @ParentFilterId int = (SELECT [DataViewFilterId] FROM [DataView] WHERE [Guid] = '0DA5F82F-CFFE-45AF-B725-49B3899A1F72')
+    DECLARE @EntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '03F0D6AC-D181-48B6-B4BC-1F2652B55323')
+    DECLARE @FilterId int = (SELECT [Id] FROM [DataViewFilter] WHERE [ParentId] = @ParentFilterId AND [EntityTypeId] = @EntityTypeId AND [Selection] LIKE '%ConnectionStatusValueId%')
+    UPDATE [DataViewFilter] SET [Selection] = '[ ""ConnectionStatusValueId"", ""[\r\n  \""39f491c5-d6ac-4a9b-8ac0-c431cb17d588\"",\r\n  \""41540783-d9ef-4c70-8f1d-c9e83d91ed5f\""\r\n]"" ]' WHERE [Id] = @FilterId
+
+    -- Update filter to correctly select family adult role
+    SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '0E239967-6D33-4205-B19F-08AD8FF6ED0B')
+    SET @FilterId = (SELECT [Id] FROM [DataViewFilter] WHERE [ParentId] = @ParentFilterId AND [EntityTypeId] = @EntityTypeId )
+    UPDATE [DataViewFilter] SET [Selection] = '790e3215-3b10-442b-af69-616c0dcb998e|2639f9a5-2aae-4e48-a8c3-4ffe86681e42' WHERE [Id] = @FilterId
 " );
 
             RockMigrationHelper.AddBlockTypeAttribute( "04712F3D-9667-4901-A49D-4507573EF7AD", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "My Profile Page", "MyProfilePage", "", "Page for user to view their person profile (if blank option will not be displayed)", 0, "", "6CFDDF63-0B21-48FC-90AE-362C0E73420B" );
