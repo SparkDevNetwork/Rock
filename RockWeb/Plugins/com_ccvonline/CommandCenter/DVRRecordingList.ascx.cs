@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
 using System.Data.Entity;
+using System.Data.Entity.SqlServer;
 
 using Rock;
 using Rock.Attribute;
@@ -129,7 +130,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             rFilter.SaveUserPreference( "Campus", cpCampus.SelectedValue != All.Id.ToString() ? cpCampus.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
             rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
-            rFilter.SaveUserPreference( "VenueType", ddlVenueType.Text );
+            rFilter.SaveUserPreference( "Venue Type", ddlVenueType.Text );
 
             BindGrid();
         }
@@ -148,6 +149,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             cpCampus.SelectedValue = rFilter.GetUserPreference( "Campus" );
             dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
             dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
+            ddlVenueType.Text = rFilter.GetUserPreference( "Venue Type" );
         }
 
         /// <summary>
@@ -156,50 +158,62 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         private void BindGrid()
         {
             var service = new RecordingService( new CommandCenterContext() );
+            var campus = new CampusService( new RockContext() );
             var sortProperty = gRecordings.SortProperty;
 
             var queryable = service.Queryable()
-                                    .GroupBy( r => DbFunctions.TruncateTime( r.StartTime ) )
-                                    .Select( g => new
-                                    {
-                                        id = g.Key.Value,
-                                        WeekendDate = g.Key,
-                                        RecordingCount = g.Select( t => t.StartTime ).Count()
-                                    } );
+                                    .GroupBy( r => 
+                                        new {
+                                            r.Campus,
+                                            r.CampusId,
+                                            WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", -1 * SqlFunctions.DatePart( "dw", r.StartTime ), r.StartTime ) ),
+                                            r.VenueType
+                                            } )
+                                    .Select( g => 
+                                        new {
+                                            id = g.Select( i => i.Id ),
+                                            WeekendDate = g.Key.WeekendDate,
+                                            Campus = g.Key.Campus,
+                                            CampusId = g.Key.CampusId,                                           
+                                            VenueType = g.Key.VenueType,
+                                            RecordingCount = g.Select( t => t.StartTime ).Count()
+                                        } );
 
-            //int campusId = int.MinValue;
-            //if ( int.TryParse( rFilter.GetUserPreference( "Campus" ), out campusId ) && campusId > 0 )
-            //{
-            //    queryable = queryable.Where( r => r.CampusId == campusId );
-            //}
+            int campusId = int.MinValue;
+            if ( int.TryParse( rFilter.GetUserPreference( "Campus" ), out campusId ) && campusId > 0 )
+            {
+                queryable = queryable.Where( r => r.CampusId == campusId );
+            }
 
-            //DateTime fromDate = DateTime.MinValue;
-            //if ( DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
-            //{
-            //    queryable = queryable.Where( r => r.Date >= fromDate );
-            //}
+            DateTime fromDate = DateTime.MinValue;
+            if ( DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
+            {
+                queryable = queryable.Where( r => r.WeekendDate >= fromDate );
+            }
 
-            //DateTime toDate = DateTime.MinValue;
-            //if ( DateTime.TryParse( rFilter.GetUserPreference( "To Date" ), out toDate ) )
-            //{
-            //    queryable = queryable.Where( r => r.Date <= toDate );
-            //}
+            DateTime toDate = DateTime.MinValue;
+            if ( DateTime.TryParse( rFilter.GetUserPreference( "To Date" ), out toDate ) )
+            {
+                queryable = queryable.Where( r => r.WeekendDate <= toDate );
+            }
 
-            //string venueType = rFilter.GetUserPreference( "VenueType" );
-            //if (!string.IsNullOrWhiteSpace( venueType ) )
-            //{
-            //    queryable = queryable.Where( r => r.VenueType.StartsWith( venueType ) );
-            //}
+            string venueType = rFilter.GetUserPreference( "VenueType" );
+            if (!string.IsNullOrWhiteSpace( venueType ) )
+            {
+                queryable = queryable.Where( r => r.VenueType.StartsWith( venueType ) );
+            }
 
             if ( sortProperty != null )
             {
                 gRecordings.DataSource = queryable.Sort( sortProperty ).ToList();
             }
             else
-            {
-                gRecordings.DataSource = queryable.OrderByDescending( s => s.WeekendDate ).ToList();
+            {               
+                gRecordings.DataSource = queryable.OrderByDescending( t => t.WeekendDate ).ToList();
             }
 
+            
+            
             gRecordings.DataBind();
         }
 
