@@ -13,19 +13,25 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel">
+
                     <Rock:GridFilter ID="gfBusinessFilter" runat="server">
                         <Rock:RockTextBox ID="tbBusinessName" runat="server" Label="Business Name"></Rock:RockTextBox>  <!-- this should search by "contains" not necessarily an exact match -->
+                        <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status">
+                            <asp:ListItem Text="[All]" Value="all"></asp:ListItem>
+                            <asp:ListItem Text="Active" Value="active"></asp:ListItem>
+                            <asp:ListItem Text="Inactive" Value="inactive"></asp:ListItem>
+                        </Rock:RockDropDownList>
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gBusinessList" runat="server" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" ShowConfirmDeleteDialog="false" OnRowSelected="gBusinessList_RowSelected">
+                    <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowDataBound="gBusinessList_RowDataBound" OnRowSelected="gBusinessList_RowSelected">
                         <Columns>
                             <asp:BoundField DataField="FirstName" HeaderText="Business Name" SortExpression="FirstName" />
                             <asp:TemplateField>
                                 <HeaderTemplate>Contact</HeaderTemplate>
                                 <ItemTemplate>
                                     <asp:Label ID="lblPhoneNumber" runat="server" />
-                                    <asp:Label ID="lblEmail" runat="server" />
+                                    <%# Eval("Email") %>
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:TemplateField>
@@ -34,10 +40,9 @@
                                     <asp:Label ID="lblAddress" runat="server" />
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <Rock:EditField OnClick="gBusinessList_Edit" />
-                            <Rock:DeleteField OnClick="gBusinessList_Delete" />
                         </Columns>
                     </Rock:Grid>
+
                 </div>
 
             </div>
