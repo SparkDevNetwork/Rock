@@ -1101,6 +1101,7 @@ fieldset .actions {
   border: 1px solid #a2a2a2;
   border-radius: 4px;
   padding: 2px;
+  position: relative;
 }
 .fileupload-group .fileupload-thumbnail {
   position: relative;
@@ -1173,6 +1174,15 @@ fieldset .actions {
   font-size: 13px;
   color: #ffffff;
   width: 100%;
+}
+.fileupload-group .upload-progress {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  margin-left: -18px;
+  top: 50%;
+  margin-top: -37px;
+  opacity: 0.3;
 }
 .updateprogress-status {
   position: fixed;

@@ -30,7 +30,7 @@
                 submit: options.submitFunction,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.fileupload-group');
-                    $el.find('.fileupload-dropzone').hide();
+                    //$el.find('.fileupload-dropzone').hide();
                     $el.find('.js-upload-progress').css("height", $el.find('.fileupload-dropzone').css("height"));
                     $el.find('.js-upload-progress').show();
                 },

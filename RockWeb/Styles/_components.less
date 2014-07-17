@@ -1208,7 +1208,7 @@ fieldset .actions {
     border: 1px solid darken(@accent-color, 20%);
     border-radius: @border-radius-base;
     padding: 2px;
-
+    position: relative;
 
     .fileupload-thumbnail {
         position: relative;
@@ -1289,6 +1289,16 @@ fieldset .actions {
             color: @btn-action-color;
             width: 100%;
         }
+    }
+
+    .upload-progress {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        margin-left: -18px;
+        top: 50%;
+        margin-top: -37px;
+        opacity: 0.3;
     }
 }
 
