@@ -462,36 +462,49 @@ ul.rocktree ul {
 .touch .rollover-item {
   opacity: 1;
 }
-.page-list-as-blocks h3 {
+.list-as-blocks h3 {
   margin-top: 0;
   font-size: 14px;
   margin: 6px 0;
 }
-.page-list-as-blocks ul {
+.list-as-blocks ul {
   padding: 0;
+  list-style: none;
 }
-.page-list-as-blocks ul li {
+.list-as-blocks ul li {
   border-radius: 4px;
   border: 1px solid #bbb;
   float: left;
   margin: 0 1.25% 15px;
   width: 47.5%;
   overflow: hidden;
+  position: relative;
+  overflow: visible;
   text-align: center;
 }
-.page-list-as-blocks ul li a {
+.list-as-blocks ul li a {
   background-color: #f3f3f4;
   display: block;
   color: #6a6a6a;
   height: 80px;
   padding: 15px;
+  border-radius: 4px;
 }
-.page-list-as-blocks ul li a:hover {
+.list-as-blocks ul li a:hover {
   background-color: #282526;
   color: #d3cec5;
 }
+.list-as-blocks ul li a div.notification {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+}
+.list-as-blocks ul li a div.notification .label {
+  border-radius: 36px;
+  padding: 2px 6px;
+}
 @media (min-width: 768px) {
-  .page-list-as-blocks ul li {
+  .list-as-blocks ul li {
     margin: 0 2.5% 15px;
     width: 20%;
   }
@@ -4176,14 +4189,14 @@ pre {
   background-color: #fff;
   width: 10px;
 }
-.page-list-as-blocks ul li a {
+.list-as-blocks ul li a {
   -webkit-transition: background-color 200ms linear;
   -moz-transition: background-color 200ms linear;
   -o-transition: background-color 200ms linear;
   -ms-transition: background-color 200ms linear;
   transition: background-color 200ms linear;
 }
-.page-list-as-blocks ul li a:hover {
+.list-as-blocks ul li a:hover {
   background-color: #567d8c;
   border-color: #4c6f7c;
   color: #fff;

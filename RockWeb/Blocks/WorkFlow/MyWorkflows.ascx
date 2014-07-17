@@ -14,14 +14,17 @@
                     <Rock:Toggle ID="tglDisplay" CssClass="pull-right" runat="server" OnText="Active Types" ActiveButtonCssClass="btn-success" OffText="All Types" AutoPostBack="true" OnCheckedChanged="tgl_CheckedChanged" />
                 </div>
 
-                <div class="page-list-as-blocks">
+                <div class="list-as-blocks">
                     <ul class="list-unstyled">
                         <asp:Repeater ID="rptWorkflowTypes" runat="server">
                             <ItemTemplate>
                                 <li class='<%# Eval("Class") %>'>
                                     <asp:LinkButton ID="lbWorkflowType" runat="server" CommandArgument='<%# Eval("WorkflowType.Id") %>' CommandName="Display">
                                         <i class='<%# Eval("WorkflowType.IconCssClass") %>'></i>
-                                        <h3><%# Eval("WorkflowType.Name") %> <small><%# ((int)Eval("Count")).ToString("#,###,###") %></small></h3>
+                                        <h3><%# Eval("WorkflowType.Name") %> </h3>
+                                        <div class="notification">
+                                            <span class="label label-primary"><%# ((int)Eval("Count")).ToString("#,###,###") %></span>
+                                        </div>
                                     </asp:LinkButton>
                                 </li>
                             </ItemTemplate>

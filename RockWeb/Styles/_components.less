@@ -372,7 +372,7 @@ ul.rocktree ul {
 // 6. Pagelist
 // -------------------------
 
-.page-list-as-blocks {
+.list-as-blocks {
     
     h3 {
         margin-top: 0;
@@ -382,16 +382,17 @@ ul.rocktree ul {
     
     ul {
         padding: 0;
+        list-style: none;
 
         li {
-            
             border-radius: @border-radius-base;
             border: 1px solid #bbb;
             float: left;
             margin: 0 1.25% @spacing-md-px;
             width: 47.5%;
             overflow: hidden;
-            
+            position: relative;
+            overflow: visible;
             text-align: center;
 
             a {
@@ -400,12 +401,23 @@ ul.rocktree ul {
                 color: @pagelist-text-color;
                 height: 80px;
                 padding: @spacing-md-px;
+                border-radius: @border-radius-base;
 
                 &:hover {
                     background-color: @accent-bold-color;
                     color: @accent-bold-text-color;
                 }
+                
+                div.notification {
+                    position: absolute;
+                    top: -10px;
+                    right: -6px;
 
+                    .label {
+                        border-radius: 36px;
+                        padding: 2px 6px;
+                    }
+                }
             }
 
             
@@ -414,7 +426,7 @@ ul.rocktree ul {
 }
 
 @media (min-width: @screen-sm-min) { // tablet portrait and larger
-    .page-list-as-blocks {
+    .list-as-blocks {
         ul {
             li {
                 margin: 0 2.5% @spacing-md-px;
