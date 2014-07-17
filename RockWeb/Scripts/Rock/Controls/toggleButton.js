@@ -12,17 +12,15 @@
 
                 // uses pattern from http://www.bootply.com/92189
 
-                $('#' + options.id).click(function () {
+                $('#' + options.id + ' .btn-toggle').click(function (e) {
 
-                    event.stopImmediatePropagation();
+                    e.stopImmediatePropagation();
 
                     $(this).find('.btn').toggleClass('active');
 
-                    if ($(this).find('.' + options.activeButtonCssClass).size() > 0) {
+                    if (options.activeButtonCssClass && $(this).find('.' + options.activeButtonCssClass).size() > 0) {
                         $(this).find('.btn').toggleClass(options.activeButtonCssClass);
                     }
-
-                    $(this).find('.btn').toggleClass('btn-default');
                     
                     $(this).find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
 
