@@ -312,6 +312,10 @@
                         <Rock:ImageUploader ID="imgupExample" runat="server" Label="Rock:ImageUploader" />
                     </div>
 
+                    <div runat="server" class="r-example">
+                        <Rock:ImageUploader ID="ImageUploader1" runat="server" Label="Rock:ImageUploader" ThumbnailHeight="200" ThumbnailWidth="200" />
+                    </div>
+
                     <a id="ImageEditor"></a>
                     <div runat="server" class="r-example">
                         <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
