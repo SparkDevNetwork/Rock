@@ -3,9 +3,6 @@
 <asp:UpdatePanel ID="upAddFamily" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
-
-
         <asp:Panel ID="pnlFamilyData" runat="server">
         
             <div class="panel panel-block">
@@ -13,6 +10,9 @@
                     <h1 class="panel-title"><i class="fa fa-plus-square-o"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
                 </div>
                 <div class="panel-body">
+
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
                     <div class="row">
                         <div class="col-md-4">
                             <h4>Family Members</h4>
