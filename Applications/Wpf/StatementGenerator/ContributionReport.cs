@@ -173,7 +173,7 @@ namespace Rock.Apps.StatementGenerator
                 EndDate = Options.EndDate,
                 AccountIds = Options.AccountIds,
                 PersonId = Options.PersonId,
-                OrderByZipCode = true
+                OrderByPostalCode = true
             };
 
             var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Model.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();

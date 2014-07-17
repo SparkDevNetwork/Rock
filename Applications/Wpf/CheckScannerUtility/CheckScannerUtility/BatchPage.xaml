@@ -81,7 +81,7 @@
                         <TextBlock Style="{StaticResource textBlockStyleGridDataTitle}"
                                    Text="{Binding Name}" />
                         <TextBlock Style="{StaticResource textBlockStyleGridData}"
-                                   Text="{Binding BatchDate, StringFormat=d}" />
+                                   Text="{Binding BatchStartDateTime, StringFormat=d}" />
                     </StackPanel>
                 </DataTemplate>
             </Grid.Resources>
@@ -234,7 +234,7 @@
                                         Margin="4,4,0,0"
                                         Content="Scan"
                                         Click="btnScan_Click" />
-                                <Button Style="{StaticResource buttonStyleMini}"
+                                <Button Style="{StaticResource buttonStylePrimaryMini}"
                                         x:Name="btnEdit"
                                         Margin="4,4,0,0"
                                         Content="Edit"
