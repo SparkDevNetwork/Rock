@@ -1005,6 +1005,10 @@
     <Compile Include="Migrations\201407162344389_PostalCode.Designer.cs">
       <DependentUpon>201407162344389_PostalCode.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407172224340_CheckinInstaller.cs" />
+    <Compile Include="Migrations\201407172224340_CheckinInstaller.Designer.cs">
+      <DependentUpon>201407172224340_CheckinInstaller.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1741,6 +1745,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407162344389_PostalCode.resx">
       <DependentUpon>201407162344389_PostalCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407172224340_CheckinInstaller.resx">
+      <DependentUpon>201407172224340_CheckinInstaller.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
