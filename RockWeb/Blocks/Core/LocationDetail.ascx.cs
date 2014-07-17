@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Core
                 location.Street2 = addrLocation.Street2;
                 location.City = addrLocation.City;
                 location.State = addrLocation.State;
-                location.Zip = addrLocation.Zip;
+                location.PostalCode = addrLocation.PostalCode;
                 location.Country = addrLocation.Country;
             }
 

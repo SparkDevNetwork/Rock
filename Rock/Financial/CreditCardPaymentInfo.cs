@@ -57,9 +57,9 @@ namespace Rock.Financial
         public string BillingState { get; set; }
 
         /// <summary>
-        /// The billing zip
+        /// The billing zip/postal code
         /// </summary>
-        public string BillingZip { get; set; }
+        public string BillingPostalCode { get; set; }
 
         /// <summary>
         /// The billing country

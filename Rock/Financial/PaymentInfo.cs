@@ -87,12 +87,12 @@ namespace Rock.Financial
         public string State { get; set; }
 
         /// <summary>
-        /// The billing zip
+        /// The billing zip/postal code
         /// </summary>
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
 
         /// <summary>
-        /// The billing zip
+        /// The billing country
         /// </summary>
         public string Country { get; set; }
 
@@ -116,7 +116,7 @@ namespace Rock.Financial
             get
             {
                 string result = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+                    this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
                 var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
@@ -132,7 +132,7 @@ namespace Rock.Financial
                         mergeFields.Add( "Street2", Street2 );
                         mergeFields.Add( "City", City );
                         mergeFields.Add( "State", State );
-                        mergeFields.Add( "Zip", Zip );
+                        mergeFields.Add( "PostalCode", PostalCode );
                         mergeFields.Add( "Country", countryValue.Description );
 
                         result = format.ResolveMergeFields( mergeFields );

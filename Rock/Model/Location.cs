@@ -493,7 +493,7 @@ namespace Rock.Model
         public string GetFullStreetAddress()
         {
             string result = string.Format( "{0} {1} {2}, {3} {4}",
-                this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+                this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
             var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues

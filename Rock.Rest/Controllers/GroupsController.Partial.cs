@@ -416,7 +416,7 @@ namespace Rock.Rest.Controllers
                         dictLocation.Add( "Street2", grouplocation.Location.Street2 );
                         dictLocation.Add( "City", grouplocation.Location.City );
                         dictLocation.Add( "State", grouplocation.Location.State );
-                        dictLocation.Add( "Zip", grouplocation.Location.Zip );
+                        dictLocation.Add( "PostalCode", grouplocation.Location.PostalCode );
                         dictLocation.Add( "Country", grouplocation.Location.Country );
                         dynGroup.Location = dictLocation;
 

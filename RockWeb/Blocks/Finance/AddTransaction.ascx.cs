@@ -1114,7 +1114,7 @@ achieve our mission.  We are so grateful for your commitment.
             tdName.Description = paymentInfo.FullName;
             tdPhone.Description = paymentInfo.Phone;
             tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.Zip );
+            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
@@ -1165,7 +1165,7 @@ achieve our mission.  We are so grateful for your commitment.
             paymentInfo.Street2 = acAddress.Street2;
             paymentInfo.City = acAddress.City;
             paymentInfo.State = acAddress.State;
-            paymentInfo.Zip = acAddress.PostalCode;
+            paymentInfo.PostalCode = acAddress.PostalCode;
             paymentInfo.Country = acAddress.Country;
 
             return paymentInfo;
@@ -1187,7 +1187,7 @@ achieve our mission.  We are so grateful for your commitment.
                 cc.BillingStreet2 = acBillingAddress.Street2;
                 cc.BillingCity = acBillingAddress.City;
                 cc.BillingState = acBillingAddress.State;
-                cc.BillingZip = acBillingAddress.PostalCode;
+                cc.BillingPostalCode = acBillingAddress.PostalCode;
                 cc.BillingCountry = acBillingAddress.Country;
             }
             else
@@ -1196,7 +1196,7 @@ achieve our mission.  We are so grateful for your commitment.
                 cc.BillingStreet2 = acAddress.Street2;
                 cc.BillingCity = acAddress.City;
                 cc.BillingState = acAddress.State;
-                cc.BillingZip = acAddress.PostalCode;
+                cc.BillingPostalCode = acAddress.PostalCode;
                 cc.BillingCountry = acAddress.Country;
             }
 

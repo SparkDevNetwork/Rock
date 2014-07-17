@@ -56,7 +56,7 @@ namespace Rock.Address
                 requestAddress.AddressLine2 = location.Street2;
                 requestAddress.City = location.City;
                 requestAddress.State = location.State;
-                requestAddress.Zip = location.Zip;
+                requestAddress.Zip = location.PostalCode;
                 requestAddress.RecordID = "1";
 
                 requestArray.Record = new RequestArrayRecord[1];
@@ -76,7 +76,7 @@ namespace Rock.Address
                         location.Street2 = responseAddress.Address2;
                         location.City = responseAddress.City.Name;
                         location.State = responseAddress.State.Abbreviation;
-                        location.Zip = responseAddress.Zip + '-' + responseAddress.Plus4;
+                        location.PostalCode = responseAddress.Zip + '-' + responseAddress.Plus4;
                         if ( location.Street2.Trim() == string.Empty &&
                             responseAddress.Suite.Trim() != string.Empty )
                             location.Street2 = responseAddress.Suite;

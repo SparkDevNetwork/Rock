@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             acAddress.Street2 = familyAddress.Street2;
                             acAddress.City = familyAddress.City;
                             acAddress.State = familyAddress.State;
-                            acAddress.PostalCode = familyAddress.Zip;
+                            acAddress.PostalCode = familyAddress.PostalCode;
                         }
                     }
                 }
@@ -599,7 +599,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 familyAddress.Street2 = acAddress.Street2;
                 familyAddress.City = acAddress.City;
                 familyAddress.State = acAddress.State;
-                familyAddress.Zip = acAddress.PostalCode;
+                familyAddress.PostalCode = acAddress.PostalCode;
                 familyAddress.Country = acAddress.Country;
                 familyAddress.IsMailing = cbMailing.Checked;
 
@@ -947,7 +947,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             updatedAddress = new LocationService( rockContext ).Get(
                                 familyAddress.Street1, familyAddress.Street2, familyAddress.City,
-                                familyAddress.State, familyAddress.Zip, familyAddress.Country );
+                                familyAddress.State, familyAddress.PostalCode, familyAddress.Country );
                         }
 
                         GroupLocation groupLocation = null;
@@ -1210,7 +1210,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         public string Street2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
         public string Country { get; set; }
         public bool IsMailing { get; set; }
         public bool IsLocation { get; set; }
@@ -1235,7 +1235,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Street2 = groupLocation.Location.Street2;
                     City = groupLocation.Location.City;
                     State = groupLocation.Location.State;
-                    Zip = groupLocation.Location.Zip;
+                    PostalCode = groupLocation.Location.PostalCode;
                     Country = groupLocation.Location.Country;
                 }
 
@@ -1257,7 +1257,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             get
             {
                 string result = string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
+                    this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
                 var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                     .DefinedValues
@@ -1273,7 +1273,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         mergeFields.Add( "Street2", Street2 );
                         mergeFields.Add( "City", City );
                         mergeFields.Add( "State", State );
-                        mergeFields.Add( "Zip", Zip );
+                        mergeFields.Add( "PostalCode", PostalCode );
                         mergeFields.Add( "Country", countryValue.Description );
 
                         result = format.ResolveMergeFields( mergeFields );

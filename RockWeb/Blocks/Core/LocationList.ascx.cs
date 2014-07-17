@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Core
                     t.Street1,
                     t.City,
                     t.State,
-                    t.Zip,
+                    t.PostalCode,
                     t.Country
                 } ).ToList();
 

@@ -637,7 +637,7 @@ namespace Rock.Web.UI.Controls
                 Street2 = location.Street2;
                 City = location.City;
                 State = location.State;
-                PostalCode = location.Zip;
+                PostalCode = location.PostalCode;
             }
             else
             {
@@ -663,7 +663,7 @@ namespace Rock.Web.UI.Controls
                 location.Street2 = Street2;
                 location.City = City;
                 location.State = State;
-                location.Zip = PostalCode;
+                location.PostalCode = PostalCode;
             }
         }
 

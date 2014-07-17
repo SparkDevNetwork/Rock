@@ -228,7 +228,7 @@ namespace RockWeb.Blocks.Groups
             var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             string polygonColors = "\"" + polygonColorList.AsDelimited( "\", \"" ) + "\"";
 
-            string template = HttpUtility.HtmlEncode( GetAttributeValue( "InfoWindowContents" ).Replace( "\n", string.Empty ) );
+            string template = HttpUtility.HtmlEncode( GetAttributeValue( "InfoWindowContents" ).Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ) );
             string groupPage = GetAttributeValue( "GroupPage" );
             string personProfilePage = GetAttributeValue( "PersonProfilePage" );
             string mapPage = GetAttributeValue( "MapPage" );

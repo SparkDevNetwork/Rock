@@ -1114,7 +1114,7 @@ achieve our mission.  We are so grateful for your commitment.
                     paymentInfo.Street2 = address.Street2;
                     paymentInfo.City = address.City;
                     paymentInfo.State = address.State;
-                    paymentInfo.Zip = address.Zip;
+                    paymentInfo.PostalCode = address.PostalCode;
                     paymentInfo.Country = address.Country;
                 }
             }
@@ -1135,7 +1135,7 @@ achieve our mission.  We are so grateful for your commitment.
             cc.BillingStreet2 = acBillingAddress.Street2;
             cc.BillingCity = acBillingAddress.City;
             cc.BillingState = acBillingAddress.State;
-            cc.BillingZip = acBillingAddress.PostalCode;
+            cc.BillingPostalCode = acBillingAddress.PostalCode;
             cc.BillingCountry = acBillingAddress.Country;
 
             return cc;
