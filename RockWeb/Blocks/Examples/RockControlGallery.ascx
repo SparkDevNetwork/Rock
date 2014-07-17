@@ -405,15 +405,16 @@
                     <Rock:Toggle ID="tglExample3" runat="server" ActiveButtonCssClass="btn-success" />
                     <Rock:Toggle ID="tglExample4" runat="server" ActiveButtonCssClass="btn-danger" />
                     <Rock:Toggle ID="tglExample5" runat="server" ActiveButtonCssClass="btn-warning" />
+                    <Rock:Toggle ID="tglExample6" runat="server" ActiveButtonCssClass="btn-primary" />
                 </div>
 
                 <a id="ToggleSizes"></a>
                 <p>Need larger or smaller toggle buttons? Set ButtonSizeCssClass to <code>.btn-lg</code>, <code>.btn-sm</code> or <code>.btn-xs</code></p>
                 <div runat="server" class="r-example">
-                    <Rock:Toggle ID="tglExample6" runat="server" ButtonSizeCssClass="btn-lg" />
-                    <Rock:Toggle ID="tglExample7" runat="server" />
-                    <Rock:Toggle ID="tglExample8" runat="server" ButtonSizeCssClass="btn-sm" />
-                    <Rock:Toggle ID="tglExample9" runat="server" ButtonSizeCssClass="btn-xs" />
+                    <Rock:Toggle ID="tglExample7" runat="server" ButtonSizeCssClass="btn-lg" />
+                    <Rock:Toggle ID="tglExample8" runat="server" />
+                    <Rock:Toggle ID="tglExample9" runat="server" ButtonSizeCssClass="btn-sm" />
+                    <Rock:Toggle ID="tglExample10" runat="server" ButtonSizeCssClass="btn-xs" />
                 </div>
 
                 <a id="BootstrapButton"></a>

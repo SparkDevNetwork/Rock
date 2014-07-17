@@ -209,14 +209,14 @@ namespace Rock.Web.UI.Controls
         [
         Bindable( true ),
         Category( "Behavior" ),
-        DefaultValue( "btn-primary" ),
+        DefaultValue( "btn-default" ),
         Description( "The CssClass to apply to the active button." )
         ]
         public string ActiveButtonCssClass
         {
             get
             {
-                return ViewState["ActiveButtonCssClass"] as string ?? "btn-primary";
+                return ViewState["ActiveButtonCssClass"] as string ?? "btn-default";
             }
 
             set
