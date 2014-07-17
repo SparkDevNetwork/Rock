@@ -4875,7 +4875,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #e6f0d3;
+  background-color: #d3e0bb;
 }
 .nav > li.disabled > a {
   color: #f3f3f4;
@@ -4890,7 +4890,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #e6f0d3;
+  background-color: #d3e0bb;
   border-color: #478bae;
 }
 .nav .nav-divider {
@@ -4980,7 +4980,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
   color: #ffffff;
-  background-color: #afd074;
+  background-color: #9ab864;
 }
 .nav-stacked > li {
   float: none;
