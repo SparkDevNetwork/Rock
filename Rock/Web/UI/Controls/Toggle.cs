@@ -209,14 +209,14 @@ namespace Rock.Web.UI.Controls
         [
         Bindable( true ),
         Category( "Behavior" ),
-        DefaultValue( "btn-default" ),
+        DefaultValue( "" ),
         Description( "The CssClass to apply to the active button." )
         ]
         public string ActiveButtonCssClass
         {
             get
             {
-                return ViewState["ActiveButtonCssClass"] as string ?? "btn-default";
+                return ViewState["ActiveButtonCssClass"] as string ?? "";
             }
 
             set
@@ -337,12 +337,12 @@ namespace Rock.Web.UI.Controls
             
             _btnOn = new HtmlAnchor();
             _btnOn.ID = this.ID + "_btnOn";
-            _btnOn.Attributes["class"] = "btn js-toggle-on " + this.ButtonSizeCssClass;
+            _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
             _btnOn.InnerText = this.OnText;
 
             _btnOff = new HtmlAnchor();
             _btnOff.ID = this.ID + "_btnOff";
-            _btnOff.Attributes["class"] = "btn js-toggle-off " + this.ButtonSizeCssClass;
+            _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
             _btnOff.InnerText = this.OffText;
 
             Controls.Add( _hfChecked );
@@ -371,25 +371,27 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID.ToString() );
+            writer.AddAttribute( "class", "toggle-container" + this.CssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( this.Checked )
             {
                 _btnOn.AddCssClass( this.ActiveButtonCssClass + " active" );
-                _btnOff.AddCssClass( "btn-default" );
             }
             else
             {
                 _btnOff.AddCssClass( this.ActiveButtonCssClass + " active" );
-                _btnOn.AddCssClass( "btn-default" );
             }
 
             _btnOn.RenderControl( writer );
+            _btnOff.RenderControl( writer );
+
+            writer.RenderEndTag();
 
             _hfChecked.RenderControl( writer );
-            
-            _btnOff.RenderControl( writer );
 
             writer.RenderEndTag();
 
