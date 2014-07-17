@@ -1745,7 +1745,7 @@ namespace RockWeb.Blocks.Examples
                 var street2 = ( addressElem.Attribute( "street2" ) != null ) ? addressElem.Attribute( "street2" ).Value.Trim() : string.Empty;
                 var city = ( addressElem.Attribute( "city" ) != null ) ? addressElem.Attribute( "city" ).Value.Trim() : string.Empty;
                 var state = ( addressElem.Attribute( "state" ) != null ) ? addressElem.Attribute( "state" ).Value.Trim() : string.Empty;
-                var zip = ( addressElem.Attribute( "zip" ) != null ) ? addressElem.Attribute( "zip" ).Value.Trim() : string.Empty;
+                var postalCode = ( addressElem.Attribute( "postalCode" ) != null ) ? addressElem.Attribute( "postalCode" ).Value.Trim() : string.Empty;
                 var country = ( addressElem.Attribute( "country" ) != null ) ? addressElem.Attribute( "country" ).Value.Trim() : "US";
                 var lat = ( addressElem.Attribute( "lat" ) != null ) ? addressElem.Attribute( "lat" ).Value.Trim() : string.Empty;
                 var lng = ( addressElem.Attribute( "long" ) != null ) ? addressElem.Attribute( "long" ).Value.Trim() : string.Empty;
@@ -1768,7 +1768,7 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Call replica of the groupService's AddNewFamilyAddress in an attempt to speed it up
-                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, country, rockContext );
+                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, postalCode, country, rockContext );
 
                 var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
 
@@ -1846,22 +1846,22 @@ namespace RockWeb.Blocks.Examples
         /// <param name="street2">The street2.</param>
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
-        /// <param name="zip">The zip.</param>
+        /// <param name="postalCode">The zip.</param>
         /// <param name="rockContext">The rock context.</param>
         public void AddNewFamilyAddress( Group family, string locationTypeGuid, 
-            string street1, string street2, string city, string state, string zip, string country,
+            string street1, string street2, string city, string state, string postalCode, string country,
             RockContext rockContext )
         {
             if ( !string.IsNullOrWhiteSpace( street1 ) ||
                  !string.IsNullOrWhiteSpace( street2 ) ||
                  !string.IsNullOrWhiteSpace( city ) ||
-                 !string.IsNullOrWhiteSpace( zip ) ||
+                 !string.IsNullOrWhiteSpace( postalCode ) ||
                  !string.IsNullOrWhiteSpace( country ) )
             {
                 var groupLocation = new GroupLocation();
 
                 // Get new or existing location and associate it with group
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip, country );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
                 groupLocation.Location = location;
                 groupLocation.IsMailingLocation = true;
                 groupLocation.IsMappedLocation = true;
