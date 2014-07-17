@@ -1032,44 +1032,47 @@ fieldset .actions {
 }
 .imageupload-group {
   margin-bottom: 15px;
-}
-.imageupload-group:before,
-.imageupload-group:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-.imageupload-group:after {
-  clear: both;
-}
-.imageupload-group .imageupload-thumbnail {
-  float: left;
   border: 1px solid #a2a2a2;
   border-radius: 4px;
   padding: 2px;
+  display: table-cell;
+  position: relative;
 }
-.imageupload-group .imageupload-thumbnail img {
-  width: 50px;
-  height: 50px;
-  border-radius: 3px;
+.imageupload-group .imageupload-thumbnail {
+  position: relative;
 }
-.imageupload-group .imageupload-remove {
-  float: left;
-  margin: 18px 4px 0;
-  width: 11px;
+.imageupload-group .imageupload-thumbnail .imageupload-thumbnail-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: 50%;
+}
+.imageupload-group .imageupload-thumbnail .imageupload-remove {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.imageupload-group .imageupload-thumbnail .imageupload-remove a {
+  padding: 2px 6px;
+  border-top-left-radius: 4px;
+  background-color: #d9534f;
+  color: #ffffff;
+  cursor: pointer;
+  display: block;
 }
 .imageupload-group .imageupload-dropzone {
-  float: left;
+  margin-top: 2px;
   width: 100px;
-  height: 55px;
+  height: 30px;
   border: 1px dotted #bbbbbb;
-  border-radius: 4px;
-  background-color: #eeeeee;
+  border-radius: 0 0 4px 4px;
+  background-color: #999999;
   text-align: center;
-  padding-top: 14px;
+  padding-top: 8px;
   position: relative;
   line-height: 12px;
+  cursor: pointer;
+  width: 100%;
 }
 .imageupload-group .imageupload-dropzone input {
   opacity: 0;
@@ -1080,9 +1083,18 @@ fieldset .actions {
   top: 0;
 }
 .imageupload-group .imageupload-dropzone span {
-  font-size: 11px;
-  color: #bbbbbb;
+  font-size: 13px;
+  color: #ffffff;
   width: 100%;
+}
+.imageupload-group .upload-progress {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  margin-left: -18px;
+  top: 50%;
+  margin-top: -37px;
+  opacity: 0.3;
 }
 .fileupload-group {
   margin-bottom: 15px;
@@ -1394,7 +1406,10 @@ ul.rocklist .rocklist-item.selected {
   opacity: 0.5;
 }
 .image-editor-fileinput {
-  visibility: hidden;
+  display: none;
+}
+.image-editor-group.imageupload-group {
+  border: 0;
 }
 .image-editor-crop-container {
   height: 480px;
