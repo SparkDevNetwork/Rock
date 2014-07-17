@@ -18,7 +18,7 @@
                         <Rock:GridFilter ID="gPagesFilter" runat="server">
                             <Rock:RockDropDownList ID="ddlLayoutFilter" runat="server" Label="Layout" />
                         </Rock:GridFilter>
-                        <Rock:Grid ID="gPages" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gPages_Edit">
+                        <Rock:Grid ID="gPages" runat="server" DisplayType="Full" AllowSorting="true" >
                             <Columns>
                                 <asp:BoundField DataField="InternalName" HeaderText="Name" SortExpression="InternalName" />
                                 <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
