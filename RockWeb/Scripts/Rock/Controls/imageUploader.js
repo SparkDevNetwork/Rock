@@ -34,7 +34,7 @@
                 submit: options.submitFunction,
                 start: function (e, data) {
                     var $el = $('#' + options.controlId).closest('.imageupload-group');
-                    $el.find('.imageupload-dropzone').hide();
+                    //$el.find('.imageupload-dropzone').hide();
                     $el.find('.js-upload-progress').show();
                 },
                 progressall: function (e, data) {
@@ -54,7 +54,7 @@
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
                         + '&id=' + data.response().result.Id
                         + '&fileName=' + data.response().result.FileName
-                        + '&width=150';
+                        + '&width=500';
 
                     if (options.rootFolder) {
                         // note rootFolder is encrypted to prevent direct access to filesystem via the URL
@@ -66,7 +66,7 @@
                             $el.attr('src', getImageUrl);
                         }
                         else {
-                            $el.attr('style', 'background-image:url(' + getImageUrl + ' &width=150);background-size:cover;background-position:50%');
+                            $el.attr('style', 'background-image:url("' + getImageUrl + '");background-size:cover;background-position:50%');
                         }
                     }
 
