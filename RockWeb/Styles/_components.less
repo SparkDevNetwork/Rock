@@ -1162,7 +1162,6 @@ fieldset .actions {
 
     .imageupload-dropzone {
         margin-top: 2px;
-        width: 100px;
         height: 30px;
         border: 1px dotted darken(@accent-light-color, 20%);
         border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -1204,15 +1203,14 @@ fieldset .actions {
 }
 
 .fileupload-group {
-    .clearfix();
+    display: table-cell;
     margin-bottom: @spacing-md-px;
+    border: 1px solid darken(@accent-color, 20%);
+    border-radius: @border-radius-base;
+    padding: 2px;
+
 
     .fileupload-thumbnail {
-
-        float: left;
-        border: 1px solid darken(@accent-color, 20%);
-        border-radius: @border-radius-base;
-        padding: 2px;
         position: relative;
 
         .file-link {
@@ -1220,10 +1218,10 @@ fieldset .actions {
             height: 50px;
             border-radius: (@border-radius-base - 1);
             font-size: 10px;
-            background-color: @accent-light-color;
-            color: darken( @accent-light-color, 30%);
+            background-color: @input-group-addon-bg;
+            color: @input-color;
             display: block;
-            padding-top: 33px;
+            padding-top: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1233,36 +1231,47 @@ fieldset .actions {
                 content: '\f016';
                 font-family: FontAwesome;
                 font-size: 28px;
-                color: darken( @accent-light-color, 10%);
+                color: darken( @input-group-addon-bg, 15%);
                 -webkit-font-smoothing: antialiased;
                 margin-left: 42px;
                 position: absolute;
-                top: 4px;
-                left: 0;
+                top: 50%;
+                left: 50%;
+                margin-top: -20px;
+                margin-left: -12px;
             }
 
             &.file-exists:after {
                 content: '\f15c';
-                color: darken( @accent-light-color, 30%);
+                color: darken( @input-group-addon-bg, 15%);
+                margin-top: -10px;
             }
         }
     }
 
     .fileupload-remove {
-        float: left;
-        margin: 18px 4px 0;
-        width: 11px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        a {
+            padding: 2px 6px;
+            border-top-left-radius: @border-radius-base;
+            background-color: @btn-danger-bg;
+            color: @btn-danger-color;
+            cursor: pointer;
+            display: block;
+        }
     }
 
     .fileupload-dropzone {
-        float: left;
-        width: 100px;
-        height: 55px;
+        margin-top: 2px;
+        height: 30px;
         border: 1px dotted darken(@accent-light-color, 20%);
-        border-radius: @border-radius-base;
-        background-color: @accent-light-color;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        background-color: @btn-action-bg;
         text-align: center;
-        padding-top: 14px;
+        padding-top: 8px;
         position: relative;
         line-height: 12px;
 
@@ -1276,8 +1285,8 @@ fieldset .actions {
         }
 
         span {
-            font-size: 11px;
-            color: darken(@accent-light-color, 20%);
+            font-size: 13px;
+            color: @btn-action-color;
             width: 100%;
         }
     }

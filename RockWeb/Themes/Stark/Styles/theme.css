@@ -1062,7 +1062,6 @@ fieldset .actions {
 }
 .imageupload-group .imageupload-dropzone {
   margin-top: 2px;
-  width: 100px;
   height: 30px;
   border: 1px dotted #bbbbbb;
   border-radius: 0 0 4px 4px;
@@ -1097,23 +1096,13 @@ fieldset .actions {
   opacity: 0.3;
 }
 .fileupload-group {
+  display: table-cell;
   margin-bottom: 15px;
-}
-.fileupload-group:before,
-.fileupload-group:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-.fileupload-group:after {
-  clear: both;
-}
-.fileupload-group .fileupload-thumbnail {
-  float: left;
   border: 1px solid #a2a2a2;
   border-radius: 4px;
   padding: 2px;
+}
+.fileupload-group .fileupload-thumbnail {
   position: relative;
 }
 .fileupload-group .fileupload-thumbnail .file-link {
@@ -1122,9 +1111,9 @@ fieldset .actions {
   border-radius: 3px;
   font-size: 10px;
   background-color: #eeeeee;
-  color: #a2a2a2;
+  color: #555555;
   display: block;
-  padding-top: 33px;
+  padding-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1134,31 +1123,41 @@ fieldset .actions {
   content: '\f016';
   font-family: FontAwesome;
   font-size: 28px;
-  color: #d5d5d5;
+  color: #c8c8c8;
   -webkit-font-smoothing: antialiased;
   margin-left: 42px;
   position: absolute;
-  top: 4px;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  margin-top: -20px;
+  margin-left: -12px;
 }
 .fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
   content: '\f15c';
-  color: #a2a2a2;
+  color: #c8c8c8;
+  margin-top: -10px;
 }
 .fileupload-group .fileupload-remove {
-  float: left;
-  margin: 18px 4px 0;
-  width: 11px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+.fileupload-group .fileupload-remove a {
+  padding: 2px 6px;
+  border-top-left-radius: 4px;
+  background-color: #d9534f;
+  color: #ffffff;
+  cursor: pointer;
+  display: block;
 }
 .fileupload-group .fileupload-dropzone {
-  float: left;
-  width: 100px;
-  height: 55px;
+  margin-top: 2px;
+  height: 30px;
   border: 1px dotted #bbbbbb;
-  border-radius: 4px;
-  background-color: #eeeeee;
+  border-radius: 0 0 4px 4px;
+  background-color: #999999;
   text-align: center;
-  padding-top: 14px;
+  padding-top: 8px;
   position: relative;
   line-height: 12px;
 }
@@ -1171,8 +1170,8 @@ fieldset .actions {
   top: 0;
 }
 .fileupload-group .fileupload-dropzone span {
-  font-size: 11px;
-  color: #bbbbbb;
+  font-size: 13px;
+  color: #ffffff;
   width: 100%;
 }
 .updateprogress-status {
