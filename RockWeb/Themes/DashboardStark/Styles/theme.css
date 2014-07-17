@@ -1858,8 +1858,10 @@ dl:not(.dl-horizontal) dd {
 */
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th {
-  cursor: pointer;
   background-color: rgba(0, 0, 0, 0.03);
+}
+td.grid-select-cell {
+  cursor: pointer;
 }
 td.wrap-contents {
   -ms-word-break: break-all;
