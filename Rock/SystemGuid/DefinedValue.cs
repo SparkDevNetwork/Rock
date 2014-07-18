@@ -362,7 +362,7 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region map Styles
+        #region Map Styles
 
         /// <summary>
         /// Google map style
@@ -373,6 +373,20 @@ namespace Rock.SystemGuid
         /// The standard Rock map style
         /// </summary>
         public const string MAP_STYLE_ROCK = "FDC5D6BA-A818-4A06-96B1-9EF31B4087AC";
+
+        #endregion
+
+        #region Chart Styles
+
+        /// <summary>
+        /// Flot Chart Style
+        /// </summary>
+        public const string CHART_STYLE_FLOT = "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC";
+        
+        /// <summary>
+        /// Rock Chart Style
+        /// </summary>
+        public const string CHART_STYLE_ROCK = "2ABB2EA0-B551-476C-8F6B-478CD08C2227";
 
         #endregion
     }
