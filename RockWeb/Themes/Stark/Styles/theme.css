@@ -175,6 +175,266 @@ img.jcrop-preview {
   max-width: none;
 }
 /*
+    Used to manage styles related to the CMS admin UI for on page editing
+    
+    1. Zone Configuration
+    2. Module Configuration
+    3. Admin Footer
+    4. Responsive Rules
+*/
+.zone-instance.outline {
+  border: 1px dashed #909090;
+  /* todo */
+  min-height: 30px;
+  min-width: 120px;
+  position: relative;
+  margin: 1px;
+  border-radius: 3px;
+}
+.zone-configuration {
+  background: #428bca;
+  border: 1px solid #3071a9;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  height: 26px;
+  overflow: hidden;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 25px;
+  z-index: 11000;
+  right: auto;
+}
+.zone-configuration p {
+  float: left;
+}
+.zone-configuration-bar {
+  color: #ecf0f3;
+  display: inline-block;
+  float: left;
+  left: 24px;
+  margin-left: 6px;
+  margin-right: -999em;
+  overflow: hidden;
+  position: absolute;
+}
+.zone-configuration-bar span {
+  display: block;
+  float: left;
+  font-size: 10px;
+  padding-right: 20px;
+  margin-top: 4px;
+}
+.block-configuration {
+  background: #428bca;
+  border: 1px solid #3071a9;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  height: 26px;
+  overflow: hidden;
+  position: absolute;
+  top: 2px;
+  width: 26px;
+  z-index: 11000;
+}
+.block-instance.outline {
+  min-height: 36px;
+  clear: both;
+  display: block;
+  position: relative;
+}
+.config-bar {
+  -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
+}
+.config-bar > a {
+  text-decoration: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.config-bar a i.fa {
+  float: left;
+  margin-left: 5px;
+  margin-top: 3px;
+  font-size: 18px;
+  color: #ecf0f3;
+  margin-right: 10px;
+}
+.block-configuration-bar {
+  color: #ecf0f3;
+  display: inline-block;
+  float: left;
+  left: 24px;
+  margin-left: 6px;
+  margin-right: -999em;
+  overflow: hidden;
+  position: absolute;
+}
+.block-configuration-bar .btn {
+  margin-right: 12px;
+  color: #ecf0f3;
+  text-shadow: none;
+}
+.block-configuration-bar span {
+  display: block;
+  float: left;
+  font-size: 10px;
+  padding-right: 20px;
+  margin-top: 3px;
+}
+#cms-admin-footer {
+  bottom: 0;
+  width: 100%;
+  height: 26px;
+  z-index: 9999;
+  position: fixed;
+  right: 0;
+  margin-right: 0;
+  background: #428bca;
+  border-color: #3071a9;
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  color: #ecf0f3;
+  padding: 5px 12px 0 12px;
+  font-size: 80%;
+}
+#cms-admin-footer > span {
+  display: none;
+  text-align: center;
+  margin-bottom: 4px;
+}
+#cms-admin-footer .button-bar {
+  margin-top: -8px;
+  margin-left: 12px;
+  text-align: center;
+}
+#cms-admin-footer .button-bar a {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+}
+#cms-admin-footer .btn {
+  color: #ecf0f3;
+  box-shadow: none;
+  text-shadow: none;
+}
+@media (min-width: 768px) {
+  #cms-admin-footer {
+    height: 28px;
+    margin-right: 25px;
+    width: auto;
+  }
+  #cms-admin-footer > span {
+    display: block;
+    text-align: left;
+    float: left;
+  }
+  #cms-admin-footer .button-bar {
+    float: right;
+  }
+}
+/*
+    Used to manage styles related to modal dialog.
+
+*/
+.rock-modal-frame {
+  width: 750px;
+  -moz-box-shadow: #464646 18px 18px 80px 0px;
+  -webkit-box-shadow: #464646 18px 18px 80px 0px;
+  box-shadow: #464646 18px 18px 80px 0px;
+}
+.rock-modal {
+  background-color: #ffffff;
+}
+.rock-modal .modal-header {
+  background-color: #3a3a3a;
+  color: #bbbbbb;
+  padding: 5px 15px;
+  min-height: 34px;
+}
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header h3 {
+  float: left;
+  margin-right: 12px;
+}
+.rock-modal .modal-header .close {
+  margin: 0;
+  padding: 6px;
+  color: #bbbbbb;
+  text-shadow: none;
+}
+.rock-modal .modal-header .label {
+  margin-top: 8px;
+}
+.rock-modal .modal-header small {
+  margin-top: 12px;
+  display: block;
+  color: #6e6e6e;
+}
+.rock-modal .modal-body {
+  color: #333333;
+}
+.rock-modal .modal-body .nav-pills {
+  margin: 6px 0 18px;
+}
+.rock-modal .modal-body > .scroll-container {
+  width: 720px;
+}
+.rock-modal .modal-body > .scroll-container > .viewport {
+  width: 670px;
+}
+.rock-modal .modal-body.iframe {
+  overflow: hidden;
+}
+.rock-modal .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #eeeeee;
+}
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11000;
+  width: 750px;
+  margin-left: 0px;
+  background-color: #ffffff;
+}
+.modal-body {
+  padding: 8px 12px 12px 12px;
+}
+.modal-footer:after {
+  clear: both;
+}
+.modal-footer .btn {
+  float: right;
+  margin-left: 5px;
+}
+#modal-popup_iframe {
+  height: 100%;
+  width: 100%;
+  border: 0;
+}
+/* Bootbox Modal Overrides */
+.modal.bootbox {
+  left: 0;
+  top: 0;
+  width: auto;
+  background-color: transparent;
+}
+/*
     Used to manage styles related to reusable components / widgets.
     
     1. Pickers - used to pick complex data types
@@ -1441,266 +1701,6 @@ ul.rocklist .rocklist-item.selected {
 }
 .nav-paging .btn-next {
   float: right;
-}
-/*
-    Used to manage styles related to the CMS admin UI for on page editing
-    
-    1. Zone Configuration
-    2. Module Configuration
-    3. Admin Footer
-    4. Responsive Rules
-*/
-.zone-instance.outline {
-  border: 1px dashed #909090;
-  /* todo */
-  min-height: 30px;
-  min-width: 120px;
-  position: relative;
-  margin: 1px;
-  border-radius: 3px;
-}
-.zone-configuration {
-  background: #428bca;
-  border: 1px solid #3071a9;
-  border-radius: 4px;
-  cursor: pointer;
-  display: none;
-  height: 26px;
-  overflow: hidden;
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  width: 25px;
-  z-index: 11000;
-  right: auto;
-}
-.zone-configuration p {
-  float: left;
-}
-.zone-configuration-bar {
-  color: #ecf0f3;
-  display: inline-block;
-  float: left;
-  left: 24px;
-  margin-left: 6px;
-  margin-right: -999em;
-  overflow: hidden;
-  position: absolute;
-}
-.zone-configuration-bar span {
-  display: block;
-  float: left;
-  font-size: 10px;
-  padding-right: 20px;
-  margin-top: 4px;
-}
-.block-configuration {
-  background: #428bca;
-  border: 1px solid #3071a9;
-  border-radius: 4px;
-  cursor: pointer;
-  display: none;
-  height: 26px;
-  overflow: hidden;
-  position: absolute;
-  top: 2px;
-  width: 26px;
-  z-index: 11000;
-}
-.block-instance.outline {
-  min-height: 36px;
-  clear: both;
-  display: block;
-  position: relative;
-}
-.config-bar {
-  -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-  -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-  box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);
-}
-.config-bar > a {
-  text-decoration: none;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-.config-bar a i.fa {
-  float: left;
-  margin-left: 5px;
-  margin-top: 3px;
-  font-size: 18px;
-  color: #ecf0f3;
-  margin-right: 10px;
-}
-.block-configuration-bar {
-  color: #ecf0f3;
-  display: inline-block;
-  float: left;
-  left: 24px;
-  margin-left: 6px;
-  margin-right: -999em;
-  overflow: hidden;
-  position: absolute;
-}
-.block-configuration-bar .btn {
-  margin-right: 12px;
-  color: #ecf0f3;
-  text-shadow: none;
-}
-.block-configuration-bar span {
-  display: block;
-  float: left;
-  font-size: 10px;
-  padding-right: 20px;
-  margin-top: 3px;
-}
-#cms-admin-footer {
-  bottom: 0;
-  width: 100%;
-  height: 26px;
-  z-index: 9999;
-  position: fixed;
-  right: 0;
-  margin-right: 0;
-  background: #428bca;
-  border-color: #3071a9;
-  border-width: 1px 1px 0 1px;
-  border-style: solid;
-  color: #ecf0f3;
-  padding: 5px 12px 0 12px;
-  font-size: 80%;
-}
-#cms-admin-footer > span {
-  display: none;
-  text-align: center;
-  margin-bottom: 4px;
-}
-#cms-admin-footer .button-bar {
-  margin-top: -8px;
-  margin-left: 12px;
-  text-align: center;
-}
-#cms-admin-footer .button-bar a {
-  background-color: transparent;
-  background-image: none;
-  border: 0;
-}
-#cms-admin-footer .btn {
-  color: #ecf0f3;
-  box-shadow: none;
-  text-shadow: none;
-}
-@media (min-width: 768px) {
-  #cms-admin-footer {
-    height: 28px;
-    margin-right: 25px;
-    width: auto;
-  }
-  #cms-admin-footer > span {
-    display: block;
-    text-align: left;
-    float: left;
-  }
-  #cms-admin-footer .button-bar {
-    float: right;
-  }
-}
-/*
-    Used to manage styles related to modal dialog.
-
-*/
-.rock-modal-frame {
-  width: 750px;
-  -moz-box-shadow: #464646 18px 18px 80px 0px;
-  -webkit-box-shadow: #464646 18px 18px 80px 0px;
-  box-shadow: #464646 18px 18px 80px 0px;
-}
-.rock-modal {
-  background-color: #ffffff;
-}
-.rock-modal .modal-header {
-  background-color: #3a3a3a;
-  color: #bbbbbb;
-  padding: 5px 15px;
-  min-height: 34px;
-}
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
-  content: " ";
-  /* 1 */
-  display: table;
-  /* 2 */
-}
-.rock-modal .modal-header:after {
-  clear: both;
-}
-.rock-modal .modal-header h3 {
-  float: left;
-  margin-right: 12px;
-}
-.rock-modal .modal-header .close {
-  margin: 0;
-  padding: 6px;
-  color: #bbbbbb;
-  text-shadow: none;
-}
-.rock-modal .modal-header .label {
-  margin-top: 8px;
-}
-.rock-modal .modal-header small {
-  margin-top: 12px;
-  display: block;
-  color: #6e6e6e;
-}
-.rock-modal .modal-body {
-  color: #333333;
-}
-.rock-modal .modal-body .nav-pills {
-  margin: 6px 0 18px;
-}
-.rock-modal .modal-body > .scroll-container {
-  width: 720px;
-}
-.rock-modal .modal-body > .scroll-container .viewport {
-  width: 670px;
-}
-.rock-modal .modal-body.iframe {
-  overflow: hidden;
-}
-.rock-modal .modal-footer {
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #eeeeee;
-}
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 11000;
-  width: 750px;
-  margin-left: 0px;
-  background-color: #ffffff;
-}
-.modal-body {
-  padding: 8px 12px 12px 12px;
-}
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
-}
-#modal-popup_iframe {
-  height: 100%;
-  width: 100%;
-  border: 0;
-}
-/* Bootbox Modal Overrides */
-.modal.bootbox {
-  left: 0;
-  top: 0;
-  width: auto;
-  background-color: transparent;
 }
 /*
     Used to manage styles related to Rock's forms
