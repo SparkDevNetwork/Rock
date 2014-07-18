@@ -464,6 +464,7 @@ namespace RockWeb.Blocks.CheckIn
                 groupEditor.Expanded = true;
             }
 
+            parentControl.Controls.Add( groupEditor );
             groupEditor.SetGroup( group, rockContext );
             var locationService = new LocationService( rockContext );
             var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
@@ -491,8 +492,6 @@ namespace RockWeb.Blocks.CheckIn
             groupEditor.AddLocationClick += groupEditor_AddLocationClick;
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
             groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
-
-            parentControl.Controls.Add( groupEditor );
         }
 
         /// <summary>
