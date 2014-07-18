@@ -6,12 +6,13 @@
         <h4>
             <asp:Literal ID="ltlRestActionName" runat="server" /></h4>
         <Rock:HiddenFieldWithClass ID="hfUrl" runat="server" CssClass="rest-url" />
+        <Rock:HelpBlock runat="server" ID="hbUrlPreview" />
         <Rock:RockTextBox ID="tbPayload" runat="server" Label="Payload" TextMode="MultiLine" Rows="10" />
         <Rock:KeyValueList ID="lstParameterValues" runat="server" Label="Parameter Values" />
         <a id="btnPOST" class="btn btn-action" runat="server" href="javascript:doPost()">POST</a>
-        <a id="btnDELETE" runat="server" href="javascript:doDelete()">DELETE</a>
-        <a id="btnPUT" runat="server" href="javascript:doPut()">PUT</a>
-        <a id="btnGET" runat="server" href="javascript:doGet()">GET</a>
+        <a id="btnDELETE" class="btn btn-action" runat="server" href="javascript:doDelete()">DELETE</a>
+        <a id="btnPUT" class="btn btn-action" runat="server" href="javascript:doPut()">PUT</a>
+        <a id="btnGET" class="btn btn-action" runat="server" href="javascript:doGet()">GET</a>
 
         <h4>Result</h4>
         <pre id="result-data">
