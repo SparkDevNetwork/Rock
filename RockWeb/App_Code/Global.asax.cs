@@ -837,19 +837,6 @@ namespace RockWeb
 
             // Cache all the Field Types
             var all = Rock.Web.Cache.FieldTypeCache.All();
-
-            // DT: When running with production CCV Data, this is taking a considerable amount of time 
-
-            // Cache all the Defined Types (which will also cache all the definedvalues)
-            var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
-            foreach ( var definedType in definedTypeService.Queryable( "DefinedValues" ).ToList() )
-            {
-                Rock.Web.Cache.DefinedTypeCache.Read( definedType, rockContext );
-                foreach (var definedValue in definedType.DefinedValues)
-                {
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue, rockContext );
-                }
-            }
         }
 
         private void Error66( Exception ex )
