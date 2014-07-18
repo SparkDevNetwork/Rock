@@ -11,7 +11,8 @@
                     <ItemTemplate>
                         <li id="liNavItem" runat="server" class="list-group-item clickable" >
                             <asp:PlaceHolder runat="server">
-                                <%# Eval("Name") %>
+                                <div><%# Eval("Name") %>
+                                <i class="fa fa-chevron-right pull-right" style="margin-top: 4px;"></i></div>
                             </asp:PlaceHolder>
                         </li>
                     </ItemTemplate>
