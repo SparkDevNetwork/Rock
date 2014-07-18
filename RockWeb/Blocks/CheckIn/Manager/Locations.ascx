@@ -29,7 +29,7 @@
                     <asp:PlaceHolder runat="server">
                         <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
                         <span class="pull-right">
-                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglRoom_CheckedChanged" />
+                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </span>
                     </asp:PlaceHolder>
                 </asp:Panel>
@@ -44,7 +44,7 @@
                                     <span class="pull-right">
                                         <span class='badge<%# (int)Eval("CurrentCount") > 0 ? " badge-success" : "" %> '><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
                                         &nbsp;&nbsp;
-                                        <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglRoom_CheckedChanged"  />
+                                        <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" ActiveButtonCssClass="btn-primary" OnCheckedChanged="tglRoom_CheckedChanged"  />
                                         <i class='fa fa-fw fa-chevron-right'></i>
                                     </span>
                                 </asp:PlaceHolder>

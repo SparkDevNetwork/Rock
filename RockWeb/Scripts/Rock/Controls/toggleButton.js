@@ -22,7 +22,7 @@
                         $(this).find('.btn').toggleClass(options.activeButtonCssClass);
                     }
                     
-                    $(this).find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
+                    $(this).parent().find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
 
                 });
 

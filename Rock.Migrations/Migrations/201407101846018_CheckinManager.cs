@@ -73,7 +73,7 @@ namespace Rock.Migrations
             // Attrib for BlockType: Locations:Check-in Type
             RockMigrationHelper.AddBlockTypeAttribute( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC", "18E29E23-B43B-4CF7-AE41-C85672C09F50", "Check-in Type", "GroupTypeTemplate", "", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", 1, @"", "B67238FA-5ED7-448A-B3C7-FA07F47DE854" );
             // Attrib for BlockType: Locations:Chart Style
-            RockMigrationHelper.AddBlockTypeAttribute( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Chart Style", "ChartStyle", "", "", 3, @"", "4708D29F-0D15-4175-91C6-A7AFEA37BF1D" );
+            RockMigrationHelper.AddBlockTypeAttribute( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC", "59D5A94C-94A0-4630-B80A-BB25697D74C7", "Chart Style", "ChartStyle", "", "", 3, @"2ABB2EA0-B551-476C-8F6B-478CD08C2227", "4708D29F-0D15-4175-91C6-A7AFEA37BF1D" );
             // Attrib for BlockType: Locations:Person Page
             RockMigrationHelper.AddBlockTypeAttribute( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Person Page", "PersonPage", "", "The page used to display a selected person's details.", 2, @"", "FDC448AC-A552-46A4-A4C4-1700FB150859" );
             
