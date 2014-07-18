@@ -66,11 +66,18 @@ namespace RockWeb.Blocks.Core
             {
                 var cookieValue = contextCookie.Values[typeof( Rock.Model.Campus ).FullName];
 
-                string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                string[] contextItemParts = contextItem.Split( '|' );
-                if ( contextItemParts.Length == 2 )
+                try
                 {
-                    defaultCampus = campusService.GetByPublicKey( contextItemParts[1] );
+                    string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                    string[] contextItemParts = contextItem.Split( '|' );
+                    if ( contextItemParts.Length == 2 )
+                    {
+                        defaultCampus = campusService.GetByPublicKey( contextItemParts[1] );
+                    }
+                }
+                catch
+                {
+                    // don't set defaultCampus if cookie is corrupt
                 }
             }
 
