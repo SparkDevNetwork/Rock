@@ -82,6 +82,8 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnLoad( e );
 
+            lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+
             if ( !Page.IsPostBack )
             {
                 LoadDropDowns();
@@ -168,8 +170,6 @@ namespace RockWeb.Blocks.CheckIn
             {
                 lcAttendance.ChartClick += lcAttendance_ChartClick;
             }
-
-            lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             var dataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, object>();
