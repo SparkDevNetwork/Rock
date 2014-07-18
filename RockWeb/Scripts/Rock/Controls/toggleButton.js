@@ -22,6 +22,14 @@
                         $(this).find('.btn').toggleClass(options.activeButtonCssClass);
                     }
                     
+                    if (options.onButtonCssClass) {
+                        $(this).find('.js-toggle-on').toggleClass(options.onButtonCssClass);
+                    }
+
+                    if (options.offButtonCssClass) {
+                        $(this).find('.js-toggle-off').toggleClass(options.offButtonCssClass);
+                    }
+                    
                     $(this).parent().find('.js-toggle-checked').val($(this).find('.js-toggle-on').hasClass('active'));
 
                 });

@@ -279,6 +279,56 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the on CSS class.
+        /// </summary>
+        /// <value>
+        /// The on Css Class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional CSS class to apply to the on state when active." )
+        ]
+        public string OnCssClass
+        {
+            get
+            {
+                return ViewState["OnCssClass"] as string ?? "";
+            }
+
+            set
+            {
+                ViewState["OnCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the off CSS class.
+        /// </summary>
+        /// <value>
+        /// The off Css Class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The optional CSS class to apply to the off state when active." )
+        ]
+        public string OffCssClass
+        {
+            get
+            {
+                return ViewState["OffCssClass"] as string ?? "";
+            }
+
+            set
+            {
+                ViewState["OffCssClass"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Toggle"/> is checked.
         /// </summary>
         /// <value>
@@ -320,7 +370,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format( @"Rock.controls.toggleButton.initialize({{ id: '{0}', activeButtonCssClass: '{1}' }});", this.ClientID, this.ActiveButtonCssClass );
+            var script = string.Format( @"Rock.controls.toggleButton.initialize({{ id: '{0}', activeButtonCssClass: '{1}', onButtonCssClass: '{2}', offButtonCssClass: '{3}' }});", this.ClientID, this.ActiveButtonCssClass, this.OnCssClass, this.OffCssClass );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "toggle-script" + this.ClientID, script, true );
         }
 
@@ -379,11 +429,13 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Checked )
             {
-                _btnOn.AddCssClass( this.ActiveButtonCssClass + " active" );
+                _btnOn.AddCssClass( this.ActiveButtonCssClass + " " + this.OnCssClass + " active" );
+                //_btnOff.RemoveCssClass( this.OffCssClass );
             }
             else
             {
-                _btnOff.AddCssClass( this.ActiveButtonCssClass + " active" );
+                _btnOff.AddCssClass( this.ActiveButtonCssClass + " " + this.OffCssClass + " active" );
+                //_btnOn.RemoveCssClass( this.OnCssClass );
             }
 
             _btnOn.RenderControl( writer );
