@@ -381,7 +381,7 @@ img.jcrop-preview {
 .rock-modal .modal-header small {
   margin-top: 12px;
   display: block;
-  color: #000000;
+  color: #080707;
 }
 .rock-modal .modal-body {
   color: #6a6a6a;
@@ -4162,6 +4162,9 @@ pre {
 }
 .rock-modal-frame {
   border: 1px solid #282526;
+}
+.close {
+  opacity: 0.6;
 }
 /*#endregion */
 /*#region  
