@@ -180,7 +180,7 @@ namespace Rock.Model
                     YValue = a.Count
                 } ).ToList();
             }
-            else if ( graphBy == AttendanceGraphBy.Type )
+            else if ( graphBy == AttendanceGraphBy.Group )
             {
                 var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Group } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 

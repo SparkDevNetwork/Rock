@@ -44,7 +44,7 @@
                                     <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
                                     <div class="btn-group">
                                         <asp:HyperLink ID="btnGraphByTotal" runat="server" CssClass="btn btn-default active" Text="Total" data-val="0" />
-                                        <asp:HyperLink ID="btnGraphByType" runat="server" CssClass="btn btn-default" Text="Type" data-val="1" />
+                                        <asp:HyperLink ID="btnGraphByGroup" runat="server" CssClass="btn btn-default" Text="Group" data-val="1" />
                                         <asp:HyperLink ID="btnGraphByCampus" runat="server" CssClass="btn btn-default" Text="Campus" data-val="2" />
                                         <asp:HyperLink ID="btnGraphByTime" runat="server" CssClass="btn btn-default" Text="Schedule" data-val="3" />
                                     </div>
@@ -70,7 +70,7 @@
                     <div class="col-md-6">
 
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
-                        <h4>Type</h4>
+                        <h4>Group</h4>
                         <ul class="rocktree">
 
                             <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
