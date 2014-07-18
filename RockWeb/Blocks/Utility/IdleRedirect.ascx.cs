@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Utility
                     window.location = '{1}';
                 }});
             }});
-            ", ms, GetAttributeValue( "NewLocation" ) );
+            ", ms, ResolveRockUrl( GetAttributeValue( "NewLocation" ) ) );
             ScriptManager.RegisterStartupScript( Page, this.GetType(), "idle-timeout", script, true );
         }
    }
