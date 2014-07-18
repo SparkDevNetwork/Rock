@@ -175,3 +175,7 @@ span.data-view-filter-label {
     padding: 2px 15px 5px 15px;
 }
 
+div.toggle-container {
+    display: inline-block;
+}
+
