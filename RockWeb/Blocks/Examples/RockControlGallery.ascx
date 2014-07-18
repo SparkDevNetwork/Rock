@@ -401,6 +401,12 @@
                         <Rock:Toggle ID="tglExample6" runat="server" ActiveButtonCssClass="btn-primary" />
                     </div>
 
+                    <a id="ToggleOnOffStyles"></a>
+                    <p>Want different colors for the on/off states?</p>
+                    <div runat="server" class="r-example">
+                        <Rock:Toggle ID="tglExampleOnOff" OnCssClass="btn-success" OffCssClass="btn-danger" runat="server" />
+                    </div>
+
                     <a id="ToggleSizes"></a>
                     <p>Need larger or smaller toggle buttons? Set ButtonSizeCssClass to <code>.btn-lg</code>, <code>.btn-sm</code> or <code>.btn-xs</code></p>
                     <div runat="server" class="r-example">
