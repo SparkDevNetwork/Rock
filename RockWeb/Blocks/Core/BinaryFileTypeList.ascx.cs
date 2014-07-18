@@ -191,7 +191,9 @@ namespace RockWeb.Blocks.Administration
             {
                 var anonymousObject = e.Row.DataItem;
                 var securityField = gBinaryFileType.Columns.OfType<SecurityField>().First();
-                e.Row.Cells[gBinaryFileType.Columns.IndexOf(securityField)].Style[System.Web.UI.HtmlTextWriterStyle.Visibility] = (bool)anonymousObject.GetPropertyValue("RequiresSecurity") ? "visible" : "hidden";
+                var cell = e.Row.Cells[gBinaryFileType.Columns.IndexOf( securityField )] as DataControlFieldCell;
+                cell.Controls[0].Visible = (bool)anonymousObject.GetPropertyValue( "RequiresSecurity" );
+                
             }
         }
 
