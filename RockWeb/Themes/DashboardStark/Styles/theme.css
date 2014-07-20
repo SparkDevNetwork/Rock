@@ -463,6 +463,7 @@ img.jcrop-preview {
     24. Image Cropper - styles for image crop component
     25. Active Users - styles for the active users block
     26. Navigation for Paging - styles for creating a pager
+    27. List Extensions - additional list options
 */
 .picker {
   position: relative;
@@ -1708,6 +1709,21 @@ ul.rocklist .rocklist-item.selected {
 }
 .nav-paging .btn-next {
   float: right;
+}
+.list-horizontal:before,
+.list-horizontal:after {
+  content: " ";
+  /* 1 */
+  display: table;
+  /* 2 */
+}
+.list-horizontal:after {
+  clear: both;
+}
+.list-horizontal li {
+  float: left;
+  margin-right: 2px;
+  margin-bottom: 4px;
 }
 /*
     Used to manage styles related to Rock's forms
