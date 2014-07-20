@@ -29,7 +29,7 @@
                     <asp:PlaceHolder runat="server">
                         <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
                         <span class="pull-right">
-                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" ActiveButtonCssClass="btn-info" OnCheckedChanged="tglRoom_CheckedChanged" />
+                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </span>
                     </asp:PlaceHolder>
                 </asp:Panel>
@@ -54,11 +54,11 @@
 
                     <asp:Repeater ID="rptPeople" runat="server">
                         <ItemTemplate>
-                            <li id="liNavItem" runat="server" class="list-group-item clickable" >
+                            <li id="liNavItem" runat="server" class="list-group-item clickable clearfix" >
                                 <asp:PlaceHolder runat="server">
-                                    <asp:Literal ID="imgPerson" runat="server" />
+                                    <div class="photoframe margin-r-md"><asp:Literal ID="imgPerson" runat="server" /></div>
                                     <%# Eval("Name") %>
-                                    <span class="pull-right">
+                                    <span class="pull-right margin-t-md">
                                         <%# Eval("GroupName") %><asp:Literal ID="lStatus" runat="server" />
                                     </span>
                                 </asp:PlaceHolder>

@@ -1042,7 +1042,7 @@ namespace Rock.Model
         /// <value>
         /// The email tag.
         /// </value>
-        public string GetEmailTag( string rockUrlRoot )
+        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "" )
         {
             if ( !string.IsNullOrWhiteSpace( Email ) )
             {
@@ -1055,20 +1055,20 @@ namespace Rock.Model
                         case EmailPreference.EmailAllowed:
                             {
                                 return string.Format(
-                                    "<a href='{0}Communication?person={1}'>{2}</a>",
-                                    rockUrlRoot, Id, Email );
+                                    "<a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5}</a>",
+                                    cssClass, rockUrlRoot, Id, preText, Email, postText );
                             }
                         case EmailPreference.NoMassEmails:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a href='{0}Communication?person={1}'>{2}</a> <i class='fa fa-exchange'></i></span>",
-                                    rockUrlRoot, Id, Email );
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5} <i class='fa fa-exchange'></i></a> </span>",
+                                    cssClass, rockUrlRoot, Id, preText, Email, postText );
                             }
                         case EmailPreference.DoNotEmail:
                             {
                                 return string.Format(
-                                    "<span class='js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{0} <i class='fa fa-ban'></i></span>",
-                                    Email );
+                                    "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
+                                    cssClass, preText, Email, postText );
                             }
                     }
                 }
