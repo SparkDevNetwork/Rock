@@ -120,6 +120,8 @@ namespace RockWeb.Blocks.Utility
                 if ( attendanceInfo != null && attendanceInfo.IsActive )
                 {
                     e.Row.AddCssClass( "success" );
+                    Literal lActive = (Literal)e.Row.FindControl( "lActive" );
+                    lActive.Text = "<span class='label label-success'>Current</span>";
                 }
             }
         }
@@ -134,6 +136,14 @@ namespace RockWeb.Blocks.Utility
                 if ( familyMember.FamilyRole.ToString() == "Child" )
                 {
                     lFamilyIcon.Text = "<i class='fa fa-child'></i>";
+                }
+                else if ( familyMember.Gender == Gender.Female )
+                {
+                    lFamilyIcon.Text = "<i class='fa fa-female'></i>";
+                }
+                else
+                {
+                    lFamilyIcon.Text = "<i class='fa fa-male'></i>";
                 }
             }
         }

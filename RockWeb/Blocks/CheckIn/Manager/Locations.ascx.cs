@@ -400,6 +400,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         lStatus.Text = string.Empty;
                     }
                 }
+
+                if ( person.Age != string.Empty )
+                {
+                    var lAge = e.Item.FindControl( "lAge" ) as Literal;
+                    lAge.Text = string.Format("<small>(Age: {0})</small>", person.Age);
+                }
             }
         }
 
@@ -1065,6 +1071,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 Guid = a.Person.Guid,
                                 Name = a.Person.FullName,
                                 Gender = a.Person.Gender,
+                                Age = a.Person.Age.ToString() ?? "",
                                 PhotoId = a.Person.PhotoId,
                                 GroupName = a.Group.Name
                             } );
@@ -1229,6 +1236,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime? LastCheckin { get; set; }
             public bool CheckedInNow { get; set; }
             public string GroupName { get; set; }
+            public string Age { get; set; }
         }
 
         #endregion

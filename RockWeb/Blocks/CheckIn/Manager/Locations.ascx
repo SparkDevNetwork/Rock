@@ -56,8 +56,11 @@
                         <ItemTemplate>
                             <li id="liNavItem" runat="server" class="list-group-item clickable clearfix" >
                                 <asp:PlaceHolder runat="server">
-                                    <div class="photoframe margin-r-md"><asp:Literal ID="imgPerson" runat="server" /></div>
-                                    <%# Eval("Name") %>
+                                    <div class="photoframe pull-left margin-r-md"><asp:Literal ID="imgPerson" runat="server" /></div>
+                                    <div class="pull-left margin-t-sm">
+                                        <%# Eval("Name") %> <br /> 
+                                        <asp:Literal ID="lAge" runat="server" />
+                                    </div>
                                     <span class="pull-right margin-t-md">
                                         <%# Eval("GroupName") %><asp:Literal ID="lStatus" runat="server" />
                                     </span>
