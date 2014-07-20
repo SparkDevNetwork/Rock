@@ -17,10 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -120,6 +120,30 @@ namespace RockWeb.Blocks.Utility
                 if ( attendanceInfo != null && attendanceInfo.IsActive )
                 {
                     e.Row.AddCssClass( "success" );
+                    Literal lActive = (Literal)e.Row.FindControl( "lActive" );
+                    lActive.Text = "<span class='label label-success'>Current</span>";
+                }
+            }
+        }
+
+        protected void rptrFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                dynamic familyMember = e.Item.DataItem as dynamic;
+                Literal lFamilyIcon = (Literal)e.Item.FindControl( "lFamilyIcon" );
+
+                if ( familyMember.FamilyRole.ToString() == "Child" )
+                {
+                    lFamilyIcon.Text = "<i class='fa fa-child'></i>";
+                }
+                else if ( familyMember.Gender == Gender.Female )
+                {
+                    lFamilyIcon.Text = "<i class='fa fa-female'></i>";
+                }
+                else
+                {
+                    lFamilyIcon.Text = "<i class='fa fa-male'></i>";
                 }
             }
         }
@@ -150,7 +174,7 @@ namespace RockWeb.Blocks.Utility
                 }
 
                 lEmail.Visible = !string.IsNullOrWhiteSpace( person.Email );
-                lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ) );
+                lEmail.Text = person.GetEmailTag( ResolveRockUrl( "/" ), "btn btn-default", "<i class='fa fa-envelope'></i>" );
 
                 var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
                 var isFamilyChild = new Dictionary<int, bool>();
@@ -168,6 +192,8 @@ namespace RockWeb.Blocks.Utility
                     {
                         Url = urlRoot + m.Person.Guid.ToString(),
                         FullName = m.Person.FullName,
+                        Gender = m.Person.Gender,
+                        FamilyRole = m.GroupRole,
                         Note = isFamilyChild[m.GroupId] ?
                             ( m.GroupRole.Guid.Equals( childGuid ) ? " (Sibling)" : "(Parent)" ) :
                             ( m.GroupRole.Guid.Equals( childGuid ) ? " (Child)" : "" )
@@ -255,5 +281,6 @@ namespace RockWeb.Blocks.Utility
         }
 
         #endregion
-    }
+        
+}
 }

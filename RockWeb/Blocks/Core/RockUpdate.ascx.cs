@@ -601,7 +601,8 @@ namespace RockWeb.Blocks.Core
         public string Street2 { get; set; }
         public string City { get; set; }
         public string State { get; set; }
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
+        public string Country { get; set; }
 
         public ImpactLocation( Rock.Model.Location location )
         {
@@ -609,7 +610,8 @@ namespace RockWeb.Blocks.Core
             Street2 = location.Street2;
             City = location.City;
             State = location.State;
-            Zip = location.Zip;
+            PostalCode = location.PostalCode;
+            Country = location.Country;
         }
     }
 

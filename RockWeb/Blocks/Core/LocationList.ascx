@@ -23,7 +23,7 @@
                             <asp:BoundField DataField="Street1" HeaderText="Street Address" />
                             <asp:BoundField DataField="City" HeaderText="City" />
                             <asp:BoundField DataField="State" HeaderText="State" />
-                            <asp:BoundField DataField="Zip" HeaderText="Zip" />
+                            <asp:BoundField DataField="PostalCode" HeaderText="Postal Code" />
                             <asp:BoundField DataField="Country" HeaderText="Country" />
                         </Columns>
                     </Rock:Grid>

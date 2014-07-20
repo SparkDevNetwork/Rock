@@ -136,10 +136,7 @@ namespace RockWeb.Blocks.Core
             campus.Location.LocationTypeValueId = locationCampusValue.Id;
 
             string preValue = campus.Location.GetFullStreetAddress();
-            campus.Location.Street1 = tbStreet.Text;
-            campus.Location.City = tbCity.Text;
-            campus.Location.State = !string.IsNullOrWhiteSpace( tbCity.Text ) ? ddlState.SelectedValue : string.Empty;
-            campus.Location.Zip = tbZip.Text;
+            acAddress.GetValues( campus.Location );
             string postValue = campus.Location.GetFullStreetAddress();
 
             campus.ShortCode = tbCampusCode.Text;
@@ -205,19 +202,7 @@ namespace RockWeb.Blocks.Core
             tbDescription.Text = campus.Description;
             tbUrl.Text = campus.Url;
             tbPhoneNumber.Text = campus.PhoneNumber;
-            if (campus.Location != null)
-            {
-                tbStreet.Text = campus.Location.Street1;
-                tbCity.Text = campus.Location.City;
-                ddlState.SelectedValue = campus.Location.State;
-                tbZip.Text = campus.Location.Zip;
-            }
-            else
-            {
-                tbStreet.Text = string.Empty;
-                tbCity.Text = string.Empty;
-                tbZip.Text = string.Empty;
-            }
+            acAddress.SetValues( campus.Location );
 
             tbCampusCode.Text = campus.ShortCode;
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );

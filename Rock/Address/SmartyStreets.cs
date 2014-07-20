@@ -70,7 +70,7 @@ namespace Rock.Address
                 var dpvCodes = GetAttributeValue("AcceptableDPVCodes").SplitDelimitedValues();
                 var precisions = GetAttributeValue("AcceptablePrecisions").SplitDelimitedValues();
 
-                var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.Zip, candidates = 1 } };
+                var payload = new[] { new { addressee = location.Name, street = location.Street1, street2 = location.Street2, city = location.City, state = location.State, zipcode = location.PostalCode, candidates = 1 } };
 
                 var client = new RestClient( string.Format( "https://api.smartystreets.com/street-address?auth-id={0}&auth-token={1}", authId, authToken ) );
                 var request = new RestRequest( Method.POST );
@@ -96,7 +96,7 @@ namespace Rock.Address
                             location.Street2 = candidate.delivery_line_2;
                             location.City = candidate.components.city_name;
                             location.State = candidate.components.state_abbreviation;
-                            location.Zip = candidate.components.zipcode + "-" + candidate.components.plus4_code;
+                            location.PostalCode = candidate.components.zipcode + "-" + candidate.components.plus4_code;
                             location.StandardizedDateTime = RockDateTime.Now;
                         }
                         else

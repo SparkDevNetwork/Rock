@@ -6,31 +6,36 @@
         <h4><asp:Literal ID="lName" runat="server"></asp:Literal></h4>
 
         <div class="row">
-            <div class="col-xs-5 col-sm-3">
-                <asp:Literal ID="lPhoto" runat="server"></asp:Literal>
+            <div class="col-sm-3">
+                <div class="photoframe">
+                    <asp:Literal ID="lPhoto" runat="server" />
+                </div>
             </div>
-            <div class="col-xs-7 col-sm-9">
-                <Rock:RockControlWrapper ID="rcwFamily" runat="server" Label="Family">
-                    <asp:Repeater ID="rptrFamily" runat="server">
-                        <ItemTemplate>
-                            <li><a href='<%# Eval("Url") %>' ><%# Eval("FullName") %></a> <small><%# Eval("Note") %></small></li>
-                        </ItemTemplate>
-                    </asp:Repeater>
+            <div class="col-sm-9">
+                <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
+                    <ul class="list-unstyled list-horizontal">
+                        <asp:Repeater ID="rptrPhones" runat="server">
+                            <ItemTemplate>
+                                <li><a class="btn btn-default" href='tel:<%# Eval("Number") %>' ><i class="fa fa-phone-square"></i> <%# Eval("NumberFormatted") %> <small>(<%# Eval("NumberTypeValue.Name") %>)</small></a></li>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </ul>
                 </Rock:RockControlWrapper>
+
+                <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
             </div>
         </div>
 
-        <Rock:RockControlWrapper ID="rcwPhone" runat="server" Label="Phone(s)">
-            <ul>
-                <asp:Repeater ID="rptrPhones" runat="server">
+        <Rock:RockControlWrapper ID="rcwFamily" runat="server" Label="Family" CssClass="list-unstyled">
+            <ul class="list-unstyled list-horizontal">
+                <asp:Repeater ID="rptrFamily" runat="server" OnItemDataBound="rptrFamily_ItemDataBound">
                     <ItemTemplate>
-                        <li><a href='tel:<%# Eval("Number") %>' ><%# Eval("NumberFormatted") %></a> <small>(<%# Eval("NumberTypeValue.Name") %>)</small></li>
+                        <li><a class="btn btn-action" href='<%# Eval("Url") %>' ><asp:Literal ID="lFamilyIcon" runat="server" /> <%# Eval("FullName") %> <small><%# Eval("Note") %></small></a> </li>
                     </ItemTemplate>
                 </asp:Repeater>
             </ul>
         </Rock:RockControlWrapper>
-
-        <Rock:RockLiteral ID="lEmail" runat="server" Label="Email" />
+        
 
         <Rock:RockControlWrapper ID="rcwCheckinHistory" runat="server" Label="Checkin History">
             <Rock:Grid ID="gHistory" runat="server" DisplayType="Light" AllowPaging="false" CssClass="table-condensed">
@@ -38,7 +43,11 @@
                     <asp:BoundField DataField="Date" HeaderText="Date" DataFormatString="{0:MM/dd/yy}" />
                     <asp:BoundField DataField="Group" HeaderText="Group"  />
                     <asp:BoundField DataField="Location" HeaderText="Location" HtmlEncode="false" />
-                    <asp:BoundField DataField="Schedule" HeaderText="Schedule" />
+                    <asp:TemplateField HeaderText="Schedule">
+                        <ItemTemplate>
+                            <%# Eval("Schedule") %> <asp:Literal id="lActive" runat="server"></asp:Literal>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                 </Columns>
             </Rock:Grid>
         </Rock:RockControlWrapper>

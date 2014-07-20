@@ -1349,7 +1349,48 @@ namespace Rock.Data
                     ) );
         }
 
-        /// <summary>
+        public void UpdateDefinedValueByName( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
+        {
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                IF EXISTS ( SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+                BEGIN
+                    UPDATE [DefinedValue]
+                    SET 
+                         [IsSystem] = {4}
+                        ,[Description] = '{2}'
+                        ,[Order] = {3}
+                    WHERE [DefinedTypeId] = @DefinedTypeId
+                    AND [Name] = '{1}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [DefinedValue]
+                        ([IsSystem]
+                        ,[DefinedTypeId]
+                        ,[Name]
+                        ,[Description]
+                        ,[Order]
+                        ,[Guid])
+                    VALUES
+                        ({4}
+                        ,@DefinedTypeId
+                        ,'{1}'
+                        ,'{2}'
+                        ,{3}
+                        ,NEWID())
+                END
+",
+                    definedTypeGuid,
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    order,
+                    ( isSystem ? "1" : "0" )
+                    ) );
+        }        /// <summary>
         /// Deletes the DefinedValue.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -1399,6 +1440,47 @@ namespace Rock.Data
             );
         }
 
+        public void AddDefinedValueAttributeValueByName( string definedTypeGuid, string definedValueName, string attributeKey, string value )
+        {
+            Migration.Sql( string.Format( @"
+                
+                DECLARE @DefinedTypeId int
+                SET @DefinedTypeId = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '{0}')
+
+                DECLARE @DefinedValueId int
+                SET @DefinedValueId = (SELECT [Id] FROM [DefinedValue] WHERE [DefinedTypeId] = @DefinedTypeId AND [Name] = '{1}' )
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (
+                    SELECT [Id] 
+                    FROM [Attribute] 
+                    WHERE [EntityTypeQualifierColumn] = 'DefinedTypeId'
+                    AND [EntityTypeQualifierValue] = CAST(@DefinedTypeId as varchar)
+                    AND [Key] = '{2}'
+                )
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @DefinedValueId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Order],[Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@DefinedValueId,
+                    0,'{3}',
+                    NEWID())
+",
+                    definedTypeGuid,
+                    definedValueName,
+                    attributeKey,
+                    value.Replace( "'", "''" )
+                )
+            );
+        }        
+        
         #endregion
 
         #region Security/Auth

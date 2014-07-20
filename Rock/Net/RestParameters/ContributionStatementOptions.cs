@@ -60,11 +60,11 @@ namespace Rock.Net.RestParameters
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [order by zip code].
+        /// Gets or sets a value indicating whether [order by postal code].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [order by zip code]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
         /// </value>
-        public bool OrderByZipCode { get; set; }
+        public bool OrderByPostalCode { get; set; }
     }
 }
