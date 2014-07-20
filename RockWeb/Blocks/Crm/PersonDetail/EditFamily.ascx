@@ -104,12 +104,12 @@
                                             <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
                                         </EditItemTemplate>
                                     </asp:TemplateField>
-                                    <asp:TemplateField HeaderText="Zip">
+                                    <asp:TemplateField HeaderText="Postal Code">
                                         <ItemTemplate>
-                                            <%# Eval("Zip") %>
+                                            <%# Eval("PostalCode") %>
                                         </ItemTemplate>
                                         <EditItemTemplate>
-                                            <Rock:RockTextBox ID="tbZip" runat="server" Text='<%# Eval("Zip") %>' CssClass="input-small" />
+                                            <Rock:RockTextBox ID="tbZip" runat="server" Text='<%# Eval("PostalCode") %>' CssClass="input-small" />
                                         </EditItemTemplate>
                                     </asp:TemplateField>
                                     <asp:TemplateField HeaderText="Mailing" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center">
