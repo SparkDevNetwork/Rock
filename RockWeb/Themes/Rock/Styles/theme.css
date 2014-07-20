@@ -445,7 +445,7 @@ img.jcrop-preview {
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Pagelist Nav - Pill nav of pages
     8. Tags - component that allows you to tag entities
-    9. 
+    9. Photo Frame - wraps a nice border around photos
     10. Smart Search - search at th top of the page for searching people, groups, etc.
     11. Fieldset Actions - styling for the button actions on field sets
     12. Title - markup for styling header titles
@@ -990,6 +990,13 @@ div.tagsinput .tags_clear {
   div.tagsinput input {
     margin: 0;
   }
+}
+.photoframe {
+  border: 4px solid #282526;
+  display: inline-block;
+}
+.photoframe.photoframe-sm {
+  border-width: 2px;
 }
 .smartsearch {
   width: 290px;
@@ -3976,6 +3983,14 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-danger a.help {
   border-bottom: 0;
+}
+.system-error pre {
+  background-color: transparent;
+  border: 0;
+  color: inherit;
+}
+.system-error .close {
+  color: inherit;
 }
 .carousel-control .fa-chevron-left,
 .carousel-control .fa-chevron-right {
