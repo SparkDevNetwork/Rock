@@ -29,7 +29,7 @@
                     <asp:PlaceHolder runat="server">
                         <i class="fa fa-chevron-left"></i> <asp:Literal ID="lNavHeading" runat="server" />
                         <span class="pull-right">
-                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglRoom_CheckedChanged" />
+                            <Rock:Toggle ID="tglHeadingRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged" />
                         </span>
                     </asp:PlaceHolder>
                 </asp:Panel>
@@ -44,7 +44,7 @@
                                     <span class="pull-right">
                                         <span class='badge<%# (int)Eval("CurrentCount") > 0 ? " badge-success" : "" %> '><%# ((int)Eval("CurrentCount")).ToString("N0") %></span>
                                         &nbsp;&nbsp;
-                                        <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglRoom_CheckedChanged"  />
+                                        <Rock:Toggle ID="tglRoom" runat="server" OnText="Open" OffText="Close" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-danger" OnCheckedChanged="tglRoom_CheckedChanged"  />
                                         <i class='fa fa-fw fa-chevron-right'></i>
                                     </span>
                                 </asp:PlaceHolder>
@@ -54,11 +54,14 @@
 
                     <asp:Repeater ID="rptPeople" runat="server">
                         <ItemTemplate>
-                            <li id="liNavItem" runat="server" class="list-group-item clickable" >
+                            <li id="liNavItem" runat="server" class="list-group-item clickable clearfix" >
                                 <asp:PlaceHolder runat="server">
-                                    <asp:Literal ID="imgPerson" runat="server" />
-                                    <%# Eval("Name") %>
-                                    <span class="pull-right">
+                                    <div class="photoframe pull-left margin-r-md"><asp:Literal ID="imgPerson" runat="server" /></div>
+                                    <div class="pull-left margin-t-sm">
+                                        <%# Eval("Name") %> <br /> 
+                                        <asp:Literal ID="lAge" runat="server" />
+                                    </div>
+                                    <span class="pull-right margin-t-md">
                                         <%# Eval("GroupName") %><asp:Literal ID="lStatus" runat="server" />
                                     </span>
                                 </asp:PlaceHolder>

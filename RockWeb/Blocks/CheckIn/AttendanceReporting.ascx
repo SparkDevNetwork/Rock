@@ -2,10 +2,10 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        
+
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i> Attendance Reporting</h1>
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Reporting</h1>
             </div>
             <div class="panel-body">
 
@@ -40,23 +40,27 @@
 
                         <Rock:RockControlWrapper ID="rcwGraphBy" runat="server" Label="Graph By">
                             <div class="controls">
-                                <div class="btn-group js-graph-by">
+                                <div class="js-graph-by">
                                     <Rock:HiddenFieldWithClass ID="hfGraphBy" CssClass="js-hidden-selected" runat="server" />
-                                    <asp:HyperLink ID="btnGraphByTotal" runat="server" CssClass="btn btn-primary" Text="Total" data-val="0" />
-                                    <asp:HyperLink ID="btnGraphByType" runat="server" CssClass="btn btn-default" Text="Type" data-val="1" />
-                                    <asp:HyperLink ID="btnGraphByCampus" runat="server" CssClass="btn btn-default" Text="Campus" data-val="2" />
-                                    <asp:HyperLink ID="btnGraphByTime" runat="server" CssClass="btn btn-default" Text="Schedule" data-val="3" />
+                                    <div class="btn-group">
+                                        <asp:HyperLink ID="btnGraphByTotal" runat="server" CssClass="btn btn-default active" Text="Total" data-val="0" />
+                                        <asp:HyperLink ID="btnGraphByGroup" runat="server" CssClass="btn btn-default" Text="Group" data-val="1" />
+                                        <asp:HyperLink ID="btnGraphByCampus" runat="server" CssClass="btn btn-default" Text="Campus" data-val="2" />
+                                        <asp:HyperLink ID="btnGraphByTime" runat="server" CssClass="btn btn-default" Text="Schedule" data-val="3" />
+                                    </div>
                                 </div>
                             </div>
                         </Rock:RockControlWrapper>
 
                         <Rock:RockControlWrapper ID="rcwGroupBy" runat="server" Label="Group By">
                             <div class="controls">
-                                <div class="btn-group js-group-by">
+                                <div class="js-group-by">
                                     <Rock:HiddenFieldWithClass ID="hfGroupBy" CssClass="js-hidden-selected" runat="server" />
-                                    <asp:HyperLink ID="btnGroupByWeek" runat="server" CssClass="btn btn-primary" Text="Week" data-val="0" />
-                                    <asp:HyperLink ID="btnGroupByMonth" runat="server" CssClass="btn btn-default" Text="Month" data-val="1" />
-                                    <asp:HyperLink ID="btnGroupByYear" runat="server" CssClass="btn btn-default" Text="Year" data-val="2" />
+                                    <div class="btn-group">
+                                        <asp:HyperLink ID="btnGroupByWeek" runat="server" CssClass="btn btn-default active" Text="Week" data-val="0" />
+                                        <asp:HyperLink ID="btnGroupByMonth" runat="server" CssClass="btn btn-default" Text="Month" data-val="1" />
+                                        <asp:HyperLink ID="btnGroupByYear" runat="server" CssClass="btn btn-default" Text="Year" data-val="2" />
+                                    </div>
                                 </div>
                             </div>
                         </Rock:RockControlWrapper>
@@ -66,7 +70,7 @@
                     <div class="col-md-6">
 
                         <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="true" />
-                        <h4>Type</h4>
+                        <h4>Group</h4>
                         <ul class="rocktree">
 
                             <asp:Repeater ID="rptGroupTypes" runat="server" OnItemDataBound="rptGroupTypes_ItemDataBound">
@@ -80,14 +84,12 @@
 
             </div>
         </div>
-        
-        
 
         <script>
             function setActiveButtonGroupButton($activeBtn) {
-                $activeBtn.removeClass('btn-default').addClass('btn-primary');
-                $activeBtn.siblings('.btn').addClass('btn-default').removeClass('btn-primary');
-                $activeBtn.siblings('.js-hidden-selected').val($activeBtn.data('val'));
+                $activeBtn.addClass('active');
+                $activeBtn.siblings('.btn').removeClass('active');
+                $activeBtn.closest('.btn-group').siblings('.js-hidden-selected').val($activeBtn.data('val'));
             }
 
             Sys.Application.add_load(function () {

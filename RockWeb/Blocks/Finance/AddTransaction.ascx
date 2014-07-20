@@ -59,20 +59,7 @@
                                     <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
                                     <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Phone"></Rock:PhoneNumberBox>
                                     <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
-                                    <Rock:RockTextBox ID="txtStreet" runat="server" Label="Address"></Rock:RockTextBox>
-                                
-                                    <div class="row">
-                                        <div class="col-md-7">
-                                            <Rock:RockTextBox Label="City" ID="txtCity" runat="server" />
-                                        </div>
-                                        <div class="col-md-2">
-                                            <Rock:StateDropDownList Label="State" ID="ddlState" runat="server" UseAbbreviation="true" />
-                                        </div>
-                                        <div class="col-md-3">
-                                            <Rock:RockTextBox  ID="txtZip" runat="server" Label="Zip" />
-                                        </div>
-                                    </div>
-                                
+                                    <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                 </fieldset>
                             </div>
                         </div>
@@ -119,18 +106,7 @@
                                         <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
                                         <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
-                                            <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
-                                            <div class="row">
-                                                <div class="col-md-7">
-                                                    <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
-                                                </div>
-                                                <div class="col-md-3">                                                
-                                                    <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
-                                                </div>
-                                            </div>
+                                            <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                         </div>                                    
                                     </div>
                                 </fieldset>

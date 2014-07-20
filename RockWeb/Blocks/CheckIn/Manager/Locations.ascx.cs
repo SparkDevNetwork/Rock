@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [CustomRadioListField( "Navigation Mode", "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation heirarchy that is most appropriate for your organization.", "T:Group Type,L:Location,", true, "T", "", 0, "Mode" )]
     [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", true, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -399,6 +399,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         lStatus.Text = string.Empty;
                     }
+                }
+
+                if ( person.Age != string.Empty )
+                {
+                    var lAge = e.Item.FindControl( "lAge" ) as Literal;
+                    lAge.Text = string.Format("<small>(Age: {0})</small>", person.Age);
                 }
             }
         }
@@ -1065,6 +1071,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                 Guid = a.Person.Guid,
                                 Name = a.Person.FullName,
                                 Gender = a.Person.Gender,
+                                Age = a.Person.Age.ToString() ?? "",
                                 PhotoId = a.Person.PhotoId,
                                 GroupName = a.Group.Name
                             } );
@@ -1229,6 +1236,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime? LastCheckin { get; set; }
             public bool CheckedInNow { get; set; }
             public string GroupName { get; set; }
+            public string Age { get; set; }
         }
 
         #endregion

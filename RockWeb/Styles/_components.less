@@ -9,7 +9,7 @@
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Pagelist Nav - Pill nav of pages
     8. Tags - component that allows you to tag entities
-    9. 
+    9. Photo Frame - wraps a nice border around photos
     10. Smart Search - search at th top of the page for searching people, groups, etc.
     11. Fieldset Actions - styling for the button actions on field sets
     12. Title - markup for styling header titles
@@ -27,6 +27,7 @@
     24. Image Cropper - styles for image crop component
     25. Active Users - styles for the active users block
     26. Navigation for Paging - styles for creating a pager
+    27. List Extensions - additional list options
 */
 
 // 1. Pickers
@@ -372,7 +373,7 @@ ul.rocktree ul {
 // 6. Pagelist
 // -------------------------
 
-.page-list-as-blocks {
+.list-as-blocks {
     
     h3 {
         margin-top: 0;
@@ -382,16 +383,17 @@ ul.rocktree ul {
     
     ul {
         padding: 0;
+        list-style: none;
 
         li {
-            
             border-radius: @border-radius-base;
             border: 1px solid #bbb;
             float: left;
             margin: 0 1.25% @spacing-md-px;
             width: 47.5%;
             overflow: hidden;
-            
+            position: relative;
+            overflow: visible;
             text-align: center;
 
             a {
@@ -400,12 +402,23 @@ ul.rocktree ul {
                 color: @pagelist-text-color;
                 height: 80px;
                 padding: @spacing-md-px;
+                border-radius: @border-radius-base;
 
                 &:hover {
                     background-color: @accent-bold-color;
                     color: @accent-bold-text-color;
                 }
+                
+                div.notification {
+                    position: absolute;
+                    top: -10px;
+                    right: -6px;
 
+                    .label {
+                        border-radius: 36px;
+                        padding: 2px 6px;
+                    }
+                }
             }
 
             
@@ -414,7 +427,7 @@ ul.rocktree ul {
 }
 
 @media (min-width: @screen-sm-min) { // tablet portrait and larger
-    .page-list-as-blocks {
+    .list-as-blocks {
         ul {
             li {
                 margin: 0 2.5% @spacing-md-px;
@@ -713,7 +726,14 @@ div.tagsinput
  
 // 9. 
 // ------------------------
+.photoframe {
+    border: 4px solid @accent-bold-color;
+    display: inline-block;
 
+    &.photoframe-sm {
+        border-width: 2px;
+    }
+}
 
 
 
@@ -1115,40 +1135,51 @@ fieldset .actions {
 
 .imageupload-group {
 
-    .clearfix();
     margin-bottom: @spacing-md-px;
+    border: 1px solid darken(@accent-color, 20%);
+    border-radius: @border-radius-base;
+    padding: 2px;
+    display: table-cell;
+    position: relative;
+    
+    .imageupload-thumbnail {     
+        position: relative;
 
-    .imageupload-thumbnail {
+        .imageupload-thumbnail-image {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: 50%;
+        }
 
-        float: left;
-        border: 1px solid darken(@accent-color, 20%);
-        border-radius: @border-radius-base;
-        padding: 2px;
+        .imageupload-remove {
+            position: absolute;
+            bottom: 0;
+            right: 0;
 
-        img {
-            width: 50px;
-            height: 50px;
-            border-radius: (@border-radius-base - 1);
+            a {
+                padding: 2px 6px;
+                border-top-left-radius: @border-radius-base;
+                background-color: @btn-danger-bg;
+                color: @btn-danger-color;
+                cursor: pointer;
+                display: block;
+            }
         }
     }
 
-    .imageupload-remove {
-        float: left;
-        margin: 18px 4px 0;
-        width: 11px;
-    }
-
     .imageupload-dropzone {
-        float: left;
-        width: 100px;
-        height: 55px;
+        margin-top: 2px;
+        height: 30px;
         border: 1px dotted darken(@accent-light-color, 20%);
-        border-radius: @border-radius-base;
-        background-color: @accent-light-color;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        background-color: @btn-action-bg;
         text-align: center;
-        padding-top: 14px;
+        padding-top: 8px;
         position: relative;
         line-height: 12px;
+        cursor: pointer;
+        width: 100%;
 
         input {
             opacity: 0;
@@ -1160,24 +1191,34 @@ fieldset .actions {
         }
 
         span {
-            font-size: 11px;
-            color: darken(@accent-light-color, 20%);
+            font-size: 13px;
+            color: @btn-action-color;
             width: 100%;
         }
 
     }
+
+    .upload-progress {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        margin-left: -18px;
+        top: 50%;
+        margin-top: -37px;
+        opacity: 0.3;
+    }
+
 }
 
 .fileupload-group {
-    .clearfix();
+    display: table-cell;
     margin-bottom: @spacing-md-px;
+    border: 1px solid darken(@accent-color, 20%);
+    border-radius: @border-radius-base;
+    padding: 2px;
+    position: relative;
 
     .fileupload-thumbnail {
-
-        float: left;
-        border: 1px solid darken(@accent-color, 20%);
-        border-radius: @border-radius-base;
-        padding: 2px;
         position: relative;
 
         .file-link {
@@ -1185,10 +1226,10 @@ fieldset .actions {
             height: 50px;
             border-radius: (@border-radius-base - 1);
             font-size: 10px;
-            background-color: @accent-light-color;
-            color: darken( @accent-light-color, 30%);
+            background-color: @input-group-addon-bg;
+            color: @input-color;
             display: block;
-            padding-top: 33px;
+            padding-top: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -1198,36 +1239,47 @@ fieldset .actions {
                 content: '\f016';
                 font-family: FontAwesome;
                 font-size: 28px;
-                color: darken( @accent-light-color, 10%);
+                color: darken( @input-group-addon-bg, 15%);
                 -webkit-font-smoothing: antialiased;
                 margin-left: 42px;
                 position: absolute;
-                top: 4px;
-                left: 0;
+                top: 50%;
+                left: 50%;
+                margin-top: -20px;
+                margin-left: -12px;
             }
 
             &.file-exists:after {
                 content: '\f15c';
-                color: darken( @accent-light-color, 30%);
+                color: darken( @input-group-addon-bg, 15%);
+                margin-top: -10px;
             }
         }
     }
 
     .fileupload-remove {
-        float: left;
-        margin: 18px 4px 0;
-        width: 11px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        a {
+            padding: 2px 6px;
+            border-top-left-radius: @border-radius-base;
+            background-color: @btn-danger-bg;
+            color: @btn-danger-color;
+            cursor: pointer;
+            display: block;
+        }
     }
 
     .fileupload-dropzone {
-        float: left;
-        width: 100px;
-        height: 55px;
+        margin-top: 2px;
+        height: 30px;
         border: 1px dotted darken(@accent-light-color, 20%);
-        border-radius: @border-radius-base;
-        background-color: @accent-light-color;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        background-color: @btn-action-bg;
         text-align: center;
-        padding-top: 14px;
+        padding-top: 8px;
         position: relative;
         line-height: 12px;
 
@@ -1241,10 +1293,20 @@ fieldset .actions {
         }
 
         span {
-            font-size: 11px;
-            color: darken(@accent-light-color, 20%);
+            font-size: 13px;
+            color: @btn-action-color;
             width: 100%;
         }
+    }
+
+    .upload-progress {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        margin-left: -18px;
+        top: 50%;
+        margin-top: -37px;
+        opacity: 0.3;
     }
 }
 
@@ -1375,6 +1437,9 @@ ul.groupmembers {
             margin: 0;
         }
 
+        .btn {
+            margin-top: 6px;
+        }
     }
 }
 
@@ -1542,7 +1607,11 @@ ul.rocklist {
 }
 
 .image-editor-fileinput {
-    visibility:hidden;
+    display: none;
+}
+
+.image-editor-group.imageupload-group {
+    border: 0;
 }
 
 .image-editor-crop-container {
@@ -1586,5 +1655,19 @@ ul.rocklist {
 
     .btn-next {
         float: right;
+    }
+}
+
+
+// 27. List Extensions
+// -------------------------
+
+.list-horizontal {
+    .clearfix();
+
+    li {
+        float: left;
+        margin-right: 2px;
+        margin-bottom: 4px;
     }
 }

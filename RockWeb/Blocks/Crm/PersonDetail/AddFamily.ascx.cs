@@ -300,7 +300,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             if ( familyGroup != null )
                             {
                                 GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ),
-                                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
+                                    acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                             }
                         } );
 

@@ -644,13 +644,7 @@ achieve our mission.  We are so grateful for your commitment.
                         scheduledTransaction.AuthorizedPerson.Id,
                         DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
 
-                    if ( address != null )
-                    {
-                        txtBillingStreet.Text = address.Street1;
-                        txtBillingCity.Text = address.City;
-                        ddlBillingState.SelectedValue = address.State;
-                        txtBillingZip.Text = address.Zip;
-                    }
+                    acBillingAddress.SetValues( address );
 
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
@@ -1116,10 +1110,12 @@ achieve our mission.  We are so grateful for your commitment.
                 var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
                 if ( address != null )
                 {
-                    paymentInfo.Street = address.Street1;
+                    paymentInfo.Street1 = address.Street1;
+                    paymentInfo.Street2 = address.Street2;
                     paymentInfo.City = address.City;
                     paymentInfo.State = address.State;
-                    paymentInfo.Zip = address.Zip;
+                    paymentInfo.PostalCode = address.PostalCode;
+                    paymentInfo.Country = address.Country;
                 }
             }
 
@@ -1135,10 +1131,12 @@ achieve our mission.  We are so grateful for your commitment.
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
             cc.NameOnCard = Gateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
             cc.LastNameOnCard = txtCardLastName.Text;
-            cc.BillingStreet = txtBillingStreet.Text;
-            cc.BillingCity = txtBillingCity.Text;
-            cc.BillingState = ddlBillingState.SelectedValue;
-            cc.BillingZip = txtBillingZip.Text;
+            cc.BillingStreet1 = acBillingAddress.Street1;
+            cc.BillingStreet2 = acBillingAddress.Street2;
+            cc.BillingCity = acBillingAddress.City;
+            cc.BillingState = acBillingAddress.State;
+            cc.BillingPostalCode = acBillingAddress.PostalCode;
+            cc.BillingCountry = acBillingAddress.Country;
 
             return cc;
         }

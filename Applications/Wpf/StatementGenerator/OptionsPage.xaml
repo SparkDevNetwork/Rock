@@ -8,7 +8,7 @@
       d:DesignWidth="700"
       Title="Check Scanner - Options"
       Loaded="Page_Loaded"
-      Style="{StaticResource pageBackground}">
+      Style="{StaticResource pageBackgroundGrey}">
     <StackPanel>
         <Label Style="{StaticResource labelStyleLegend}"
                Margin="8,0">Options</Label>

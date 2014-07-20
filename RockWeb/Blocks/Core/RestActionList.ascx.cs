@@ -43,6 +43,10 @@ namespace RockWeb.Blocks.Administration
 
         #region Base Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -51,12 +55,20 @@ namespace RockWeb.Blocks.Administration
             gActions.GridRebind += gActions_GridRebind;
             gActions.Actions.ShowAdd = false;
             gActions.IsDeleteEnabled = false;
-            gActions.RowSelected += gActions_RowSelected;
+            if ( GetAttributeValue( "DetailPage" ).AsGuidOrNull() != null )
+            {
+                gActions.RowSelected += gActions_RowSelected;
+            }
            
             SecurityField securityField = gActions.Columns[2] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gActions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gActions_RowSelected( object sender, RowEventArgs e )
         {
             var queryParams = new Dictionary<string, string>();
@@ -108,6 +120,11 @@ namespace RockWeb.Blocks.Administration
 
         #region Events
 
+        /// <summary>
+        /// Handles the GridRebind event of the gActions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gActions_GridRebind( object sender, EventArgs e )
         {
             BindGrid();

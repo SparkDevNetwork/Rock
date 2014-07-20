@@ -191,15 +191,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             lbVerify.Visible = false;
                         }
                     }
-
-                    if ( !string.IsNullOrWhiteSpace( loc.Street2 ) )
-                    {
-                        PlaceHolder phStreet2 = e.Item.FindControl( "phStreet2" ) as PlaceHolder;
-                        if ( phStreet2 != null )
-                        {
-                            phStreet2.Controls.Add( new LiteralControl( string.Format( "{0}</br>", loc.Street2 ) ) );
-                        }
-                    }
                 }
             }
         }

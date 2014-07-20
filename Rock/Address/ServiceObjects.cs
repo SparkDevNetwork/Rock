@@ -60,7 +60,7 @@ namespace Rock.Address
                         location.Street2),
                     location.City,
                     location.State,
-                    location.Zip,
+                    location.PostalCode,
                     licenseKey );
 
                 result = location_match.Level;

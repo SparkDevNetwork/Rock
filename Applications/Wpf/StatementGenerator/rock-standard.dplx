@@ -38,7 +38,7 @@
 				<text>#AddressPersonNames#
 #Street1##IIF(len(Street2),"
 ")##Street2#
-#City#, #State# #Zip#</text>
+#City#, #State# #PostalCode#</text>
 			</recordArea>
 			<subReport id="OrganizationInfoReport" x="0" y="0" width="250">
 				<query id="OrgInfoQuery">
@@ -48,7 +48,7 @@
 				<detail id="OrgDetail" height="100">
 					<image height="51" path="logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
 					<recordArea x="0" width="252" id="raOrganizationAddress" height="42" y="54" fontSize="10">
-						<text>#Street1#, #City# #State# #Zip#
+						<text>#Street1#, #City# #State# #PostalCode#
 </text>
 					</recordArea>
 					<contentGroup id="ContentGroup1" height="55" width="200" x="162" y="66"/></detail>

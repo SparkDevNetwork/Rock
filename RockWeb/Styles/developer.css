@@ -174,3 +174,8 @@ span.data-view-filter-label {
 .nav > li > a.persondetails-actions {
     padding: 2px 15px 5px 15px;
 }
+
+div.toggle-container {
+    display: inline-block;
+}
+

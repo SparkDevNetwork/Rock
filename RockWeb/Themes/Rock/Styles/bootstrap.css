@@ -3398,7 +3398,7 @@ textarea.input-lg {
 }
 .btn:hover,
 .btn:focus {
-  color: #231f20;
+  color: #524c43;
   text-decoration: none;
 }
 .btn:active,
@@ -3419,7 +3419,7 @@ fieldset[disabled] .btn {
   box-shadow: none;
 }
 .btn-default {
-  color: #231f20;
+  color: #524c43;
   background-color: #ffffff;
   border-color: #dbd5cb;
 }
@@ -3428,7 +3428,7 @@ fieldset[disabled] .btn {
 .btn-default:active,
 .btn-default.active,
 .open .dropdown-toggle.btn-default {
-  color: #231f20;
+  color: #524c43;
   background-color: #ebebeb;
   border-color: #c2b8a7;
 }
@@ -4470,7 +4470,7 @@ input[type="button"].btn-block {
   }
 }
 .btn-default .caret {
-  border-top-color: #231f20;
+  border-top-color: #524c43;
 }
 .btn-primary .caret,
 .btn-success .caret,
@@ -4480,7 +4480,7 @@ input[type="button"].btn-block {
   border-top-color: #fff;
 }
 .dropup .btn-default .caret {
-  border-bottom-color: #231f20;
+  border-bottom-color: #524c43;
 }
 .dropup .btn-primary .caret,
 .dropup .btn-success .caret,
@@ -4875,7 +4875,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #e1dfd4;
+  background-color: #d3e0bb;
 }
 .nav > li.disabled > a {
   color: #f3f3f4;
@@ -4890,7 +4890,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #e1dfd4;
+  background-color: #d3e0bb;
   border-color: #478bae;
 }
 .nav .nav-divider {
@@ -4979,8 +4979,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
-  color: #616161;
-  background-color: #c2b8a7;
+  color: #ffffff;
+  background-color: #9ab864;
 }
 .nav-stacked > li {
   float: none;
@@ -5837,7 +5837,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   vertical-align: baseline;
   white-space: nowrap;
   text-align: center;
-  background-color: #f3f3f4;
+  background-color: #b4b4b4;
   border-radius: 10px;
 }
 .badge:empty {
@@ -6426,14 +6426,14 @@ a.list-group-item:focus {
   font-size: 21px;
   font-weight: bold;
   line-height: 1;
-  color: #000000;
+  color: inherit;
   text-shadow: 0 1px 0 #ffffff;
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
 .close:hover,
 .close:focus {
-  color: #000000;
+  color: inherit;
   text-decoration: none;
   cursor: pointer;
   opacity: 0.5;
