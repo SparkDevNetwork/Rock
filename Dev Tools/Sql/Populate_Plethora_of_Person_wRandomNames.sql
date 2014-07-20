@@ -6095,7 +6095,7 @@ while @personCounter < @maxPerson
             set @zipCode = ROUND(rand() * 9999, 0)+ 80000;
             set @streetAddress = ROUND(rand() * 9999, 0)+ 100;
 
-            INSERT INTO [Location] (Street1, Street2, City, [State], Zip, IsActive, [Guid])
+            INSERT INTO [Location] (Street1, Street2, City, [State], PostalCode, IsActive, [Guid])
             VALUES ( CONVERT(varchar(max), @streetAddress) + ' Random Street', '', 'Phoenix', 'AZ', @zipCode, 1, NEWID())
             SET @locationId = SCOPE_IDENTITY()
 
