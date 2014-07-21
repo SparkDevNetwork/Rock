@@ -83,11 +83,7 @@ namespace RockWeb.Blocks.Core
 
             lCurrentSelection.Text = defaultCampus != null ? defaultCampus.ToString() : "Select Campus";
 
-            var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList().Select( a => new
-            {
-                a.Name,
-                ContextKey = HttpUtility.UrlDecode(a.ContextKey)
-            } ).ToList();
+            var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList().Select( a => new { a.Name, ContextKey = HttpUtility.UrlDecode( a.ContextKey ) } ).ToList();
 
             rptCampuses.DataSource = campuses;
             rptCampuses.DataBind();
