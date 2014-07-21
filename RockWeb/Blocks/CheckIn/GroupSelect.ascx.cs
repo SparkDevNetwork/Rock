@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,52 +45,45 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !Page.IsPostBack )
                 {
                     ClearSelection();
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+
+                    CheckInPerson person = null;
+                    CheckInGroupType groupType = null;
+
+                    person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .SelectMany( f => f.People.Where( p => p.Selected ) )
+                        .FirstOrDefault();
+
+                    if ( person != null )
                     {
-                        var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                        if ( person != null )
+                        groupType = person.GroupTypes.Where( t => t.Selected )
+                                .FirstOrDefault();
+                    }
+
+                    if ( groupType == null )
+                    {
+                        GoBack();
+                    }
+
+                    lTitle.Text = person.ToString();
+                    lSubTitle.Text = groupType.ToString();
+
+                    var availGroups = groupType.Groups.Where( g => !g.ExcludedByFilter).ToList();
+                    if ( availGroups.Count == 1 )
+                    {
+                        if ( UserBackedUp )
                         {
-                            var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                            if ( groupType != null )
-                            {
-                                lGroupTypeName.Text = groupType.ToString();
-
-                                if ( groupType.Groups.Count == 1 )
-                                {
-                                    if ( UserBackedUp )
-                                    {
-                                        GoBack();
-                                    }
-                                    else
-                                    {
-                                        foreach ( var group in groupType.Groups )
-                                        {
-                                            group.Selected = true;
-                                        }
-
-                                        ProcessSelection( maWarning );
-                                    }
-                                }
-                                else
-                                {
-                                    rSelection.DataSource = groupType.Groups;
-                                    rSelection.DataBind();
-                                }
-                            }
-                            else
-                            {
-                                GoBack();
-                            }
+                            GoBack();
                         }
                         else
                         {
-                            GoBack();
+                            availGroups.FirstOrDefault().Selected = true;
+                            ProcessSelection();
                         }
                     }
                     else
                     {
-                        GoBack();
+                        rSelection.DataSource = availGroups;
+                        rSelection.DataBind();
                     }
                 }
             }
@@ -110,7 +103,6 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var group in groupType.Groups )
                         {
                             group.Selected = false;
-                            //group.Locations = new List<CheckInLocation>();
                         }
                     }
                 }
@@ -121,23 +113,19 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                var groupType = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected ) 
+                        .SelectMany( p => p.GroupTypes.Where( t => t.Selected ) ) )
+                    .FirstOrDefault();
+
+                if ( groupType != null )
                 {
-                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                    if ( person != null )
+                    int id = Int32.Parse( e.CommandArgument.ToString() );
+                    var group = groupType.Groups.Where( g => g.Group.Id == id ).FirstOrDefault();
+                    if ( group != null )
                     {
-                        var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                        if ( groupType != null )
-                        {
-                            int id = Int32.Parse( e.CommandArgument.ToString() );
-                            var group = groupType.Groups.Where( g => g.Group.Id == id ).FirstOrDefault();
-                            if ( group != null )
-                            {
-                                group.Selected = true;
-                                ProcessSelection( maWarning );
-                            }
-                        }
+                        group.Selected = true;
+                        ProcessSelection();
                     }
                 }
             }
@@ -151,6 +139,17 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
+        }
+
+        protected void ProcessSelection()
+        {
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                .SelectMany( f => f.People.Where( p => p.Selected )
+                    .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
+                        .SelectMany( t => t.Groups.Where( g => g.Selected ) 
+                            .SelectMany( g => g.Locations.Where( l => !l.ExcludedByFilter ) ) ) ) )
+                .Count() <= 0,
+                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" );
         }
     }
 }

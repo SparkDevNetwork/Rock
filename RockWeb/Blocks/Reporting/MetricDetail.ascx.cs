@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +40,10 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given metric." )]
 
+    [BooleanField( "Show Chart", DefaultValue = "true" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
+    [SlidingDateRangeField( "Chart Date Range", Key = "SlidingDateRange", DefaultValue = "-1||||" )]
+    [BooleanField( "Combine Chart Series" )]
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -106,14 +110,7 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( metricId.HasValue )
                 {
-                    if ( parentCategoryId.HasValue )
-                    {
-                        ShowDetail( "MetricId", metricId.Value, parentCategoryId );
-                    }
-                    else
-                    {
-                        ShowDetail( "MetricId", metricId.Value );
-                    }
+                    ShowDetail( metricId.Value, parentCategoryId );
                 }
                 else
                 {
@@ -207,7 +204,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             // do a WrapTransaction since we are doing multiple SaveChanges()
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var scheduleService = new ScheduleService( rockContext );
                 var schedule = scheduleService.Get( metric.ScheduleId ?? 0 );
@@ -418,36 +415,31 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="metricId">The metric identifier.</param>
+        public void ShowDetail( int metricId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( metricId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="metricId">The metric identifier.</param>
         /// <param name="parentCategoryId">The parent category id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        public void ShowDetail( int metricId, int? parentCategoryId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "MetricId" ) )
-            {
-                return;
-            }
 
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
             Metric metric = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !metricId.Equals( 0 ) )
             {
-                metric = metricService.Get( itemKeyValue );
+                metric = metricService.Get( metricId );
             }
-            else
+
+            if ( metric == null )
             {
                 metric = new Metric { Id = 0, IsSystem = false };
                 metric.SourceValueTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
@@ -460,7 +452,7 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            if ( metric == null || !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            if ( !metric.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 return;
             }
@@ -592,6 +584,15 @@ namespace RockWeb.Blocks.Reporting
         {
             SetEditMode( false );
             hfMetricId.SetValue( metric.Id );
+
+            lcMetricsChart.Visible = GetAttributeValue( "ShowChart" ).AsBooleanOrNull() ?? true;
+            lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "-1||" );
+            lcMetricsChart.StartDate = chartDateRange.Start;
+            lcMetricsChart.EndDate = chartDateRange.End;
+            lcMetricsChart.MetricId = metric.Id;
+            lcMetricsChart.CombineValues = GetAttributeValue( "CombineChartSeries" ).AsBooleanOrNull() ?? false;
+
             lReadOnlyTitle.Text = metric.Title.FormatAsHtmlTitle();
 
             DescriptionList descriptionListMain = new DescriptionList();
@@ -674,7 +675,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             // limit to EntityTypes that support picking a Value with a picker
-            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where(a => a.SingleValueFieldTypeId.HasValue).ToList();
+            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where( a => a.SingleValueFieldTypeId.HasValue ).ToList();
         }
 
         #endregion

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ public partial class error : System.Web.UI.Page
     /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
     protected void Page_Load( object sender, EventArgs e )
     {
-        logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
+        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
 
         string errorType = Request["type"];
         if (string.IsNullOrWhiteSpace(errorType))

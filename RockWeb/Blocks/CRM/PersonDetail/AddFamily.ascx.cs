@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -294,13 +294,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( familyMembers.Any() )
                     {
                         var rockContext = new RockContext();
-                        RockTransactionScope.WrapTransaction( () =>
+                        rockContext.WrapTransaction( () =>
                         {
                             var familyGroup = GroupService.SaveNewFamily( rockContext, familyMembers, cpCampus.SelectedValueAsInt(), true );
                             if ( familyGroup != null )
                             {
                                 GroupService.AddNewFamilyAddress( rockContext, familyGroup, GetAttributeValue( "LocationType" ),
-                                    tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
+                                    acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                             }
                         } );
 

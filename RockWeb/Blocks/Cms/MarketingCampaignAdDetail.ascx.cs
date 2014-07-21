@@ -60,23 +60,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "marketingCampaignAdId" );
-                string campaignId = PageParameter( "marketingCampaignId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( campaignId ) )
-                    {
-                        ShowDetail( "marketingCampaignAdId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "marketingCampaignAdId", int.Parse( itemId ), int.Parse( campaignId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "marketingCampaignAdId" ).AsInteger(), PageParameter( "marketingCampaignId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -130,26 +114,20 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="marketingCampaignAdId">The marketing campaign ad identifier.</param>
+        public void ShowDetail( int marketingCampaignAdId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( marketingCampaignAdId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="marketingCampaignAdId">The marketing campaign ad identifier.</param>
         /// <param name="marketingCampaignId">The marketing campaign id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? marketingCampaignId )
+        public void ShowDetail( int marketingCampaignAdId, int? marketingCampaignId )
         {
             pnlDetails.Visible = false;
-            if ( !itemKey.Equals( "marketingCampaignAdId" ) )
-            {
-                return;
-            }
 
             MarketingCampaignAd marketingCampaignAd = null;
 
@@ -158,26 +136,24 @@ namespace RockWeb.Blocks.Cms
 
             var rockContext = new RockContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !marketingCampaignAdId.Equals( 0 ) )
             {
-                marketingCampaignAd = new MarketingCampaignAdService( rockContext ).Get( itemKeyValue );
-                marketingCampaignAd.LoadAttributes();
+                marketingCampaignAd = new MarketingCampaignAdService( rockContext ).Get( marketingCampaignAdId );
             }
-            else
+
+            if (marketingCampaignAd == null && marketingCampaignId.HasValue )
             {
-                // only create a new marketing Campaign Ad if the marketingCampaignId was specified
-                if ( marketingCampaignId != null )
-                {
-                    marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
-                    marketingCampaignAd.MarketingCampaignId = marketingCampaignId.Value;
-                    marketingCampaignAd.MarketingCampaign = new MarketingCampaignService( rockContext ).Get( marketingCampaignAd.MarketingCampaignId );
-                }
+                marketingCampaignAd = new MarketingCampaignAd { Id = 0, MarketingCampaignAdStatus = MarketingCampaignAdStatus.PendingApproval };
+                marketingCampaignAd.MarketingCampaignId = marketingCampaignId.Value;
+                marketingCampaignAd.MarketingCampaign = new MarketingCampaignService( rockContext ).Get( marketingCampaignAd.MarketingCampaignId );
             }
 
             if ( marketingCampaignAd == null )
             {
                 return;
             }
+
+            marketingCampaignAd.LoadAttributes();
 
             pnlDetails.Visible = true;
             hfMarketingCampaignAdId.Value = marketingCampaignAd.Id.ToString();
@@ -198,7 +174,7 @@ namespace RockWeb.Blocks.Cms
 
             SetApprovalValues( marketingCampaignAd.MarketingCampaignAdStatus, new PersonService( rockContext ).Get( marketingCampaignAd.MarketingCampaignStatusPersonId ?? 0 ) );
 
-            if ( itemKeyValue.Equals( 0 ) )
+            if ( marketingCampaignAdId.Equals( 0 ) )
             {
                 drpAdDateRange.LowerValue = null;
                 drpAdDateRange.UpperValue = null;
@@ -358,7 +334,7 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( marketingCampaignAd.Id.Equals( 0 ) )
                 {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Utility
                     window.location = '{1}';
                 }});
             }});
-            ", ms, GetAttributeValue( "NewLocation" ) );
+            ", ms, ResolveRockUrl( GetAttributeValue( "NewLocation" ) ) );
             ScriptManager.RegisterStartupScript( Page, this.GetType(), "idle-timeout", script, true );
         }
    }

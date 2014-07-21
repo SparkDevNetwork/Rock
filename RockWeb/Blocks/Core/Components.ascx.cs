@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Core
             {
                 PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
                 if ( instanceProperty != null )
-                {
+                {                   
                     _container = instanceProperty.GetValue( null, null ) as IContainer;
                     if ( _container != null )
                     {

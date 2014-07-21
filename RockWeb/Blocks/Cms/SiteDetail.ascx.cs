@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -78,15 +78,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "siteId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "siteId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "siteId" ).AsInteger() );
             }
 
         }
@@ -217,7 +209,7 @@ namespace RockWeb.Blocks.Cms
                     return;
                 }
 
-                RockTransactionScope.WrapTransaction( () =>
+                rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
 
@@ -321,31 +313,22 @@ namespace RockWeb.Blocks.Cms
         /// Shows the edit.
         /// </summary>
         /// <param name="siteId">The site id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        public void ShowDetail( int siteId )
         {
             pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "siteId" ) )
-            {
-                return;
-            }
-
             Site site = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !siteId.Equals( 0 ) )
             {
-                site = new SiteService( new RockContext() ).Get( itemKeyValue );
+                site = new SiteService( new RockContext() ).Get( siteId );
             }
-            else
+
+            if (site == null)
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = RockPage.Layout.Site.Theme;
-            }
-
-            if ( site == null )
-            {
-                return;
             }
 
             pnlDetails.Visible = true;

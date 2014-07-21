@@ -51,6 +51,7 @@ namespace RockWeb.Blocks.Cms
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
 
+    [ContextAware]
     public partial class HtmlContentDetail : RockBlock
     {
         #region Base Control Methods
@@ -549,6 +550,12 @@ namespace RockWeb.Blocks.Cms
                         mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
                         mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
                         mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
+
+                        var contextEntity = ContextEntity();
+                        if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                        {
+                            mergeFields.Add( "ContextEntity", contextEntity );
+                        }
                     }
 
                     html = content.Content.ResolveMergeFields( mergeFields );

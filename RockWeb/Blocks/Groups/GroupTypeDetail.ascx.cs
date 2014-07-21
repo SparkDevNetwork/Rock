@@ -315,15 +315,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
             }
             else
             {
@@ -514,7 +506,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // need WrapTransaction due to Attribute saves    
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 
@@ -592,27 +584,19 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupTypeId">The group type identifier.</param>
+        public void ShowDetail( int groupTypeId )
         {
             pnlDetails.Visible = false;
 
-            if ( !itemKey.Equals( "groupTypeId" ) )
-            {
-                return;
-            }
-
-            bool editAllowed = true;
-
             GroupType groupType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !groupTypeId.Equals( 0 ) )
             {
-                groupType = new GroupTypeService( new RockContext() ).Get( itemKeyValue );
-                editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId );
             }
-            else
+
+            if ( groupType == null )
             {
                 groupType = new GroupType { Id = 0, ShowInGroupList = true, GroupTerm = "Group", GroupMemberTerm = "Member" };
                 groupType.ChildGroupTypes = new List<GroupType>();
@@ -626,10 +610,7 @@ namespace RockWeb.Blocks.Groups
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
             }
 
-            if ( groupType == null )
-            {
-                return;
-            }
+            bool editAllowed = groupType.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
             DefaultRoleGuid = groupType.DefaultGroupRole != null ? groupType.DefaultGroupRole.Guid : Guid.Empty;
 

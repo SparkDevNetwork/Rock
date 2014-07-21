@@ -54,7 +54,12 @@ namespace Rock.Search.Group
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
-            return new GroupService( new RockContext() ).Queryable().Where( g => ( g.Name ).Contains( searchterm ) ).Select( g => g.Name );
+            return new GroupService( new RockContext() ).Queryable()
+                .Where( g => 
+                    g.GroupType.ShowInNavigation &&
+                    g.Name.Contains( searchterm ) )
+                .OrderBy( g => g.Name )
+                .Select( g => g.Name );
         }
     }
 }

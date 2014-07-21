@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -81,8 +82,32 @@ namespace RockWeb.Blocks.Checkin
 
             if ( !Page.IsPostBack )
             {
-                BindFilter(); 
-                BindGrid();
+                bool valid = true;
+                int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                if ( ContextTypesRequired.Any( p => p.Id == personEntityTypeId ) && _person == null )
+                {
+                    valid = false;
+                }
+
+                int batchEntityTypeId = EntityTypeCache.Read( "Rock.Model.Group" ).Id;
+                if ( ContextTypesRequired.Any( g => g.Id == batchEntityTypeId ) && _group == null )
+                {
+                    valid = false;
+                }
+
+                if ( valid )
+                {
+                    rFilter.Visible = true;
+                    gHistory.Visible = true;
+                    BindFilter();
+                    BindGrid();
+                }
+                else
+                {
+                    rFilter.Visible = false;
+                    gHistory.Visible = false;
+                }
+
             }
         }
 

@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
     public class WorkflowActionTypeEditor : CompositeControl, IHasValidationGroup
     {
-        private HiddenField _hfExpanded;
+        private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfActionTypeGuid;
         private Label _lblActionTypeName;
         private LinkButton _lbDeleteActionType;
@@ -61,14 +61,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-
-                bool expanded = false;
-                if ( !bool.TryParse( _hfExpanded.Value, out expanded ) )
-                {
-                    expanded = false;
-                }
-
-                return expanded;
+                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
             }
 
             set
@@ -348,9 +341,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
         {
             Controls.Clear();
 
-            _hfExpanded = new HiddenField();
+            _hfExpanded = new HiddenFieldWithClass();
             Controls.Add( _hfExpanded );
             _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.CssClass = "filter-expanded";
             _hfExpanded.Value = "False";
 
             _hfActionTypeGuid = new HiddenField();
@@ -487,7 +481,6 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( "header" );
 
             // Hidden Field to track expansion
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left workflow-action-name" );

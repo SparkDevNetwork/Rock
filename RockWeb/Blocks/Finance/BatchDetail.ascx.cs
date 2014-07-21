@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,15 +45,7 @@ namespace RockWeb.Blocks.Finance
             base.OnLoad( e );
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "financialBatchId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "financialBatchId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "financialBatchId" ).AsInteger() );
             }
         }
 
@@ -231,21 +223,17 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="financialBatchId">The financial batch identifier.</param>
+        public void ShowDetail( int financialBatchId )
         {
-            if ( !itemKey.Equals( "financialBatchId" ) )
+            FinancialBatch financialBatch = null;
+
+            if ( !financialBatchId.Equals( 0 ) )
             {
-                return;
+                financialBatch = new FinancialBatchService( new RockContext() ).Get( financialBatchId );
             }
 
-            FinancialBatch financialBatch = null;
-            if ( !itemKeyValue.Equals( 0 ) )
-            {
-                financialBatch = new FinancialBatchService( new RockContext() ).Get( itemKeyValue );
-            }
-            else
+            if ( financialBatch == null )
             {
                 financialBatch = new FinancialBatch { Id = 0 };
             }

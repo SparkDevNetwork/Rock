@@ -1,0 +1,31 @@
+﻿<div id="announcement-rotator">
+
+    <div class="flexslider">
+      <ul class="slides">
+
+        {% for Ad in Ads -%}
+          <li>
+            <a href="{{ Ad.DetailPageUrl }}">
+              {% for Attribute in Ad.Attributes -%}
+                {% if Attribute.Key == 'AdImage' -%}
+                  {{ Attribute.Value }}
+                {% endif -%}
+              {% endfor -%}
+            </a>
+          </li>   
+        {% endfor -%}
+
+      </ul>
+    </div>
+
+    <ul class="slide-control">
+
+      {% for Ad in Ads -%}
+        <li><span>{{ Ad.Title }}</span></li>   
+      {% endfor -%}
+
+      <div class="tipper"></div>
+      
+    </ul>
+
+</div>

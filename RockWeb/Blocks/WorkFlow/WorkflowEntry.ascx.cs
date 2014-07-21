@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.WorkFlow
                     {
                         _workflowService.Add( _workflow );
 
-                        RockTransactionScope.WrapTransaction( () =>
+                        _rockContext.WrapTransaction( () =>
                         {
                             _rockContext.SaveChanges();
                             _workflow.SaveAttributeValues( _rockContext );
@@ -640,7 +640,7 @@ namespace RockWeb.Blocks.WorkFlow
                             _workflowService.Add( _workflow );
                         }
 
-                        RockTransactionScope.WrapTransaction( () =>
+                        _rockContext.WrapTransaction( () =>
                         {
                             _rockContext.SaveChanges();
                             _workflow.SaveAttributeValues( _rockContext );

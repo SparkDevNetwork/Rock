@@ -1,3 +1,8 @@
+﻿// Inspired By
+// http://tattek.com/minimal/#
+// http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
+// http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
+
 
 // Load Master Styles
 // -------------------------
@@ -6,22 +11,11 @@
 @import "_variables.less";
 @import "_print.less";
 
-// Fonts
+/*#region  
+// Fonts                       */
 // -------------------------
 
-// regular (weight 'normal' aka 400)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-// light (weight 300)
+// light (weight 400 = 'normal')
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
@@ -33,7 +27,19 @@
     font-style: normal;
 }
 
-// semi-bold (weight 600)
+// regular (weight 500)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// semi-bold (weight 700)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
@@ -41,11 +47,11 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
-    font-weight: 600;
+    font-weight: 700;
     font-style: normal;
 }
 
-// bold (weight 700)
+// bold (weight 900)
 @font-face {
     font-family: 'OpenSans';
     src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
@@ -53,462 +59,700 @@
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
          url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
-    font-weight: 700;
+    font-weight: 900;
     font-style: normal;
 }
-
+/*#endregion */
 
 /*
     Rock Theme Styles
 
-    1. HTML Overrides
-    2. Bootstrap Overides
-    3. Page Header
-    4. Footer
-    5. Layout Specific Styles
-    6. Responsive Overrides
+    1. 
+    2. HTML Overrides
+    3. Bootstrap Overides
+    4. Rock Overrides
+    5. Theme Styling
+    6. Utilities
+    7. Responsive Overrides 
+    8. Side Navbar
+    9. Person Details
 
 */
 
-// 1. HTML Overrides
+/*#region  
+// 1.         */
 // -------------------------
 
-// set window background
-html
-{
-    background-color: #3a3a3a;  
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
-}
+/*#endregion */
+
+
+/*#region  
+// 2. HTML Overrides         */
+// -------------------------
 
 main {
-    display:block;
+    display: block;
 }
 
-h1 {
-	font-size: 28px;
+body {
+    background-color: @accent-bold-color;
 }
 
-h1, h2, h3 {
-	letter-spacing: -0.03em;
-    margin: 0 0 @spacing-sm-px; // added 1/22 in working with bio bar
-}
-
-h2, h3, h4
-{
-    font-weight: @font-weight-semibold;
-}
-
-// get rid of dotted box around anchors with focus
-a {
-   outline: 0;
+h1, h2, h3, h4 {
+    font-weight: @font-weight-light;
+    letter-spacing: -1px;
 }
 
 a:hover {
     text-decoration: none;
 }
 
-a:hover i.fs
-{
-    text-decoration: none;
+input[type=text], 
+textarea,
+.form-control {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+}
+ 
+input[type=text]:focus, 
+textarea:focus,
+.form-control:focus {
+  box-shadow: 0 0 5px rgba(238, 118, 36, .6);
+  border: 1px solid rgba(238, 118, 36, .6);
 }
 
-// 2. Bootstrap Overrides 
+pre {
+    background-color: @accent-light-color;
+    border-color: darken(@accent-light-color, 15%);
+    color: @accent-light-text-color;
+}
+
+/*#endregion */
+
+
+/*#region  
+// 3. Bootstrap Overrides    */
 // ------------------------- 
 
-// get rid of the icon bootstrap adds to the h4's on alerts
-.alert h4:before {
-    content: '';
-}
+// panel tweaks
 
-.navbar {
-    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013 BS3
-}
 
-.nav-pills > .active > a,
-.nav-pills > .active > a:hover
-{
-    background-color: @accent-bold-color;
-    color: @accent-bold-text-color;
-}
+.panel {
+    border-radius: 0;
+    border-top-width: 0;
+    border-color: darken(@gray-lighter, 10%);
+    border-top: 3px solid @accent-color;
 
-.nav-pills > li > a
-{
-    color: @text-color;
-}
+    .panel-heading {
+        padding: 6px 10px;
+        border-color: darken(@gray-lighter, 5%);
+        border-radius: 0;
 
-.nav-pills > li > a:hover
-{
-    background-color: @accent-color;
-}
+        .panel-title {
+            font-weight: @font-weight-light;
+            letter-spacing: -1px;
+            font-size: 18px;
+            margin: 0 12px 4px 0;
+        }
 
-.btn-xs
-{
-    padding: 0 6px;
-}
+        h3 > i {
+            margin-right: 4px;
+        }
+    }
 
-.label,
-.badge {
-    font-weight: @font-weight-light;
-}
-
-.control-label {
-    .alert { // set the font weight of the help text in the control label
-        font-weight: normal;
+    &.panel-primary {
+        .panel-heading {
+            background-color: @brand-primary;
+        }
     }
 }
 
-// augment the grid striping when on a panel
-.panel-default {
-    .table-striped > tbody > tr:nth-child(odd) > td {
-        background-color: lighten(@accent-light-color, 4%);
+.well {
+    &.well-message {
+        background-color: @accent-blue-light;
+        border-color: darken(@accent-blue-light, 5%);
     }
 }
 
+.tag-letterlist a {
+    color: @brand-primary;
+}
 
-// 3. Page Header
+.nav.nav-pagelist {
+    background-color: @accent-blue-light;
+    border: 1px solid darken(@accent-blue-light, 10%);
+
+    .pill-help {
+        a {
+            color: @accent-blue;
+        }
+    }
+
+    .nav.nav-pills {
+
+        li a:hover {
+            background-color: lighten(@accent-blue, 30%);
+        }
+
+        li.active a {
+            background-color: @accent-blue;
+            color: #fff;
+            border-color: darken(@accent-blue, 5%);
+        }
+    }
+}
+
+.rock-modal-frame {
+    border: 1px solid @accent-bold-color;
+}
+
+.close {
+    opacity: 0.6;
+}
+
+/*#endregion */
+
+
+/*#region  
+// 4. Rock Overrides         */
 // -------------------------
 
-#jPanelMenu-menu {
-    width: 265px !important;
+.smartsearch {
+    margin: 12px 4%;
+    border: 0;
+    background-color: lighten(@accent-bold-color, 5%);
+    width: 92%;
+
+    input.searchinput {
+        color: @accent-bold-text-color;
+    }
 }
 
-// brand bar
-.pageheader {
-    background: none;
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
-    color: @header-text-color;
-    margin-bottom: @spacing-md-px;
-    text-align: center;
-
-    a {
-        color: @header-text-color;
-
-        &:hover,
-        &:active,
-        &:focus {
-            color: darken(@header-text-color, 10%);
-        }
+.loginstatus {
+    margin-right: 2px;
+    
+    .profile-photo {
+        height: 35px;
+        width: 35px;
+        float: left;
+        background-size: 100%;
+	    -webkit-border-radius: 17.5px;
+	    -moz-border-radius: 17.5px;
+        border-radius: 17.5px;
+        margin: -8px 4px 0 0;
     }
-
-    #zone-login {
-        margin-top: 12px;
-        margin-left: 10px;
-        float: right;
-    }
-
-    .smartsearch {
-        margin: 0 auto 20px;
-        text-align: left;
-    }
-
-    .loginstatus {
-        display: none;
-    }
-
-    .navbar-brand {
-        float: none;
-        display: block;
-
-        .brandbar-logo {
-	        width: 110px;
-            height: 41px;
-        }
-    }
-
-    .navbar-toggle {
-        color: @header-text-color;
-        border-color: @header-text-color;
-        position: absolute;
-        left: 0;
-        margin: 8px 0 0 12px;
-        
-        &:focus {outline:0;}
-    }
-     
 }
 
+.rock-modal { 
+    .modal-header {
+        background-color: @accent-bold-color;
+        color: @accent-bold-text-color;
 
-// page nav
-.pagenav {
-    border-top: 1px solid lighten(@header-bg, 10%);
-    border-bottom: 1px solid darken(@header-bg, 10%);
-    background: @header-bg;
-    max-height: inherit; // override bootstraps max-height 340px
-    padding: 24px 0 0 0;
-    text-align: left;
-
-    .navbar-nav {
-        margin: 0;
+        small, 
+        .close {
+            color: darken(@accent-bold-text-color, 20%);
+        }
     }
+}
 
-    .nav {
-        width: 100%;
+.personprofilebar-bio .actions a.btn-action {
+    background-color: @accent-blue;
+    color: #fff;
+    border: 1px solid darken(@accent-blue, 5%);
+}
 
-        > li {
-            height: auto;
-            width: 100%;
-            float: left;
+.updateprogress-status {
+    left: 45%;
+    padding: 30px 20px;
+    border-radius: 120px;
+    box-shadow: 5px 5px 12px 3px rgba(0,0,0,0.1);
+    
+    .spinner {
+        width: 80px;
+        height: 60px;
 
-            &:last-child:after { // add the final shadow to the last nav element
-                content: " ";
-                position: absolute;
-                top: 0;
-                right: 0;
-                bottom: 0;
+        > div {
+            background-color: #fff;
+            width: 10px;
+        }
+    }
+}
+
+.list-as-blocks {
+
+    ul {
+
+        li {
+
+            a {
+                -webkit-transition: background-color 200ms linear;
+                -moz-transition: background-color 200ms linear;
+                -o-transition: background-color 200ms linear;
+                -ms-transition: background-color 200ms linear;
+                transition: background-color 200ms linear;
+
+                &:hover {
+                    background-color: @accent-blue;
+                    border-color: darken(@accent-blue, 5%);
+                    color: #fff;
+                }
+
+            }
+        }
+    }
+}
+
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+    background-color: #ecf2e2;
+}
+
+/*#endregion */
+
+
+/*#region  
+// 5. Theme Styling          */
+// -------------------------
+
+#page-wrapper {
+    width: 100%;
+    overflow: hidden;
+}
+
+#content-wrapper {
+    background-color: @body-bg;
+    min-height: 1000px;
+    z-index: 30;
+    min-width: 320px;
+
+    header {
+        .navbar-default {
+            background-color: @accent-bold-color;
+            border-color: darken(@accent-bold-color, 5%);
+            color: @accent-bold-text-color;
+
+            .navbar-header {
+                padding: 8px 0 0 12px;
+                float: left;
             }
 
-            > a {
-                padding: 14px 0;
-                font-size: 14px;
-                color: @header-text-color;
-                position: relative;
-                height: 100%;
-                line-height: 1em;
+            .navbar-mobile-logo {
+                float: left;
+                width: 95px;
+                height: 34px;
+                margin: 8px 0 0 6px;
 
-                .fa.fa-caret-down {
-                    display: none;
-                }
+                svg {
+                    height: 100%;
+                    width: 100%;
 
-                i.fa {
-                    display: block;
-                    margin: 4px 12px 0 0;
-                    font-size: 18px;
-                    float: left;
+                    .rock-logo {
+                        fill: #d3cec5;
+                    }
                 }
-                // next two elements vertically center the nav text between the icon and caret with support for two line wrapping
-                div {
-                    height: 26px;
-                    line-height: 20px;
-                }
+            }
 
-                span {
-                    display: inline-block;
-                    vertical-align: middle;
-                    line-height: 11px;
-                }
+            .navbar-zone-header {
+                width: 100%;
+            }
+
+            .navbar-nav > .open > a, 
+            .navbar-nav > .open > a:hover, 
+            .navbar-nav > .open > a:focus {
+                background-color: lighten(@accent-bold-color, 5%);
+            }
+
+            .navbar-nav > li > a {
+                color: @accent-bold-text-color;
             }
 
             .dropdown-menu {
-                margin-left: 8px;
-
-                > li {
-                    
-                    &.dropdown-header {
-                        padding-left: 0;
-                    }
-
-                    a {
-                        color: @header-text-color;
-                        padding-left: 0;
-
-                        &:hover {
-                            background-color: inherit;
-                        }
-                    }
-
-                    &.divider {
-                        display: none;
-                    }
+                li.divider {
+                    background-color: lighten(@accent-bold-color, 5%);
                 }
+            }
+
+        }
+    }
+
+    #page-title {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        padding: 15px;
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: @font-weight-light;
+            letter-spacing: -1px;
+
+            .page-icon {
+                display: inline;
+                color: lighten(@accent-text-color, 10%);
+            }
+
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
+
+            > .active {
+                color: lighten(@accent-text-color, 30%);
+            }
+
+            li + li:before {
+                color: lighten(@accent-text-color, 30%);
             }
         }
     }
 
+    #page-content {
+        padding: 15px;
+    }
 
-    .dropdown-menu {
-        left: -2px;
-        width: 240px;
+    footer {
+        padding: 0 15px;
     }
 }
 
-// page title
-.pagetitle {
-	background-color: @pagetitle-bg;
-	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
-	background-image: none;
-    filter: initial;
-    color: @text-color;
+#content-wrapper, .navbar-static-side {
+    -webkit-transition-duration: 0.5s;
+    -moz-transition-duration: 0.5s;
+    -o-transition-duration: 0.5s;
+    transition-duration: 0.5s;
+}
 
-    h1 {
-        margin: 12px 0 0 0;
-        float: left;
-    }
+.not-found h2 {
+    font-size: 200px;
+    font-weight: @font-weight-bold;
+    letter-spacing: -5px;
+    line-height: 210px;
 
-    .page-icon
-    {
-        font-size: 36px;
-        margin-right: 12px;
-        float: left;
+    i {
+        color: #F03;
+        font-size: 210px;
+        position: relative;
+        top: -12px;
     }
 }
 
-
-// 4. Footer
-// -------------------------
-
-
-.page-footer {
-    margin-top: 24px;
-	padding-top: 24px;
-	min-height: 120px;
-	background-color: @footer-bg;
-	border-top: 1px solid #000;
-	color: @footer-text-color;
-
-    a {
-        color: #717171;
-    }
-}
-
-
-// 5. Layout Specific Styles
-// -------------------------
-// splash screen
-#splash {
-    background: none;
-
-    .pageheader-logo {
-        height: 45px;
-        width: 127.57px;
-        margin-top: 45px;
-        margin-bottom: 6px;
-    }
+body#splash {
+    background-color: @accent-color;
+    border-top: 36px solid @accent-bold-color;
 
     #content {
-        margin-bottom: 60px;
+        max-width: 400px;
+        margin: 24px auto 0;
+        padding: 15px;
 
-        #content-box {
-            background-color: @body-bg;
-            overflow: hidden;
-            padding: 15px;
+        #logo {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin: 0 auto;
 
-            .form-actions {
-                margin: 0 -15px -15px -15px;
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .rock-logo {
+                fill: darken(@accent-color, 5%);
             }
         }
     }
-} 
 
-// 6. Responsive Overrides 
+
+    &.error #content {
+        margin: 12px auto 0;
+        max-width: 800px;
+
+        #logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+    }
+}
+
+.error-wrap .error-icon {
+    &.warning {
+        color: #dab751;
+    }
+}
+
+/*#endregion */
+
+
+/*#region  
+// 6. Utilities              */
 // -------------------------
 
-@media (min-width: @screen-sm-min) { // tablet portrait and larger
+.navbar-minimize {
+    background-color: @btn-primary-bg;
+    color: @btn-primary-color;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+}
 
-    .pageheader {
-        .smartsearch {
-            margin: 20px auto;
-            float: right;
-        }
 
-        .loginstatus {
-            display: block;
-        }
-    }
+/*#endregion */
 
-    .pagenav { // change menu to show as boxes
-        padding-top: 0;
 
-        .nav {
-            border-left: 1px solid lighten(@header-bg, 10%);
+/*#region 
+// 7. Responsive Overrides  */
+// -------------------------
 
-            & > li {
-                width: 12.5%;
-                height: 67px;
-                border-left: 1px solid darken(@header-bg, 10%);
-                border-right: 1px solid lighten(@header-bg, 10%);
+// default styling should be for phones 767px or less
 
-                > a {
-                    text-align: center;
-                    padding: 4px 15px;
-                    min-height: 67px;
-                    font-size: 11px;
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+    
+    body#splash {
 
-                    i.fa {
-                        margin: 6px auto 0;
-                        float: none;
-                    }
-
-                    .fa.fa-caret-down {
-                        display: block;
-                        margin-bottom: 6px;
-                        position: absolute;
-                        bottom: 0;
-                        left: 48%;
-                    }
-                }
-
-                .dropdown-menu {
-                    margin-left: 0;
-
-                    > li {
-                        
-                        &.dropdown-header {
-                            padding-left: 20px;
-                        }
-                        
-                        > a {
-                            color: @text-color;
-                            padding-left: 20px;
-
-                            &:hover {
-                                background-color: @accent-light-color;
-                            }
-                        }
-
-                        &:last-child:after {
-                            border-right: 1px solid darken(@header-bg, 10%);
-                        }
-
-                        &.divider {
-                            display: inherit;
-                        }
-
-                            &.divider:last-child { // remove last divider out of the menu
-                                display: none;
-                            }
-                    }
-                }
-            }
-        }
-    }
-
-    #splash {
-        
-        .pageheader-logo {
-            margin-top: 0;
-        }
-        
         #content {
-            width: 700px;
-            margin: 5% auto 0;
+            margin: 36px auto 0;
 
-            #content-box {
-                border-radius: @border-radius-base;
+            #logo {
+                width: 150px;
+                height: 150px;
+                display: block;
+                margin: 0 auto 12px;
             }
         }
     }
+
 }
 
 // Medium devices (desktops, 992px and up) 
 @media (min-width: @screen-md-min) {
+
+    #content-wrapper {
+        header {
+            .navbar-default {
+                height: @navbar-height;
+                background-color: @header-bg;
+                border-color: darken(@header-bg, 5%);
+                color: @header-text-color;
+
+                .navbar-mobile-logo {
+                    display: none;
+                }
+
+                .navbar-zone-header {
+                    width: inherit;
+                }
+
+                & .navbar-nav > .open > a, 
+                & .navbar-nav > .open > a:hover, 
+                & .navbar-nav > .open > a:focus {
+                    background-color: darken(@accent-semibold-color, 5%);
+                }
+
+                & .navbar-nav > li > a {
+                    color: @accent-semibold-text-color;
+                }
+
+                .dropdown-menu {
+                    li.divider {
+                        background-color: @gray-light;
+                    }
+                }
+            }
+        }
     
-    .pagenav {
-        .nav {
-            .dropdown-menu > li {
-                
+        .smartsearch {
+            margin: 9px 8px 9px 0;
+            width: 290px;
+            background-color: darken(@header-bg, 3%);
+
+            input.searchinput {
+                color: @header-text-color;
             }
         }
     }
+
 }
 
-// Large devices (large desktops, 1200px and up)
+// Large devices (large desktops, 1200px and up) 
 @media (min-width: @screen-lg-min) {
+    
+}
+/*#endregion */
 
-    .container { // allow the rock screen to grow wide
-        width: 90%;
+
+/*#region  
+// 8. Side Navbar             */
+// ------------------------- 
+
+
+// base styles
+.navbar-static-side {
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+    display: none;
+    position: absolute;
+    width: 70px;
+
+    .navbar-header {
+        height: @navbar-height;
+        width: 100%;
+        background-color: darken(@accent-bold-color, 5%);
+
+        .logo {
+            background: url(../../../Assets/Images/rock-logo-sm.svg) no-repeat top left;
+            height: 35px;
+            width: 36px;
+            background-size: contain;
+            margin: 8px auto 0;
+        }
+    }
+
+    .navbar-side {
+        margin-top: 24px;
+        display: inline-block;
+        width: 100%;    
+
+        & > li {
+            text-align: center;
+            margin-top: 0;
+
+            > i {
+                padding: 11px 0;
+                font-size: 24px;
+                color: @accent-bold-text-color;
+                display: block;
+                
+                &:hover {
+                    background-color: lighten(@accent-bold-color, 5%);
+                }
+            }
+
+            &.open {
+                background-color: lighten(@accent-bold-color, 5%);
+            }
+
+            .nav-childpages {
+                top: 0;
+                left: 70px;
+                position: absolute;
+                z-index: 9999;
+                background-color: lighten(@accent-bold-color, 5%);
+                display: none;
+                font-size: 14px;
+                width: 220px;
+                text-align: left;
+                padding: 9px 12px;
+
+                li a {
+                    line-height: 1.1em;
+                    padding: 6px;
+                    color: @accent-bold-text-color;
+
+                    &:hover {
+                        background-color: darken(@accent-bold-color, 5%);
+                    } 
+                }
+
+                li.title {
+                    font-size: 18px;
+                    font-weight: @font-weight-light;
+                    color: #ee7624;
+                    margin-bottom: -8px;
+                }
+
+                li.header {
+                    margin-top: 14px;
+                    color: darken(@accent-bold-text-color, 20%);
+                    margin-left: 4px;
+                    font-weight: @font-weight-semibold;
+                    padding-bottom: 2px;
+                    border-bottom: 1px solid lighten(@accent-bold-color, 10%);
+                    font-weight: 400;
+                }
+
+                li.header:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        > li.open {
+            .nav-childpages {
+                display: block;
+
+                li.header {
+                    padding-left: 0;
+                }
+            }
+        }
+    }
+   
+}
+
+// expanded view 
+@media (min-width: @screen-md-min) {
+
+    .navbar-static-side {
+        display: block;
+    }
+
+    #content-wrapper {
+        margin-left: 70px;
     }
 }
 
+// minimized view
+body.navbar-side-open {
+    .navbar-static-side {
+        width: 70px;
+        display: block;
+    }
+
+    #content-wrapper {
+        margin-left: 70px;
+    } 
+}
+
+body.navbar-side-close {
+    .navbar-static-side {
+        display: none;
+    }
+
+    #content-wrapper {
+        margin-left: 0;
+    } 
+}
+/*#endregion */
 
 
+/*#region 
+// 9. Person Details  */
+// -------------------------
 
+.personprofile {
+
+    .personprofilebar-badge,
+    .personprofilebar-family,
+    .pagetabs,
+    .person-content {
+        padding: 0 15px;
+    }
+
+    .personprofilebar-bio {
+        margin-top: 12px;
+    }
+
+    .pagetabs {
+        margin-bottom: 12px;
+    }
+}
+
+/*#endregion */

@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Web.Cache;
 
@@ -67,7 +69,12 @@ namespace Rock.Financial
         /// <summary>
         /// The billing street
         /// </summary>
-        public string Street { get; set; }
+        public string Street1 { get; set; }
+
+        /// <summary>
+        /// The billing street
+        /// </summary>
+        public string Street2 { get; set; }
 
         /// <summary>
         /// The billing city
@@ -80,9 +87,14 @@ namespace Rock.Financial
         public string State { get; set; }
 
         /// <summary>
-        /// The billing zip
+        /// The billing zip/postal code
         /// </summary>
-        public string Zip { get; set; }
+        public string PostalCode { get; set; }
+
+        /// <summary>
+        /// The billing country
+        /// </summary>
+        public string Country { get; set; }
 
         /// <summary>
         /// Gets the account number.
@@ -98,5 +110,42 @@ namespace Rock.Financial
         /// Gets the credit card type value id.
         /// </summary>
         public virtual DefinedValueCache CreditCardTypeValue { get { return null; } }
+
+        public string FormattedValue
+        {
+            get
+            {
+                string result = string.Format( "{0} {1} {2}, {3} {4}",
+                    this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
+
+                var countryValue = Rock.Web.Cache.DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                    .DefinedValues
+                    .Where( v => v.Name.Equals( this.Country, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+                if ( countryValue != null )
+                {
+                    string format = countryValue.GetAttributeValue( "AddressFormat" );
+                    if ( !string.IsNullOrWhiteSpace( format ) )
+                    {
+                        var mergeFields = new Dictionary<string, object>();
+                        mergeFields.Add( "Street1", Street1 );
+                        mergeFields.Add( "Street2", Street2 );
+                        mergeFields.Add( "City", City );
+                        mergeFields.Add( "State", State );
+                        mergeFields.Add( "PostalCode", PostalCode );
+                        mergeFields.Add( "Country", countryValue.Description );
+
+                        result = format.ResolveMergeFields( mergeFields );
+                    }
+                }
+
+                if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
+                {
+                    return string.Empty;
+                }
+
+                return result;
+            }
+        }
     }
 }

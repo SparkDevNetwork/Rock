@@ -71,7 +71,7 @@ Please confirm the information below. Once you have confirmed that the informati
 
     [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may
+By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to transfer the amount above from my account. I acknowledge that I may
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]
@@ -481,14 +481,7 @@ achieve our mission.  We are so grateful for your commitment.
                             addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                         }
 
-                        var address = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
-                        if ( address != null )
-                        {
-                            txtStreet.Text = address.Street1;
-                            txtCity.Text = address.City;
-                            ddlState.SelectedValue = address.State;
-                            txtZip.Text = address.Zip;
-                        }
+                        acAddress.SetValues( personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id ) );
                     }
                     else
                     {
@@ -912,11 +905,7 @@ achieve our mission.  We are so grateful for your commitment.
                                 rockContext,
                                 familyGroup,
                                 GetAttributeValue( "AddressType" ),
-                                txtStreet.Text,
-                                string.Empty,
-                                txtCity.Text,
-                                ddlState.SelectedValue,
-                                txtZip.Text );
+                                acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                         }
                     }
 
@@ -1125,7 +1114,7 @@ achieve our mission.  We are so grateful for your commitment.
             tdName.Description = paymentInfo.FullName;
             tdPhone.Description = paymentInfo.Phone;
             tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street, paymentInfo.City, paymentInfo.State, paymentInfo.Zip );
+            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
@@ -1172,10 +1161,12 @@ achieve our mission.  We are so grateful for your commitment.
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
             paymentInfo.Email = txtEmail.Text;
             paymentInfo.Phone = PhoneNumber.FormattedNumber( pnbPhone.CountryCode, pnbPhone.Number, true );
-            paymentInfo.Street = txtStreet.Text;
-            paymentInfo.City = txtCity.Text;
-            paymentInfo.State = ddlState.SelectedValue;
-            paymentInfo.Zip = txtZip.Text;
+            paymentInfo.Street1 = acAddress.Street1;
+            paymentInfo.Street2 = acAddress.Street2;
+            paymentInfo.City = acAddress.City;
+            paymentInfo.State = acAddress.State;
+            paymentInfo.PostalCode = acAddress.PostalCode;
+            paymentInfo.Country = acAddress.Country;
 
             return paymentInfo;
         }
@@ -1192,17 +1183,21 @@ achieve our mission.  We are so grateful for your commitment.
 
             if ( cbBillingAddress.Checked )
             {
-                cc.BillingStreet = txtBillingStreet.Text;
-                cc.BillingCity = txtBillingCity.Text;
-                cc.BillingState = ddlBillingState.SelectedValue;
-                cc.BillingZip = txtBillingZip.Text;
+                cc.BillingStreet1 = acBillingAddress.Street1;
+                cc.BillingStreet2 = acBillingAddress.Street2;
+                cc.BillingCity = acBillingAddress.City;
+                cc.BillingState = acBillingAddress.State;
+                cc.BillingPostalCode = acBillingAddress.PostalCode;
+                cc.BillingCountry = acBillingAddress.Country;
             }
             else
             {
-                cc.BillingStreet = txtStreet.Text;
-                cc.BillingCity = txtCity.Text;
-                cc.BillingState = ddlState.SelectedValue;
-                cc.BillingZip = txtZip.Text;
+                cc.BillingStreet1 = acAddress.Street1;
+                cc.BillingStreet2 = acAddress.Street2;
+                cc.BillingCity = acAddress.City;
+                cc.BillingState = acAddress.State;
+                cc.BillingPostalCode = acAddress.PostalCode;
+                cc.BillingCountry = acAddress.Country;
             }
 
             return cc;

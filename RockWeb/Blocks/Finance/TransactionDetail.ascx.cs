@@ -87,15 +87,7 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "transactionId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "transactionId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "transactionId" ).AsInteger() );
             }
         }
 
@@ -402,17 +394,20 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveImage_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var service = new FinancialTransactionImageService( rockContext );
-            var financialTransactionImage = new FinancialTransactionImage();
-            var transactionId = hfIdTransValue.ValueAsInt();
-            financialTransactionImage.BinaryFileId = imgupTransactionImages.BinaryFileId.Value;
-            financialTransactionImage.TransactionId = transactionId;
-            financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
-            service.Add( financialTransactionImage );
-            rockContext.SaveChanges();
-            imgupTransactionImages.BinaryFileId = 0;
-            LoadRelatedImages( transactionId );
+            if ( imgupTransactionImages.BinaryFileId.HasValue )
+            {
+                var rockContext = new RockContext();
+                var service = new FinancialTransactionImageService( rockContext );
+                var financialTransactionImage = new FinancialTransactionImage();
+                var transactionId = hfIdTransValue.ValueAsInt();
+                financialTransactionImage.BinaryFileId = imgupTransactionImages.BinaryFileId.Value;
+                financialTransactionImage.TransactionId = transactionId;
+                financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
+                service.Add( financialTransactionImage );
+                rockContext.SaveChanges();
+                imgupTransactionImages.BinaryFileId = 0;
+                LoadRelatedImages( transactionId );
+            }
         }
 
         #endregion Events
@@ -503,6 +498,13 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
+                int? contextPersonId = PageParameter( "PersonId" ).AsIntegerOrNull();
+                if ( contextPersonId.HasValue )
+                {
+                    var contextPerson = new PersonService( new RockContext() ).Get( (int)contextPersonId );
+                    ppAuthorizedPerson.PersonId = contextPerson.Id;
+                    ppAuthorizedPerson.PersonName = contextPerson.FullName;
+                }                
             }
 
             SetEditMode( true );
@@ -548,21 +550,16 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="transactionId">The transaction identifier.</param>
+        public void ShowDetail( int transactionId )
         {
-            if ( !itemKey.Equals( "transactionId" ) && !!itemKey.Equals( "batchfk" ) )
+            FinancialTransaction transaction = null;
+            if ( !transactionId.Equals( 0 ) )
             {
-                return;
+                transaction = new FinancialTransactionService( new RockContext() ).Get( transactionId );
             }
 
-            FinancialTransaction transaction = null;
-            if ( !itemKeyValue.Equals( 0 ) )
-            {
-                transaction = new FinancialTransactionService( new RockContext() ).Get( itemKeyValue );
-            }
-            else
+            if ( transaction == null )
             {
                 transaction = new FinancialTransaction { Id = 0 };
             }

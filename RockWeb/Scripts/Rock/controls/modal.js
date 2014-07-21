@@ -49,8 +49,6 @@
 
                 $('#modal-popup_iframe').on('load', function () {
 
-                    console.log('load event');
-
                     // set opacity to 1% (instead of invisible) so that ModalIFrameDialog can position correctly
                     $('#modal-popup_contentPanel').fadeTo(0, 1);
                     $('#modal-popup_iframe').off('load');

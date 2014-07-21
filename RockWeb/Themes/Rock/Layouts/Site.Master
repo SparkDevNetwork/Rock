@@ -1,10 +1,9 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
-
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
 <!--
-   _______       _____           _   ____         _______ _             _____ _                   
+  _______       _____           _   ____         _______ _             _____ _                   
  |__   __|     / ____|         | | |  _ \       |__   __| |           / ____| |                  
     | | ___   | |  __  ___   __| | | |_) | ___     | |  | |__   ___  | |  __| | ___  _ __ _   _  
     | |/ _ \  | | |_ |/ _ \ / _` | |  _ < / _ \    | |  | '_ \ / _ \ | | |_ | |/ _ \| '__| | | | 
@@ -14,14 +13,20 @@
                                                                                           |___/ 
 -->
 
-
 <script runat="server">
+    
+    // keep code below to call base class init method
 
-    protected override void OnLoad( EventArgs e )
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
     {
-        base.OnLoad( e );
-        divTitle.Visible = ShowPageTitle;
-    }  
+        base.OnInit( e );
+
+        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo.svg") );
+    }    
     
 </script>
 
@@ -31,21 +36,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
     <meta charset="utf-8">
     <title></title>
-
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
+    
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jpanelmenu.min.js", true) %>"></script>
-    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jRespond.min.js", true) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/jquery.jquery-dotimeout.js", true) %>"></script>
 
-    <!-- Set the viewport width to device width for mobile disabling zooming -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-    <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -55,157 +59,139 @@
     <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone-retina.png", true) %>">
     <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-ipad.png", true) %>">
     <link rel="apple-touch-icon-precomposed" href="<%# ResolveRockUrl("~/Assets/Icons/touch-icon-iphone.png", true) %>">
+    
 </head>
 <body>
 
-    <form id="form1" action="#" runat="server">
+    <form id="form1" runat="server">
+        
+        <div id="page-wrapper">
 
-        <!-- Page Header -->
-        <header class="pageheader">
-            <div class="container">
-
-                <!-- Brand Bar -->
+            <nav class="navbar-default navbar-static-side" role="navigation">
+                
                 <div class="navbar-header">
-
-                    <button class="navbar-toggle navbar-toggle-header" type="button" data-target=".pagenav">
-                        <i class="fa fa-bars fa-2x"></i>
-                    </button>
-
-                    <div class="navbar-brand">
-                        <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
-                            <asp:Image ID="imgLogo" runat="server" AlternateText="Rock" ImageUrl="<%$ Fingerprint:~/Assets/Images/rock-logo.svg %>" CssClass="brandbar-logo" />
-                        </asp:HyperLink>
-                    </div>
-
-
+                    <asp:HyperLink ID="hlHome" runat="server" NavigateUrl="~" ToolTip="Rock">
+                        <div class="logo"></div>
+                    </asp:HyperLink>
                 </div>
 
-                <Rock:Zone Name="Login" runat="server" />
-
-                <Rock:Zone Name="Header" runat="server" />
-
-            </div>
-
-
-            <!-- Main Navigation -->
-            <nav class="pagenav navbar-collapse collapse">
-                <div class="container">
-                    <div class="">
-                        <Rock:Zone Name="Navigation" runat="server" />
-                    </div>
-                </div>
+                <Rock:Zone Name="Navigation" runat="server" />
             </nav>
 
-            <!-- Page Title -->
-            <div id="divTitle" runat="server" class="navbar navbar-static-top pagetitle">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:PageIcon ID="PageIcon" runat="server" />
-                            <h1>
-                                <Rock:PageTitle ID="PageTitle" runat="server" />
-                            </h1>
-                            <Rock:Zone Name="Title Left" runat="server" />
+            <div id="content-wrapper">
+
+                <header>
+                    <!-- Brand Bar -->
+                    <nav class="navbar navbar-default navbar-static-top">
+            
+                    
+			                <div class="navbar-header">
+                                <div class="navbar-minimize">
+                                    <i class="fa fa-bars"></i>
+                                </div>
+			                </div>
+                        
+                            <div class="navbar-mobile-logo">
+                                <asp:Literal ID="lLogoSvg" runat="server" />		   
+                            </div>
+                        	
+                            <div class="navbar-content">   
+                                <div class="navbar-zone-login pull-right"><Rock:Zone Name="Login" runat="server" /></div>
+                                <div class="navbar-zone-header pull-right divided"><Rock:Zone Name="Header" runat="server" /></div>
+			                </div>
+                    </nav>
+
+                </header>
+
+                <main>
+                    <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+
+                    <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                </main>
+
+                 <footer>
+                
+		    
+                        <hr />
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <Rock:Zone Name="Footer" runat="server" />
+                            </div>
+                            <div class="col-md-4">
+                                <p class="text-center" style="color: #808080">
+                                    <i class="fa fa-star"></i>Rock Beta <i class="fa fa-star"></i>
+                                    <br />
+                                    <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a>
+                                    / <a href="http://www.rockrms.com/Rock/Ask/Using" target="_blank">Ask Questions</a>
+                                    / <a href="http://www.rockrms.com/Rock/Ideas" target="_blank">Ideas</a>
+                                </p>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <Rock:Zone Name="Title Right" runat="server" />
-                        </div>
-                    </div>
-                </div>
+
+	            </footer>
+
             </div>
 
-        </header>
-
-        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-
-        <footer class="page-footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-8">
-                        <Rock:Zone Name="Footer" runat="server" />
+	    </div>
+        
+        <%-- controls for scriptmanager and update panel --%>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div>
+                          <div class="rect2"></div>
+                          <div class="rect3"></div>
+                          <div class="rect4"></div>
+                          <div class="rect5"></div>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <p class="text-center">
-                            <i class="fa fa-star"></i>Rock Beta <i class="fa fa-star"></i>
-                            <br />
-                            <a href="https://github.com/SparkDevNetwork/Rock/issues?state=open" target="_blank">Submit Issues</a>
-                            / <a href="http://www.rockrms.com/Rock/Ask/Using" target="_blank">Ask Questions</a>
-                            / <a href="http://www.rockrms.com/Rock/Ideas" target="_blank">Ideas</a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </footer>
-
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
-
-        <asp:UpdateProgress ID="updateProgress" runat="server">
-            <ProgressTemplate>
-                <div class="updateprogress-status">
-                    <div class="spinner">
-                        <div class="rect1"></div>
-                        <div class="rect2"></div>
-                        <div class="rect3"></div>
-                        <div class="rect4"></div>
-                        <div class="rect5"></div>
-                    </div>
-                </div>
-                <div class="updateprogress-bg modal-backdrop">
-                </div>
-            </ProgressTemplate>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
         </asp:UpdateProgress>
 
     </form>
 
     <script>
-
-        var jPM = $.jPanelMenu({
-            menu: '.pagenav',
-            trigger: '.navbar-toggle-header'
+        Sys.Application.add_load( function () {
+            $('.navbar-side > li').hover(function () {
+                $(this).doTimeout('hover', 250, 'addClass', 'open');
+            }, function () {
+                $(this).doTimeout('hover', 250, 'removeClass', 'open');
+            });
         });
 
-        //jPM.on();
 
-        var jRes = jRespond([
-            {
-                label: 'xs',
-                enter: 0,
-                exit: 480
-            }, {
-                label: 'sm',
-                enter: 481,
-                exit: 767
-            }, {
-                label: 'md',
-                enter: 768,
-                exit: 991
-            }, {
-                label: 'lg',
-                enter: 991,
-                exit: 10000
-            }
-        ]);
+        $(document).ready(function () {
 
-        jRes.addFunc({
-            breakpoint: 'xs',
-            enter: function () {
-                jPM.on();
-            },
-            exit: function () {
-                jPM.off();
-            }
+            // enable sidbar sub menus
+            $('.navbar-side li').click(function () {
+                $('.navbar-side li').removeClass('open');
+                $(this).addClass('open');
+            });
+
+            
+            
+
+            
+            $('#content-wrapper').click(function () {
+                $('.navbar-side li').removeClass('open');
+            });
+            
+
+            // show/hide sidebar nav 
+            $('.navbar-minimize').click(function () {
+                if ($('body').hasClass('navbar-side-open') || $('body').hasClass('navbar-side-close')) {
+                    $('body').toggleClass('navbar-side-open navbar-side-close');
+                } else {
+                    $('body').addClass('navbar-side-close');
+                }  
+            });
+
+
         });
-
-        jRes.addFunc({
-            breakpoint: 'sm',
-            enter: function () {
-                jPM.on();
-            },
-            exit: function () {
-                jPM.off();
-            }
-        });
-
     </script>
 
 </body>

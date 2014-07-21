@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -234,46 +234,6 @@ namespace RockWeb.Blocks.Examples
         protected void binaryFileTypePicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             bfpExample.BinaryFileTypeId = bftpExample.SelectedValueAsInt();
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the tglLabels control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglLabels_CheckedChanged( object sender, EventArgs e )
-        {
-            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
-            {
-                if ( control is IRockControl )
-                {
-                    IRockControl rockControl = control as IRockControl;
-                    if ( tglLabels.Checked )
-                    {
-                        rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
-                    }
-                    else
-                    {
-                        rockControl.Label = string.Empty;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the tglEnabled control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void tglEnabled_CheckedChanged( object sender, EventArgs e )
-        {
-            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
-            {
-                if ( control is IRockControl )
-                {
-                    control.Enabled = tglEnabled.Checked;
-                }
-            }
         }
 
         /// <summary>

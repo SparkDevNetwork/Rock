@@ -75,18 +75,7 @@
                                             <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                             <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
                                             <div id="divBillingAddress" runat="server">
-                                                <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
-                                                <div class="row">
-                                                    <div class="col-md-7">
-                                                        <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
-                                                    </div>
-                                                    <div class="col-md-2">
-                                                        <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
-                                                    </div>
-                                                    <div class="col-md-3">                                                
-                                                        <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
-                                                    </div>
-                                                </div>
+                                                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
                                             </div>
                                         </div>
                                     </fieldset>

@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Examples
 
             //// First delete any sample data that might exist already 
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // First we'll clean up by deleting any previously created data such as
                 // families, addresses, people, photos, attendance data, etc.
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.Examples
 
             // Import the sample data
             // using RockContext in case there are multiple saves (like Attributes)
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 // Now we can add the families (and people) and then groups.
                 AddFamilies( elemFamilies, rockContext );
@@ -1299,7 +1299,8 @@ namespace RockWeb.Blocks.Examples
                         AttendanceCode = attendanceCode,
                         StartDateTime = checkinDateTime,
                         EndDateTime = null,
-                        DidAttend = true
+                        DidAttend = true,
+                        CampusId = 1
                     };
 
                     member.Person.Attendances.Add( attendance );
@@ -1471,7 +1472,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id,
-                            Number = personElem.Attribute( "homePhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "homePhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1485,7 +1486,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id,
-                            Number = personElem.Attribute( "mobilePhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "mobilePhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1499,7 +1500,7 @@ namespace RockWeb.Blocks.Examples
                         var phoneNumber = new PhoneNumber
                         {
                             NumberTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() ).Id,
-                            Number = personElem.Attribute( "workPhone" ).Value.Trim()
+                            Number = PhoneNumber.CleanNumber( personElem.Attribute( "workPhone" ).Value.Trim() )
                         };
 
                         // Format number since default SaveChanges() is not being used.
@@ -1525,7 +1526,7 @@ namespace RockWeb.Blocks.Examples
                 // person attributes
                 if ( personElem.Elements( "attributes" ).Any() )
                 {
-                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ) );
+                    AddPersonAttributes( groupMember, personElem.Elements( "attributes" ), rockContext );
                 }
 
                 // person logins
@@ -1599,7 +1600,7 @@ namespace RockWeb.Blocks.Examples
             if ( isPrivate.AsBoolean() )
             {
                 rockContext.SaveChanges( disablePrePostProcessing: true );
-                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()] );
+                note.MakePrivate( Rock.Security.Authorization.VIEW, _personCache[byPersonGuid.AsGuid()], rockContext );
             }
 
         }
@@ -1640,10 +1641,10 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="groupMember"></param>
         /// <param name="attributes"></param>
-        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes )
+        private void AddPersonAttributes( GroupMember groupMember, IEnumerable<XElement> attributes, RockContext rockContext )
         {
             // In order to add attributes to the person, you have to first load them all
-            groupMember.Person.LoadAttributes();
+            groupMember.Person.LoadAttributes( rockContext );
 
             foreach ( var personAttribute in attributes.Elements( "attribute" ) )
             {
@@ -1744,7 +1745,8 @@ namespace RockWeb.Blocks.Examples
                 var street2 = ( addressElem.Attribute( "street2" ) != null ) ? addressElem.Attribute( "street2" ).Value.Trim() : string.Empty;
                 var city = ( addressElem.Attribute( "city" ) != null ) ? addressElem.Attribute( "city" ).Value.Trim() : string.Empty;
                 var state = ( addressElem.Attribute( "state" ) != null ) ? addressElem.Attribute( "state" ).Value.Trim() : string.Empty;
-                var zip = ( addressElem.Attribute( "zip" ) != null ) ? addressElem.Attribute( "zip" ).Value.Trim() : string.Empty;
+                var postalCode = ( addressElem.Attribute( "postalCode" ) != null ) ? addressElem.Attribute( "postalCode" ).Value.Trim() : string.Empty;
+                var country = ( addressElem.Attribute( "country" ) != null ) ? addressElem.Attribute( "country" ).Value.Trim() : "US";
                 var lat = ( addressElem.Attribute( "lat" ) != null ) ? addressElem.Attribute( "lat" ).Value.Trim() : string.Empty;
                 var lng = ( addressElem.Attribute( "long" ) != null ) ? addressElem.Attribute( "long" ).Value.Trim() : string.Empty;
 
@@ -1766,7 +1768,7 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 // Call replica of the groupService's AddNewFamilyAddress in an attempt to speed it up
-                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, zip, rockContext );
+                AddNewFamilyAddress( family, locationTypeGuid, street1, street2, city, state, postalCode, country, rockContext );
 
                 var location = family.GroupLocations.Where( gl => gl.Location.Street1 == street1 ).Select( gl => gl.Location ).FirstOrDefault();
 
@@ -1844,19 +1846,22 @@ namespace RockWeb.Blocks.Examples
         /// <param name="street2">The street2.</param>
         /// <param name="city">The city.</param>
         /// <param name="state">The state.</param>
-        /// <param name="zip">The zip.</param>
+        /// <param name="postalCode">The zip.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, string street1, string street2, string city, string state, string zip, RockContext rockContext )
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid, 
+            string street1, string street2, string city, string state, string postalCode, string country,
+            RockContext rockContext )
         {
             if ( !string.IsNullOrWhiteSpace( street1 ) ||
                  !string.IsNullOrWhiteSpace( street2 ) ||
                  !string.IsNullOrWhiteSpace( city ) ||
-                 !string.IsNullOrWhiteSpace( zip ) )
+                 !string.IsNullOrWhiteSpace( postalCode ) ||
+                 !string.IsNullOrWhiteSpace( country ) )
             {
                 var groupLocation = new GroupLocation();
 
                 // Get new or existing location and associate it with group
-                var location = new LocationService( rockContext ).Get( street1, street2, city, state, zip );
+                var location = new LocationService( rockContext ).Get( street1, street2, city, state, postalCode, country );
                 groupLocation.Location = location;
                 groupLocation.IsMailingLocation = true;
                 groupLocation.IsMappedLocation = true;

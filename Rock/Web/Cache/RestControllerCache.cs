@@ -145,9 +145,10 @@ namespace Rock.Web.Cache
         /// Returns RestController object from cache.  If RestController does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static RestControllerCache Read( int id )
+        public static RestControllerCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestControllerCache.CacheKey( id );
 
@@ -160,7 +161,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService( new RockContext() );
+                var RestControllerService = new RestControllerService( rockContext ?? new RockContext() );
                 var RestControllerModel = RestControllerService.Get( id );
                 if ( RestControllerModel != null )
                 {
@@ -183,8 +184,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static RestControllerCache Read( Guid guid )
+        public static RestControllerCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -195,7 +197,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestControllerService = new RestControllerService( new RockContext() );
+                var RestControllerService = new RestControllerService( rockContext ?? new RockContext() );
                 var RestControllerModel = RestControllerService
                     .Queryable( "RestActions" )
                     .Where( t => t.Guid == guid )

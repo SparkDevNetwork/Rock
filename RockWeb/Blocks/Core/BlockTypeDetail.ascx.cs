@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,15 +45,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "blockTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "blockTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "blockTypeId" ).AsInteger() );
             }
         }
 
@@ -131,28 +123,23 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="blockTypeId">The block type identifier.</param>
+        public void ShowDetail( int blockTypeId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "blockTypeId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             // Load depending on Add(0) or Edit
             BlockType blockType = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+
+            if ( !blockTypeId.Equals( 0 ) )
             {
-                blockType = new BlockTypeService( new RockContext() ).Get( itemKeyValue );
+                blockType = new BlockTypeService( new RockContext() ).Get( blockTypeId );
                 lActionTitle.Text = ActionTitle.Edit( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();
                 lstPages.Visible = true;
                 lblStatus.Visible = true;
             }
-            else
+            
+            if (blockType == null)
             {
                 blockType = new BlockType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( BlockType.FriendlyTypeName ).FormatAsHtmlTitle();

@@ -42,7 +42,7 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable()
+            return Queryable( "Group,Schedule" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&
@@ -64,7 +64,7 @@ namespace Rock.Model
             DateTime beginDate = date.Date;
             DateTime endDate = beginDate.AddDays( 1 );
 
-            return Queryable()
+            return Queryable( "Group,Schedule" )
                 .Where( a =>
                     a.StartDateTime >= beginDate &&
                     a.StartDateTime < endDate &&
@@ -80,10 +80,10 @@ namespace Rock.Model
         /// <param name="graphBy">The graph by.</param>
         /// <param name="startDate">The start date.</param>
         /// <param name="endDate">The end date.</param>
-        /// <param name="groupTypeIds">The group type ids.</param>
+        /// <param name="groupIds">The group ids.</param>
         /// <param name="campusIds">The campus ids.</param>
         /// <returns></returns>
-        public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupTypeIds = null, string campusIds = null )
+        public IEnumerable<IChartData> GetChartData( AttendanceGroupBy groupBy = AttendanceGroupBy.Week, AttendanceGraphBy graphBy = AttendanceGraphBy.Total, DateTime? startDate = null, DateTime? endDate = null, string groupIds = null, string campusIds = null )
         {
             var qry = Queryable().AsNoTracking().Where( a => a.DidAttend );
 
@@ -97,10 +97,10 @@ namespace Rock.Model
                 qry = qry.Where( a => a.StartDateTime < endDate.Value );
             }
 
-            if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
+            if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
-                var groupTypeIdList = groupTypeIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
-                qry = qry.Where( a => a.GroupId.HasValue && groupTypeIdList.Contains( a.Group.GroupTypeId ) );
+                var groupIdList = groupIds.Split( ',' ).Select( a => a.AsInteger() ).ToList();
+                qry = qry.Where( a => a.GroupId.HasValue && groupIdList.Contains( a.GroupId.Value ) );
             }
 
             if ( !string.IsNullOrWhiteSpace( campusIds ) )
@@ -109,48 +109,48 @@ namespace Rock.Model
                 qry = qry.Where( a => a.CampusId.HasValue && campusIdList.Contains( a.CampusId.Value ) );
             }
 
-            var summaryQry = qry.Select( a => new
+            //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
+            
+            var qryWithSundayDate = qry.Select( a => new
             {
-                //// for Date SQL functions, borrowed some ideas from http://stackoverflow.com/a/1177529/1755417 and http://stackoverflow.com/a/133101/1755417 and http://stackoverflow.com/a/607837/1755417
-
-                // Build a CASE statement to group by week, or month, or year
-                SummaryDateTime = (DateTime)(
-                    
-                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
-                    groupBy == AttendanceGroupBy.Week ? SqlFunctions.DateAdd(
+                Attendance = a,
+                SundayDate = SqlFunctions.DateAdd(
                         "day",
                         SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "weekday", a.StartDateTime ) + 1 + 1 + 6, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+                        "1900-01-01" )
+            } );
 
-                   // GroupBy Month 
-                   groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd(
-                        "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+            var summaryQry = qryWithSundayDate.Select( a => new
+            {
+                // Build a CASE statement to group by week, or month, or year
+                SummaryDateTime = (DateTime)(
+
+                    // GroupBy Week with Monday as FirstDayOfWeek ( +1 ) and Sunday as Summary Date ( +6 )
+                    groupBy == AttendanceGroupBy.Week ? a.SundayDate :
+
+                    // GroupBy Month 
+                    groupBy == AttendanceGroupBy.Month ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "day", a.SundayDate ) + 1, a.SundayDate ) :
 
                     // GroupBy Year
-                    groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd(
-                        "day",
-                        SqlFunctions.DateDiff( "day", "1900-01-01", SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.StartDateTime ) + 1, a.StartDateTime ) ),
-                        "1900-01-01" ) :
+                    groupBy == AttendanceGroupBy.Year ? SqlFunctions.DateAdd( "day", -SqlFunctions.DatePart( "dayofyear", a.SundayDate ) + 1, a.SundayDate ) :
 
                     // shouldn't happen
                     null
                 ),
                 Campus = new
                 {
-                    Id = a.CampusId,
-                    Name = a.Campus.Name
+                    Id = a.Attendance.CampusId,
+                    Name = a.Attendance.Campus.Name
                 },
-                GroupType = new
+                Group = new
                 {
-                    Id = a.Group.GroupTypeId,
-                    Name = a.Group.GroupType.Name
+                    Id = a.Attendance.GroupId,
+                    Name = a.Attendance.Group.Name
                 },
                 Schedule = new
                 {
-                    Id = a.ScheduleId,
-                    Name = a.Schedule.Name
+                    Id = a.Attendance.ScheduleId,
+                    Name = a.Attendance.Schedule.Name
                 }
             } );
 
@@ -180,9 +180,9 @@ namespace Rock.Model
                     YValue = a.Count
                 } ).ToList();
             }
-            else if ( graphBy == AttendanceGraphBy.Area )
+            else if ( graphBy == AttendanceGraphBy.Group )
             {
-                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.GroupType } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
+                var groupByQry = summaryQry.GroupBy( a => new { a.SummaryDateTime, Series = a.Group } ).Select( s => new { s.Key, Count = s.Count() } ).OrderBy( o => o.Key );
 
                 result = groupByQry.ToList().Select( a => new AttendanceSummaryData
                 {

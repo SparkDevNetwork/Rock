@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.Security;
 using Rock;
@@ -31,6 +32,7 @@ namespace RockWeb.Blocks.Security
     [Description( "Displays the currently logged in user's name along with options to Login, Logout, or manage account." )]
 
     [LinkedPage( "My Account Page", "Page for user to manage their account (if blank will use 'MyAccount' page route)" )]
+    [LinkedPage( "My Profile Page", "Page for user to view their person profile (if blank option will not be displayed)" )]
     public partial class LoginStatus : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -43,13 +45,12 @@ namespace RockWeb.Blocks.Security
         {
             base.OnInit( e );
 
-            var url = LinkedPageUrl( "MyAccountPage" );
-            if (string.IsNullOrWhiteSpace(url))
+            var myAccountUrl = LinkedPageUrl( "MyAccountPage" );
+            if ( string.IsNullOrWhiteSpace( myAccountUrl ) )
             {
-                url = ResolveRockUrl( "~/MyAccount" );
+                myAccountUrl = ResolveRockUrl( "~/MyAccount" );
             }
-
-            hlMyAccount.NavigateUrl = url;
+            hlMyAccount.NavigateUrl = myAccountUrl;
         }
 
         /// <summary>
@@ -68,12 +69,28 @@ namespace RockWeb.Blocks.Security
 
                 var currentUser = CurrentUser;
                 phMyAccount.Visible = currentUser != null && currentUser.IsAuthenticated;
+
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "PersonId", currentPerson.Id.ToString() );
+                var myProfileUrl = LinkedPageUrl( "MyProfilePage", queryParams );
+                if ( !string.IsNullOrWhiteSpace( myProfileUrl ) )
+                {
+                    hlMyProfile.NavigateUrl = myProfileUrl;
+                }
+                else
+                {
+                    phMyProfile.Visible = false;
+                }
+
                 lbLoginLogout.Text = "Logout";
+
+                divProfilePhoto.Attributes.Add( "style", String.Format( "background-image: url('{0}'); background-size: cover; background-repeat: no-repeat;", currentPerson.PhotoUrl ) );
             }
             else
             {
                 phHello.Visible = false;
                 phMyAccount.Visible = false;
+                phMyProfile.Visible = false;
                 lbLoginLogout.Text = "Login";
             }
 

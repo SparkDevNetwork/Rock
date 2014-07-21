@@ -73,6 +73,12 @@ namespace Rock.Security
         }
 
         /// <summary>
+        /// The _key bytes created new for each thread/session
+        /// </summary>
+        [ThreadStatic]
+        private static byte[] _keyBytes = null;
+
+        /// <summary>
         /// Encrypt the given string using AES.  The string can be decrypted using 
         /// DecryptStringAES().  The sharedSecret parameters must match.
         /// </summary>
@@ -91,12 +97,18 @@ namespace Rock.Security
 
             try
             {
-                // generate the key from the shared secret and the salt
-                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-
                 // Create a RijndaelManaged object
                 aesAlg = new RijndaelManaged();
-                aesAlg.Key = key.GetBytes( aesAlg.KeySize / 8 );
+                
+                // generate the key from the shared secret and the salt
+                if ( _keyBytes == null )
+                {
+                    // generate a new key for every thread (vs. every call which is slow) 
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
+                }
+
+                aesAlg.Key = _keyBytes;
 
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor( aesAlg.Key, aesAlg.IV );

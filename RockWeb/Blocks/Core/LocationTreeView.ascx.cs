@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,18 +86,7 @@ namespace RockWeb.Blocks.Core
                         if ( location != null )
                         {
                             _LocationId = location.Id.ToString();
-                            string redirectUrl = string.Empty;
-
-                            // redirect so that the location treeview has the first node selected right away and location detail shows the location
-                            if ( hfPageRouteTemplate.Value.IndexOf( "{locationId}", StringComparison.OrdinalIgnoreCase ) >= 0 )
-                            {
-                                redirectUrl = "~/" + hfPageRouteTemplate.Value.ReplaceCaseInsensitive( "{locationId}", _LocationId.ToString() );
-                            }
-                            else
-                            {
-                                redirectUrl = this.Request.Url + "?LocationId=" + _LocationId.ToString();
-                            }
-
+                            string redirectUrl = this.Request.Url.AbsolutePath + "?LocationId=" + _LocationId.ToString();
                             this.Response.Redirect( redirectUrl, false );
                             Context.ApplicationInstance.CompleteRequest();
                         }

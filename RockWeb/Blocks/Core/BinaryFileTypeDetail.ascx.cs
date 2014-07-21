@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,15 +84,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "binaryFileTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "binaryFileTypeId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "binaryFileTypeId" ).AsInteger() );
             }
             else
             {
@@ -117,26 +109,21 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="binaryFileTypeId">The binary file type identifier.</param>
+        public void ShowDetail( int binaryFileTypeId )
         {
-            if ( !itemKey.Equals( "binaryFileTypeId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
-            BinaryFileType binaryFileType;
+            BinaryFileType binaryFileType = null;
 
             var rockContext = new RockContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !binaryFileTypeId.Equals( 0 ) )
             {
-                binaryFileType = new BinaryFileTypeService( rockContext ).Get( itemKeyValue );
+                binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId );
                 lActionTitle.Text = ActionTitle.Edit( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if ( binaryFileType == null )
             {
                 binaryFileType = new BinaryFileType { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( BinaryFileType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -278,7 +265,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 rockContext.SaveChanges();
 

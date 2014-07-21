@@ -517,10 +517,10 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( int personId, bool includeSelf = false )
         {
-            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            int groupTypeFamilyId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
             return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
-                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .Where( m => m.PersonId == personId && m.Group.GroupTypeId == groupTypeFamilyId )
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != personId )
                 .Distinct();
@@ -537,7 +537,7 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<GroupMember> GetFamilyMembers( Group family, int personId, bool includeSelf = false )
         {
-            return new GroupMemberService( (RockContext)this.Context ).Queryable( "Person" )
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupRole, Person" )
                 .Where( m => m.GroupId == family.Id )
                 .Where( m => includeSelf || m.PersonId != personId )
                 .OrderBy( m => m.GroupRole.Order)
@@ -712,9 +712,10 @@ namespace Rock.Model
             // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
             // 2) Opposite Gender as Person
             // 3) Both Persons are Married
-            
+
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            int marriedDefinedValueId = DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid()).Id;
+            int adultRoleId = GroupTypeCache.Read( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+            int marriedDefinedValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
@@ -722,7 +723,7 @@ namespace Rock.Model
             }
 
             return GetFamilyMembers(person.Id)
-                .Where( m => m.GroupRole.Guid == adultGuid)
+                .Where( m => m.GroupRoleId == adultRoleId )
                 .Where( m => m.Person.Gender != person.Gender )
                 .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
                 .Select( m => m.Person )

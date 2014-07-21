@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Groups
     <div class='pull-left' style='padding-right: 24px'>
         <strong>{{GroupLocation.Name}}</strong><br>
         {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.Zip}}
+        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.PostalCode}}
         {% for attribute in Attributes %}
             {% if forloop.first %}<br/>{% endif %}
             <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
@@ -240,7 +240,7 @@ namespace RockWeb.Blocks.Groups
                                                 l.Location.Street2,
                                                 l.Location.City,
                                                 l.Location.State,
-                                                l.Location.Zip,
+                                                PostalCode = l.Location.PostalCode,
                                                 Latitude = l.Location.GeoPoint.Latitude,
                                                 Longitude = l.Location.GeoPoint.Longitude,
                                                 l.GroupLocationTypeValue.Name

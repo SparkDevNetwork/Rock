@@ -136,7 +136,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The validation group.
         /// </value>
-        public string ValidationGroup 
+        public string ValidationGroup
         {
             get { return ViewState["ValidationGroup"] as string ?? string.Empty; }
             set { ViewState["ValidationGroup"] = value; }
@@ -160,7 +160,6 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _contentPanel;
             }
-
         }
 
         /// <summary>
@@ -186,12 +185,38 @@ namespace Rock.Web.UI.Controls
             _dialogPanel.Controls.Add( _headerPanel );
             _headerPanel.ID = "headerPanel";
             _headerPanel.CssClass = "modal-header";
+            
+            // Content Panel wrapper with scroll-container
+            var scrollStartLiteral = new Literal();
+            scrollStartLiteral.Text = @"
+            <div class='modal-body'>
+                <div class='modal-dialog-scroll-container scroll-container scroll-container-vertical'>                
+                    <div class='scrollbar'>
+                        <div class='track'>
+                            <div class='thumb'>
+                                <div class='end'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='viewport'>
+                        <div class='overview'>";
+
+            _dialogPanel.Controls.Add( scrollStartLiteral );
 
             _contentPanel = new Panel();
             _dialogPanel.Controls.Add( _contentPanel );
             _contentPanel.ID = "contentPanel";
-            _contentPanel.CssClass = "modal-body";
 
+            var scrollEndLiteral = new Literal();
+            scrollEndLiteral.Text = @"
+                        </div>
+                    </div>
+                </div>
+            </div>";
+
+            _dialogPanel.Controls.Add( scrollEndLiteral );
+
+            // Footer
             _footerPanel = new Panel();
             _dialogPanel.Controls.Add( _footerPanel );
             _footerPanel.ID = "footerPanel";
@@ -246,6 +271,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
+            RegisterJavaScript();
+
             _closeLink.Attributes["onclick"] = string.Format(
                 "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
@@ -271,9 +298,28 @@ namespace Rock.Web.UI.Controls
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )
+            {
                 this.TargetControlID = _dfltShowButton.ID;
+            }
 
             base.OnPreRender( e );
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected void RegisterJavaScript()
+        {
+            string scriptFormat = @"
+            $('#{0} .modal-dialog-scroll-container').tinyscrollbar({{ size: 150, sizethumb: 20 }});
+
+            $('#{0} .modal-dialog-scroll-container').on('mouseenter', function () {{
+                $('#{0} .modal-dialog-scroll-container').tinyscrollbar_update('relative');
+            }});";
+
+            var script = string.Format( scriptFormat, _dialogPanel.ClientID );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "modaldialog-scroll-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -291,7 +337,5 @@ namespace Rock.Web.UI.Controls
         /// Occurs when the save button is clicked.
         /// </summary>
         public event EventHandler SaveClick;
-
     }
-
 }

@@ -27,25 +27,30 @@ namespace Rock.Model
     /// </summary>
     public partial class LocationService 
     {
-       
+
         /// <summary>
-        /// Returns the first <see cref="Rock.Model.Location"/> where the address matches the provided address.  If no address is found with the provided values, 
+        /// Returns the first
+        /// <see cref="Rock.Model.Location" /> where the address matches the provided address.  If no address is found with the provided values,
         /// the address will be standardized. If there is still not a match, the address will be saved as a new location.
         /// </summary>
-        /// <param name="street1">A <see cref="System.String"/> representing the Address Line 1 to search by.</param>
-        /// <param name="street2">A <see cref="System.String"/> representing the Address Line 2 to search by.</param>
-        /// <param name="city">A <see cref="System.String"/> representing the City to search by.</param>
-        /// <param name="state">A <see cref="System.String"/> representing the State to search by.</param>
-        /// <param name="zip">A <see cref="System.String"/> representing the Zip/Postal code to search by</param>
-        /// <returns>The first <see cref="Rock.Model.Location"/> where an address match is found, if no match is found a new <see cref="Rock.Model.Location"/> is created and returned.</returns>
-        public Location Get( string street1, string street2, string city, string state, string zip )
+        /// <param name="street1">A <see cref="System.String" /> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="System.String" /> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="System.String" /> representing the City to search by.</param>
+        /// <param name="state">A <see cref="System.String" /> representing the State to search by.</param>
+        /// <param name="postalCode">A <see cref="System.String" /> representing the Zip/Postal code to search by</param>
+        /// <param name="country">The country.</param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.Location" /> where an address match is found, if no match is found a new <see cref="Rock.Model.Location" /> is created and returned.
+        /// </returns>
+        public Location Get( string street1, string street2, string city, string state, string postalCode, string country )
         {
             // Make sure it's not an empty address
             if ( string.IsNullOrWhiteSpace( street1 ) &&
                 string.IsNullOrWhiteSpace( street2 ) &&
                 string.IsNullOrWhiteSpace( city ) &&
                 string.IsNullOrWhiteSpace( state ) &&
-                string.IsNullOrWhiteSpace( zip ) )
+                string.IsNullOrWhiteSpace( postalCode ) &&
+                string.IsNullOrWhiteSpace( country ) )
             {
                 return null;
             }
@@ -56,7 +61,8 @@ namespace Rock.Model
                 ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) &&
                 ( t.City == city || ( city == null && t.City == null ) ) &&
                 ( t.State == state || ( state == null && t.State == null ) ) &&
-                ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
+                ( t.PostalCode == postalCode || ( postalCode == null && t.PostalCode == null ) ) &&
+                ( t.Country == country || ( country == null && t.Country == null ) ) );
             if ( existingLocation != null )
             {
                 return existingLocation;
@@ -70,7 +76,8 @@ namespace Rock.Model
                 Street2 = street2,
                 City = city,
                 State = state,
-                Zip = zip
+                PostalCode = postalCode,
+                Country = country
             };
 
             Verify( newLocation, false );
@@ -80,7 +87,8 @@ namespace Rock.Model
                 ( t.Street2 == newLocation.Street2 || ( newLocation.Street2 == null && t.Street2 == null ) ) &&
                 ( t.City == newLocation.City || ( newLocation.City == null && t.City == null ) ) &&
                 ( t.State == newLocation.State || ( newLocation.State == null && t.State == null ) ) &&
-                ( t.Zip == newLocation.Zip || ( newLocation.Zip == null && t.Zip == null ) ) );
+                ( t.PostalCode == newLocation.PostalCode || ( newLocation.PostalCode == null && t.PostalCode == null ) ) &&
+                ( t.Country == newLocation.Country || ( newLocation.Country == null && t.Country == null ) ) );
 
             if ( existingLocation != null )
             {
@@ -206,6 +214,11 @@ namespace Rock.Model
                         log.Result = result.Left( 200 );
                         log.Success = success;
                         logService.Add( log );
+                    }
+
+                    if (success)
+                    {
+                        break;
                     }
                 }
             }

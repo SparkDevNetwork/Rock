@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,36 +44,46 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                    if ( family != null )
+                    ClearSelection();
+
+                    CheckInPerson person = null;
+                    CheckInGroup group = null;
+                    CheckInLocation location = null;
+
+                    person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .SelectMany( f => f.People.Where( p => p.Selected ) )
+                        .FirstOrDefault();
+
+                    if ( person != null )
                     {
-                        var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                        if ( person != null )
+                        group = person.GroupTypes.Where( t => t.Selected )
+                                .SelectMany( t => t.Groups.Where( g => g.Selected ) )
+                                .FirstOrDefault();
+
+                        if ( group != null )
                         {
-                            var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                            if ( groupType != null )
-                            {
-                                var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                if ( group != null )
-                                {
-                                    var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                    if ( location != null )
-                                    {
-                                        lTitle.Text = person.ToString();
-                                        lSubTitle.Text = group.ToString();
+                            location = group.Locations.Where( l => l.Selected )
+                                        .FirstOrDefault();
+                        }
+                    }
 
-                                        if ( location.Schedules.Count == 1 )
-                                        {
-                                            foreach ( var schedule in location.Schedules )
-                                            {
-                                                schedule.Selected = true;
-                                            }
+                    if ( location == null )
+                    {
+                        GoBack();
+                    }
 
-                                            ProcessSelection( maWarning );
-                                        }
-                                        else
-                                        {
-                                            string script = string.Format(@"
+                    lTitle.Text = person.ToString();
+                    lSubTitle.Text = string.Format( "{0} - {1}", group.ToString(), location.ToString() );
+
+                    var availSchedules = location.Schedules.Where( s => !s.ExcludedByFilter ).ToList();
+                    if ( availSchedules.Count == 1 )
+                    {
+                        availSchedules.FirstOrDefault().Selected = true;
+                        ProcessSelection( maWarning );
+                    }
+                    else
+                    {
+                        string script = string.Format( @"
     <script>
         function GetTimeSelection() {{
             var ids = '';
@@ -81,85 +91,76 @@ namespace RockWeb.Blocks.CheckIn
                 ids += $(this).attr('schedule-id') + ',';
             }});
             if (ids == '') {{
-                alert('Please select at least one time');
+                bootbox.alert('Please select at least one time');
                 return false;
             }}
             else
             {{
-                $('#{0}').val(ids);
+                $('#{0}').button('loading')
+                $('#{1}').val(ids);
                 return true;
             }}
         }}
     </script>
-", hfTimes.ClientID );
-                                            Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
+", lbSelect.ClientID, hfTimes.ClientID );
+                        Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
 
-                                            rSelection.DataSource = location.Schedules.OrderBy( s => s.StartTime );
-                                            rSelection.DataBind();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        GoBack();
-                                    }
-                                }
-                                else
-                                {
-                                    GoBack();
-                                }
-                            }
-                            else
-                            {
-                                GoBack();
-                            }
-                        }
-                        else
-                        {
-                            GoBack();
-                        }
-                    }
-                    else
-                    {
-                        GoBack();
+                        rSelection.DataSource = availSchedules.OrderBy( s => s.StartTime );
+                        rSelection.DataBind();
                     }
                 }
             }
         }
 
-        protected void lbSelect_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Clears any previously selected schedules.
+        /// </summary>
+        private void ClearSelection()
         {
-            if ( KioskCurrentlyActive )
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                foreach ( var person in family.People )
                 {
-                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                    if ( person != null )
+                    foreach ( var groupType in person.GroupTypes )
                     {
-                        var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                        if ( groupType != null )
+                        foreach ( var group in groupType.Groups )
                         {
-                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
-                            if ( group != null )
+                            foreach ( var location in group.Locations )
                             {
-                                var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                if ( location != null )
+                                foreach ( var schedule in location.Schedules )
                                 {
-                                    foreach( var scheduleId in hfTimes.Value.SplitDelimitedValues())
-                                    {
-                                        int id = Int32.Parse( scheduleId );
-                                        var schedule = location.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
-                                        if (schedule != null)
-                                        {
-                                            schedule.Selected = true;
-                                        }
-                                    }
-
-                                    ProcessSelection( maWarning );
+                                    schedule.Selected = false;
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+        protected void lbSelect_Click( object sender, EventArgs e )
+        {
+            if ( KioskCurrentlyActive )
+            {
+                var location = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected )
+                        .SelectMany( p => p.GroupTypes.Where( t => t.Selected )
+                            .SelectMany( t => t.Groups.Where( g => g.Selected ) 
+                                .SelectMany( g => g.Locations.Where( l => l.Selected ) ) ) ) )
+                    .FirstOrDefault();
+
+                if ( location != null )
+                {
+                    foreach( var scheduleId in hfTimes.Value.SplitDelimitedValues())
+                    {
+                        int id = Int32.Parse( scheduleId );
+                        var schedule = location.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
+                        if (schedule != null)
+                        {
+                            schedule.Selected = true;
+                        }
+                    }
+
+                    ProcessSelection( maWarning );
                 }
             }
         }

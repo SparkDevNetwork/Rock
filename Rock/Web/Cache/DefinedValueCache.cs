@@ -164,9 +164,10 @@ namespace Rock.Web.Cache
         /// Returns DefinedValue object from cache.  If definedValue does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( int id )
+        public static DefinedValueCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = DefinedValueCache.CacheKey( id );
 
@@ -179,7 +180,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService( new RockContext() );
+                var definedValueService = new DefinedValueService( rockContext ?? new RockContext() );
                 var definedValueModel = definedValueService.Get( id );
                 if ( definedValueModel != null )
                 {
@@ -219,8 +220,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( Guid guid )
+        public static DefinedValueCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -231,7 +233,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService( new RockContext() );
+                var definedValueService = new DefinedValueService( rockContext ?? new RockContext() );
                 var definedValueModel = definedValueService.Get( guid );
                 if ( definedValueModel != null )
                 {
@@ -255,8 +257,9 @@ namespace Rock.Web.Cache
         /// Reads the specified defined value model.
         /// </summary>
         /// <param name="definedValueModel">The defined value model.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static DefinedValueCache Read( DefinedValue definedValueModel )
+        public static DefinedValueCache Read( DefinedValue definedValueModel, RockContext rockContext = null )
         {
             string cacheKey = DefinedValueCache.CacheKey( definedValueModel.Id );
 
@@ -270,7 +273,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                definedValueModel.LoadAttributes();
+                definedValueModel.LoadAttributes( rockContext );
                 definedValue = new DefinedValueCache( definedValueModel );
 
                 var cachePolicy = new CacheItemPolicy();

@@ -159,8 +159,9 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PersonBadgeCache Read( int id )
+        public static PersonBadgeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = PersonBadgeCache.CacheKey( id );
 
@@ -173,7 +174,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var personBadgeService = new PersonBadgeService( new RockContext() );
+                var personBadgeService = new PersonBadgeService( rockContext ?? new RockContext() );
                 var personBadgeModel = personBadgeService.Get( id );
                 if ( personBadgeModel != null )
                 {
@@ -197,8 +198,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PersonBadgeCache Read( Guid guid )
+        public static PersonBadgeCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -209,7 +211,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var personBadgeService = new PersonBadgeService( new RockContext() );
+                var personBadgeService = new PersonBadgeService( rockContext ?? new RockContext() );
                 var personBadgeModel = personBadgeService.Get( guid );
                 if ( personBadgeModel != null )
                 {

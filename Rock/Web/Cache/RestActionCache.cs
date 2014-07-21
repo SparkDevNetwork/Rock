@@ -154,9 +154,10 @@ namespace Rock.Web.Cache
         /// Returns RestAction object from cache.  If RestAction does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static RestActionCache Read( int id )
+        public static RestActionCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestActionCache.CacheKey( id );
 
@@ -169,7 +170,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService( new RockContext() );
+                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
                 var RestActionModel = RestActionService.Get( id );
                 if ( RestActionModel != null )
                 {
@@ -192,8 +193,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static RestActionCache Read( Guid guid )
+        public static RestActionCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -204,7 +206,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var RestActionService = new RestActionService( new RockContext() );
+                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
                 var RestActionModel = RestActionService.Get( guid );
                 if ( RestActionModel != null )
                 {

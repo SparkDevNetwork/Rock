@@ -79,23 +79,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "BinaryFileId" );
-                string typeId = PageParameter( "BinaryFileTypeId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( typeId ) )
-                    {
-                        ShowDetail( "BinaryFileId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "BinaryFileId", int.Parse( itemId ), int.Parse( typeId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "BinaryFileId" ).AsInteger(), PageParameter( "BinaryFileTypeId" ).AsIntegerOrNull() );
 
                 ddlBinaryFileType.Visible = GetAttributeValue( "ShowBinaryFileType" ).AsBoolean();
             }
@@ -121,54 +105,50 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Shows the edit.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        public void ShowDetail( int binaryFileId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( binaryFileId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="binaryFileId">The binary file identifier.</param>
         /// <param name="binaryFileTypeId">The binary file type id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? binaryFileTypeId )
+        public void ShowDetail( int binaryFileId, int? binaryFileTypeId )
         {
-            if ( !itemKey.Equals( "BinaryFileId" ) )
-            {
-                return;
-            }
-
             var rockContext = new RockContext();
             var binaryFileService = new BinaryFileService( rockContext );
             BinaryFile binaryFile = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !binaryFileId.Equals( 0 ) )
             {
-                binaryFile = binaryFileService.Get( itemKeyValue );
+                binaryFile = binaryFileService.Get( binaryFileId );
             }
 
-            if ( binaryFile != null )
+            if ( binaryFile == null )
             {
-                lActionTitle.Text = ActionTitle.Edit( binaryFile.BinaryFileType.Name ).FormatAsHtmlTitle();
+                BinaryFileType binaryFileType = null;
+                if ( binaryFileTypeId.HasValue )
+                {
+                    binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId.Value );
+                }
+
+                if ( binaryFileType != null )
+                {
+                    binaryFile = new BinaryFile { Id = 0, IsSystem = false, BinaryFileTypeId = binaryFileTypeId };
+                    lActionTitle.Text = ActionTitle.Add( binaryFileType.Name ).FormatAsHtmlTitle();
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                    return;
+                }
             }
             else
             {
-                binaryFile = new BinaryFile { Id = 0, IsSystem = false, BinaryFileTypeId = binaryFileTypeId };
-
-                string friendlyName = BinaryFile.FriendlyTypeName;
-                if ( binaryFileTypeId.HasValue )
-                {
-                    var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId.Value );
-                    if ( binaryFileType != null )
-                    {
-                        friendlyName = binaryFileType.Name;
-                    }
-                }
-
-                lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Edit( binaryFile.BinaryFileType.Name ).FormatAsHtmlTitle();
             }
 
             binaryFile.LoadAttributes( rockContext );
@@ -190,7 +170,7 @@ namespace RockWeb.Blocks.Core
             
             if ( binaryFile.BinaryFileTypeId.HasValue )
             {
-                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId ?? 0 ).Guid;
+                fsFile.BinaryFileTypeGuid = new BinaryFileTypeService( new RockContext() ).Get( binaryFile.BinaryFileTypeId.Value ).Guid;
             }
 
             tbName.Text = binaryFile.FileName;
@@ -319,7 +299,7 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 foreach ( var id in OrphanedBinaryFileIdList )
                 {

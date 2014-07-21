@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.WorkFlow
         private void BuildCategoryControl( Control parentControl, WorkflowNavigationCategory category )
         {
             var divPanel = new HtmlGenericContainer( "div" );
-            divPanel.AddCssClass( "panel panel-default panel-workflowitem" );
+            divPanel.AddCssClass( "panel panel-workflowitem" );
             parentControl.Controls.Add( divPanel );
 
             var divPanelHeading = new HtmlGenericControl( "div" );
@@ -194,7 +194,7 @@ namespace RockWeb.Blocks.WorkFlow
                 foreach ( var workflowType in category.WorkflowTypes )
                 {
                     var li = new HtmlGenericControl( "li" );
-                    li.AddCssClass( "xlist-group-item" );
+                    li.AddCssClass( "margin-b-sm" );
                     ulGroup.Controls.Add( li );
 
                     var qryParms = new Dictionary<string, string>();

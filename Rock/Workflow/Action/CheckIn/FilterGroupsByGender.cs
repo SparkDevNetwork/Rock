@@ -20,17 +20,20 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the grouptypes from each family member that are not specific to their grade
+    /// Removes (or excludes) the grouptypes from each family member that are not specific to their gender
     /// </summary>
-    [Description( "Removes the groups from each family member that are not specific to gender." )]
+    [Description( "Removes (or excludes) the groups from each family member that are not specific to their gender." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Gender" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByGender : CheckInActionComponent
     {
         /// <summary>
@@ -50,6 +53,8 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
+                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                     foreach ( var person in family.People.Where( p => p.Selected ) )
                     {
                         string personsGender = person.Person.Gender.ToString( "d" );
@@ -61,7 +66,14 @@ namespace Rock.Workflow.Action.CheckIn
                                 var groupAttributes = group.Group.GetAttributeValues( "Gender" );
                                 if ( groupAttributes.Any() && !groupAttributes.Contains( personsGender ) )
                                 {
-                                    groupType.Groups.Remove( group );
+                                    if ( remove )
+                                    {
+                                        groupType.Groups.Remove( group );
+                                    }
+                                    else
+                                    {
+                                        group.ExcludedByFilter = true;
+                                    }
                                 }
                             }
                         }

@@ -127,16 +127,16 @@ namespace RockWeb
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    try 
+                    try
                     {
                         new AttributeService( rockContext ).Get( 0 );
-                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", (RockDateTime.Now - startDateTime).TotalMilliseconds ) );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
                         startDateTime = RockDateTime.Now;
                     }
                     catch
                     {
                         // Intentionally Blank
-                    }                
+                    }
                 }
 
                 RegisterRoutes( rockContext, RouteTable.Routes );
@@ -409,17 +409,17 @@ namespace RockWeb
                                             string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                                             var serverVarList = context.Request.ServerVariables;
 
-                                            if (!string.IsNullOrWhiteSpace(filterSettings) && serverVarList.Count > 0)
+                                            if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
                                             {
                                                 string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
                                                 foreach ( string nameValue in nameValues )
                                                 {
                                                     string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
                                                     {
-                                                        if (nameAndValue.Length == 2)
+                                                        if ( nameAndValue.Length == 2 )
                                                         {
                                                             var serverValue = serverVarList[nameAndValue[0]];
-                                                            if (serverValue != null && serverValue.ToUpper().Contains(nameAndValue[1].ToUpper().Trim()))
+                                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
                                                             {
                                                                 sendNotification = false;
                                                                 break;
@@ -594,7 +594,7 @@ namespace RockWeb
                                     .ToList();
 
                                 // Wrap the migrations for each assembly in a transaction so that if an error with one migration, none of the migrations are persisted
-                                RockTransactionScope.WrapTransaction( () =>
+                                rockContext.WrapTransaction( () =>
                                 {
                                     // Iterate each migration in the assembly in MigrationNumber order 
                                     foreach ( var migrationType in assemblyMigrations.Value.OrderBy( t => t.Key ) )
@@ -820,7 +820,7 @@ namespace RockWeb
 
                     qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     LogError( ex, null );
                 }
@@ -837,21 +837,6 @@ namespace RockWeb
 
             // Cache all the Field Types
             var all = Rock.Web.Cache.FieldTypeCache.All();
-
-            // DT: When running with production CCV Data, this is taking a considerable amount of time 
-            // Cache all tha Defined Types
-            var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
-            foreach ( var definedType in definedTypeService.Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-            }
-
-            // Cache all the Defined Values
-            var definedValueService = new Rock.Model.DefinedValueService( rockContext );
-            foreach ( var definedValue in definedValueService.Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-            }
         }
 
         private void Error66( Exception ex )

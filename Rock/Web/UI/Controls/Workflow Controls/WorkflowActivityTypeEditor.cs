@@ -30,7 +30,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
     public class WorkflowActivityTypeEditor : CompositeControl, IHasValidationGroup
     {
-        private HiddenField _hfExpanded;
+        private HiddenFieldWithClass _hfExpanded;
         private HiddenField _hfActivityTypeGuid;
         private Label _lblActivityTypeName;
         private Label _lblActivityTypeDescription;
@@ -59,14 +59,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-
-                bool expanded = false;
-                if ( !bool.TryParse( _hfExpanded.Value, out expanded ) )
-                {
-                    expanded = false;
-                }
-
-                return expanded;
+                return _hfExpanded.Value.AsBooleanOrNull() ?? false;
             }
 
             set
@@ -318,9 +311,10 @@ $('.workflow-activity > .panel-body').on('validation-error', function() {
         {
             Controls.Clear();
 
-            _hfExpanded = new HiddenField();
+            _hfExpanded = new HiddenFieldWithClass();
             Controls.Add( _hfExpanded );
             _hfExpanded.ID = this.ID + "_hfExpanded";
+            _hfExpanded.CssClass = "filter-expanded";
             _hfExpanded.Value = "False";
 
             _hfActivityTypeGuid = new HiddenField();
@@ -488,10 +482,9 @@ javascript:
             writer.RenderBeginTag( "header" );
 
             // Hidden Field to track expansion
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
             _hfExpanded.RenderControl( writer );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toggle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute("class", "panel-title");

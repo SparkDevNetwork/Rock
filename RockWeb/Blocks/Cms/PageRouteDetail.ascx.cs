@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,17 +58,10 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "pageRouteId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( "pageRouteId", int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "pageRouteId" ).AsInteger() );
             }
         }
+
         #endregion
 
         #region Internal Methods
@@ -76,25 +69,20 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="routeId">The route identifier.</param>
+        public void ShowDetail( int routeId )
         {
-            if ( !itemKey.Equals( "pageRouteId" ) )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             PageRoute pageRoute = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !routeId.Equals( 0 ) )
             {
-                pageRoute = new PageRouteService( new RockContext() ).Get( itemKeyValue );
+                pageRoute = new PageRouteService( new RockContext() ).Get( routeId );
                 lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
+
+            if (pageRoute == null)
             {
                 pageRoute = new PageRoute { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add(PageRoute.FriendlyTypeName).FormatAsHtmlTitle();

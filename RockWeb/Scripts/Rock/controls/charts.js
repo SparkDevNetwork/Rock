@@ -103,7 +103,7 @@
 
                     chartSeriesList = [];
                     var chartCombinedMeasurePoints = {
-                        label: xaxisLabelText + ' combined',
+                        label: xaxisLabelText + ' Total',
                         chartData: combinedChartData,
                         data: combinedData
                     };
@@ -153,7 +153,7 @@
             ///
             /// attaches a bootstrap style tooltip to the 'plothover' of a chart
             ///
-            bindTooltip: function (plotContainerId) {
+            bindTooltip: function (plotContainerId, tooltipFormatter) {
                 // setup of bootstrap tooltip which we'll show on the plothover event
                 var toolTipId = 'tooltip_' + plotContainerId;
                 var chartContainer = '#' + plotContainerId;
@@ -170,29 +170,37 @@
                     if (item) {
 
                         var tooltipText = "";
-                        if (item.series.chartData[item.dataIndex].DateTimeStamp) {
-                            tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
-                        };
 
-                        if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
-                            tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
+                        // if a tooltipFormatter is specified, use that
+                        if (tooltipFormatter) {
+                            tooltipText = tooltipFormatter(item);
+                        }
+                        else {
+                            if (item.series.chartData[item.dataIndex].DateTimeStamp) {
+                                tooltipText = new Date(item.series.chartData[item.dataIndex].DateTimeStamp).toLocaleDateString();
+                            };
+
+                            if (item.series.chartData[item.dataIndex].StartDateTimeStamp) {
+                                tooltipText = new Date(item.series.chartData[item.dataIndex].StartDateTimeStamp).toLocaleDateString();
+                            }
+
+                            if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
+                                tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
+                            }
+
+                            if (tooltipText) {
+                                tooltipText += '<br />';
+                            }
+
+                            if (item.series.label) {
+                                tooltipText += item.series.label;
+                            }
+
+                            var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+
+                            tooltipText += ': ' + pointValue;
                         }
 
-                        if (item.series.chartData[item.dataIndex].EndDateTimeStamp) {
-                            tooltipText += " to " + new Date(item.series.chartData[item.dataIndex].EndDateTimeStamp).toLocaleDateString();
-                        }
-
-                        if (tooltipText) {
-                            tooltipText += '<br />';
-                        }
-
-                        if (item.series.label) {
-                            tooltipText += item.series.label;
-                        }
-
-                        var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
-
-                        tooltipText += ': ' + pointValue;
                         $toolTip.find('.tooltip-inner').html(tooltipText);
                         var tipTop = pos.pageY - ($toolTip.height() / 2);
                         $toolTip.css({ top: tipTop, left: pos.pageX + 5, opacity: 1 });

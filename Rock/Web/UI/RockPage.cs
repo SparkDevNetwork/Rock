@@ -783,6 +783,7 @@ namespace Rock.Web.UI
                                 catch ( Exception ex )
                                 {
                                     NotificationBox nbBlockLoad = new NotificationBox();
+                                    nbBlockLoad.CssClass = "system-error";
                                     nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
                                     nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
                                     nbBlockLoad.Details = string.Format( "{0}<pre>{1}</pre>", ex.Message, ex.StackTrace );

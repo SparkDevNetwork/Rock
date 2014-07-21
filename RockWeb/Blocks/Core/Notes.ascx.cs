@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +64,8 @@ namespace RockWeb.Blocks.Core
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
+                upNotes.Visible = true;
+
                 string noteTypeName = GetAttributeValue( "NoteType" );
 
                 var rockContext = new RockContext();
@@ -100,6 +102,10 @@ namespace RockWeb.Blocks.Core
                 notesTimeline.AllowAnonymousEntry = GetAttributeValue( "Allow Anonymous" ).AsBoolean();
                 notesTimeline.AddAlwaysVisible = GetAttributeValue( "AddAlwaysVisible" ).AsBoolean();
                 notesTimeline.SortDirection = GetAttributeValue( "DisplayOrder" ) == "Ascending" ? ListSortDirection.Ascending : ListSortDirection.Descending;
+            }
+            else
+            {
+                upNotes.Visible = false;
             }
         }
 

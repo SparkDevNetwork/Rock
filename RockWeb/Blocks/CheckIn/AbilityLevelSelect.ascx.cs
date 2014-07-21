@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,45 +49,42 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    var abilityLevelDtGuid = new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE );
-                    
-                    var family = CurrentCheckInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
-                    if ( family != null )
+                    var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                        .SelectMany( f => f.People.Where( p => p.Selected ) )
+                        .FirstOrDefault();
+
+                    if ( person == null )
                     {
-                        var person = family.People.FirstOrDefault( p => p.Selected );
-                        if ( person != null )
+                        GoBack();
+                    }
+
+                    lPersonName.Text = person.ToString();
+
+                    person.ClearFilteredExclusions();
+
+                    var availGroupTypes = person.GroupTypes.Where( t => !t.ExcludedByFilter ).ToList();
+                    if ( NoConfiguredAbilityLevels( availGroupTypes ) )
+                    {
+                        if ( UserBackedUp )
                         {
-                            // If no AbilityLevel attributes on Groups or GroupTypes, skip to next screen.
-                            if ( HasNoAbilityLevelAttribsOnGroupTypesOrGroups() )
-                            {
-                                if ( UserBackedUp )
-                                {
-                                    GoBack();
-                                }
-                                else
-                                {
-                                    ProcessSelection( maWarning );
-                                }
-                            }
-                            else
-                            {
-                                lPersonName.Text = person.ToString();
-                                person.Person.LoadAttributes();
-                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
-
-                                var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
-
-                                if ( abilityLevelDType != null )
-                                {
-                                    rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                                    rSelection.DataBind();
-                                }
-                            }
+                            GoBack();
+                        }
+                        else
+                        {
+                            ProcessSelection();
                         }
                     }
                     else
                     {
-                        GoBack();
+                        person.Person.LoadAttributes();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                        var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                        if ( abilityLevelDType != null )
+                        {
+                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                            rSelection.DataBind();
+                        }
                     }
                 }
             }
@@ -100,30 +97,24 @@ namespace RockWeb.Blocks.CheckIn
         /// <returns>
         ///   <c>true</c> if no AbilityLevel attributes are defined; otherwise, <c>false</c>.
         /// </returns>
-        private bool HasNoAbilityLevelAttribsOnGroupTypesOrGroups()
+        private bool NoConfiguredAbilityLevels( List<CheckInGroupType> groupTypes )
         {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            foreach ( var groupType in groupTypes )
             {
-                foreach ( var person in family.People.Where( p => p.Selected ) )
+                var groupTypeAttributes = groupType.GroupType.GetAttributeValues( "AbilityLevel" );
+                if ( groupTypeAttributes.Any() )
                 {
-                    foreach ( var groupType in person.GroupTypes )
-                    {
-                        var groupTypeAttributes = groupType.GroupType.GetAttributeValues( "AbilityLevel" );
-                        if ( groupTypeAttributes.Any() )
-                        {
-                            // break out, we're done as soon as we find one!
-                            return false;
-                        }
+                    // break out, we're done as soon as we find one!
+                    return false;
+                }
 
-                        foreach ( var group in groupType.Groups )
-                        {
-                            var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
-                            if ( groupAttributes.Any() )
-                            {
-                                // break out, we're done as soon as we find one!
-                                return false;
-                            }
-                        }
+                foreach ( var group in groupType.Groups )
+                {
+                    var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                    if ( groupAttributes.Any() )
+                    {
+                        // break out, we're done as soon as we find one!
+                        return false;
                     }
                 }
             }
@@ -135,31 +126,32 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( KioskCurrentlyActive )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected ) )
+                    .FirstOrDefault();
+
+                if ( person != null )
                 {
-                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                    if ( person != null )
+                    string selectedAbilityLevelGuid = e.CommandArgument.ToString();
+
+                    //person.Person.LoadAttributes();
+                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                    // Only save the ability level if it's changed
+                    if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                     {
-                        string selectedAbilityLevelGuid = e.CommandArgument.ToString();
-                        //person.Person.LoadAttributes();
-                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
-
-                        // Only save the ability level if it's changed
-                        if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
+                        // Need to load a fully hydrated person because the person.Person is only a clone.
+                        var rockContext = new RockContext();
+                        Person p = new PersonService( rockContext ).Get( person.Person.Id );
+                        if ( p != null )
                         {
-                            // Need to load a fully hydrated person because the person.Person is only a clone.
-                            Person p = new PersonService( new RockContext() ).Get( person.Person.Id );
-                            if ( p != null )
-                            {
-                                p.LoadAttributes();
-                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
-                                p.SaveAttributeValues();
-                            }
+                            p.LoadAttributes( rockContext );
+                            p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
+                            p.SaveAttributeValues( rockContext );
                         }
-
-                        ProcessSelection( maWarning );
                     }
+
+                    ProcessSelection();
                 }
             }
         }
@@ -201,5 +193,34 @@ namespace RockWeb.Blocks.CheckIn
                 linkButton.Text = string.Format("{0} {1}", "<i class='fa fa-check-square'> </i>", linkButton.Text);
             }
         }
+
+        protected void ProcessSelection()
+        {
+            if ( !ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                .SelectMany( f => f.People.Where( p => p.Selected )
+                    .SelectMany( p => p.GroupTypes.Where( t => !t.ExcludedByFilter ) ) )
+                .Count() <= 0,
+                "<ul><li>Sorry, based on your selection, there are currently not any available locations that can be checked into.</li></ul>" ) ) 
+            {
+                // Clear any filtered items so that user can select another option
+                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected ) )
+                    .FirstOrDefault();
+                if ( person != null )
+                {
+                    person.ClearFilteredExclusions();
+                    person.Person.LoadAttributes();
+                    _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+
+                    var abilityLevelDType = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                    if ( abilityLevelDType != null )
+                    {
+                        rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                        rSelection.DataBind();
+                    }
+                }
+            }
+        }
+
     }
 }

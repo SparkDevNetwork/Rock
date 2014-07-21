@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -56,13 +56,13 @@ public partial class Http404Error : System.Web.UI.Page
             else
             {
                 Response.StatusCode = 404;
-                logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
+                lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
             }
         }
         catch 
         {
             Response.StatusCode = 404;
-            logoImg.Src = ResolveUrl( "~/Assets/Images/rock-logo.svg" );
+            lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
         }
     }
 }

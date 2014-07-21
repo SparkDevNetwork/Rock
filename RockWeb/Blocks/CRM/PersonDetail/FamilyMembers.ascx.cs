@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -189,15 +189,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         else
                         {
                             lbVerify.Visible = false;
-                        }
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( loc.Street2 ) )
-                    {
-                        PlaceHolder phStreet2 = e.Item.FindControl( "phStreet2" ) as PlaceHolder;
-                        if ( phStreet2 != null )
-                        {
-                            phStreet2.Controls.Add( new LiteralControl( string.Format( "{0}</br>", loc.Street2 ) ) );
                         }
                     }
                 }

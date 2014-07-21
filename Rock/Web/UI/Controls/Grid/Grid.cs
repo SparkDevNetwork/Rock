@@ -509,27 +509,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
-            {
-                string deleteButtonScriptFormat = @"
-   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
-  return Rock.dialogs.confirmDelete(event, '{1}');
-}});";
-                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
-            }
-
-
-            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
-
-            string gridSelectCellScriptFormat = @"
-   $('#{0} .grid-select-cell').on( 'click', function (event) {{
-  var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
-  {1}
-}});";
-            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
-
             if ( Page.IsPostBack )
             {
                 if ( this.DataKeys != null && this.DataKeys.Count > 0 )
@@ -565,6 +544,40 @@ namespace Rock.Web.UI.Controls
             }
 
             base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        private void RegisterJavaScript()
+        {
+            if ( this.ShowConfirmDeleteDialog && this.Enabled && this.IsDeleteEnabled )
+            {
+                string deleteButtonScriptFormat = @"
+   $('#{0} .grid-delete-button').not('.disabled').on( 'click', function (event) {{
+  return Rock.dialogs.confirmDelete(event, '{1}');
+}});";
+                string deleteButtonScript = string.Format( deleteButtonScriptFormat, this.ClientID, this.RowItemText );
+                ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-delete-confirm-script-" + this.ClientID, deleteButtonScript, true );
+            }
+            
+            string clickScript = string.Format( "__doPostBack('{0}', 'RowSelected$' + dataRowIndexValue);", this.UniqueID );
+
+            string gridSelectCellScriptFormat = @"
+   $('#{0} .grid-select-cell').on( 'click', function (event) {{
+  var dataRowIndexValue = $(this).closest('tr').attr('data-row-index');
+  {1}
+}});";
+            string gridSelectCellScript = string.Format( gridSelectCellScriptFormat, this.ClientID, clickScript );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-select-cell-script-" + this.ClientID, gridSelectCellScript, true );
+
+            // render script for popovers
+            string popoverScript = @"
+    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
+    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+";
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-popover", popoverScript, true );
         }
 
         /// <summary>
@@ -647,13 +660,8 @@ namespace Rock.Web.UI.Controls
             }
 
             this.PrepareControlHierarchy();
-
-            // render script for popovers
-            string script = @"
-    $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
-    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
-";
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "grid-popover", script, true);
+            
+            RegisterJavaScript();
 
             this.RenderContents( writer );
         }
@@ -1228,7 +1236,7 @@ namespace Rock.Web.UI.Controls
                 Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
                 
                 // if the list is just List<object>, try to find out what the properties of specific type of object are by examining the first item in the list
-                if (oType == typeof(object) || oType == typeof(Rock.Data.IEntity))
+                if (oType == typeof(object) || oType.IsInterface )
                 {
                     if (data.Count > 0)
                     {
@@ -1239,13 +1247,15 @@ namespace Rock.Web.UI.Controls
                 // get all properties of the objects in the grid
                 IList<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties());
                 IList<PropertyInfo> props = new List<PropertyInfo>();
+
+                var gridDataFields = this.Columns.OfType<BoundField>().Where( a => a.Visible );
                 
                 // figure out which properties we can get data from and put those in the grid
                 foreach ( PropertyInfo prop in allprops )
                 {
-                    if ( prop.GetGetMethod().IsVirtual )
+                    if ( !gridDataFields.Any(a => a.DataField == prop.Name) && prop.GetGetMethod().IsVirtual )
                     {
-                        // skip over virtual properties since they are probably lazy loaded and it is too late to get them
+                        // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
                         continue;
                     }
 

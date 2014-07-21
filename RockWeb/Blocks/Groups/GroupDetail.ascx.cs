@@ -185,24 +185,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "GroupId" );
-                string parentGroupId = PageParameter( "ParentGroupId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    if ( string.IsNullOrWhiteSpace( parentGroupId ) )
-                    {
-                        ShowDetail( "GroupId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "GroupId", int.Parse( itemId ), int.Parse( parentGroupId ) );
-                    }
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "GroupId" ).AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
             }
             else
             {
@@ -441,7 +424,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 if ( group.Id.Equals( 0 ) )
                 {
@@ -652,51 +635,38 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="groupId">The group identifier.</param>
+        public void ShowDetail( int groupId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( groupId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The group id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? parentGroupId )
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        public void ShowDetail( int groupId, int? parentGroupId )
         {
-            pnlDetails.Visible = false;
-
-            if ( !itemKey.Equals( "GroupId" ) )
-            {
-                return;
-            }
+            Group group = null;
 
             bool editAllowed = true;
 
-            Group group = null;
-
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !groupId.Equals( 0 ) )
             {
-                group = GetGroup( itemKeyValue );
-                if ( group != null )
+                group = GetGroup( groupId );
+                if (group != null)
                 {
                     editAllowed = group.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 }
             }
-            else
-            {
-                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
-                wpGeneral.Expanded = true;
-            }
 
             if ( group == null )
             {
-                return;
+                group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
+                wpGeneral.Expanded = true;
             }
 
-            pnlDetails.Visible = true;
             hfGroupId.Value = group.Id.ToString();
 
             // render UI based on Authorized and IsSystem
@@ -922,8 +892,12 @@ namespace RockWeb.Blocks.Groups
             SetEditMode( false );
             var rockContext = new RockContext();
 
-            string groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
-                groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+            string groupIconHtml = string.Empty;
+            if ( group.GroupType != null )
+            {
+                groupIconHtml = !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) ?
+                    groupIconHtml = string.Format( "<i class='{0}' ></i>", group.GroupType.IconCssClass ) : string.Empty;
+            }
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;

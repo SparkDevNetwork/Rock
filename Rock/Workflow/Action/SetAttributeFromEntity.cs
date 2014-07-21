@@ -53,12 +53,12 @@ namespace Rock.Workflow.Action
             Guid guid = GetAttributeValue( action, "Attribute" ).AsGuid();
             if ( !guid.IsEmpty() )
             {
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
                     if ( entity != null )
                     {
-                        if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid() ).Id )
+                        if ( entity is Person && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                         {
                             var person = entity as Person;
 
@@ -73,7 +73,7 @@ namespace Rock.Workflow.Action
                                 errorMessages.Add( "Could not determine person primary alias!" );
                             }
                         }
-                        else if ( entity is Group && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid() ).Id )
+                        else if ( entity is Group && attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid(), rockContext ).Id )
                         {
                             var group = entity as Group;
                             SetWorkflowAttributeValue( action, guid, group.Id.ToString() );

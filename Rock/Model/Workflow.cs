@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Web;
 using Rock.Data;
 
 namespace Rock.Model
@@ -113,6 +113,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? CompletedDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the initiator person alias identifier.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias identifier.
+        /// </value>
+        [DataMember]
+        public int? InitiatorPersonAliasId { get; set; }
+        
         #endregion
 
         #region Virtual Properties
@@ -124,6 +133,14 @@ namespace Rock.Model
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
         public virtual WorkflowType WorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initiator person alias.
+        /// </summary>
+        /// <value>
+        /// The initiator person alias.
+        /// </value>
+        public virtual PersonAlias InitiatorPersonAlias { get; set; }
 
         /// <summary>
         /// Gets a flag indicating whether this Workflow instance is active.
@@ -265,8 +282,18 @@ namespace Rock.Model
         /// </returns>
         public virtual bool Process( RockContext rockContext, out List<string> errorMessages)
         {
-            bool result = Process( rockContext, null, out errorMessages );
-            return result;
+            if (!InitiatorPersonAliasId.HasValue &&
+                HttpContext.Current != null && 
+                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null )
+                {
+                    InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
+                }
+            }
+
+            return Process( rockContext, null, out errorMessages );
         }
 
         /// <summary>
@@ -465,7 +492,8 @@ namespace Rock.Model
         /// </summary>
         public WorkflowConfiguration()
         {
-            this.HasRequired( m => m.WorkflowType ).WithMany().HasForeignKey( m => m.WorkflowTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( w => w.WorkflowType ).WithMany().HasForeignKey( w => w.WorkflowTypeId ).WillCascadeOnDelete( true );
+            this.HasOptional( w => w.InitiatorPersonAlias ).WithMany().HasForeignKey( w => w.InitiatorPersonAliasId ).WillCascadeOnDelete( false );
         }
     }
 

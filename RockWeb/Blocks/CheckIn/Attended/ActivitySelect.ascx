@@ -73,15 +73,17 @@
                 <h3>Selected</h3>
                 <asp:UpdatePanel ID="pnlSelected" runat="server" UpdateMode="Conditional">
                 <ContentTemplate> 
-                    <Rock:Grid ID="gSelectedGrid" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light" EmptyDataText="No CheckIn Selected">
-                    <Columns>
-                        <asp:BoundField DataField="Schedule" />
-                        <asp:BoundField DataField="ScheduleId" Visible="false" />
-                        <asp:BoundField DataField="Location" />
-                        <asp:BoundField DataField="LocationId" Visible="false" />                        
-                        <Rock:DeleteField OnClick="gSelectedGrid_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
-                    </Columns>
-                    </Rock:Grid>
+                    <div class="grid">
+                        <Rock:Grid ID="gSelectedGrid" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light" EmptyDataText="No CheckIn Selected">
+                        <Columns>
+                            <asp:BoundField DataField="Schedule" />
+                            <asp:BoundField DataField="ScheduleId" Visible="false" />
+                            <asp:BoundField DataField="Location" />
+                            <asp:BoundField DataField="LocationId" Visible="false" />                        
+                            <Rock:DeleteField OnClick="gSelectedGrid_Delete" ControlStyle-CssClass="btn btn-lg btn-primary" />
+                        </Columns>
+                        </Rock:Grid>
+                    </div>
                 </ContentTemplate>
                 </asp:UpdatePanel>
             </div>

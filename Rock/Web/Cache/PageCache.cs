@@ -779,9 +779,10 @@ namespace Rock.Web.Cache
         /// Returns Page object from cache.  If page does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PageCache Read( int id )
+        public static PageCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = PageCache.CacheKey( id );
 
@@ -794,7 +795,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var pageService = new PageService( new RockContext() );
+                var pageService = new PageService( rockContext ?? new RockContext() );
                 var pageModel = pageService.Get( id );
                 if ( pageModel != null )
                 {
@@ -818,8 +819,9 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static PageCache Read( Guid guid )
+        public static PageCache Read( Guid guid, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
@@ -830,7 +832,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var pageService = new PageService( new RockContext() );
+                var pageService = new PageService( rockContext ?? new RockContext() );
                 var pageModel = pageService.Get( guid );
                 if ( pageModel != null )
                 {

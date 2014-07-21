@@ -239,8 +239,15 @@ namespace Rock.Model
             get
             {
                 string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, RockDateTime.Now.Ticks );
-                string encryptedCode = Rock.Security.Encryption.EncryptString( identifier );
-                return encryptedCode;
+                string encryptedCode;
+                if (Rock.Security.Encryption.TryEncryptString(identifier, out encryptedCode))
+                {
+                    return encryptedCode;
+                }
+                else
+                {
+                    return null;
+                }
             }
             private set { }
         }
@@ -312,6 +319,25 @@ namespace Rock.Model
 
         #endregion
 
+    }
+
+    /// <summary>
+    /// Special Class to use when posting/putting a UserLogin record thru the Rest API.
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL)
+    /// with the PlainTextPassword and the Rock server will encrypt prior to saving to database
+    /// </summary>
+    [DataContract]
+    [NotMapped]
+    public class UserLoginWithPlainTextPassword : UserLogin
+    {
+        /// <summary>
+        /// Gets or sets the plain text password.
+        /// </summary>
+        /// <value>
+        /// The plain text password.
+        /// </value>
+        [DataMember]
+        public string PlainTextPassword { get; set; }
     }
 
     #region Entity Configuration

@@ -155,6 +155,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\ValueListFieldType.cs" />
@@ -231,6 +233,7 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\PluginMigration.cs" />
+    <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
@@ -621,6 +624,7 @@
     <Compile Include="Web\UI\Controls\HiddenFieldWithClass.cs" />
     <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
     <Compile Include="Web\UI\Controls\ImageEditor.cs" />
+    <Compile Include="Web\UI\Controls\AddressControl.cs" />
     <Compile Include="Web\UI\Controls\ValueList.cs" />
     <Compile Include="Web\UI\Controls\NoteContainer.cs" />
     <Compile Include="Web\UI\Controls\PhoneNumberBox.cs" />
@@ -643,6 +647,7 @@
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\CodeEditor.cs" />
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
+    <Compile Include="Web\UI\Controls\RockUpdatePanel.cs" />
     <Compile Include="Web\UI\Controls\RockTextOrDropDownList.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
@@ -736,6 +741,8 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\SendSms.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeFromEntity.cs" />
@@ -817,7 +824,6 @@
     <Compile Include="Data\NotAuditedAttribute.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\RockPluginDBInitializer.cs" />
-    <Compile Include="Data\RockTransactionScope.cs" />
     <Compile Include="Data\RouteAttribute.cs" />
     <Compile Include="Data\Service.cs" />
     <Compile Include="Extension\Component.cs" />

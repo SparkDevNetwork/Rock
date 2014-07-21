@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -152,43 +152,46 @@ namespace RockWeb.Blocks.Security
                 pnlViewed.Visible = true;
                 pnlViewedBy.Visible = false;
 
-                var viewedList = personViewedService.Queryable()
-                    .Where( p => p.ViewerPersonAlias != null && p.ViewerPersonAlias.PersonId == personId )
-                    .GroupBy( p => p.TargetPersonAlias.PersonId )
-                    .Select( p => new
-                    {
-                        TargetPersonId = p.Key,
-                        FirstViewed = p.Min( g => g.ViewDateTime ),
-                        LastViewed = p.Max( g => g.ViewDateTime ),
-                        ViewedCount = p.Count()
-                    } );
-
-                var pQry = personService.Queryable();
-
-                var qry = viewedList
-                    .Join( pQry, v => v.TargetPersonId, p => p.Id, ( v, p ) => new
-                    {
-                        p.Id,
-                        FullName = p.NickName + " " + p.LastName,
-                        p.BirthDate,
-                        p.Gender,
-                        FirstViewedDate = v.FirstViewed,
-                        LastViewedDate = v.LastViewed,
-                        ViewedCount = v.ViewedCount
-                    } );
-
-                SortProperty sortProperty = gViewed.SortProperty;
-                if ( sortProperty != null )
+                if ( personId.HasValue )
                 {
-                    qry = qry.Sort( sortProperty );
-                }
-                else
-                {
-                    qry = qry.OrderByDescending( q => q.LastViewedDate );
-                }
+                    var viewedList = personViewedService.Queryable()
+                        .Where( p => p.ViewerPersonAlias != null && p.ViewerPersonAlias.PersonId == personId )
+                        .GroupBy( p => p.TargetPersonAlias.PersonId )
+                        .Select( p => new
+                        {
+                            TargetPersonId = p.Key,
+                            FirstViewed = p.Min( g => g.ViewDateTime ),
+                            LastViewed = p.Max( g => g.ViewDateTime ),
+                            ViewedCount = p.Count()
+                        } );
 
-                gViewed.DataSource = qry.ToList();
-                gViewed.DataBind();
+                    var pQry = personService.Queryable();
+
+                    var qry = viewedList
+                        .Join( pQry, v => v.TargetPersonId, p => p.Id, ( v, p ) => new
+                        {
+                            p.Id,
+                            FullName = p.NickName + " " + p.LastName,
+                            p.BirthDate,
+                            p.Gender,
+                            FirstViewedDate = v.FirstViewed,
+                            LastViewedDate = v.LastViewed,
+                            ViewedCount = v.ViewedCount
+                        } );
+
+                    SortProperty sortProperty = gViewed.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        qry = qry.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( q => q.LastViewedDate );
+                    }
+
+                    gViewed.DataSource = qry.ToList();
+                    gViewed.DataBind();
+                }
             }
             else
             {
@@ -196,43 +199,46 @@ namespace RockWeb.Blocks.Security
                 pnlViewed.Visible = false;
                 pnlViewedBy.Visible = true;
 
-                var viewedList = personViewedService.Queryable()
-                    .Where( p => p.TargetPersonAlias != null && p.TargetPersonAlias.PersonId == personId )
-                    .GroupBy( p => p.ViewerPersonAlias.PersonId )
-                    .Select( p => new
-                    {
-                        ViewerPersonId = p.Key,
-                        FirstViewed = p.Min( g => g.ViewDateTime ),
-                        LastViewed = p.Max( g => g.ViewDateTime ),
-                        ViewedCount = p.Count()
-                    } );
-
-                var pQry = personService.Queryable();
-
-                var qry = viewedList
-                    .Join( pQry, v => v.ViewerPersonId, p => p.Id, ( v, p ) => new
-                    {
-                        p.Id,
-                        FullName = p.NickName + " " + p.LastName,
-                        p.BirthDate,
-                        p.Gender,
-                        FirstViewedDate = v.FirstViewed,
-                        LastViewedDate = v.LastViewed,
-                        ViewedCount = v.ViewedCount
-                    } );
-
-                SortProperty sortProperty = gViewedBy.SortProperty;
-                if ( sortProperty != null )
+                if ( personId.HasValue )
                 {
-                    qry = qry.Sort( sortProperty );
-                }
-                else
-                {
-                    qry = qry.OrderByDescending( q => q.LastViewedDate );
-                }
+                    var viewedList = personViewedService.Queryable()
+                        .Where( p => p.TargetPersonAlias != null && p.TargetPersonAlias.PersonId == personId )
+                        .GroupBy( p => p.ViewerPersonAlias.PersonId )
+                        .Select( p => new
+                        {
+                            ViewerPersonId = p.Key,
+                            FirstViewed = p.Min( g => g.ViewDateTime ),
+                            LastViewed = p.Max( g => g.ViewDateTime ),
+                            ViewedCount = p.Count()
+                        } );
 
-                gViewedBy.DataSource = qry.ToList();
-                gViewedBy.DataBind();
+                    var pQry = personService.Queryable();
+
+                    var qry = viewedList
+                        .Join( pQry, v => v.ViewerPersonId, p => p.Id, ( v, p ) => new
+                        {
+                            p.Id,
+                            FullName = p.NickName + " " + p.LastName,
+                            p.BirthDate,
+                            p.Gender,
+                            FirstViewedDate = v.FirstViewed,
+                            LastViewedDate = v.LastViewed,
+                            ViewedCount = v.ViewedCount
+                        } );
+
+                    SortProperty sortProperty = gViewedBy.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        qry = qry.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        qry = qry.OrderByDescending( q => q.LastViewedDate );
+                    }
+
+                    gViewedBy.DataSource = qry.ToList();
+                    gViewedBy.DataBind();
+                }
             }
         }
 

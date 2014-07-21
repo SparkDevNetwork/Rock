@@ -1035,7 +1035,55 @@ namespace Rock.Model
             user.Person = this;
             return user;
         }
-        
+
+        /// <summary>
+        /// Gets an anchor tag to send person a communication 
+        /// </summary>
+        /// <value>
+        /// The email tag.
+        /// </value>
+        public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "" )
+        {
+            if ( !string.IsNullOrWhiteSpace( Email ) )
+            {
+                if ( !IsEmailActive.HasValue || IsEmailActive.Value )
+                {
+                    rockUrlRoot.EnsureTrailingBackslash();
+
+                    switch ( EmailPreference )
+                    {
+                        case EmailPreference.EmailAllowed:
+                            {
+                                return string.Format(
+                                    "<a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5}</a>",
+                                    cssClass, rockUrlRoot, Id, preText, Email, postText );
+                            }
+                        case EmailPreference.NoMassEmails:
+                            {
+                                return string.Format(
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}Communication?person={2}'>{3} {4} {5} <i class='fa fa-exchange'></i></a> </span>",
+                                    cssClass, rockUrlRoot, Id, preText, Email, postText );
+                            }
+                        case EmailPreference.DoNotEmail:
+                            {
+                                return string.Format(
+                                    "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
+                                    cssClass, preText, Email, postText );
+                            }
+                    }
+                }
+                else
+                {
+                    return string.Format(
+                        "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
+                        EmailNote, Email );
+                }
+            }
+
+            return string.Empty;
+        }
+
+
         /// <summary>
         /// Creates a <see cref="System.Collections.Generic.Dictionary{String, Object}"/> of the Person object
         /// </summary>
@@ -1477,13 +1525,16 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's spouse.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the spouse of.</param>
-        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
-        public static Person GetSpouse( this Person person )
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.
+        /// </returns>
+        public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetSpouse( person );
+            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
         }
 
     }

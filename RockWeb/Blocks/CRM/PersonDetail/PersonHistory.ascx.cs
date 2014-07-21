@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,12 +89,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 new PersonService( new RockContext() ).GetFamilies( Person.Id ).ToList().ForEach( f => families.Add( f.Id, f.Name ) );
-            }
 
-            if ( !Page.IsPostBack )
-            {
-                BindFilter();
-                BindGrid();
+                if ( !Page.IsPostBack )
+                {
+                    BindFilter();
+                    BindGrid();
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -133,7 +133,12 @@ namespace RockWeb.Blocks.CheckIn
 
         private void ProcessSelection()
         {
-            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ), "<ul><li>No one in that family is eligible to check-in.</li></ul>" );
+            if ( !ProcessSelection( maWarning, () => 
+                CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ),
+                "<ul><li>Sorry, no one in your family is eligible to check-in at this location.</li></ul>" ) )            
+            {
+                ClearSelection();
+            }
         }
     }
 }

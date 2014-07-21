@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
 
-    [ContextAware( typeof( Person ) )]
+    [ContextAware]
     public partial class UserLogins : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -372,6 +372,12 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void BindGrid()
         {
+            int personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) && ContextEntity<Person>() == null)
+            {
+                return;
+            }
+    
             var qry = new UserLoginService( new RockContext() ).Queryable()
                 .Where( l => !_personId.HasValue || l.PersonId == _personId.Value );
 

@@ -289,53 +289,57 @@ namespace RockWeb.Blocks.Groups
             boolFields["IsSystem"].Visible = showSystemColumn;
 
             // Person context will exist if used on a person detail page
-            var personContext = ContextEntity<Person>();
-            if ( personContext != null )
+            int personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+            if ( ContextTypesRequired.Any( e => e.Id == personEntityTypeId ) )
             {
-                boundFields["GroupRole"].Visible = true;
-                boundFields["DateAdded"].Visible = true;
-                boundFields["MemberCount"].Visible = false;
-
-                gGroups.Actions.ShowAdd = false;
-                gGroups.IsDeleteEnabled = false;
-                gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
-
-                var qry = new GroupMemberService( rockContext ).Queryable()
-                    .Where( m =>
-                        m.PersonId == personContext.Id &&
-                        groupTypeIds.Contains( m.Group.GroupTypeId ) &&
-                        ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
-
-                // Filter by active/inactive
-                if ( ddlActiveFilter.SelectedIndex > -1 )
+                var personContext = ContextEntity<Person>();
+                if ( personContext != null )
                 {
-                    if ( ddlActiveFilter.SelectedValue == "inactive" )
-                    {
-                        qry = qry.Where( a => a.Group.IsActive == false );
-                    }
-                    else if ( ddlActiveFilter.SelectedValue == "active" )
-                    {
-                        qry = qry.Where( a => a.Group.IsActive == true );
-                    }
-                }
+                    boundFields["GroupRole"].Visible = true;
+                    boundFields["DateAdded"].Visible = true;
+                    boundFields["MemberCount"].Visible = false;
 
-                gGroups.DataSource = qry
-                    .Select( m => new
+                    gGroups.Actions.ShowAdd = false;
+                    gGroups.IsDeleteEnabled = false;
+                    gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
+
+                    var qry = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m =>
+                            m.PersonId == personContext.Id &&
+                            groupTypeIds.Contains( m.Group.GroupTypeId ) &&
+                            ( !onlySecurityGroups || m.Group.IsSecurityRole ) );
+
+                    // Filter by active/inactive
+                    if ( ddlActiveFilter.SelectedIndex > -1 )
+                    {
+                        if ( ddlActiveFilter.SelectedValue == "inactive" )
                         {
-                            Id = m.Group.Id,
-                            Name = m.Group.Name,
-                            GroupTypeName = m.Group.GroupType.Name,
-                            GroupOrder = m.Group.Order,
-                            GroupTypeOrder = m.Group.GroupType.Order,
-                            Description = m.Group.Description,
-                            IsSystem = m.Group.IsSystem,
-                            GroupRole = m.GroupRole.Name,
-                            DateAdded = m.CreatedDateTime,
-                            IsActive = m.Group.IsActive,
-                            MemberCount = 0
-                        } )
-                    .Sort( sortProperty )
-                    .ToList();
+                            qry = qry.Where( a => a.Group.IsActive == false );
+                        }
+                        else if ( ddlActiveFilter.SelectedValue == "active" )
+                        {
+                            qry = qry.Where( a => a.Group.IsActive == true );
+                        }
+                    }
+
+                    gGroups.DataSource = qry
+                        .Select( m => new
+                            {
+                                Id = m.Group.Id,
+                                Name = m.Group.Name,
+                                GroupTypeName = m.Group.GroupType.Name,
+                                GroupOrder = m.Group.Order,
+                                GroupTypeOrder = m.Group.GroupType.Order,
+                                Description = m.Group.Description,
+                                IsSystem = m.Group.IsSystem,
+                                GroupRole = m.GroupRole.Name,
+                                DateAdded = m.CreatedDateTime,
+                                IsActive = m.Group.IsActive,
+                                MemberCount = 0
+                            } )
+                        .Sort( sortProperty )
+                        .ToList();
+                }
             }
             else
             {

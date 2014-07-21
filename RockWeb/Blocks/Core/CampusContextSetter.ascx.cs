@@ -57,29 +57,35 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void LoadDropDowns()
         {
-            var campusService =new CampusService( new RockContext() );
+            var campusService = new CampusService( new RockContext() );
+            Campus defaultCampus = null;
 
             // default campus to the whatever the context cookie has for it
-            string defaultCampusPublicKey = string.Empty;
             var contextCookie = Request.Cookies["Rock:context"];
             if ( contextCookie != null )
             {
                 var cookieValue = contextCookie.Values[typeof( Rock.Model.Campus ).FullName];
 
-                string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
-                string[] contextItemParts = contextItem.Split( '|' );
-                if ( contextItemParts.Length == 2 )
+                try
                 {
-                    defaultCampusPublicKey = contextItemParts[1];
+                    string contextItem = Rock.Security.Encryption.DecryptString( cookieValue );
+                    string[] contextItemParts = contextItem.Split( '|' );
+                    if ( contextItemParts.Length == 2 )
+                    {
+                        defaultCampus = campusService.GetByPublicKey( contextItemParts[1] );
+                    }
+                }
+                catch
+                {
+                    // don't set defaultCampus if cookie is corrupt
                 }
             }
 
-            var defaultCampus = campusService.GetByPublicKey( defaultCampusPublicKey );
             var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
             foreach ( var campus in campuses )
             {
                 var listItem = new ListItem( campus.Name, HttpUtility.UrlDecode( campus.ContextKey ) );
-                listItem.Selected = campus.Guid == defaultCampus.Guid;
+                listItem.Selected = ( defaultCampus != null && campus.Guid == defaultCampus.Guid );
                 ddlCampus.Items.Add( listItem );
             }
         }

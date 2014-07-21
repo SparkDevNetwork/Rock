@@ -26,14 +26,21 @@ namespace Rock.Constants
         /// The value it stores is the current version of Rock for that installation.
         /// </summary>
         public static readonly string ROCK_INSTANCE_ID = "RockInstanceId";
+
         /// <summary>
         /// This system setting is the guid for the organization's location record.
         /// </summary>
         public static readonly string ORG_LOC_GUID = "com.rockrms.orgLocatoinGuid";
+        
         /// <summary>
         /// This system setting is the state for the organization's location record.
         /// </summary>
         public static readonly string ORG_LOC_STATE = "com.rockrms.orgLocationState";
+
+        /// <summary>
+        /// This system setting is the country for the organization's location record.
+        /// </summary>
+        public static readonly string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
 
         /// <summary>
         /// Holds the System Setting key for the sample data load date/time.

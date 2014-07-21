@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,10 +38,6 @@ namespace RockWeb.Blocks.Prayer
     [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, "DefaultCategory" )]
     public partial class PrayerRequestDetail : RockBlock, IDetailBlock
     {
-        #region Fields
-        private static readonly string _prayerRequestKeyParameter = "prayerRequestId";
-        #endregion
-
         #region Properties
         #endregion
 
@@ -64,15 +60,7 @@ namespace RockWeb.Blocks.Prayer
         {
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( _prayerRequestKeyParameter );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
-                {
-                    ShowDetail( _prayerRequestKeyParameter, int.Parse( itemId ) );
-                }
-                else
-                {
-                    pnlDetails.Visible = false;
-                }
+                ShowDetail( PageParameter( "prayerRequestId" ).AsInteger() );
             }
 
             base.OnLoad( e );
@@ -120,29 +108,19 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// Shows the prayer request's detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="prayerId">The prayer identifier.</param>
+        public void ShowDetail( int prayerId )
         {
-            if ( !itemKey.Equals( _prayerRequestKeyParameter ) )
-            {
-                return;
-            }
+            PrayerRequest prayerRequest = null;
 
-            PrayerRequest prayerRequest;
-
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( prayerId != 0 )
             {
-                prayerRequest = new PrayerRequestService( new RockContext() ).Get( itemKeyValue );
-            }
-            else
-            {
-                prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
+                prayerRequest = new PrayerRequestService( new RockContext() ).Get( prayerId );
             }
 
             if ( prayerRequest == null )
             {
-                return;
+                prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
             }
 
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();
@@ -316,7 +294,7 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequest prayerRequest;
             PrayerRequestService prayerRequestService = new PrayerRequestService( rockContext );
 
-            int prayerRequestId = int.Parse( hfPrayerRequestId.Value );
+            int prayerRequestId = hfPrayerRequestId.Value.AsInteger();
 
             // Fetch the prayer request or create a new one if needed
             if ( prayerRequestId == 0 )

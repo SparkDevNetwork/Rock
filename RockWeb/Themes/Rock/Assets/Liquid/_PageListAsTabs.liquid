@@ -1,22 +1,7 @@
-﻿<div class="nav navbar nav-pagelist">
-
-  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse-personprofile">
-    {% for childPage in page.pages -%}
-      {% if childPage.current == 'true' -%}
-        <div class="collapse-current-item">{{ childPage.title }}</div>
-      {% endif -%}
-    {% endfor -%}
-    <i class="fa fa-bars fa-2x"></i>
-  </button>
-  
-  <div class="collapse navbar-collapse navbar-collapse-personprofile">
-  
-      <ul class="nav nav-pills">
-          {% for childPage in page.pages %}
-              <li {% if childPage.current == 'true' %}class='active'{% endif %}>
-                  <a href="{{ childPage.url }}">{{ childPage.title }}</a>
-              </li>
-          {% endfor %}
-      </ul>
-  </div>
-</div>
+﻿<ul class="nav nav-pills">
+    {% for childPage in page.pages %}
+        <li {% if childPage.current == 'true' %}class='active'{% endif %}>
+            <a href="{{ childPage.url }}">{{ childPage.title }}</a>
+        </li>
+    {% endfor %}
+</ul>

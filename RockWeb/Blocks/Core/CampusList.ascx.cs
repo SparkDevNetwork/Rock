@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -104,12 +105,21 @@ namespace RockWeb.Blocks.Core
             Campus campus = campusService.Get( (int)e.RowKeyValue );
             if ( campus != null )
             {
+                // Don't allow deleting the last campus
+                if ( !campusService.Queryable().Where( c => c.Id != campus.Id ).Any() )
+                {
+                    mdGridWarning.Show( campus.Name + " is the only campus and cannot be deleted (Rock requires at least one campus).", ModalAlertType.Information );
+                    return;
+                }
+
                 string errorMessage;
                 if ( !campusService.CanDelete( campus, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
+
+                CampusCache.Flush( campus.Id );
 
                 campusService.Delete( campus );
                 rockContext.SaveChanges();

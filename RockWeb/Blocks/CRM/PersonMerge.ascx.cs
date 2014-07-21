@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Crm
 
             var rockContext = new RockContext();
 
-            RockTransactionScope.WrapTransaction( () =>
+            rockContext.WrapTransaction( () =>
             {
                 var personService = new PersonService( rockContext );
                 var userLoginService = new UserLoginService( rockContext );
@@ -475,6 +475,7 @@ namespace RockWeb.Blocks.Crm
 
                 var labelCol = new BoundField();
                 labelCol.DataField = "Label";
+                labelCol.HeaderStyle.CssClass = "merge-personselect";
                 gValues.Columns.Add( labelCol );
 
                 var personService = new PersonService( new RockContext() );

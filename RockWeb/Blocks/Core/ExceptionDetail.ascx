@@ -2,13 +2,14 @@
 
 <asp:UpdatePanel ID="upExcpetionDetail" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-default">
+        <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
+
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-bug"></i> <asp:Literal ID="lPageTitle" runat="server" /></h1>
+            </div>
+
             <div class="panel-body">
-                <div class="banner">
-                    <h1>
-                        <asp:Literal ID="lPageTitle" runat="server" />
-                    </h1>
-                </div>
+                
                 <fieldset>
                     <h4>Summary</h4>
                     <div class="row">

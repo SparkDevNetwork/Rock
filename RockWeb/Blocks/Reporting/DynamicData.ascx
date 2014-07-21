@@ -5,7 +5,7 @@
 
         <%-- View Panel --%>
         <asp:Panel ID="pnlView" runat="server">
-            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+            <div class="grid"><Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" /></div>
             <asp:PlaceHolder ID="phHtml" runat="server" Visible="false" />
         </asp:Panel>
 

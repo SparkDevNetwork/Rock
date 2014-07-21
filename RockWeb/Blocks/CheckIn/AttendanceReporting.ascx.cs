@@ -35,13 +35,13 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// Shows a graph of attendance statistics which can be configured for specific groups, date range, etc.
     /// </summary>
-    [DisplayName( "Attendance Reporting" )]
+    [DisplayName( "Attendance Analysis" )]
     [Category( "Check-in" )]
     [Description( "Shows a graph of attendance statistics which can be configured for specific groups, date range, etc." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked" )]
-    [GroupTypeField( "Group Type Template", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
+    [GroupTypeField( "Check-in Type", key: "GroupTypeTemplate", groupTypePurposeValueGuid: Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     public partial class AttendanceReporting : RockBlock
     {
         #region Base Control Methods
@@ -81,6 +81,8 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
             if ( !Page.IsPostBack )
             {
@@ -144,7 +146,7 @@ namespace RockWeb.Blocks.CheckIn
         private void BuildGroupTypesUI()
         {
             var rockContext = new RockContext();
-            
+
             var groupTypeService = new GroupTypeService( rockContext );
             var groupTypeTemplateGuid = this.GetAttributeValue( "GroupTypeTemplate" ).AsGuidOrNull();
 
@@ -169,8 +171,6 @@ namespace RockWeb.Blocks.CheckIn
                 lcAttendance.ChartClick += lcAttendance_ChartClick;
             }
 
-            lcAttendance.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
-
             var dataSourceUrl = "~/api/Attendances/GetChartData";
             var dataSourceParams = new Dictionary<string, object>();
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
@@ -185,10 +185,63 @@ namespace RockWeb.Blocks.CheckIn
                 dataSourceParams.AddOrReplace( "endDate", dateRange.End.Value.ToString( "o" ) );
             }
 
+            var groupBy = hfGroupBy.Value.ConvertToEnumOrNull<AttendanceGroupBy>() ?? AttendanceGroupBy.Week;
+            lcAttendance.TooltipFormatter = null;
+            switch ( groupBy )
+            {
+                case AttendanceGroupBy.Week:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "7", "day" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = 'Weekend of <br />' + itemDate.toLocaleDateString();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+                case AttendanceGroupBy.Month:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "month" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var month_names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = month_names[itemDate.getMonth()] + ' ' + itemDate.getFullYear();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+                case AttendanceGroupBy.Year:
+                    {
+                        lcAttendance.Options.xaxis.tickSize = new string[] { "1", "year" };
+                        lcAttendance.TooltipFormatter = @"
+function(item) { 
+    var itemDate = new Date(item.series.chartData[item.dataIndex].DateTimeStamp);
+    var dateText = itemDate.getFullYear();
+    var seriesLabel = item.series.label;
+    var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
+    return dateText + '<br />' + seriesLabel + ': ' + pointValue;
+}
+";
+                    }
+
+                    break;
+            }
+
             dataSourceParams.AddOrReplace( "groupBy", hfGroupBy.Value.AsInteger() );
             dataSourceParams.AddOrReplace( "graphBy", hfGraphBy.Value.AsInteger() );
 
             dataSourceParams.AddOrReplace( "campusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
+            dataSourceParams.AddOrReplace( "groupIds", GetSelectedGroupIds().AsDelimited( "," ) );
 
             SaveSettingsToUserPreferences();
 
@@ -213,7 +266,26 @@ namespace RockWeb.Blocks.CheckIn
             this.SetUserPreference( keyPrefix + "GroupBy", hfGroupBy.Value );
             this.SetUserPreference( keyPrefix + "GraphBy", hfGraphBy.Value );
             this.SetUserPreference( keyPrefix + "CampusIds", cpCampuses.SelectedCampusIds.AsDelimited( "," ) );
-            //rockBlock.SetUserPreference( keyPrefix + "GroupTypeIds", todo );
+
+            var selectedGroupIds = GetSelectedGroupIds();
+
+            this.SetUserPreference( keyPrefix + "GroupIds", selectedGroupIds.AsDelimited( "," ) );
+        }
+
+        /// <summary>
+        /// Gets the selected group ids.
+        /// </summary>
+        /// <returns></returns>
+        private List<int> GetSelectedGroupIds()
+        {
+            var selectedGroupIds = new List<int>();
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                selectedGroupIds.AddRange( cblGroup.SelectedValuesAsInt );
+            }
+
+            return selectedGroupIds;
         }
 
         /// <summary>
@@ -223,13 +295,25 @@ namespace RockWeb.Blocks.CheckIn
         {
             string keyPrefix = string.Format( "attendance-reporting-{0}-", this.BlockId );
 
-            drpSlidingDateRange.DelimitedValues = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            string slidingDateRangeSettings = this.GetUserPreference( keyPrefix + "SlidingDateRange" );
+            if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )
+            {
+                // default to current year
+                drpSlidingDateRange.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Current;
+                drpSlidingDateRange.TimeUnit = SlidingDateRangePicker.TimeUnitType.Year;
+            }
+            else
+            {
+                drpSlidingDateRange.DelimitedValues = slidingDateRangeSettings;
+            }
+
             hfGroupBy.Value = this.GetUserPreference( keyPrefix + "GroupBy" );
             hfGraphBy.Value = this.GetUserPreference( keyPrefix + "GraphBy" );
 
             var campusIdList = this.GetUserPreference( keyPrefix + "CampusIds" ).Split( ',' ).ToList();
             cpCampuses.SetValues( campusIdList );
 
+            // if no campuses are selected, default to showing all of them
             if ( cpCampuses.SelectedCampusIds.Count == 0 )
             {
                 foreach ( ListItem item in cpCampuses.Items )
@@ -238,7 +322,19 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
-            //rockBlock.GetUserPreference( keyPrefix + "GroupTypeIds");
+            var groupIdList = this.GetUserPreference( keyPrefix + "GroupIds" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            // if no groups are selected, default to showing all of them
+            var selectAll = groupIdList.Count == 0;
+
+            var checkboxListControls = rptGroupTypes.ControlsOfTypeRecursive<RockCheckBoxList>();
+            foreach ( var cblGroup in checkboxListControls )
+            {
+                foreach ( ListItem item in cblGroup.Items )
+                {
+                    item.Selected = selectAll || groupIdList.Contains( item.Value );
+                }
+            }
         }
 
         /// <summary>
@@ -267,10 +363,14 @@ namespace RockWeb.Blocks.CheckIn
             if ( pnlGrid.Visible )
             {
                 pnlGrid.Visible = false;
+                lShowGrid.Text = "Show Data <i class='fa fa-chevron-down'></i>";
+                lShowGrid.ToolTip = "Show Data";
             }
             else
             {
                 pnlGrid.Visible = true;
+                lShowGrid.Text = "Hide Data <i class='fa fa-chevron-up'></i>";
+                lShowGrid.ToolTip = "Hide Data";
                 BindGrid();
             }
         }
@@ -282,7 +382,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
 
-            string groupTypeIds = null;
+            string groupIds = GetSelectedGroupIds().AsDelimited( "," );
             string campusIds = cpCampuses.SelectedCampusIds.AsDelimited( "," );
 
             SortProperty sortProperty = gAttendance.SortProperty;
@@ -292,7 +392,7 @@ namespace RockWeb.Blocks.CheckIn
                 hfGraphBy.Value.ConvertToEnumOrNull<AttendanceGraphBy>() ?? AttendanceGraphBy.Total,
                 dateRange.Start,
                 dateRange.End,
-                groupTypeIds,
+                groupIds,
                 campusIds );
 
             if ( sortProperty != null )
@@ -352,7 +452,7 @@ namespace RockWeb.Blocks.CheckIn
                     liGroupTypeItem.Controls.Add( new Label { Text = groupType.Name, ID = "lbl" + groupType.Name } );
                 }
             }
-            
+
             if ( groupType.ChildGroupTypes.Any() )
             {
                 var ulGroupTypeList = new HtmlGenericContainer( "ul", "rocktree-children" );

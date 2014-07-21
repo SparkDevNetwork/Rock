@@ -54,10 +54,10 @@ namespace Rock.Workflow.Action
             if (!guid.IsEmpty())
             {
                 // Get the attribute
-                var attribute = AttributeCache.Read( guid );
+                var attribute = AttributeCache.Read( guid, rockContext );
                 if ( attribute != null )
                 {
-                    if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid() ).Id )
+                    if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.PERSON.AsGuid(), rockContext ).Id )
                     {
                         // If attribute type is a person, value should be person alias id
                         Guid? personAliasGuid = action.GetWorklowAttributeValue(guid).AsGuidOrNull();
@@ -78,7 +78,7 @@ namespace Rock.Workflow.Action
                         }
                     }
 
-                    else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid() ).Id )
+                    else if ( attribute.FieldTypeId == FieldTypeCache.Read( SystemGuid.FieldType.GROUP.AsGuid(), rockContext ).Id )
                     {
                         // If attribute type is a group, value should be group id
                         int? groupId = action.GetWorklowAttributeValue( guid ).AsIntegerOrNull();

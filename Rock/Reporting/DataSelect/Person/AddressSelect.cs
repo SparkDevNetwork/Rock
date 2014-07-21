@@ -145,7 +145,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .Where( m => m.Group.GroupTypeId == familyGroupTypeId && m.PersonId == p.Id )
                     .SelectMany( m => m.Group.GroupLocations )
                     .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
-                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.Zip ).Replace( "  ", " " ) )
+                    .Select( s => ( s.Location.Street1 + " " + s.Location.Street2 + " " + s.Location.City + ", " + s.Location.State + " " + s.Location.PostalCode ).Replace( "  ", " " ) )
                     .FirstOrDefault() );
 
             var selectExpression = SelectExpressionExtractor.Extract<Rock.Model.Person>( personLocationQuery, entityIdProperty, "p" );

@@ -59,10 +59,9 @@ namespace RockWeb.Blocks.Groups
     </div>
     
     <div class='clearfix'>
-		{% if Location.Street1 and Location.Street1 != '' %}
+		{% if Location.Address && Location.Address != '' %}
 			<strong>{{ Location.Type }}</strong>
-			<br>{{ Location.Street1 }}
-			<br>{{ Location.City }}, {{ Location.State }} {{ Location.Zip }}
+			<br>{{ Location.Address }}
 		{% endif %}
 		{% if Members.size > 0 %}
 			<br>
@@ -229,7 +228,7 @@ namespace RockWeb.Blocks.Groups
             var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             string polygonColors = "\"" + polygonColorList.AsDelimited( "\", \"" ) + "\"";
 
-            string template = HttpUtility.HtmlEncode( GetAttributeValue( "InfoWindowContents" ).Replace( "\n", string.Empty ) );
+            string template = HttpUtility.HtmlEncode( GetAttributeValue( "InfoWindowContents" ).Replace( Environment.NewLine, string.Empty ).Replace( "\n", string.Empty ) );
             string groupPage = GetAttributeValue( "GroupPage" );
             string personProfilePage = GetAttributeValue( "PersonProfilePage" );
             string mapPage = GetAttributeValue( "MapPage" );

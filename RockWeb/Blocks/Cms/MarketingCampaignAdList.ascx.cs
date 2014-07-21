@@ -405,7 +405,6 @@ namespace RockWeb.Blocks.Cms
         {
             rFilter.Visible = visible;
             pnlMarketingCampaignAds.Visible = visible;
-            lTitle.Visible = visible;
         }
 
         #endregion
