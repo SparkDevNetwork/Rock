@@ -940,7 +940,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     rockContext.SaveChanges();
 
-                    foreach ( var familyAddress in FamilyAddresses )
+                    foreach ( var familyAddress in FamilyAddresses.Where( a => a.Id >= 0 ) )
                     {
                         Location updatedAddress = null;
                         if ( familyAddress.LocationIsDirty )
