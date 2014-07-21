@@ -1,6 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CampusContextSetter.ascx.cs" Inherits="RockWeb.Blocks.Core.CampusContextSetter" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="ddlCampus" />
+    </Triggers>
     <ContentTemplate>
         <input type="hidden" id="rock_page_campus_context" name="context" />
 
