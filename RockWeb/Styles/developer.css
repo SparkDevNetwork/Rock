@@ -73,22 +73,12 @@ table.server-variables
     word-wrap:break-word;
 }
 
-    table.server-variables td
-    {
-        min-width:200px;
-        vertical-align:text-top;
-    }
-
-/* CSF - Exception Detail Grid*/
-.exceptionDetail-stackTrace-hide
+table.server-variables td
 {
-    display: none;
+    min-width:200px;
+    vertical-align:text-top;
 }
 
-.exceptionDetail-stackTrace-show
-{
-    display:table-row;
-}
 
 
 

@@ -527,7 +527,7 @@ img.jcrop-preview {
   font-weight: 700;
 }
 .picker .picker-menu {
-  width: 370px;
+  width: 400px;
   padding: 10px;
 }
 .picker .picker-menu h4:first-child {
@@ -3142,8 +3142,9 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
-    1. Error Page - styles for the error page.
-
+    1. Error Page 
+    2. Blank Page
+    3. Exception Page
 */
 .error-wrap {
   text-align: center;
@@ -3179,6 +3180,18 @@ iframe.email-body {
 .rock-blank main.container {
   margin: 0;
   padding: 12px;
+}
+.exceptionDetail-stackTrace-hide {
+  display: none;
+}
+.exceptionDetail-stackTrace-show {
+  display: table-row;
+}
+.exceptionDetail-stackTrace-show pre {
+  padding: 0;
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
 }
 /*
     Used to manage styles related to Rock's internal scrollbar
