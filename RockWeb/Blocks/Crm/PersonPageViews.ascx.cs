@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
     [IntegerField("Session Count", "The number of sessions to show per page.", true, 20, "", 1)]
-    [BooleanField("Show Header", "Determines whether the header showing the person's name and date filter should be displayed", true, "", 2)]
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -180,19 +179,6 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        protected void rptPageViews_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            /*if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                int currentIndex = e.Item.ItemIndex;
-                if ( currentIndex > 0 )
-                {
-                    var lPageViewDuration = e.Item.FindControl( "lPageViewDuration" ) as Literal;
-                    var rptPageViews = sender as Repeater;
-                }
-            }*/
-        }
-
         protected void btnFilter_Click( object sender, EventArgs e )
         {
             if ( drpDateFilter.LowerValue.HasValue )
@@ -225,15 +211,7 @@ namespace RockWeb.Blocks.Crm
             var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
             if (person != null)
             {
-                if ( GetAttributeValue( "ShowHeader" ).AsBoolean() )
-                {
-                    pnlHeader.Visible = true;
-                    lPersonName.Text = person.FullName.FormatAsHtmlTitle() + " Page Views";
-                }
-                else
-                {
-                    pnlHeader.Visible = false;
-                }
+                lPersonName.Text = person.FullName;
 
                 PageViewService pageviewService = new PageViewService( rockContext );
 
