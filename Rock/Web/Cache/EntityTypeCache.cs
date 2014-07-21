@@ -256,6 +256,11 @@ namespace Rock.Web.Cache
         {
             int? entityTypeId = null;
 
+            if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+            {
+                type = type.BaseType;
+            }
+
             lock ( obj )
             {
                 if ( entityTypes.ContainsKey( type.FullName ) )
