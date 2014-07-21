@@ -172,22 +172,19 @@
                 $(this).addClass('open');
             });
 
-            
-            
-
-            
             $('#content-wrapper').click(function () {
                 $('.navbar-side li').removeClass('open');
             });
             
-
             // show/hide sidebar nav 
             $('.navbar-minimize').click(function () {
-                if ($('body').hasClass('navbar-side-open') || $('body').hasClass('navbar-side-close')) {
-                    $('body').toggleClass('navbar-side-open navbar-side-close');
-                } else {
+                if ($('.navbar-static-side').is(":visible")) {
                     $('body').addClass('navbar-side-close');
-                }  
+                    $('body').removeClass('navbar-side-open');
+                } else {
+                    $('body').addClass('navbar-side-open');
+                    $('body').removeClass('navbar-side-close');
+                }
             });
 
 
