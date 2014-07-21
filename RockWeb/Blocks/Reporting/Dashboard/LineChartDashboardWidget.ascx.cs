@@ -24,8 +24,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Line Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Line Chart Dashboard Widget" )]
     public partial class LineChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
         /// <summary>

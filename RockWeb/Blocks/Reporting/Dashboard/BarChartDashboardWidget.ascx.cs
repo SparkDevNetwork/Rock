@@ -24,8 +24,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Bar Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "Bar Chart DashboardWidget" )]
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Bar Chart Dashboard Widget" )]
     public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
         public override Rock.Web.UI.Controls.FlotChart FlotChartControl
