@@ -2581,6 +2581,13 @@ table.attribute-grid tr th:nth-child(3) {
   margin-bottom: 7.5px;
   text-align: center;
 }
+.personprofilebar-bio .nav li .persondetails-actions {
+  padding: 2px 0 0 15px;
+}
+.personprofilebar-bio .nav li .persondetails-actions:hover,
+.personprofilebar-bio .nav li .persondetails-actions:focus {
+  background-color: transparent;
+}
 .personprofilebar-bio .actions {
   position: absolute;
   right: 50%;
