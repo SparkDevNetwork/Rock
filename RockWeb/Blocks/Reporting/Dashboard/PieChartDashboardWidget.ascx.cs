@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -32,11 +31,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// 
     /// </summary>
     [DisplayName( "Pie Chart" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget using flotcharts" )]
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Pie Chart Dashboard Widget" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
-    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", "Either select a specific {0} or leave {0} blank to get it from the page context.", Order = 4 )]
+    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", Key="Entity", Order = 4 )]
     [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 5, "MetricCategories" )]
     [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
@@ -89,7 +88,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             string restApiUrl = string.Format( "~/api/MetricValues/GetSummary?metricIdList={0}", metricIdList.AsDelimited( "," ) );
 
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? "" );
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
             if ( dateRange != null )
             {
                 if ( dateRange.Start.HasValue )
@@ -107,7 +106,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
 
-            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
+            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( '|' );
             if ( entityValues.Length == 2 )
             {
                 var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
@@ -134,8 +133,10 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             }
 
             pcChart.DataSourceUrl = restApiUrl;
-            //pcChart.PieOptions.tilt = 0.5;
-            //pcChart.ChartHeight =  
+            
+            //// pcChart.PieOptions.tilt = 0.5;
+            //// pcChart.ChartHeight =  
+            
             pcChart.PieOptions.label = new Rock.Reporting.Dashboard.Flot.PieLabel { show = true };
             pcChart.PieOptions.label.formatter = @"
 function labelFormatter(label, series) {
@@ -157,10 +158,8 @@ function labelFormatter(label, series) {
         /// </value>
         public List<int> GetMetricIds()
         {
-
             var metricCategoryGuids = ( GetAttributeValue( "MetricCategories" ) ?? string.Empty ).Split( ',' ).Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
             return new MetricCategoryService( new Rock.Data.RockContext() ).GetByGuids( metricCategoryGuids ).Select( a => a.MetricId ).ToList();
-
         }
     }
 }
