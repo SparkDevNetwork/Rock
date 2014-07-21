@@ -20,17 +20,19 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the locations and groups for each selected family member that
-    /// are not specific to their last name.
+    /// Removes (or excludes) the groups for each selected family member that are not specific to their last name.
     /// </summary>
-    [Description( "Removes the groups for each selected family member that are not specific to their last name." )]
+    [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their last name." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByLastName : CheckInActionComponent
     {
         /// <summary>
@@ -53,6 +55,8 @@ namespace Rock.Workflow.Action.CheckIn
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
+                var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                 foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
                 {
                     char lastInitial = char.Parse( person.Person.LastName.Substring( 0, 1 ).ToUpper() );
@@ -69,7 +73,14 @@ namespace Rock.Workflow.Action.CheckIn
                             // If the last name is not in range, remove the group
                             if ( !( lastInitial >= rangeStart && lastInitial <= rangeEnd ) )
                             {
-                                groupType.Groups.Remove( group );
+                                if ( remove )
+                                {
+                                    groupType.Groups.Remove( group );
+                                }
+                                else
+                                {
+                                    group.ExcludedByFilter = true;
+                                }
                             }
                         }
                     }

@@ -56,6 +56,10 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 person.GroupTypes.Remove( groupType );
                             }
+                            else if ( !groupType.Groups.Any( g => !g.ExcludedByFilter ) )
+                            {
+                                groupType.ExcludedByFilter = true;
+                            }
                         }
                     }
                 }

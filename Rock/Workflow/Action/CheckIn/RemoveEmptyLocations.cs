@@ -25,9 +25,9 @@ using Rock.Data;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes locations (from groups) if the location has no schedule.
+    /// Removes locations (from groups) if the location has no schedule.  If location contains schedules, but they are all excluded by filter, will also mark the location as excluded by filter.
     /// </summary>
-    [Description( "Removes locations (from groups) if the location has no schedule." )]
+    [Description( "Removes locations (from groups) if the location has no schedule.  If location contains schedules, but they are all excluded by filter, will also mark the location as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Locations" )]
     public class RemoveEmptyLocations : CheckInActionComponent
@@ -59,6 +59,10 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( location.Schedules.Count == 0 )
                                     {
                                         group.Locations.Remove( location );
+                                    }
+                                    else if ( !location.Schedules.Any( s => !s.ExcludedByFilter ) )
+                                    {
+                                        location.ExcludedByFilter = true;
                                     }
                                 }
                             }

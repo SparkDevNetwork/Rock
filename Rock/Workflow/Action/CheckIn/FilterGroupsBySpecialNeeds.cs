@@ -26,15 +26,17 @@ using Rock.Data;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the location's "special needs" groups for each selected family member
+    /// Removes (or excludes) the location's "special needs" groups for each selected family member
     /// if the person is not "special needs".  The filter can ALSO be configured to 
     /// remove normal (non-special needs) groups when the person is "special needs".
     /// </summary>
-    [Description( "Removes the groups for each selected family member that are not specific to their special needs attribute." )]
+    [Description( "Removes (or excludes) the groups for each selected family member that are not specific to their special needs attribute." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Special Needs" )]
-    [BooleanField( "Remove Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups" )]
-    [BooleanField( "Remove Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups" )]
+
+    [BooleanField( "Remove (or exclude) Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups" )]
+    [BooleanField( "Remove (or exclude) Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups" )]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsBySpecialNeeds : CheckInActionComponent
     {
         /// <summary>
@@ -60,6 +62,8 @@ namespace Rock.Workflow.Action.CheckIn
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
+                var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                 foreach ( var person in family.People.Where( p => p.Selected ) )
                 {
                     bool isSNPerson = bool.Parse( person.Person.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
@@ -72,13 +76,28 @@ namespace Rock.Workflow.Action.CheckIn
                             // If the group is special needs but the person is not, then remove it.
                             if ( removeSNGroups && isSNGroup && !( isSNPerson ) )
                             {
-                                groupType.Groups.Remove( group );
+                                if ( remove )
+                                {
+                                    groupType.Groups.Remove( group );
+                                }
+                                else
+                                {
+                                    group.ExcludedByFilter = true;
+                                }
+                                continue;
                             }
 
                             // or if the setting is enabled and the person is SN but the group is not.
                             if ( removeNonSNGroups && isSNPerson && !isSNGroup )
                             {
-                                groupType.Groups.Remove( group );
+                                if ( remove )
+                                {
+                                    groupType.Groups.Remove( group );
+                                }
+                                else
+                                {
+                                    group.ExcludedByFilter = true;
+                                }
                             }
                         }
                     }

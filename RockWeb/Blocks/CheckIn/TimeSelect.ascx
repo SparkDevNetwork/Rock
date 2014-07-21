@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="checkin-actions">
-                    <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" Text="Check-in" />
+                    <asp:LinkButton CssClass="btn btn-primary" ID="lbSelect" runat="server" data-loading-text="Printing..." OnClientClick="return GetTimeSelection();" OnClick="lbSelect_Click" Text="Check-in" />
                 </div>
 
             </div>

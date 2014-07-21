@@ -20,16 +20,19 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the grouptypes from each family member that are not specific to their grade
+    /// Removes (or excludes) the grouptypes from each family member that are not specific to their grade
     /// </summary>
-    [Description( "Removes the grouptypes from each family member that are not specific to their grade." )]
+    [Description( "Removes (or excludus) the grouptypes from each family member that are not specific to their grade." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter By Grade" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if group types should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterByGrade : CheckInActionComponent
     {
         /// <summary>
@@ -49,6 +52,8 @@ namespace Rock.Workflow.Action.CheckIn
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
+                    var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                     foreach ( var person in family.People )
                     {
                         int? personsGrade = person.Person.Grade;
@@ -74,7 +79,14 @@ namespace Rock.Workflow.Action.CheckIn
                                     // remove if the person does not have a grade or if their grade is less than the min
                                     if ( !personsGrade.HasValue || personsGrade < minGrade )
                                     {
-                                        person.GroupTypes.Remove( groupType );
+                                        if ( remove )
+                                        {
+                                            person.GroupTypes.Remove( groupType );
+                                        }
+                                        else
+                                        {
+                                            groupType.ExcludedByFilter = true;
+                                        }
                                         continue;
                                     }
                                 }
@@ -89,7 +101,14 @@ namespace Rock.Workflow.Action.CheckIn
                                     // remove if the person does not have a grade or if their grade is more than the max
                                     if ( !personsGrade.HasValue || personsGrade > maxGrade )
                                     {
-                                        person.GroupTypes.Remove( groupType );
+                                        if ( remove )
+                                        {
+                                            person.GroupTypes.Remove( groupType );
+                                        }
+                                        else
+                                        {
+                                            groupType.ExcludedByFilter = true;
+                                        }
                                         continue;
                                     }
                                 }
