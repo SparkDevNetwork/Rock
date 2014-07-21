@@ -13,7 +13,10 @@
     NA - This is used to style a checkboxlist grouping as seen (in the DefaultValues
         of the DefinedValue editor) when editing something like the AbilityLevel person
         attribute and changing it to 'allow multiple values'.  Added around 2/1/2013
-*/
+
+    JME - Not sure we need this with the new theme. Let me know if you see any
+          area that is in need of this still.
+
 .checkboxlist-group {
     width: 196px;
     padding: 6px 11px 0px 11px;
@@ -29,7 +32,7 @@
     -moz-transition: border linear .2s, box-shadow linear .2s;
     -o-transition: border linear .2s, box-shadow linear .2s;
     transition: border linear .2s, box-shadow linear .2s;
-}
+}*/
 
 
 
