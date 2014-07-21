@@ -50,23 +50,15 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                int? itemId = PageParameter( "ProjectPointOfAssessmentId" ).AsInteger();
-                int? projectId = PageParameter( "ProjectId" ).AsInteger();
-                if ( itemId != null )
+                int? projectPointOfAssessmentId = PageParameter( "ProjectPointOfAssessmentId" ).AsIntegerOrNull();
+                if ( projectPointOfAssessmentId.HasValue )
                 {
-                    if ( projectId == null )
-                    {
-                        ShowDetail( "ProjectPointOfAssessmentId", itemId.Value );
-                    }
-                    else
-                    {
-                        ShowDetail( "ProjectPointOfAssessmentId", itemId.Value, projectId.Value );
-                    }
+                    ShowDetail( projectPointOfAssessmentId.Value, PageParameter( "ProjectId" ).AsIntegerOrNull() );
                 }
                 else
                 {
                     pnlDetails.Visible = false;
-                }
+                } 
             }
         }
 
@@ -171,27 +163,19 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="projectPointOfAssessmentId">The project point of assessment identifier.</param>
+        public void ShowDetail( int projectPointOfAssessmentId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( projectPointOfAssessmentId, null );
         }
 
         /// <summary>
         /// Shows the detail
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="projectPointOfAssessmentId">The project point of assessment identifier.</param>
         /// <param name="projectId">The residency project id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? projectId )
+        public void ShowDetail( int projectPointOfAssessmentId, int? projectId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "ProjectPointOfAssessmentId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             LoadDropDowns();
@@ -206,9 +190,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Where( a => a.Id.Equals( projectId.Value ) )
                 .Select( a => a.Name ).FirstOrDefault();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !projectPointOfAssessmentId.Equals( 0 ) )
             {
-                projectPointOfAssessment = projectPointOfAssessmentService.Get( itemKeyValue );
+                projectPointOfAssessment = projectPointOfAssessmentService.Get( projectPointOfAssessmentId );
             }
             else
             {

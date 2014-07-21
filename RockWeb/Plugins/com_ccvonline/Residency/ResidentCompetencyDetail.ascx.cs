@@ -50,12 +50,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 string competencyPersonId = PageParameter( "CompetencyPersonId" );
                 if ( !string.IsNullOrWhiteSpace( competencyPersonId ) )
                 {
-                    ShowDetail( "CompetencyPersonId", int.Parse( competencyPersonId ) );
+                    ShowDetail( competencyPersonId.AsInteger() );
                 }
                 else
                 {
                     pnlDetails.Visible = false;
-                }
+                } 
             }
         }
 
@@ -96,29 +96,21 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyPersonId">The competency person identifier.</param>
+        public void ShowDetail( int competencyPersonId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyPersonId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
-            hfCompetencyPersonId.Value = itemKeyValue.ToString();
+            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( competencyPersonId );
 
-            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( hfCompetencyPersonId.ValueAsInt() );
-
-            if ( competencyPerson.PersonId != CurrentPersonId )
+            if ( competencyPerson == null || competencyPerson.PersonId != CurrentPersonId )
             {
                 // somebody besides the Resident is logged in
                 NavigateToParentPage();
                 return;
             }
 
+            hfCompetencyPersonId.Value = competencyPersonId.ToString();
             lReadOnlyTitle.Text  = competencyPerson.Competency.Name.FormatAsHtmlTitle();
 
             lblFacilitator.Text = competencyPerson.Competency.FacilitatorPerson != null ? competencyPerson.Competency.FacilitatorPerson.FullName : Rock.Constants.None.TextHtml;

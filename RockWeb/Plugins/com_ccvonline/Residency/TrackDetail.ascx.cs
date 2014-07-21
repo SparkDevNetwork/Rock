@@ -49,18 +49,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "TrackId" );
-                string periodId = PageParameter( "PeriodId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string trackId = PageParameter( "TrackId" );
+                if ( !string.IsNullOrWhiteSpace( trackId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( periodId ) )
-                    {
-                        ShowDetail( "TrackId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "TrackId", int.Parse( itemId ), int.Parse( periodId ) );
-                    }
+                    ShowDetail( trackId.AsInteger(), PageParameter( "PeriodId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -212,38 +204,31 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="trackId">The track identifier.</param>
+        public void ShowDetail( int trackId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( trackId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="trackId">The track identifier.</param>
         /// <param name="periodId">The period id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? periodId )
+        public void ShowDetail( int trackId, int? periodId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "TrackId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             var residencyContext = new ResidencyContext();
 
             // Load depending on Add(0) or Edit
             Track track = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !trackId.Equals( 0 ) )
             {
-                track = new ResidencyService<Track>( residencyContext ).Get( itemKeyValue );
+                track = new ResidencyService<Track>( residencyContext ).Get( trackId );
             }
-            else
+            
+            if ( track == null )
             {
                 track = new Track { Id = 0 };
                 track.PeriodId = periodId ?? 0;

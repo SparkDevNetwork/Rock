@@ -59,10 +59,10 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "recordingId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string recordingId = PageParameter( "recordingId" );
+                if ( !string.IsNullOrWhiteSpace( recordingId ) )
                 {
-                    ShowDetail( "recordingId", int.Parse( itemId ) );
+                    ShowDetail( recordingId.AsInteger() );
                 }
                 else
                 {
@@ -134,25 +134,19 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="recordingId">The recording identifier.</param>
+        public void ShowDetail( int recordingId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "recordingId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             Recording recording = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !recordingId.Equals( 0 ) )
             {
-                recording = new RecordingService( new CommandCenterContext() ).Get( itemKeyValue );
+                recording = new RecordingService( new CommandCenterContext() ).Get( recordingId );
                 lActionTitle.Text = ActionTitle.Edit( Recording.FriendlyTypeName );
             }
-            else
+
+            if ( recording == null )
             {
                 recording = new Recording { Id = 0 };
                 lActionTitle.Text = ActionTitle.Add( Recording.FriendlyTypeName );

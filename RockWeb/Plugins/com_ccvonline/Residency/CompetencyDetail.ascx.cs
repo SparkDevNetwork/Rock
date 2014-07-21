@@ -49,18 +49,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "CompetencyId" );
-                string trackId = PageParameter( "TrackId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string competencyId = PageParameter( "competencyId" );
+                if ( !string.IsNullOrWhiteSpace( competencyId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( trackId ) )
-                    {
-                        ShowDetail( "CompetencyId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "CompetencyId", int.Parse( itemId ), int.Parse( trackId ) );
-                    }
+                    ShowDetail( competencyId.AsInteger(), PageParameter( "TrackId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -212,38 +204,31 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyId">The competency identifier.</param>
+        public void ShowDetail( int competencyId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( competencyId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="competencyId">The competency identifier.</param>
         /// <param name="trackId">The residency track id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? trackId )
+        public void ShowDetail( int competencyId, int? trackId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             var residencyContext = new ResidencyContext();
 
             // Load depending on Add(0) or Edit
             Competency competency = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !competencyId.Equals( 0 ) )
             {
-                competency = new ResidencyService<Competency>( residencyContext ).Get( itemKeyValue );
+                competency = new ResidencyService<Competency>( residencyContext ).Get( competencyId );
             }
-            else
+            
+            if ( competency == null )
             {
                 competency = new Competency { Id = 0 };
                 competency.TrackId = trackId ?? 0;

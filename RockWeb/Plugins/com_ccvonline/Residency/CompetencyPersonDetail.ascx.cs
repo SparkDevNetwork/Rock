@@ -50,18 +50,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "CompetencyPersonId" );
-                string personId = PageParameter( "PersonId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string competencyPersonId = PageParameter( "CompetencyPersonId" );
+                if ( !string.IsNullOrWhiteSpace( competencyPersonId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( personId ) )
-                    {
-                        ShowDetail( "CompetencyPersonId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "CompetencyPersonId", int.Parse( itemId ), int.Parse( personId ) );
-                    }
+                    ShowDetail( competencyPersonId.AsInteger(), PageParameter( "PersonId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -203,7 +195,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 }
 
 
-                RockTransactionScope.WrapTransaction( () =>
+                residencyContext.WrapTransaction( () =>
                 {
                     foreach ( var competencyId in competencyToAssignIdList )
                     {
@@ -246,38 +238,31 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyPersonId">The competency person identifier.</param>
+        public void ShowDetail( int competencyPersonId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( competencyPersonId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="competencyPersonId">The competency person identifier.</param>
         /// <param name="personId">The person id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? personId )
+        public void ShowDetail( int competencyPersonId, int? personId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyPersonId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             var residencyContext = new ResidencyContext();
 
             // Load depending on Add(0) or Edit
             CompetencyPerson competencyPerson = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !competencyPersonId.Equals( 0 ) )
             {
-                competencyPerson = new ResidencyService<CompetencyPerson>( residencyContext ).Get( itemKeyValue );
+                competencyPerson = new ResidencyService<CompetencyPerson>( residencyContext ).Get( competencyPersonId );
             }
-            else
+            
+            if ( competencyPerson == null )
             {
                 competencyPerson = new CompetencyPerson { Id = 0 };
                 competencyPerson.PersonId = personId ?? 0;

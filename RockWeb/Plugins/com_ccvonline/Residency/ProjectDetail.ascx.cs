@@ -48,18 +48,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "ProjectId" );
-                string competencyId = PageParameter( "CompetencyId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string projectId = PageParameter( "ProjectId" );
+                if ( !string.IsNullOrWhiteSpace( projectId ) )
                 {
-                    if ( string.IsNullOrWhiteSpace( competencyId ) )
-                    {
-                        ShowDetail( "ProjectId", int.Parse( itemId ) );
-                    }
-                    else
-                    {
-                        ShowDetail( "ProjectId", int.Parse( itemId ), int.Parse( competencyId ) );
-                    }
+                    ShowDetail( projectId.AsInteger(), PageParameter( "CompetencyId" ).AsIntegerOrNull() );
                 }
                 else
                 {
@@ -225,38 +217,31 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="projectId">The project identifier.</param>
+        public void ShowDetail( int projectId )
         {
-            ShowDetail( itemKey, itemKeyValue, null );
+            ShowDetail( projectId, null );
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="projectId">The project identifier.</param>
         /// <param name="competencyId">The residency competency id.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int? competencyId )
+        public void ShowDetail( int projectId, int? competencyId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "ProjectId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             Project project = null;
 
             var residencyContext = new ResidencyContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !projectId.Equals( 0 ) )
             {
-                project = new ResidencyService<Project>( residencyContext ).Get( itemKeyValue );
+                project = new ResidencyService<Project>( residencyContext ).Get( projectId );
             }
-            else
+            
+            if ( project == null )
             {
                 project = new Project { Id = 0 };
                 project.CompetencyId = competencyId ?? 0;

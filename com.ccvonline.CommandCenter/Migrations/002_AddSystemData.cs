@@ -31,8 +31,8 @@ namespace com.ccvonline.CommandCenter.Migrations
             // Attrib Value for Recording List:Detail Page
             RockMigrationHelper.AddBlockAttributeValue( "7591B01B-8F22-47E3-BEFB-076338A3F24A", "D23CF945-F440-4821-8496-C35035E1C3FE", "6e7acdfc-0297-473e-8990-9c96cc49394c" );
 
-            RockMigrationHelper.UpdateFieldType( "Accounts Field Type", "", "Rock", "Rock.Field.Types.AccountsFieldType", "CC009E89-CE40-42F6-9D7C-D117ADF8DCD0" );
-            RockMigrationHelper.UpdateFieldType( "Category Field Type", "", "Rock", "Rock.Field.Types.CategoryFieldType", "AB6B4F30-F535-41E9-A4B6-63CE12C9C3CB" );
+            RockMigrationHelper.UpdateFieldType( "Accounts Field Type", "", "Rock", "Rock.Field.Types.AccountsFieldType", "17033CDD-EF97-4413-A483-7B85A787A87F" );
+            RockMigrationHelper.UpdateFieldType( "Category Field Type", "", "Rock", "Rock.Field.Types.CategoryFieldType", "309460EF-0CC5-41C6-9161-B3837BA3D374" );
 
             RockMigrationHelper.AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Wowza Server", "Url of Wowza Server", 0, "", "07784C63-DBF8-4179-85F4-6FCFCF9B752C" );
             

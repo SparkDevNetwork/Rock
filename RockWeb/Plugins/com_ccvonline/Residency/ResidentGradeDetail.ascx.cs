@@ -53,7 +53,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.ValueAsInt() );
+                ShowDetail( hfCompetencyPersonProjectId.ValueAsInt() );
             }
 
             // minimize the chance of using the Browser Back button to accidently "re-grade" the project after the residentGraderSessionKey has expired
@@ -208,7 +208,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 competencyPersonProjectAssessmentPointOfAssessmentList.Add( competencyPersonProjectAssessmentPointOfAssessment );
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            residencyContext.WrapTransaction( () =>
             {
                 competencyPersonProjectAssessment.CompetencyPersonProjectId = competencyPersonProject.Id;
 
@@ -249,16 +249,9 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyPersonProjectId">The competency person project identifier.</param>
+        public void ShowDetail( int itemId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyPersonProjectId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             hfCompetencyPersonProjectId.Value = this.PageParameter( "CompetencyPersonProjectId" );

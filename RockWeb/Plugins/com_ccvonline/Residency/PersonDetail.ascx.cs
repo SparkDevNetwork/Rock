@@ -46,10 +46,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string groupId = PageParameter( "GroupId" );
-                string personId = PageParameter( "PersonId" );
-
-                ShowDetail( "PersonId", int.Parse( personId ), groupId.AsInteger() );
+                ShowDetail( PageParameter( "PersonId" ).AsInteger(), PageParameter( "GroupId" ).AsInteger() );
             }
         }
 
@@ -195,16 +192,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <param name="groupId">The group identifier.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue, int groupId )
+        public void ShowDetail( int personId, int groupId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "PersonId" )
-            {
-                return;
-            }
 
             pnlDetails.Visible = true;
 
@@ -212,11 +203,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             Person person = null;
             var rockContext = new RockContext();
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !personId.Equals( 0 ) )
             {
-                person = new PersonService( rockContext ).Get( itemKeyValue );
+                person = new PersonService( rockContext ).Get( personId );
             }
-            else
+            
+            if ( person == null )
             {
                 person = new Person { Id = 0 };
             }

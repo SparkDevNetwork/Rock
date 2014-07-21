@@ -65,7 +65,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 int? competencyPersonProjectAssessmentId = this.PageParameter( "CompetencyPersonProjectAssessmentId" ).AsInteger();
                 if ( competencyPersonProjectAssessmentId.HasValue )
                 {
-                    ShowDetail( "CompetencyPersonProjectAssessmentId", competencyPersonProjectAssessmentId.Value );
+                    ShowDetail( competencyPersonProjectAssessmentId.Value );
                 }
                 else
                 {
@@ -171,19 +171,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyPersonProjectAssessmentId">The competency person project assessment identifier.</param>
+        public void ShowDetail( int competencyPersonProjectAssessmentId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyPersonProjectAssessmentId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
-            CompetencyPersonProjectAssessment competencyPersonProjectAssessment = new ResidencyService<CompetencyPersonProjectAssessment>( new ResidencyContext() ).Get( itemKeyValue );
+            CompetencyPersonProjectAssessment competencyPersonProjectAssessment = new ResidencyService<CompetencyPersonProjectAssessment>( new ResidencyContext() ).Get( competencyPersonProjectAssessmentId );
 
             if ( competencyPersonProjectAssessment.CompetencyPersonProject.CompetencyPerson.PersonId != CurrentPersonId )
             {

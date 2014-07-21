@@ -43,11 +43,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "CompetencyPersonId" );
-
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string competencyPersonId = PageParameter( "CompetencyPersonId" );
+                if ( !string.IsNullOrWhiteSpace( competencyPersonId ) )
                 {
-                    ShowDetail( "CompetencyPersonId", itemId.AsInteger() );
+                    ShowDetail( competencyPersonId.AsInteger() );
                 }
                 else
                 {
@@ -63,19 +62,12 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        /// <param name="competencyPersonId">The competency person identifier.</param>
+        public void ShowDetail( int competencyPersonId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "CompetencyPersonId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
-            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( itemKeyValue );
+            CompetencyPerson competencyPerson = new ResidencyService<CompetencyPerson>( new ResidencyContext() ).Get( competencyPersonId );
 
             if ( competencyPerson != null )
             {

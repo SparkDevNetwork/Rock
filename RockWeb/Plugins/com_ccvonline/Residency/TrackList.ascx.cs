@@ -96,7 +96,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 .Where( a => a.PeriodId.Equals( periodId ) )
                 .OrderBy( a => a.DisplayOrder ).ToList();
 
-            RockTransactionScope.WrapTransaction( () =>
+            residencyContext.WrapTransaction( () =>
             {
                 Track movedItem = items[oldIndex];
                 items.RemoveAt( oldIndex );

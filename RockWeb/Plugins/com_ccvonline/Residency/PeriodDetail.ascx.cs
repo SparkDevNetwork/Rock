@@ -47,10 +47,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "PeriodId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                string periodId = PageParameter( "PeriodId" );
+                if ( !string.IsNullOrWhiteSpace( periodId ) )
                 {
-                    ShowDetail( "PeriodId", int.Parse( itemId ) );
+                    ShowDetail( periodId.AsInteger() );
                 }
                 else
                 {
@@ -183,7 +183,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
                 return;
             }
 
-            RockTransactionScope.WrapTransaction( () =>
+            residencyContext.WrapTransaction( () =>
             {
                 residencyContext.SaveChanges();
 
@@ -264,23 +264,18 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// </summary>
         /// <param name="itemKey">The item key.</param>
         /// <param name="itemKeyValue">The item key value.</param>
-        public void ShowDetail( string itemKey, int itemKeyValue )
+        public void ShowDetail( int periodId )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "PeriodId" )
-            {
-                return;
-            }
-
             pnlDetails.Visible = true;
 
             // Load depending on Add(0) or Edit
             Period period = null;
-            if ( !itemKeyValue.Equals( 0 ) )
+            if ( !periodId.Equals( 0 ) )
             {
-                period = new ResidencyService<Period>( new ResidencyContext() ).Get( itemKeyValue );
+                period = new ResidencyService<Period>( new ResidencyContext() ).Get( periodId );
             }
-            else
+            
+            if ( period == null )
             {
                 period = new Period { Id = 0 };
             }

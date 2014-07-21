@@ -117,7 +117,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
         /// <param name="items">The items.</param>
         private void UpdateItemOrders( ResidencyContext residencyContext, List<ProjectPointOfAssessment> items )
         {
-            RockTransactionScope.WrapTransaction( () =>
+            residencyContext.WrapTransaction( () =>
             {
                 int order = 1;
                 foreach ( ProjectPointOfAssessment item in items )
