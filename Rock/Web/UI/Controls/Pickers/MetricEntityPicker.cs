@@ -266,7 +266,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 1;
+                if ( _rblSelectOrContext != null)
+                {
+                    return _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 1;
+                }
+                else
+                {
+                    return true;
+                }
             }
 
             set
@@ -276,8 +283,11 @@ namespace Rock.Web.UI.Controls
                 {
                     _entityTypeEditControl.Visible = !value;
                 }
-                
-                _rblSelectOrContext.SelectedValue = value ? "1" : "0";
+
+                if ( _rblSelectOrContext != null )
+                {
+                    _rblSelectOrContext.SelectedValue = value ? "1" : "0";
+                }
             }
         }
 
@@ -292,13 +302,23 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbCombine.Checked;
+                if ( _cbCombine != null )
+                {
+                    return _cbCombine.Checked;
+                }
+                else
+                {
+                    return true;
+                }
             }
 
             set
             {
                 EnsureChildControls();
-                _cbCombine.Checked = value;
+                if ( _cbCombine != null )
+                {
+                    _cbCombine.Checked = value;
+                }
             }
         }
 
