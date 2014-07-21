@@ -238,47 +238,49 @@ namespace RockWeb.Blocks.Crm
                 PageViewService pageviewService = new PageViewService( rockContext );
 
                 var pageViews = pageviewService.Queryable();
-                
+
                 var sessionInfo = pageviewService.Queryable()
-                    .Where( s => s.PersonAlias.PersonId == person.Id )
-                    .GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent })
-                                .Select( s => new WebSession
-                                {
-                                                SessionId = s.Key.SessionId,
-                                                StartDateTime = s.Min(x => x.DateTimeViewed),
-                                                EndDateTime = s.Max(x => x.DateTimeViewed),
-                                                SiteId = s.Key.SiteId,
-                                                Site = s.Key.SiteName,
-                                                ClientType = s.Key.ClientType,
-                                                IpAddress = s.Key.IpAddress,
-                                                UserAgent = s.Key.UserAgent,
-                                                PageViews = pageViews.Where(p=> p.SessionId == s.Key.SessionId).ToList()
-                                });
+                    .Where( s => s.PersonAlias.PersonId == person.Id );
+                    
 
                 if ( startDate != DateTime.MinValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.StartDateTime > drpDateFilter.LowerValue );
+                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed > drpDateFilter.LowerValue );
                 }
 
                 if ( endDate != DateTime.MaxValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.StartDateTime < drpDateFilter.UpperValue );
+                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed < drpDateFilter.UpperValue );
                 }
 
                 if ( siteId != -1 )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.SiteId == siteId );
+                    sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
                 }
 
-                sessionInfo = sessionInfo.OrderByDescending(p => p.StartDateTime)
+                var pageviewInfo = sessionInfo.GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent } )
+                                .Select( s => new WebSession
+                                {
+                                    SessionId = s.Key.SessionId,
+                                    StartDateTime = s.Min( x => x.DateTimeViewed ),
+                                    EndDateTime = s.Max( x => x.DateTimeViewed ),
+                                    SiteId = s.Key.SiteId,
+                                    Site = s.Key.SiteName,
+                                    ClientType = s.Key.ClientType,
+                                    IpAddress = s.Key.IpAddress,
+                                    UserAgent = s.Key.UserAgent,
+                                    PageViews = pageViews.Where( p => p.SessionId == s.Key.SessionId && p.SiteId == s.Key.SiteId).ToList()
+                                } );
+
+                pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
                                 .Skip( skipCount )
                                 .Take( sessionCount + 1);
 
-                rptSessions.DataSource = sessionInfo.ToList().Take(sessionCount);
+                rptSessions.DataSource = pageviewInfo.ToList().Take( sessionCount );
                 rptSessions.DataBind();
 
                 // set next button
-                if ( sessionInfo.Count() > sessionCount )
+                if ( pageviewInfo.Count() > sessionCount )
                 {
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();
