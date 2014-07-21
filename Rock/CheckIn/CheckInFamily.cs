@@ -79,6 +79,17 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Clears the filtered exclusions.
+        /// </summary>
+        public void ClearFilteredExclusions()
+        {
+            foreach( var person in People)
+            {
+                person.ClearFilteredExclusions();
+            }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

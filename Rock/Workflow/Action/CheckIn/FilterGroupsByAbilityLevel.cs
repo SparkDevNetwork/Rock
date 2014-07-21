@@ -26,12 +26,13 @@ using Rock.Data;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the locations and groups for each selected family member
-    /// if the person's ability level does not match the groups.
+    /// Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups.
     /// </summary>
-    [Description( "Removes the groups for each selected family member if the person's ability level does not match the groups." )]
+    [Description( "Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
+
+    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByAbilityLevel : CheckInActionComponent
     {
         /// <summary>
@@ -54,6 +55,8 @@ namespace Rock.Workflow.Action.CheckIn
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
+                var remove = GetAttributeValue( action, "Remove" ).AsBoolean();
+
                 foreach ( var person in family.People.Where( p => p.Selected ) )
                 {
                     person.Person.LoadAttributes();
@@ -68,9 +71,17 @@ namespace Rock.Workflow.Action.CheckIn
                         foreach ( var group in groupType.Groups.ToList() )
                         {
                             var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
-                            if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel ) )
+                            if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) )
                             {
-                                groupType.Groups.Remove( group );
+                                if ( remove )
+                                {
+                                    groupType.Groups.Remove( group );
+                                }
+                                else
+                                {
+                                    group.ExcludedByFilter = true;
+                                }
+
                             }
                         }
                     }
