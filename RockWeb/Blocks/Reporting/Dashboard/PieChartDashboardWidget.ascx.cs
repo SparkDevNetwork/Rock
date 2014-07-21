@@ -23,6 +23,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
@@ -35,10 +36,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "DashboardWidget using flotcharts" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
-    [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 4, "MetricCategories" )]
-    [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 5 )]
-    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 6 )]
-    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 7 )]
+    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", "Either select a specific {0} or leave {0} blank to get it from the page context.", Order = 4 )]
+    [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 5, "MetricCategories" )]
+    [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
+    [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
+    [LinkedPage( "Detail Page", "Select the page to navigate to when the chart is clicked", Order = 8 )]
     public partial class PieChartDashboardWidget : DashboardWidget
     {
         /// <summary>
@@ -99,13 +101,37 @@ namespace RockWeb.Blocks.Reporting.Dashboard
                 {
                     restApiUrl += string.Format( "&endDate={0}", dateRange.End.Value.ToString( "o" ) );
                 }
-
-
             }
 
             var metricValueType = this.GetAttributeValue( "MetricValueTypes" ).ConvertToEnumOrNull<MetricValueType>() ?? Rock.Model.MetricValueType.Measure;
 
             restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
+
+            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? "" ).Split( '|' );
+            if ( entityValues.Length == 2 )
+            {
+                var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                if ( entityType != null )
+                {
+                    restApiUrl += string.Format( "?entityTypeId={0}", entityType.Id );
+                    int? entityId = entityValues[1].AsIntegerOrNull();
+                    if ( entityId.HasValue )
+                    {
+                        restApiUrl += string.Format( "&entityId={0}", entityId );
+                    }
+                }
+            }
+            else
+            {
+                if ( this.ContextEntity() != null )
+                {
+                    var entityType = EntityTypeCache.Read( this.ContextEntity().GetType(), false );
+                    if ( entityType != null )
+                    {
+                        restApiUrl += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );
+                    }
+                }
+            }
 
             pcChart.DataSourceUrl = restApiUrl;
             //pcChart.PieOptions.tilt = 0.5;
