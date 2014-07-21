@@ -3090,9 +3090,6 @@ span.field-value {
 .merge-photo {
   border: 3px solid #999999;
 }
-.panel-widget.pageviewsession .panel-heading small {
-  color: #428bca;
-}
 .panel-widget.pageviewsession .pageviewsession-client {
   color: #428bca;
   text-align: right;
@@ -3691,10 +3688,13 @@ a.help {
   border-color: #d5d5d5;
 }
 .panel .panel-heading .panel-title small {
-  color: #e0e0e0;
+  opacity: .5;
 }
 .panel .panel-heading .panel-actions {
   margin-top: 4px;
+}
+.panel .panel-heading .form-group {
+  margin-bottom: 0;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
