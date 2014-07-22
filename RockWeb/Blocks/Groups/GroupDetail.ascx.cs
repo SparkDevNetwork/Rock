@@ -185,7 +185,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "GroupId" ).AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                string groupId = PageParameter( "GroupId" );
+                if (!string.IsNullOrWhiteSpace(groupId))
+                {
+                    ShowDetail( groupId.AsInteger(), PageParameter( "ParentGroupId" ).AsIntegerOrNull() );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
             else
             {
@@ -666,6 +674,8 @@ namespace RockWeb.Blocks.Groups
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId, Name = "" };
                 wpGeneral.Expanded = true;
             }
+
+            pnlDetails.Visible = true;
 
             hfGroupId.Value = group.Id.ToString();
 
