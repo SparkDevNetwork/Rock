@@ -356,10 +356,10 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             SetEditMode( false );
 
-            lblMainDetailsCol1.Text = new DescriptionList()
+            lblDescription.Text = new DescriptionList()
                 .Add( "Description", period.Description ).Html;
 
-            lblMainDetailsCol2.Text = new DescriptionList()
+            lblMainDetailsCol1.Text = new DescriptionList()
                 .Add( "Date Range", string.Format( "{0} to {1}", ( period.StartDate ?? DateTime.MinValue ).ToShortDateString(), ( period.EndDate ?? DateTime.MaxValue ).ToShortDateString() ) )
                 .Html;
         }

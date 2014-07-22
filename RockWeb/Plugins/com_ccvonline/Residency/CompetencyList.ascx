@@ -3,18 +3,28 @@
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
         
-        <asp:Panel ID="pnlList" runat="server">
-            <h4>Competencies</h4>
+        <asp:Panel ID="pnlList" CssClass="panel panel-block" runat="server">
+
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-lightbulb-o"></i> Competencies</h1>
+            </div>
+            <div class="panel-body">
+
+                <div class="grid grid-panel">
+                    <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_Edit" DataKeyNames="Id" ShowConfirmDeleteDialog="false" TooltipField="Description">
+                        <Columns>
+                            <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:DeleteField OnClick="gList_Delete" />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
+
+            </div>
 
             <asp:HiddenField ID="hfTrackId" runat="server" />
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-            <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowSelected="gList_Edit" DataKeyNames="Id" ShowConfirmDeleteDialog="false" TooltipField="Description">
-                <Columns>
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                    <Rock:DeleteField OnClick="gList_Delete" />
-                </Columns>
-            </Rock:Grid>
+            
 
         </asp:Panel>
 
