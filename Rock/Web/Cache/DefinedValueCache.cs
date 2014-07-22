@@ -180,11 +180,12 @@ namespace Rock.Web.Cache
             }
             else
             {
-                var definedValueService = new DefinedValueService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var definedValueService = new DefinedValueService( rockContext );
                 var definedValueModel = definedValueService.Get( id );
                 if ( definedValueModel != null )
                 {
-                    definedValueModel.LoadAttributes();
+                    definedValueModel.LoadAttributes( rockContext );
                     definedValue = new DefinedValueCache( definedValueModel );
 
                     var cachePolicy = new CacheItemPolicy();
