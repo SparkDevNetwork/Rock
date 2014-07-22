@@ -2,35 +2,32 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server">
+        <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <asp:HiddenField ID="hfCompetencyPersonId" runat="server" />
 
-            <div class="banner">
-                <h1>
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </h1>
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-code-fork"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
             </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl>
+                            <dt>Facilitator</dt>
+                            <dd>
+                                <asp:Literal runat="server" ID="lblFacilitator" /></dd>
+                        </dl>
+                    </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <dl>
-                        <dt>Facilitator</dt>
-                        <dd>
-                            <asp:Literal runat="server" ID="lblFacilitator" /></dd>
-                    </dl>
+                    <div class="col-md-6">
+                        <dl>
+                            <dt>Description</dt>
+                            <dd>
+                                <asp:Literal runat="server" ID="lblDescription" />
+                            </dd>
+                        </dl>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-            </div>
-            <div>
-                <dl>
-                    <dt>Description</dt>
-                    <dd>
-                        <asp:Literal runat="server" ID="lblDescription" />
-                    </dd>
-                </dl>
-            </div>
             </div>
 
         </asp:Panel>
