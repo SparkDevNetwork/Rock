@@ -154,7 +154,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
             var competencyPersonProjectAssessmentService = new ResidencyService<CompetencyPersonProjectAssessment>( new ResidencyContext() );
             int competencyPersonProjectId = hfCompetencyPersonProjectId.ValueAsInt();
             SortProperty sortProperty = gList.SortProperty;
-            var qry = competencyPersonProjectAssessmentService.Queryable();
+            var qry = competencyPersonProjectAssessmentService.Queryable("AssessorPerson");
 
             qry = qry.Where( a => a.CompetencyPersonProjectId.Equals( competencyPersonProjectId ) );
 
