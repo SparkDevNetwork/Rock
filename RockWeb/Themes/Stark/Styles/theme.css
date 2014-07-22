@@ -987,7 +987,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #428bca;
+  border: 4px solid #999999;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
