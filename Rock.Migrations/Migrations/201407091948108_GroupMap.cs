@@ -154,7 +154,7 @@ namespace Rock.Migrations
             // Attrib Value for Block:Group Map, Attribute:Map Style Page: Group Map, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "FC4B338F-C2DC-4623-A6A5-C4712B70FDFD", @"fdc5d6ba-a818-4a06-96b1-9ef31b4087ac" );
             // Attrib Value for Block:Group Map, Attribute:Polygon Colors Page: Group Map, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "71DBCABB-444E-46C3-932E-1D8EF487D23C", @"f37833,446f7a,afd074,649dac,f8eba2,92d0df,eaf7fc" );
+            RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "71DBCABB-444E-46C3-932E-1D8EF487D23C", @"#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc" );
             // Attrib Value for Block:Group Map, Attribute:Info Window Contents Page: Group Map, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "92B339D5-D8AF-4810-A7F8-09373DC5D0DE", @"<div style='width:250px'>
 
