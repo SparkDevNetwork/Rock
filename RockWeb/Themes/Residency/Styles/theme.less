@@ -7,6 +7,57 @@
 @import "_print.less";
 
 
+// Fonts                       */
+// -------------------------
+
+// light (weight 400 = 'normal')
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// regular (weight 500)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// semi-bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+// bold (weight 900)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 900;
+    font-style: normal;
+}
+
 /*
     Rock Theme Styles
 
@@ -47,6 +98,11 @@ a:hover i.fs
 // -------------------------
 
 header {
+    
+    .navbar-inverse {
+        background: #414141 url('../Assets/Images/header-background.png') no-repeat left center;
+    }
+
     .page-menu,
     .login-status {
         float: right;

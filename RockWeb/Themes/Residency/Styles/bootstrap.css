@@ -1824,7 +1824,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.42857143;
   color: #333333;
@@ -1969,7 +1969,7 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 700;
   line-height: 1.1;
   color: inherit;
@@ -4875,7 +4875,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #2a2a2a;
+  background-color: #e1edf7;
 }
 .nav > li.disabled > a {
   color: #999999;
@@ -4890,7 +4890,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #2a2a2a;
+  background-color: #e1edf7;
   border-color: #428bca;
 }
 .nav .nav-divider {
