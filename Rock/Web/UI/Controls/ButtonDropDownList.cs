@@ -241,6 +241,8 @@ namespace Rock.Web.UI.Controls
         public ButtonDropDownList()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
         }
 
@@ -354,6 +356,9 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _divControl );
             Controls.Add( _hfSelectedItemId );
             Controls.Add( _hfSelectedItemText );
+
+            RequiredFieldValidator.InitialValue = string.Empty;
+            RequiredFieldValidator.ControlToValidate = _hfSelectedItemId.ID;
         }
 
         /// <summary>
