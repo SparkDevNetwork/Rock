@@ -111,6 +111,12 @@ namespace Rock.Financial
         /// </summary>
         public virtual DefinedValueCache CreditCardTypeValue { get { return null; } }
 
+        /// <summary>
+        /// Gets the formatted value.
+        /// </summary>
+        /// <value>
+        /// The formatted value.
+        /// </value>
         public string FormattedValue
         {
             get

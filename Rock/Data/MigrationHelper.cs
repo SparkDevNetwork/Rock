@@ -1349,6 +1349,14 @@ namespace Rock.Data
                     ) );
         }
 
+        /// <summary>
+        /// Updates the name of the defined value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="isSystem">if set to <c>true</c> [is system].</param>
         public void UpdateDefinedValueByName( string definedTypeGuid, string name, string description, int order, bool isSystem = true )
         {
             Migration.Sql( string.Format( @"
@@ -1440,6 +1448,13 @@ namespace Rock.Data
             );
         }
 
+        /// <summary>
+        /// Adds the name of the defined value attribute value by.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="definedValueName">Name of the defined value.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
         public void AddDefinedValueAttributeValueByName( string definedTypeGuid, string definedValueName, string attributeKey, string value )
         {
             Migration.Sql( string.Format( @"
