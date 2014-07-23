@@ -178,7 +178,7 @@ namespace Rock.Web.UI.Controls
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "rock-modal rock-modal-frame";
+            _dialogPanel.CssClass = "modal-content rock-modal rock-modal-frame";
             _dialogPanel.Attributes.Add( "style", "display:none" );
 
             _headerPanel = new Panel();
