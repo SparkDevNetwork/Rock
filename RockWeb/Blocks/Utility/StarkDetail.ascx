@@ -7,6 +7,10 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-star"></i> Blank Detail Block</h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
+                </div>
             </div>
             <div class="panel-body">
 

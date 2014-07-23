@@ -6,7 +6,10 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment-o"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
-                <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlStatus" runat="server" />
+                </div>
             </div>
             <div class="panel-body">
 
