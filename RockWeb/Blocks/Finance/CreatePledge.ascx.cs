@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -49,10 +49,10 @@ namespace RockWeb.Blocks.Finance
         @"
 <h1>Thank You!</h1>
 <p>
-{{Person.NickName}}, thank you for your commitment of {{FinancialPledge.TotalAmount}} to {{Account.Name}}.  To make your commitment even easier, you might consider making a scheduled giving profile.
+{{Person.NickName}}, thank you for your commitment of ${{FinancialPledge.TotalAmount}} to {{Account.Name}}.  To make your commitment even easier, you might consider making a scheduled giving profile.
 </p>
 <p>
-    <a href='page/186' class='btn btn-default' >Setup a Giving Profile</a>
+    <a href='/page/186?PledgeId={{ FinancialPledge.Id  }}' class='btn btn-default' >Setup a Giving Profile</a>
 </p>
 " )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 10 )]
@@ -81,18 +81,18 @@ namespace RockWeb.Blocks.Finance
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var pledgeService = new FinancialPledgeService( rockContext );
+            var financialPledgeService = new FinancialPledgeService( rockContext );
+            var financialAccountService = new FinancialAccountService( rockContext );
+            var definedValueService = new DefinedValueService( rockContext );
             var person = FindPerson( rockContext );
 
             FinancialPledge financialPledge = new FinancialPledge();
 
             financialPledge.PersonId = person.Id;
-            var financialAccount = new FinancialAccountService( new RockContext() ).Get( GetAttributeValue( "Account" ).AsGuid() );
+            var financialAccount = financialAccountService.Get( GetAttributeValue( "Account" ).AsGuid() );
             if ( financialAccount != null )
             {
                 financialPledge.AccountId = financialAccount.Id;
-
-
             }
 
             financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
@@ -101,22 +101,20 @@ namespace RockWeb.Blocks.Finance
             if ( pledgeFrequenceSelection != null )
             {
                 financialPledge.PledgeFrequencyValueId = pledgeFrequenceSelection.Id;
-
-
             }
 
             financialPledge.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
             financialPledge.EndDate = drpDateRange.UpperValue ?? DateTime.MaxValue;
 
-            pledgeService.Add( financialPledge );
+            financialPledgeService.Add( financialPledge );
 
             rockContext.SaveChanges();
 
-            // populate account too so that Liquid can access it
+            // populate account so that Liquid can access it
             financialPledge.Account = financialAccount;
 
-            // populate PledgeFrequencyValue too so that Liquid can access it
-            financialPledge.PledgeFrequencyValue = new DefinedValueService( rockContext ).Get( pledgeFrequenceSelection.Id );
+            // populate PledgeFrequencyValue so that Liquid can access it
+            financialPledge.PledgeFrequencyValue = definedValueService.Get( pledgeFrequenceSelection.Id );
 
             var mergeObjects = new Dictionary<string, object>();
             mergeObjects.Add( "Person", person );
@@ -124,19 +122,21 @@ namespace RockWeb.Blocks.Finance
             mergeObjects.Add( "PledgeFrequency", pledgeFrequenceSelection );
             mergeObjects.Add( "Account", financialAccount );
             lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
-            
+
+            // show liquid help for debug
             if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
             {
-                // show liquid help
-                string debugInfo = string.Format(
-                    @"<small><a data-toggle='collapse' data-parent='#accordion' href='#liquid-metric-debug'><i class='fa fa-eye'></i></a></small>
-                            <pre id='liquid-metric-debug' class='collapse well liquid-metric-debug'>
-                                {0}
-                            </pre>",
-                    mergeObjects.LiquidHelpText() );
+                StringBuilder debugInfo = new StringBuilder();
+                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
 
-                lReceipt.Text += debugInfo;
+                debugInfo.Append( "<pre>" );
 
+                debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
+                debugInfo.Append( mergeObjects.LiquidHelpText() + "</pre>" );
+
+                debugInfo.Append( "</div>" );
+
+                lReceipt.Text += debugInfo.ToString();
             }
 
             lReceipt.Visible = true;
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Finance
             var financialAccount = new FinancialAccountService( new RockContext() ).Get( GetAttributeValue( "Account" ).AsGuid() );
             if ( financialAccount == null )
             {
-                nbWarningMessage.Text = "Warning:  No Account is specified for this pledge.  Please contact the administrator.";
+                nbWarningMessage.Text = "Warning: No Account is specified for this pledge.  Please contact the administrator.";
                 nbWarningMessage.Visible = true;
             }
             else
@@ -175,12 +175,14 @@ namespace RockWeb.Blocks.Finance
             // only show the date range picker if the block setting for date range isn't fully specified
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
-            var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( ( a => a.Name ) );
+            var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name );
             bddlFrequency.DataSource = frequencies;
             bddlFrequency.DataBind();
 
             bddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;
             bddlFrequency.SelectedValue = Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME;
+
+            bddlFrequency.Required = GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false;
 
             string saveButtonText = GetAttributeValue( "SaveButtonText" );
             if ( !string.IsNullOrWhiteSpace( saveButtonText ) )
