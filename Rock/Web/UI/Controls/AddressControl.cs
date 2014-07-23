@@ -785,12 +785,20 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the default state.
+        /// </summary>
+        /// <returns></returns>
         public string GetDefaultState()
         {
             SetOrganizationAddressDefaults();
             return _orgState;
         }
 
+        /// <summary>
+        /// Gets the default country.
+        /// </summary>
+        /// <returns></returns>
         public string GetDefaultCountry()
         {
             SetOrganizationAddressDefaults();
