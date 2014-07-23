@@ -9,8 +9,11 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-map-marker"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
-                    <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    </div>
                 </div>
                 <div class="panel-body">
 

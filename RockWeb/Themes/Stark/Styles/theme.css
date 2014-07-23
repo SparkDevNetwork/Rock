@@ -3703,6 +3703,9 @@ a.help {
 .panel .panel-heading .panel-title small {
   opacity: .5;
 }
+.panel .panel-heading .panel-labels {
+  float: right;
+}
 .panel .panel-heading .panel-actions {
   margin-top: 4px;
 }
@@ -3820,6 +3823,10 @@ a.help {
 }
 .panel-block .panel-heading {
   background-color: #eeeeee;
+  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
+            float: right;
+            margin-top: 2px;
+        }*/
 }
 .panel-block .panel-heading:before,
 .panel-block .panel-heading:after {
@@ -3834,10 +3841,6 @@ a.help {
 }
 .panel-block .panel-heading .panel-title i {
   color: #6a6a6a;
-}
-.panel-block .panel-heading span.label {
-  float: right;
-  margin-top: 2px;
 }
 .panel-block .panel-body .grid.grid-panel {
   margin: -15px;
