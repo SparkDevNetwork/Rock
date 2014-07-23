@@ -346,60 +346,63 @@ img.jcrop-preview {
   -webkit-box-shadow: #464646 18px 18px 80px 0px;
   box-shadow: #464646 18px 18px 80px 0px;
 }
-.rock-modal {
+.modal-content {
+  border: 0;
   background-color: #ffffff;
+  color: #333333;
 }
-.rock-modal .modal-header {
+.modal-content .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
+.modal-content .modal-header:before,
+.modal-content .modal-header:after {
   content: " ";
   display: table;
 }
-.rock-modal .modal-header:after {
+.modal-content .modal-header:after {
   clear: both;
 }
-.rock-modal .modal-header h3 {
+.modal-content .modal-header h3 {
   float: left;
   margin-right: 12px;
 }
-.rock-modal .modal-header .close {
+.modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-.rock-modal .modal-header .label {
+.modal-content .modal-header .label {
   margin-top: 8px;
 }
-.rock-modal .modal-header small {
+.modal-content .modal-header small {
   margin-top: 12px;
   display: block;
   color: #a2a2a2;
 }
-.rock-modal .modal-body {
+.modal-content .modal-body {
   color: #333333;
 }
-.rock-modal .modal-body .nav-pills {
+.modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.rock-modal .modal-body > .scroll-container {
+.modal-content .modal-body > .scroll-container {
   width: 720px;
 }
-.rock-modal .modal-body > .scroll-container > .viewport {
+.modal-content .modal-body > .scroll-container > .viewport {
   width: 670px;
 }
-.rock-modal .modal-body.iframe {
+.modal-content .modal-body.iframe {
   overflow: hidden;
 }
-.rock-modal .modal-footer {
+.modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #eeeeee;
+  color: #555555;
 }
 .modal {
   position: fixed;
