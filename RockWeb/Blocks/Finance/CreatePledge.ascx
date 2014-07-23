@@ -19,7 +19,7 @@
                         <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" Required="true"/>
 
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                        <Rock:ButtonDropDownList ID="bddlFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency" DataTextField="Name" DataValueField="Guid" />
+                        <Rock:ButtonDropDownList ID="bddlFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency" />
                         <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Amount" Required="true" />
 
                         <div class="actions">

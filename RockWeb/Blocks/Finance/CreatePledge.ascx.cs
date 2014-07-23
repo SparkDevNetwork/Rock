@@ -96,11 +96,11 @@ namespace RockWeb.Blocks.Finance
             }
 
             financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
-
-            var pledgeFrequenceSelection = DefinedValueCache.Read( bddlFrequency.SelectedValue.AsGuid() );
-            if ( pledgeFrequenceSelection != null )
+            
+            var pledgeFrequencySelection = DefinedValueCache.Read( bddlFrequency.SelectedValue.AsInteger() );
+            if ( pledgeFrequencySelection != null )
             {
-                financialPledge.PledgeFrequencyValueId = pledgeFrequenceSelection.Id;
+                financialPledge.PledgeFrequencyValueId = pledgeFrequencySelection.Id;
             }
 
             financialPledge.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
@@ -114,12 +114,12 @@ namespace RockWeb.Blocks.Finance
             financialPledge.Account = financialAccount;
 
             // populate PledgeFrequencyValue so that Liquid can access it
-            financialPledge.PledgeFrequencyValue = definedValueService.Get( pledgeFrequenceSelection.Id );
+            financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
 
             var mergeObjects = new Dictionary<string, object>();
             mergeObjects.Add( "Person", person );
             mergeObjects.Add( "FinancialPledge", financialPledge );
-            mergeObjects.Add( "PledgeFrequency", pledgeFrequenceSelection );
+            mergeObjects.Add( "PledgeFrequency", pledgeFrequencySelection );
             mergeObjects.Add( "Account", financialAccount );
             lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
 
@@ -175,14 +175,19 @@ namespace RockWeb.Blocks.Finance
             // only show the date range picker if the block setting for date range isn't fully specified
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
+            bddlFrequency.Items.Clear();
+            //bddlFrequency.Items.Add( new ListItem( string.Empty, string.Empty ) );
             var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name );
-            bddlFrequency.DataSource = frequencies;
-            bddlFrequency.DataBind();
+            foreach ( var frequency in frequencies )
+            {
+                bddlFrequency.Items.Add( new ListItem( frequency.Name, frequency.Id.ToString() ) );
+            }
 
             bddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;
-            bddlFrequency.SelectedValue = Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME;
+            bddlFrequency.SelectedValue = null;
 
-            bddlFrequency.Required = GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false;
+            // if Frequency is Visible, require it if RequirePledgeFrequency
+            bddlFrequency.Required = bddlFrequency.Visible && ( GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false );
 
             string saveButtonText = GetAttributeValue( "SaveButtonText" );
             if ( !string.IsNullOrWhiteSpace( saveButtonText ) )
@@ -224,22 +229,21 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
-                if ( people.Count() == 1 )
+                // Same logic as AddTransaction.ascx.cs
+                var personMatches = personService.GetByMatch( firstName, tbLastName.Text, tbEmail.Text );
+                if ( personMatches.Count() == 1 )
                 {
-                    person = people.FirstOrDefault();
+                    person = personMatches.FirstOrDefault();
                 }
                 else
                 {
-                    // TODO multiple matches, identify the correct person otherwise we're creating duplicates
-                    // here.
                     person = null;
                 }
             }
 
             if ( person == null )
             {
-                var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultConnectionStatus" ) ) );
+                var definedValue = DefinedValueCache.Read( GetAttributeValue( "NewConnectionStatus" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 person = new Person
                 {
                     FirstName = tbFirstName.Text,
