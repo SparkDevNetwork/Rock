@@ -34,10 +34,10 @@ namespace RockWeb.Blocks.Utility
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Stark" )]
+    [DisplayName( "Stark List" )]
     [Category( "Utility" )]
-    [Description( "Template block for developers to use to start a new block." )]
-    public partial class Stark : Rock.Web.UI.RockBlock
+    [Description( "Template block for developers to use to start a new list block." )]
+    public partial class StarkList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
+                BindGrid();
             }
         }
 
@@ -102,7 +102,22 @@ namespace RockWeb.Blocks.Utility
 
         #region Methods
 
-        // helper functional methods (like BindGrid(), etc.)
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
+        {
+            RockContext rockContext = new RockContext();
+            PersonService personService = new PersonService( rockContext );
+            
+            // sample query to display a few people
+            var qry = personService.Queryable()
+                        .Where( p => p.Gender == Gender.Male)
+                        .Take(10);
+
+            gList.DataSource = qry.ToList();
+            gList.DataBind();
+        }
 
         #endregion
     }
