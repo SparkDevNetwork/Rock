@@ -4035,6 +4035,12 @@ fieldset[disabled] .btn-authenication.active {
 .alert-danger a.help {
   border-bottom: 0;
 }
+.alert pre {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
 .system-error pre {
   background-color: transparent;
   border: 0;
