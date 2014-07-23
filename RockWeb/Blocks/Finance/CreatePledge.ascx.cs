@@ -55,7 +55,9 @@ namespace RockWeb.Blocks.Finance
     <a href='/page/186?PledgeId={{ FinancialPledge.Id  }}' class='btn btn-default' >Setup a Giving Profile</a>
 </p>
 " )]
-    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 10 )]
+
+    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Order = 10 )]
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     public partial class CreatePledge : RockBlock
     {
         /// <summary>
@@ -96,7 +98,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
-            
+
             var pledgeFrequencySelection = DefinedValueCache.Read( bddlFrequency.SelectedValue.AsInteger() );
             if ( pledgeFrequencySelection != null )
             {
@@ -105,6 +107,24 @@ namespace RockWeb.Blocks.Finance
 
             financialPledge.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
             financialPledge.EndDate = drpDateRange.UpperValue ?? DateTime.MaxValue;
+
+            if ( sender != btnConfirm )
+            {
+                var duplicatePledge = financialPledgeService.Queryable()
+                    .Where( a => a.PersonId == person.Id )
+                    .Where( a => a.AccountId == financialPledge.AccountId )
+                    .Where( a => a.StartDate == financialPledge.StartDate )
+                    .Where( a => a.EndDate == financialPledge.EndDate )
+                    .FirstOrDefault();
+
+                if ( duplicatePledge != null )
+                {
+                    nbDuplicatePledgeWarning.Text = string.Format( "You already have an existing pledge of {0} to {1} from {2} to {3}. Are you sure you want to create a new pledge? ", duplicatePledge.TotalAmount, duplicatePledge.Account, duplicatePledge.StartDate.ToShortDateString(), duplicatePledge.EndDate.ToShortDateString() );
+                    btnSave.Visible = false;
+                    btnConfirm.Visible = true;
+                    return;
+                }
+            }
 
             financialPledgeService.Add( financialPledge );
 
@@ -141,6 +161,19 @@ namespace RockWeb.Blocks.Finance
 
             lReceipt.Visible = true;
             pnlAddPledge.Visible = false;
+
+            // if a ConfirmationEmailTemplate is configured, send an email
+            var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
+            if (confirmationEmailTemplateGuid.HasValue)
+            {
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
+                
+                // add person and the mergeObjects (same mergeobjects as reciept)
+                recipients.Add( person.Email, mergeObjects );
+
+                Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
+            }
+
         }
 
         /// <summary>

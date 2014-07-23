@@ -21,8 +21,10 @@
                     <Rock:ButtonDropDownList ID="bddlFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency" />
                     <Rock:CurrencyBox ID="tbTotalAmount" runat="server" Label="Total Amount" Required="true" />
 
+                    <Rock:NotificationBox ID="nbDuplicatePledgeWarning" runat="server" NotificationBoxType="Warning" />
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
+                        <asp:LinkButton ID="btnConfirm" runat="server" Text="Confirm" OnClick="btnSave_Click" CssClass="btn btn-primary" Visible="false" />
                     </div>
 
                     <Rock:RockLiteral ID="lNote" runat="server" />
