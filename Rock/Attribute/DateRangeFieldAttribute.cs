@@ -22,7 +22,7 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for setting a Date range.  For example, StartDate and EndDate
+    /// Field Attribute for setting a Date range.  For example, StartDate and EndDate.  Stored as two delimited dates.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DateRangeFieldAttribute : FieldAttribute
