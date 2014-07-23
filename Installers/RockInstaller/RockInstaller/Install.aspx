@@ -566,7 +566,7 @@
                         
                         <div class="row progress-header">
                             <div class="col-sm-6">
-                                <h4 id="step-name" class="fade-in">Step 1: Downloading Database</h4>
+                                <h4 id="step-name">Step 1: Downloading Database</h4>
                             </div>
 
                             <div class="col-sm-6">
