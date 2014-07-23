@@ -66,6 +66,15 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
             if ( !this.IsPostBack )
             {
@@ -543,22 +552,29 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    if (CurrentPerson != null)
+                    if ( content.Content.HasMergeFields() )
                     {
-                        mergeFields.Add( "Person", CurrentPerson );
-                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
-                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
-                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
-
-                        var contextEntity = ContextEntity();
-                        if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                        if ( CurrentPerson != null )
                         {
-                            mergeFields.Add( "ContextEntity", contextEntity );
-                        }
-                    }
+                            mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
+                            mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
+                            mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
 
-                    html = content.Content.ResolveMergeFields( mergeFields );
+                            var contextEntity = ContextEntity();
+                            if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                            {
+                                mergeFields.Add( "ContextEntity", contextEntity );
+                            }
+                        }
+
+                        html = content.Content.ResolveMergeFields( mergeFields );
+                    }
+                    else
+                    {
+                        html = content.Content;
+                    }
                 }
                 else
                 {

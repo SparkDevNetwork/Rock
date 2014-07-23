@@ -28,9 +28,9 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     /// 
     /// </summary>
     [DisplayName( "Liquid Dashboard Widget" )]
-    [Category( "Dashboard" )]
-    [Description( "DashboardWidget from Liquid using YTD metric values" )]
-    [EntityField( "Entity", "Select the Entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics", "Either select a specific {0} or leave {0} blank to get it from the page context.", Order = 3 )]
+    [Category( "Reporting > Dashboard" )]
+    [Description( "Dashboard Widget from Liquid using YTD metric values" )]
+    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", Key = "Entity", Order = 3 )]
     [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4 )]
     [BooleanField( "Round Values", "Round Y values to the nearest whole number. For example, display 25.00 as 25.", true, Order = 5 )]
     [CodeEditorField( "Display Text", "The text (or html) to display as a dashboard widget", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
