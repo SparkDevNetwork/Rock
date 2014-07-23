@@ -812,11 +812,11 @@ namespace RockInstaller
                         {
                             if ( zipFileCount == unzippedFiles )
                             {
-                                this.SendConsoleMessage( "100% unziped" );
+                                this.SendConsoleMessage( "100% unzipped" );
                             }
                             else if ( currentPercentile >= unzipNextConsolePercentile )
                             {
-                                this.SendConsoleMessage( currentPercentile + "% unziped" );
+                                this.SendConsoleMessage( currentPercentile + "% unzipped" );
                                 unzipNextConsolePercentile = currentPercentile + consoleMessageReportFrequency;
                             }
                         }
