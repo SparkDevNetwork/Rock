@@ -17,8 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+
+using DotLiquid;
 
 using Rock.Data;
+using Rock.Financial;
 
 namespace Rock.Model
 {
@@ -89,5 +93,36 @@ namespace Rock.Model
             return false;
 
         }
+
+        public static string ProcessPayments( string batchNameFormat, List<Payment> payments )
+        {
+            var batches = new Dictionary<string, List<Payment>>();
+
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template template = Template.Parse( batchNameFormat );
+
+            foreach(var payment in payments)
+            {
+                var mergeObjects = payment.ToLiquid() as IDictionary<string, object>;
+                string batchName = template.Render( Hash.FromDictionary( mergeObjects ) );
+
+                if (!batches.ContainsKey(batchName))
+                {
+                    batches.Add( batchName, new List<Payment>() );
+                }
+                batches[batchName].Add( payment );
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach(var batch in batches)
+            {
+                sb.AppendFormat( "<li>}{0}: {1} Transactions totaling: {2}",
+                    batch.Key, batch.Value.Count.ToString( "N0" ),
+                    batch.Value.Select( p => p.Amount ).Sum().ToString( "C2" ) );
+            }
+
+            return sb.ToString();
+        }
+
     }
 }
