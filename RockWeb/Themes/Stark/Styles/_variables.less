@@ -82,11 +82,6 @@
 @grid-footer-button-text-color: @accent-semibold-text-color;
 @grid-footer-button-border: @accent-semibold-text-color;
 
-@pagination-bg: @accent-light-color;
-@pagination-hover-bg: lighten(@accent-light-color, 5%);
-@pagination-border: darken(@accent-light-color, 10%);
-@pagination-active-bg: @accent-semibold-color;
-
 // Admin Bar
 @adminbar-bg: @accent-bold-color;
 @adminbar-text-color: @accent-bold-text-color;
@@ -173,12 +168,12 @@
 
 // Grays
 // -------------------------
-
-@gray-darker:            lighten(#000, 13.5%); // #222
-@gray-dark:              lighten(#000, 20%);   // #333
-@gray:                   lighten(#000, 33.5%); // #555
-@gray-light:             lighten(#000, 60%);   // #999
-@gray-lighter:           lighten(#000, 93.5%); // #eee
+@gray-base:              #000;
+@gray-darker:            lighten(@gray-base, 13.5%); // #222
+@gray-dark:              lighten(@gray-base, 20%);   // #333
+@gray:                   lighten(@gray-base, 33.5%); // #555
+@gray-light:             lighten(@gray-base, 60%);   // #999
+@gray-lighter:           lighten(@gray-base, 93.5%); // #eee
 
 // Brand colors
 // -------------------------
@@ -427,6 +422,7 @@
 @navbar-border-radius:             @border-radius-base;
 @navbar-padding-horizontal:        floor(@grid-gutter-width / 2);
 @navbar-padding-vertical:          ((@navbar-height - @line-height-computed) / 2);
+@navbar-collapse-max-height:       340px;
 
 // Navbar links
 @navbar-default-link-color:                #777;
@@ -507,15 +503,21 @@
 // Pagination
 // -------------------------
 
+@pagination-color:                     @link-color;
 @pagination-bg:                        #fff;
 @pagination-border:                    #ddd;
 
+@pagination-hover-color:               @link-hover-color;
 @pagination-hover-bg:                  @gray-lighter;
+@pagination-hover-border:              #ddd;
 
-@pagination-active-bg:                 @brand-primary;
 @pagination-active-color:              #fff;
+@pagination-active-bg:                 @brand-primary;
+@pagination-active-border:             @brand-primary;
 
 @pagination-disabled-color:            @gray-light;
+@pagination-disabled-bg:               #fff;
+@pagination-disabled-border:           #ddd;
 
 
 // Pager
@@ -665,6 +667,11 @@
 // Panels
 // -------------------------
 @panel-bg:                    #fff;
+@panel-body-padding:          15px;
+@panel-heading-padding:       10px 15px;
+@panel-footer-padding:        @panel-heading-padding;
+@panel-border-radius:         @border-radius-base;
+
 @panel-inner-border:          #ddd;
 @panel-border-radius:         @border-radius-base;
 @panel-footer-bg:             #f5f5f5;
@@ -773,6 +780,7 @@
 @blockquote-small-color:      @gray-light;
 @blockquote-border-color:     @gray-lighter;
 @page-header-border-color:    @gray-lighter;
+@dl-horizontal-offset:        @component-offset-horizontal;
 
 // Miscellaneous
 // -------------------------
