@@ -152,7 +152,7 @@ namespace Rock.Model
             return Queryable( includeDeceased, includeBusinesses )
                 .Where( p => 
                     p.Email == email && 
-                    p.FirstName == firstName && 
+                    (p.FirstName == firstName || p.NickName == firstName) && 
                     p.LastName == lastName )
                 .ToList();
         }
