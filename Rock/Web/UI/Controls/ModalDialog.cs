@@ -183,7 +183,7 @@ namespace Rock.Web.UI.Controls
 
             _headerPanel = new Panel();
             _dialogPanel.Controls.Add( _headerPanel );
-            _headerPanel.ID = "headerPanel";
+            //_headerPanel.ID = "headerPanel";
             _headerPanel.CssClass = "modal-header";
             
             // Content Panel wrapper with scroll-container
@@ -219,7 +219,7 @@ namespace Rock.Web.UI.Controls
             // Footer
             _footerPanel = new Panel();
             _dialogPanel.Controls.Add( _footerPanel );
-            _footerPanel.ID = "footerPanel";
+            //_footerPanel.ID = "footerPanel";
             _footerPanel.CssClass = "modal-footer";
 
             _closeLink = new HtmlGenericControl( "A" );

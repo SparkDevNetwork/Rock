@@ -10,9 +10,10 @@
     box-shadow: @modal-dropshadow-color 18px 18px 80px 0px; 
 }
 
-.rock-modal {
-
-    background-color: @body-bg;
+.modal-content {
+    border: 0;
+    background-color: @modal-body-bg;
+    color: @modal-body-text-color;
 
     .modal-header {
         background-color: @modal-header-bg;  
@@ -68,7 +69,8 @@
     .modal-footer {
         padding: 8px;
         margin-top: 10px;
-        background-color: @accent-light-color;
+        background-color: @modal-footer-bg;
+        color: @modal-footer-text-color;
     }
 }
 
