@@ -15,13 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+
+using DotLiquid;
 
 namespace Rock.Financial
 {
     /// <summary>
     /// Information about a scheduled payment transaction that has been processed
     /// </summary>
-    public class Payment
+    public class Payment: ILiquidizable
     {
         /// <summary>
         /// Gets or sets the amount.
@@ -47,5 +50,46 @@ namespace Rock.Financial
         /// Gets or sets a value indicating whether schedule is still active.
         /// </summary>
         public bool ScheduleActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional transaction details.
+        /// </summary>
+        /// <value>
+        /// The additional transaction details.
+        /// </value>
+        public Dictionary<string, string> AdditionalTransactionDetails { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Payment"/> class.
+        /// </summary>
+        public Payment()
+        {
+            AdditionalTransactionDetails = new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public object ToLiquid()
+        {
+            var items = new Dictionary<string, object>();
+            items.Add( "Amount", Amount );
+            items.Add( "TransactionCode", TransactionCode );
+            items.Add( "TransactionDateTime", TransactionDateTime );
+            items.Add( "TransactionDay", TransactionDateTime.ToString( "MMdd" ) );
+            items.Add( "GatewayScheduleId", GatewayScheduleId );
+            items.Add( "ScheduleActive", ScheduleActive );
+
+            foreach( var item in AdditionalTransactionDetails)
+            {
+                if ( !items.ContainsKey( item.Key ) )
+                {
+                    items.Add( item.Key, item.Value );
+                }
+            }
+
+            return items;
+        }
     }
 }

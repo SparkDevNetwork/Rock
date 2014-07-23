@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Core
             catch ( Exception ex )
             {
                 pnlError.Visible = true;
-                pnlUpdateSuccess.Visible = false;
+                pnlUpdateSuccess.Visible = false; 
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, they are listed for your review:<br/>{0}", ex.Message );
                 LogException( ex );
             }

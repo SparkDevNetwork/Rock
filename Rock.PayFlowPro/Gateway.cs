@@ -43,7 +43,71 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5)]
+    [TextField( "Batch Name", @"
+The batch name format. When scheduled payments are downloaded from PayFlowPro they will be grouped into batches
+according to this format. This should be Liquid text that each transaction will be merged with to get a batch
+name to be used. The transaction will then be added to the first open batch (sorted by start date) that matches
+the name.  For example a value of 'Downloaded Transactions - {{ TransactionDay }}' will put each transaction from
+a specific day into it's own batch.<br/>
+<p>
+    <a data-toggle=""collapse""  href=""#collapseMergeFields"" class=''btn btn-action btn-xs''>Show/Hide Merge Fileds</a>
+</p>
+
+<div id=""collapseMergeFields"" class=""panel-collapse collapse"">
+<pre>
+{
+    Amount,
+    TransactionCode,
+    TransactionDateTime,
+    TransactionDay,
+    GatewayScheduleId,
+    ScheduleActive,
+    Transaction_ID,
+    Merchant,
+    User_Name,
+    Time,
+    Type,
+    Duration,
+    Tender_Type,
+    Client_IP_Address,
+    Account_Number,
+    Client_Version,
+    Expires,
+    Amount,
+    Comment1,
+    Comment2,
+    Billing_First_Name,
+    Billing_Last_Name,
+    Billing_Address,
+    Billing_City,
+    Billing_State,
+    Billing_Zip,
+    Billing_Country,
+    Billing_Email,
+    Shipping_First_Name,
+    Shipping_Last_Name,
+    Shipping_Address,
+    Shipping_City,
+    Shipping_State,
+    Shipping_Zip,
+    Shipping_Country,
+    Recurring,
+    Result_Code,
+    Response_Msg,
+    Authcode,
+    Original_Transaction_ID,
+    AVS_Street_Match,
+    Original_Amount,
+    AVS_Zip_Match,
+    International_AVS_Indicator,
+    CSC_Match,
+    Batch_ID,
+    Currency_Symbol,
+    Pnref
+}
+</pre>
+</div>
+", false, "PayFlowPro Sheduled Transactions ( Batch #{{ Batch_ID }})", "", 5 )]
 
     public class Gateway : GatewayComponent
     {
@@ -72,17 +136,12 @@ namespace Rock.PayFlowPro
         /// <summary>
         /// Gets the batch time offset.
         /// </summary>
-        public override TimeSpan BatchTimeOffset
+        public override string BatchNameFormat
         {
-            get
-            {
-                var timeValue = new TimeSpan( 0 );
-                if ( TimeSpan.TryParse( GetAttributeValue("BatchProcessTime"), out timeValue ) )
-                {
-                    return timeValue;
-                }
-                return base.BatchTimeOffset;
-            }
+	        get 
+	        { 
+		         return GetAttributeValue("BatchName");
+	        }
         }
 
         /// <summary>
@@ -417,6 +476,16 @@ namespace Rock.PayFlowPro
                         payment.TransactionCode = row["Transaction ID"].ToString();
                         payment.GatewayScheduleId = row["Profile ID"].ToString();
                         payment.ScheduleActive = row["Status"].ToString() == "Active";
+
+                        foreach( DataColumn col in dtTxn.Columns )
+                        {
+                            string colName = col.ColumnName.Replace( ' ', '_' );
+                            if ( !payment.AdditionalTransactionDetails.ContainsKey( colName ) )
+                            {
+                                payment.AdditionalTransactionDetails.Add( colName, row[col.ColumnName].ToString() );
+                            }
+                        }
+
                         txns.Add( payment );
                     }
                     else
@@ -483,11 +552,16 @@ namespace Rock.PayFlowPro
 
         private UserInfo GetUserInfo()
         {
-            return new UserInfo(
-                GetAttributeValue( "User" ),
-                GetAttributeValue( "Vendor" ),
-                GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
+            string user = GetAttributeValue( "User" );
+            string vendor = GetAttributeValue( "Vendor" );
+            string partner = GetAttributeValue( "Partner" );
+            string password = GetAttributeValue( "Password" );
+
+            if (string.IsNullOrWhiteSpace(user))
+            {
+                user = vendor;
+            }
+            return new UserInfo( user, vendor, partner, password );
         }
 
         private Invoice GetInvoice( PaymentInfo paymentInfo )
@@ -498,17 +572,21 @@ namespace Rock.PayFlowPro
             ppBillingInfo.LastName = paymentInfo.LastName;
             ppBillingInfo.Email = paymentInfo.Email;
             ppBillingInfo.PhoneNum = paymentInfo.Phone;
-            ppBillingInfo.Street = paymentInfo.Street;
+            ppBillingInfo.Street = paymentInfo.Street1;
+            ppBillingInfo.BillToStreet2 = paymentInfo.Street2;
             ppBillingInfo.State = paymentInfo.State;
-            ppBillingInfo.Zip = paymentInfo.Zip;
+            ppBillingInfo.Zip = paymentInfo.PostalCode;
+            ppBillingInfo.BillToCountry = paymentInfo.Country;
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
-                ppBillingInfo.Street = cc.BillingStreet;
+                ppBillingInfo.Street = cc.BillingStreet1;
+                ppBillingInfo.BillToStreet2 = cc.BillingStreet2;
                 ppBillingInfo.City = cc.BillingCity;
                 ppBillingInfo.State = cc.BillingState;
-                ppBillingInfo.Zip = cc.BillingZip;
+                ppBillingInfo.Zip = cc.BillingPostalCode;
+                ppBillingInfo.BillToCountry = cc.BillingCountry;
             }
 
             var ppAmount = new Currency( paymentInfo.Amount );
