@@ -866,15 +866,15 @@ achieve our mission.  We are so grateful for your commitment.
                         !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
-                        var personMatches = personService.GetByEmail( txtEmail.Text )
-                            .Where( p =>
-                                p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
-                                ( p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ||
-                                    p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) )
-                            .ToList();
+                        // Same logic as CreatePledge.ascx.cs
+                        var personMatches = personService.GetByMatch( txtFirstName.Text, txtLastName.Text, txtEmail.Text );
                         if ( personMatches.Count() == 1 )
                         {
                             person = personMatches.FirstOrDefault();
+                        }
+                        else
+                        {
+                            person = null;
                         }
                     }
 
@@ -887,8 +887,7 @@ achieve our mission.  We are so grateful for your commitment.
                         person.Email = txtEmail.Text;
                         person.EmailPreference = EmailPreference.EmailAllowed;
 
-                        bool displayPhone = false;
-                        if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                        if ( GetAttributeValue( "DisplayPhone" ).AsBooleanOrNull() ?? false )
                         {
                             var phone = new PhoneNumber();
                             phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );

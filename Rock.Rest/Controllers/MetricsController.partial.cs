@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Web.Http;
 using Newtonsoft.Json;
 using Rock.Data;
@@ -153,17 +154,20 @@ namespace Rock.Rest.Controllers
 
                 string resultHtml = displayText.ResolveMergeFields( mergeValues );
 
-                // show liquid help
+                // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format(
-                        @"<small><a data-toggle='collapse' data-parent='#accordion' href='#liquid-metric-debug'><i class='fa fa-eye'></i></a></small>
-                            <pre id='liquid-metric-debug' class='collapse well liquid-metric-debug'>
-                                {0}
-                            </pre>",
-                        mergeValues.LiquidHelpText() );
+                    StringBuilder debugInfo = new StringBuilder();
+                    debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
 
-                    resultHtml += debugInfo;
+                    debugInfo.Append( "<pre>" );
+
+                    debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
+                    debugInfo.Append( mergeValues.LiquidHelpText() + "</pre>" );
+
+                    debugInfo.Append( "</div>" );
+
+                    resultHtml += debugInfo.ToString();
                 }
 
                 return resultHtml;

@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -34,54 +34,32 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured account funds, start and end date. This block also creates a new person record if a matching person could not be found." )]
 
-    [AccountsField( "Accounts", "The accounts that new pledges will be allocated toward", true, "", "", 0, "DefaultAccounts" )]
-    [TextField( "Legend Text", "Custom heading at the top of the form.", key: "LegendText", defaultValue: "Create a new pledge", order: 1 )]
-    [LinkedPage( "Giving Page", "The page used to set up a person's giving profile.", key: "GivingPage", order: 2 )]
-    [DateField( "Start Date", "Date all pledges will begin on.", key: "DefaultStartDate", order: 3 )]
-    [DateField( "End Date", "Date all pledges will end.", key: "DefaultEndDate", order: 4 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "New User Status", "Person conection status to assign to a new user.", key: "DefaultConnectionStatus", order: 5 )]
+    [BooleanField( "Enable Smart Names", "Check the first name for 'and' and '&' and split it to just use the first name provided.", true, Order = 1 )]
+    [AccountField( "Account", "The account that new pledges will be allocated toward", true, "", "", Order = 2 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "New Connection Status", "Person connection status to assign to a new user.", true, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT, Order = 3 )]
+    [DateRangeField( "Pledge Date Range", "Date range of the pledge.", false, Order = 4 )]
+
+    [BooleanField( "Show Pledge Frequency", "Show the pledge frequency option to the user.", DefaultValue = "false", Order = 5 )]
+    [BooleanField( "Require Pledge Frequency", "Require that a user select a specific pledge frequency (when pledge frequency is shown)", DefaultValue = "false", Order = 6 )]
+
+    [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
+    [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as the circumstances change.", Order = 8 )]
+
+    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
+        @"
+<h1>Thank You!</h1>
+<p>
+{{Person.NickName}}, thank you for your commitment of ${{FinancialPledge.TotalAmount}} to {{Account.Name}}.  To make your commitment even easier, you might consider making a scheduled giving profile.
+</p>
+<p>
+    <a href='/page/186?PledgeId={{ FinancialPledge.Id  }}' class='btn btn-default' >Setup a Giving Profile</a>
+</p>
+" )]
+
+    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Order = 10 )]
+    [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     public partial class CreatePledge : RockBlock
     {
-        /// <summary>
-        /// Gets the accounts.
-        /// </summary>
-        /// <value>
-        /// The accounts.
-        /// </value>
-        private List<FinancialAccount> Accounts
-        {
-            get
-            {
-                var cacheKey = string.Format( "FinancialAccountsForPage_{0}", RockPage.PageId );
-                var accounts = GetCacheItem( cacheKey ) as List<FinancialAccount>;
-
-                if ( accounts == null )
-                {
-                    int cacheDuration;
-                    int.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration );
-                    var accountService = new FinancialAccountService( new RockContext() );
-                    accounts = accountService.Queryable().Where( a => AccountGuids.Contains( a.Guid ) ).ToList();
-                    AddCacheItem( cacheKey, accounts, cacheDuration );
-                }
-
-                return accounts;
-            }
-        }
-
-        /// <summary>
-        /// Gets the account guids.
-        /// </summary>
-        /// <value>
-        /// The account guids.
-        /// </value>
-        private List<Guid> AccountGuids
-        {
-            get
-            {
-                return GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
-            }
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -92,8 +70,6 @@ namespace RockWeb.Blocks.Finance
 
             if ( !IsPostBack )
             {
-                Session.Remove( "CachedPledge" );
-                lLegendText.Text = GetAttributeValue( "LegendText" );
                 ShowForm();
             }
         }
@@ -107,133 +83,105 @@ namespace RockWeb.Blocks.Finance
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var pledgeService = new FinancialPledgeService( rockContext );
+            var financialPledgeService = new FinancialPledgeService( rockContext );
+            var financialAccountService = new FinancialAccountService( rockContext );
+            var definedValueService = new DefinedValueService( rockContext );
             var person = FindPerson( rockContext );
-            var pledges = GetPledges( person ).ToList();
 
-            // Does this person already have a pledge for these accounts?
-            // If so, give them the option to create a new one?
-            var personPledgeAccountIds = pledgeService.Queryable()
-                .Where( p => p.PersonId == person.Id )
-                .Select( p => p.AccountId )
-                .ToList();
+            FinancialPledge financialPledge = new FinancialPledge();
 
-            if ( Accounts.Any( a => personPledgeAccountIds.Contains( a.Id ) ) )
+            financialPledge.PersonId = person.Id;
+            var financialAccount = financialAccountService.Get( GetAttributeValue( "Account" ).AsGuid() );
+            if ( financialAccount != null )
             {
-                pnlConfirm.Visible = true;
-                Session.Add( "CachedPledges", pledges );
-                return;
+                financialPledge.AccountId = financialAccount.Id;
             }
 
-            foreach ( var pledge in pledges )
+            financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
+
+            var pledgeFrequencySelection = DefinedValueCache.Read( bddlFrequency.SelectedValue.AsInteger() );
+            if ( pledgeFrequencySelection != null )
             {
-                if ( !pledge.IsValid )
+                financialPledge.PledgeFrequencyValueId = pledgeFrequencySelection.Id;
+            }
+
+            financialPledge.StartDate = drpDateRange.LowerValue ?? DateTime.MinValue;
+            financialPledge.EndDate = drpDateRange.UpperValue ?? DateTime.MaxValue;
+
+            if ( sender != btnConfirm )
+            {
+                var duplicatePledges = financialPledgeService.Queryable()
+                    .Where( a => a.PersonId == person.Id )
+                    .Where( a => a.AccountId == financialPledge.AccountId )
+                    .Where( a => a.StartDate == financialPledge.StartDate )
+                    .Where( a => a.EndDate == financialPledge.EndDate ).ToList();
+
+
+                if ( duplicatePledges.Any() )
                 {
-                    continue;
-                }
+                    pnlAddPledge.Visible = false;
+                    pnlConfirm.Visible = true;
+                    nbDuplicatePledgeWarning.Text = "The following pledges have already been entered for you:";
+                    nbDuplicatePledgeWarning.Text += "<ul>";
+                    foreach ( var pledge in duplicatePledges.OrderBy( a => a.StartDate ).ThenBy( a => a.Account.Name ) )
+                    {
+                        nbDuplicatePledgeWarning.Text += string.Format( "<li>{0} {1} {2}</li>", pledge.Account, pledge.PledgeFrequencyValue, pledge.TotalAmount );
+                    }
 
-                pledgeService.Add( pledge );
+                    nbDuplicatePledgeWarning.Text += "</ul>";
+
+                    return;
+                }
             }
+
+            financialPledgeService.Add( financialPledge );
 
             rockContext.SaveChanges();
 
-            ShowReceipt( pledges.Select( p => p.Id ) );
-        }
+            // populate account so that Liquid can access it
+            financialPledge.Account = financialAccount;
 
-        /// <summary>
-        /// Handles the Click event of the btnConfirmYes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmYes_Click( object sender, EventArgs e )
-        {
-            var pledges = Session["CachedPledges"] as List<FinancialPledge>;
+            // populate PledgeFrequencyValue so that Liquid can access it
+            financialPledge.PledgeFrequencyValue = definedValueService.Get( financialPledge.PledgeFrequencyValueId ?? 0 );
 
-            if ( pledges == null )
+            var mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "Person", person );
+            mergeObjects.Add( "FinancialPledge", financialPledge );
+            mergeObjects.Add( "PledgeFrequency", pledgeFrequencySelection );
+            mergeObjects.Add( "Account", financialAccount );
+            lReceipt.Text = GetAttributeValue( "ReceiptText" ).ResolveMergeFields( mergeObjects );
+
+            // show liquid help for debug
+            if ( GetAttributeValue( "EnableDebug" ).AsBooleanOrNull() ?? false )
             {
-                return;
+                StringBuilder debugInfo = new StringBuilder();
+                debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
+
+                debugInfo.Append( "<pre>" );
+
+                debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
+                debugInfo.Append( mergeObjects.LiquidHelpText() + "</pre>" );
+
+                debugInfo.Append( "</div>" );
+
+                lReceipt.Text += debugInfo.ToString();
             }
 
-            var rockContext = new RockContext();
-            var pledgeService = new FinancialPledgeService( rockContext );
-            foreach ( var pledge in pledges )
-            {
-                if ( pledge == null || !pledge.IsValid )
-                {
-                    continue;
-                }
-                
-                pledgeService.Add( pledge );
-            }
-
-            rockContext.SaveChanges();
-
-            Session.Remove( "CachedPledges" );
-            ShowReceipt( pledges.Select( p => p.Id ) );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnConfirmNo control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnConfirmNo_Click( object sender, EventArgs e )
-        {
+            lReceipt.Visible = true;
+            pnlAddPledge.Visible = false;
             pnlConfirm.Visible = false;
-        }
 
-        /// <summary>
-        /// Handles the Click event of the btnGivingProfile control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnGivingProfile_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( "GivingPage" );
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptAccounts control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptAccounts_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var account = e.Item.DataItem as FinancialAccount;
-            var textbox = e.Item.FindControl( "tbAmount" ) as RockTextBox;
-            var hiddenField = e.Item.FindControl( "hfId" ) as HiddenField;
-
-            if ( textbox == null || hiddenField == null || account == null )
+            // if a ConfirmationEmailTemplate is configured, send an email
+            var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
+            if ( confirmationEmailTemplateGuid.HasValue )
             {
-                return;
+                var recipients = new Dictionary<string, Dictionary<string, object>>();
+
+                // add person and the mergeObjects (same mergeobjects as reciept)
+                recipients.Add( person.Email, mergeObjects );
+
+                Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
-
-            textbox.Label = account.PublicName;
-            hiddenField.Value = account.Id.ToString();
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptCompletedPledges control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void rptCompletedPledges_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var pledge = e.Item.DataItem as FinancialPledge;
-            var amount = e.Item.FindControl( "lAmount" ) as Literal;
-            var frequency = e.Item.FindControl( "lFrequency" ) as Literal;
-            var accountName = e.Item.FindControl( "lAccountName" ) as Literal;
-
-            if ( pledge == null || amount == null || frequency == null || accountName == null )
-            {
-                return;
-            }
-
-            amount.Text = pledge.TotalAmount.ToString( "C" );
-            var pledgeFrequency = DefinedValueCache.Read( pledge.PledgeFrequencyValueId ?? 0 );
-            frequency.Text = pledgeFrequency.ToString();
-            accountName.Text = pledge.Account.PublicName;
         }
 
         /// <summary>
@@ -241,14 +189,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowForm()
         {
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
-            ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
-
-            if ( AccountGuids.Any() )
-            {
-                rptAccounts.DataSource = Accounts;
-                rptAccounts.DataBind();
-            }
+            lReceipt.Visible = false;
+            pnlAddPledge.Visible = true;
 
             if ( CurrentPerson != null )
             {
@@ -257,48 +199,48 @@ namespace RockWeb.Blocks.Finance
                 tbEmail.Text = CurrentPerson.Email;
             }
 
-            var start = GetAttributeValue( "DefaultStartDate" );
-            var end = GetAttributeValue( "DefaultEndDate" );
-
-            if ( string.IsNullOrWhiteSpace( start ) )
+            // Warn if Financial Account is not specified (must be set up by administrator)
+            var financialAccount = new FinancialAccountService( new RockContext() ).Get( GetAttributeValue( "Account" ).AsGuid() );
+            if ( financialAccount == null )
             {
-                dtpStartDate.Visible = true;
+                nbWarningMessage.Text = "Warning: No Account is specified for this pledge.  Please contact the administrator.";
+                nbWarningMessage.Visible = true;
+            }
+            else
+            {
+                nbWarningMessage.Visible = false;
             }
 
-            if ( string.IsNullOrWhiteSpace( end ) )
+            drpDateRange.DelimitedValues = GetAttributeValue( "PledgeDateRange" );
+
+            // only show the date range picker if the block setting for date range isn't fully specified
+            drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
+
+            bddlFrequency.Items.Clear();
+            //bddlFrequency.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name );
+            foreach ( var frequency in frequencies )
             {
-                dtpEndDate.Visible = true;
+                bddlFrequency.Items.Add( new ListItem( frequency.Name, frequency.Id.ToString() ) );
             }
 
-            var pledge = Session["CachedPledge"] as FinancialPledge;
+            bddlFrequency.Visible = GetAttributeValue( "ShowPledgeFrequency" ).AsBooleanOrNull() ?? false;
+            bddlFrequency.SelectedValue = null;
 
-            if ( pledge != null )
+            // if Frequency is Visible, require it if RequirePledgeFrequency
+            bddlFrequency.Required = bddlFrequency.Visible && ( GetAttributeValue( "RequirePledgeFrequency" ).AsBooleanOrNull() ?? false );
+
+            string saveButtonText = GetAttributeValue( "SaveButtonText" );
+            if ( !string.IsNullOrWhiteSpace( saveButtonText ) )
             {
-                pnlConfirm.Visible = true;
+                btnSave.Text = saveButtonText;
             }
-        }
-
-        /// <summary>
-        /// Shows the receipt.
-        /// </summary>
-        /// <param name="ids">The ids.</param>
-        private void ShowReceipt( IEnumerable<int> ids )
-        {
-            // Pledges need to be loaded fresh from the database so they can
-            // be attached to a context and be fully hydrated with data.
-            var pledgeService = new FinancialPledgeService( new RockContext() );
-            var pledges = pledgeService.Queryable().Where( p => ids.Contains( p.Id ) );
-            var person = pledges.Select( p => p.Person ).FirstOrDefault();
-            rptCompletedPledges.DataSource = pledges.ToList();
-            rptCompletedPledges.DataBind();
-
-            if ( person != null )
+            else
             {
-                lPersonFullName.Text = person.FullName;
+                btnSave.Text = "Save";
             }
 
-            pnlForm.Visible = false;
-            pnlReceipt.Visible = true;
+            lNote.Text = GetAttributeValue( "NoteMessage" );
         }
 
         /// <summary>
@@ -306,7 +248,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private Person FindPerson(RockContext rockContext)
+        private Person FindPerson( RockContext rockContext )
         {
             Person person;
             var personService = new PersonService( rockContext );
@@ -317,22 +259,32 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                var people = personService.GetByMatch( tbFirstName.Text, tbLastName.Text, tbEmail.Text );
-                if ( people.Count() == 1 )
+                string firstName = tbFirstName.Text;
+                if ( GetAttributeValue( "EnableSmartNames" ).AsBooleanOrNull() ?? true )
                 {
-                    person = people.FirstOrDefault();
+                    // If they tried to specify first name as multiple first names, like "Steve and Judy" or "Bob & Sally", just take the first first name
+                    var parts = firstName.Split( new string[] { " and ", " & " }, StringSplitOptions.RemoveEmptyEntries );
+                    if ( parts.Length > 0 )
+                    {
+                        firstName = parts[0];
+                    }
+                }
+
+                // Same logic as AddTransaction.ascx.cs
+                var personMatches = personService.GetByMatch( firstName, tbLastName.Text, tbEmail.Text );
+                if ( personMatches.Count() == 1 )
+                {
+                    person = personMatches.FirstOrDefault();
                 }
                 else
                 {
-                    // TODO multiple matches, identify the correct person otherwise we're creating duplicates
-                    // here.
                     person = null;
                 }
             }
 
             if ( person == null )
             {
-                var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultConnectionStatus" ) ) );
+                var definedValue = DefinedValueCache.Read( GetAttributeValue( "NewConnectionStatus" ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
                 person = new Person
                 {
                     FirstName = tbFirstName.Text,
@@ -348,42 +300,15 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Finds the pledge.
+        /// Handles the Click event of the btnCancel control.
         /// </summary>
-        /// <param name="person">The Person.</param>
-        /// <returns></returns>
-        private IEnumerable<FinancialPledge> GetPledges( Person person )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
         {
-            var pledges = Session["CachedPledges"] as List<FinancialPledge> ?? new List<FinancialPledge>();
-
-            if ( pledges.Any() )
-            {
-                return pledges;
-            }
-
-            var startSetting = GetAttributeValue( "DefaultStartDate" );
-            var startDate = !string.IsNullOrWhiteSpace( startSetting ) ? DateTime.Parse( startSetting ) : DateTime.Parse( dtpStartDate.Text );
-            var endSetting = GetAttributeValue( "DefaultEndDate" );
-            var endDate = !string.IsNullOrWhiteSpace( endSetting ) ? DateTime.Parse( endSetting ) : DateTime.Parse( dtpEndDate.Text );
-            var frequencyId = int.Parse( ddlFrequencyType.SelectedValue );
-
-            // For some reason, this approach is not working. Account is not being found from the repeater data items...
-            pledges.AddRange( from RepeaterItem item in rptAccounts.Items
-                              where item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem
-                              let textBox = item.FindControl( "tbAmount" ) as RockTextBox
-                              let hiddenField = item.FindControl( "hfId" ) as HiddenField
-                              where !string.IsNullOrWhiteSpace( hiddenField.Value ) && !string.IsNullOrWhiteSpace( textBox.Text )
-                              select new FinancialPledge
-                                  {
-                                      PersonId = person.Id,
-                                      AccountId = int.Parse( hiddenField.Value ),
-                                      TotalAmount = decimal.Parse( textBox.Text ),
-                                      StartDate = startDate,
-                                      EndDate = endDate,
-                                      PledgeFrequencyValueId = frequencyId
-                                  } );
-
-            return pledges;
+            // reload page to start with a clean pledge entry
+            Response.Redirect( Request.RawUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

@@ -419,21 +419,21 @@ namespace RockInstaller
                     this.SendConsoleMessage( "Merging values into SQL config script." );
                     string sqlScript = System.IO.File.ReadAllText( localSqlConfigScript );
                     sqlScript = sqlScript.Replace( "{AdminPassword}", RockInstallUtilities.EncodePassword( installData.AdminUser.Password, "7E10A764-EF6B-431F-87C7-861053C84131", passwordKey ) );
-                    sqlScript = sqlScript.Replace( "{AdminUsername}", installData.AdminUser.Username );
+                    sqlScript = sqlScript.Replace( "{AdminUsername}", SqlClean(installData.AdminUser.Username) );
                     sqlScript = sqlScript.Replace( "{PublicAppRoot}", RockInstallUtilities.CleanBaseAddress( installData.HostingInfo.ExternalUrl ) );
                     sqlScript = sqlScript.Replace( "{PublicAppSite}", RockInstallUtilities.GetDomainFromString( installData.HostingInfo.ExternalUrl ) );
                     sqlScript = sqlScript.Replace( "{InternalAppRoot}", RockInstallUtilities.CleanBaseAddress( installData.HostingInfo.InternalUrl ) );
                     sqlScript = sqlScript.Replace( "{InternalAppSite}", RockInstallUtilities.GetDomainFromString( installData.HostingInfo.InternalUrl ) );
-                    sqlScript = sqlScript.Replace( "{OrgName}", installData.Organization.Name );
-                    sqlScript = sqlScript.Replace( "{OrgPhone}", installData.Organization.Phone );
-                    sqlScript = sqlScript.Replace( "{OrgEmail}", installData.Organization.Email );
-                    sqlScript = sqlScript.Replace( "{OrgWebsite}", installData.Organization.Website );
+                    sqlScript = sqlScript.Replace( "{OrgName}", SqlClean(installData.Organization.Name ));
+                    sqlScript = sqlScript.Replace( "{OrgPhone}", SqlClean(installData.Organization.Phone ));
+                    sqlScript = sqlScript.Replace( "{OrgEmail}", SqlClean(installData.Organization.Email ));
+                    sqlScript = sqlScript.Replace( "{OrgWebsite}", SqlClean(installData.Organization.Website ));
                     sqlScript = sqlScript.Replace( "{SafeSender}", RockInstallUtilities.GetDomainFromEmail( installData.Organization.Email ) );
-                    sqlScript = sqlScript.Replace( "{EmailException}", installData.Organization.Email );
-                    sqlScript = sqlScript.Replace( "{SmtpServer}", installData.EmailSettings.Server );
+                    sqlScript = sqlScript.Replace( "{EmailException}", SqlClean(installData.Organization.Email ));
+                    sqlScript = sqlScript.Replace( "{SmtpServer}", SqlClean(installData.EmailSettings.Server) );
                     sqlScript = sqlScript.Replace( "{SmtpPort}", installData.EmailSettings.Port );
-                    sqlScript = sqlScript.Replace( "{SmtpUser}", installData.EmailSettings.RelayUsername );
-                    sqlScript = sqlScript.Replace( "{SmtpPassword}", installData.EmailSettings.RelayPassword );
+                    sqlScript = sqlScript.Replace( "{SmtpUser}", SqlClean(installData.EmailSettings.RelayUsername ));
+                    sqlScript = sqlScript.Replace( "{SmtpPassword}", SqlClean( installData.EmailSettings.RelayPassword ) );
                     sqlScript = sqlScript.Replace( "{SmtpUseSsl}", installData.EmailSettings.UseSsl.ToString() );
 
                     System.IO.File.WriteAllText( localSqlConfigScript, sqlScript );
@@ -535,6 +535,11 @@ namespace RockInstaller
         #endregion
 
         #region Utility Methods
+
+        private string SqlClean( string item )
+        {
+            return item.Replace( "'", "''" );
+        }
 
         private ActivityResult RunSqlScript( InstallData installData, string sqlScriptFile, int consoleMessageReportFrequency, int progressbarEventFrequency, int percentOfStep, int startPercent )
         {
@@ -807,11 +812,11 @@ namespace RockInstaller
                         {
                             if ( zipFileCount == unzippedFiles )
                             {
-                                this.SendConsoleMessage( "100% unziped" );
+                                this.SendConsoleMessage( "100% unzipped" );
                             }
                             else if ( currentPercentile >= unzipNextConsolePercentile )
                             {
-                                this.SendConsoleMessage( currentPercentile + "% unziped" );
+                                this.SendConsoleMessage( currentPercentile + "% unzipped" );
                                 unzipNextConsolePercentile = currentPercentile + consoleMessageReportFrequency;
                             }
                         }
