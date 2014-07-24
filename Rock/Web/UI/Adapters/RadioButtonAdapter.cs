@@ -52,8 +52,13 @@ namespace Rock.Web.UI.Adapters
             if ( rb != null )
             {
                 writer.WriteLine();
-                writer.AddAttribute( "class", "radio-inline" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+
+                bool hasText = !string.IsNullOrWhiteSpace( rb.Text );
+                if ( hasText )
+                {
+                    writer.AddAttribute( "class", "radio-inline" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                }
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, rb.ClientID );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "radio" );
@@ -103,9 +108,11 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                writer.Write( rb.Text );
-
-                writer.RenderEndTag();      // Label
+                if ( hasText )
+                {
+                    writer.Write( rb.Text );
+                    writer.RenderEndTag();      // Label
+                }
 
                 if ( Page != null && Page.ClientScript != null )
                 {
