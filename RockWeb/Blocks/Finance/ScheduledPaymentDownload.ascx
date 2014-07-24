@@ -7,7 +7,7 @@
                 
             <div class="panel-heading clearfix">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-bank"></i> 
+                    <i class="fa fa-download"></i> 
                     Scheduled Payment Download
                 </h1>
             </div>
