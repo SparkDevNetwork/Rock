@@ -36,12 +36,20 @@ namespace Rock.Migrations
             AddForeignKey( "dbo.FinancialScheduledTransaction", "CreditCardTypeValueId", "dbo.DefinedValue", "Id" );
             AddForeignKey( "dbo.FinancialScheduledTransaction", "CurrencyTypeValueId", "dbo.DefinedValue", "Id" );
 
+            RockMigrationHelper.AddDefinedTypeAttribute( "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Batch Name Suffix", "BatchNameSuffix",
+                "When a financial transaction is processed by Rock, it will add the transaction to a new or existing batch with a specific name. This name can have a suffix defined specific to the type of credit card being used. This provides control over how specific credit card transactions are grouped into batches.",
+                1, "", "B4A01204-FD66-48B3-8F08-135D36CC7EE5" );
+            Sql( "UPDATE [Attribute] SET [IsGridColumn] = 1 WHERE [Guid] = 'B4A01204-FD66-48B3-8F08-135D36CC7EE5'" );
+            RockMigrationHelper.AddDefinedValueAttributeValue( "FC66B5F8-634F-4800-A60D-436964D27B64", "B4A01204-FD66-48B3-8F08-135D36CC7EE5", "VMD" ); // Visa
+            RockMigrationHelper.AddDefinedValueAttributeValue( "6373A4B6-4DCA-4EB6-9ADE-B30E8A7F8621", "B4A01204-FD66-48B3-8F08-135D36CC7EE5", "VMD" ); // Mastercard
+            RockMigrationHelper.AddDefinedValueAttributeValue( "4B746601-E9EB-4660-BA13-C0B66B24E248", "B4A01204-FD66-48B3-8F08-135D36CC7EE5", "VMD" ); // Discover
+
             // Add Transaction, Batch Name Prefix Attribute
             RockMigrationHelper.AddBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Batch Name Prefix", "BatchNamePrefix", "", "The batch prefix name to use when creating a new batch", 2, "Online Giving", "245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D" );
             RockMigrationHelper.AddBlockAttributeValue( "8ADB1C1F-299B-461A-8469-0FF4E2C98216", "245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D", @"Online Giving" );
 
             RockMigrationHelper.AddPage( "F23C5BF7-4F52-448F-8445-6BAEEE3030AB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Contribution Detail", "", "F1C3BBD3-EE91-4DDD-8880-1542EBCD8041", "" ); // Site:Rock RMS
-            RockMigrationHelper.AddPage( "18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Download", "", "720819FC-1730-444A-9DE8-C98D29954170", "fa fa-download" ); // Site:Rock RMS
+            RockMigrationHelper.AddPage( "18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Download Payments", "", "720819FC-1730-444A-9DE8-C98D29954170", "fa fa-download" ); // Site:Rock RMS
 
             RockMigrationHelper.UpdateBlockType( "Scheduled Payment Download", "Block used to download any scheduled payment transactions that were processed by payment gateway during a specified date range.", "~/Blocks/Finance/ScheduledPaymentDownload.ascx", "Finance", "71FF09C3-3E50-4E97-9329-3CD57AACCA53" );
 
@@ -150,6 +158,8 @@ Thank-you,<br/>
 
             RockMigrationHelper.DeletePage( "720819FC-1730-444A-9DE8-C98D29954170" ); //  Page: Download, Layout: Full Width, Site: Rock RMS
             RockMigrationHelper.DeletePage( "F1C3BBD3-EE91-4DDD-8880-1542EBCD8041" ); //  Page: Contribution Detail, Layout: Full Width, Site: Rock RMS
+
+            RockMigrationHelper.DeleteAttribute( "B4A01204-FD66-48B3-8F08-135D36CC7EE5" );
 
             DropForeignKey( "dbo.FinancialScheduledTransaction", "CurrencyTypeValueId", "dbo.DefinedValue" );
             DropForeignKey( "dbo.FinancialScheduledTransaction", "CreditCardTypeValueId", "dbo.DefinedValue" );
