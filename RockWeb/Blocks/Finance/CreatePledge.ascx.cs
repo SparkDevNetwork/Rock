@@ -116,7 +116,6 @@ namespace RockWeb.Blocks.Finance
                     .Where( a => a.StartDate == financialPledge.StartDate )
                     .Where( a => a.EndDate == financialPledge.EndDate ).ToList();
 
-
                 if ( duplicatePledges.Any() )
                 {
                     pnlAddPledge.Visible = false;
@@ -217,7 +216,6 @@ namespace RockWeb.Blocks.Finance
             drpDateRange.Visible = drpDateRange.LowerValue == null || drpDateRange.UpperValue == null;
 
             bddlFrequency.Items.Clear();
-            //bddlFrequency.Items.Add( new ListItem( string.Empty, string.Empty ) );
             var frequencies = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() ).DefinedValues.OrderBy( a => a.Order ).ThenBy( a => a.Name );
             foreach ( var frequency in frequencies )
             {
@@ -244,7 +242,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Finds the person if they're logged in, or by email and name. If not found, creates a new person.
+        /// Finds the person if they're logged in, or by email and name. If not exactly one found, creates a new person (and family)
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
