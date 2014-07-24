@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.FinancialScheduledTransaction"/> entity objects.
     /// </summary>
-    public partial class FinancialScheduledTransactionService 
+    public partial class FinancialScheduledTransactionService
     {
         /// <summary>
         /// Gets schedule transactions associated to a person.  Includes any transactions associated to person
@@ -44,14 +44,14 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
-            var qry = Queryable( "ScheduledTransactionDetails" )
+            var qry = Queryable( "ScheduledTransactionDetails,CurrencyTypeValue,CreditCardTypeValue" )
                 .Where( t => t.IsActive || includeInactive );
 
             if ( givingGroupId.HasValue )
             {
-                qry = qry.Where( t => t.AuthorizedPerson.GivingGroupId == givingGroupId.Value);
+                qry = qry.Where( t => t.AuthorizedPerson.GivingGroupId == givingGroupId.Value );
             }
-            else if (personId.HasValue)
+            else if ( personId.HasValue )
             {
                 qry = qry.Where( t => t.AuthorizedPersonId == personId );
             }
@@ -69,7 +69,7 @@ namespace Rock.Model
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
             return Queryable( "ScheduledTransactionDetails" )
-                .Where( t => t.GatewayScheduleId == scheduleId)
+                .Where( t => t.GatewayScheduleId == scheduleId )
                 .FirstOrDefault();
         }
 
@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public bool GetStatus(FinancialScheduledTransaction scheduledTransaction, out string errorMessages)
+        public bool GetStatus( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
             if ( scheduledTransaction.GatewayEntityType != null )
             {
@@ -124,22 +124,21 @@ namespace Rock.Model
                         transaction.TransactionTypeValueId = contributionTxnTypeId;
 
                         var currencyTypeValue = payment.CurrencyTypeValue;
-                        if ( currencyTypeValue != null )
                         if ( currencyTypeValue == null && scheduledTransaction.CurrencyTypeValueId.HasValue )
                         {
                             currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.CurrencyTypeValueId.Value );
                         }
-                        if (currencyTypeValue != null)
+                        if ( currencyTypeValue != null )
                         {
                             transaction.CurrencyTypeValueId = currencyTypeValue.Id;
                         }
 
                         var creditCardTypevalue = payment.CreditCardTypeValue;
-                        if (creditCardTypevalue == null && scheduledTransaction.CreditCardTypeValueId.HasValue)
+                        if ( creditCardTypevalue == null && scheduledTransaction.CreditCardTypeValueId.HasValue )
                         {
                             creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.CreditCardTypeValueId.Value );
                         }
-                        if (creditCardTypevalue != null)
+                        if ( creditCardTypevalue != null )
                         {
                             transaction.CreditCardTypeValueId = creditCardTypevalue.Id;
                         }
@@ -193,8 +192,8 @@ namespace Rock.Model
                         // Get the batch 
                         var batch = batchService.Get(
                             batchNamePrefix,
-                            payment.CurrencyTypeValue,
-                            payment.CreditCardTypeValue,
+                            currencyTypeValue,
+                            creditCardTypevalue,
                             transaction.TransactionDateTime.Value,
                             gateway.BatchTimeOffset,
                             batches );
@@ -222,9 +221,10 @@ namespace Rock.Model
                     .Select( b => b.Name )
                     .FirstOrDefault();
 
-                sb.AppendFormat( "<li>}{0}: {1} Transactions totaling: {2}",
-                    batchName, batch.Value.Count.ToString( "N0" ),
-                    batch.Value.Select( p => p.Amount ).Sum().ToString( "C2" ) );
+                int items = batch.Value.Count;
+                decimal sum = batch.Value.Select( p => p.Amount ).Sum();
+
+                sb.AppendFormat( "<li>{0}: {1} Transactions totaling: {2}</li>", batchName, items.ToString( "N0" ), sum.ToString( "C2" ) );
             }
 
             return sb.ToString();
