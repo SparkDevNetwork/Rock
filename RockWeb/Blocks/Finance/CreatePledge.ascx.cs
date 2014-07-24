@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 " )]
 
-    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Order = 10 )]
+    [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
     public partial class CreatePledge : RockBlock
     {
@@ -177,7 +177,7 @@ namespace RockWeb.Blocks.Finance
             {
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
 
-                // add person and the mergeObjects (same mergeobjects as reciept)
+                // add person and the mergeObjects (same mergeobjects as receipt)
                 recipients.Add( person.Email, mergeObjects );
 
                 Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
