@@ -20,7 +20,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-magic"></i>Control Gallery</h1>
+                <h1 class="panel-title"><i class="fa fa-magic"></i> Control Gallery</h1>
             </div>
             <div class="panel-body">
                 <asp:Panel ID="pnlDetails" runat="server">
