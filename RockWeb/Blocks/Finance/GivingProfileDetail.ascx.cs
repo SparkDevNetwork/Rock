@@ -501,7 +501,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     rockContext = new RockContext();
                     var service = new FinancialScheduledTransactionService( rockContext );
-                    var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType" )
+                    var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
                         .Where( t =>
                             t.Id == txnId &&
                             ( t.AuthorizedPersonId == targetPerson.Id || t.AuthorizedPerson.GivingGroupId == targetPerson.GivingGroupId ) )
@@ -997,6 +997,21 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
+                    if ( paymentInfo.CurrencyTypeValue != null )
+                    {
+                        scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+
+                        DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
+                        if ( creditCardTypeValue != null )
+                        {
+                            scheduledTransaction.CreditCardTypeValueId = creditCardTypeValue.Id;
+                        }
+                        else
+                        {
+                            scheduledTransaction.CreditCardTypeValueId = null;
+                        }
+                    }
+                    
                     var selectedAccountIds = SelectedAccounts
                         .Where( a => a.Amount > 0 )
                         .Select( a => a.Id ).ToList();

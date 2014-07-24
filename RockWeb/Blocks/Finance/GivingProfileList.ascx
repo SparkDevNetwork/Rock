@@ -26,6 +26,8 @@
                             <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" />
                             <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
+                            <asp:BoundField DataField="CurrencyTypeValue.Name" HeaderText="Payment Method" />
+                            <asp:BoundField DataField="CreditCardTypeValue.Name" HeaderText="Card Type" />
                             <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DateField DataField="LastStatusUpdateDateTime" HeaderText="Last Update" />

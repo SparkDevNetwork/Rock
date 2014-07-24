@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, "", "", 3 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
@@ -1330,6 +1330,8 @@ achieve our mission.  We are so grateful for your commitment.
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
                         scheduledTransaction.AuthorizedPersonId = person.Id;
                         scheduledTransaction.GatewayEntityTypeId = EntityTypeCache.Read( gateway.TypeGuid ).Id;
+                        scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+                        scheduledTransaction.CreditCardTypeValueId = CreditCardTypeValueId;
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
                         {
@@ -1377,52 +1379,20 @@ achieve our mission.  We are so grateful for your commitment.
                             transaction.TransactionDetails.Add( transactionDetail );
                         }
 
-                        // Get the batch name
-                        string ccSuffix = string.Empty;
-                        if ( paymentInfo.CreditCardTypeValue != null )
-                        {
-                            ccSuffix = paymentInfo.CreditCardTypeValue.GetAttributeValue( "BatchNameSuffix" );
-                        }
-
-                        if ( string.IsNullOrWhiteSpace( ccSuffix ) )
-                        {
-                            ccSuffix = paymentInfo.CurrencyTypeValue.Name;
-                        }
-
-                        string batchName = GetAttributeValue( "BatchNamePrefix" ).Trim() + " " + ccSuffix;
-
                         var batchService = new FinancialBatchService( rockContext );
-                        var batch = batchService.Queryable()
-                            .Where( b =>
-                                b.Status == BatchStatus.Open &&
-                                b.BatchStartDateTime <= transaction.TransactionDateTime &&
-                                b.BatchEndDateTime > transaction.TransactionDateTime &&
-                                b.Name == batchName )
-                            .FirstOrDefault();
-                        if ( batch == null )
-                        {
-                            batch = new FinancialBatch();
-                            batch.Name = batchName;
-                            batch.Status = BatchStatus.Open;
-                            batch.BatchStartDateTime = transaction.TransactionDateTime.Value.Date.Add( gateway.BatchTimeOffset );
-                            if ( batch.BatchStartDateTime > transaction.TransactionDateTime )
-                            {
-                                batch.BatchStartDateTime.Value.AddDays( -1 );
-                            }
 
-                            batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
-                            batch.ControlAmount = 0;
-                            batchService.Add( batch );
-                            rockContext.SaveChanges();
-
-                            batch = batchService.Get( batch.Id );
-                        }
+                        // Get the batch 
+                        var batch = batchService.Get(
+                            GetAttributeValue( "BatchNamePrefix" ),
+                            paymentInfo.CurrencyTypeValue,
+                            paymentInfo.CreditCardTypeValue,
+                            transaction.TransactionDateTime.Value,
+                            gateway.BatchTimeOffset );
 
                         batch.ControlAmount += transaction.TotalAmount;
 
-                        var transactionService = new FinancialTransactionService( rockContext );
                         transaction.BatchId = batch.Id;
-                        transactionService.Add( transaction );
+                        batch.Transactions.Add( transaction );
                         rockContext.SaveChanges();
 
                         TransactionCode = transaction.TransactionCode;

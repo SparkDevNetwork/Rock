@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.Linq;
 
 using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
@@ -43,7 +44,7 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5)]
+    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
 
     public class Gateway : GatewayComponent
     {
@@ -77,7 +78,7 @@ namespace Rock.PayFlowPro
             get
             {
                 var timeValue = new TimeSpan( 0 );
-                if ( TimeSpan.TryParse( GetAttributeValue("BatchProcessTime"), out timeValue ) )
+                if ( TimeSpan.TryParse( GetAttributeValue( "BatchProcessTime" ), out timeValue ) )
                 {
                     return timeValue;
                 }
@@ -165,7 +166,7 @@ namespace Rock.PayFlowPro
                 recurring.OptionalTrx = "A";
             }
 
-            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ), 
+            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ),
                 recurring, PayflowUtility.RequestId );
 
             if ( paymentInfo is ReferencePaymentInfo )
@@ -286,7 +287,7 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring(transaction), PayflowUtility.RequestId );
+            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -383,7 +384,8 @@ namespace Rock.PayFlowPro
                 GetAttributeValue( "User" ),
                 GetAttributeValue( "Vendor" ),
                 GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
+                GetAttributeValue( "Password" ),
+                GetAttributeValue( "Mode" ).Equals( "Test", StringComparison.CurrentCultureIgnoreCase ) );
 
             var reportParams = new Dictionary<string, string>();
             reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
@@ -400,6 +402,8 @@ namespace Rock.PayFlowPro
                 reportParams = new Dictionary<string, string>();
                 reportParams.Add( "transaction_id", string.Empty );
 
+                var creditCardTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
+
                 foreach ( DataRow row in dt.Rows )
                 {
                     reportParams["transaction_id"] = row["Transaction ID"].ToString();
@@ -409,14 +413,14 @@ namespace Rock.PayFlowPro
                         var payment = new Payment();
 
                         decimal amount = decimal.MinValue;
-                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? (amount / 100) : 0.0M;
+                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
 
-                        var time = DateTime.MinValue;
-                        payment.TransactionDateTime = DateTime.TryParse( row["Time"].ToString(), out time ) ? time : DateTime.MinValue;
-
+                        payment.TransactionDateTime = row["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
                         payment.TransactionCode = row["Transaction ID"].ToString();
                         payment.GatewayScheduleId = row["Profile ID"].ToString();
                         payment.ScheduleActive = row["Status"].ToString() == "Active";
+                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == dtTxn.Rows[0]["Tender Type"].ToString() ).FirstOrDefault();
+
                         txns.Add( payment );
                     }
                     else
@@ -455,8 +459,8 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
             return string.Empty;
-        }        
-        
+        }
+
         #endregion
 
         #region PayFlowPro Object Helper Methods
@@ -483,32 +487,41 @@ namespace Rock.PayFlowPro
 
         private UserInfo GetUserInfo()
         {
-            return new UserInfo(
-                GetAttributeValue( "User" ),
-                GetAttributeValue( "Vendor" ),
-                GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
+            string user = GetAttributeValue( "User" );
+            string vendor = GetAttributeValue( "Vendor" );
+            string partner = GetAttributeValue( "Partner" );
+            string password = GetAttributeValue( "Password" );
+
+            if ( string.IsNullOrWhiteSpace( user ) )
+            {
+                user = vendor;
+            }
+            return new UserInfo( user, vendor, partner, password );
         }
 
         private Invoice GetInvoice( PaymentInfo paymentInfo )
         {
             var ppBillingInfo = new BillTo();
-            
+
             ppBillingInfo.FirstName = paymentInfo.FirstName;
             ppBillingInfo.LastName = paymentInfo.LastName;
             ppBillingInfo.Email = paymentInfo.Email;
             ppBillingInfo.PhoneNum = paymentInfo.Phone;
-            ppBillingInfo.Street = paymentInfo.Street;
+            ppBillingInfo.Street = paymentInfo.Street1;
+            ppBillingInfo.BillToStreet2 = paymentInfo.Street2;
             ppBillingInfo.State = paymentInfo.State;
-            ppBillingInfo.Zip = paymentInfo.Zip;
+            ppBillingInfo.Zip = paymentInfo.PostalCode;
+            ppBillingInfo.BillToCountry = paymentInfo.Country;
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
-                ppBillingInfo.Street = cc.BillingStreet;
+                ppBillingInfo.Street = cc.BillingStreet1;
+                ppBillingInfo.BillToStreet2 = cc.BillingStreet2;
                 ppBillingInfo.City = cc.BillingCity;
                 ppBillingInfo.State = cc.BillingState;
-                ppBillingInfo.Zip = cc.BillingZip;
+                ppBillingInfo.Zip = cc.BillingPostalCode;
+                ppBillingInfo.BillToCountry = cc.BillingCountry;
             }
 
             var ppAmount = new Currency( paymentInfo.Amount );
@@ -522,7 +535,7 @@ namespace Rock.PayFlowPro
 
         private BaseTender GetTender( PaymentInfo paymentInfo )
         {
-            if (paymentInfo is CreditCardPaymentInfo)
+            if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 var ppCreditCard = new CreditCard( cc.Number, cc.ExpirationDate.ToString( "MMyy" ) );
@@ -575,7 +588,7 @@ namespace Rock.PayFlowPro
         private RecurringInfo GetRecurring( FinancialScheduledTransaction schedule )
         {
             var ppRecurringInfo = new RecurringInfo();
-            
+
             ppRecurringInfo.OrigProfileId = schedule.GatewayScheduleId;
             ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
             if ( schedule.TransactionFrequencyValueId > 0 )
@@ -613,7 +626,7 @@ namespace Rock.PayFlowPro
         private DateTime? GetDate( string date )
         {
             DateTime dt = DateTime.MinValue;
-            if (DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ))
+            if ( DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ) )
             {
                 return dt;
             }
