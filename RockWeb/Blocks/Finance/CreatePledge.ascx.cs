@@ -110,18 +110,26 @@ namespace RockWeb.Blocks.Finance
 
             if ( sender != btnConfirm )
             {
-                var duplicatePledge = financialPledgeService.Queryable()
+                var duplicatePledges = financialPledgeService.Queryable()
                     .Where( a => a.PersonId == person.Id )
                     .Where( a => a.AccountId == financialPledge.AccountId )
                     .Where( a => a.StartDate == financialPledge.StartDate )
-                    .Where( a => a.EndDate == financialPledge.EndDate )
-                    .FirstOrDefault();
+                    .Where( a => a.EndDate == financialPledge.EndDate ).ToList();
 
-                if ( duplicatePledge != null )
+
+                if ( duplicatePledges.Any() )
                 {
-                    nbDuplicatePledgeWarning.Text = string.Format( "You already have an existing pledge of {0} to {1} from {2} to {3}. Are you sure you want to create a new pledge? ", duplicatePledge.TotalAmount, duplicatePledge.Account, duplicatePledge.StartDate.ToShortDateString(), duplicatePledge.EndDate.ToShortDateString() );
-                    btnSave.Visible = false;
-                    btnConfirm.Visible = true;
+                    pnlAddPledge.Visible = false;
+                    pnlConfirm.Visible = true;
+                    nbDuplicatePledgeWarning.Text = "The following pledges have already been entered for you:";
+                    nbDuplicatePledgeWarning.Text += "<ul>";
+                    foreach ( var pledge in duplicatePledges.OrderBy( a => a.StartDate ).ThenBy( a => a.Account.Name ) )
+                    {
+                        nbDuplicatePledgeWarning.Text += string.Format( "<li>{0} {1} {2}</li>", pledge.Account, pledge.PledgeFrequencyValue, pledge.TotalAmount );
+                    }
+
+                    nbDuplicatePledgeWarning.Text += "</ul>";
+
                     return;
                 }
             }
@@ -161,19 +169,19 @@ namespace RockWeb.Blocks.Finance
 
             lReceipt.Visible = true;
             pnlAddPledge.Visible = false;
+            pnlConfirm.Visible = false;
 
             // if a ConfirmationEmailTemplate is configured, send an email
             var confirmationEmailTemplateGuid = GetAttributeValue( "ConfirmationEmailTemplate" ).AsGuidOrNull();
-            if (confirmationEmailTemplateGuid.HasValue)
+            if ( confirmationEmailTemplateGuid.HasValue )
             {
                 var recipients = new Dictionary<string, Dictionary<string, object>>();
-                
+
                 // add person and the mergeObjects (same mergeobjects as reciept)
                 recipients.Add( person.Email, mergeObjects );
 
                 Rock.Communication.Email.Send( confirmationEmailTemplateGuid.Value, recipients, ResolveRockUrl( "~/" ), ResolveRockUrl( "~~/" ) );
             }
-
         }
 
         /// <summary>
@@ -289,6 +297,18 @@ namespace RockWeb.Blocks.Finance
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            // reload page to start with a clean pledge entry
+            Response.Redirect( Request.RawUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }
