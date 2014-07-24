@@ -51,10 +51,15 @@ namespace Rock.Web.UI.Adapters
             if ( cb != null )
             {
                 writer.WriteLine();
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                bool hasText = !string.IsNullOrWhiteSpace( cb.Text );
+                if ( hasText )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                }
 
                 writer.AddAttribute( "id", cb.ClientID );
                 writer.AddAttribute( "type", "checkbox" );
@@ -93,9 +98,12 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
-                writer.Write( cb.Text );
+                if ( hasText )
+                {
+                    writer.Write( cb.Text );
 
-                writer.RenderEndTag();      // Label
+                    writer.RenderEndTag();      // Label
+                }
 
                 var rockCb = cb as Rock.Web.UI.Controls.RockCheckBox;
                 if (rockCb != null)
@@ -109,7 +117,10 @@ namespace Rock.Web.UI.Adapters
                     }
                 }
 
-                writer.RenderEndTag();      // Div
+                if ( hasText )
+                {
+                    writer.RenderEndTag();      // Div
+                }
 
                 if ( Page != null && Page.ClientScript != null )
                 {
