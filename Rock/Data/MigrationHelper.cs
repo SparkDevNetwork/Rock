@@ -2173,7 +2173,7 @@ INSERT INTO [dbo].[Auth]
         #region SystemEmail
 
         /// <summary>
-        /// Updates the system email.
+        /// Updates or Inserts the system email.
         /// </summary>
         /// <param name="category">The category.</param>
         /// <param name="title">The title.</param>
