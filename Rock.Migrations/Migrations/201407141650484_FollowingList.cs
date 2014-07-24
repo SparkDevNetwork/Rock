@@ -64,7 +64,7 @@ UPDATE [DefinedType] SET [HelpText] = NULL WHERE [IsSystem] = 1 AND [Guid] <> 'F
 UPDATE [DefinedType] SET [HelpText] = 'Label merge fields are defined with a liquid syntax. Click the ''Show Merge Fields'' button below to view the available merge fields.
 
 <p>
-    <a data-toggle=""collapse""  href=""#collapseMergeFields"" class=''btn btn-action btn-xs''>Show/Hide Merge Fileds</a>
+    <a data-toggle=""collapse""  href=""#collapseMergeFields"" class=''btn btn-action btn-xs''>Show/Hide Merge Fields</a>
 </p>
 
 <div id=""collapseMergeFields"" class=""panel-collapse collapse"">

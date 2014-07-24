@@ -36,7 +36,7 @@ namespace Rock.PayFlowPro.Reporting
 
         public Api( string user, string vendor, string partner, string password, bool test = false )
         {
-            User = user;
+            User = string.IsNullOrWhiteSpace( user ) ? vendor : user;
             Vendor = vendor;
             Partner = partner;
             Password = password;
@@ -96,7 +96,7 @@ namespace Rock.PayFlowPro.Reporting
                             foreach ( var row in data.Rows )
                             {
                                 var dataRow = dt.NewRow();
-                                for ( int colNum = 0; colNum < metaData.ColumnCount; colNum++ )
+                                for ( int colNum = 0; colNum < row.Count; colNum++ )
                                 {
                                     dataRow[colNum] = row[colNum];
                                 }
