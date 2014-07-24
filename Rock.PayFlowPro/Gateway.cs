@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
+using System.Linq;
 
 using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
@@ -43,71 +44,7 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TextField( "Batch Name", @"
-The batch name format. When scheduled payments are downloaded from PayFlowPro they will be grouped into batches
-according to this format. This should be Liquid text that each transaction will be merged with to get a batch
-name to be used. The transaction will then be added to the first open batch (sorted by start date) that matches
-the name.  For example a value of 'Downloaded Transactions - {{ TransactionDay }}' will put each transaction from
-a specific day into it's own batch.<br/>
-<p>
-    <a data-toggle=""collapse""  href=""#collapseMergeFields"" class=''btn btn-action btn-xs''>Show/Hide Merge Fileds</a>
-</p>
-
-<div id=""collapseMergeFields"" class=""panel-collapse collapse"">
-<pre>
-{
-    Amount,
-    TransactionCode,
-    TransactionDateTime,
-    TransactionDay,
-    GatewayScheduleId,
-    ScheduleActive,
-    Transaction_ID,
-    Merchant,
-    User_Name,
-    Time,
-    Type,
-    Duration,
-    Tender_Type,
-    Client_IP_Address,
-    Account_Number,
-    Client_Version,
-    Expires,
-    Amount,
-    Comment1,
-    Comment2,
-    Billing_First_Name,
-    Billing_Last_Name,
-    Billing_Address,
-    Billing_City,
-    Billing_State,
-    Billing_Zip,
-    Billing_Country,
-    Billing_Email,
-    Shipping_First_Name,
-    Shipping_Last_Name,
-    Shipping_Address,
-    Shipping_City,
-    Shipping_State,
-    Shipping_Zip,
-    Shipping_Country,
-    Recurring,
-    Result_Code,
-    Response_Msg,
-    Authcode,
-    Original_Transaction_ID,
-    AVS_Street_Match,
-    Original_Amount,
-    AVS_Zip_Match,
-    International_AVS_Indicator,
-    CSC_Match,
-    Batch_ID,
-    Currency_Symbol,
-    Pnref
-}
-</pre>
-</div>
-", false, "PayFlowPro Sheduled Transactions ( Batch #{{ Batch_ID }})", "", 5 )]
+    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
 
     public class Gateway : GatewayComponent
     {
@@ -136,12 +73,17 @@ a specific day into it's own batch.<br/>
         /// <summary>
         /// Gets the batch time offset.
         /// </summary>
-        public override string BatchNameFormat
+        public override TimeSpan BatchTimeOffset
         {
-	        get 
-	        { 
-		         return GetAttributeValue("BatchName");
-	        }
+            get
+            {
+                var timeValue = new TimeSpan( 0 );
+                if ( TimeSpan.TryParse( GetAttributeValue( "BatchProcessTime" ), out timeValue ) )
+                {
+                    return timeValue;
+                }
+                return base.BatchTimeOffset;
+            }
         }
 
         /// <summary>
@@ -224,7 +166,7 @@ a specific day into it's own batch.<br/>
                 recurring.OptionalTrx = "A";
             }
 
-            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ), 
+            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ),
                 recurring, PayflowUtility.RequestId );
 
             if ( paymentInfo is ReferencePaymentInfo )
@@ -345,7 +287,7 @@ a specific day into it's own batch.<br/>
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring(transaction), PayflowUtility.RequestId );
+            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -442,7 +384,8 @@ a specific day into it's own batch.<br/>
                 GetAttributeValue( "User" ),
                 GetAttributeValue( "Vendor" ),
                 GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
+                GetAttributeValue( "Password" ),
+                GetAttributeValue( "Mode" ).Equals( "Test", StringComparison.CurrentCultureIgnoreCase ) );
 
             var reportParams = new Dictionary<string, string>();
             reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
@@ -459,6 +402,8 @@ a specific day into it's own batch.<br/>
                 reportParams = new Dictionary<string, string>();
                 reportParams.Add( "transaction_id", string.Empty );
 
+                var creditCardTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
+
                 foreach ( DataRow row in dt.Rows )
                 {
                     reportParams["transaction_id"] = row["Transaction ID"].ToString();
@@ -468,23 +413,13 @@ a specific day into it's own batch.<br/>
                         var payment = new Payment();
 
                         decimal amount = decimal.MinValue;
-                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? (amount / 100) : 0.0M;
+                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
 
-                        var time = DateTime.MinValue;
-                        payment.TransactionDateTime = DateTime.TryParse( row["Time"].ToString(), out time ) ? time : DateTime.MinValue;
-
+                        payment.TransactionDateTime = row["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
                         payment.TransactionCode = row["Transaction ID"].ToString();
                         payment.GatewayScheduleId = row["Profile ID"].ToString();
                         payment.ScheduleActive = row["Status"].ToString() == "Active";
-
-                        foreach( DataColumn col in dtTxn.Columns )
-                        {
-                            string colName = col.ColumnName.Replace( ' ', '_' );
-                            if ( !payment.AdditionalTransactionDetails.ContainsKey( colName ) )
-                            {
-                                payment.AdditionalTransactionDetails.Add( colName, row[col.ColumnName].ToString() );
-                            }
-                        }
+                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == dtTxn.Rows[0]["Tender Type"] ).FirstOrDefault();
 
                         txns.Add( payment );
                     }
@@ -524,8 +459,8 @@ a specific day into it's own batch.<br/>
         {
             errorMessage = string.Empty;
             return string.Empty;
-        }        
-        
+        }
+
         #endregion
 
         #region PayFlowPro Object Helper Methods
@@ -557,7 +492,7 @@ a specific day into it's own batch.<br/>
             string partner = GetAttributeValue( "Partner" );
             string password = GetAttributeValue( "Password" );
 
-            if (string.IsNullOrWhiteSpace(user))
+            if ( string.IsNullOrWhiteSpace( user ) )
             {
                 user = vendor;
             }
@@ -567,7 +502,7 @@ a specific day into it's own batch.<br/>
         private Invoice GetInvoice( PaymentInfo paymentInfo )
         {
             var ppBillingInfo = new BillTo();
-            
+
             ppBillingInfo.FirstName = paymentInfo.FirstName;
             ppBillingInfo.LastName = paymentInfo.LastName;
             ppBillingInfo.Email = paymentInfo.Email;
@@ -600,7 +535,7 @@ a specific day into it's own batch.<br/>
 
         private BaseTender GetTender( PaymentInfo paymentInfo )
         {
-            if (paymentInfo is CreditCardPaymentInfo)
+            if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 var ppCreditCard = new CreditCard( cc.Number, cc.ExpirationDate.ToString( "MMyy" ) );
@@ -653,7 +588,7 @@ a specific day into it's own batch.<br/>
         private RecurringInfo GetRecurring( FinancialScheduledTransaction schedule )
         {
             var ppRecurringInfo = new RecurringInfo();
-            
+
             ppRecurringInfo.OrigProfileId = schedule.GatewayScheduleId;
             ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
             if ( schedule.TransactionFrequencyValueId > 0 )
@@ -691,7 +626,7 @@ a specific day into it's own batch.<br/>
         private DateTime? GetDate( string date )
         {
             DateTime dt = DateTime.MinValue;
-            if (DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ))
+            if ( DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ) )
             {
                 return dt;
             }
