@@ -1021,6 +1021,10 @@
     <Compile Include="Migrations\201407232253485_CreatePledgePage.Designer.cs">
       <DependentUpon>201407232253485_CreatePledgePage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407241610046_AddScheduledTxnFields.cs" />
+    <Compile Include="Migrations\201407241610046_AddScheduledTxnFields.Designer.cs">
+      <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1769,6 +1773,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407232253485_CreatePledgePage.resx">
       <DependentUpon>201407232253485_CreatePledgePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407241610046_AddScheduledTxnFields.resx">
+      <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

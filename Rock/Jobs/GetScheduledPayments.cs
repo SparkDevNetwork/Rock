@@ -32,7 +32,7 @@ namespace Rock.Jobs
     /// </summary>
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Payment Gateway", "The payment gateway to query for scheduled payments that were processed.", true, "", "", 0 )]
     [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
 
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob

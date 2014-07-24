@@ -32,7 +32,17 @@ namespace Rock.Model
             DateTime transactionDate, TimeSpan batchTimeOffset, List<FinancialBatch> batches = null )
         {
             // Use the credit card type's batch name suffix, or if that doesn't exist, use the currency type value
-            string ccSuffix = creditCardType != null ? ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" ) : string.Empty;
+            string ccSuffix = string.Empty;
+            
+            if (creditCardType != null )
+            {
+                ccSuffix = creditCardType.GetAttributeValue( "BatchNameSuffix" );
+                if ( string.IsNullOrWhiteSpace( ccSuffix ) )
+                {
+                    ccSuffix = creditCardType.Name;
+                }
+            }
+
             if ( string.IsNullOrWhiteSpace( ccSuffix ) && currencyType != null )
             {
                 ccSuffix = currencyType.Name;

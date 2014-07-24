@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block used to download any scheduled payment transactions that were processed by payment gateway during a specified date range." )]
 
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 
@@ -128,8 +128,13 @@ namespace RockWeb.Blocks.Finance
                         if (!string.IsNullOrWhiteSpace(resultSummary))
                         {
                             nbSuccess.Text = string.Format( "<ul class='list-padded'>{0}</ul>", resultSummary );
-                            nbSuccess.Visible = true;
                         }
+                        else
+                        {
+                            nbSuccess.Text = string.Format( "<ul class='list-padded'>There were not any transactions downloaded.</ul>", resultSummary );
+                        
+                        }
+                        nbSuccess.Visible = true;
 
                     }
                     else

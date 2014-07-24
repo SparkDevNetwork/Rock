@@ -419,7 +419,7 @@ namespace Rock.PayFlowPro
                         payment.TransactionCode = row["Transaction ID"].ToString();
                         payment.GatewayScheduleId = row["Profile ID"].ToString();
                         payment.ScheduleActive = row["Status"].ToString() == "Active";
-                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == dtTxn.Rows[0]["Tender Type"] ).FirstOrDefault();
+                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == dtTxn.Rows[0]["Tender Type"].ToString() ).FirstOrDefault();
 
                         txns.Add( payment );
                     }
