@@ -2,6 +2,50 @@
 <%@ Import Namespace="System.Net"  %>
 <%@ Import Namespace="System.IO"  %>
 
+<!--
+                               INNNN                    
+                              NNNNNNN                   
+                            .NNNNNNNNNN                 
+                           NNNNNNNNNNNNN                
+                          NNNNNNNNNNNNNNN.              
+                         NNNNNNNNNNNNNNNNNN             
+                       NNNNNNNNN? .NNNNNNNNN            
+                      NNNNNNNNN     NNNNNNNNN+          
+                    ?NNNNNNNNN       .NNNNNNNNN         
+                   NNNNNNNNN          .NNNNNNNNN        
+                  NNNNNNNNN             NNNNNNNNNN      
+                NNNNNNNNNN               .NNNNNNNNN     
+                                NNNNNNNNNNNNNNNNNNNN    
+                               DNNNNNNNNNNNNNNNNNNNNN   
+                               NNNNNNNNNNNNNNNNNNNNNN7  
+                               .NNNNNNNNNNNNNNNNNNNNN   
+                                 NNNNNNNNN  .....       
+                                  DNNNNNNNNN            
+                                    NNNNNNNNN           
+                                     NNNNNNNNN.         
+                                      :NNNNNNNNN        
+                                        NNNNNNNNN.      
+                                         NNNNNNNNNZ     
+                                           NNNNNNNNN
+
+    
+                             !### --  READ THIS -- ###!
+    
+    If you are seeing this on in your browser it means one of a few things:
+
+    + You are not running on a Windows server. Rock requires a Windows hosting
+      platform running IIS 7+ and ASP.Net 4.5.1. For more information be sure
+      to read our hosting guides.
+
+    + Your Windows server is not configured to run ASP.Net. Please see our
+      guides to help you walk though the configuration of ASP.Net.
+
+    + The Internet has crashed. Better take the day off while it gets rebooted.
+
+
+-->
+
+
 <script language="CS" runat="server">
 
     const string requiredDotnetVersion = "4.5.1";
