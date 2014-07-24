@@ -371,6 +371,7 @@
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="SystemGuid\FinancialAccount.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Utility\DateRange.cs" />
     <Compile Include="Utility\DoubleMetaphone.cs" />
