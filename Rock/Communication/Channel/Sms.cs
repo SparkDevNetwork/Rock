@@ -123,8 +123,10 @@ namespace Rock.Communication.Channel
         /// <param name="fromPhone">The phone number a message is sent from.</param>
         /// <param name="message">The message that was sent.</param>
         /// <returns></returns>
-        public void ProcessResponse( string toPhone, string fromPhone, string message )
+        public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
+            errorMessage = string.Empty;
+            
             int toPersonId = -1;
             string transportPhone = string.Empty;
 
@@ -186,7 +188,14 @@ namespace Rock.Communication.Channel
                     string messageId = GenerateResponseCode( rockContext );
                     message = string.Format( "-{0}-\n{1}\n( {2} )", fromPerson.FullName, message, messageId );
                     CreateCommunication( fromPerson.Id, fromPerson.FullName, toPersonId, message, transportPhone, messageId, rockContext );
-                } 
+                }
+            }
+            else
+            {
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                string organizationName = globalAttributes.GetValue( "OrganizationName" );
+
+                errorMessage = string.Format( "Could not deliver message. This phone number is not registered in the {0} database.", organizationName);
             }
         }
 

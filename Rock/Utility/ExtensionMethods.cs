@@ -622,12 +622,10 @@ namespace Rock
         {
             try
             {
-                if ( content == null )
-                    return string.Empty;
-
-                // If there's no merge codes, just return the content
-                if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
-                    return content;
+                if (!content.HasMergeFields())
+                {
+                    return content ?? string.Empty;
+                }
 
                 //// NOTE: This means that template filters will also use CSharpNamingConvention
                 //// For example the dotliquid documentation says to do this for formatting dates: 
@@ -643,6 +641,23 @@ namespace Rock
             {
                 return "Error resolving Liquid merge fields: " + ex.Message;
             }
+        }
+
+        /// <summary>
+        /// Determines whether [has merge fields] [the specified content].
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool HasMergeFields( this string content)
+        {
+            if ( content == null )
+                return false;
+
+            // If there's no merge codes, just return the content
+            if ( !Regex.IsMatch( content, @".*\{.+\}.*" ) )
+                return false;
+
+            return true;
         }
 
         /// <summary>

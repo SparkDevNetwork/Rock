@@ -346,60 +346,63 @@ img.jcrop-preview {
   -webkit-box-shadow: #464646 18px 18px 80px 0px;
   box-shadow: #464646 18px 18px 80px 0px;
 }
-.rock-modal {
+.modal-content {
+  border: 0;
   background-color: #ffffff;
+  color: #333333;
 }
-.rock-modal .modal-header {
+.modal-content .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
+.modal-content .modal-header:before,
+.modal-content .modal-header:after {
   content: " ";
   display: table;
 }
-.rock-modal .modal-header:after {
+.modal-content .modal-header:after {
   clear: both;
 }
-.rock-modal .modal-header h3 {
+.modal-content .modal-header h3 {
   float: left;
   margin-right: 12px;
 }
-.rock-modal .modal-header .close {
+.modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-.rock-modal .modal-header .label {
+.modal-content .modal-header .label {
   margin-top: 8px;
 }
-.rock-modal .modal-header small {
+.modal-content .modal-header small {
   margin-top: 12px;
   display: block;
   color: #a2a2a2;
 }
-.rock-modal .modal-body {
+.modal-content .modal-body {
   color: #333333;
 }
-.rock-modal .modal-body .nav-pills {
+.modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.rock-modal .modal-body > .scroll-container {
+.modal-content .modal-body > .scroll-container {
   width: 720px;
 }
-.rock-modal .modal-body > .scroll-container > .viewport {
+.modal-content .modal-body > .scroll-container > .viewport {
   width: 670px;
 }
-.rock-modal .modal-body.iframe {
+.modal-content .modal-body.iframe {
   overflow: hidden;
 }
-.rock-modal .modal-footer {
+.modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #eeeeee;
+  color: #555555;
 }
 .modal {
   position: fixed;
@@ -527,7 +530,7 @@ img.jcrop-preview {
   font-weight: 700;
 }
 .picker .picker-menu {
-  width: 370px;
+  width: 400px;
   padding: 10px;
 }
 .picker .picker-menu h4:first-child {
@@ -987,7 +990,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #428bca;
+  border: 4px solid #999999;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
@@ -2581,6 +2584,13 @@ table.attribute-grid tr th:nth-child(3) {
   margin-bottom: 7.5px;
   text-align: center;
 }
+.personprofilebar-bio .nav li .persondetails-actions {
+  padding: 2px 0 0 15px;
+}
+.personprofilebar-bio .nav li .persondetails-actions:hover,
+.personprofilebar-bio .nav li .persondetails-actions:focus {
+  background-color: transparent;
+}
 .personprofilebar-bio .actions {
   position: absolute;
   right: 50%;
@@ -3083,9 +3093,6 @@ span.field-value {
 .merge-photo {
   border: 3px solid #999999;
 }
-.panel-widget.pageviewsession .panel-heading small {
-  color: #428bca;
-}
 .panel-widget.pageviewsession .pageviewsession-client {
   color: #428bca;
   text-align: right;
@@ -3138,8 +3145,9 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
-    1. Error Page - styles for the error page.
-
+    1. Error Page 
+    2. Blank Page
+    3. Exception Page
 */
 .error-wrap {
   text-align: center;
@@ -3175,6 +3183,18 @@ iframe.email-body {
 .rock-blank main.container {
   margin: 0;
   padding: 12px;
+}
+.exceptionDetail-stackTrace-hide {
+  display: none;
+}
+.exceptionDetail-stackTrace-show {
+  display: table-row;
+}
+.exceptionDetail-stackTrace-show pre {
+  padding: 0;
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
 }
 /*
     Used to manage styles related to Rock's internal scrollbar
@@ -3684,10 +3704,16 @@ a.help {
   border-color: #d5d5d5;
 }
 .panel .panel-heading .panel-title small {
-  color: #e0e0e0;
+  opacity: .5;
+}
+.panel .panel-heading .panel-labels {
+  float: right;
 }
 .panel .panel-heading .panel-actions {
   margin-top: 4px;
+}
+.panel .panel-heading .form-group {
+  margin-bottom: 0;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
@@ -3800,6 +3826,10 @@ a.help {
 }
 .panel-block .panel-heading {
   background-color: #eeeeee;
+  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
+            float: right;
+            margin-top: 2px;
+        }*/
 }
 .panel-block .panel-heading:before,
 .panel-block .panel-heading:after {
@@ -3814,10 +3844,6 @@ a.help {
 }
 .panel-block .panel-heading .panel-title i {
   color: #6a6a6a;
-}
-.panel-block .panel-heading span.label {
-  float: right;
-  margin-top: 2px;
 }
 .panel-block .panel-body .grid.grid-panel {
   margin: -15px;
@@ -4014,6 +4040,12 @@ fieldset[disabled] .btn-authenication.active {
 }
 .alert-danger a.help {
   border-bottom: 0;
+}
+.alert pre {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
 }
 .system-error pre {
   background-color: transparent;

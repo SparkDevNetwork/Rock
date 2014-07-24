@@ -9,8 +9,11 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-signal"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
-                <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
+                
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    <Rock:HighlightLabel ID="ltLastRunDateTime" runat="server" />
+                </div>
             </div>
             <div class="panel-body">
 
