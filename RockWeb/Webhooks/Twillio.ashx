@@ -69,7 +69,14 @@ public class Twillio : IHttpHandler
         
         if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
         {
-            new Rock.Communication.Channel.Sms().ProcessResponse( toPhone, fromPhone, body );
+            string errorMessage = string.Empty;
+
+            new Rock.Communication.Channel.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+
+            if ( errorMessage != string.Empty )
+            {
+                response.Write( errorMessage );
+            }
         }
     }
 
