@@ -38,6 +38,8 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Payment Download" )]
     [Category( "Finance" )]
     [Description( "Block used to download any scheduled payment transactions that were processed by payment gateway during a specified date range." )]
+
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 
@@ -79,9 +81,10 @@ namespace RockWeb.Blocks.Finance
                 if ( gateway != null )
                 {
                     var today = RockDateTime.Today;
-                    var days = today.DayOfWeek == DayOfWeek.Monday ? new TimeSpan( 2, 0, 0, 0 ) : new TimeSpan();
+                    var days = today.DayOfWeek == DayOfWeek.Monday ? new TimeSpan( 3, 0, 0, 0 ) : new TimeSpan( 1, 0, 0, 0 );
+                    var endDateTime = today.Add( gateway.BatchTimeOffset );
 
-                    drpDates.UpperValue = today.AddDays(-1);
+                    drpDates.UpperValue = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? today.AddDays( -1 ) : today;
                     drpDates.LowerValue = drpDates.UpperValue.Value.Subtract( days );
                 }
             }
@@ -103,10 +106,12 @@ namespace RockWeb.Blocks.Finance
 
         protected void btnDownload_Click( object sender, EventArgs e )
         {
+            string batchNamePrefix = GetAttributeValue( "BatchNamePrefix" );
+
             DateTime? startDateTime = drpDates.LowerValue;
             DateTime? endDateTime = drpDates.UpperValue;
 
-            if (startDateTime.HasValue && endDateTime.HasValue && endDateTime.Value.CompareTo(startDateTime.Value) > 0)
+            if (startDateTime.HasValue && endDateTime.HasValue && endDateTime.Value.CompareTo(startDateTime.Value) >= 0)
             {
                 var gateway = GetSelectedGateway();
                 if (gateway != null)
@@ -119,7 +124,13 @@ namespace RockWeb.Blocks.Finance
 
                     if ( string.IsNullOrWhiteSpace( errorMessage ) )
                     {
-                        FinancialScheduledTransactionService.ProcessPayments( gateway.BatchNameFormat, payments );
+                        string resultSummary = FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments );
+                        if (!string.IsNullOrWhiteSpace(resultSummary))
+                        {
+                            nbSuccess.Text = string.Format( "<ul class='list-padded'>{0}</ul>", resultSummary );
+                            nbSuccess.Visible = true;
+                        }
+
                     }
                     else
                     {

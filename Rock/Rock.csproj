@@ -233,6 +233,7 @@
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />

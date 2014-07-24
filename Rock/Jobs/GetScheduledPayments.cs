@@ -32,6 +32,8 @@ namespace Rock.Jobs
     /// </summary>
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Payment Gateway", "The payment gateway to query for scheduled payments that were processed.", true, "", "", 0 )]
     [IntegerField( "Days Back", "The number of days prior to the current date to use as the start date when querying for scheduled payments that were processed.", true, 7, "", 1 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
+
     [DisallowConcurrentExecution]
     public class GetScheduledPayments : IJob
     {
@@ -68,16 +70,21 @@ namespace Rock.Jobs
                     GatewayComponent gateway = GatewayContainer.GetComponent( gatewayGuid );
                     if ( gateway != null )
                     {
-                        DateTime endDateTime = RockDateTime.Now;
-                        int daysBack = dataMap.GetString( "DaysBack" ).AsInteger();
-                        DateTime startDateTime = RockDateTime.Today.AddDays( 0 - daysBack );
+                        int daysBack = dataMap.GetString( "DaysBack" ).AsIntegerOrNull() ?? 1;
+
+                        DateTime today = RockDateTime.Today;
+                        TimeSpan days = new TimeSpan( daysBack, 0, 0, 0 );
+                        DateTime endDateTime = today.Add( gateway.BatchTimeOffset );
+                        endDateTime = RockDateTime.Now.CompareTo( endDateTime ) < 0 ? endDateTime.AddDays( -1 ) : today;
+                        DateTime startDateTime = endDateTime.Subtract( days );
 
                         string errorMessage = string.Empty;
                         var payments = gateway.GetPayments( startDateTime, endDateTime, out errorMessage );
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            FinancialScheduledTransactionService.ProcessPayments( gateway.BatchNameFormat, payments );
+                            string batchNamePrefix = dataMap.GetString( "BatchNamePrefix" );
+                            FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments );
                         }
                         else
                         {

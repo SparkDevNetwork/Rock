@@ -23,6 +23,7 @@ using DotLiquid;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -67,7 +68,7 @@ namespace Rock.Model
         /// <returns></returns>
         public FinancialScheduledTransaction GetByScheduleId( string scheduleId )
         {
-            return Queryable()
+            return Queryable( "ScheduledTransactionDetails" )
                 .Where( t => t.GatewayScheduleId == scheduleId)
                 .FirstOrDefault();
         }
@@ -94,30 +95,135 @@ namespace Rock.Model
 
         }
 
-        public static string ProcessPayments( string batchNameFormat, List<Payment> payments )
+        public static string ProcessPayments( GatewayComponent gateway, string batchNamePrefix, List<Payment> payments )
         {
-            var batches = new Dictionary<string, List<Payment>>();
+            var batches = new List<FinancialBatch>();
+            var batchSummary = new Dictionary<Guid, List<Payment>>();
 
-            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            Template template = Template.Parse( batchNameFormat );
+            var rockContext = new RockContext();
+            var txnService = new FinancialTransactionService( rockContext );
+            var batchService = new FinancialBatchService( rockContext );
+            var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
 
-            foreach(var payment in payments)
+            var contributionTxnTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+
+            foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
             {
-                var mergeObjects = payment.ToLiquid() as IDictionary<string, object>;
-                string batchName = template.Render( Hash.FromDictionary( mergeObjects ) );
-
-                if (!batches.ContainsKey(batchName))
+                // Only consider transactions that have not already been added
+                if ( txnService.GetByTransactionCode( payment.TransactionCode ) == null )
                 {
-                    batches.Add( batchName, new List<Payment>() );
+                    var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
+                    if ( scheduledTransaction != null && scheduledTransaction.ScheduledTransactionDetails.Any() )
+                    {
+                        var transaction = new FinancialTransaction();
+                        transaction.TransactionCode = payment.TransactionCode;
+                        transaction.TransactionDateTime = payment.TransactionDateTime;
+                        transaction.ScheduledTransactionId = scheduledTransaction.Id;
+                        transaction.AuthorizedPersonId = scheduledTransaction.AuthorizedPersonId;
+                        transaction.GatewayEntityTypeId = gateway.TypeId;
+                        transaction.TransactionTypeValueId = contributionTxnTypeId;
+
+                        var currencyTypeValue = payment.CurrencyTypeValue;
+                        if ( currencyTypeValue != null )
+                        if ( currencyTypeValue == null && scheduledTransaction.CurrencyTypeValueId.HasValue )
+                        {
+                            currencyTypeValue = DefinedValueCache.Read( scheduledTransaction.CurrencyTypeValueId.Value );
+                        }
+                        if (currencyTypeValue != null)
+                        {
+                            transaction.CurrencyTypeValueId = currencyTypeValue.Id;
+                        }
+
+                        var creditCardTypevalue = payment.CreditCardTypeValue;
+                        if (creditCardTypevalue == null && scheduledTransaction.CreditCardTypeValueId.HasValue)
+                        {
+                            creditCardTypevalue = DefinedValueCache.Read( scheduledTransaction.CreditCardTypeValueId.Value );
+                        }
+                        if (creditCardTypevalue != null)
+                        {
+                            transaction.CreditCardTypeValueId = creditCardTypevalue.Id;
+                        }
+
+                        //transaction.SourceTypeValueId = DefinedValueCache.Read( sourceGuid ).Id;
+
+                        // Try to allocate the amount of the transaction based on the current scheduled transaction accounts
+                        decimal remainingAmount = payment.Amount;
+                        foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails )
+                        {
+                            var transactionDetail = new FinancialTransactionDetail();
+                            transactionDetail.AccountId = detail.AccountId;
+
+                            if ( detail.Amount <= remainingAmount )
+                            {
+                                // If the configured amount for this account is less than or equal to the remaining
+                                // amount, allocate the configured amount
+                                transactionDetail.Amount = detail.Amount;
+                                remainingAmount -= detail.Amount;
+                            }
+                            else
+                            {
+                                // If the configured amount is greater than the remaining amount, only allocate
+                                // the remaining amount
+                                detail.Amount = remainingAmount;
+                                remainingAmount = 0.0M;
+                            }
+
+                            transaction.TransactionDetails.Add( transactionDetail );
+
+                            if ( remainingAmount <= 0.0M )
+                            {
+                                // If there's no amount left, break out of details
+                                break;
+                            }
+                        }
+
+                        // If there's still amount left after allocating based on current config, add the remainder
+                        // to the account that was configured for the most amount
+                        if ( remainingAmount > 0.0M )
+                        {
+                            var transactionDetail = transaction.TransactionDetails
+                                .OrderByDescending( d => d.Amount )
+                                .First();
+                            if ( transactionDetail != null )
+                            {
+                                transactionDetail.Amount += remainingAmount;
+                            }
+                        }
+
+                        // Get the batch 
+                        var batch = batchService.Get(
+                            batchNamePrefix,
+                            payment.CurrencyTypeValue,
+                            payment.CreditCardTypeValue,
+                            transaction.TransactionDateTime.Value,
+                            gateway.BatchTimeOffset,
+                            batches );
+
+                        batch.ControlAmount += transaction.TotalAmount;
+                        batch.Transactions.Add( transaction );
+
+                        // Add summary
+                        if ( !batchSummary.ContainsKey( batch.Guid ) )
+                        {
+                            batchSummary.Add( batch.Guid, new List<Payment>() );
+                        }
+                        batchSummary[batch.Guid].Add( payment );
+                    }
                 }
-                batches[batchName].Add( payment );
             }
 
+            rockContext.SaveChanges();
+
             StringBuilder sb = new StringBuilder();
-            foreach(var batch in batches)
+            foreach ( var batch in batchSummary )
             {
+                string batchName = batches
+                    .Where( b => b.Guid.Equals( batch.Key ) )
+                    .Select( b => b.Name )
+                    .FirstOrDefault();
+
                 sb.AppendFormat( "<li>}{0}: {1} Transactions totaling: {2}",
-                    batch.Key, batch.Value.Count.ToString( "N0" ),
+                    batchName, batch.Value.Count.ToString( "N0" ),
                     batch.Value.Select( p => p.Amount ).Sum().ToString( "C2" ) );
             }
 
