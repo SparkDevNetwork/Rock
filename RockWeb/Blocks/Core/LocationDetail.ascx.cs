@@ -205,16 +205,7 @@ namespace RockWeb.Blocks.Core
 
             location.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
 
-            var addrLocation = locapAddress.Location;
-            if ( addrLocation != null )
-            {
-                location.Street1 = addrLocation.Street1;
-                location.Street2 = addrLocation.Street2;
-                location.City = addrLocation.City;
-                location.State = addrLocation.State;
-                location.PostalCode = addrLocation.PostalCode;
-                location.Country = addrLocation.Country;
-            }
+            acAddress.GetValues(location);
 
             location.GeoPoint = geopPoint.SelectedValue;
             if ( geopPoint.SelectedValue != null )
@@ -315,12 +306,11 @@ namespace RockWeb.Blocks.Core
             var rockContext = new RockContext();
             var service = new LocationService( rockContext );
             var location = service.Get( locationId );
+            acAddress.GetValues( location );
 
             service.Verify( location, true );
 
-            rockContext.SaveChanges();
-
-            locapAddress.SetValue( location );
+            acAddress.SetValues( location );
             geopPoint.SetValue( location.GeoPoint );
 
             lStandardizationUpdate.Text = String.Format( "<div class='alert alert-info'>Standardization Result: {0}<br/>Geocoding Result: {1}</div>",
@@ -449,7 +439,7 @@ namespace RockWeb.Blocks.Core
 
             tbName.Text = location.Name;
             cbIsActive.Checked = location.IsActive;
-            locapAddress.SetValue( location );
+            acAddress.SetValues( location );
             ddlPrinter.SetValue( location.PrinterDeviceId );
             geopPoint.SetValue( location.GeoPoint );
             geopFence.SetValue( location.GeoFence );
