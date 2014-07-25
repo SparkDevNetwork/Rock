@@ -209,6 +209,8 @@ namespace Rock.Apps.CheckScannerUtility
 
             rockConfig.Save();
 
+            // shutdown the scanner so that options will be reloaded when the batch page loads
+            BatchPage.rangerScanner.ShutDown();
             this.NavigationService.GoBack();
         }
 
