@@ -55,7 +55,7 @@
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Start" />
                     <Label Style="{StaticResource labelStyleIconPrimary}"
-                       Content="&#xf0da;" />
+                       Content="&#xf054;" />
                 </StackPanel>
             </Button>
         </Grid>

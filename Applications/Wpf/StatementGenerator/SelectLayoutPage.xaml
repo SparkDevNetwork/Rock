@@ -48,16 +48,16 @@
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Left"
                     Grid.Row="2">
-            <Button x:Name="btnBack"
+            <Button x:Name="btnPrev"
                     HorizontalAlignment="Left"
-                    Style="{StaticResource buttonStylePrimary}"
+                    Style="{StaticResource buttonStyle}"
                     Margin="8,8,8,8"
-                    Click="btnBack_Click">
+                    Click="btnPrev_Click">
                 <StackPanel Orientation="Horizontal">
                     <Label Style="{StaticResource labelStyleIconPrimaryLeft}"
-                           Content="&#xf0d9;" />
+                           Content="&#xf053;" />
                     <Label Style="{StaticResource labelStyleButtonTextPrimary}"
-                           Content="Back" />
+                           Content="Prev" />
                 </StackPanel>
             </Button>
             <Button x:Name="btnImport"
@@ -77,7 +77,7 @@
                 <Label Style="{StaticResource labelStyleButtonTextPrimary}"
                        Content="Next" />
                 <Label Style="{StaticResource labelStyleIconPrimary}"
-                       Content="&#xf0da;" />
+                       Content="&#xf054;" />
             </StackPanel>
         </Button>
 
