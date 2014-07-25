@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Utility
             this.AddConfigurationUpdateTrigger( upSettings );
 
             string script = @"
-$('.checklist-item label .checklist-desc-toggle').on('click', function (e) {
+$('.checklist-item label strong, .checklist-desc-toggle').on('click', function (e) {
     e.stopImmediatePropagation();
     e.preventDefault();
     var $header = $(this).closest('header');
