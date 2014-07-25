@@ -27,12 +27,12 @@ namespace Rock.SystemGuid
     public static class Group
     {
         /// <summary>
-        /// Gets the administrator group guid
+        /// Gets the administrator group guid (Rock Administrators)
         /// </summary>
         public const string  GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
 
         /// <summary>
-        /// Gets the staff member group guid
+        /// Gets the staff member group guid (Staff Users)
         /// </summary>
         public const string  GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
 
