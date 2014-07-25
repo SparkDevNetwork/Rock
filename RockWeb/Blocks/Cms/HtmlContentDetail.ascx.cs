@@ -166,6 +166,7 @@ namespace RockWeb.Blocks.Cms
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
+            htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
@@ -173,6 +174,7 @@ namespace RockWeb.Blocks.Cms
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
+            ceHtml.MergeFields.Add( "RockVersion" );
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
@@ -561,6 +563,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
                             mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
                             mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
                             var contextEntity = ContextEntity();
                             if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
