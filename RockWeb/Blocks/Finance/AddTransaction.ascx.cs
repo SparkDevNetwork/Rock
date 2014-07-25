@@ -440,6 +440,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( !Page.IsPostBack )
                 {
+                    var rockContext = new RockContext();
+
                     SetPage( 1 );
 
                     // Get the list of accounts that can be used
@@ -457,7 +459,7 @@ achieve our mission.  We are so grateful for your commitment.
                         txtLastName.Visible = false;
                         txtEmail.Text = person.Email;
 
-                        var personService = new PersonService( new RockContext() );
+                        var personService = new PersonService( rockContext );
 
                         bool displayPhone = false;
                         if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
@@ -1608,7 +1610,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 get
                 {
-                    return Amount > 0 ? Amount.ToString( "F2" ) : string.Empty;
+                    return Amount > 0 ? Amount.ToString( "C2" ) : string.Empty;
                 }
             }
 
