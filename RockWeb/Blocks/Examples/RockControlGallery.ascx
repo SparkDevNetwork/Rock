@@ -113,6 +113,11 @@
                         <Rock:DataTextBox ID="dtbExample" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
                     </div>
 
+                    <a id="EmailBox"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:EmailBox ID="ebEmail" runat="server" Label="Rock:EmailBox" />
+                    </div>
+
                     <a id="NumberBox"></a>
                     <div runat="server" class="r-example">
                         <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
