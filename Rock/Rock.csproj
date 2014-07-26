@@ -157,6 +157,7 @@
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
+    <Compile Include="Attribute\EmailAttribute.cs" />
     <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
     <Compile Include="Attribute\SlidingDateRangeFieldAttribute.cs" />
@@ -223,6 +224,7 @@
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
+    <Compile Include="Field\Types\EmailFieldType.cs" />
     <Compile Include="Field\Types\ValueListFieldType.cs" />
     <Compile Include="Field\Types\SlidingDateRangeFieldType.cs" />
     <Compile Include="Field\Types\EntityFieldType.cs" />
@@ -611,6 +613,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\PieChart.cs" />
     <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
