@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <!-- TODO talk about this... -->
         <style>
             .check-image {
                 max-width: 500px;
@@ -15,6 +16,8 @@
         </style>
 
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
+        <asp:HiddenField ID="hfTransactionId" runat="server" />
+        <asp:HiddenField ID="hfFinancialBatchId" runat="server" />
         <asp:HiddenField ID="hfCheckMicrHashed" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block js-check-matching">
 
@@ -22,6 +25,7 @@
                 <h1 class="panel-title">
                     <asp:Literal ID="lPanelTitle" runat="server" /></h1>
                 <asp:LinkButton ID="btnFilter" runat="server" CssClass="btn pull-right" OnClick="btnFilter_Click"><i class="fa fa-gear" title="Filter Accounts"></i></asp:LinkButton>
+                <Rock:HighlightLabel ID="hlRemainingCount" runat="server" />
             </div>
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-2x fa-check-circle'></i> There are no more unmatched checks in this batch." />
@@ -52,7 +56,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-action" OnClick="btnBack_Click"><i class="fa fa-chevron-left"></i> Back</asp:LinkButton>
+                            <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
                             <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
