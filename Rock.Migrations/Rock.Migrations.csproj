@@ -1025,6 +1025,10 @@
     <Compile Include="Migrations\201407241610046_AddScheduledTxnFields.Designer.cs">
       <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407261708456_CheckinCleanUp.cs" />
+    <Compile Include="Migrations\201407261708456_CheckinCleanUp.Designer.cs">
+      <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1776,6 +1780,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407241610046_AddScheduledTxnFields.resx">
       <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407261708456_CheckinCleanUp.resx">
+      <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
