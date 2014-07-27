@@ -78,11 +78,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server.
+        /// </summary>
+        /// <returns>The group of controls for which the <see cref="T:System.Web.UI.WebControls.TextBox" /> control causes validation when it posts back to the server. The default value is an empty string ("").</returns>
+        public override string ValidationGroup
+        {
+            get
+            {
+                return base.ValidationGroup;
+            }
+            set
+            {
+                base.ValidationGroup = value;
+
+                EnsureChildControls();
+                _regexValidator.ValidationGroup = value;
+            }
+        }
+
+        /// <summary>
         /// Renders any data validator.
         /// </summary>
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
+            base.RenderDataValidator( writer );
+
             _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
             _regexValidator.ErrorMessage = "Email address is not valid";
 

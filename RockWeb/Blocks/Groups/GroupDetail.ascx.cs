@@ -884,7 +884,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group.Attributes != null && group.Attributes.Any() )
                 {
                     wpGroupAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, "GroupDetail" );
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup );
                 }
                 else
                 {
