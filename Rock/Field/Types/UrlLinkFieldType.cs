@@ -24,7 +24,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a numeric value
     /// </summary>
     [Serializable]
-    public class EmailFieldType : FieldType
+    public class UrlLinkFieldType : FieldType
     {
 
         /// <summary>
@@ -38,11 +38,10 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace(value) )
             {
-                Match match = Regex.Match( value, @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" );
-
-                if ( match.Success )
+                Uri validatedUri;
+                if (Uri.TryCreate( value, UriKind.Absolute, out validatedUri ))
                 {
-                    message = "The email address provided is not valid.";
+                    message = "The link provided is not valid";
                     return true;
                 }
             }
@@ -60,7 +59,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new EmailBox { ID = id }; 
+            return new UrlLinkBox { ID = id }; 
         }
 
         /// <summary>
@@ -76,7 +75,14 @@ namespace Rock.Field.Types
             if (string.IsNullOrWhiteSpace(value)) {
                 return string.Empty;
             } else {
-                return string.Format( "<a href='mailto:{0}'>{0}</a>", value );
+                if ( condensed )
+                {
+                    return string.Format( "<a href='{0}'>Link</a>", value );
+                }
+                else
+                {
+                    return string.Format( "<a href='{0}'>{0}</a>", value );
+                }
             }
         }
     }

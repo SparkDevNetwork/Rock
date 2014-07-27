@@ -1029,6 +1029,10 @@
     <Compile Include="Migrations\201407261708456_CheckinCleanUp.Designer.cs">
       <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.cs" />
+    <Compile Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.Designer.cs">
+      <DependentUpon>201407270612147_EmailAndLinkAttributeTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1783,6 +1787,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407261708456_CheckinCleanUp.resx">
       <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.resx">
+      <DependentUpon>201407270612147_EmailAndLinkAttributeTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

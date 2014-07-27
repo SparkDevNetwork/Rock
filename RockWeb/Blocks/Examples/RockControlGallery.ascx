@@ -118,6 +118,11 @@
                         <Rock:EmailBox ID="ebEmail" runat="server" Label="Rock:EmailBox" />
                     </div>
 
+                    <a id="UrlLinkBox"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:UrlLinkBox ID="ulLink" runat="server" Label="Rock:UrlLinkBox" />
+                    </div>
+
                     <a id="NumberBox"></a>
                     <div runat="server" class="r-example">
                         <Rock:NumberBox ID="numbExample" runat="server" Label="Rock:NumberBox" />
