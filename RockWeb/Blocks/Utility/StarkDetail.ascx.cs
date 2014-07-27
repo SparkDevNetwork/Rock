@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Utility
     [DisplayName( "Stark Detail" )]
     [Category( "Utility" )]
     [Description( "Template block for developers to use to start a new detail block." )]
+    [EmailField("Email")]
     public partial class StarkDetail : Rock.Web.UI.RockBlock
     {
         #region Fields

@@ -25,8 +25,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.CurrencyBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:EmailBox runat=server></{0}:EmailBox>" )]
-    public class EmailBox : RockTextBox
+    [ToolboxData( "<{0}:UrlLinkBox runat=server></{0}:UrlLinkBox>" )]
+    public class UrlLinkBox : RockTextBox
     {
         private RegularExpressionValidator _regexValidator;
         
@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
             var globalAttributes = GlobalAttributesCache.Read();
             if (globalAttributes != null)
             {
-                this.PrependText = "<i class='fa fa-envelope'></i>";
+                this.PrependText = "<i class='fa fa-link'></i>";
             }
         }
 
@@ -72,8 +72,8 @@ namespace Rock.Web.UI.Controls
             _regexValidator.ControlToValidate = this.ID;
             _regexValidator.Display = ValidatorDisplay.Dynamic;
             _regexValidator.CssClass = "validation-error help-inline";
-            _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
-            _regexValidator.ErrorMessage = "The email address provided is not valid";
+            _regexValidator.ValidationExpression = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?";
+            _regexValidator.ErrorMessage = "The link provided is not valid";
             Controls.Add( _regexValidator );
         }
 
@@ -104,8 +104,8 @@ namespace Rock.Web.UI.Controls
         {
             base.RenderDataValidator( writer );
 
-            _regexValidator.ValidationExpression = @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*";
-            _regexValidator.ErrorMessage = "Email address is not valid";
+            _regexValidator.ValidationExpression = @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?";
+            _regexValidator.ErrorMessage = "The link provided is not valid";
 
             _regexValidator.ValidationGroup = this.ValidationGroup;
             _regexValidator.RenderControl( writer );
