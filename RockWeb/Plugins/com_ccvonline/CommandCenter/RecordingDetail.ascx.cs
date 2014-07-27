@@ -59,10 +59,10 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "recordingId" );
+                string itemId = PageParameter( "dvrRecordingId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "recordingId", int.Parse( itemId ) );
+                    ShowDetail( "dvrRecordingId", int.Parse( itemId ) );
                 }
                 else
                 {
@@ -139,7 +139,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             // return if unexpected itemKey 
-            if ( itemKey != "recordingId" )
+            if ( itemKey != "dvrRecordingId" )
             {
                 return;
             }

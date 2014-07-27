@@ -176,7 +176,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                         new {
                                             r.Campus,
                                             r.CampusId,
-                                            WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", 1 - SqlFunctions.DatePart( "dw", r.Date ) % 7, r.Date ) ),
+                                            WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", -1 * SqlFunctions.DatePart( "dw", r.Date ), r.Date ) ),
                                             r.VenueType
                                             } )
                                     .Select( g => 
