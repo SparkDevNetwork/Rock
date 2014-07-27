@@ -24,6 +24,17 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     {
         #region Base Control Methods
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             rptvideostreams.DataSource = GetDatasource();
