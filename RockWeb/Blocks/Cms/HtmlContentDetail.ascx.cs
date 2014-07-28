@@ -565,10 +565,24 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-                            var contextEntity = ContextEntity();
-                            if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                            var contextObjects = new Dictionary<string, object>();
+                            foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
                             {
-                                mergeFields.Add( "ContextEntity", contextEntity );
+                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                                if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                                {
+                                    var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                                    if (type != null)
+                                    {
+                                        contextObjects.Add( type.Name, contextEntity );
+                                    }
+                                }
+
+                            }
+
+                            if ( contextObjects.Any() )
+                            {
+                                mergeFields.Add( "Context", contextObjects );
                             }
                         }
 
