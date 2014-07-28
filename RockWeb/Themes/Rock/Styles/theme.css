@@ -356,6 +356,7 @@ img.jcrop-preview {
   color: #231f20;
   padding: 5px 15px;
   min-height: 34px;
+  border-radius: 4px 4px 0 0;
 }
 .modal-content .modal-header:before,
 .modal-content .modal-header:after {
@@ -403,6 +404,7 @@ img.jcrop-preview {
   margin-top: 10px;
   background-color: #e5e5e5;
   color: #555555;
+  border-radius: 0 0 4px 4px;
 }
 .modal {
   position: fixed;
