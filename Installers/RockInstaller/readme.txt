@@ -10,13 +10,15 @@ ___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode)
 
 ___ 3. Edit web.config
          
-		 * Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
-         * Set RunJobsInIISContext = true
-         * Turn off debug <compilation debug="false"…
+        * Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
+        * Set RunJobsInIISContext = true
+        * Turn off debug <compilation debug="false"
 
-___ 4. Update NuGet Package called Rock.x.y.z.nupkg (where x.y.z is version being built) in the App_Data/Packages folder.
+___ 4. Update NuGet Package called Rock.x.y.z.nupkg (where x.y.z is version being built) in 
+       the App_Data/Packages folder.
 
-___ 5. Update NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in the App_Data/Packages folder.
+___ 5. Update NuGet Package called RockUpdate-x-y-z.x.y.z.nupkg (RockUpdate-x-y-z) in 
+       the App_Data/Packages folder.
 
 ___ 6. Zip up the RockWeb directory leaving out the following files:
 
@@ -26,7 +28,8 @@ ___ 6. Zip up the RockWeb directory leaving out the following files:
 
 ___ 7. Rename zip file 'rock-install-latest.zip'
 
-___ 8. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it will be in source control
+___ 8. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
+       will be in source control
 
 ___ 9. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
 
@@ -44,7 +47,8 @@ ___ 4. Right-click on the new database and select 'Tasks > Generate Scripts'
 
 ___ 5. Click 'Next' until you see the screen with the 'Advanced' button.
 
-___ 6. Click the 'Advanced' button and change the setting for 'Types of data to script' to 'schema and data'.
+___ 6. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
+       'schema and data'.
 
 ___ 7. Click 'Next' then 'Finished'
 
@@ -58,7 +62,8 @@ ___ 8. Open the SQL file and make the following edits:
 
 ___ 9. Zip the file into a new file named 'sql-latest.sql'
 
-___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it will be in source control
+___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
+        it will be in source control
 
 ___ 11. Overwrite with snapshot zip file to Azure Blog storage
- (rockrms/install/<version>/Data)
+        (rockrms/install/<version>/Data)
