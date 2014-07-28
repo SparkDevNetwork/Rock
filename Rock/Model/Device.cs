@@ -168,29 +168,6 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the <see cref="Rock.Model.Location">Locations</see> that this
-        /// device is configured for.
-        /// </summary>
-        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location"/>Locations that this device is configured for.</returns>
-        public virtual IEnumerable<GroupType> GetLocationGroupTypes()
-        {
-            var groupTypes = new Dictionary<int, GroupType>();
-            foreach ( var groupLocations in this.Locations
-                .Select( l => l.GroupLocations ) )
-            {
-                foreach(var groupType in groupLocations.Select( gl => gl.Group.GroupType))
-                {
-                    if (!groupTypes.ContainsKey(groupType.Id))
-                    {
-                        groupTypes.Add(groupType.Id, groupType);
-                    }
-                }
-            }
-
-            return groupTypes.Select( g => g.Value );
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
