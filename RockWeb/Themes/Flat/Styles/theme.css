@@ -4107,13 +4107,14 @@ div.aspNetDisabled {
     content: '' !important;
   }
 }
-.slide-control {
+.slide-control ul {
   padding-left: 0;
   list-style: none;
   text-align: center;
+  margin-bottom: 0;
 }
 @media (min-width: 992px) {
-  .slide-control > li {
+  .slide-control ul > li {
     display: inline-block;
   }
 }
@@ -4160,20 +4161,18 @@ div.aspNetDisabled {
   height: 100%;
   cursor: pointer;
   font-size: .8em;
-}
-@media (min-width: 768px) {
-  .slide-control li {
-    font-size: .9em;
-  }
-}
-.slide-control li span {
   -webkit-transition: opacity 0.6s;
   -o-transition: opacity 0.6s;
   transition: opacity 0.6s;
   opacity: 0.5;
   filter: alpha(opacity=50);
 }
-.slide-control li.flex-active span {
+@media (min-width: 768px) {
+  .slide-control li {
+    font-size: .9em;
+  }
+}
+.slide-control li.flex-active {
   opacity: 1;
   filter: alpha(opacity=100);
 }

@@ -18,14 +18,15 @@
       </ul>
     </div>
 
-    <ul class="slide-control">
-
+  <div class="slide-control">
+    <ul>
+    
       {% for Ad in Ads -%}
-        <li><span>{{ Ad.Title }}</span></li>   
+        <li>{{ Ad.Title }}</li>   
       {% endfor -%}
-
-      <div class="tipper"></div>
       
     </ul>
+    <div class="tipper"></div>
+  </div>
 
 </div>
