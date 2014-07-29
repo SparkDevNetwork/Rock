@@ -280,15 +280,13 @@ namespace Rock.Reporting.Dashboard
         /// <summary>
         /// Loads the chart.
         /// </summary>
-        public void LoadChart()
+        public virtual void LoadChart()
         {
             FlotChartControl.StartDate = this.DateRange.Start;
             FlotChartControl.EndDate = this.DateRange.End;
             FlotChartControl.MetricValueType = this.MetricValueType;
             FlotChartControl.MetricId = this.MetricId;
             FlotChartControl.EntityId = this.EntityId;
-            FlotChartControl.Title = this.Title;
-            FlotChartControl.Subtitle = this.Subtitle;
             FlotChartControl.CombineValues = this.CombineValues;
             FlotChartControl.ShowTooltip = true;
             if ( this.DetailPageGuid.HasValue )
@@ -306,7 +304,7 @@ namespace Rock.Reporting.Dashboard
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        public void lcExample_ChartClick( object sender, Rock.Web.UI.Controls.FlotChart.ChartClickArgs e )
+        public void lcExample_ChartClick( object sender, ChartClickArgs e )
         {
             if ( this.DetailPageGuid.HasValue )
             {

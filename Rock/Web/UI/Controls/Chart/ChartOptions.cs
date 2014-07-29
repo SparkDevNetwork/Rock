@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 using Rock.Model;
 using Rock.Utility;
 
-namespace Rock.Reporting.Dashboard.Flot
+namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Class that can be JSON'd and used for Flot Charts (properties are case sensitive)

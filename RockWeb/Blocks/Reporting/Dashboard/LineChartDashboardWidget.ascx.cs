@@ -17,6 +17,7 @@
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -34,7 +35,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// <value>
         /// The flot chart control.
         /// </value>
-        public override Rock.Web.UI.Controls.FlotChart FlotChartControl
+        public override FlotChart FlotChartControl
         {
             get { return lcChart; }
         }
@@ -48,6 +49,16 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
             get { return nbMetricWarning; }
+        }
+
+        /// <summary>
+        /// Loads the chart.
+        /// </summary>
+        public override void LoadChart()
+        {
+            base.LoadChart();
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

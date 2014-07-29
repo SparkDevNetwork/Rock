@@ -243,11 +243,12 @@
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
-    <Compile Include="Reporting\Dashboard\ChartStyle.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
@@ -617,10 +618,10 @@
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\PieChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\LineChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />

@@ -21,7 +21,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock.Model;
-using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {
@@ -51,8 +50,8 @@ namespace Rock.Web.UI.Controls
         private HiddenFieldWithClass _hfSeriesNameUrl;
         private HiddenFieldWithClass _hfXAxisLabel;
         private HiddenFieldWithClass _hfYAxisLabel;
-        private Label _lblDashboardTitle;
-        private Label _lblDashboardSubtitle;
+        private Label _lblChartTitle;
+        private Label _lblChartSubtitle;
         private Panel _pnlChartPlaceholder;
         private HelpBlock _hbChartOptions;
 
@@ -186,13 +185,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _lblDashboardTitle.Text;
+                return _lblChartTitle.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                _lblDashboardTitle.Text = value;
+                _lblChartTitle.Text = value;
             }
         }
 
@@ -207,13 +206,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _lblDashboardSubtitle.Text;
+                return _lblChartSubtitle.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                _lblDashboardSubtitle.Text = value;
+                _lblChartSubtitle.Text = value;
             }
         }
 
@@ -412,35 +411,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public class ChartClickArgs : EventArgs
-        {
-            /// <summary>
-            /// Gets or sets the date time value.
-            /// </summary>
-            /// <value>
-            /// The date time value.
-            /// </value>
-            public DateTime DateTimeValue { get; set; }
-
-            /// <summary>
-            /// Gets or sets the y value.
-            /// </summary>
-            /// <value>
-            /// The y value.
-            /// </value>
-            public decimal? YValue { get; set; }
-
-            /// <summary>
-            /// Gets or sets the series identifier.
-            /// </summary>
-            /// <value>
-            /// The series identifier.
-            /// </value>
-            public string SeriesId { get; set; }
-        }
+        
 
         /// <summary>
         /// Occurs when [chart click].
@@ -714,16 +685,14 @@ namespace Rock.Web.UI.Controls
             _hfSeriesNameUrl.ID = string.Format( "hfSeriesNameUrl_{0}", this.ID );
             _hfSeriesNameUrl.CssClass = "js-seriesname-url";
 
-            _lblDashboardTitle = new Label();
-            _lblDashboardTitle.CssClass = "dashboard-title";
-            _lblDashboardTitle.ID = string.Format( "lblDashboardTitle_{0}", this.ID );
+            _lblChartTitle = new Label();
+            _lblChartTitle.ID = string.Format( "lblChartTitle_{0}", this.ID );
 
-            _lblDashboardSubtitle = new Label();
-            _lblDashboardSubtitle.CssClass = "dashboard-subtitle";
-            _lblDashboardSubtitle.ID = string.Format( "lblDashboardSubtitle_{0}", this.ID );
+            _lblChartSubtitle = new Label();
+            _lblChartSubtitle.ID = string.Format( "lblChartSubtitle_{0}", this.ID );
 
             _pnlChartPlaceholder = new Panel();
-            _pnlChartPlaceholder.CssClass = "dashboard-chart-placeholder js-chart-placeholder";
+            _pnlChartPlaceholder.CssClass = "chart-placeholder js-chart-placeholder";
             _pnlChartPlaceholder.ID = string.Format( "pnlChartPlaceholder_{0}", this.ID );
 
             _hbChartOptions = new HelpBlock();
@@ -735,8 +704,8 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfRestUrlParams );
             Controls.Add( _hfRestUrl );
             Controls.Add( _hfSeriesNameUrl );
-            Controls.Add( _lblDashboardTitle );
-            Controls.Add( _lblDashboardSubtitle );
+            Controls.Add( _lblChartTitle );
+            Controls.Add( _lblChartSubtitle );
             Controls.Add( _pnlChartPlaceholder );
             Controls.Add( _hbChartOptions );
         }
@@ -765,61 +734,68 @@ namespace Rock.Web.UI.Controls
                 _hfXAxisLabel.RenderControl( writer );
                 _hfYAxisLabel.RenderControl( writer );
 
-                writer.AddAttribute( "class", "dashboard-title" );
-                if ( this.Options.customSettings != null && this.Options.customSettings.titleAlign != null )
+                if ( !string.IsNullOrWhiteSpace( _lblChartTitle.Text ) )
                 {
-                    writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.titleAlign );
+                    writer.AddAttribute( "class", "chart-title" );
+                    if ( this.Options.customSettings != null && this.Options.customSettings.titleAlign != null )
+                    {
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.titleAlign );
+                    }
+
+                    if ( this.Options.customSettings != null && this.Options.customSettings.titleFont != null )
+                    {
+                        if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.color ) )
+                        {
+                            _lblChartTitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.titleFont.color );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.family ) )
+                        {
+                            _lblChartTitle.Font.Name = this.Options.customSettings.titleFont.family;
+                        }
+
+                        if ( this.Options.customSettings.titleFont.size.HasValue )
+                        {
+                            _lblChartTitle.Font.Size = new FontUnit( this.Options.customSettings.titleFont.size.Value );
+                        }
+                    }
+
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    _lblChartTitle.RenderControl( writer );
+                    writer.RenderEndTag();
                 }
 
-                if ( this.Options.customSettings != null && this.Options.customSettings.titleFont != null )
+                if ( !string.IsNullOrWhiteSpace( _lblChartSubtitle.Text ) )
                 {
-                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.color ) )
+                    writer.AddAttribute( "class", "chart-subtitle" );
+                    if ( this.Options.customSettings != null && this.Options.customSettings.subtitleAlign != null )
                     {
-                        _lblDashboardTitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.titleFont.color );
+                        writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.subtitleAlign );
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.titleFont.family ) )
+                    if ( this.Options.customSettings != null && this.Options.customSettings.subtitleFont != null )
                     {
-                        _lblDashboardTitle.Font.Name = this.Options.customSettings.titleFont.family;
+                        if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.color ) )
+                        {
+                            _lblChartSubtitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.subtitleFont.color );
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.family ) )
+                        {
+                            _lblChartSubtitle.Font.Name = this.Options.customSettings.subtitleFont.family;
+                        }
+
+                        if ( this.Options.customSettings.subtitleFont.size.HasValue )
+                        {
+                            _lblChartSubtitle.Font.Size = new FontUnit( this.Options.customSettings.subtitleFont.size.Value );
+                        }
                     }
 
-                    if ( this.Options.customSettings.titleFont.size.HasValue )
-                    {
-                        _lblDashboardTitle.Font.Size = new FontUnit( this.Options.customSettings.titleFont.size.Value );
-                    }
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _lblChartSubtitle.RenderControl( writer );
+                    writer.RenderEndTag();
                 }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _lblDashboardTitle.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.AddAttribute( "class", "dashboard-subtitle" );
-                if ( this.Options.customSettings != null && this.Options.customSettings.subtitleAlign != null )
-                {
-                    writer.AddStyleAttribute( HtmlTextWriterStyle.TextAlign, this.Options.customSettings.subtitleAlign );
-                }
-
-                if ( this.Options.customSettings != null && this.Options.customSettings.subtitleFont != null )
-                {
-                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.color ) )
-                    {
-                        _lblDashboardSubtitle.ForeColor = ColorTranslator.FromHtml( this.Options.customSettings.subtitleFont.color );
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( this.Options.customSettings.subtitleFont.family ) )
-                    {
-                        _lblDashboardSubtitle.Font.Name = this.Options.customSettings.subtitleFont.family;
-                    }
-
-                    if ( this.Options.customSettings.subtitleFont.size.HasValue )
-                    {
-                        _lblDashboardSubtitle.Font.Size = new FontUnit( this.Options.customSettings.subtitleFont.size.Value );
-                    }
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _lblDashboardSubtitle.RenderControl( writer );
-                writer.RenderEndTag();
 
                 if ( this.ShowDebug )
                 {
