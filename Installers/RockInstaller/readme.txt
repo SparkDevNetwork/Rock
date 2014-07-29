@@ -14,14 +14,11 @@ ___ 3. Edit web.config
         * Set RunJobsInIISContext = true
         * Turn off debug <compilation debug="false"
 
-___ 4. Using the NuGet Package Explorer, edit the Rock.x.y.z.nupkg in the App_Data/Packages folder
-       replacing the x.y.z in the "Version" field with the new version number and the "Title" field
-       with the new proper Rock version name (e.g. Rock McKinley 0.9).
-       Save As with the new package file name. 
-
-___ 5. Using the NuGet Package Explorer, edit the RockUpdate-x-y-z.x.y.z.nupkg in the App_Data/Packages folder
-       replacing the x, y, z numbers in the "Id", "Version" and "Title" fields to the correct value.
-       Save As with the new package file name. 
+___ 4. Copy the Rock.x.y.z.nupkg file from https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
+       to the App_Data/Packages folder.
+       
+___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
+       to the App_Data/Packages folder.
 
 ___ 6. Zip up the RockWeb directory leaving out the following files:
 
