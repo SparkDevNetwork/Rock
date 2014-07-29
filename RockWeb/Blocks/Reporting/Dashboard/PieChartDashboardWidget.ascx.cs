@@ -79,6 +79,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public void LoadChart()
         {
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
             pcChart.ShowTooltip = true;

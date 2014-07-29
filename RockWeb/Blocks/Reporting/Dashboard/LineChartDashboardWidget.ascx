@@ -2,12 +2,12 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <div class="dashboard-title">
+        <asp:Panel ID="pnlDashboardTitle" runat="server" CssClass="dashboard-title">
             <asp:Literal runat="server" ID="lDashboardTitle" />
-        </div>
-        <div class="dashboard-subtitle">
+        </asp:Panel>
+        <asp:Panel ID="pnlDashboardSubtitle" runat="server" CssClass="dashboard-subtitle">
             <asp:Literal runat="server" ID="lDashboardSubtitle" />
-        </div>
+        </asp:Panel>
         <Rock:NotificationBox ID="nbMetricWarning" runat="server" NotificationBoxType="Warning" Text="Please select a metric in the block settings." />
         <Rock:LineChart ID="lcChart" runat="server" />
 

@@ -57,6 +57,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         public override void LoadChart()
         {
             base.LoadChart();
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
         }

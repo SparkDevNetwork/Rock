@@ -103,6 +103,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         protected override void OnLoad( System.EventArgs e )
         {
             base.OnLoad( e );
+            pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
+            pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
         }
