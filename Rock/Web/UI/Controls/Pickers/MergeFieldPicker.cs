@@ -81,6 +81,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        public override string InitialItemParentIds
+        {
+            get
+            {
+                return base.InitialItemParentIds.Split( ',' ).ToList().Select( i => i.Quoted() ).ToList().AsDelimited( "," );
+            }
+            set
+            {
+                base.InitialItemParentIds = value;
+            }
+        }
+
         /// <summary>
         /// Sets the value.
         /// </summary>
@@ -98,7 +110,7 @@ namespace Rock.Web.UI.Controls
                     
                     if ( nodes.Count > 1 )
                     {
-                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
+                        InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
                     }
                 }
             }
@@ -134,7 +146,7 @@ namespace Rock.Web.UI.Controls
 
                         if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
                         {
-                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).Select(a => a.Quoted()).ToList().AsDelimited( "," );
+                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
                         }
                     }
                 }
