@@ -1679,7 +1679,7 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T ConvertToEnum<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T? result = ConvertToEnumOrNull<T>(enumValue, defaultValue);
             if (result.HasValue)
@@ -1698,10 +1698,10 @@ namespace Rock
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
         /// <returns></returns>
-        public static T? ConvertToEnumOrNull<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T result;
-            if ( Enum.TryParse<T>( enumValue.Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
+            if ( Enum.TryParse<T>( (enumValue ?? "").Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
             {
                 return result;
             }
