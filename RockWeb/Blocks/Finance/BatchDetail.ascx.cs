@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -25,7 +26,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -37,93 +40,67 @@ namespace RockWeb.Blocks.Finance
         #region Control Methods
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            gAccounts.DataKeyNames = new string[] { "Id" };
+            gAccounts.ShowActionRow = false;
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "financialBatchId" ).AsInteger() );
+                ShowDetail( PageParameter( "batchId" ).AsInteger() );
             }
+        }
+
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? batchId = PageParameter( pageReference, "batchId" ).AsIntegerOrNull();
+            if ( batchId != null )
+            {
+                string batchName = new FinancialBatchService( new RockContext() )
+                    .Queryable().Where( b => b.Id == batchId.Value )
+                    .Select( b => b.Name )
+                    .FirstOrDefault();
+
+                if ( !string.IsNullOrWhiteSpace( batchName ) )
+                {
+                    breadCrumbs.Add( new BreadCrumb( batchName, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Batch", pageReference ) );
+                }
+            }
+            else
+            {
+                // don't show a breadcrumb if we don't have a pageparam to work with
+            }
+
+            return breadCrumbs;
         }
 
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Handles the Click event of the lbSaveFinancialBatch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveFinancialBatch_Click( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            var financialBatchService = new FinancialBatchService( rockContext );
-            FinancialBatch financialBatch = null;
-
-            int financialBatchId = 0;
-            if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
-            {
-                financialBatchId = int.Parse( hfBatchId.Value );
-            }
-
-            if ( financialBatchId == 0 )
-            {
-                financialBatch = new Rock.Model.FinancialBatch();
-                financialBatchService.Add( financialBatch );
-            }
-            else
-            {
-                financialBatch = financialBatchService.Get( financialBatchId );
-            }
-
-            financialBatch.Name = tbName.Text;
-            financialBatch.BatchStartDateTime = drpBatchDate.LowerValue;
-            financialBatch.BatchEndDateTime = drpBatchDate.UpperValue;
-            financialBatch.CampusId = campCampus.SelectedCampusId;
-            financialBatch.Status = (BatchStatus)ddlStatus.SelectedIndex;
-            decimal fcontrolamt = 0;
-            decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
-            financialBatch.ControlAmount = fcontrolamt;
-
-            if ( !financialBatch.IsValid )
-            {
-                // Controls will render the error messages                    
-                return;
-            }
-
-            rockContext.SaveChanges();
-            hfBatchId.SetValue( financialBatch.Id );
-
-            foreach ( var block in RockPage.RockBlocks.OfType<RockWeb.Blocks.Finance.TransactionList>() )
-            {
-                ( (RockWeb.Blocks.Finance.TransactionList)block ).RefreshList();
-            }
-
-            var savedFinancialBatch = new FinancialBatchService( rockContext ).Get( hfBatchId.ValueAsInt() );
-            ShowSummary( savedFinancialBatch );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbCancelFinancialBatch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancelFinancialBatch_Click( object sender, EventArgs e )
-        {
-            if ( hfBatchId.ValueAsInt() != 0 )
-            {
-                var savedFinancialBatch = new FinancialBatchService( new RockContext() ).Get( hfBatchId.ValueAsInt() );
-                ShowSummary( savedFinancialBatch );
-            }
-            else
-            {
-                NavigateToParentPage();
-            }
-        }
 
         /// <summary>
         /// Handles the Click event of the lbEdit control.
@@ -132,14 +109,261 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbEdit_Click( object sender, EventArgs e )
         {
-            var financialBatchService = new FinancialBatchService( new RockContext() );
-            var financialBatch = financialBatchService.Get( hfBatchId.ValueAsInt() );
-            ShowEdit( financialBatch );
+            ShowEditDetails( GetBatch( hfBatchId.Value.AsInteger() ) );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
+        {
+            var rockContext = new RockContext();
+            var batchService = new FinancialBatchService( rockContext );
+            FinancialBatch batch = null;
+
+            int batchId = hfBatchId.Value.AsInteger();
+            if ( batchId == 0 )
+            {
+                batch = new Rock.Model.FinancialBatch();
+                batchService.Add( batch );
+            }
+            else
+            {
+                batch = batchService.Get( batchId );
+            }
+
+            if ( batch != null )
+            {
+                batch.Name = tbName.Text;
+                batch.Status = (BatchStatus)ddlStatus.SelectedIndex;
+                batch.CampusId = campCampus.SelectedCampusId;
+                batch.BatchStartDateTime = dtpStart.SelectedDateTimeIsBlank ? null : dtpStart.SelectedDateTime;
+                if (dtpEnd.SelectedDateTimeIsBlank && batch.BatchStartDateTime.HasValue)
+                {
+                    batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
+                }
+                else
+                {
+                    batch.BatchEndDateTime = dtpEnd.SelectedDateTimeIsBlank ? null : dtpEnd.SelectedDateTime;
+                }
+                batch.ControlAmount = tbControlAmount.Text.AsDecimal();
+                batch.AccountingSystemCode = tbAccountingCode.Text;
+
+                if ( !Page.IsValid || !batch.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
+                rockContext.SaveChanges();
+                hfBatchId.SetValue( batch.Id );
+
+                // Requery the batch to support EF navigation properties
+                var savedBatch = GetBatch( batch.Id );
+
+                ShowReadonlyDetails( savedBatch );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCancelFinancialBatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            int batchId = hfBatchId.ValueAsInt();
+            if (batchId != 0 )
+            {
+                ShowReadonlyDetails( GetBatch( batchId ) );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
         }
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets the batch.
+        /// </summary>
+        /// <param name="batchId">The batch identifier.</param>
+        /// <returns></returns>
+        private FinancialBatch GetBatch( int batchId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            var batch = new FinancialBatchService( rockContext )
+                .Queryable( "Campus,Transactions.TransactionDetails.Account" )
+                .Where( b => b.Id == batchId )
+                .FirstOrDefault();
+            return batch;
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="batchId">The financial batch identifier.</param>
+        public void ShowDetail( int batchId )
+        {
+            FinancialBatch batch = null;
+
+            bool editAllowed = true;
+
+            if ( !batchId.Equals( 0 ) )
+            {
+                batch = GetBatch( batchId );
+                if ( batch != null )
+                {
+                    editAllowed = batch.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
+            }
+
+            if ( batch == null )
+            {
+                batch = new FinancialBatch { Id = 0 };
+            }
+
+            hfBatchId.Value = batch.Id.ToString();
+
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                lbEdit.Visible = false;
+                ShowReadonlyDetails( batch );
+            }
+            else
+            {
+                lbEdit.Visible = true;
+                if ( batch.Id > 0 )
+                {
+                    ShowReadonlyDetails( batch );
+                }
+                else
+                {
+                    ShowEditDetails( batch );
+                }
+            }
+
+            lbSave.Visible = !readOnly;
+        }
+
+        /// <summary>
+        /// Shows the financial batch summary.
+        /// </summary>
+        /// <param name="batch">The financial batch.</param>
+        private void ShowReadonlyDetails( FinancialBatch batch )
+        {
+            SetEditMode( false );
+
+            if ( batch != null )
+            {
+                hfBatchId.SetValue( batch.Id );
+
+                lTitle.Text = batch.Name.FormatAsHtmlTitle();
+
+                string campus = string.Empty;
+                if ( batch.Campus != null )
+                {
+                    campus = batch.Campus.ToString();
+                }
+
+                decimal txnTotal = batch.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M;
+                decimal variance = txnTotal - batch.ControlAmount;
+                string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
+                    txnTotal.ToString( "C2" ), batch.ControlAmount.ToString( "C2" ), variance.ToString( "C2" ) );
+
+                lDetailsLeft.Text = new DescriptionList()
+                    .Add( "Status", batch.Status.ToString() )
+                    .Add( "Campus", campus )
+                    .Add( "Accounting Code", batch.AccountingSystemCode )
+                    .Html;
+
+                lDetailsRight.Text = new DescriptionList()
+                    .Add( "Transaction / Control / Variance Amounts", amountFormat )
+                    .Add( "Date Range", new DateRange( batch.BatchStartDateTime, batch.BatchEndDateTime ).ToString( "g" ) )
+                    .Html;
+
+                gAccounts.DataSource = batch.Transactions
+                    .SelectMany( t => t.TransactionDetails )
+                    .GroupBy( d => new
+                    {
+                        AccountId = d.AccountId,
+                        AccountName = d.Account.Name
+                    } )
+                    .Select( s => new
+                    {
+                        Id = s.Key.AccountId,
+                        Name = s.Key.AccountName,
+                        Amount = s.Sum( a => (decimal?)a.Amount ) ?? 0.0M
+                    } )
+                    .OrderBy( s => s.Name )
+                    .ToList();
+                gAccounts.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="batch">The financial batch.</param>
+        protected void ShowEditDetails( FinancialBatch batch )
+        {
+            if ( batch != null )
+            {
+                hfBatchId.Value = batch.Id.ToString();
+                if ( batch.Id > 0 )
+                {
+                    lTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
+                }
+
+                SetEditMode( true );
+
+                tbName.Text = batch.Name;
+
+                ddlStatus.BindToEnum( typeof( BatchStatus ) );
+                ddlStatus.SelectedIndex = (int)(BatchStatus)batch.Status;
+                
+                campCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
+                if ( batch.CampusId.HasValue )
+                {
+                    campCampus.SetValue(batch.CampusId.Value);
+                }
+
+                tbControlAmount.Text = batch.ControlAmount.ToString( "N2" );
+
+                dtpStart.SelectedDateTime = batch.BatchStartDateTime;
+                dtpEnd.SelectedDateTime = batch.BatchEndDateTime;
+
+                tbAccountingCode.Text = batch.AccountingSystemCode;
+            }
+        }
+
 
         /// <summary>
         /// Sets the edit mode.
@@ -148,124 +372,11 @@ namespace RockWeb.Blocks.Finance
         private void SetEditMode( bool editable )
         {
             pnlEditDetails.Visible = editable;
-            valSummaryBatch.Enabled = editable;
             fieldsetViewSummary.Visible = !editable;
+
+            this.HideSecondaryBlocks( editable );
         }
-
-        /// <summary>
-        /// Shows the financial batch summary.
-        /// </summary>
-        /// <param name="financialBatch">The financial batch.</param>
-        private void ShowSummary( FinancialBatch financialBatch )
-        {
-            string batchDate = string.Empty;
-            if ( financialBatch.BatchStartDateTime != null )
-            {
-                batchDate = financialBatch.BatchStartDateTime.Value.ToShortDateString();
-            }
-
-            lTitle.Text = string.Format( "{0} <small>{1}</small>", financialBatch.Name.FormatAsHtmlTitle(), batchDate );
-
-            SetEditMode( false );
-
-            string campus = string.Empty;
-            if ( financialBatch.CampusId.HasValue )
-            {
-                campus = financialBatch.Campus.ToString();
-            }
-
-            hfBatchId.SetValue( financialBatch.Id );
-            lDetailsLeft.Text = new DescriptionList()
-                .Add( "Title", financialBatch.Name )
-                .Add( "Status", financialBatch.Status.ToString() )
-                .Add( "Batch Start Date", Convert.ToDateTime( financialBatch.BatchStartDateTime ).ToString( "MM/dd/yyyy" ) )
-                .Html;
-
-            lDetailsRight.Text = new DescriptionList()
-                .Add( "Control Amount", financialBatch.ControlAmount.ToString() )
-                .Add( "Campus", campus )
-                .Add( "Batch End Date", Convert.ToDateTime( financialBatch.BatchEndDateTime ).ToString( "MM/dd/yyyy" ) )
-                .Html;
-        }
-
-        /// <summary>
-        /// Shows the edit details.
-        /// </summary>
-        /// <param name="financialBatch">The financial batch.</param>
-        protected void ShowEdit( FinancialBatch financialBatch )
-        {
-            if ( financialBatch.Id > 0 )
-            {
-                lTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
-            }
-            else
-            {
-                lTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
-            }
-
-            SetEditMode( true );
-
-            ddlStatus.BindToEnum( typeof( BatchStatus ) );
-            hfBatchId.Value = financialBatch.Id.ToString();
-            tbName.Text = financialBatch.Name;
-            tbControlAmount.Text = financialBatch.ControlAmount.ToString();
-            ddlStatus.SelectedIndex = (int)(BatchStatus)financialBatch.Status;
-            campCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
-            if ( financialBatch.CampusId.HasValue )
-            {
-                campCampus.SelectedCampusId = financialBatch.CampusId;
-            }
-
-            drpBatchDate.LowerValue = financialBatch.BatchStartDateTime;
-            drpBatchDate.UpperValue = financialBatch.BatchEndDateTime;
-        }
-
-        /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        /// <param name="financialBatchId">The financial batch identifier.</param>
-        public void ShowDetail( int financialBatchId )
-        {
-            FinancialBatch financialBatch = null;
-
-            if ( !financialBatchId.Equals( 0 ) )
-            {
-                financialBatch = new FinancialBatchService( new RockContext() ).Get( financialBatchId );
-            }
-
-            if ( financialBatch == null )
-            {
-                financialBatch = new FinancialBatch { Id = 0 };
-            }
-
-            bool readOnly = false;
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
-            }
-
-            if ( !readOnly )
-            {
-                lbEdit.Visible = true;
-                if ( financialBatch.Id > 0 )
-                {
-                    ShowSummary( financialBatch );
-                }
-                else
-                {
-                    ShowEdit( financialBatch );
-                }
-            }
-            else
-            {
-                lbEdit.Visible = false;
-                ShowSummary( financialBatch );
-            }
-
-            lbSave.Visible = !readOnly;
-        }
-
+        
         #endregion
     }
 }

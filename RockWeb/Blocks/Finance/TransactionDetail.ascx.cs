@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Finance
             if ( batchId != null )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["financialBatchid"] = hfBatchId.Value;
+                qryString["batchid"] = hfBatchId.Value;
                 NavigateToParentPage( qryString );
             }
             else
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Finance
             if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["financialBatchid"] = hfBatchId.Value;
+                qryString["batchid"] = hfBatchId.Value;
                 NavigateToParentPage( qryString );
             }
             else
@@ -472,7 +472,7 @@ namespace RockWeb.Blocks.Finance
             {
                 lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
                 hfIdTransValue.Value = transaction.Id.ToString();
-                hfBatchId.Value = PageParameter( "financialBatchId" );
+                hfBatchId.Value = PageParameter( "batchId" );
                 ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
                 ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
                 if ( transaction.GatewayEntityTypeId.HasValue )
@@ -565,7 +565,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             hfIdTransValue.Value = transaction.Id.ToString();
-            hfBatchId.Value = PageParameter( "financialBatchId" );
+            hfBatchId.Value = PageParameter( "batchId" );
 
             if ( !readOnly )
             {

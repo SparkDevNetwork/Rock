@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     [ContextAware]
     [LinkedPage( "Detail Page" )]
     [TextField( "Title", "Title to display above the grid. Leave blank to hide.", false )]
-    public partial class TransactionList : Rock.Web.UI.RockBlock
+    public partial class TransactionList : Rock.Web.UI.RockBlock, ISecondaryBlock
     {
         #region Fields
 
@@ -252,6 +252,15 @@ namespace RockWeb.Blocks.Finance
         #region Internal Methods
 
         /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on it's page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
+        }
+        
+        /// <summary>
         /// Binds the filter.
         /// </summary>
         private void BindFilter()
@@ -302,7 +311,7 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( contextEntity is FinancialBatch )
                 {
-                    var batchId = PageParameter( "financialBatchId" );
+                    var batchId = PageParameter( "batchId" );
                     var batch = new FinancialBatchService( new RockContext() ).Get( int.Parse( batchId ) );
                     _batch = batch;
                     BindGrid();
@@ -347,7 +356,7 @@ namespace RockWeb.Blocks.Finance
                     gTransactions.IsDeleteEnabled = true;
                 }
             }
-            else if ( !string.IsNullOrWhiteSpace( PageParameter( "financialBatchId" ) ) && _batch == null )
+            else if ( !string.IsNullOrWhiteSpace( PageParameter( "batchId" ) ) && _batch == null )
             {
                 // this makes sure the grid will show no transactions when you're adding a new financial batch.
                 queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == 0 );
@@ -467,7 +476,7 @@ namespace RockWeb.Blocks.Finance
             if ( _batch != null )
             {
                 Dictionary<string, string> qryParams = new Dictionary<string, string>();
-                qryParams.Add( "financialBatchId", _batch.Id.ToString() );
+                qryParams.Add( "batchId", _batch.Id.ToString() );
                 qryParams.Add( "transactionId", id.ToString() );
                 NavigateToLinkedPage( "DetailPage", qryParams );
             }
@@ -496,5 +505,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion Internal Methods
+
     }
 }

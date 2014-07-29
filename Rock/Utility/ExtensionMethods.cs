@@ -1681,21 +1681,14 @@ namespace Rock
         /// <returns></returns>
         public static T ConvertToEnum<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
-            if ( defaultValue.HasValue )
+            T? result = ConvertToEnumOrNull<T>(enumValue, defaultValue);
+            if (result.HasValue)
             {
-                T result;
-                if ( Enum.TryParse<T>( enumValue, out result ) )
-                {
-                    return result;
-                }
-                else
-                {
-                    return defaultValue.Value;
-                }
+                return result.Value;
             }
             else
             {
-                return (T)Enum.Parse( typeof( T ), enumValue.Replace( " ", "" ) );
+                throw new Exception( string.Format( "'{0}' is not a member of the {1} enumeration.", enumValue, typeof( T ).Name ) );
             }
         }
 
@@ -1705,16 +1698,23 @@ namespace Rock
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
         /// <returns></returns>
-        public static T? ConvertToEnumOrNull<T>( this String enumValue ) where T : struct // actually limited to enum, but struct is the closest we can do
+        public static T? ConvertToEnumOrNull<T>( this String enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T result;
-            if ( Enum.TryParse<T>( enumValue, out result ) )
+            if ( Enum.TryParse<T>( enumValue.Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
             {
                 return result;
             }
             else
             {
-                return null;
+                if ( defaultValue.HasValue )
+                {
+                    return defaultValue.Value;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 

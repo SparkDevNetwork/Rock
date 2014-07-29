@@ -35,7 +35,16 @@ namespace Rock.Migrations
             AddForeignKey("dbo.FinancialTransaction", "ProcessedByPersonAliasId", "dbo.PersonAlias", "Id");
 
             // Update Batch Detail page not to diplay name in breadcrumbs (block now does it)
-            Sql( @"UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '606BDA31-A8FE-473A-B3F8-A00ECF7E06EC'" );
+            Sql( @"
+    UPDATE [Page] SET [BreadCrumbDisplayName] = 0 WHERE [Guid] = '606BDA31-A8FE-473A-B3F8-A00ECF7E06EC'
+
+    UPDATE C SET C.[IdParameter] = 'batchId'
+    FROM [PageContext] C
+	    INNER JOIN [Page] P ON P.[Id] = C.[PageId]
+    WHERE P.[Guid] = '606BDA31-A8FE-473A-B3F8-A00ECF7E06EC'
+    AND C.[IdParameter] = 'financialBatchId'
+" );
+
         }
         
         /// <summary>

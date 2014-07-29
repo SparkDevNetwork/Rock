@@ -425,38 +425,16 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         /// <returns></returns>
         public static string FormatDelimitedValues( string value )
         {
-            try
+            if ( !string.IsNullOrWhiteSpace(value) && value.Contains(",") )
             {
-                if ( value != null )
+                var dates = value.Split( ',' );
+                if (dates.Length == 2)
                 {
-                    if ( value.StartsWith( "," ) )
-                    {
-                        string upperValue = DateTime.Parse( value.Substring( 1 ) ).Date.ToShortDateString();
-                        return string.Format( "through {0}", upperValue );
-                    }
-                    else if ( value.EndsWith( "," ) )
-                    {
-                        string lowerValue = DateTime.Parse( value.Substring( 0, value.Length - 1 ) ).Date.ToShortDateString();
-                        return string.Format( "from {0}", lowerValue );
-                    }
-                    else
-                    {
-                        string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                        if ( valuePair.Length == 2 )
-                        {
-                            string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[0] ).Date.ToShortDateString();
-                            string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : DateTime.Parse( valuePair[1] ).Date.ToShortDateString();
-                            return string.Format( "{0} to {1}", lowerValue, upperValue );
-                        }
-                    }
+                    return new DateRange( dates[0].AsDateTime(), dates[1].AsDateTime() ).ToString( "d" );
                 }
+            }
 
-                return null;
-            }
-            catch 
-            {
-                return null;  
-            }
+            return null;
         }
     }
 }
