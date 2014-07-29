@@ -4004,6 +4004,12 @@ fieldset[disabled] .btn-authenication.active {
   color: #808080;
   padding: 0;
 }
+.alert pre {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background-color: transparent;
+}
 .alert-action {
   background-color: #d5d5d5;
   border-color: #d5d5d5;
