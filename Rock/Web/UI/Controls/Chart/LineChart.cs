@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Reporting.Dashboard.Flot;
 
 namespace Rock.Web.UI.Controls
 {

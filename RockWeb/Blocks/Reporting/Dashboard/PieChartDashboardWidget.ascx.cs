@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "Pie Chart Dashboard Widget" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", Order = 3 )]
-    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", Key="Entity", Order = 4 )]
+    [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", Key = "Entity", Order = 4 )]
     [MetricCategoriesField( "Metrics", "Select the metrics to include in the pie chart.  Each Metric will be a section of the pie.", false, "", "", 5, "MetricCategories" )]
     [CustomRadioListField( "Metric Value Type", "Select which metric value type to display in the chart", "Goal,Measure", false, "Measure", Order = 6 )]
     [SlidingDateRangeField( "Date Range", Key = "SlidingDateRange", DefaultValue = "1||4||", Order = 7 )]
@@ -79,8 +79,8 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// </summary>
         public void LoadChart()
         {
-            pcChart.Title = this.Title;
-            pcChart.Subtitle = this.Subtitle;
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
             pcChart.ShowTooltip = true;
             pcChart.Options.SetChartStyle( this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
 
@@ -133,18 +133,18 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             }
 
             pcChart.DataSourceUrl = restApiUrl;
-            
+
             //// pcChart.PieOptions.tilt = 0.5;
             //// pcChart.ChartHeight =  
-            
-            pcChart.PieOptions.label = new Rock.Reporting.Dashboard.Flot.PieLabel { show = true };
+
+            pcChart.PieOptions.label = new PieLabel { show = true };
             pcChart.PieOptions.label.formatter = @"
 function labelFormatter(label, series) {
 	return ""<div style='font-size:8pt; text-align:center; padding:2px; '>"" + label + ""<br/>"" + Math.round(series.percent) + ""%</div>"";
 }
 ".Trim();
             pcChart.Legend.show = false;
-            
+
             nbMetricWarning.Visible = !metricIdList.Any();
         }
 

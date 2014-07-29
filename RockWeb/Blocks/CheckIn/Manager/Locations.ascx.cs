@@ -28,7 +28,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.Dashboard.Flot;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 

@@ -17,6 +17,7 @@
 using System.ComponentModel;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
@@ -28,14 +29,36 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [Description( "Bar Chart Dashboard Widget" )]
     public partial class BarChartDashboardWidget : LineBarPointsChartDashboardWidget
     {
-        public override Rock.Web.UI.Controls.FlotChart FlotChartControl
+        /// <summary>
+        /// Gets the flot chart control.
+        /// </summary>
+        /// <value>
+        /// The flot chart control.
+        /// </value>
+        public override FlotChart FlotChartControl
         {
             get { return bcChart; }
         }
 
+        /// <summary>
+        /// Gets the metric warning control.
+        /// </summary>
+        /// <value>
+        /// The metric warning control.
+        /// </value>
         public override Rock.Web.UI.Controls.NotificationBox MetricWarningControl
         {
             get { return nbMetricWarning; }
+        }
+
+        /// <summary>
+        /// Loads the chart.
+        /// </summary>
+        public override void LoadChart()
+        {
+            base.LoadChart();
+            lDashboardTitle.Text = this.Title;
+            lDashboardSubtitle.Text = this.Subtitle;
         }
     }
 }

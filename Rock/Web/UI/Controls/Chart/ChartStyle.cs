@@ -18,7 +18,7 @@ using System;
 using Newtonsoft.Json;
 using Rock.Utility;
 
-namespace Rock.Reporting.Dashboard
+namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Chart Style class.  All values are optional.  The chart will decide the style if a value is not specified
@@ -297,7 +297,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The font.
         /// </value>
-        public FontStyle Font { get; set; }
+        public ChartFontStyle Font { get; set; }
 
         /// <summary>
         /// Gets or sets the date time format on axis that have date/time data
@@ -312,7 +312,7 @@ namespace Rock.Reporting.Dashboard
     /// <summary>
     /// 
     /// </summary>
-    public class FontStyle
+    public class ChartFontStyle
     {
         /// <summary>
         /// Gets or sets the size.
@@ -350,7 +350,7 @@ namespace Rock.Reporting.Dashboard
         /// <value>
         /// The font.
         /// </value>
-        public FontStyle Font { get; set; }
+        public ChartFontStyle Font { get; set; }
 
         /// <summary>
         /// Gets or sets the align.

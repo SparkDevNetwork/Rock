@@ -342,7 +342,7 @@ function(item) {
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        protected void lcAttendance_ChartClick( object sender, FlotChart.ChartClickArgs e )
+        protected void lcAttendance_ChartClick( object sender, ChartClickArgs e )
         {
             if ( this.DetailPageGuid.HasValue )
             {
