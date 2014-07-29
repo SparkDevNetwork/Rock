@@ -28,9 +28,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Security;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.Finance
             hfFinancialBatchId.Value = financialBatchId.ToString();
             hfTransactionId.Value = string.Empty;
 
-            NavigateToTransaction( Direction.Next);
+            NavigateToTransaction( Direction.Next );
         }
 
         /// <summary>
@@ -124,56 +124,40 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Navigates to the next (or previous) transaction to edit
         /// </summary>
-        private void NavigateToTransaction( Direction direction)
+        private void NavigateToTransaction( Direction direction )
         {
-            int? transactionId = hfTransactionId.Value.AsInteger();
-            
-            if (direction == Direction.Prev)
-            {
-                var historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
-                
-                int position = historyList.IndexOf( transactionId ?? 0 );
-                if ( position > 0 )
-                {
-                    transactionId = historyList[position - 1];
-                }
-                else
-                {
-                    transactionId = null;
-                }
+            int? fromTransactionId = hfTransactionId.Value.AsIntegerOrNull();
+            int? toTransactionId = null;
+            List<int> historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
+            int position = hfHistoryPosition.Value.AsIntegerOrNull() ?? -1;
 
-                hfTransactionId.Value = transactionId.ToString();
+            if ( direction == Direction.Prev )
+            {
+                position--;
             }
             else
             {
-                // TODO
-                var historyList = hfBackNextHistory.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.AsInteger() ).Where( a => a > 0 ).ToList();
+                position++;
+            }
 
-                // figure out which transaction to navigate to (or set to NULL if we need to look for the next one in the database)
-                int position = historyList.IndexOf( transactionId.Value );
-                if ( position < 0 )
+            if ( historyList.Count > position )
+            {
+                if ( position >= 0 )
                 {
-                    historyList.Add( transactionId.Value );
-                    transactionId = null;
+                    toTransactionId = historyList[position];
                 }
                 else
                 {
-                    if ( position < historyList.Count )
-                    {
-                        transactionId = historyList[position + 1];
-                    }
-                    else
-                    {
-                        transactionId = null;
-                    }
+                    // if we trying to go previous when we are already at the start of the list, wrap around to the last item in the list
+                    toTransactionId = historyList.Last();
+                    position = historyList.Count - 1;
                 }
-
-                hfBackNextHistory.Value = historyList.AsDelimited( "," );
             }
 
-            // TODO fix up navigation logic, etc....
+            hfHistoryPosition.Value = position.ToString();
 
-            
+            // TODO fix up edit/display logic, etc....
+
             int financialBatchId = hfFinancialBatchId.Value.AsInteger();
             var rockContext = new RockContext();
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
@@ -182,29 +166,59 @@ namespace RockWeb.Blocks.Finance
                 .Where( a => a.AuthorizedPersonId == null );
 
             // if a specific transactionId was specified load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
-            if ( transactionId.HasValue )
+            if ( toTransactionId.HasValue )
             {
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.Id == transactionId );
+                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.Id == toTransactionId );
             }
             else if ( financialBatchId != 0 )
             {
                 qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == financialBatchId );
             }
 
+            if ( historyList.Any() && !toTransactionId.HasValue )
+            {
+                // since we are looking for a transaction we haven't viewed or matched yet, look for the next one in the database that we haven't seen yet
+                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => !historyList.Contains( a.Id ) );
+            }
+
             qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
 
             // TODO add logic for ProcessedBy...
-            FinancialTransaction firstTransactionToMatch = qryTransactionsToMatch.FirstOrDefault();
-            if ( firstTransactionToMatch == null )
+            FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
+            if ( transactionToMatch == null )
             {
                 // TODO if no matches are left remove the limit of ProcessedBy and present a warning if there are InProcess ones that need to be finished
+                qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
+                if ( financialBatchId != 0 )
+                {
+                    qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == financialBatchId );
+                }
+
+                transactionToMatch = qryTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault() ?? qryTransactionsToMatch.FirstOrDefault();
+                if ( transactionToMatch != null )
+                {
+                    historyList.Add( transactionToMatch.Id );
+                    hfHistoryPosition.Value = historyList.LastIndexOf( transactionToMatch.Id ).ToString();
+                }
+            }
+            else
+            {
+                if ( !toTransactionId.HasValue )
+                {
+                    historyList.Add( transactionToMatch.Id );
+                }
             }
 
-            nbNoUnmatchedTransactionsRemaining.Visible = firstTransactionToMatch == null;
-            pnlEdit.Visible = firstTransactionToMatch != null;
-            if ( firstTransactionToMatch != null )
+            nbNoUnmatchedTransactionsRemaining.Visible = transactionToMatch == null;
+            pnlEdit.Visible = transactionToMatch != null;
+            if ( transactionToMatch != null )
             {
-                var transactionToMatch = firstTransactionToMatch;
+                var descriptionList = new DescriptionList();
+                descriptionList
+                    .Add( "Date", transactionToMatch.TransactionDateTime )
+                    .Add( "Id", transactionToMatch.Id );
+
+                lTransactionInfo.Text = descriptionList.Html;
                 hfTransactionId.Value = transactionToMatch.Id.ToString();
                 int frontImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT.AsGuid() ).Id;
                 int backImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK.AsGuid() ).Id;
@@ -212,23 +226,41 @@ namespace RockWeb.Blocks.Finance
                 var backImage = transactionToMatch.Images.Where( a => a.TransactionImageTypeValueId == backImageTypeId ).FirstOrDefault();
 
                 string checkMicrHashed = null;
-                var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
-                var parts = checkMicrClearText.Split( '_' );
-                if ( parts.Length >= 2 )
+
+                if ( !string.IsNullOrWhiteSpace( transactionToMatch.CheckMicrEncrypted ) )
                 {
-                    checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
+                    try
+                    {
+                        var checkMicrClearText = Encryption.DecryptString( transactionToMatch.CheckMicrEncrypted );
+                        var parts = checkMicrClearText.Split( '_' );
+                        if ( parts.Length >= 2 )
+                        {
+                            checkMicrHashed = FinancialPersonBankAccount.EncodeAccountNumber( parts[0], parts[1] );
+                        }
+                    }
+                    catch
+                    {
+                        // intentionally ignore exception when decripting CheckMicrEncrypted since we'll be checking for null below
+                    }
                 }
 
                 hfCheckMicrHashed.Value = checkMicrHashed;
 
-                var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.Person );
-                ddlIndividual.Items.Clear();
-                foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
+                if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
                 {
-                    ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
+                    var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.Person );
+                    ddlIndividual.Items.Clear();
+                    foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
+                    {
+                        ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
+                    }
+                }
+                else
+                {
+                    // TODO warn about missing MICR
                 }
 
-                if ( ddlIndividual.Items.Count == 0 )
+                if ( ddlIndividual.Items.Count == 1 )
                 {
                     ddlIndividual.SelectedIndex = 0;
                 }
@@ -260,6 +292,26 @@ namespace RockWeb.Blocks.Finance
             {
                 hfTransactionId.Value = string.Empty;
             }
+
+            hfBackNextHistory.Value = historyList.AsDelimited( "," );
+
+            // DEBUG bookmarks
+            lBookmarkDebug.Text = string.Empty;
+
+            for ( int i = 0; i < historyList.Count; i++ )
+            {
+                var item = historyList[i];
+                if ( i == position )
+                {
+                    lBookmarkDebug.Text += "|<u>" + item.ToString() + "</u>";
+                }
+                else
+                {
+                    lBookmarkDebug.Text += "|" + item.ToString();
+                }
+            }
+
+            lBookmarkDebug.Text = lBookmarkDebug.Text.TrimStart( new char[] { '|' } );
         }
 
         #endregion
@@ -297,7 +349,7 @@ namespace RockWeb.Blocks.Finance
         {
             NavigateToTransaction( Direction.Prev );
 
-            
+
         }
 
         /// <summary>

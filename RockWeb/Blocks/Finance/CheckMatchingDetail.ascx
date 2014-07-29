@@ -16,6 +16,7 @@
         </style>
 
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
+        <asp:HiddenField ID="hfHistoryPosition" runat="server" />
         <asp:HiddenField ID="hfTransactionId" runat="server" />
         <asp:HiddenField ID="hfFinancialBatchId" runat="server" />
         <asp:HiddenField ID="hfCheckMicrHashed" runat="server" />
@@ -32,7 +33,9 @@
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-6">
+                            <asp:Literal ID="lTransactionInfo" runat="server" />
                             <Rock:NotificationBox ID="nbNoCheckImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Check Images found for this transaction." />
+                            <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This check is getting processed by ...." />
                             <asp:Image ID="imgCheck" runat="server" CssClass="check-image" AlternateText="Unable to display check. Verify that user is authorized to view Check Images." />
                             <br />
                             <asp:Image ID="imgCheckOtherSideThumbnail" runat="server" CssClass="check-image-thumbnail" ToolTip="Click to toggle" onclick="javascript: toggleCheckImages();" />
@@ -60,6 +63,13 @@
                             <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="text-align: center">
+                                <asp:Literal ID="lBookmarkDebug" runat="server" Text="1|2|<u>3</u>|4|5" />
+                            </div>
+                        </div>
+                    </div>
                 </asp:Panel>
             </div>
 
@@ -74,7 +84,7 @@
         <script>
             function updateRemainingAccountAllocation() {
                 var checkTotalAmount = $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val();
-                
+
                 var amountRemaining = isNaN(checkTotalAmount) ? 0.00 : Number(checkTotalAmount).toFixed(2);
                 $('#<%=pnlView.ClientID%> .js-account-amount :input').each(function (index, elem) {
                     var accountAmount = Number($(elem).val()).toFixed(2);
