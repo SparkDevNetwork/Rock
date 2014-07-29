@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchDetail" %>
 <%@ Reference Control="~/Blocks/Finance/TransactionList.ascx" %>
 
-<asp:UpdatePanel ID="upnlFinancialBatch" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
@@ -19,39 +19,52 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbName" runat="server" Label="Title" TabIndex="1" 
-                                SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" ValidationGroup="batchDetail" />
                         </div>
                     </div>
                 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:CurrencyBox ID="tbControlAmount" runat="server" CssClass="input-width-md" Label="Control Amount" TabIndex="2" 
-                                SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
-                            <Rock:RockDropDownList ID="ddlStatus" TabIndex="3" runat="server" Label="Status"></Rock:RockDropDownList>
+                            <Rock:DataTextBox ID="tbName" runat="server" Label="Title" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
+                            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" Required="true"></Rock:RockDropDownList>
+                            <Rock:CampusPicker ID="campCampus" runat="server" Label="Campus" />
+                            <Rock:DataTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="AccountingSystemCode"
+                                Help="Optional id or code from an external accounting system." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:CampusPicker ID="campCampus" runat="server" TabIndex="4" />
-                            <Rock:DateRangePicker ID="drpBatchDate" TabIndex="5" runat="server" Label="Batch Date Range" />
+                            <Rock:CurrencyBox ID="tbControlAmount" runat="server" Label="Control Amount" />
+                            <Rock:DateTimePicker ID="dtpStart" runat="server" Label="Batch Start" Required="true" RequiredErrorMessage="A Batch Start Date is required" />
+                            <Rock:DateTimePicker ID="dtpEnd" runat="server" Label="Batch End" />
                         </div>
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSaveFinancialBatch_Click" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancelFinancialBatch_Click" />
+                        <asp:LinkButton ID="lbSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                     </div>
                 </div>
 
                 <fieldset id="fieldsetViewSummary" runat="server">
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     <div class="row">
-                        <div class="col-md-12">
-                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                        <div class="col-sm-7">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <asp:Literal ID="lDetailsLeft" runat="server" />
+                                </div>
+                                <div class="col-md-7">
+                                    <asp:Literal ID="lDetailsRight" runat="server" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <asp:Literal ID="lDetailsLeft" runat="server" />
-                        </div>
-                        <div class="col-md-6">
-                            <asp:Literal ID="lDetailsRight" runat="server" />
+                        <div class="col-sm-5">
+                            <div class="grid">
+                                <Rock:Grid ID="gAccounts" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Account" AllowSorting="false">
+                                    <Columns>
+                                        <asp:BoundField DataField="Name" HeaderText="Account Totals" />
+                                        <asp:BoundField DataField="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                                    </Columns>
+                                </Rock:Grid>
+                            </div>
                         </div>
                     </div>
                     <div class="actions">

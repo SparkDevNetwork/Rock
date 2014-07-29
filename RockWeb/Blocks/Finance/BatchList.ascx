@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchList.ascx.cs" Inherits="RockWeb.Blocks.Finance.BatchList" %>
 
-<asp:UpdatePanel ID="upnlFinancialBatch" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Danger" Visible="true" />
@@ -13,47 +13,40 @@
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:GridFilter ID="gfBatchFilter" runat="server">
-                        <Rock:DatePicker ID="dpBatchDate" runat="server" Label="Date" />
-                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
                         <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                        <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
                         <Rock:CampusPicker ID="campCampus" runat="server" />
+                        <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
+                        <Rock:RockTextBox ID="tbAccountingCode" runat="server" Label="Accounting Code"></Rock:RockTextBox>
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gBatchList" runat="server" OnRowDataBound="gBatchList_RowDataBound" ShowConfirmDeleteDialog="true" OnRowSelected="gBatchList_Edit" AllowSorting="true">
+                    <Rock:Grid ID="gBatchList" runat="server" RowItemText="Batch" OnRowSelected="gBatchList_Edit" AllowSorting="true">
                         <Columns>
+                            <Rock:SelectField />
                             <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                            <asp:TemplateField HeaderText="Date">
-                                <ItemTemplate>
-                                    <span><%# Eval("BatchStartDateTime") %></span>
-                                </ItemTemplate>
-                            </asp:TemplateField>
+                            <Rock:DateField DataField="BatchStartDateTime" HeaderText="Date" SortExpression="BatchStartDateTime" />
                             <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
-                            <asp:TemplateField HeaderText="Transaction Total">
+                            <asp:BoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
+                            <asp:BoundField DataField="TransactionCount" HeaderText="Transactions" SortExpression="TransactionCount" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" />
+                            <asp:BoundField DataField="TransactionAmount" HeaderText="Transaction Total" SortExpression="TransactionAmount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" />
+                            <asp:TemplateField HeaderText="Control Variance" ItemStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
-                                    <asp:Literal ID="TransactionTotal" runat="server" />
+                                    <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Var from Control">
+                            <asp:BoundField DataField="CampusName" HeaderText="Campus" SortExpression="CampusName"  />
+                            <asp:TemplateField HeaderText="Status">
                                 <ItemTemplate>
-                                    <asp:Label ID="lblVariance" runat="server"></asp:Label>
+                                    <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:TemplateField HeaderText="Transaction Count" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right">
-                                <ItemTemplate>
-                                    <asp:Literal ID="TransactionCount" runat="server" />
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus"  />
-                            <asp:BoundField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                            <asp:TemplateField HeaderText="Messages">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblWarnings" runat="server"></asp:Label>
-                                </ItemTemplate>
-                            </asp:TemplateField>
+                            <asp:BoundField DataField="Notes" HeaderText="Note" HtmlEncode="false"  />
                             <Rock:DeleteField OnClick="gBatchList_Delete" />
                         </Columns>
                     </Rock:Grid>
+
+                    <Rock:NotificationBox ID="nbResult" runat="server" Visible="false" Dismissable="true"></Rock:NotificationBox>
                 </div>
             </div>
 

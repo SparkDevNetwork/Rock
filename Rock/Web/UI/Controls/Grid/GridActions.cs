@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -27,6 +29,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
     {
+
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="GridActions" /> class.
         /// </summary>
@@ -34,19 +39,30 @@ namespace Rock.Web.UI.Controls
         public GridActions( Grid parentGrid )
         {
             _parentGrid = parentGrid;
+            _customActions = new List<Control>();
         }
+
+        #endregion
+
+        #region Fields
 
         private Grid _parentGrid;
 
+        #endregion
+
+        #region Controls
+
+        private List<Control> _customActions;
         private LinkButton _lbMerge;
-
         private LinkButton _lbCommunicate;
-
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
-
         private HtmlGenericControl _aExcelExport;
         private LinkButton _lbExcelExport;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets a value indicating whether [show communicate].
@@ -137,6 +153,19 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> value that corresponds to this Web server control. This property is used primarily by control developers.
+        /// </summary>
+        /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
+        protected override HtmlTextWriterTag TagKey
+        {
+            get { return HtmlTextWriterTag.Unknown; }
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -156,65 +185,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            _lbMerge.Visible = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
-
-            _lbCommunicate.Visible = ShowCommunicate;
-
-            _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
-            _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
-
-            _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
-
-            base.RenderControl( writer );
-        }
-
-        /// <summary>
         /// Recreates the child controls in a control derived from <see cref="T:System.Web.UI.WebControls.CompositeControl"/>.
         /// </summary>
         protected override void RecreateChildControls()
         {
             EnsureChildControls();
-        }
-
-        /// <summary>
-        /// Gets the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> value that corresponds to this Web server control. This property is used primarily by control developers.
-        /// </summary>
-        /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
-        protected override HtmlTextWriterTag TagKey
-        {
-            get { return HtmlTextWriterTag.Unknown; }
-        }
-
-        /// <summary>
-        /// Renders the HTML opening tag of the control to the specified writer. This method is used primarily by control developers.
-        /// </summary>
-        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
-        public override void RenderBeginTag( HtmlTextWriter writer )
-        {
-            // suppress the writing of a wrapper tag
-            if (this.TagKey != HtmlTextWriterTag.Unknown)
-            {
-                base.RenderBeginTag(writer);
-            }
-        }
-
-        /// <summary>
-        /// Renders the HTML closing tag of the control to the specified writer. This method is used primarily by control developers.
-        /// </summary>
-        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
-        public override void RenderEndTag(HtmlTextWriter writer)
-        {
-            // suppress the writing of a wrapper tag
-            if (this.TagKey != HtmlTextWriterTag.Unknown)
-            {
-                base.RenderEndTag(writer);
-            }
         }
 
         /// <summary>
@@ -224,12 +199,20 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
+            if ( _customActions != null )
+            {
+                foreach ( Control control in _customActions )
+                {
+                    Controls.Add( control );
+                }
+            }
+
             // controls for add
             _aAdd = new HtmlGenericControl( "a" );
             Controls.Add( _aAdd );
             _aAdd.ID = "aAdd";
             _aAdd.Attributes.Add( "href", "#" );
-            _aAdd.Attributes.Add("class", "btn-add btn btn-default btn-sm");
+            _aAdd.Attributes.Add( "class", "btn-add btn btn-default btn-sm" );
             _aAdd.InnerText = "Add";
 
             _lbAdd = new LinkButton();
@@ -242,9 +225,9 @@ namespace Rock.Web.UI.Controls
             _lbAdd.PreRender += lb_PreRender;
             Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
-            iAdd.Attributes.Add("class", "fa fa-plus-circle");
+            iAdd.Attributes.Add( "class", "fa fa-plus-circle" );
             _lbAdd.Controls.Add( iAdd );
-            
+
             // control for communicate
             _lbCommunicate = new LinkButton();
             Controls.Add( _lbCommunicate );
@@ -293,6 +276,55 @@ namespace Rock.Web.UI.Controls
             iExcelExport.Attributes.Add( "class", "fa fa-table" );
             _lbExcelExport.Controls.Add( iExcelExport );
         }
+
+        /// <summary>
+        /// Renders the HTML opening tag of the control to the specified writer. This method is used primarily by control developers.
+        /// </summary>
+        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
+        public override void RenderBeginTag( HtmlTextWriter writer )
+        {
+            // suppress the writing of a wrapper tag
+            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            {
+                base.RenderBeginTag(writer);
+            }
+        }
+
+        /// <summary>
+        /// Renders the HTML closing tag of the control to the specified writer. This method is used primarily by control developers.
+        /// </summary>
+        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
+        public override void RenderEndTag(HtmlTextWriter writer)
+        {
+            // suppress the writing of a wrapper tag
+            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            {
+                base.RenderEndTag(writer);
+            }
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            _lbMerge.Visible = !string.IsNullOrWhiteSpace( _parentGrid.PersonIdField );
+
+            _lbCommunicate.Visible = ShowCommunicate;
+
+            _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
+            _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+
+            _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+
+            base.RenderControl( writer );
+        }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handles the PreRender event of the linkbutton controls.
@@ -367,6 +399,25 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        public void ClearCustomActionControls()
+        {
+            _customActions.Clear();
+        }
+
+        public void AddCustomActionControl( Control control)
+        {
+            _customActions.Add( control );
+            RecreateChildControls();
+        }
+
+        #endregion
+
+        #region Event Handlers
+
         /// <summary>
         /// Occurs when merge action is clicked.
         /// </summary>
@@ -386,5 +437,7 @@ namespace Rock.Web.UI.Controls
         /// Occurs when add action is clicked.
         /// </summary>
         public event EventHandler ExcelExportClick;
+
+        #endregion
     }
 }

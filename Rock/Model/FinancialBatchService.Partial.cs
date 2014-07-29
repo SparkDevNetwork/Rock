@@ -93,7 +93,7 @@ namespace Rock.Model
                     batch.BatchStartDateTime.Value.AddDays( -1 );
                 }
 
-                batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
+                batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
                 batch.ControlAmount = 0;
                 Add( batch );
             }
