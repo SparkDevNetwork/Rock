@@ -106,13 +106,19 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             restApiUrl += string.Format( "&metricValueType={0}", metricValueType );
 
-            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( '|' );
+            string[] entityValues = ( GetAttributeValue( "Entity" ) ?? string.Empty ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            EntityTypeCache entityType = null;
+            if ( entityValues.Length >= 1 )
+            {
+                entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+            }
+
             if ( entityValues.Length == 2 )
             {
-                var entityType = EntityTypeCache.Read( entityValues[0].AsGuid() );
+                // entity id specified by block setting
                 if ( entityType != null )
                 {
-                    restApiUrl += string.Format( "?entityTypeId={0}", entityType.Id );
+                    restApiUrl += string.Format( "&entityTypeId={0}", entityType.Id );
                     int? entityId = entityValues[1].AsIntegerOrNull();
                     if ( entityId.HasValue )
                     {
@@ -122,13 +128,20 @@ namespace RockWeb.Blocks.Reporting.Dashboard
             }
             else
             {
-                if ( this.ContextEntity() != null )
+                // entity id comes from context
+                Rock.Data.IEntity contextEntity;
+                if (entityType != null)
                 {
-                    var entityType = EntityTypeCache.Read( this.ContextEntity().GetType(), false );
-                    if ( entityType != null )
-                    {
-                        restApiUrl += string.Format( "?entityTypeId={0}&entityId={1}", entityType.Id, this.ContextEntity().Id );
-                    }
+                    contextEntity = this.ContextEntity( entityType.Name );
+                }
+                else
+                {
+                    contextEntity = this.ContextEntity();
+                }
+
+                if ( contextEntity != null )
+                {
+                    restApiUrl += string.Format( "&entityTypeId={0}&entityId={1}", EntityTypeCache.GetId(contextEntity.GetType()), contextEntity.Id );
                 }
             }
 
