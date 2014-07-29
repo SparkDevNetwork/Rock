@@ -14,10 +14,12 @@ ___ 3. Edit web.config
         * Set RunJobsInIISContext = true
         * Turn off debug <compilation debug="false"
 
-___ 4. Copy the Rock.x.y.z.nupkg file from https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
+___ 4. Copy the Rock.x.y.z.nupkg file from
+       https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.
        
-___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
+___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
+       https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.
 
 ___ 6. Zip up the RockWeb directory leaving out the following files:
