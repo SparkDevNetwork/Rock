@@ -18,7 +18,7 @@
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
         <asp:HiddenField ID="hfHistoryPosition" runat="server" />
         <asp:HiddenField ID="hfTransactionId" runat="server" />
-        <asp:HiddenField ID="hfFinancialBatchId" runat="server" />
+        <asp:HiddenField ID="hfBatchId" runat="server" />
         <asp:HiddenField ID="hfCheckMicrHashed" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block js-check-matching">
 
@@ -47,7 +47,7 @@
 
                             <Rock:CurrencyBox ID="cbAmount" runat="server" CssClass="js-total-amount" Label="Total Amount" Help="Enter the amount shown on the check" onkeyup="javascript: updateRemainingAccountAllocation()" />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
-                                <asp:Repeater ID="rptAccounts" runat="server" OnItemDataBound="rptAccounts_ItemDataBound">
+                                <asp:Repeater ID="rptAccounts" runat="server" >
                                     <ItemTemplate>
                                         <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' CssClass="js-account-amount" onkeyup="javascript: updateRemainingAccountAllocation()" />
                                     </ItemTemplate>

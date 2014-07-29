@@ -47,19 +47,6 @@ namespace RockWeb.Blocks.Finance
         #region Base Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -71,7 +58,7 @@ namespace RockWeb.Blocks.Finance
             {
                 hfBackNextHistory.Value = string.Empty;
                 LoadDropDowns();
-                ShowDetail( PageParameter( "FinancialBatchId" ).AsInteger() );
+                ShowDetail( PageParameter( "BatchId" ).AsInteger() );
             }
         }
 
@@ -103,10 +90,10 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="financialBatchId">The financial batch identifier.</param>
-        public void ShowDetail( int financialBatchId )
+        /// <param name="batchId">The financial batch identifier.</param>
+        public void ShowDetail( int batchId )
         {
-            hfFinancialBatchId.Value = financialBatchId.ToString();
+            hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
             NavigateToTransaction( Direction.Next );
@@ -158,7 +145,7 @@ namespace RockWeb.Blocks.Finance
 
             // TODO fix up edit/display logic, etc....
 
-            int financialBatchId = hfFinancialBatchId.Value.AsInteger();
+            int batchId = hfBatchId.Value.AsInteger();
             var rockContext = new RockContext();
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var financialTransactionService = new FinancialTransactionService( rockContext );
@@ -170,9 +157,9 @@ namespace RockWeb.Blocks.Finance
             {
                 qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.Id == toTransactionId );
             }
-            else if ( financialBatchId != 0 )
+            else if ( batchId != 0 )
             {
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == financialBatchId );
+                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
             }
 
             if ( historyList.Any() && !toTransactionId.HasValue )
@@ -189,9 +176,9 @@ namespace RockWeb.Blocks.Finance
             {
                 // TODO if no matches are left remove the limit of ProcessedBy and present a warning if there are InProcess ones that need to be finished
                 qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
-                if ( financialBatchId != 0 )
+                if ( batchId != 0 )
                 {
-                    qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == financialBatchId );
+                    qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
                 }
 
                 transactionToMatch = qryTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault() ?? qryTransactionsToMatch.FirstOrDefault();
@@ -211,8 +198,24 @@ namespace RockWeb.Blocks.Finance
 
             nbNoUnmatchedTransactionsRemaining.Visible = transactionToMatch == null;
             pnlEdit.Visible = transactionToMatch != null;
+            nbIsInProcess.Visible = false;
             if ( transactionToMatch != null )
             {
+                if ( transactionToMatch.ProcessedByPersonAlias != null )
+                {
+                    nbIsInProcess.Visible = true;
+                    nbIsInProcess.Text = string.Format( "Warning. This check is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                }
+
+                // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional check matching sessions will know that it is currently getting looked at
+                if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
+                {
+                    transactionToMatch.ProcessedByPersonAlias = null;
+                    transactionToMatch.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
+                    transactionToMatch.ProcessedDateTime = RockDateTime.Now;
+                    rockContext.SaveChanges();
+                }
+
                 var descriptionList = new DescriptionList();
                 descriptionList
                     .Add( "Date", transactionToMatch.TransactionDateTime )
@@ -318,16 +321,6 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
-        {
-            // TODO
-        }
-
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
             // TODO
@@ -341,15 +334,35 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Marks the transaction as not processed by the current user
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        private void MarkTransactionAsNotProcessedByCurrentUser( int transactionId )
+        {
+            var rockContext = new RockContext();
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var financialTransaction = financialTransactionService.Get( transactionId );
+
+            if ( financialTransaction != null && financialTransaction.ProcessedByPersonAliasId == this.CurrentPersonAlias.Id )
+            {
+                // if the current user marked this as processed, clear out the processedby fields.  Otherwise, assume the other person is still editing it
+                financialTransaction.ProcessedByPersonAliasId = null;
+                financialTransaction.ProcessedDateTime = null;
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnPrevious control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPrevious_Click( object sender, EventArgs e )
         {
+            // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+            MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
+
             NavigateToTransaction( Direction.Prev );
-
-
         }
 
         /// <summary>
@@ -359,12 +372,25 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            NavigateToTransaction( Direction.Next );
-        }
+            var rockContext = new RockContext();
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var financialTransaction = financialTransactionService.Get( hfTransactionId.Value.AsInteger() );
 
-        protected void rptAccounts_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            // TODO
+            // set the AuthorizedPersonId (the person who wrote the check) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
+            int? authorizedPersonId = ppSelectNew.PersonId ?? ddlIndividual.SelectedValue.AsIntegerOrNull();
+
+            // if the transaction is matched to somebody, attempt to save it
+            if ( financialTransaction != null && authorizedPersonId.HasValue )
+            {
+                financialTransaction.AuthorizedPersonId = authorizedPersonId;
+            }
+            else
+            {
+                // if the transaction was not matched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+                MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
+            }
+
+            NavigateToTransaction( Direction.Next );
         }
 
         #endregion
