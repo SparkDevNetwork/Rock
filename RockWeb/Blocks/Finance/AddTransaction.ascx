@@ -102,8 +102,16 @@
                                             <li class="card-amex"></li>
                                             <li class="card-discover"></li>
                                         </ul>
-                                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
-                                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="4" />
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" />
+                                            </div>
+                                        </div>
+
                                         <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                                         <div id="divBillingAddress" runat="server" class="toggle-content">
                                             <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" />
