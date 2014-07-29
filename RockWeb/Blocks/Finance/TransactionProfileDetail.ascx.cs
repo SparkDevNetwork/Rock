@@ -77,7 +77,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
-    public partial class GivingProfileDetail : RockBlock
+    public partial class TransactionProfileDetail : RockBlock
     {
         #region Properties
 

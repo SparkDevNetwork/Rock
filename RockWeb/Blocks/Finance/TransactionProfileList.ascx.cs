@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage( "Edit Page" )]
     [LinkedPage( "Add Page" )]
     [ContextAware]
-    public partial class GivingProfileList : Rock.Web.UI.RockBlock
+    public partial class TransactionProfileList : Rock.Web.UI.RockBlock
     {
         #region Properties
 
