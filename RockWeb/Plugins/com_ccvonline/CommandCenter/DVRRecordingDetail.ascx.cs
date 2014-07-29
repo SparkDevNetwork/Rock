@@ -61,37 +61,37 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
         {
             base.OnLoad( e );
 
+            DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
+            Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
+            string venueType = PageParameter( "VenueType" );
+
             if ( !Page.IsPostBack )
             {
-                string weekendDate = PageParameter( "WeekendDate" );
-                string campusGuid = PageParameter( "CampusGuid" );
-                string venueType = PageParameter( "VenueType" );
-
-                if ( !string.IsNullOrWhiteSpace( weekendDate ) ||
-                    !string.IsNullOrWhiteSpace( campusGuid ) ||
-                    !string.IsNullOrWhiteSpace( venueType ) )
-                    ShowDetail( weekendDate, campusGuid, venueType );
-                else
+                if ( !weekendDateTime.HasValue || !campusGuid.HasValue || string.IsNullOrWhiteSpace( venueType ) )
+                {
+                    // Hide the details panel if we didn't get the page parameters we expected
                     pnlDetails.Visible = false;
+                }
+                else 
+                {
+                    pnlDetails.Visible = true;
+                }
 
             }
-        }
 
-        #endregion
 
-        #region Internal Methods
+            RecordingService service = new RecordingService( new CommandCenterContext() );            
+            var rockContext = new RockContext();
+            var campus = new CampusService( rockContext ).Get( campusGuid.Value );
 
-        public void ShowDetail( string weekendValue, string campusGuidValue, string venueTypevalue )
-        {
-            pnlDetails.Visible = true;
+            lblTitle.Text = "Weekend of " + weekendDateTime.Value.Date.ToShortDateString();
+            lblCampus.Text = campus.Name;
+            lblVenueType.Text = venueType;
 
-            DateTime weekendDateTime = DateTime.Parse( weekendValue );
-
-            RecordingService service = new RecordingService( new CommandCenterContext() );
-
-            var queryable = service.Queryable()
+            var campusVenueWeekendTimeList = service.Queryable()
                                    .Select( g =>
-                                       new {
+                                       new
+                                       {
                                            WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", 1 - SqlFunctions.DatePart( "dw", g.Date ) % 7, g.Date ) ),
                                            Campus = g.Campus,
                                            CampusId = g.CampusId,
@@ -100,44 +100,34 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                            RecordingName = g.RecordingName,
                                            VenueType = g.VenueType,
                                            StartTime = g.StartTime
-                                           } )
-                                   .Where( g => ( g.WeekendDate == weekendDateTime ) && 
-                                                ( g.CampusGuid.ToString() == campusGuidValue ) &&
-                                                ( g.VenueType == venueTypevalue ) )
-                                   .ToList();
+                                       } )
+                                   .Where( g => ( g.WeekendDate == weekendDateTime ) &&
+                                                ( g.Campus.Guid == campusGuid ) &&
+                                                ( g.VenueType == venueType ) )
+                                   .OrderBy( a => a.StartTime ).ToList();
 
-            string[] date = queryable.Select( s => s.WeekendDate.ToString() ).FirstOrDefault().Split( ' ' );
 
-            string weekendDate = date[0];
-
-            lblTitle.Text = "Weekend of " + weekendDate;
-
-            lblCampus.Text = queryable.Select( c => c.Campus.Name ).FirstOrDefault();
-            lblVenueType.Text = queryable.Select( v => v.VenueType ).FirstOrDefault();
-
-            var campusServiceTimeLists = queryable.Select( r => new { r.StartTime, r.RecordingDayAndTime, r.RecordingName } ).OrderBy( r => r.StartTime ).ToList();
-
-            foreach ( var campusServiceTimeList in campusServiceTimeLists )
+            if ( campusVenueWeekendTimeList.Any() )
             {
-                string[] dayAndTime = campusServiceTimeList.RecordingDayAndTime.Split( ' ' );
-                string time = dayAndTime[1];
+                // set the recording to the first recording that we'll show
+                hfRecording.Value = campusVenueWeekendTimeList.FirstOrDefault().RecordingName;
+            }
 
-                LinkButton button = new LinkButton();
-                button.Text = time;
-                button.ID = time;
-                button.Click += Button_Click;
+            // creating the service time buttons
+            foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
+            {
+                HtmlAnchor button = new HtmlAnchor();
+                button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
+                button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString("n") );              
+                button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted("'") + " );";
 
-                button.Attributes.Add( "class", "btn btn-primary" );
+                button.Attributes.Add("class", "btn btn-primary servicebutton");
                 plcServiceTimeButtons.Controls.Add( button );
             }
 
         }
 
-        protected void Button_Click( object sender, EventArgs e )
-        {         
-            LinkButton lb = sender as LinkButton;
-        }
-
         #endregion
+
     }
 }

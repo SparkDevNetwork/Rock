@@ -2,6 +2,9 @@
 
 <asp:UpdatePanel ID="upRecordings" runat="server">
     <ContentTemplate>
+
+        <asp:HiddenField ID="hfRecording" runat="server" />
+
         <asp:Panel ID="pnlDetails" runat="server">
 
                         <div class="row">
@@ -10,18 +13,28 @@
                             </div> 
                             <div class="col-sm-6">
                                 <div class="pull-right">
-                                    <Rock:HighlightLabel ID="lblCampus" LabelType="Campus" runat="server"/>
-                                    <Rock:HighlightLabel ID="lblVenueType" LabelType="Warning" Text="Command Center" runat="server"/>
+                                    <Rock:HighlightLabel ID="lblCampus" LabelType="Campus" runat="server" />
+                                    <Rock:HighlightLabel ID="lblVenueType" LabelType="Warning" runat="server" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="videocontent">                                          
+                                    <a id="player" data-flashfit="true"></a>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="videocontent">                                          
-                            <a id="player"></a>
-                        </div>
-                    
-                        <div class="servicebuttons btn-group">
-                            <asp:PlaceHolder id="plcServiceTimeButtons" runat="server" />
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="servicebuttons">
+                                    <div class="btn-group">
+                                        <asp:PlaceHolder id="plcServiceTimeButtons" runat="server" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="sharebutton">
@@ -67,9 +80,13 @@
     </ContentTemplate>
 </asp:UpdatePanel>
 
+<%-- Setup video player --%>
 <script type="text/javascript">
-    $("document").ready(function () {
-        // setup players 
+
+    var recordingName = '<%=hfRecording.Value%>';
+
+    function pageLoad() {
+        // setup player
         flowplayer("player", "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf",
 			{
 			    plugins: {
@@ -77,12 +94,19 @@
 			        httpstreaming: { url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.httpstreaming-3.2.11.swf' },
 			    },
 			    clip: {
-			        url: 'eastvalley_2014-7-20_Sunday1100/manifest.f4m?DVR&wowzadvrplayliststart=0',
+			        url: recordingName + '/manifest.f4m?DVR&wowzadvrplayliststart=0',
 			        urlResolvers: ['f4m'],
 			        provider: 'httpstreaming',
 			        baseUrl: 'http://ccvwowza:1935/commandcenter/',
-			        autoplay: true,			        
+			        autoplay: true,
+                    scaling: 'fit'
 			    }
 			});
-    });
+    }
+
+    <%-- Change video --%>
+    function ChangeRecording( recording ) {
+        $f("player").play(recording + '/manifest.f4m?DVR&wowzadvrplayliststart=0');
+    }
+
 </script>
