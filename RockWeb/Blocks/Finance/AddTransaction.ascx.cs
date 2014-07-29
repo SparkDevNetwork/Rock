@@ -570,7 +570,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Danger, "Oops!", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Before we finish...", errorMessage );
                     }
 
                     break;
