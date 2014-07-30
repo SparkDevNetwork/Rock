@@ -36,6 +36,7 @@
                             <asp:Literal ID="lTransactionInfo" runat="server" />
                             <Rock:NotificationBox ID="nbNoCheckImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Check Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This check is getting processed by ...." />
+                            <Rock:NotificationBox ID="nbNoMicrWarning" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to determine Checking Account Number" />
                             <asp:Image ID="imgCheck" runat="server" CssClass="check-image" AlternateText="Unable to display check. Verify that user is authorized to view Check Images." />
                             <br />
                             <asp:Image ID="imgCheckOtherSideThumbnail" runat="server" CssClass="check-image-thumbnail" ToolTip="Click to toggle" onclick="javascript: toggleCheckImages();" />
@@ -45,11 +46,12 @@
                             <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account." />
                             <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the checking account." />
 
+                            <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to save..." />
                             <Rock:CurrencyBox ID="cbAmount" runat="server" CssClass="js-total-amount" Label="Total Amount" Help="Enter the amount shown on the check" onkeyup="javascript: updateRemainingAccountAllocation()" />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
-                                <asp:Repeater ID="rptAccounts" runat="server" >
+                                <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
-                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' CssClass="js-account-amount" onkeyup="javascript: updateRemainingAccountAllocation()" />
+                                        <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount" onkeyup="javascript: updateRemainingAccountAllocation()" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
