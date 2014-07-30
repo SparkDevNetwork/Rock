@@ -173,8 +173,10 @@ function labelFormatter(label, series) {
         /// </value>
         public List<int> GetMetricIds()
         {
-            var metricCategoryGuids = ( GetAttributeValue( "MetricCategories" ) ?? string.Empty ).Split( ',' ).Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
-            return new MetricCategoryService( new Rock.Data.RockContext() ).GetByGuids( metricCategoryGuids ).Select( a => a.MetricId ).ToList();
+            var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs(GetAttributeValue( "MetricCategories" ));
+
+            var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
+            return new MetricService( new Rock.Data.RockContext() ).GetByGuids( metricGuids ).Select( a => a.Id ).ToList();
         }
     }
 }

@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    /// NOTE: Most of the logic for processing the Attributes is in Rock.Rest.MetricsController.GetHtmlForBlock
     /// </summary>
     [DisplayName( "Liquid Dashboard Widget" )]
     [Category( "Reporting > Dashboard" )]

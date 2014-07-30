@@ -49,7 +49,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the HTML for block.
+        /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -57,22 +57,25 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
-            Block block = new BlockService( new RockContext() ).Get( blockId );
+            RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
+            Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
             {
                 block.LoadAttributes();
 
                 string displayText = block.GetAttributeValue( "DisplayText" );
 
-                List<Guid> metricCategoryGuids = block.GetAttributeValue( "MetricCategories" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
+                var metricCategoryPairList = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( block.GetAttributeValue( "MetricCategories" ) );
 
-                RockContext rockContext = new RockContext();
-                MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
-                var metricCategories = metricCategoryService.GetByGuids( metricCategoryGuids );
+                var metricGuids = metricCategoryPairList.Select( a => a.MetricGuid ).ToList();
+               
+                bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
+                
+                MetricService metricService = new MetricService( rockContext );
+                var metrics = metricService.GetByGuids( metricGuids );
                 List<object> metricsData = new List<object>();
 
-                if ( metricCategories.Count() == 0 )
+                if ( metrics.Count() == 0 )
                 {
                     return @"<div class='alert alert-warning'> 
 								Please select a metric in the block settings.
@@ -85,7 +88,7 @@ namespace Rock.Rest.Controllers
                 DateTime currentDateTime = RockDateTime.Now;
                 DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
 
-                foreach ( var metric in metricCategories.Select(a => a.Metric).Distinct() )
+                foreach ( var metric in metrics )
                 {
                     var metricYTDData = JsonConvert.DeserializeObject( metric.ToJson(), typeof( MetricYTDData ) ) as MetricYTDData;
                     var qryMeasureValues = metricValueService.Queryable()
