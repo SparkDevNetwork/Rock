@@ -37,12 +37,12 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName( "Check Matching Detail" )]
+    [DisplayName( "Transaction Matching" )]
     [Category( "Finance" )]
-    [Description( "Used to match checks to an individual and allocate the check amount to financial account(s)." )]
+    [Description( "Used to match transactions to an individual and allocate the check amount to financial account(s)." )]
 
-    [AccountsField( "Accounts", "Select the funds that check amounts can be allocated to.  Leave blank to show all accounts" )]
-    public partial class CheckMatchingDetail : RockBlock, IDetailBlock
+    [AccountsField( "Accounts", "Select the accounts that check amounts can be allocated to.  Leave blank to show all accounts" )]
+    public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Base Control Methods
 
