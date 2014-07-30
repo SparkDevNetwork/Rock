@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="CheckMatchingDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.CheckMatchingDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionMatching.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionMatching" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -20,7 +20,7 @@
         <asp:HiddenField ID="hfTransactionId" runat="server" />
         <asp:HiddenField ID="hfBatchId" runat="server" />
         <asp:HiddenField ID="hfCheckMicrHashed" runat="server" />
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block js-check-matching">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
                 <h1 class="panel-title">
