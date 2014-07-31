@@ -86,16 +86,25 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         public void LoadDropDowns()
         {
+            // get accounts that are both allowed by the BlockSettings and also in the personal AccountList setting
             var rockContext = new RockContext();
             var accountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() );
 
-            // TODO personal accounts filter
+            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
             var accountQry = new FinancialAccountService( rockContext ).Queryable();
 
+            // no accounts specified means "all"
             if ( accountGuidList.Any() )
             {
                 accountQry = accountQry.Where( a => accountGuidList.Contains( a.Guid ) );
+            }
+
+            // no personal accounts specified means "all(that are allowed in block settings)"
+            if ( personalAccountGuidList.Any() )
+            {
+                accountQry = accountQry.Where( a => personalAccountGuidList.Contains( a.Guid ) );
             }
 
             rptAccounts.DataSource = accountQry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -400,15 +409,36 @@ namespace RockWeb.Blocks.Finance
 
         #region Events
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdAccountsPersonalFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
-            // TODO
+            var selectedAccountIdList = apPersonalAccounts.SelectedValuesAsInt().ToList();
+            var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
+            
+            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
+
             mdAccountsPersonalFilter.Hide();
+            LoadDropDowns();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
-            // TODO
+            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var personalAccountList = new FinancialAccountService( new RockContext() ).GetByGuids( personalAccountGuidList ).ToList();
+
+            apPersonalAccounts.SetValues( personalAccountList );
+
             mdAccountsPersonalFilter.Show();
         }
 

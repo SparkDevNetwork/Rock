@@ -70,8 +70,8 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12" style="text-align: right">
-                            <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" Text="42" ToolTip="Number of unmatched transactions remaining in this batch." />
-                            <Rock:HighlightLabel ID="hlUnvisitedRemainingDebug" runat="server" LabelType="Default" Text="36" ToolTip="Number of unvisited transactions remaining in this batch." />
+                            <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" ToolTip="Number of unmatched transactions remaining in this batch." />
+                            <Rock:HighlightLabel ID="hlUnvisitedRemainingDebug" runat="server" LabelType="Default" ToolTip="Number of unvisited transactions remaining in this batch." />
                         </div>
                     </div>
                     <div class="row">
@@ -86,7 +86,7 @@
 
             <Rock:ModalDialog ID="mdAccountsPersonalFilter" runat="server" Title="Accounts Filter" OnSaveClick="mdAccountsPersonalFilter_SaveClick">
                 <Content>
-                    <Rock:AccountPicker ID="apAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" />
+                    <Rock:AccountPicker ID="apPersonalAccounts" runat="server" AllowMultiSelect="true" Label="Select Account(s)" />
                 </Content>
             </Rock:ModalDialog>
 
