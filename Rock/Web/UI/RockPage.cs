@@ -851,7 +851,7 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
                                         Page.Trace.Warn( "\tCreating block attributes" );
-                                        blockControl.CreateAttributes();
+                                        blockControl.CreateAttributes( rockContext );
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 

@@ -1041,6 +1041,10 @@
     <Compile Include="Migrations\201407292304111_RenameGivingProfileToTransactionProfile.Designer.cs">
       <DependentUpon>201407292304111_RenameGivingProfileToTransactionProfile.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407311214231_AddAttributeKeyIndex.cs" />
+    <Compile Include="Migrations\201407311214231_AddAttributeKeyIndex.Designer.cs">
+      <DependentUpon>201407311214231_AddAttributeKeyIndex.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1804,6 +1808,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407292304111_RenameGivingProfileToTransactionProfile.resx">
       <DependentUpon>201407292304111_RenameGivingProfileToTransactionProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407311214231_AddAttributeKeyIndex.resx">
+      <DependentUpon>201407311214231_AddAttributeKeyIndex.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
