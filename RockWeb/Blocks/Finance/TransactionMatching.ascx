@@ -44,10 +44,10 @@
                         <div class="col-md-6">
 
                             <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account." />
+                            <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
                             <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the checking account." />
 
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to save..." />
-                            <Rock:CurrencyBox ID="cbAmount" runat="server" CssClass="js-total-amount" Label="Total Amount" Help="Enter the amount shown on the check" onkeyup="javascript: updateRemainingAccountAllocation()" />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
@@ -55,7 +55,8 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
-                            <Rock:CurrencyBox ID="cbRemaining" runat="server" Label="Remaining" CssClass="js-amount-remaining" Text="0.00" ReadOnly="true"></Rock:CurrencyBox>
+                            <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
+                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" disabled="disabled" Text="0.00" ></Rock:CurrencyBox>
 
                         </div>
                     </div>
@@ -85,17 +86,19 @@
 
         <script>
             function updateRemainingAccountAllocation() {
-                var checkTotalAmount = $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val();
-
-                var amountRemaining = isNaN(checkTotalAmount) ? 0.00 : Number(checkTotalAmount).toFixed(2);
+                // do currency math in Cents instead of Dollars to avoid floating point math issues
+                var checkTotalAmountCents = null;
+                
                 $('#<%=pnlView.ClientID%> .js-account-amount :input').each(function (index, elem) {
-                    var accountAmount = Number($(elem).val()).toFixed(2);
-                    if (!isNaN(accountAmount)) {
-                        amountRemaining = (amountRemaining - accountAmount).toFixed(2);
+                    var accountAmountDollar = $(elem).val();
+                    if (!isNaN(accountAmountDollar) && accountAmountDollar != "") {
+                        checkTotalAmountCents = (checkTotalAmountCents || 0.00) + Number(accountAmountDollar) * 100;
                     }
                 });
 
-                $('#<%=pnlView.ClientID%>').find('.js-amount-remaining :input').val(amountRemaining);
+                var checkTotalAmountDollars = checkTotalAmountCents != null ? (checkTotalAmountCents / 100).toFixed(2) : null;
+
+                $('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val(checkTotalAmountDollars);
             }
 
             function toggleCheckImages() {
@@ -104,8 +107,6 @@
 
                 $('#<%=imgCheck.ClientID%>').attr("src", image2src);
                 $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src", image1src);
-
-
             }
 
             Sys.Application.add_load(function () {

@@ -42,6 +42,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Used to match transactions to an individual and allocate the check amount to financial account(s)." )]
 
     [AccountsField( "Accounts", "Select the accounts that check amounts can be allocated to.  Leave blank to show all accounts" )]
+    [LinkedPage("Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue="6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7")]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -107,6 +108,16 @@ namespace RockWeb.Blocks.Finance
         /// <param name="batchId">The financial batch identifier.</param>
         public void ShowDetail( int batchId )
         {
+            string temp = this.GetAttributeValue( "AddFamilyLink" );
+            string url = this.LinkedPageUrl( "AddFamilyLink" );
+
+            hlAddNewFamily.Visible = !string.IsNullOrWhiteSpace( url );
+            if ( hlAddNewFamily.Visible )
+            {
+                // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
+                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
+            }
+            
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
@@ -158,8 +169,6 @@ namespace RockWeb.Blocks.Finance
 
             hfHistoryPosition.Value = position.ToString();
 
-            // TODO fix up edit/display logic, etc....
-
             int batchId = hfBatchId.Value.AsInteger();
             var rockContext = new RockContext();
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
@@ -170,7 +179,7 @@ namespace RockWeb.Blocks.Finance
             // if a specific transactionId was specified load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
             if ( toTransactionId.HasValue )
             {
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.Id == toTransactionId );
+                qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.Id == toTransactionId );
             }
             else if ( batchId != 0 )
             {
@@ -184,12 +193,10 @@ namespace RockWeb.Blocks.Finance
             }
 
             qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
-
-            // TODO add logic for ProcessedBy...
+            
             FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
             if ( transactionToMatch == null )
             {
-                // TODO if no matches are left remove the limit of ProcessedBy and present a warning if there are InProcess ones that need to be finished
                 var qryRemainingTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
                 if ( batchId != 0 )
                 {
@@ -270,31 +277,30 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                nbNoMicrWarning.Visible = string.IsNullOrWhiteSpace( checkMicrHashed );
-
                 hfCheckMicrHashed.Value = checkMicrHashed;
 
                 if ( !string.IsNullOrWhiteSpace( checkMicrHashed ) )
                 {
                     var matchedPersons = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == checkMicrHashed ).Select( a => a.Person );
                     ddlIndividual.Items.Clear();
+                    ddlIndividual.Items.Add( new ListItem( null, null ) );
                     foreach ( var person in matchedPersons.OrderBy( a => a.LastName ).ThenBy( a => a.NickName ) )
                     {
                         ddlIndividual.Items.Add( new ListItem( person.FullNameReversed, person.Id.ToString() ) );
                     }
                 }
-                else
-                {
-                    // TODO warn about missing MICR
-                }
 
-                if ( ddlIndividual.Items.Count == 1 )
+                nbNoMicrWarning.Visible = string.IsNullOrWhiteSpace( checkMicrHashed );
+
+                if ( ddlIndividual.Items.Count == 2 )
                 {
-                    ddlIndividual.SelectedIndex = 0;
+                    // only one person (and the None selection) are in the list, so init to the person
+                    ddlIndividual.SelectedIndex = 1;
                 }
                 else
                 {
-                    ddlIndividual.SelectedIndex = -1;
+                    // either zero or multiple people are in the list, so default to none so they are forced to choose
+                    ddlIndividual.SelectedIndex = 0;
                 }
 
                 string frontCheckUrl = string.Empty;
@@ -315,14 +321,14 @@ namespace RockWeb.Blocks.Finance
                     ddlIndividual.SelectedValue = transactionToMatch.AuthorizedPersonId.ToString();
                 }
 
-                ppSelectNew.PersonId = null;
+                ppSelectNew.SetValue( null );
                 if ( transactionToMatch.TransactionDetails.Any() )
                 {
-                    cbAmount.Text = transactionToMatch.TotalAmount.ToString();
+                    cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
                 }
                 else
                 {
-                    cbAmount.Text = string.Empty;
+                    cbTotalAmount.Text = string.Empty;
                 }
 
                 // update accountboxes
@@ -339,8 +345,6 @@ namespace RockWeb.Blocks.Finance
                         accountBox.Text = detail.Amount.ToString();
                     }
                 }
-
-                cbRemaining.Text = "0.00";
 
                 imgCheck.Visible = !string.IsNullOrEmpty( frontCheckUrl ) || !string.IsNullOrEmpty( backCheckUrl ); ;
                 imgCheckOtherSideThumbnail.Visible = imgCheck.Visible;
@@ -440,8 +444,30 @@ namespace RockWeb.Blocks.Finance
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
-            // if the transaction is matched to somebody, attempt to save it
-            if ( financialTransaction != null && authorizedPersonId.HasValue )
+            if ( cbTotalAmount.Text.AsDecimalOrNull().HasValue && !authorizedPersonId.HasValue)
+            {
+                nbSaveError.Text = "Transaction must be matched to a person when the amount is specified.";
+                nbSaveError.Visible = true;
+                return;
+            }
+
+            // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
+            if ( financialTransaction != null && financialTransaction.AuthorizedPersonId.HasValue && !authorizedPersonId.HasValue )
+            {
+                financialTransaction.AuthorizedPersonId = null;
+                foreach (var detail in financialTransaction.TransactionDetails)
+                {
+                    financialTransactionDetailService.Delete( detail );
+                }
+
+                rockContext.SaveChanges();
+
+                // if the transaction was unmatched, clear out the ProcessedBy fields since we didn't match the check and are moving on to process another transaction
+                MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
+            }
+
+            // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
+            if ( financialTransaction != null && authorizedPersonId.HasValue)
             {
                 if ( string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
@@ -450,19 +476,13 @@ namespace RockWeb.Blocks.Finance
                     return;
                 }
 
-                if ( cbAmount.Text.AsDecimalOrNull() == null )
+                if ( cbTotalAmount.Text.AsDecimalOrNull() == null )
                 {
-                    nbSaveError.Text = "Total Amount is required.";
+                    nbSaveError.Text = "Total amount must be allocated to accounts.";
                     nbSaveError.Visible = true;
                     return;
                 }
-
-                if ( cbRemaining.Text.AsDecimalOrNull() != 0 )
-                {
-                    nbSaveError.Text = "Total amount must be fully allocated to accounts.";
-                    nbSaveError.Visible = true;
-                    return;
-                }
+                
 
                 var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonId == authorizedPersonId ).FirstOrDefault();
                 if ( financialPersonBankAccount == null )
@@ -476,7 +496,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.AuthorizedPersonId = authorizedPersonId;
 
                 // just in case this transaction is getting re-edited either by the same user, or somebody else, clean out any existing TransactionDetail records
-                foreach ( var detail in financialTransaction.TransactionDetails )
+                foreach ( var detail in financialTransaction.TransactionDetails.ToList() )
                 {
                     financialTransactionDetailService.Delete( detail );
                 }
