@@ -816,7 +816,7 @@ namespace Rock.Apps.CheckScannerUtility
                 client.Login( rockConfig.Username, rockConfig.Password );
 
                 FinancialBatch financialBatch = null;
-                if ( SelectedFinancialBatch == null )
+                if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0)
                 {
                     financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
                 }
@@ -858,7 +858,7 @@ namespace Rock.Apps.CheckScannerUtility
                     client.PutData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
                 }
 
-                if ( SelectedFinancialBatch == null )
+                if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
                 {
                     // refetch the batch to get the Id if it was just Inserted
                     financialBatch = client.GetDataByGuid<FinancialBatch>( "api/FinancialBatches", financialBatch.Guid );
