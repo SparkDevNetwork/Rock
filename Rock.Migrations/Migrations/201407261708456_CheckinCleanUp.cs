@@ -51,7 +51,7 @@ namespace Rock.Migrations
             // change checkin manager route to 'CheckinManager'
             Sql( @"  UPDATE [PageRoute]
                       SET [Route] = 'CheckinManager'
-                      WHERE [Guid] = '8D7415A8-5796-480F-BFD3-AC8C46E06BAD'" );
+                      WHERE [Route] = 'ManageCheckin'" );
             
             // delete de-centralized kiosk devices
             Sql(@"DELETE FROM [Device]
