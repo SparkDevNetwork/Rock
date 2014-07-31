@@ -31,7 +31,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [DisplayName( "Prayer Request Detail" )]
-    [Category( "Prayer > Admin" )]
+    [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
     [IntegerField( "Expires After (Days)", "Number of days until the request will expire (only applies when auto-approved is enabled).", false, 14, "", 0, "ExpireDays" )]

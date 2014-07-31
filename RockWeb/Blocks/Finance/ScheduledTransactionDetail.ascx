@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionProfileDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionProfileDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduledTransactionDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.ScheduledTransactionDetail" %>
 
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>

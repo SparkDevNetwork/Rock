@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Block for user to create a new login account.
     /// </summary>
-    [DisplayName( "New Account" )]
+    [DisplayName( "Account Entry" )]
     [Category( "Security" )]
     [Description( "Block allows users to create a new login account." )]
 
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Security
     [EmailTemplateField( "Forgot Username", "Forgot Username Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "Email Templates", 8, "ForgotUsernameTemplate" )]
     [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 9, "ConfirmAccountTemplate" )]
     [EmailTemplateField( "Account Created", "Account Created Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_ACCOUNT_CREATED, "Email Templates", 10, "AccountCreatedTemplate" )]
-    public partial class NewAccount : Rock.Web.UI.RockBlock
+    public partial class AccountEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 

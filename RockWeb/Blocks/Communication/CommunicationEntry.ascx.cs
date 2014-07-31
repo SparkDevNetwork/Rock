@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for creating a new communication.  This block should be used on same page as the CommunicationDetail block and only visible when editing a new or transient communication
     /// </summary>
-    [DisplayName( "New Communication" )]
+    [DisplayName( "Communication Entry" )]
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Communication
     [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 0, "", 2 )]
     [IntegerField( "Display Count", "The initial number of recipients to display prior to expanding list", false, 0, "", 3  )]
     [BooleanField( "Send When Approved", "Should communication be sent once it's approved (vs. just being queued for scheduled job to send)?", true, "", 4 )]
-    public partial class NewCommunication : RockBlock
+    public partial class CommunicationEntry : RockBlock
     {
         #region Properties
 

@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [DisplayName( "Prayer Request List" )]
-    [Category( "Prayer > Admin" )]
+    [Category( "Prayer" )]
     [Description( "Displays a list of prayer requests for the configured top-level group category." )]
 
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve prayer requests and comments." )]

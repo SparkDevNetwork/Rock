@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Group Mapper" )]
+    [DisplayName( "Group Type Map" )]
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]
 
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Groups
 
 ", "", 9 )]
     [BooleanField( "Enable Debug", "Enabling debug will display the fields of the first 5 groups to help show you wants available for your liquid.", false, "", 10 )]
-    public partial class GroupMapper : Rock.Web.UI.RockBlock
+    public partial class GroupTypeMap : Rock.Web.UI.RockBlock
     {
         #region Fields
 

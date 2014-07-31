@@ -36,14 +36,14 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
     /// </summary>
-    [DisplayName( "Giving Profile List" )]
+    [DisplayName( "Scheduled Transaction List" )]
     [Category( "Finance" )]
     [Description( "Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person)." )]
 
     [LinkedPage( "Edit Page" )]
     [LinkedPage( "Add Page" )]
     [ContextAware]
-    public partial class TransactionProfileList : Rock.Web.UI.RockBlock
+    public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock
     {
         #region Properties
 

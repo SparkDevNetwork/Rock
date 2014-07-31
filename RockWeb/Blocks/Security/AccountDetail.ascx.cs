@@ -33,12 +33,12 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// The main Person Profile block the main information about a peron 
     /// </summary>
-    [DisplayName( "My Account" )]
+    [DisplayName( "Account Detail" )]
     [Category( "Security" )]
     [Description( "Public block for user to manager their account" )]
 
     [LinkedPage("Detail Page", "Page to edit account details")]
-    public partial class MyAccount : RockBlock
+    public partial class AccountDetail : RockBlock
     {
         #region Base Control Methods
 
