@@ -969,7 +969,7 @@ namespace RockWeb.Blocks.Groups
                 string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
                 if ( !string.IsNullOrWhiteSpace( mapStyle ) )
                 {
-                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => gl.GroupLocationTypeValue.Order ) )
+                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => (gl.GroupLocationTypeValue != null) ? gl.GroupLocationTypeValue.Order : int.MaxValue) )
                     {
                         if ( groupLocation.Location != null )
                         {
