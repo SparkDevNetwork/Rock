@@ -20,7 +20,7 @@
                             <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                         
                             <div class="grid">
-                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
+                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                     <Columns>
                                         <Rock:ReorderField/>
                                         <asp:BoundField DataField="Name" HeaderText="Value"/>
