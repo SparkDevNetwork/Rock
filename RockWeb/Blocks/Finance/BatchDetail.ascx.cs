@@ -192,6 +192,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            int batchId = hfBatchId.ValueAsInt();
+            if ( batchId != 0 )
+            {
+                ShowReadonlyDetails( GetBatch( batchId ) );
+            }
         }
 
         #endregion
@@ -281,7 +286,7 @@ namespace RockWeb.Blocks.Finance
             {
                 hfBatchId.SetValue( batch.Id );
 
-                lTitle.Text = batch.Name.FormatAsHtmlTitle();
+                SetHeadingInfo( batch, batch.Name );
 
                 string campus = string.Empty;
                 if ( batch.Campus != null )
@@ -294,15 +299,10 @@ namespace RockWeb.Blocks.Finance
                 string amountFormat = string.Format( "{0} / {1} / " + ( variance == 0.0M ? "{2}" : "<span class='label label-danger'>{2}</span>" ),
                     txnTotal.ToString( "C2" ), batch.ControlAmount.ToString( "C2" ), variance.ToString( "C2" ) );
 
-                lDetailsLeft.Text = new DescriptionList()
-                    .Add( "Status", batch.Status.ToString() )
-                    .Add( "Campus", campus )
-                    .Add( "Accounting Code", batch.AccountingSystemCode )
-                    .Html;
-
-                lDetailsRight.Text = new DescriptionList()
-                    .Add( "Transaction / Control / Variance Amounts", amountFormat )
+                lDetails.Text = new DescriptionList()
                     .Add( "Date Range", new DateRange( batch.BatchStartDateTime, batch.BatchEndDateTime ).ToString( "g" ) )
+                    .Add( "Transaction / Control / Variance", amountFormat )
+                    .Add( "Accounting Code", batch.AccountingSystemCode )
                     .Html;
 
                 gAccounts.DataSource = batch.Transactions
@@ -333,14 +333,11 @@ namespace RockWeb.Blocks.Finance
             if ( batch != null )
             {
                 hfBatchId.Value = batch.Id.ToString();
-                if ( batch.Id > 0 )
-                {
-                    lTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
-                }
-                else
-                {
-                    lTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
-                }
+                string title = batch.Id > 0 ? 
+                    ActionTitle.Edit( FinancialBatch.FriendlyTypeName ) :
+                    ActionTitle.Add( FinancialBatch.FriendlyTypeName );
+                
+                SetHeadingInfo( batch, title );
 
                 SetEditMode( true );
 
@@ -364,6 +361,29 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        private void SetHeadingInfo( FinancialBatch batch, string title)
+        {
+            lTitle.Text = title.FormatAsHtmlTitle();
+
+            hlStatus.Text = batch.Status.ConvertToString();
+            switch (batch.Status)
+            {
+                case BatchStatus.Pending: hlStatus.LabelType = LabelType.Warning; break;
+                case BatchStatus.Open: hlStatus.LabelType = LabelType.Info; break;
+                case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default; break;
+            }
+
+            if (batch.Campus != null)
+            {
+                hlCampus.Visible = true;
+                hlCampus.Text = batch.Campus.Name;
+            }
+            else
+            {
+                hlCampus.Visible = false;
+            }
+
+        }
 
         /// <summary>
         /// Sets the edit mode.
