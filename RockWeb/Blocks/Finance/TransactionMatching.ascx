@@ -55,15 +55,23 @@
                                     </ItemTemplate>
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
+
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
-                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" disabled="disabled" Text="0.00" ></Rock:CurrencyBox>
+                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" disabled="disabled" Text="0.00"></Rock:CurrencyBox>
 
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
                             <asp:LinkButton ID="btnNext" runat="server" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12" style="text-align: right">
+                            <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" Text="42" ToolTip="Number of unmatched transactions remaining in this batch." />
+                            <Rock:HighlightLabel ID="hlUnvisitedRemainingDebug" runat="server" LabelType="Default" Text="36" ToolTip="Number of unvisited transactions remaining in this batch." />
                         </div>
                     </div>
                     <div class="row">
@@ -88,7 +96,7 @@
             function updateRemainingAccountAllocation() {
                 // do currency math in Cents instead of Dollars to avoid floating point math issues
                 var checkTotalAmountCents = null;
-                
+
                 $('#<%=pnlView.ClientID%> .js-account-amount :input').each(function (index, elem) {
                     var accountAmountDollar = $(elem).val();
                     if (!isNaN(accountAmountDollar) && accountAmountDollar != "") {

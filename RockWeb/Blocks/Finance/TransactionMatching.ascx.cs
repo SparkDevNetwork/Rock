@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Used to match transactions to an individual and allocate the check amount to financial account(s)." )]
 
     [AccountsField( "Accounts", "Select the accounts that check amounts can be allocated to.  Leave blank to show all accounts" )]
-    [LinkedPage("Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue="6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7")]
+    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7" )]
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Finance
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
                 hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
             }
-            
+
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
@@ -174,16 +174,29 @@ namespace RockWeb.Blocks.Finance
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             var financialTransactionService = new FinancialTransactionService( rockContext );
             var qryTransactionsToMatch = financialTransactionService.Queryable()
-                .Where( a => a.AuthorizedPersonId == null && a.ProcessedByPersonAliasId == null);
+                .Where( a => a.AuthorizedPersonId == null && a.ProcessedByPersonAliasId == null );
+
+            if ( batchId != 0 )
+            {
+                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
+            }
+
+            // display how many unmatched and unviewed transactions are remaining
+            var qryRemainingTransactionsCount = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
+            if ( batchId != 0 )
+            {
+                qryRemainingTransactionsCount = qryRemainingTransactionsCount.Where( a => a.BatchId == batchId );
+            }
+
+            hlUnmatchedRemaining.Text = qryRemainingTransactionsCount.Count().ToString();
+
+            //debug
+            hlUnvisitedRemainingDebug.Text = qryRemainingTransactionsCount.Where( a => !historyList.Contains( a.Id ) ).Count().ToString();
 
             // if a specific transactionId was specified load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
             if ( toTransactionId.HasValue )
             {
                 qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.Id == toTransactionId );
-            }
-            else if ( batchId != 0 )
-            {
-                qryTransactionsToMatch = qryTransactionsToMatch.Where( a => a.BatchId == batchId );
             }
 
             if ( historyList.Any() && !toTransactionId.HasValue )
@@ -193,17 +206,21 @@ namespace RockWeb.Blocks.Finance
             }
 
             qryTransactionsToMatch = qryTransactionsToMatch.OrderBy( a => a.CreatedDateTime ).ThenBy( a => a.Id );
-            
+
             FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
             if ( transactionToMatch == null )
             {
+                // we exhausted the transactions that aren't processed and aren't in our history list, so remove those those restrictions and show all transactions that haven't been matched yet
                 var qryRemainingTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.AuthorizedPersonId == null );
                 if ( batchId != 0 )
                 {
                     qryRemainingTransactionsToMatch = qryRemainingTransactionsToMatch.Where( a => a.BatchId == batchId );
                 }
 
-                transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault() ?? qryRemainingTransactionsToMatch.FirstOrDefault();
+                // get the first transaction that we haven't visited yet, or the next one we have visited after one we are on, or simple the first unmatched one
+                transactionToMatch = qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId && !historyList.Contains( a.Id ) ).FirstOrDefault()
+                    ?? qryRemainingTransactionsToMatch.Where( a => a.Id > fromTransactionId ).FirstOrDefault()
+                    ?? qryRemainingTransactionsToMatch.FirstOrDefault();
                 if ( transactionToMatch != null )
                 {
                     historyList.Add( transactionToMatch.Id );
@@ -248,7 +265,8 @@ namespace RockWeb.Blocks.Finance
 
                 var descriptionList = new DescriptionList();
                 descriptionList
-                    .Add( "Date", transactionToMatch.TransactionDateTime )
+                    .Add( "Transaction Date", transactionToMatch.TransactionDateTime )
+                    .Add( "Scanned Date", transactionToMatch.CreatedDateTime )
                     .Add( "Id", transactionToMatch.Id );
 
                 lTransactionInfo.Text = descriptionList.Html;
@@ -346,7 +364,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                imgCheck.Visible = !string.IsNullOrEmpty( frontCheckUrl ) || !string.IsNullOrEmpty( backCheckUrl ); ;
+                imgCheck.Visible = !string.IsNullOrEmpty( frontCheckUrl ) || !string.IsNullOrEmpty( backCheckUrl );
                 imgCheckOtherSideThumbnail.Visible = imgCheck.Visible;
                 nbNoCheckImageWarning.Visible = !imgCheck.Visible;
                 imgCheck.ImageUrl = frontCheckUrl;
@@ -365,14 +383,14 @@ namespace RockWeb.Blocks.Finance
             for ( int i = 0; i < historyList.Count; i++ )
             {
                 var item = historyList[i];
-                if ( i == position )
-                {
-                    lBookmarkDebug.Text += "|<u>" + item.ToString() + "</u>";
-                }
-                else
-                {
-                    lBookmarkDebug.Text += "|" + item.ToString();
-                }
+                var tran = financialTransactionService.Get( item );
+
+                lBookmarkDebug.Text += string.Format(
+                    "|<span style='color:{1}; font-size:{2}'>{0}{3}</span>",
+                    item.ToString(),
+                    tran.AuthorizedPersonId == null ? "black" : "green",
+                    i == position ? "x-large" : "medium",
+                    tran.ProcessedByPersonAliasId != null ? "<i class='fa fa-rocket'></i>" : string.Empty );
             }
 
             lBookmarkDebug.Text = lBookmarkDebug.Text.TrimStart( new char[] { '|' } );
@@ -444,7 +462,7 @@ namespace RockWeb.Blocks.Finance
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
-            if ( cbTotalAmount.Text.AsDecimalOrNull().HasValue && !authorizedPersonId.HasValue)
+            if ( cbTotalAmount.Text.AsDecimalOrNull().HasValue && !authorizedPersonId.HasValue )
             {
                 nbSaveError.Text = "Transaction must be matched to a person when the amount is specified.";
                 nbSaveError.Visible = true;
@@ -455,7 +473,7 @@ namespace RockWeb.Blocks.Finance
             if ( financialTransaction != null && financialTransaction.AuthorizedPersonId.HasValue && !authorizedPersonId.HasValue )
             {
                 financialTransaction.AuthorizedPersonId = null;
-                foreach (var detail in financialTransaction.TransactionDetails)
+                foreach ( var detail in financialTransaction.TransactionDetails )
                 {
                     financialTransactionDetailService.Delete( detail );
                 }
@@ -467,7 +485,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
-            if ( financialTransaction != null && authorizedPersonId.HasValue)
+            if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
                 if ( string.IsNullOrWhiteSpace( accountNumberSecured ) )
                 {
@@ -482,7 +500,6 @@ namespace RockWeb.Blocks.Finance
                     nbSaveError.Visible = true;
                     return;
                 }
-                
 
                 var financialPersonBankAccount = financialPersonBankAccountService.Queryable().Where( a => a.AccountNumberSecured == accountNumberSecured && a.PersonId == authorizedPersonId ).FirstOrDefault();
                 if ( financialPersonBankAccount == null )
