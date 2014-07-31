@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for editing a system email
     /// </summary>
-    [DisplayName( "Edit Email Preference" )]
+    [DisplayName( "Email Preference Entry" )]
     [Category( "Communication" )]
     [Description( "Allows user to set their email preference." )]
 
@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Communication
     [TextField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ GlobalAttribute.OrganizationName }}.", "", 3 )]
     [TextField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank-You</h4>We have saved your email preference.", "", 4 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 5)]
-    public partial class EditEmailPreference : RockBlock
+    public partial class EmailPreferenceEntry : RockBlock
     {
         #region Fields
 

@@ -33,10 +33,10 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Allows a person to edit their account information. 
     /// </summary>
-    [DisplayName( "Edit My Account" )]
+    [DisplayName( "Account Edit" )]
     [Category( "Security" )]
     [Description( "Allows a person to edit their account information." )]
-    public partial class EditMyAccount : RockBlock
+    public partial class AccountEdit : RockBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.

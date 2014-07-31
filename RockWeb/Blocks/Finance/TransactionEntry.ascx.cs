@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Add a new one-time or scheduled transaction
     /// </summary>
-    [DisplayName( "Add Transaction" )]
+    [DisplayName( "Transaction Entry" )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
 
@@ -90,7 +90,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
-    public partial class AddTransaction : Rock.Web.UI.RockBlock
+    public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
         #region Fields
 

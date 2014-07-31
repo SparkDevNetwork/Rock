@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DisplayName( "Create Pledge" )]
+    [DisplayName( "Pledge Entry" )]
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured account funds, start and end date. This block also creates a new person record if a matching person could not be found." )]
 
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Finance
 
     [EmailTemplateField( "Confirmation Email Template", "Email template to use after submitting a new pledge. Leave blank to not send an email.", false, Rock.SystemGuid.SystemEmail.FINANCE_PLEDGE_CONFIRMATION, Order = 10 )]
     [BooleanField( "Enable Debug", "Outputs the object graph to help create your liquid syntax.", false, Order = 11 )]
-    public partial class CreatePledge : RockBlock
+    public partial class PledgeEntry : RockBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.

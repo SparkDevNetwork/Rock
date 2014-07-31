@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Edit an existing scheduled transaction.
     /// </summary>
-    [DisplayName( "Giving Profile Detail" )]
+    [DisplayName( "Scheduled Transaction Detail" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
 
@@ -77,7 +77,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
-    public partial class TransactionProfileDetail : RockBlock
+    public partial class ScheduledTransactionDetail : RockBlock
     {
         #region Properties
 

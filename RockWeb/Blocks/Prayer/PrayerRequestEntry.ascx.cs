@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [DisplayName( "Add Prayer Request" )]
+    [DisplayName( "Prayer Request Entry" )]
     [Category( "Prayer" )]
     [Description( "Allows prayer requests to be added via visitors on the website." )]
 
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Prayer
     // On Save Behavior
     [BooleanField( "Navigate To Parent On Save", "If enabled, on successful save control will redirect back to the parent page.", false, "On Save Behavior", 10 )]
     [TextField( "Save Success Text", "Some text (or HTML) to display to the requester upon successful save. (Only applies if not navigating to parent page on save.)", false, "<p>Thank you for allowing us to pray for you.</p>", "On Save Behavior", 11 )]
-    public partial class AddPrayerRequest : RockBlock
+    public partial class PrayerRequestEntry : RockBlock
     {
         #region Properties
         public int? PrayerRequestEntityTypeId { get; private set; }

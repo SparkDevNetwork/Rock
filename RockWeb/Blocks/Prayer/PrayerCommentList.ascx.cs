@@ -30,7 +30,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [DisplayName( "Prayer Comment List" )]
-    [Category( "Prayer > Admin" )]
+    [Category( "Prayer" )]
     [Description( "Displays a list of prayer comments for the configured top-level group category." )]
 
     [LinkedPage( "Detail Page", Order = 0 ),]

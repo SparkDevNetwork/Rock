@@ -32,7 +32,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Prayer
 {
     [DisplayName( "Prayer Comment Detail" )]
-    [Category( "Prayer > Admin" )]
+    [Category( "Prayer" )]
     [Description( "Shows a list of prayer comments and allows the noteId that is passed in (via querystring) to be editable." )]
 
     [ContextAware( typeof( PrayerRequest ) )]

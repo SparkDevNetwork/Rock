@@ -33,12 +33,12 @@ namespace RockWeb.Blocks.Security
     /// <summary>
     /// Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person.
     /// </summary>
-    [DisplayName( "User Logins" )]
+    [DisplayName( "User Login List" )]
     [Category( "Security" )]
     [Description( "Block for displaying logins.  By default displays all logins, but can be configured to use person context to display logins for a specific person." )]
 
     [ContextAware]
-    public partial class UserLogins : Rock.Web.UI.RockBlock
+    public partial class UserLoginList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
