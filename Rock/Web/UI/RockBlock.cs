@@ -38,7 +38,7 @@ namespace Rock.Web.UI
     {
         #region Private Properties
 
-        private BlockCache _blockCache;
+        internal BlockCache _blockCache;
 
         #endregion
 

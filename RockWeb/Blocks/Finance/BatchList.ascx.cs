@@ -39,8 +39,14 @@ namespace RockWeb.Blocks.Finance
 
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField("Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1)]
-    public partial class BatchList : Rock.Web.UI.RockBlock
+    public partial class BatchList : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
+        #region Fields
+
+        private RockDropDownList ddlAction;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -63,14 +69,13 @@ namespace RockWeb.Blocks.Finance
             gBatchList.Actions.AddClick += gBatchList_Add;
             gBatchList.GridRebind += gBatchList_GridRebind;
 
-            var ddlAction = new RockDropDownList();
+            ddlAction = new RockDropDownList();
             ddlAction.ID = "ddlAction";
-            ddlAction.AutoPostBack = true;
-            ddlAction.SelectedIndexChanged += ddlAction_SelectedIndexChanged;
             ddlAction.CssClass = "pull-left input-width-lg";
             ddlAction.Items.Add( new ListItem( "-- Select Action --", string.Empty ) );
             ddlAction.Items.Add( new ListItem( "Open Selected Batches", "OPEN") );
             ddlAction.Items.Add( new ListItem( "Close Selected Batches", "CLOSE" ) );
+
             gBatchList.Actions.AddCustomActionControl( ddlAction );
         }
 
@@ -88,6 +93,29 @@ namespace RockWeb.Blocks.Finance
                 BindFilter();
                 BindGrid();
             }
+
+            string script = string.Format( @"
+    $('#{0}').change(function( e ){{
+        var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
+        if (count == 0) {{
+            eval({2});
+        }}
+        else
+        {{
+            var $ddl = $(this);
+            if ($ddl.val() != '') {{
+                Rock.dialogs.confirm('Are you sure you want to ' + ($ddl.val() == 'OPEN' ? 'open' : 'close') + ' the selected batches?', function (result) {{
+                    if (result) {{
+                        eval({2});
+                    }}
+                    $ddl.val('');
+                }});
+            }}
+        }}
+    }});
+", ddlAction.ClientID, gBatchList.ClientID, Page.ClientScript.GetPostBackEventReference( this, "StatusUpdate" ) );
+            ScriptManager.RegisterStartupScript( ddlAction, ddlAction.GetType(), "ConfirmStatusChange", script, true );
+
         }
 
         #endregion
@@ -225,15 +253,10 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlAction control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void ddlAction_SelectedIndexChanged( object sender, EventArgs e )
+        public void RaisePostBackEvent( string eventArgument )
         {
-            var ddlAction = sender as RockDropDownList;
-            if ( ddlAction != null &&
+            if ( eventArgument == "StatusUpdate" &&
+                ddlAction != null &&
                 ddlAction.SelectedValue != null &&
                 !String.IsNullOrWhiteSpace( ddlAction.SelectedValue ) )
             {
@@ -392,7 +415,38 @@ namespace RockWeb.Blocks.Finance
             SortProperty sortProperty = gBatchList.SortProperty;
             if ( sortProperty != null )
             {
-                sortedQry = qry.Sort( sortProperty );
+                switch ( sortProperty.Property )
+                {
+                    case "TransactionCount":
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                sortedQry = qry.OrderBy( b => b.Transactions.Count() );
+                            }
+                            else
+                            {
+                                sortedQry = qry.OrderByDescending( b => b.Transactions.Count() );
+                            }
+                            break;
+                        }
+                    case "TransactionAmount":
+                        {
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                sortedQry = qry.OrderBy( b => b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M );
+                            }
+                            else
+                            {
+                                sortedQry = qry.OrderByDescending( b => b.Transactions.Sum( t => (decimal?)( t.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ) ) ?? 0.0M );
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            sortedQry = qry.Sort( sortProperty );
+                            break;
+                        }
+                }
             }
             else
             {
@@ -458,7 +512,7 @@ namespace RockWeb.Blocks.Finance
                     switch ( Status )
                     {
                         case BatchStatus.Closed : return "label label-default";
-                        case BatchStatus.Open: return "label label-success";
+                        case BatchStatus.Open: return "label label-info";
                         case BatchStatus.Pending: return "label label-warning";
                     }
 

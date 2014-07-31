@@ -35,8 +35,8 @@
                                     <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# ((decimal)Eval("Variance")).ToString("C2") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
-                            <asp:BoundField DataField="CampusName" HeaderText="Campus" SortExpression="CampusName"  />
-                            <asp:TemplateField HeaderText="Status">
+                            <asp:BoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name"  />
+                            <asp:TemplateField HeaderText="Status" SortExpression="Status">
                                 <ItemTemplate>
                                     <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>
