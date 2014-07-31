@@ -4086,6 +4086,15 @@ ul.list-padded li {
 ul.list-padded li:first-child {
   margin-top: 0;
 }
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 @media (min-width: 992px) {
   .col-md-2-10 {
     width: 20%;
