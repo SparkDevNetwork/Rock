@@ -16,7 +16,7 @@ ___ 3. Edit web.config
 
 ___ 4. Copy the Rock.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
-       to the App_Data/Packages folder.
+       to the App_Data/Packages folder.  Remove any earlier versions of the Rock.*.nupkg file.
        
 ___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
