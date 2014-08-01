@@ -49,12 +49,14 @@ ___ 4. Right-click on the new database and select 'Tasks > Generate Scripts'
 
 ___ 5. Click 'Next' until you see the screen with the 'Advanced' button.
 
-___ 6. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
+___ 6. Save the file as 'sql-install.sql'
+
+___ 7. Click the 'Advanced' button and change the setting for 'Types of data to script' to 
        'schema and data'.
 
-___ 7. Click 'Next' then 'Finished'
+___ 8. Click 'Next' then 'Finished'
 
-___ 8. Open the SQL file and make the following edits:
+___ 9. Open the SQL file and make the following edits:
          * delete from the start of the file to the beginning of the first comment of the first stored proc
          * remove the follow four lines from the end of the script
               USE [master]
@@ -62,10 +64,10 @@ ___ 8. Open the SQL file and make the following edits:
               ALTER DATABASE [RockRMS_NewDbName] SET  READ_WRITE 
               GO
 
-___ 9. Zip the file into a new file named 'sql-latest.sql'
+___ 10. Zip the file into a new file named 'sql-latest.sql'
 
-___ 10. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
+___ 11. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that 
         it will be in source control
 
-___ 11. Overwrite with snapshot zip file to Azure Blog storage
+___ 12. Overwrite with snapshot zip file to Azure Blog storage
         (rockrms/install/<version>/Data)
