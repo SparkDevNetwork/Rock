@@ -34,11 +34,11 @@ using Rock.Security;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person).
+    /// Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions.
     /// </summary>
     [DisplayName( "Scheduled Transaction List" )]
     [Category( "Finance" )]
-    [Description( "Lists scheduled transactions for current or selected user (if context for person is not configured, will display for currently logged in person)." )]
+    [Description( "Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions." )]
 
     [LinkedPage( "Edit Page" )]
     [LinkedPage( "Add Page" )]
@@ -72,12 +72,12 @@ namespace RockWeb.Blocks.Finance
 
             bool canEdit = IsUserAuthorized( Authorization.EDIT );
 
-            rGridGivingProfile.DataKeyNames = new string[] { "id" };
-            rGridGivingProfile.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
-            rGridGivingProfile.IsDeleteEnabled = canEdit;
+            gList.DataKeyNames = new string[] { "id" };
+            gList.Actions.ShowAdd = canEdit && !string.IsNullOrWhiteSpace( GetAttributeValue( "AddPage" ) );
+            gList.IsDeleteEnabled = canEdit;
 
-            rGridGivingProfile.Actions.AddClick += rGridGivingProfile_Add;
-            rGridGivingProfile.GridRebind += rGridGivingProfile_GridRebind;
+            gList.Actions.AddClick += gList_Add;
+            gList.GridRebind += gList_GridRebind;
 
             TargetPerson = ContextEntity<Person>();
         }
@@ -125,11 +125,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the RowSelected event of the rGridGivingProfile control.
+        /// Handles the RowSelected event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridGivingProfile_Edit( object sender, RowEventArgs e )
+        protected void gList_Edit( object sender, RowEventArgs e )
         {
             string urlEncodedKey = string.Empty;
             if ( TargetPerson != null )
@@ -146,7 +146,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             var parms = new Dictionary<string, string>();
-            parms.Add( "Txn", rGridGivingProfile.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "Txn", gList.DataKeys[e.RowIndex]["id"].ToString() );
             if ( !string.IsNullOrWhiteSpace( urlEncodedKey ) )
             {
                 parms.Add( "Person", urlEncodedKey );
@@ -156,11 +156,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Add event of the gridFinancialGivingProfile control.
+        /// Handles the Add event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridGivingProfile_Add( object sender, EventArgs e )
+        protected void gList_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
@@ -168,11 +168,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Delete event of the grdFinancialGivingProfile control.
+        /// Handles the Delete event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridGivingProfile_Delete( object sender, RowEventArgs e )
+        protected void gList_Delete( object sender, RowEventArgs e )
         {
             // TODO: Can't just delete profile, need to inactivate it on gateway
             //var scheduledTransactionService = new FinancialScheduledTransactionService();
@@ -188,11 +188,11 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the grdFinancialGivingProfile control.
+        /// Handles the GridRebind event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void rGridGivingProfile_GridRebind( object sender, EventArgs e )
+        private void gList_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
         }
@@ -229,9 +229,9 @@ namespace RockWeb.Blocks.Finance
 
             if ( validRequest )
             {
-                rGridGivingProfile.DataSource = new FinancialScheduledTransactionService( new RockContext() )
+                gList.DataSource = new FinancialScheduledTransactionService( new RockContext() )
                     .Get( personId, givingGroupId, includeInactive ).ToList();
-                rGridGivingProfile.DataBind();
+                gList.DataBind();
             }
         }
 
