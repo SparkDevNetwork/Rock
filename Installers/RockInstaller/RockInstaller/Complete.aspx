@@ -42,7 +42,7 @@
                                         left is to login and get started.
                                     </p>
 
-                                    <a href="/" class="btn btn-primary"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                    <a href="./" class="btn btn-primary"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
                                 </div>
                             </asp:Panel>
 
@@ -173,8 +173,7 @@
         Directory.Delete( target_dir, false );
     }
     
-    private void DirectoryCopy(
-            string sourceDirName, string destDirName, bool copySubDirs )
+    private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs )
     {
         DirectoryInfo dir = new DirectoryInfo( sourceDirName );
         DirectoryInfo[] dirs = dir.GetDirectories();
