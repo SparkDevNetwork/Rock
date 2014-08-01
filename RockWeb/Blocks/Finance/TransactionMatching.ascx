@@ -42,11 +42,37 @@
                             <asp:Image ID="imgCheckOtherSideThumbnail" runat="server" CssClass="check-image-thumbnail" ToolTip="Click to toggle" onclick="javascript: toggleCheckImages();" />
                         </div>
                         <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                </div>
 
-                            <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account." />
+                                <div class="col-md-8">
+                                    <asp:Panel ID="pnlPreview" runat="server">
+                                        <asp:Literal ID="lPersonPreviewPhoto" runat="server" />
+
+                                        <!-- List of addresses associated with this person -->
+                                        <div class="col-md-x addresses clearfix">
+                                            <ul class="list-unstyled">
+                                                <asp:Repeater ID="rptrAddresses" runat="server">
+                                                    <ItemTemplate>
+                                                        <li class="address clearfix">
+                                                            <h4><%# Eval("GroupLocationTypeValue.Name") %></h4>
+                                                            <div class="address">
+                                                                <%# Eval("Location.FormattedHtmlValue") %>
+                                                            </div>
+                                                        </li>
+                                                    </ItemTemplate>
+                                                </asp:Repeater>
+                                            </ul>
+                                        </div>
+
+                                    </asp:Panel>
+                                </div>
+                            </div>
+
                             <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
                             <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the checking account." />
-
                             <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
                                 <asp:Repeater ID="rptAccounts" runat="server">

@@ -252,14 +252,19 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( transactionToMatch.ProcessedByPersonAlias != null )
                 {
-                    nbIsInProcess.Visible = true;
                     if ( transactionToMatch.AuthorizedPersonId.HasValue )
                     {
                         nbIsInProcess.Text = string.Format( "Warning. This check was matched by {0} at {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                        nbIsInProcess.Visible = true;
                     }
                     else
                     {
-                        nbIsInProcess.Text = string.Format( "Warning. This check is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                        // display a warning if some other user has this marked as InProcess (and it isn't matched)
+                        if ( transactionToMatch.ProcessedByPersonAliasId != this.CurrentPersonAlias.Id )
+                        {
+                            nbIsInProcess.Text = string.Format( "Warning. This check is getting processed by {0} as of {1} ({2})", transactionToMatch.ProcessedByPersonAlias, transactionToMatch.ProcessedDateTime.ToString(), transactionToMatch.ProcessedDateTime.ToRelativeDateString() );
+                            nbIsInProcess.Visible = true;
+                        }
                     }
                 }
 
@@ -329,6 +334,8 @@ namespace RockWeb.Blocks.Finance
                     // either zero or multiple people are in the list, so default to none so they are forced to choose
                     ddlIndividual.SelectedIndex = 0;
                 }
+
+                ddlIndividual_SelectedIndexChanged( null, null );
 
                 string frontCheckUrl = string.Empty;
                 string backCheckUrl = string.Empty;
@@ -418,7 +425,7 @@ namespace RockWeb.Blocks.Finance
         {
             var selectedAccountIdList = apPersonalAccounts.SelectedValuesAsInt().ToList();
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
-            
+
             string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
             this.SetUserPreference( keyPrefix + "account-list", selectedAccountGuidList.AsDelimited( "," ) );
 
@@ -574,6 +581,35 @@ namespace RockWeb.Blocks.Finance
             }
 
             NavigateToTransaction( Direction.Next );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlIndividual control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlIndividual_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var personId = ddlIndividual.SelectedValue.AsIntegerOrNull();
+
+            LoadPersonPreview( personId );
+        }
+
+        /// <summary>
+        /// Loads the person preview.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        private void LoadPersonPreview( int? personId )
+        {
+            string previewHtmlDetails = string.Empty;
+            var person = new PersonService( new RockContext() ).Get( personId ?? 0 );
+            pnlPreview.Visible = person != null;
+            if ( person != null )
+            {
+                lPersonPreviewPhoto.Text = Person.GetPhotoImageTag( person, 65, 65 );
+                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).ToList();
+                rptrAddresses.DataBind();
+            }
         }
 
         #endregion
