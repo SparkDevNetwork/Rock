@@ -231,6 +231,18 @@ namespace Rock.Web.UI.Controls
             {
                 return Items.IndexOf( SelectedItem );
             }
+
+            set
+            {
+                if ( value >= 0 && value < Items.Count )
+                {
+                    SelectedValue = Items[value].Value;
+                }
+                else
+                {
+                    SelectedValue = string.Empty;
+                }
+            }
         }
 
         #endregion
