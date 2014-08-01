@@ -444,7 +444,7 @@
         result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DirectoryNotApplication";
         result.DidPass = true;
 
-        string applicationPath = Request.ServerVariables["APPL_PHYSICAL_PATH"];
+        string applicationPath = Request.ServerVariables["APPL_PHYSICAL_PATH"].ToLower();
         string directoryPath = Request.ServerVariables["PATH_TRANSLATED"].ToLower().Replace("start.aspx", "");
 
         if ( directoryPath != applicationPath )
