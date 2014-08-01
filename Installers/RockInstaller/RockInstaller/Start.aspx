@@ -50,7 +50,7 @@
 
     const string requiredDotnetVersion = "4.5.1";
     public string redirectPage = string.Empty;
-    public string serverUrl = "//rockrms.blob.core.windows.net/install/";
+    public string serverUrl = "https://rockrms.blob.core.windows.net/install/";
 
     void Page_Load( object sender, EventArgs e )
     {        
