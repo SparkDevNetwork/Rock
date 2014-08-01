@@ -64,6 +64,7 @@
 
             // redirect to complete page
             installcontroller.client.redirectToComplete = function () {
+                $('#step-unzip').addClass('complete');
                 window.location = queryString.replace('Install.aspx', 'Complete.aspx');
             }
 
