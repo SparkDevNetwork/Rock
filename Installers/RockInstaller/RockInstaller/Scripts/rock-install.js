@@ -45,8 +45,7 @@ function validateForm(panel) {
 
 // validates urls 
 function validateURL(textval) {
-    var urlregex = new RegExp(
-          "^(http|https)\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(/\S*)?$");
+    var urlregex = new RegExp('^https?:\/\/[a-z0-9-\.]+\.[a-z]{2,4}\/?[^\s<>\#%"\,\{\}\\|\\\^\[\]`]+?$');
     return urlregex.test(textval);
 }
 
