@@ -45,7 +45,37 @@ function validateForm(panel) {
 
 // validates urls 
 function validateURL(textval) {
-    var urlregex = new RegExp('^https?:\/\/[a-z0-9-\.]+\.[a-z]{2,4}\/?[^\s<>\#%"\,\{\}\\|\\\^\[\]`]+?$');
+    var urlregex = new RegExp(
+          "^" +
+            // protocol identifier
+            "(?:(?:https?)://)" +
+            // user:pass authentication
+            "(?:\\S+(?::\\S*)?@)?" +
+            "(?:" +
+              // IP address exclusion
+              // private & local networks
+
+              // IP address dotted notation octets
+              // excludes loopback network 0.0.0.0
+              // excludes reserved space >= 224.0.0.0
+              // excludes network & broacast addresses
+              // (first & last IP address of each class)
+              "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
+              "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
+              "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
+            "|" +
+              // host name
+              "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
+              // domain name
+              "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
+              // TLD identifier
+              "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
+            ")" +
+            // port number
+            "(?::\\d{2,5})?" +
+            // resource path
+            "(?:/\\S*)?" +
+          "$", "i");
     return urlregex.test(textval);
 }
 
