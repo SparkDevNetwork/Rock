@@ -124,6 +124,12 @@
                 // delete this page
                 File.Delete( serverPath + @"Complete.aspx" );
 
+                // delete a web.config if it already exists in the root, this is not the rock one
+                if ( File.Exists( serverPath + @"\web.config" ) )
+                {
+                    File.Delete( serverPath + @"\web.config" );
+                }
+                
                 // move the web.config into place
                 File.Move( serverPath + @"\webconfig.xml", serverPath + @"\web.config" );
             }
