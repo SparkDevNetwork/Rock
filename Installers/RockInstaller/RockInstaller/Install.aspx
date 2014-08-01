@@ -16,7 +16,7 @@
     <link href="<%=String.Format("{0}Styles/rock-installer.css", storageUrl) %>" rel="stylesheet" />
     <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", storageUrl) %>" />
 
-    <script src="/signalr/hubs" type="text/javascript"></script>
+    <script src="./signalr/hubs" type="text/javascript"></script>
 
     <script>
 
