@@ -20,6 +20,7 @@
         <asp:HiddenField ID="hfTransactionId" runat="server" />
         <asp:HiddenField ID="hfBatchId" runat="server" />
         <asp:HiddenField ID="hfCheckMicrHashed" runat="server" />
+        <asp:HiddenField ID="hfDoFadeIn" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
@@ -33,7 +34,6 @@
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-6">
-                            <asp:Literal ID="lTransactionInfo" runat="server" />
                             <Rock:NotificationBox ID="nbNoCheckImageWarning" runat="server" NotificationBoxType="Warning" Text="Warning. No Check Images found for this transaction." />
                             <Rock:NotificationBox ID="nbIsInProcess" runat="server" NotificationBoxType="Warning" Text="Warning. This check is getting processed by ...." />
                             <Rock:NotificationBox ID="nbNoMicrWarning" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to determine Checking Account Number" />
@@ -44,36 +44,42 @@
                         <div class="col-md-6">
                             <div class="row">
                                 <div class="col-md-4">
-                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
+                                    <Rock:RockDropDownList ID="ddlIndividual" runat="server" Label="Individual" Help="Select a person that has previously been matched to the checking account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                 </div>
 
                                 <div class="col-md-8">
-                                    <asp:Panel ID="pnlPreview" runat="server">
-                                        <asp:Literal ID="lPersonPreviewPhoto" runat="server" />
+                                    <asp:Panel ID="pnlPreview" CssClass="contents" runat="server">
+                                        <asp:Literal ID="lPersonName" runat="server" />
+                                        <p>
+                                            <asp:Literal ID="lSpouseName" runat="server" />
+                                        </p>
 
                                         <!-- List of addresses associated with this person -->
-                                        <div class="col-md-x addresses clearfix">
-                                            <ul class="list-unstyled">
-                                                <asp:Repeater ID="rptrAddresses" runat="server">
-                                                    <ItemTemplate>
-                                                        <li class="address clearfix">
-                                                            <h4><%# Eval("GroupLocationTypeValue.Name") %></h4>
-                                                            <div class="address">
-                                                                <%# Eval("Location.FormattedHtmlValue") %>
-                                                            </div>
-                                                        </li>
-                                                    </ItemTemplate>
-                                                </asp:Repeater>
-                                            </ul>
-                                        </div>
+
+                                        <ul class="list-unstyled">
+                                            <asp:Repeater ID="rptrAddresses" runat="server">
+                                                <ItemTemplate>
+                                                    <li class="address clearfix">
+
+                                                        <strong><%# Eval("GroupLocationTypeValue.Name") %></strong>
+                                                        <p>
+                                                            <%# Eval("Location.FormattedHtmlValue") %>
+                                                        </p>
+                                                    </li>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </ul>
+
 
                                     </asp:Panel>
                                 </div>
                             </div>
 
-                            <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
+                            <Rock:RockControlWrapper ID="rcwAddNewFamily" runat="server" Help="If the person isn't in the system yet, click this to add a new family." Visible="false">
+                                <a id="hlAddNewFamily" runat="server" href="#">Add Family</a>
+                            </Rock:RockControlWrapper>
                             <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" Help="Select a new person to match to the checking account." />
-                            <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Text="Warning. Unable to save..." />
+                            <Rock:NotificationBox ID="nbSaveError" runat="server" NotificationBoxType="Danger" Dismissable="true" Text="Warning. Unable to save..." />
                             <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server" Label="Account Split" Help="Enter the amount that should be allocated to each account. The total must match the amount shown on the check">
                                 <asp:Repeater ID="rptAccounts" runat="server">
                                     <ItemTemplate>
@@ -83,7 +89,7 @@
                             </Rock:RockControlWrapper>
 
                             <%-- note: using disabled instead of readonly so that we can set the postback value in javascript --%>
-                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" disabled="disabled" Text="0.00"></Rock:CurrencyBox>
+                            <Rock:CurrencyBox ID="cbTotalAmount" runat="server" Label="Total Amount" CssClass="js-total-amount" Help="Allocates amounts to the above account(s) until the total amount matches what is shown on the check." disabled="disabled" Text="0.00"></Rock:CurrencyBox>
 
                         </div>
                     </div>
@@ -97,16 +103,9 @@
                     <div class="row">
                         <div class="col-md-12" style="text-align: right">
                             <Rock:HighlightLabel ID="hlUnmatchedRemaining" runat="server" LabelType="Info" ToolTip="Number of unmatched transactions remaining in this batch." />
-                            <Rock:HighlightLabel ID="hlUnvisitedRemainingDebug" runat="server" LabelType="Default" ToolTip="Number of unvisited transactions remaining in this batch." />
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div style="text-align: center">
-                                <asp:Literal ID="lBookmarkDebug" runat="server" Text="1|2|<u>3</u>|4|5" />
-                            </div>
-                        </div>
-                    </div>
+
                 </asp:Panel>
             </div>
 
@@ -144,7 +143,9 @@
             }
 
             Sys.Application.add_load(function () {
-                $('#<%=pnlView.ClientID%>').rockFadeIn();
+                if ($('#<%=hfDoFadeIn.ClientID%>').val() == "1") {
+                    $('#<%=pnlView.ClientID%>').rockFadeIn();
+                }
             })
         </script>
 

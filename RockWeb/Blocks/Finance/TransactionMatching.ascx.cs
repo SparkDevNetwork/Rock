@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -26,11 +25,10 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using Rock.Web.UI;
 using Rock.Security;
-using Rock.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -55,25 +53,14 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
+            // initialize DoFadeIn to "0" so it only gets set to "1" when navigating thru checks
+            hfDoFadeIn.Value = "0";
+
             if ( !Page.IsPostBack )
             {
                 hfBackNextHistory.Value = string.Empty;
                 LoadDropDowns();
                 ShowDetail( PageParameter( "BatchId" ).AsInteger() );
-            }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Unload" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains event data.</param>
-        protected override void OnUnload( EventArgs e )
-        {
-            base.OnUnload( e );
-
-            if ( !Page.IsPostBack )
-            {
-                MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
             }
         }
 
@@ -120,8 +107,8 @@ namespace RockWeb.Blocks.Finance
             string temp = this.GetAttributeValue( "AddFamilyLink" );
             string url = this.LinkedPageUrl( "AddFamilyLink" );
 
-            hlAddNewFamily.Visible = !string.IsNullOrWhiteSpace( url );
-            if ( hlAddNewFamily.Visible )
+            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( url );
+            if ( rcwAddNewFamily.Visible )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
                 hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", url );
@@ -147,6 +134,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void NavigateToTransaction( Direction direction )
         {
+            hfDoFadeIn.Value = "1";
             nbSaveError.Visible = false;
             int? fromTransactionId = hfTransactionId.Value.AsIntegerOrNull();
             int? toTransactionId = null;
@@ -199,10 +187,7 @@ namespace RockWeb.Blocks.Finance
 
             hlUnmatchedRemaining.Text = qryRemainingTransactionsCount.Count().ToString();
 
-            //debug
-            hlUnvisitedRemainingDebug.Text = qryRemainingTransactionsCount.Where( a => !historyList.Contains( a.Id ) ).Count().ToString();
-
-            // if a specific transactionId was specified load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
+            // if a specific transactionId was specified (because we are navigating thru history), load that one. Otherwise, if a batch is specified, get the first unmatched transaction in that batch
             if ( toTransactionId.HasValue )
             {
                 qryTransactionsToMatch = financialTransactionService.Queryable().Where( a => a.Id == toTransactionId );
@@ -277,13 +262,6 @@ namespace RockWeb.Blocks.Finance
                     rockContext.SaveChanges();
                 }
 
-                var descriptionList = new DescriptionList();
-                descriptionList
-                    .Add( "Transaction Date", transactionToMatch.TransactionDateTime )
-                    .Add( "Scanned Date", transactionToMatch.CreatedDateTime )
-                    .Add( "Id", transactionToMatch.Id );
-
-                lTransactionInfo.Text = descriptionList.Html;
                 hfTransactionId.Value = transactionToMatch.Id.ToString();
                 int frontImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT.AsGuid() ).Id;
                 int backImageTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK.AsGuid() ).Id;
@@ -392,24 +370,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             hfBackNextHistory.Value = historyList.AsDelimited( "," );
-
-            // DEBUG bookmarks
-            lBookmarkDebug.Text = string.Empty;
-
-            for ( int i = 0; i < historyList.Count; i++ )
-            {
-                var item = historyList[i];
-                var tran = financialTransactionService.Get( item );
-
-                lBookmarkDebug.Text += string.Format(
-                    "|<span style='color:{1}; font-size:{2}'>{0}{3}</span>",
-                    item.ToString(),
-                    tran.AuthorizedPersonId == null ? "black" : "green",
-                    i == position ? "x-large" : "medium",
-                    tran.ProcessedByPersonAliasId != null ? "<i class='fa fa-rocket'></i>" : string.Empty );
-            }
-
-            lBookmarkDebug.Text = lBookmarkDebug.Text.TrimStart( new char[] { '|' } );
         }
 
         #endregion
@@ -602,11 +562,14 @@ namespace RockWeb.Blocks.Finance
         private void LoadPersonPreview( int? personId )
         {
             string previewHtmlDetails = string.Empty;
-            var person = new PersonService( new RockContext() ).Get( personId ?? 0 );
+            var rockContext = new RockContext();
+            var person = new PersonService( rockContext ).Get( personId ?? 0 );
             pnlPreview.Visible = person != null;
             if ( person != null )
             {
-                lPersonPreviewPhoto.Text = Person.GetPhotoImageTag( person, 65, 65 );
+                lPersonName.Text = person.FullName;
+                var spouse = person.GetSpouse( rockContext );
+                lSpouseName.Text = spouse != null ? string.Format( "<strong>Spouse: </strong>{0}", spouse.FullName ) : string.Empty;
                 rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).ToList();
                 rptrAddresses.DataBind();
             }
