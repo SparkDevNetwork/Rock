@@ -115,6 +115,13 @@
             errorDetails.Append(  rockInstalledResult.AsListItem );
         }
         
+        // install directory is an asp.net application
+        EnvironmentCheckResult rockDirectoryIsAppResult = DirectoryIsApplicationTest();
+        if ( !rockDirectoryIsAppResult.DidPass )
+        {
+            errorDetails.Append( rockDirectoryIsAppResult.AsListItem );
+        }
+        
         // if any test failed display errors
         if ( errorDetails.Length > 0 )
         {
@@ -425,6 +432,25 @@
         {
             result.Message = String.Format( "The server does not have the correct .Net runtime.  You have .Net version {0} Rock requires version {1}.", version, requiredDotnetVersion );
             result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
+        }
+
+        return result;
+    }
+
+    // check dot net version
+    private EnvironmentCheckResult DirectoryIsApplicationTest()
+    {
+        EnvironmentCheckResult result = new EnvironmentCheckResult();
+        result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DirectoryNotApplication";
+        result.DidPass = true;
+
+        string applicationPath = Request.ServerVariables["APPL_PHYSICAL_PATH"];
+        string directoryPath = Request.ServerVariables["PATH_TRANSLATED"].ToLower().Replace("start.aspx", "");
+
+        if ( directoryPath != applicationPath )
+        {
+            result.DidPass = false;
+            result.Message = "The folder where you're installing Rock from needs to be converted to an Application in IIS using the 'Convert to Application' option in the context menu.";
         }
 
         return result;
