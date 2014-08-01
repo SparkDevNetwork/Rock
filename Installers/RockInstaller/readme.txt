@@ -6,7 +6,8 @@ CREATING INSTALLER ZIP FILE
 
 ___ 1. Download the source from the GitHub release tag
 
-___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode)
+___ 2. Build solution in Visual Studio (IMPORTANT: build in Release mode) After downloading you may
+       need to make the RockWeb project the startup project.
 
 ___ 3. Edit web.config
          
@@ -21,19 +22,24 @@ ___ 4. Copy the Rock.x.y.z.nupkg file from
 ___ 5. Copy the RockUpdate-X-Y-Z.x.y.z.nupkg file from
        https://github.com/SparkDevNetwork/Rock-UpdatePackageBuilder/tree/master/InstallerArtifacts
        to the App_Data/Packages folder.
+       
+___ 6. Delete the following files from the RockWeb directory
 
-___ 6. Zip up the RockWeb directory leaving out the following files:
-
-        * .gitignore
-        *.pdb 
+       * .gitignore (do a search as there are files in several directory)
+        *.pdb (do a search as there are several files )
         * Settings.StyleCop
 
-___ 7. Rename zip file 'rock-install-latest.zip'
+___ 7. Zip up the RockWeb directory leaving out the following files:
 
-___ 8. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
+
+___ 8. Rename zip file 'rock-install-latest.zip'
+
+___ 9. Move copy of zip to ./Installers/RockInstaller/Install Versions/vX.Y.Z/ so that it  
        will be in source control
 
-___ 9. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
+___ 10. Overwrite with snapshot zip file to Azure Blog storage (rockrms/install/<version>/Data)
+        Note the <version> label is the installer version not the Rock version. This should not
+        be incremented except when the installer scripts get updated.
 
 CREATING SQL FILE
 <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
