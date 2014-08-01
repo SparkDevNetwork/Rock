@@ -473,7 +473,10 @@
         // check that sql server spatial files don't exist
         string sqlSpatialFiles32Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x86\SqlServerSpatial110.dll";
         string sqlSpatialFiles64Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x64\SqlServerSpatial110.dll";
-        if ( File.Exists( sqlSpatialFiles32Bit ) || File.Exists( sqlSpatialFiles64Bit ) )
+        string sqlMsCore32Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x86\msvcr100.dll";
+        string sqlMsCore64Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x64\msvcr100.dll";
+
+        if ( File.Exists( sqlSpatialFiles32Bit ) || File.Exists( sqlSpatialFiles64Bit ) || File.Exists( sqlMsCore32Bit ) || File.Exists( sqlMsCore64Bit ) )
         {
             isInstalledResult.DidPass = false;
             isInstalledResult.Message = "You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.";
