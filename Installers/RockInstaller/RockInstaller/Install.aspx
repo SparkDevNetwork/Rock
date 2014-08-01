@@ -209,7 +209,7 @@
                             <div class="alert alert-warning ssl-alert">
                                 <strong>Just A Thought...</strong></p>
                                         Looks like you're not running over an encrypted connection (SSL).  Since you will be providing passwords for configuring
-                                        your database and Rock install you may wish to run the install over an encrypted connection.
+                                        your database and Rock administrator login, you may wish to run the install over an encrypted connection.
                             </div>
                         </asp:Literal>
 
