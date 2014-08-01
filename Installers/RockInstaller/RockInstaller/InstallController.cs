@@ -321,7 +321,7 @@ namespace RockInstaller
             {
                 this.SendConsoleMessage( String.Format("Database {0} does not exist creating it.", installData.ConnectionString.Database) );
                 
-                string sql = String.Format("CREATE DATABASE {0}", installData.ConnectionString.Database);
+                string sql = String.Format("CREATE DATABASE [{0}]", installData.ConnectionString.Database);
 
                 string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", installData.ConnectionString.Username, installData.ConnectionString.Password, installData.ConnectionString.Server );
                 SqlConnection conn = new SqlConnection( connectionString );
