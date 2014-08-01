@@ -1,6 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduledTransactionList.ascx.cs" Inherits="RockWeb.Blocks.Finance.ScheduledTransactionList" %>
 
-<asp:UpdatePanel ID="upFinancialGivingProfile" runat="server">
+<asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -15,8 +15,8 @@
                     <Rock:GridFilter ID="gfSettings" runat="server">
                         <Rock:RockCheckBox ID="cbIncludeInactive" runat="server" Label="Include Inactive" Text="Yes" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="rGridGivingProfile" AllowSorting="false" runat="server" EmptyDataText="No Scheduled Transactions Found" 
-                        ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="rGridGivingProfile_Edit">
+                    <Rock:Grid ID="gList" AllowSorting="false" runat="server" EmptyDataText="No Scheduled Transactions Found" 
+                        ShowConfirmDeleteDialog="true" RowItemText="Scheduled Transaction" OnRowSelected="gList_Edit">
                         <Columns>
                             <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
                             <asp:BoundField DataField="TotalAmount" HeaderText="Amount" DataFormatString="{0:C2}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
@@ -31,15 +31,13 @@
                             <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:DateField DataField="LastStatusUpdateDateTime" HeaderText="Last Update" />
-                            <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
+                            <Rock:DeleteField OnClick="gList_Delete" />
                         </Columns>
                     </Rock:Grid>
                 </div>
 
             </div>
         </div>
-
-        
 
     </ContentTemplate>
 </asp:UpdatePanel>
