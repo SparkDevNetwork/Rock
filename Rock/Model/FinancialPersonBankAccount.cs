@@ -58,6 +58,15 @@ namespace Rock.Model
         [MaxLength( 128 )]
         public string AccountNumberSecured { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Masked Account Number (Last 4 of Account Number prefixed with 12 *'s)
+        /// </summary>
+        /// <value>
+        /// The account number masked.
+        /// </value>
+        [Required]
+        public string AccountNumberMasked { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -82,7 +91,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberSecured.ToStringSafe();
+            return this.AccountNumberMasked;
         }
 
         /// <summary>

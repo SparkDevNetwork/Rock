@@ -504,6 +504,14 @@ namespace RockWeb.Blocks.Finance
                     financialPersonBankAccount = new FinancialPersonBankAccount();
                     financialPersonBankAccount.PersonId = authorizedPersonId.Value;
                     financialPersonBankAccount.AccountNumberSecured = accountNumberSecured;
+
+                    var checkMicrClearText = Encryption.DecryptString( financialTransaction.CheckMicrEncrypted );
+                    var parts = checkMicrClearText.Split( '_' );
+                    if ( parts.Length >= 2 )
+                    {
+                        financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
+                    }
+                    
                     financialPersonBankAccountService.Add( financialPersonBankAccount );
                 }
 
