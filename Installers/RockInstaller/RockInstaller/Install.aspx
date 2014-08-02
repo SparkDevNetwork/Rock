@@ -65,6 +65,7 @@
             // redirect to complete page
             installcontroller.client.redirectToComplete = function () {
                 $('#step-unzip').addClass('complete');
+                $('#waiting-message').slideDown();
                 window.location = queryString.replace('Install.aspx', 'Complete.aspx');
             }
 
@@ -584,6 +585,15 @@
                         <div class="progress active">
                             <div class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
                         </div>
+
+                        <div id="waiting-message" style="display: none;" class="alert alert-success clearfix">
+
+				            <strong>We're Almost There</strong> 
+
+                            <p>The last step is to complete some final configuration. This can take one to two minutes depending
+				            on the speed of your server.</p>
+			
+		                </div>
 
                         <div id="error-message"></div>
 
