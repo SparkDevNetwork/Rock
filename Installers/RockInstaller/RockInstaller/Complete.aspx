@@ -116,7 +116,7 @@
                 DeleteDirectory( serverPath + @"\bin" );
 
                 // move the rock application into place
-                DirectoryCopy( serverPath + @"\rock", serverPath, true );
+                DirectoryContentsMove( serverPath + @"\rock", serverPath );
 
                 // delete rock install directory
                 Directory.Delete( serverPath + @"\rock", true );
@@ -217,6 +217,59 @@
                 // Copy the subdirectories.
                 DirectoryCopy( subdir.FullName, temppath, copySubDirs );
             }
+        }
+    }
+
+    private void DirectoryContentsMove( string sourceDirName, string destDirName )
+    {
+        // this will move the contents of a folder into the contents of another
+        // if a folder already exists in the directory with the same name it
+        // will be deleted. ONLY USE THIS IF THIS USE CASE WORKS FOR YOU!!!
+        
+        DirectoryInfo sourceDirectory = new DirectoryInfo( sourceDirName );
+        DirectoryInfo[] sourceChildDirectories = sourceDirectory.GetDirectories();
+
+        // If the source directory does not exist, throw an exception.
+        if ( !sourceDirectory.Exists )
+        {
+            throw new DirectoryNotFoundException(
+                "Source directory does not exist or could not be found: "
+                + sourceDirName );
+        }
+
+        // If the destination directory does not exist, create it.
+        if ( !Directory.Exists( destDirName ) )
+        {
+            Directory.CreateDirectory( destDirName );
+        }
+
+        // move child directories
+        foreach ( var directory in sourceChildDirectories )
+        {
+            string destChildDirectory = Path.Combine( destDirName, directory.Name );
+            if ( Directory.Exists( destChildDirectory ) )
+            {
+                DeleteDirectory( destChildDirectory );
+            }
+            Directory.Move( directory.FullName, destChildDirectory );
+        }
+        
+        // move child files
+        FileInfo[] files = sourceDirectory.GetFiles();
+
+        foreach ( FileInfo file in files )
+        {
+            // Create the path to the new copy of the file.
+            string temppath = Path.Combine( destDirName, file.Name );
+
+            // check if file exists in dest if so delete
+            if ( File.Exists( temppath ) )
+            {
+                File.Delete( temppath );
+            }
+            
+            // Copy the file.
+            file.MoveTo( temppath );
         }
     }
 
