@@ -105,8 +105,15 @@
                  
         </asp:Panel>
 
-        <asp:Panel ID="pnlDefinedTypeAttributes" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />
+        <asp:Panel ID="pnlDefinedTypeAttributes" CssClass="panel panel-block" runat="server" Visible="false">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute Editor</h1>
+            </div>
+            <div class="panel-body">
+                <Rock:AttributeEditor ID="edtDefinedTypeAttributes" runat="server" OnSaveClick="btnSaveDefinedTypeAttribute_Click" OnCancelClick="btnCancelDefinedTypeAttribute_Click" ValidationGroup="Attribute" />
+            </div>
+    
         </asp:Panel>
         
     </ContentTemplate>
