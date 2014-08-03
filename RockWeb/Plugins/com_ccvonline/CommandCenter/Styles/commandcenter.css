@@ -1,3 +1,23 @@
+.live-content {
+    max-width: 520px;
+    padding-bottom: 56.25%;
+    height: 0;
+    position: relative;
+    padding-top: 25px;
+}
+
+/*.live-content:after {
+    padding-top: 75%;
+    display: block;
+    content: '';
+}*/
+
+.live-player {
+    display: block;
+    width: 520px;
+    height: 330px;
+}
+
 
 .servicebuttons {
     width: 50%;
@@ -20,6 +40,7 @@
     display: block;
     content: '';
 }
+
 
 #player {
     position: absolute;
