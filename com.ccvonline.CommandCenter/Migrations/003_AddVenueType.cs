@@ -8,7 +8,7 @@ using Rock.Plugin;
 
 namespace com.ccvonline.CommandCenter.Migrations
 {
-    [MigrationNumber( 3, "1.0.9" )]
+    [MigrationNumber( 3, "1.0.10" )]
     class AddVenueType : Migration
     {
         /// <summary>
@@ -16,10 +16,18 @@ namespace com.ccvonline.CommandCenter.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql( @"
+            Sql(@"
                     ALTER TABLE dbo._com_ccvonline_CommandCenter_Recording
                     ADD VenueType VARCHAR(50) NULL
-                " );
+
+                    UPDATE _com_ccvonline_CommandCenter_Recording
+                    SET VenueType = 'Command Center'
+                    WHERE StreamName not like 'WR%'
+
+                    UPDATE _com_ccvonline_CommandCenter_Recording
+                    SET VenueType = 'War Room'
+                    WHERE StreamName like 'WR%'
+                ");
         }
 
         /// <summary>
