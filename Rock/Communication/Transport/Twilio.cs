@@ -97,13 +97,13 @@ namespace Rock.Communication.Transport
                                     string message = communication.GetChannelDataValue( "Message" );
                                     message = message.ResolveMergeFields( mergeObjects );
  
-                                    string twillioNumber = phoneNumber.Number;
+                                    string twilioNumber = phoneNumber.Number;
                                     if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
                                     {
-                                        twillioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+                                        twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
                                     }
 
-                                    var response = twilio.SendMessage( fromPhone, twillioNumber, message );
+                                    var response = twilio.SendMessage( fromPhone, twilioNumber, message );
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
