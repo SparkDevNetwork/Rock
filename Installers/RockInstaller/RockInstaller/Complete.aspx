@@ -54,8 +54,6 @@
                                 <asp:Literal ID="lErrorMessage" runat="server" />
                             </asp:Panel>
 
-                        </div>
-
                     </div>
                 </div>
 
@@ -96,10 +94,9 @@
         {
             isDebug = Convert.ToBoolean( Request["Debug"] );
         }
-
+        
         try
         {
-            
             // remove installer data files
             File.Delete( serverPath + @"\rock-install-latest.zip" );
             File.Delete( serverPath + @"\sql-config.sql" );
@@ -108,36 +105,19 @@
 
             if ( !isDebug )
             {
-                // remove installer files
-                
-                File.Delete( serverPath + @"Start.aspx" );
-                File.Delete( serverPath + @"Install.aspx" );
-                
-                DeleteDirectory( serverPath + @"\bin" );
-
-                // move the rock application into place
-                DirectoryContentsMove( serverPath + @"\rock", serverPath );
-
-                // delete rock install directory
-                Directory.Delete( serverPath + @"\rock", true );
-
-                // delete this page
-                File.Delete( serverPath + @"Complete.aspx" );
-
-                // delete a web.config if it already exists in the root, this is not the rock one
-                if ( File.Exists( serverPath + @"\web.config" ) )
+                // process the bin folder
+                System.Threading.Thread cleanup = new System.Threading.Thread( delegate()
                 {
-                    File.Delete( serverPath + @"\web.config" );
-                }
-                
-                // move the web.config into place
-                File.Move( serverPath + @"\webconfig.xml", serverPath + @"\web.config" );
+                    CleanUpInstall();
+                } );
+
+                cleanup.IsBackground = true;
+                cleanup.Start();
             }
             else
             {
                 File.Delete( serverPath + @"\webconfig.xml" );
             }
-            
             
         }
         catch ( Exception ex )
@@ -154,26 +134,46 @@
         }
     }
 
-    private void DeleteDirectory( string target_dir )
+    private void CleanUpInstall()
     {
-        string[] files = Directory.GetFiles( target_dir );
-        string[] dirs = Directory.GetDirectories( target_dir );
+        // remove installer files
+        File.Delete( serverPath + @"Start.aspx" );
+        File.Delete( serverPath + @"Install.aspx" );
 
-        foreach ( string file in files )
+        DeleteDirectory( serverPath + @"\bin" );
+
+        // move the rock application into place
+        DirectoryContentsMove( serverPath + @"\rock", serverPath );
+        
+        // delete this page
+        File.Delete( serverPath + @"Complete.aspx" );
+
+        // delete a web.config if it already exists in the root, this is not the rock one
+        if ( File.Exists( serverPath + @"\web.config" ) )
         {
-            File.SetAttributes( file, FileAttributes.Normal );
-            File.Delete( file );
+            File.Delete( serverPath + @"\web.config" );
         }
 
-        foreach ( string dir in dirs )
-        {
-            DeleteDirectory( dir );
-        }
+        // move the web.config into place
+        File.Move( serverPath + @"\webconfig.xml", serverPath + @"\web.config" );
 
-        Directory.Delete( target_dir, false );
+        // delete rock install directory
+        Directory.Delete( serverPath + @"\rock", true );
     }
-    
-    private void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs )
+
+    /*private void SmartBinMove()
+    {
+        // delete installer assemblies
+        File.Delete( serverPath + @"\bin\Ionic.Zip.dll" );
+        File.Delete( serverPath + @"\bin\Microsoft.ApplicationBlocks.Data.dll" );
+        File.Delete( serverPath + @"\bin\RockInstaller.dll" );
+        File.Delete( serverPath + @"\bin\RockInstallTools.dll" );
+        File.Delete( serverPath + @"\bin\Subtext.Scripting.dll" );
+        
+        DirectoryCopy( serverPath + @"\rock\bin", serverPath + @"\bin", true );
+    }
+
+    private void DirectoryCopy( string sourceDirName, string destDirName, bool copySubDirs )
     {
         DirectoryInfo dir = new DirectoryInfo( sourceDirName );
         DirectoryInfo[] dirs = dir.GetDirectories();
@@ -202,7 +202,7 @@
             string temppath = Path.Combine( destDirName, file.Name );
 
             // Copy the file.
-            file.CopyTo( temppath, false );
+            file.CopyTo( temppath, true );
         }
 
         // If copySubDirs is true, copy the subdirectories.
@@ -218,6 +218,25 @@
                 DirectoryCopy( subdir.FullName, temppath, copySubDirs );
             }
         }
+    }*/
+    
+    private void DeleteDirectory( string target_dir )
+    {
+        string[] files = Directory.GetFiles( target_dir );
+        string[] dirs = Directory.GetDirectories( target_dir );
+
+        foreach ( string file in files )
+        {
+            File.SetAttributes( file, FileAttributes.Normal );
+            File.Delete( file );
+        }
+
+        foreach ( string dir in dirs )
+        {
+            DeleteDirectory( dir );
+        }
+
+        Directory.Delete( target_dir, false );
     }
 
     private void DirectoryContentsMove( string sourceDirName, string destDirName )
@@ -244,33 +263,36 @@
         }
 
         // move child directories
-        foreach ( var directory in sourceChildDirectories )
+        System.Threading.Tasks.Parallel.ForEach( sourceChildDirectories, d =>
         {
-            string destChildDirectory = Path.Combine( destDirName, directory.Name );
-            if ( Directory.Exists( destChildDirectory ) )
-            {
-                DeleteDirectory( destChildDirectory );
-            }
-            Directory.Move( directory.FullName, destChildDirectory );
-        }
+            //if ( d.Name.ToLower() != "bin" ) // don't delete and move the bin file, we're too smart for that
+            //{
+                string destChildDirectory = Path.Combine( destDirName, d.Name );
+                if ( Directory.Exists( destChildDirectory ) )
+                {
+                    DeleteDirectory( destChildDirectory );
+                }
+                d.MoveTo( destChildDirectory );
+            //}
+        } );
         
         // move child files
         FileInfo[] files = sourceDirectory.GetFiles();
 
-        foreach ( FileInfo file in files )
+        System.Threading.Tasks.Parallel.ForEach( files, f =>
         {
             // Create the path to the new copy of the file.
-            string temppath = Path.Combine( destDirName, file.Name );
+            string temppath = Path.Combine( destDirName, f.Name );
 
             // check if file exists in dest if so delete
             if ( File.Exists( temppath ) )
             {
                 File.Delete( temppath );
             }
-            
+
             // Copy the file.
-            file.MoveTo( temppath );
-        }
+            f.MoveTo( temppath );
+        } );
     }
 
 </script>
