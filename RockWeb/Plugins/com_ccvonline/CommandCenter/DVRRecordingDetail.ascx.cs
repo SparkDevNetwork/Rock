@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
@@ -25,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -43,6 +45,9 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     [Description( "Displays the details of a Command Center DVR recording." )]
     public partial class DVRRecordingDetail : RockBlock
     {
+
+        Campus _campus;
+
         #region Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -54,7 +59,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
             RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
-            RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/dvr.css" );
+            RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
         }
 
         protected override void OnLoad( EventArgs e )
@@ -64,29 +69,17 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
             Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
             string venueType = PageParameter( "VenueType" );
+            string clipUrl = PageParameter( "ClipURL" );
+            string clipStart = PageParameter( "ClipStart" );
+            string clipDuration = PageParameter( "ClipDuration" );
 
-            if ( !Page.IsPostBack )
-            {
-                if ( !weekendDateTime.HasValue || !campusGuid.HasValue || string.IsNullOrWhiteSpace( venueType ) )
-                {
-                    // Hide the details panel if we didn't get the page parameters we expected
-                    pnlDetails.Visible = false;
-                }
-                else 
-                {
-                    pnlDetails.Visible = true;
-                }
-
-            }
-
-
-            RecordingService service = new RecordingService( new CommandCenterContext() );            
+            RecordingService service = new RecordingService( new CommandCenterContext() );
             var rockContext = new RockContext();
-            var campus = new CampusService( rockContext ).Get( campusGuid.Value );
 
-            lblTitle.Text = "Weekend of " + weekendDateTime.Value.Date.ToShortDateString();
-            lblCampus.Text = campus.Name;
-            lblVenueType.Text = venueType;
+            if ( campusGuid != null )
+            {
+                _campus = new CampusService( rockContext ).Get( campusGuid.Value );
+            }
 
             var campusVenueWeekendTimeList = service.Queryable()
                                    .Select( g =>
@@ -100,34 +93,98 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                            RecordingName = g.RecordingName,
                                            VenueType = g.VenueType,
                                            StartTime = g.StartTime
-                                       } )
-                                   .Where( g => ( g.WeekendDate == weekendDateTime ) &&
-                                                ( g.Campus.Guid == campusGuid ) &&
-                                                ( g.VenueType == venueType ) )
-                                   .OrderBy( a => a.StartTime ).ToList();
+                                       } );
+                                                                     
 
+            if ( !Page.IsPostBack )
+            {
+                if ( !String.IsNullOrWhiteSpace(clipUrl) )
+                {
+                    campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => g.RecordingName == clipUrl );
+
+                    if ( !String.IsNullOrWhiteSpace( clipStart ) )
+                    {
+                        hfClipStart.Value = clipStart;
+                    }
+
+                    if ( !String.IsNullOrWhiteSpace( clipDuration ) )
+                    {
+                        hfClipDuration.Value = clipDuration;
+                    }
+
+                    pnlVideo.Visible = true;
+                    pnlControls.Visible = false;
+                }
+                else if ( weekendDateTime.HasValue || campusGuid.HasValue || !string.IsNullOrWhiteSpace( venueType ) )
+                {
+                    campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => ( g.WeekendDate == weekendDateTime ) &&
+                                                ( g.Campus.Guid == campusGuid ) &&
+                                                ( g.VenueType == venueType ) );
+
+                    pnlVideo.Visible = true;
+                    pnlControls.Visible = true;
+                }
+                else 
+                {
+                    mdWarning.Visible = true;             
+                    pnlVideo.Visible = false;
+                    pnlControls.Visible = false;
+                }
+
+            }
+
+            campusVenueWeekendTimeList = campusVenueWeekendTimeList.OrderBy( a => a.StartTime );
+            campusVenueWeekendTimeList.ToList();
 
             if ( campusVenueWeekendTimeList.Any() )
             {
+
+                lblTitle.Text = "Weekend of " + campusVenueWeekendTimeList.FirstOrDefault().WeekendDate.Value.ToShortDateString();
+                lblCampus.Text = campusVenueWeekendTimeList.FirstOrDefault().Campus.ToString();
+                lblVenueType.Text = campusVenueWeekendTimeList.FirstOrDefault().VenueType.ToString();
+
                 // set the recording to the first recording that we'll show
                 hfRecording.Value = campusVenueWeekendTimeList.FirstOrDefault().RecordingName;
-            }
 
-            // creating the service time buttons
-            foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
+                // creating the service time buttons
+                foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
+                {
+                    HtmlAnchor button = new HtmlAnchor();
+                    button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
+                    button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString( "n" ) );
+                    button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted( "'" ) + " );";
+                    button.Attributes["recordingName"] = campusServiceTimeList.RecordingName;
+
+                    button.Attributes.Add( "class", "btn btn-primary servicebutton" );
+                    plcServiceTimeButtons.Controls.Add( button );
+                }
+            }
+            else
             {
-                HtmlAnchor button = new HtmlAnchor();
-                button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
-                button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString("n") );              
-                button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted("'") + " );";
-
-                button.Attributes.Add("class", "btn btn-primary servicebutton");
-                plcServiceTimeButtons.Controls.Add( button );
+                mdWarning.Visible = true;
+                pnlVideo.Visible = false;
+                pnlControls.Visible = false;
             }
-
         }
 
         #endregion
+       
+        #region Methods
 
+        private void SendMessage()
+        {
+            var recipients = new Dictionary<string, Dictionary<string, object>>();
+            recipients.Add( dtbEmailTo.Text,  new Dictionary<string, object>() );
+
+            Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ) );
+        
+        }
+
+        protected void btnSendEmail_Click( object sender, EventArgs e )
+        {
+            SendMessage();
+        }
+
+        #endregion
     }
 }
