@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="Twillio" %>
+﻿<%@ WebHandler Language="C#" Class="Twilio" %>
 
 using System;
 using System.Web;
@@ -10,7 +10,7 @@ using Rock;
 using Rock.Model;
 using Rock.Web.Cache;
 
-public class Twillio : IHttpHandler
+public class Twilio : IHttpHandler
 {    
     private HttpRequest request;
     private HttpResponse response;
