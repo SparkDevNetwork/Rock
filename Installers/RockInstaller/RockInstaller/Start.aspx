@@ -280,6 +280,15 @@
 
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
     <script src="<%=String.Format("{0}Scripts/rock-install.js", serverUrl) %>"></script>
+
+    <style type="text/css">
+
+        body {
+            background-color: #dbd5cb;
+            border-top: 24px solid #282526;
+        }
+
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
