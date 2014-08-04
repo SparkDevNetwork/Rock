@@ -95,26 +95,46 @@ namespace Rock.Model
 
         }
 
-        public static string ProcessPayments( GatewayComponent gateway, string batchNamePrefix, List<Payment> payments )
+        public static string ProcessPayments( GatewayComponent gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "" )
         {
+            int totalPayments = 0;
+            int totalAlreadyDownloaded = 0;
+            int totalNoScheduledTransaction = 0;
+            int totalAdded = 0;
+
             var batches = new List<FinancialBatch>();
             var batchSummary = new Dictionary<Guid, List<Payment>>();
 
             var rockContext = new RockContext();
+            var accountService = new FinancialAccountService( rockContext );
             var txnService = new FinancialTransactionService( rockContext );
             var batchService = new FinancialBatchService( rockContext );
             var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
 
             var contributionTxnTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
+            var defaultAccount = accountService.Queryable()
+                .Where( a =>
+                    a.IsActive &&
+                    !a.ParentAccountId.HasValue &&
+                    ( !a.StartDate.HasValue || a.StartDate.Value <= RockDateTime.Now ) &&
+                    ( !a.EndDate.HasValue || a.EndDate.Value >= RockDateTime.Now )
+                    )
+                .OrderBy( a => a.Order )
+                .FirstOrDefault();
+
             foreach ( var payment in payments.Where( p => p.Amount > 0.0M ) )
             {
+                totalPayments++;
+
                 // Only consider transactions that have not already been added
                 if ( txnService.GetByTransactionCode( payment.TransactionCode ) == null )
                 {
                     var scheduledTransaction = scheduledTxnService.GetByScheduleId( payment.GatewayScheduleId );
-                    if ( scheduledTransaction != null && scheduledTransaction.ScheduledTransactionDetails.Any() )
+                    if ( scheduledTransaction != null )
                     {
+                        scheduledTransaction.IsActive = payment.ScheduleActive;
+
                         var transaction = new FinancialTransaction();
                         transaction.TransactionCode = payment.TransactionCode;
                         transaction.TransactionDateTime = payment.TransactionDateTime;
@@ -147,7 +167,7 @@ namespace Rock.Model
 
                         // Try to allocate the amount of the transaction based on the current scheduled transaction accounts
                         decimal remainingAmount = payment.Amount;
-                        foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails )
+                        foreach ( var detail in scheduledTransaction.ScheduledTransactionDetails.Where( d => d.Amount != 0.0M ) )
                         {
                             var transactionDetail = new FinancialTransactionDetail();
                             transactionDetail.AccountId = detail.AccountId;
@@ -163,7 +183,9 @@ namespace Rock.Model
                             {
                                 // If the configured amount is greater than the remaining amount, only allocate
                                 // the remaining amount
+                                transaction.Summary = "NOTE: downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
                                 detail.Amount = remainingAmount;
+                                detail.Summary = "NOTE: the downloaded amount was not enough to apply the configured amount to this account.";
                                 remainingAmount = 0.0M;
                             }
 
@@ -180,13 +202,21 @@ namespace Rock.Model
                         // to the account that was configured for the most amount
                         if ( remainingAmount > 0.0M )
                         {
+                            transaction.Summary = "NOTE: downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
                             var transactionDetail = transaction.TransactionDetails
                                 .OrderByDescending( d => d.Amount )
                                 .First();
+                            if ( transactionDetail == null && defaultAccount != null )
+                            {
+                                transactionDetail = new FinancialTransactionDetail();
+                                transactionDetail.AccountId = defaultAccount.Id;
+                            }
                             if ( transactionDetail != null )
                             {
                                 transactionDetail.Amount += remainingAmount;
+                                transactionDetail.Summary = "NOTE: extra amount was applied to this account.";
                             }
+
                         }
 
                         // Get the batch 
@@ -207,24 +237,66 @@ namespace Rock.Model
                             batchSummary.Add( batch.Guid, new List<Payment>() );
                         }
                         batchSummary[batch.Guid].Add( payment );
+
+                        totalAdded++;
                     }
+                    else
+                    {
+                        totalNoScheduledTransaction++;
+                    }
+                }
+                else
+                {
+                    totalAlreadyDownloaded++;
                 }
             }
 
             rockContext.SaveChanges();
 
             StringBuilder sb = new StringBuilder();
-            foreach ( var batch in batchSummary )
+            sb.AppendFormat( "<li>{0} {1} downloaded.</li>", totalPayments.ToString( "N0" ), 
+                ( totalPayments == 1 ? "payment" : "payments" ) );
+
+            if ( totalAlreadyDownloaded > 0 )
             {
-                string batchName = batches
-                    .Where( b => b.Guid.Equals( batch.Key ) )
-                    .Select( b => b.Name )
-                    .FirstOrDefault();
+                sb.AppendFormat( "<li>{0} {1} previously downloaded and {2} already been added.</li>", totalAlreadyDownloaded.ToString( "N0" ),
+                    ( totalAlreadyDownloaded == 1 ? "payment was" : "payments were" ),
+                    ( totalAlreadyDownloaded == 1 ? "has" : "have" ) );
+            }
 
-                int items = batch.Value.Count;
-                decimal sum = batch.Value.Select( p => p.Amount ).Sum();
+            if ( totalNoScheduledTransaction > 0 )
+            {
+                sb.AppendFormat( "<li>{0} {1} could not be matched to an existing scheduled payment profile.</li>", totalNoScheduledTransaction.ToString( "N0" ),
+                    ( totalNoScheduledTransaction == 1 ? "payment" : "payments" ) );
+            }
 
-                sb.AppendFormat( "<li>{0}: {1} Transactions totaling: {2}</li>", batchName, items.ToString( "N0" ), sum.ToString( "C2" ) );
+            sb.AppendFormat( "<li>{0} {1} successfully added.</li>", totalAdded.ToString( "N0" ),
+                ( totalAdded == 1 ? "payment was" : "payments were" ) );
+
+            foreach ( var batchItem in batchSummary )
+            {
+                int items = batchItem.Value.Count;
+                if (items > 0)
+                {
+                    var batch = batches
+                        .Where( b => b.Guid.Equals( batchItem.Key ) )
+                        .FirstOrDefault();
+
+                    string batchName = string.Format("'{0} ({1})'", batch.Name, batch.BatchStartDateTime.Value.ToString("d"));
+                    if ( !string.IsNullOrWhiteSpace( batchUrlFormat ) )
+                    {
+                        batchName = string.Format( "<a href='{0}'>{1}</a>", string.Format( batchUrlFormat, batch.Id ), batchName );
+                    }
+
+                    decimal sum = batchItem.Value.Select( p => p.Amount ).Sum();
+
+
+                    string summaryformat = items == 1 ?
+                        "<li>{0} transaction of {1} was added to the {2} batch.</li>" :
+                        "<li>{0} transactions totaling {1} were added to the {2} batch</li>";
+
+                    sb.AppendFormat( summaryformat, items.ToString( "N0" ), sum.ToString( "C2" ), batchName );
+                }
             }
 
             return sb.ToString();

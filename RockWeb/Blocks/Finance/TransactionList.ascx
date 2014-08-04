@@ -30,8 +30,7 @@
                         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
                         <Rock:Grid ID="gTransactions" runat="server" EmptyDataText="No Transactions Found" 
-                            RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true"
-                            TooltipField="Summary">
+                            RowItemText="Transaction" OnRowSelected="gTransactions_Edit" AllowSorting="true" >
                             <Columns>
                                 <Rock:SelectField></Rock:SelectField>
                                 <asp:BoundField DataField="AuthorizedPerson.FullName" HeaderText="Person" SortExpression="AuthorizedPerson.LastName,AuthorizedPerson.NickName" />
@@ -43,6 +42,7 @@
                                     </ItemTemplate>
                                 </asp:TemplateField>
                                 <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" />                
+                                <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
                                 <Rock:DeleteField OnClick="gTransactions_Delete" Visible="false"/>
                             </Columns>
                         </Rock:Grid>

@@ -23,14 +23,16 @@
                             <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                             <Rock:DateField DataField="StartDate" HeaderText="Starting" />
                             <Rock:DateField DataField="EndDate" HeaderText="Ending" />
-                            <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:DateField DataField="NextPaymentDate" HeaderText="Next Payment" />
+                            <asp:TemplateField HeaderText="Currency Type" >
+                                <ItemTemplate>
+                                    <asp:Literal ID="lCurrencyType" runat="server" />
+                                </ItemTemplate>
+                            </asp:TemplateField>
                             <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
-                            <asp:BoundField DataField="CurrencyTypeValue.Name" HeaderText="Payment Method" />
-                            <asp:BoundField DataField="CreditCardTypeValue.Name" HeaderText="Card Type" />
                             <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:DateField DataField="LastStatusUpdateDateTime" HeaderText="Last Update" />
+                            <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Update" />
                             <Rock:DeleteField OnClick="gList_Delete" />
                         </Columns>
                     </Rock:Grid>
