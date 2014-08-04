@@ -4,17 +4,14 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfCompetencyPersonProjectId" runat="server" />
 
-        <asp:Panel ID="pnlGraderLogin" runat="server">
-            <div class="panel panel-default">
+        <asp:Panel ID="pnlGraderLogin" CssClass="panel panel-block" runat="server">
+
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-lock"></i> <asp:Literal ID="lFacilitatorLoginTitle" runat="server" /></h1>
+                </div>
                 <div class="panel-body">
 
-                    <div class="banner">
-                        <h1>
-                            <asp:Literal ID="lFacilitatorLoginTitle" runat="server" />
-                        </h1>
-                    </div>
-
-                    <div class="row">
+                     <div class="row">
                         <div class="col-md-12">
                             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgLogin" />
 
@@ -30,25 +27,28 @@
                     <div class="actions">
                         <asp:Button ID="btnLogin" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" ValidationGroup="vgLogin" />
                     </div>
-                </div>
+
+                </div>    
+
             </div>
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlEmailRequest" runat="server">
-            <div class="banner">
-                <h1>
-                    <asp:Literal ID="lblEmailRequestTitle" runat="server" />
-                </h1>
+        <asp:Panel ID="pnlEmailRequest" CssClass="panel panel-block" runat="server">
+            
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-envelope"></i> <asp:Literal ID="lblEmailRequestTitle" runat="server" /></h1>
+            </div>
+            <div class="panel-body">
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgEmailRequest" />
+
+                <Rock:RockDropDownList ID="ddlFacilitators" runat="server" Required="true" ValidationGroup="vgEmailRequest" Label="Facilitator" />
+
+                <asp:Button ID="btnSendRequest" runat="server" Text="Send" CssClass="btn btn-primary" OnClick="btnSendRequest_Click" ValidationGroup="vgEmailRequest" />
+
+                <Rock:NotificationBox ID="nbSendMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Info" />
             </div>
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="vgEmailRequest" />
-
-            <Rock:RockDropDownList ID="ddlFacilitators" runat="server" Required="true" ValidationGroup="vgEmailRequest" Label="Facilitator" />
-
-            <asp:Button ID="btnSendRequest" runat="server" Text="Send" CssClass="btn btn-primary" OnClick="btnSendRequest_Click" ValidationGroup="vgEmailRequest" />
-
-            <Rock:NotificationBox ID="nbSendMessage" ClientIDMode="Static" runat="server" NotificationBoxType="Info" />
         </asp:Panel>
 
     </ContentTemplate>
