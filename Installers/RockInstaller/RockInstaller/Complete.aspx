@@ -10,16 +10,20 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
     
+    <style type="text/css">
+
+        body {
+            background-color: #dbd5cb;
+            border-top: 24px solid #282526;
+        }
+
+    </style>
+
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
 
     <script src="<%=String.Format("{0}Scripts/rock-install.js", storageUrl) %>"></script>
     <link href="<%=String.Format("{0}Styles/rock-installer.css", storageUrl) %>" rel="stylesheet" />
     <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", storageUrl) %>" />
-
-    <script>
-
-        
-    </script>
 
 </head>
 <body>
@@ -37,12 +41,24 @@
                                 
                                     <h1>Success</h1>
 
-                                    <p>
-                                        Rock RMS has been successfully installed on your server. All that's
-                                        left is to login and get started.
-                                    </p>
+                                    <div class="success-message">
+                                        <p>
+                                            Rock RMS has been successfully installed on your server. All that's
+                                            left is to login and get started.
+                                        </p>
 
-                                    <a href="./" class="btn btn-primary"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                        <a href="#" class="btn btn-primary start-up"><i class="fa fa-lightbulb-o "></i> Flip the Switch</a>
+                                    </div>
+
+                                    <div id="waiting-message" class="alert alert-info" style="display: none;">
+                                        <strong>Something To Keep In Mind...</strong>
+                                        <p>
+                                            Rock can take a minute or two to intially start-up when the server has been shutdown. Once started 
+                                            though, pages will load quickly.
+                                        </p>
+                                        <span class="blink label label-info" style="margin-top: 6px;">Rock Loading...</span>
+                                    </div>
+
                                 </div>
                             </asp:Panel>
 
@@ -58,6 +74,18 @@
                 </div>
 
         </div>
+
+        <script>
+
+            $('.start-up').click(function () {
+                $('.success-message').slideUp();
+                $('#waiting-message').slideDown();
+                window.location = './';
+                return false;
+            });
+
+        </script>
+
     </form>
 </body>
 
@@ -161,65 +189,6 @@
         Directory.Delete( serverPath + @"\rock", true );
     }
 
-    /*private void SmartBinMove()
-    {
-        // delete installer assemblies
-        File.Delete( serverPath + @"\bin\Ionic.Zip.dll" );
-        File.Delete( serverPath + @"\bin\Microsoft.ApplicationBlocks.Data.dll" );
-        File.Delete( serverPath + @"\bin\RockInstaller.dll" );
-        File.Delete( serverPath + @"\bin\RockInstallTools.dll" );
-        File.Delete( serverPath + @"\bin\Subtext.Scripting.dll" );
-        
-        DirectoryCopy( serverPath + @"\rock\bin", serverPath + @"\bin", true );
-    }
-
-    private void DirectoryCopy( string sourceDirName, string destDirName, bool copySubDirs )
-    {
-        DirectoryInfo dir = new DirectoryInfo( sourceDirName );
-        DirectoryInfo[] dirs = dir.GetDirectories();
-
-        // If the source directory does not exist, throw an exception.
-        if ( !dir.Exists )
-        {
-            throw new DirectoryNotFoundException(
-                "Source directory does not exist or could not be found: "
-                + sourceDirName );
-        }
-
-        // If the destination directory does not exist, create it.
-        if ( !Directory.Exists( destDirName ) )
-        {
-            Directory.CreateDirectory( destDirName );
-        }
-
-
-        // Get the file contents of the directory to copy.
-        FileInfo[] files = dir.GetFiles();
-
-        foreach ( FileInfo file in files )
-        {
-            // Create the path to the new copy of the file.
-            string temppath = Path.Combine( destDirName, file.Name );
-
-            // Copy the file.
-            file.CopyTo( temppath, true );
-        }
-
-        // If copySubDirs is true, copy the subdirectories.
-        if ( copySubDirs )
-        {
-
-            foreach ( DirectoryInfo subdir in dirs )
-            {
-                // Create the subdirectory.
-                string temppath = Path.Combine( destDirName, subdir.Name );
-
-                // Copy the subdirectories.
-                DirectoryCopy( subdir.FullName, temppath, copySubDirs );
-            }
-        }
-    }*/
-    
     private void DeleteDirectory( string target_dir )
     {
         string[] files = Directory.GetFiles( target_dir );
