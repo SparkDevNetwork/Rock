@@ -19,6 +19,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -182,6 +183,23 @@ namespace Rock.Model
         }
         private ICollection<WorkflowActivityType> _activityTypes;
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has active forms.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has active forms; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasActiveForms
+        {
+            get
+            {
+                return ActivityTypes
+                    .Where( t => t.IsActive.HasValue && t.IsActive.Value )
+                    .SelectMany( t => t.ActionTypes )
+                    .Where( a => a.WorkflowFormId.HasValue )
+                    .Any();
+            }
+        }
         #endregion
 
         #region Methods
