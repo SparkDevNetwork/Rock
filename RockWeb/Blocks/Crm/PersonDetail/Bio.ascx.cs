@@ -237,7 +237,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 else
                 {
                     nbInvalidPerson.Visible = true;
-                    phContent.Visible = false;
+                    pnlContent.Visible = false;
                 }
             }
         }
