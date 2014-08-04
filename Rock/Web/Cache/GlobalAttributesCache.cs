@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -76,8 +77,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-
-                var attributeCache = Attributes.FirstOrDefault(a => a.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+                var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
                 if ( attributeCache != null )
                 {
                     var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null ).FirstOrDefault();
@@ -118,7 +118,7 @@ namespace Rock.Web.Cache
                     if ( attribute == null )
                     {
                         attribute = new Rock.Model.Attribute();
-                        attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
+                        attribute.FieldTypeId = FieldTypeCache.Read( new Guid( SystemGuid.FieldType.TEXT ) ).Id;
                         attribute.EntityTypeQualifierColumn = string.Empty;
                         attribute.EntityTypeQualifierValue = string.Empty;
                         attribute.Key = key;
@@ -189,11 +189,7 @@ namespace Rock.Web.Cache
                 globalAttributes.Attributes = new List<AttributeCache>();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                } 
-                
+                rockContext = rockContext ?? new RockContext();
                 var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
@@ -227,7 +223,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        public static Dictionary<string, object> GetMergeFields(Person currentPerson)
+        public static Dictionary<string, object> GetMergeFields( Person currentPerson )
         {
             var configValues = new Dictionary<string, object>();
 
@@ -244,14 +240,6 @@ namespace Rock.Web.Cache
             }
             configValues.Add( "GlobalAttribute", globalAttributeValues );
 
-            //    // Add any application config values as available merge objects
-            //    var appSettingValues = new Dictionary<string, object>();
-            //    foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
-            //    {
-            //        appSettingValues.Add( key, System.Configuration.ConfigurationManager.AppSettings[key] );
-            //    }
-            //    configValues.Add( "AppSetting", appSettingValues );
-            
             // Recursively resolve any of the config values that may have other merge codes as part of their value
             foreach ( var collection in configValues.ToList() )
             {
