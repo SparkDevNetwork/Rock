@@ -351,6 +351,8 @@ namespace RockWeb.Blocks.Finance
 
                 transactionService.Delete( transaction );
                 rockContext.SaveChanges();
+
+                RockPage.UpdateBlocks( "~/Blocks/Finance/BatchDetail.ascx" );
             }
 
             BindGrid();
