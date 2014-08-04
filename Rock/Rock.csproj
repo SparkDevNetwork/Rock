@@ -766,7 +766,6 @@
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
@@ -786,8 +785,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />

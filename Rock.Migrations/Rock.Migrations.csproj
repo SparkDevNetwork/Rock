@@ -1053,6 +1053,10 @@
     <Compile Include="Migrations\201408012250032_FinancialPersonBackAccountMasked.Designer.cs">
       <DependentUpon>201408012250032_FinancialPersonBackAccountMasked.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408032233377_RemoveAttendedCheckin.cs" />
+    <Compile Include="Migrations\201408032233377_RemoveAttendedCheckin.Designer.cs">
+      <DependentUpon>201408032233377_RemoveAttendedCheckin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1825,6 +1829,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408012250032_FinancialPersonBackAccountMasked.resx">
       <DependentUpon>201408012250032_FinancialPersonBackAccountMasked.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408032233377_RemoveAttendedCheckin.resx">
+      <DependentUpon>201408032233377_RemoveAttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
