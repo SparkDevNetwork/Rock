@@ -1,4 +1,4 @@
-﻿<%@ WebHandler Language="C#" Class="TextToWorkflowTwillio" %>
+﻿<%@ WebHandler Language="C#" Class="TextToWorkflowTwilio" %>
 
 using System;
 using System.Web;
@@ -11,7 +11,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using com.voracitySolutions.TextToWorkflow;
 
-public class TextToWorkflowTwillio : IHttpHandler
+public class TextToWorkflowTwilio : IHttpHandler
 {    
     private HttpRequest request;
     private HttpResponse response;
