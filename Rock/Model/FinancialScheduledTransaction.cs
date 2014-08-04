@@ -134,7 +134,6 @@ namespace Rock.Model
         /// A <see cref="System.DateTime" /> representing the date and time of the last status update.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
         public DateTime? LastStatusUpdateDateTime { get; set; }
 
         /// <summary>
