@@ -467,6 +467,7 @@ img.jcrop-preview {
     25. Active Users - styles for the active users block
     26. Navigation for Paging - styles for creating a pager
     27. List Extensions - additional list options
+    28. Key Value Pair Control - styling for key/value pair control
 */
 .picker {
   position: relative;
@@ -1722,6 +1723,9 @@ ul.rocklist .rocklist-item.selected {
   float: left;
   margin-right: 2px;
   margin-bottom: 4px;
+}
+.key-value-rows .controls-row {
+  margin-bottom: 6px;
 }
 /*
     Used to manage styles related to Rock's forms
