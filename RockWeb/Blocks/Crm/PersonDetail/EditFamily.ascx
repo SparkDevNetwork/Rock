@@ -80,7 +80,7 @@
                                     </asp:TemplateField>
                                     <asp:TemplateField HeaderText="Address">
                                         <ItemTemplate>
-                                            <%# Eval("FormattedValue") %><br />
+                                            <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <Rock:AddressControl ID="acAddress" runat="server" />

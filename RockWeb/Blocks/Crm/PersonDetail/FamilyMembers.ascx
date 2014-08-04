@@ -50,7 +50,7 @@
                                                 <i class="fa fa-map-marker"></i>
                                             </a>
                                             <div class="address">
-                                                <%# Eval("Location.FormattedHtmlValue") %>
+                                                <%# Eval("Location.FormattedHtmlAddress") %>
                                             </div>
                                             <div class="pull-left rollover-item">
                                                 <asp:LinkButton ID="lbVerify" runat="server">

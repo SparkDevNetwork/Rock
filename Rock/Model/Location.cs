@@ -382,27 +382,25 @@ namespace Rock.Model
         public virtual BinaryFile Image { get; set; }
 
         /// <summary>
-        /// Gets the formatted location.
+        /// Gets the formatted address.
         /// </summary>
         /// <value>
-        /// The formatted location.
+        /// The formatted address.
         /// </value>
-        [NotMapped]
-        public virtual string FormattedValue
+        public virtual string FormattedAddress
         {
-            get { return this.ToString(); }
+            get { return GetFullStreetAddress(); }
         }
 
         /// <summary>
-        /// Gets the formatted HTML value.
+        /// Gets the formatted HTML address.
         /// </summary>
         /// <value>
-        /// The formatted HTML value.
+        /// The formatted HTML address.
         /// </value>
-        [NotMapped]
-        public virtual string FormattedHtmlValue
+        public virtual string FormattedHtmlAddress
         {
-            get { return FormattedValue.ConvertCrLfToHtmlBr(); }
+            get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
         }
 
         #endregion
