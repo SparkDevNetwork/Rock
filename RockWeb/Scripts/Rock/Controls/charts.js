@@ -102,6 +102,11 @@
                     }
 
                     chartSeriesList = [];
+
+                    // sort data after combining
+                    combinedChartData.sort(function (item1, item2) { return item2.DateTimeStamp - item1.DateTimeStamp });
+                    combinedData.sort(function (item1, item2) { return item2[0] - item1[0]; });
+
                     var chartCombinedMeasurePoints = {
                         label: xaxisLabelText + ' Total',
                         chartData: combinedChartData,
