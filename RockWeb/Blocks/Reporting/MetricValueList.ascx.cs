@@ -42,6 +42,20 @@ namespace RockWeb.Blocks.Reporting
 
         private Dictionary<int, string> _entityNameLookup;
 
+        /// <summary>
+        /// Gets the entity preference key.
+        /// </summary>
+        /// <value>
+        /// The entity preference key.
+        /// </value>
+        private string EntityPreferenceKey
+        {
+            get
+            {
+                return string.Format( "EntityForMetric:{0}", hfMetricId.Value );
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -53,6 +67,9 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            gfMetricValues.ApplyFilterClick += gfMetricValues_ApplyFilterClick;
+            gfMetricValues.DisplayFilterValue += gfMetricValues_DisplayFilterValue;
 
             gMetricValues.DataKeyNames = new string[] { "id" };
             gMetricValues.Actions.AddClick += gMetricValues_Add;
@@ -72,10 +89,103 @@ namespace RockWeb.Blocks.Reporting
         {
             if ( !Page.IsPostBack )
             {
+                SetHiddenFieldValues();
+                this.Visible = hfMetricId.Value.AsIntegerOrNull().HasValue;
+                BindFilter();
                 BindGrid();
             }
 
             base.OnLoad( e );
+        }
+
+        #endregion
+
+        #region Grid Filter
+
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            drpDates.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
+
+            ddlGoalMeasure.Items.Clear();
+            ddlGoalMeasure.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            ddlGoalMeasure.Items.Add( new ListItem( MetricValueType.Goal.ConvertToString(), MetricValueType.Goal.ConvertToInt().ToString() ) );
+            ddlGoalMeasure.Items.Add( new ListItem( MetricValueType.Measure.ConvertToString(), MetricValueType.Measure.ConvertToInt().ToString() ) );
+
+            ddlGoalMeasure.SelectedValue = gfMetricValues.GetUserPreference( "Goal/Measure" );
+
+            var metric = new MetricService( new RockContext() ).Get( hfMetricId.Value.AsInteger() );
+
+            epEntity.Visible = metric != null;
+
+            if ( metric != null )
+            {
+                epEntity.EntityTypeId = metric.EntityTypeId;
+                epEntity.EntityTypePickerVisible = false;
+
+                var parts = gfMetricValues.GetUserPreference( this.EntityPreferenceKey ).Split( '|' );
+
+                if ( parts.Length >= 2 )
+                {
+                    epEntity.EntityId = parts[1].AsIntegerOrNull();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gfs the metric values_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void gfMetricValues_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            if ( e.Key == "Date Range" )
+            {
+                e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
+            }
+            else if ( e.Key == "Goal/Measure" )
+            {
+                var metricValueType = e.Value.ConvertToEnumOrNull<MetricValueType>();
+                if ( metricValueType.HasValue )
+                {
+                    e.Value = metricValueType.Value.ConvertToString();
+                }
+                else
+                {
+                    e.Value = null;
+                }
+            }
+            else if ( e.Key == EntityPreferenceKey )
+            {
+                e.Key = hfEntityTypeName.Value;
+                var parts = e.Value.Split( '|' );
+                if ( parts.Length >= 2 )
+                {
+                    e.Value = GetSeriesName( parts[1].AsIntegerOrNull() );
+                }
+            }
+            else
+            {
+                e.Value = null;
+            }
+        }
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the gfMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gfMetricValues_ApplyFilterClick( object sender, EventArgs e )
+        {
+            gfMetricValues.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
+            gfMetricValues.SaveUserPreference( this.EntityPreferenceKey, string.Format( "{0}|{1}", epEntity.EntityTypeId, epEntity.EntityId ) );
+            gfMetricValues.SaveUserPreference( "Goal/Measure", ddlGoalMeasure.SelectedValue );
+
+            gfMetricValues.SaveUserPreference( "Entity", null );
+
+            BindGrid();
         }
 
         #endregion
@@ -183,44 +293,17 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
-            var rockContext = new RockContext();
-            MetricValueService metricValueService = new MetricValueService( rockContext );
-            SortProperty sortProperty = gMetricValues.SortProperty;
-            var qry = metricValueService.Queryable();
-
-            // in case called normally
-            int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
-
-            // in case called from CategoryTreeView
-            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
-            MetricCategory metricCategory = null;
-            if ( metricCategoryId.HasValue )
-            {
-                if ( metricCategoryId.Value > 0 )
-                {
-                    // editing a metric, but get the metricId from the metricCategory
-                    metricCategory = new MetricCategoryService( rockContext ).Get( metricCategoryId.Value );
-                    if ( metricCategory != null )
-                    {
-                        metricId = metricCategory.MetricId;
-                    }
-                }
-                else
-                {
-                    // adding a new metric. Block will (hopefully) not be shown
-                    metricId = 0;
-                }
-            }
-
-            hfMetricId.Value = metricId.ToString();
-            hfMetricCategoryId.Value = metricCategoryId.ToString();
-
-            this.Visible = metricId.HasValue;
+            int? metricId = hfMetricId.Value.AsIntegerOrNull();
 
             if ( !metricId.HasValue )
             {
                 return;
             }
+
+            var rockContext = new RockContext();
+            SortProperty sortProperty = gMetricValues.SortProperty;
+            MetricValueService metricValueService = new MetricValueService( rockContext );
+            var qry = metricValueService.Queryable();
 
             qry = qry.Where( a => a.MetricId == metricId );
 
@@ -263,6 +346,38 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = gfMetricValues.GetUserPreference( "Date Range" );
+            if ( drp.LowerValue.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueDateTime >= drp.LowerValue.Value );
+            }
+
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                qry = qry.Where( a => a.MetricValueDateTime < upperDate );
+            }
+
+            var metricValueType = gfMetricValues.GetUserPreference( "Goal/Measure" ).ConvertToEnumOrNull<MetricValueType>();
+            if ( metricValueType.HasValue )
+            {
+                qry = qry.Where( a => a.MetricValueType == metricValueType.Value );
+            }
+
+            var entityParts = gfMetricValues.GetUserPreference( this.EntityPreferenceKey ).Split( '|' );
+            if ( entityParts.Length == 2 )
+            {
+                if ( entityParts[0].AsInteger() == metric.EntityTypeId )
+                {
+                    var entityId = entityParts[1].AsIntegerOrNull();
+                    if ( entityId.HasValue )
+                    {
+                        qry = qry.Where( a => a.EntityId == entityId );
+                    }
+                }
+            }
+
             if ( sortProperty != null )
             {
                 gMetricValues.DataSource = qry.Sort( sortProperty ).ToList();
@@ -273,6 +388,46 @@ namespace RockWeb.Blocks.Reporting
             }
 
             gMetricValues.DataBind();
+        }
+
+        /// <summary>
+        /// Sets the hidden field values.
+        /// </summary>
+        private void SetHiddenFieldValues()
+        {
+            var rockContext = new RockContext();
+
+            // in case called normally
+            int? metricId = PageParameter( "MetricId" ).AsIntegerOrNull();
+            hfEntityTypeName.Value = string.Empty;
+
+            // in case called from CategoryTreeView
+            int? metricCategoryId = PageParameter( "MetricCategoryId" ).AsIntegerOrNull();
+            MetricCategory metricCategory = null;
+            if ( metricCategoryId.HasValue )
+            {
+                if ( metricCategoryId.Value > 0 )
+                {
+                    // editing a metric, but get the metricId from the metricCategory
+                    metricCategory = new MetricCategoryService( rockContext ).Get( metricCategoryId.Value );
+                    if ( metricCategory != null )
+                    {
+                        metricId = metricCategory.MetricId;
+                        if ( metricCategory.Metric != null && metricCategory.Metric.EntityType != null )
+                        {
+                            hfEntityTypeName.Value = metricCategory.Metric.EntityType.FriendlyName;
+                        }
+                    }
+                }
+                else
+                {
+                    // adding a new metric. Block will (hopefully) not be shown
+                    metricId = 0;
+                }
+            }
+
+            hfMetricId.Value = metricId.ToString();
+            hfMetricCategoryId.Value = metricCategoryId.ToString();
         }
 
         #endregion
