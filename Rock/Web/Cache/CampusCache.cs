@@ -15,8 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -31,7 +31,7 @@ namespace Rock.Web.Cache
     {
         #region Constructors
 
-        private CampusCache() 
+        private CampusCache()
         {
         }
 
@@ -187,34 +187,26 @@ namespace Rock.Web.Cache
         public static CampusCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CampusCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
-            if ( campus != null )
+            if ( campus == null )
             {
-                return campus;
-            }
-            else
-            {
-                CampusService campusService = new CampusService( rockContext ?? new RockContext() );
-                Campus campusModel = campusService.Get( id );
+                rockContext = rockContext ?? new RockContext();
+                var campusService = new CampusService( rockContext );
+                var campusModel = campusService.Get( id );
                 if ( campusModel != null )
                 {
-                    campusModel.LoadAttributes();
+                    campusModel.LoadAttributes( rockContext );
                     campus = new CampusCache( campusModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, campus, cachePolicy );
                     cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-                    
-                    return campus;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return campus;
         }
 
         /// <summary>
@@ -228,31 +220,31 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            CampusCache campus = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                campus = Read( (int)cacheObj );
             }
-            else
+
+            if ( campus == null )
             {
-                var campusService = new CampusService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var campusService = new CampusService( rockContext );
                 var campusModel = campusService.Get( guid );
                 if ( campusModel != null )
                 {
-                    campusModel.LoadAttributes();
-                    var campus = new CampusCache( campusModel );
+                    campusModel.LoadAttributes( rockContext );
+                    campus = new CampusCache( campusModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( CampusCache.CacheKey( campus.Id ), campus, cachePolicy );
                     cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-
-                    return campus;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return campus;
         }
+
         /// <summary>
         /// Adds Campus model to cache, and returns cached object
         /// </summary>
@@ -261,25 +253,22 @@ namespace Rock.Web.Cache
         public static CampusCache Read( Campus campusModel )
         {
             string cacheKey = CampusCache.CacheKey( campusModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             CampusCache campus = cache[cacheKey] as CampusCache;
 
             if ( campus != null )
             {
                 campus.CopyFromModel( campusModel );
-                return campus;
             }
             else
             {
                 campus = new CampusCache( campusModel );
-                
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, campus, cachePolicy );
                 cache.Set( campus.Guid.ToString(), campus.Id, cachePolicy );
-                
-                return campus;
             }
+
+            return campus;
         }
 
         /// <summary>

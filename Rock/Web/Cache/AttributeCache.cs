@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -44,7 +45,7 @@ namespace Rock.Web.Cache
     {
         #region constructors
 
-        private AttributeCache() 
+        private AttributeCache()
         {
         }
 
@@ -213,7 +214,7 @@ namespace Rock.Web.Cache
         /// The type of the field.
         /// </value>
         [DataMember]
-        public FieldTypeCache FieldType 
+        public FieldTypeCache FieldType
         {
             get { return FieldTypeCache.Read( FieldTypeId ); }
         }
@@ -330,7 +331,7 @@ namespace Rock.Web.Cache
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
         /// <param name="required">The required.</param>
-        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null)
+        public void AddControl( ControlCollection controls, string value, string validationGroup, bool setValue, bool setId, bool? required = null )
         {
             Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( attributeControl != null )
@@ -533,8 +534,8 @@ namespace Rock.Web.Cache
         public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
         {
             Security.Authorization.MakePrivate( this, action, person, rockContext );
-        }        
-        
+        }
+
         #endregion
 
         #region Static Methods
@@ -558,13 +559,10 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             AttributeCache attribute = cache[cacheKey] as AttributeCache;
 
-            if ( attribute != null )
+            if ( attribute == null )
             {
-                return attribute;
-            }
-            else
-            {
-                var attributeService = new Rock.Model.AttributeService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeModel = attributeService.Get( id );
                 if ( attributeModel != null )
                 {
@@ -573,14 +571,10 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-
-                    return attribute;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return attribute;
         }
 
         /// <summary>
@@ -594,31 +588,30 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            AttributeCache attribute = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                attribute = Read( (int)cacheObj );
             }
-            else
+
+            if ( attribute == null )
             {
-                var attributeService = new AttributeService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var attributeService = new AttributeService( rockContext );
                 var attributeModel = attributeService.Get( guid );
                 if ( attributeModel != null )
                 {
-                    var attribute = new AttributeCache( attributeModel );
+                    attribute = new AttributeCache( attributeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( AttributeCache.CacheKey( attribute.Id ), attribute, cachePolicy );
                     cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-
-                    return attribute;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return attribute;
         }
-        
+
         /// <summary>
         /// Adds Attribute model to cache, and returns cached object
         /// </summary>
@@ -634,18 +627,16 @@ namespace Rock.Web.Cache
             if ( attribute != null )
             {
                 attribute.CopyFromModel( attributeModel );
-                return attribute;
             }
             else
             {
                 attribute = new AttributeCache( attributeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, attribute, cachePolicy );
                 cache.Set( attribute.Guid.ToString(), attribute.Id, cachePolicy );
-
-                return attribute;
             }
+
+            return attribute;
         }
 
         /// <summary>
