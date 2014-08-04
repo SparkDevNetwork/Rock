@@ -63,7 +63,7 @@
 
                                                         <strong><%# Eval("GroupLocationTypeValue.Name") %></strong>
                                                         <p>
-                                                            <%# Eval("Location.FormattedHtmlValue") %>
+                                                            <%# Eval("Location.FormattedHtmlAddress") %>
                                                         </p>
                                                     </li>
                                                 </ItemTemplate>

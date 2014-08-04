@@ -1274,7 +1274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
         }
 
-        public string FormattedValue
+        public string FormattedAddress
         {
             get
             {
@@ -1305,6 +1305,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
                 {
                     result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
+                }
+                while ( result.Contains( "\x0A\x0A" ) )
+                {
+                    result = result.Replace( "\x0A\x0A", "\x0A" );
                 }
 
                 if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )
