@@ -129,6 +129,7 @@ namespace Rock.Web.UI.Controls
             toggleAllAny.ButtonSizeCssClass = "btn-xs";
             toggleAllAny.OnText = "All";
             toggleAllAny.OffText = "Any";
+            toggleAllAny.ActiveButtonCssClass = "btn-info";
 
             btnAddGroup = new LinkButton();
             Controls.Add( btnAddGroup );
