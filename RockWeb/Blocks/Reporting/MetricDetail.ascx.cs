@@ -66,6 +66,8 @@ namespace RockWeb.Blocks.Reporting
 
             // Metric supports 0 or more Categories, so the entityType is actually MetricCategory, not Metric
             cpMetricCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.MetricCategory ) ).Id;
+
+            lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
         }
 
         /// <summary>
@@ -586,7 +588,7 @@ namespace RockWeb.Blocks.Reporting
             hfMetricId.SetValue( metric.Id );
 
             lcMetricsChart.Visible = GetAttributeValue( "ShowChart" ).AsBooleanOrNull() ?? true;
-            lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            
             var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "-1||" );
             lcMetricsChart.StartDate = chartDateRange.Start;
             lcMetricsChart.EndDate = chartDateRange.End;
