@@ -39,7 +39,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block used to download any scheduled payment transactions that were processed by payment gateway during a specified date range." )]
 
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 0 )]
+    [LinkedPage( "Batch Detail Page", "The page used to display details of a batch.", false, "", "", 1)]
     public partial class ScheduledPaymentDownload : Rock.Web.UI.RockBlock
     {
 
@@ -124,7 +125,12 @@ namespace RockWeb.Blocks.Finance
 
                     if ( string.IsNullOrWhiteSpace( errorMessage ) )
                     {
-                        string resultSummary = FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments );
+                        var qryParam = new Dictionary<string, string>();
+                        qryParam.Add( "batchId", "9999" );
+                        string batchUrlFormat = LinkedPageUrl( "BatchDetailPage", qryParam ).Replace( "9999", "{0}" );
+
+                        string resultSummary = FinancialScheduledTransactionService.ProcessPayments( gateway, batchNamePrefix, payments, batchUrlFormat );
+
                         if (!string.IsNullOrWhiteSpace(resultSummary))
                         {
                             nbSuccess.Text = string.Format( "<ul class='list-padded'>{0}</ul>", resultSummary );

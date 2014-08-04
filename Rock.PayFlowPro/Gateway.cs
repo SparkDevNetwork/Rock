@@ -387,45 +387,119 @@ namespace Rock.PayFlowPro
                 GetAttributeValue( "Password" ),
                 GetAttributeValue( "Mode" ).Equals( "Test", StringComparison.CurrentCultureIgnoreCase ) );
 
-            var reportParams = new Dictionary<string, string>();
-            reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
-            reportParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
-
-            DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
-            if ( dt != null )
+            // Query the PayFlowPro Recurring Billing Report for transactions that were processed during data range
+            var recurringBillingParams = new Dictionary<string, string>();
+            recurringBillingParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+            recurringBillingParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+            DataTable recurringBillingTable = reportingApi.GetReport( "RecurringBillingReport", recurringBillingParams, out errorMessage );
+            if ( recurringBillingTable != null )
             {
+                // The Recurring Billing Report items does not include the amounts for each transaction, so need 
+                // to run a custom report to try and get the amount/tender type for each transaction
+                var transactionCodes = new Dictionary<string, int>();
+                var customParams = new Dictionary<string, string>();
+                customParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+                customParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
+                customParams.Add( "maximum_amount", "1000000" );
+                customParams.Add( "recurring_only", "true" );
+                customParams.Add( "show_order_id", "false" );
+                customParams.Add( "show_transaction_id", "true" );
+                customParams.Add( "show_time", "false" );
+                customParams.Add( "show_type", "false" );
+                customParams.Add( "show_tender_type", "true" );
+                customParams.Add( "show_account_number", "false" );
+                customParams.Add( "show_expires", "false" );
+                customParams.Add( "show_aba_routing_num", "false" );
+                customParams.Add( "show_amount", "true" );
+                customParams.Add( "show_result_code", "false" );
+                customParams.Add( "show_response_msg", "false" );
+                customParams.Add( "show_comment1", "false" );
+                customParams.Add( "show_comment2", "false" );
+                customParams.Add( "show_tax_amount", "false" );
+                customParams.Add( "show_purchase_order", "false" );
+                customParams.Add( "show_original_transactio", "false" );
+                customParams.Add( "show_avs_street_match", "false" );
+                customParams.Add( "show_avs_zip_match", "false" );
+                customParams.Add( "show_invoice_number", "false" );
+                customParams.Add( "show_authcode", "false" );
+                customParams.Add( "show_batch_id", "false" );
+                customParams.Add( "show_csc_match", "false" );
+                customParams.Add( "show_billing_first_name", "false" );
+                customParams.Add( "show_billing_last_name", "false" );
+                customParams.Add( "show_billing_company_", "false" );
+                customParams.Add( "show_billing_address", "false" );
+                customParams.Add( "show_billing_city", "false" );
+                customParams.Add( "show_billing_state", "false" );
+                customParams.Add( "show_billing_zip", "false" );
+                customParams.Add( "show_billing_email", "false" );
+                customParams.Add( "show_billing_country", "false" );
+                customParams.Add( "show_shipping_first_na", "false" );
+                customParams.Add( "show_shipping_last_na", "false" );
+                customParams.Add( "show_shipping_address", "false" );
+                customParams.Add( "show_shipping_city", "false" );
+                customParams.Add( "show_shipping_state", "false" );
+                customParams.Add( "show_shipping_zip", "false" );
+                customParams.Add( "show_shipping_country", "false" );
+                customParams.Add( "show_customer_code", "false" );
+                customParams.Add( "show_freight_amount", "false" );
+                customParams.Add( "show_duty_amount", "false" );
+                DataTable customTable = reportingApi.GetReport( "CustomReport", customParams, out errorMessage );
+                if ( customTable != null )
+                {
+                    for ( int i = 0; i < customTable.Rows.Count; i++ )
+                    {
+                        transactionCodes.Add( customTable.Rows[i]["Transaction Id"].ToString(), i );
+                    }
+                }
+
                 var txns = new List<Payment>();
 
-                // The Recurring Billing Report items does not include the amounts for each transaction, so need 
-                // to do a transactionIDSearch to get the amount for each transaction
-
-                reportParams = new Dictionary<string, string>();
-                reportParams.Add( "transaction_id", string.Empty );
+                var transactionIdParams = new Dictionary<string, string>();
+                transactionIdParams.Add( "transaction_id", string.Empty );
 
                 var creditCardTypes = DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues;
 
-                foreach ( DataRow row in dt.Rows )
+                foreach ( DataRow recurringBillingRow in recurringBillingTable.Rows )
                 {
-                    reportParams["transaction_id"] = row["Transaction ID"].ToString();
-                    DataTable dtTxn = reportingApi.GetSearch( "TransactionIDSearch", reportParams, out errorMessage );
-                    if ( dtTxn != null && dtTxn.Rows.Count == 1 )
+                    bool foundTxn = false;
+                    string transactionId = recurringBillingRow["Transaction ID"].ToString();
+                    decimal amount = decimal.MinValue;
+                    string tenderType = string.Empty;
+
+                    if ( transactionCodes.ContainsKey(transactionId) )
                     {
+                        int rowNumber = transactionCodes[transactionId];
+                        amount = decimal.TryParse( customTable.Rows[rowNumber]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
+                        tenderType = customTable.Rows[rowNumber]["Tender Type"].ToString();
+                        foundTxn = true;
+                    }
+                    else
+                    {
+                        // If the custom report did not include the transaction, run a transactionIDSearch report to get the amount and tender type
+                        transactionIdParams["transaction_id"] = transactionId;
+                        DataTable transactionIdTable = reportingApi.GetSearch( "TransactionIDSearch", transactionIdParams, out errorMessage );
+                        if ( transactionIdTable != null && transactionIdTable.Rows.Count == 1 )
+                        {
+                            amount = decimal.TryParse( transactionIdTable.Rows[0]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
+                            tenderType = transactionIdTable.Rows[0]["Tender Type"].ToString();
+                            foundTxn = true;
+                        }
+                    }
+
+                    if (foundTxn)
+                    { 
                         var payment = new Payment();
-
-                        decimal amount = decimal.MinValue;
-                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? ( amount / 100 ) : 0.0M;
-
-                        payment.TransactionDateTime = row["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
-                        payment.TransactionCode = row["Transaction ID"].ToString();
-                        payment.GatewayScheduleId = row["Profile ID"].ToString();
-                        payment.ScheduleActive = row["Status"].ToString() == "Active";
-                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == dtTxn.Rows[0]["Tender Type"].ToString() ).FirstOrDefault();
-
+                        payment.Amount = amount;
+                        payment.TransactionDateTime = recurringBillingRow["Time"].ToString().AsDateTime() ?? DateTime.MinValue;
+                        payment.TransactionCode = recurringBillingRow["Transaction ID"].ToString();
+                        payment.GatewayScheduleId = recurringBillingRow["Profile ID"].ToString();
+                        payment.ScheduleActive = recurringBillingRow["Status"].ToString() == "Active";
+                        payment.CreditCardTypeValue = creditCardTypes.Where( t => t.Name == tenderType ).FirstOrDefault();
                         txns.Add( payment );
                     }
                     else
                     {
-                        errorMessage = "The TransactionIDSearch report did not return a value for transaction: " + row["Transaction ID"].ToString();
+                        errorMessage = "The TransactionIDSearch report did not return a value for transaction: " + recurringBillingRow["Transaction ID"].ToString();
                         return null;
                     }
                 }

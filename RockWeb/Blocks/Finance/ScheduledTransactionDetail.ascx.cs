@@ -286,10 +286,12 @@ achieve our mission.  We are so grateful for your commitment.
                             if ( SelectedAccounts.Count > item.ItemIndex )
                             {
                                 decimal amount = decimal.MinValue;
-                                if ( decimal.TryParse( accountAmount.Text, out amount ) )
+                                if ( !decimal.TryParse( accountAmount.Text, out amount ) )
                                 {
-                                    SelectedAccounts[item.ItemIndex].Amount = amount;
+                                    amount = 0.0M;
                                 }
+
+                                SelectedAccounts[item.ItemIndex].Amount = amount;
                             }
                         }
                     }
