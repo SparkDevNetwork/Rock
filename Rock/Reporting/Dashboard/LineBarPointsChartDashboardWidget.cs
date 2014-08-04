@@ -301,7 +301,6 @@ namespace Rock.Reporting.Dashboard
             FlotChartControl.Options.legend = FlotChartControl.Options.legend ?? new Legend();
             FlotChartControl.Options.legend.show = this.GetAttributeValue( "ShowLegend" ).AsBooleanOrNull();
             FlotChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
-            FlotChartControl.ShowDebug = true;
 
             MetricWarningControl.Visible = !this.MetricId.HasValue;
         }
