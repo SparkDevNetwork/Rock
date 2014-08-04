@@ -87,9 +87,13 @@ function (val, axis) {
             if ( chartStyle.Legend != null )
             {
                 this.legend = new Legend();
+                this.legend.show = chartStyle.Legend.Show ?? true;
+                this.legend.labelBoxBorderColor = chartStyle.Legend.LabelBoxBorderColor;
+                this.legend.noColumns = chartStyle.Legend.NoColumns;
+                this.legend.position = chartStyle.Legend.Position;
                 this.legend.backgroundColor = chartStyle.Legend.BackgroundColor;
                 this.legend.backgroundOpacity = chartStyle.Legend.BackgroundOpacity;
-                this.legend.labelBoxBorderColor = chartStyle.Legend.LabelBoxBorderColor;
+                this.legend.container = chartStyle.Legend.Container;
             }
 
             this.customSettings = this.customSettings ?? new CustomSettings();

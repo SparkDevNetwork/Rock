@@ -254,20 +254,12 @@ namespace Rock.Web.UI.Controls
     public class LegendStyle
     {
         /// <summary>
-        /// Gets or sets the color of the background.
+        /// Gets or sets whether to show the legend or not
         /// </summary>
         /// <value>
-        /// The color of the background.
+        /// The show.
         /// </value>
-        public string BackgroundColor { get; set; }
-
-        /// <summary>
-        /// Gets or sets the background opacity.
-        /// </summary>
-        /// <value>
-        /// The background opacity.
-        /// </value>
-        public double? BackgroundOpacity { get; set; }
+        public bool? Show { get; set; }
 
         /// <summary>
         /// Gets or sets the color of the label box border.
@@ -276,6 +268,46 @@ namespace Rock.Web.UI.Controls
         /// The color of the label box border.
         /// </value>
         public string LabelBoxBorderColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of columns
+        /// </summary>
+        /// <value>
+        /// The no columns.
+        /// </value>
+        public int? NoColumns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the position ("ne" or "nw" or "se" or "sw")
+        /// </summary>
+        /// <value>
+        /// The position.
+        /// </value>
+        public string Position { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the color of the background. null or color
+        /// </summary>
+        /// <value>
+        /// The color of the background.
+        /// </value>
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the background opacity. number between 0 and 1
+        /// </summary>
+        /// <value>
+        /// The background opacity.
+        /// </value>
+        public double? BackgroundOpacity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the container (null or jQuery object/DOM element/jQuery expression)
+        /// </summary>
+        /// <value>
+        /// The container.
+        /// </value>
+        public string Container { get; set; }
     }
 
     /// <summary>
