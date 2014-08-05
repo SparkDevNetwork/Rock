@@ -58,44 +58,45 @@ namespace RockWeb.Blocks.Groups
             if ( groupId == 0 )
             {
                 groupId = PageParameter( "GroupId" ).AsInteger();
-                if ( groupId != 0 )
+            }
+
+            if ( groupId != 0 )
+            {
+                string key = string.Format( "Group:{0}", groupId );
+                _group = RockPage.GetSharedItem( key ) as Group;
+                if ( _group == null )
                 {
-                    string key = string.Format( "Group:{0}", groupId );
-                    _group = RockPage.GetSharedItem( key ) as Group;
-                    if ( _group == null )
-                    {
-                        _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
-                            .Where( g => g.Id == groupId )
-                            .FirstOrDefault();
-                        RockPage.SaveSharedItem( key, _group );
-                    }
+                    _group = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                        .Where( g => g.Id == groupId )
+                        .FirstOrDefault();
+                    RockPage.SaveSharedItem( key, _group );
+                }
 
-                    if ( _group != null )
-                    {
-                        rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-                        gGroupMembers.DataKeyNames = new string[] { "Id" };
-                        gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
-                        gGroupMembers.PersonIdField = "PersonId";
-                        gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
-                        gGroupMembers.Actions.ShowAdd = true;
-                        gGroupMembers.IsDeleteEnabled = true;
-                        gGroupMembers.GridRebind += gGroupMembers_GridRebind;
-                        gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
-                        gGroupMembers.ExportFilename = _group.Name;
+                if ( _group != null )
+                {
+                    rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+                    gGroupMembers.DataKeyNames = new string[] { "Id" };
+                    gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+                    gGroupMembers.PersonIdField = "PersonId";
+                    gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
+                    gGroupMembers.Actions.ShowAdd = true;
+                    gGroupMembers.IsDeleteEnabled = true;
+                    gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+                    gGroupMembers.RowItemText = _group.GroupType.GroupTerm + " " + _group.GroupType.GroupMemberTerm;
+                    gGroupMembers.ExportFilename = _group.Name;
 
-                        // make sure they have Auth to the block AND Edit to the Group
-                        bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
-                        gGroupMembers.Actions.ShowAdd = canEditBlock;
-                        gGroupMembers.IsDeleteEnabled = canEditBlock;
+                    // make sure they have Auth to the block AND Edit to the Group
+                    bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) && _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                    gGroupMembers.Actions.ShowAdd = canEditBlock;
+                    gGroupMembers.IsDeleteEnabled = canEditBlock;
 
-                        // Add attribute columns
-                        AddAttributeColumns();
+                    // Add attribute columns
+                    AddAttributeColumns();
 
-                        // Add delete column
-                        var deleteField = new DeleteField();
-                        gGroupMembers.Columns.Add( deleteField );
-                        deleteField.Click += DeleteGroupMember_Click;
-                    }
+                    // Add delete column
+                    var deleteField = new DeleteField();
+                    gGroupMembers.Columns.Add( deleteField );
+                    deleteField.Click += DeleteGroupMember_Click;
                 }
             }
         }

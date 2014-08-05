@@ -532,6 +532,15 @@ namespace RockWeb.Blocks.Communication
             if (communication.Status == CommunicationStatus.Transient && !string.IsNullOrWhiteSpace(GetAttributeValue("DefaultTemplate")))
             {
                 var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "DefaultTemplate" ).AsGuid() );
+                
+                // If a template guid was passed in, it overrides any default template.
+                string templateGuid = PageParameter( "templateGuid" );
+                if ( !string.IsNullOrEmpty( templateGuid ) )
+                {
+                    var guid = new Guid( templateGuid );
+                    template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( t => t.Guid == guid ).FirstOrDefault();
+                }
+
                 if (template != null && template.ChannelEntityTypeId == ChannelEntityTypeId)
                 {
                     foreach(ListItem item in ddlTemplate.Items)
