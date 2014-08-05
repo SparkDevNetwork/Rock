@@ -145,8 +145,8 @@ namespace Rock.Rest.Controllers
                     }
                     else
                     {
-                        var singleGoal = goalLineStartPoint ?? goalLineEndPoint;
-                        metricYTDData.GoalValue = singleGoal != null ? singleGoal.YValue : (decimal?)null;
+                        // if there isn't a both a start goal and end goal within the date range, there wouldn't be a goal line shown in a line chart, so don't display a goal in liquid either
+                        metricYTDData.GoalValue = null;
                     }
 
                     metricsData.Add( metricYTDData.ToLiquid() );
