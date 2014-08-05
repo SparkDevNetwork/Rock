@@ -33,18 +33,28 @@
                     else {
                         if (!chartSeriesLookup[chartData[i].SeriesId]) {
 
-                            var seriesName = chartData[i].SeriesId;
-
-                            if (getSeriesUrl) {
-                                $.ajax({
-                                    url: getSeriesUrl + chartData[i].SeriesId,
-                                    async: false
-                                })
-                                .done(function (data) {
-                                    seriesName = data;
-                                });
+                            
+                            var seriesName = null;
+                            if (chartData[i].SeriesId == 0) {
+                                // SeriesId of 0 means that the metric doesn't have a series partition. (Metrics don't have to be partitioned by Series)
+                                // set the series name to the xaxislabeltext or just 'value' if it's blank
+                                seriesName = xaxisLabelText || 'value';
+                            }
+                            else {
+                                // SeriesId is NonZero so get the seriesName from the getSeriesUrl
+                                if (getSeriesUrl) {
+                                    $.ajax({
+                                        url: getSeriesUrl + chartData[i].SeriesId,
+                                        async: false
+                                    })
+                                    .done(function (data) {
+                                        seriesName = data;
+                                    });
+                                }
                             }
 
+                            // if we weren't able to determine the seriesName for some reason, output at least the seriesId
+                            // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesUrl failed
                             seriesName = seriesName || xaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
 
                             chartSeriesLookup[chartData[i].SeriesId] = {
