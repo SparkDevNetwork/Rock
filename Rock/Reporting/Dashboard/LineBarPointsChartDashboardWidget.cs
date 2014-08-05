@@ -315,6 +315,7 @@ namespace Rock.Reporting.Dashboard
             if ( this.DetailPageGuid.HasValue )
             {
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString.Add( "MetricValueId", e.MetricValueId.ToString() );
                 qryString.Add( "MetricId", this.MetricId.ToString() );
                 qryString.Add( "SeriesId", e.SeriesId );
                 qryString.Add( "YValue", e.YValue.ToString() );
