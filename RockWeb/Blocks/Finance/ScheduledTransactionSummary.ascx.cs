@@ -38,8 +38,11 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Summary" )]
     [Category( "Finance" )]
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
-    [CodeEditorField("Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "default content")]
-    [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.")]
+    [CodeEditorField("Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, "default content", "", 1)]
+    [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
+    [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
+    [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
+    [LinkedPage("Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 5)]
     public partial class ScheduledTransactionSummary : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -176,10 +179,18 @@ namespace RockWeb.Blocks.Finance
                     scheduleSummaries.Add( scheduleSummary );
                 }
                 
+                // added linked pages to mergefields
+                Dictionary<string, object> linkedPages = new Dictionary<string, object>();
+                linkedPages.Add( "ManageScheduledTransactionsPage", LinkedPageUrl( "ManageScheduledTransactionsPage", null ));
+                linkedPages.Add( "TransactionHistoryPage", LinkedPageUrl( "TransactionHistoryPage", null ) );
+                linkedPages.Add( "TransactionEntryPage", LinkedPageUrl( "TransactionEntryPage", null ) );
                 
+
+
                 var scheduleValues = new Dictionary<string, object>();
                 scheduleValues.Add( "ScheduledTransactions", scheduleSummaries.ToList() );
-                scheduleValues.Add( "Person", CurrentPerson );
+                scheduleValues.Add( "LinkedPages", linkedPages );
+                scheduleValues.Add( "Person", CurrentPerson );  
 
                 string content = GetAttributeValue( "Template" ).ResolveMergeFields( scheduleValues );
 
