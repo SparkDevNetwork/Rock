@@ -34,5 +34,13 @@ namespace Rock.Web.UI.Controls
         /// The series identifier.
         /// </value>
         public string SeriesId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metric value identifier.
+        /// </summary>
+        /// <value>
+        /// The metric value identifier.
+        /// </value>
+        public int? MetricValueId { get; set; }
     }
 }

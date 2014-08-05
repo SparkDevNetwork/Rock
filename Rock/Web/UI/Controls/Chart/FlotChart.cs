@@ -476,7 +476,20 @@ namespace Rock.Web.UI.Controls
                 }
                 else if ( param[0] == "SeriesId" )
                 {
-                    chartClickArgs.SeriesId = param[1];
+                    // only include SeriesId when CombineValues is false
+                    if ( !this.CombineValues )
+                    {
+                        chartClickArgs.SeriesId = param[1];
+                    }
+                }
+                else if ( param[0] == "MetricValueId" && !this.CombineValues )
+                {
+                    // only include MetricValueId when CombineValues is false
+                    if ( !this.CombineValues )
+                    {
+
+                        chartClickArgs.MetricValueId = param[1].AsIntegerOrNull();
+                    }
                 }
             }
 
@@ -637,7 +650,7 @@ namespace Rock.Web.UI.Controls
                 $('#{0}').find('.js-chart-placeholder').bind('plotclick', function (event, pos, item) {{
                     
                     if (item) {{
-                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId);
+                        __doPostBack('{1}', 'DateStamp=' + item.series.chartData[item.dataIndex].DateTimeStamp + ';YValue=' + item.series.chartData[item.dataIndex].YValue + ';SeriesId=' + item.series.chartData[item.dataIndex].SeriesId + ';MetricValueId=' + item.series.chartData[item.dataIndex].Id);
                     }}
                     else
                     {{
