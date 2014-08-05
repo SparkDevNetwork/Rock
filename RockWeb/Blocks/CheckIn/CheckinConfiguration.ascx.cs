@@ -391,6 +391,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -416,6 +417,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -767,6 +769,7 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB = new GroupType();
                         groupTypeDB.Id = 0;
                         groupTypeDB.Guid = groupTypeUI.Guid;
+                        groupTypeDB.ShowInNavigation = false;
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
