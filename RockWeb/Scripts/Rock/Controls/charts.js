@@ -204,6 +204,10 @@
                             var pointValue = item.series.chartData[item.dataIndex].YValue || item.series.chartData[item.dataIndex].YValueTotal;
 
                             tooltipText += ': ' + pointValue;
+
+                            if (item.series.chartData[item.dataIndex].Note) {
+                                tooltipText += '<br />' + item.series.chartData[item.dataIndex].Note;
+                            }
                         }
 
                         $toolTip.find('.tooltip-inner').html(tooltipText);
