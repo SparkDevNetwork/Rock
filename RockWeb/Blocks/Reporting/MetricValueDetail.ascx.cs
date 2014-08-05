@@ -210,11 +210,6 @@ namespace RockWeb.Blocks.Reporting
                 metricValue.Metric = metricValue.Metric ?? new MetricService( new RockContext() ).Get( metricValue.MetricId );
                 lActionTitle.Text = ActionTitle.Add( MetricValue.FriendlyTypeName ).FormatAsHtmlTitle();
             }
-            else
-            {
-                pnlDetails.Visible = false;
-                return;
-            }
 
             hfMetricValueId.Value = metricValue.Id.ToString();
 
