@@ -43,7 +43,9 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         <div class='col-md-6'>
             {{ metric.LastValueDate | Date: 'MMM' }}
               <span style='font-size:40px'>{{ metric.LastValue }}</span>
-            <p>YTD {{ metric.CumulativeValue }} GOAL {{ metric.GoalValue }}</p>
+            <p>
+                YTD {{ metric.CumulativeValue }} {% if metric.GoalValue %} GOAL {{ metric.GoalValue }} {% endif %}
+            </p>
         </div>
         <div class='col-md-6'>
             <i class='{{ metric.IconCssClass }} fa-5x'></i>
