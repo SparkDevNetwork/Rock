@@ -183,9 +183,9 @@ namespace Rock.Model
                             {
                                 // If the configured amount is greater than the remaining amount, only allocate
                                 // the remaining amount
-                                transaction.Summary = "Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
+                                transaction.Summary = "Note: Downloaded transaction amount was less than the configured allocation amounts for the Scheduled Transaction.";
                                 detail.Amount = remainingAmount;
-                                detail.Summary = "The downloaded amount was not enough to apply the configured amount to this account.";
+                                detail.Summary = "Note: The downloaded amount was not enough to apply the configured amount to this account.";
                                 remainingAmount = 0.0M;
                             }
 
@@ -202,7 +202,7 @@ namespace Rock.Model
                         // to the account that was configured for the most amount
                         if ( remainingAmount > 0.0M )
                         {
-                            transaction.Summary = "Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
+                            transaction.Summary = "Note: Downloaded transaction amount was greater than the configured allocation amounts for the Scheduled Transaction.";
                             var transactionDetail = transaction.TransactionDetails
                                 .OrderByDescending( d => d.Amount )
                                 .First();
@@ -214,7 +214,7 @@ namespace Rock.Model
                             if ( transactionDetail != null )
                             {
                                 transactionDetail.Amount += remainingAmount;
-                                transactionDetail.Summary = "Extra amount was applied to this account.";
+                                transactionDetail.Summary = "Note: Extra amount was applied to this account.";
                             }
 
                         }

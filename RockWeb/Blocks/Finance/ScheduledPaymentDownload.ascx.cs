@@ -133,11 +133,11 @@ namespace RockWeb.Blocks.Finance
 
                         if (!string.IsNullOrWhiteSpace(resultSummary))
                         {
-                            nbSuccess.Text = string.Format( "<ul class='list-padded'>{0}</ul>", resultSummary );
+                            nbSuccess.Text = string.Format( "<ul>{0}</ul>", resultSummary );
                         }
                         else
                         {
-                            nbSuccess.Text = string.Format( "<ul class='list-padded'>There were not any transactions downloaded.</ul>", resultSummary );
+                            nbSuccess.Text = string.Format( "<ul>There were not any transactions downloaded.</ul>", resultSummary );
                         
                         }
                         nbSuccess.Visible = true;

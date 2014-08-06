@@ -36,7 +36,7 @@
                                 </ItemTemplate>
                             </asp:TemplateField>
                             <asp:BoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name"  />
-                            <asp:TemplateField HeaderText="Status" SortExpression="Status">
+                            <asp:TemplateField HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center">
                                 <ItemTemplate>
                                     <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
                                 </ItemTemplate>

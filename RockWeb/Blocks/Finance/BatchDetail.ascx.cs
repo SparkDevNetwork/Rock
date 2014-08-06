@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web.UI;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -35,6 +36,8 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Batch Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial batch." )]
+
+    [LinkedPage( "Transaction Matching Page", "Page used to match transactions for a batch." )]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Control Methods
@@ -113,6 +116,18 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Click event of the lbMatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbMatch_Click( object sender, EventArgs e )
+        {
+            var qryParam = new Dictionary<string, string>();
+            qryParam.Add( "BatchId", hfBatchId.Value );
+            NavigateToLinkedPage( "TransactionMatchingPage", qryParam );
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -140,7 +155,7 @@ namespace RockWeb.Blocks.Finance
                 batch.Status = (BatchStatus)ddlStatus.SelectedIndex;
                 batch.CampusId = campCampus.SelectedCampusId;
                 batch.BatchStartDateTime = dtpStart.SelectedDateTimeIsBlank ? null : dtpStart.SelectedDateTime;
-                if (dtpEnd.SelectedDateTimeIsBlank && batch.BatchStartDateTime.HasValue)
+                if ( dtpEnd.SelectedDateTimeIsBlank && batch.BatchStartDateTime.HasValue )
                 {
                     batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 );
                 }
@@ -175,7 +190,7 @@ namespace RockWeb.Blocks.Finance
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             int batchId = hfBatchId.ValueAsInt();
-            if (batchId != 0 )
+            if ( batchId != 0 )
             {
                 ShowReadonlyDetails( GetBatch( batchId ) );
             }
@@ -333,10 +348,10 @@ namespace RockWeb.Blocks.Finance
             if ( batch != null )
             {
                 hfBatchId.Value = batch.Id.ToString();
-                string title = batch.Id > 0 ? 
+                string title = batch.Id > 0 ?
                     ActionTitle.Edit( FinancialBatch.FriendlyTypeName ) :
                     ActionTitle.Add( FinancialBatch.FriendlyTypeName );
-                
+
                 SetHeadingInfo( batch, title );
 
                 SetEditMode( true );
@@ -345,11 +360,11 @@ namespace RockWeb.Blocks.Finance
 
                 ddlStatus.BindToEnum( typeof( BatchStatus ) );
                 ddlStatus.SelectedIndex = (int)(BatchStatus)batch.Status;
-                
+
                 campCampus.Campuses = new CampusService( new RockContext() ).Queryable().OrderBy( a => a.Name ).ToList();
                 if ( batch.CampusId.HasValue )
                 {
-                    campCampus.SetValue(batch.CampusId.Value);
+                    campCampus.SetValue( batch.CampusId.Value );
                 }
 
                 tbControlAmount.Text = batch.ControlAmount.ToString( "N2" );
@@ -361,19 +376,19 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
-        private void SetHeadingInfo( FinancialBatch batch, string title)
+        private void SetHeadingInfo( FinancialBatch batch, string title )
         {
             lTitle.Text = title.FormatAsHtmlTitle();
 
             hlStatus.Text = batch.Status.ConvertToString();
-            switch (batch.Status)
+            switch ( batch.Status )
             {
                 case BatchStatus.Pending: hlStatus.LabelType = LabelType.Warning; break;
                 case BatchStatus.Open: hlStatus.LabelType = LabelType.Info; break;
                 case BatchStatus.Closed: hlStatus.LabelType = LabelType.Default; break;
             }
 
-            if (batch.Campus != null)
+            if ( batch.Campus != null )
             {
                 hlCampus.Visible = true;
                 hlCampus.Text = batch.Campus.Name;
@@ -396,7 +411,7 @@ namespace RockWeb.Blocks.Finance
 
             this.HideSecondaryBlocks( editable );
         }
-        
+
         #endregion
     }
 }
