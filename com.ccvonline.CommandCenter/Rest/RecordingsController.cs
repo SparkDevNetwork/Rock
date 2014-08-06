@@ -30,7 +30,7 @@ namespace com.ccvonline.CommandCenter.Rest
         {
             routes.MapHttpRoute(
                 name: "com.ccvonline.CommandCenter.Recording",
-                routeTemplate: "api/Recordings/{action}/{campusId}/{label}/{app}/{stream}/{recording}",
+                routeTemplate: "api/Recordings/{action}/{campusId}/{venue}/{label}/{app}/{stream}/{recording}",
                 defaults: new
                 {
                     controller = "recordings"
@@ -50,6 +50,7 @@ namespace com.ccvonline.CommandCenter.Rest
         /// Starts the specified campus id.
         /// </summary>
         /// <param name="campusId">The campus id.</param>
+        /// <param name="venue">The venue.</param>
         /// <param name="label">The label.</param>
         /// <param name="app">The app.</param>
         /// <param name="stream">The stream.</param>
@@ -58,10 +59,10 @@ namespace com.ccvonline.CommandCenter.Rest
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpGet]
         [Authenticate]
-        public Recording Start( int campusId, string label, string app, string stream, string recording )
+        public Recording Start( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
-            var Recording = RecordingService.StartRecording( campusId, label, app, stream, recording );
+            var Recording = RecordingService.StartRecording( campusId, venue, label, app, stream, recording );
 
             if ( Recording != null )
                 return Recording;
@@ -73,6 +74,7 @@ namespace com.ccvonline.CommandCenter.Rest
         /// Stops the specified campus id.
         /// </summary>
         /// <param name="campusId">The campus id.</param>
+        /// <param name="venue">The venue.</param>
         /// <param name="label">The label.</param>
         /// <param name="app">The app.</param>
         /// <param name="stream">The stream.</param>
@@ -81,10 +83,10 @@ namespace com.ccvonline.CommandCenter.Rest
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpGet]
         [Authenticate]
-        public Recording Stop( int campusId, string label, string app, string stream, string recording )
+        public Recording Stop( int campusId, string venue, string label, string app, string stream, string recording )
         {
             var RecordingService = new RecordingService( new Data.CommandCenterContext() );
-            var Recording = RecordingService.StopRecording( campusId, label, app, stream, recording );
+            var Recording = RecordingService.StopRecording( campusId, venue, label, app, stream, recording );
 
             if ( Recording != null )
                 return Recording;

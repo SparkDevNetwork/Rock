@@ -120,6 +120,16 @@ namespace com.ccvonline.CommandCenter.Model
         [DataMember]
         public string StopResponse { get; set; }
 
+        /// <summary>
+        /// Gets or sets the VenueType
+        /// </summary>
+        /// <value>
+        /// The venue type
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string VenueType { get; set; }
+
 
         #endregion
 

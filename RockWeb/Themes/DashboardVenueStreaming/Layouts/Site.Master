@@ -32,10 +32,6 @@
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-    <%-- Video JS Components --%>
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Scripts/video-js/video-js.css", true) %>"/>
-    <script src="<%# ResolveRockUrl("~~/Scripts/video-js/video.js", true) %>"></script>
-
 	<!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
