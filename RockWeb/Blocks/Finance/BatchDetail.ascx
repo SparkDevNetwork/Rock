@@ -65,6 +65,7 @@
                     </div>
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
+                        <asp:LinkButton ID="lbMatch" runat="server" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="lbMatch_Click"><i class="fa fa-money"></i> Match Transactions</asp:LinkButton>
                     </div>
                 </fieldset>
 

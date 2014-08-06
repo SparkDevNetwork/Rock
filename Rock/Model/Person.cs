@@ -1037,6 +1037,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets an anchor tag for linking to person profile
+        /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <returns></returns>
+        public string GetAnchorTag( string rockUrlRoot, string cssClass = "" )
+        {
+            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass, rockUrlRoot, Id, FullName );
+        }
+
+        /// <summary>
         /// Gets an anchor tag to send person a communication 
         /// </summary>
         /// <value>
