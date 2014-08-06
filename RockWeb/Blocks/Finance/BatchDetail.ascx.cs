@@ -126,7 +126,7 @@ namespace RockWeb.Blocks.Finance
             int batchId = hfBatchId.Value.AsInteger();
             if ( batchId == 0 )
             {
-                batch = new Rock.Model.FinancialBatch();
+                batch = new FinancialBatch();
                 batchService.Add( batch );
             }
             else

@@ -17,6 +17,7 @@
                     <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                 </div>
             </div>
+
             <div class="panel-body">
 
                 <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
@@ -24,11 +25,6 @@
                 <div id="pnlEditDetails" runat="server">
                     <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
-                    <div class="row">
-                        <div class="col-md-6">
-                        </div>
-                    </div>
-                
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" Label="Title" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
