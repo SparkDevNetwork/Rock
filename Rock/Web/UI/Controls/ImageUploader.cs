@@ -565,7 +565,7 @@ Rock.controls.imageUploader.initialize({{
                 this.SubmitFunctionClientScript,
                 this.DoneFunctionClientScript,
                 this.NoPictureUrl);
-            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
         /// <summary>
