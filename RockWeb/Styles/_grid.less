@@ -185,7 +185,6 @@ td.grid-col-actions {
     }
 }
 
-
 // 5. Light Style
 // -------------------------
 
@@ -212,6 +211,7 @@ td.grid-col-actions {
     .grid-columncommand { // get buttons in the light grid to align over the add in the footer
         text-align: right;
         width: 42px;
+        min-width: 42px;
     }
 }
 
@@ -253,6 +253,13 @@ td.grid-col-actions {
 
     &.grid-columncommand {
          padding: 6px;
+         padding-top: 12px;
+          min-width: 48px;
+    }
+
+    &.grid-columnreorder {
+         padding-top: 12px;
+         min-width: 48px;
     }
 }
 
