@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <ul class="nav navbar-nav campus-context-setter">
+        <ul class="nav navbar-nav contextsetter contextsetter-campus">
             <li class="dropdown">
 
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
