@@ -389,7 +389,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect.Click += _btnSelect_Click;
             _pnlPickerActions.Controls.Add( _btnSelect );
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs btn-link", Text = "Cancel" };
-            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
+            _btnCancel.OnClientClick = string.Format( "$('#{0}').hide(); $('#{1}').val('false'); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
         }
 
@@ -400,7 +400,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Enabled )
             {
-                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
+                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); $('#{1}').val($('#{0}').is(':visible').toString()); Rock.dialogs.updateModalScrollBar('{0}'); return false;", _pnlPickerMenu.ClientID, _hfPanelIsVisible.ClientID );
                 _btnPickerLabel.HRef = "#";
             }
             else
