@@ -8,7 +8,9 @@ SET NOCOUNT ON
 	@homePhone int = (SELECT id FROM DefinedValue WHERE guid = 'AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303'),
     @maritalStatusMarried int = (SELECT id FROM DefinedValue WHERE guid = '5FE5A540-7D9F-433E-B47E-4229D1472248'),
 	@personId int,
+    @personGuid uniqueidentifier,
     @spousePersonId int,
+    @spousePersonGuid uniqueidentifier,
 	@firstName nvarchar(50),
 	@lastName nvarchar(50),
 	@email nvarchar(75),
@@ -6053,9 +6055,13 @@ while @personCounter < @maxPerson
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
 		set @phoneNumber = ROUND(rand() * 0095551212, 0)+ 6230000000;
+        set @personGuid = NEWID();
 		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[EmailPreference],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
+		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @email, 1, 0, @personGuid, @personRecordType, @activeRecordStatus)
 		SET @personId = SCOPE_IDENTITY()
+
+        INSERT INTO [PersonAlias] (PersonId, AliasPersonId, AliasPersonGuid, [Guid])
+        values (@personId, @personId, @personGuid, NEWID());
 
 		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
 		VALUES (0, @personId, @phoneNumber, 1, 0, newid(), @homePhone);
@@ -6073,9 +6079,13 @@ while @personCounter < @maxPerson
         set @email = @firstName + '.' + @lastName + '@nowhere.com';
 		set @month = CONVERT(nvarchar(100), ROUND(rand() * 11, 0) + 1);
 		set @day = CONVERT(nvarchar(100), ROUND(rand() * 26, 0) + 1);
+        set @spousePersonGuid = NEWID();
 		INSERT INTO [Person] ([IsSystem],[FirstName],[NickName], [LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[MaritalStatusValueId], [Email],[IsEmailActive],[EmailPreference],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @maritalStatusMarried, @email, 1, 0, NEWID(), @personRecordType, @activeRecordStatus)
+		VALUES (0, @firstName , @firstName, @lastName, @day, @month, @year, @genderInt, @maritalStatusMarried, @email, 1, 0, @spousePersonGuid, @personRecordType, @activeRecordStatus)
 		SET @spousePersonId = SCOPE_IDENTITY()
+
+        INSERT INTO [PersonAlias] (PersonId, AliasPersonId, AliasPersonGuid, [Guid])
+        values (@spousePersonId, @spousePersonId, @personGuid, NEWID());
 
 		INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, [Guid], NumberTypeValueId)
 		VALUES (0, @spousePersonId, @phoneNumber, 1, 0, newid(), @homePhone);
@@ -6113,6 +6123,5 @@ IF OBJECT_ID('tempdb..#fakenames') IS NOT NULL
     DROP TABLE #fakenames
 
 SELECT COUNT(*) [Total Person Count] FROM PERSON
-
 
 end
