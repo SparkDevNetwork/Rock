@@ -10,6 +10,7 @@
             <Rock:DatePicker ID="dtStartDate" runat="server" Label="From Date" />
             <Rock:DatePicker ID="dtEndDate" runat="server" Label="To Date" />
             <Rock:RockTextBox ID="tbStream" runat="server" Label="Stream"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="tbVenue" runat="server" Label="Venue"></Rock:RockTextBox>
             <Rock:RockTextBox ID="tbLabel" runat="server" Label="Label"></Rock:RockTextBox>
             <Rock:RockTextBox ID="tbRecording" runat="server" Label="Recording"></Rock:RockTextBox>
         </Rock:GridFilter>
@@ -19,6 +20,7 @@
                 <asp:BoundField HeaderText="Campus" DataField="Campus" SortExpression="Campus" />
                 <asp:BoundField HeaderText="Date" DataField="Date" SortExpression="Date" DataFormatString="{0:MM/dd/yy}" />
                 <asp:BoundField HeaderText="Stream" DataField="StreamName" SortExpression="StreamName" />
+                <asp:BoundField HeaderText="Venue" DataField="VenueType" SortExpression="VenueType" />
                 <asp:BoundField HeaderText="Label" DataField="Label" SortExpression="Label" />
                 <asp:BoundField HeaderText="Recording" DataField="RecordingName" SortExpression="RecordingName" />
                 <asp:BoundField HeaderText="Started" DataField="StartTime" SortExpression="StartTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />
