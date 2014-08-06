@@ -79,13 +79,13 @@
 
                     <br />
 
-                    <Rock:DataTextBox ID="dtbLink" runat="server" Label="Link" TextMode="Url" Enabled="true" CssClass="js-urltextbox" />
+                    <Rock:RockTextBox ID="tbLink" runat="server" Label="Link" TextMode="Url" CssClass="js-urltextbox" />
 
-                    <Rock:DataTextBox ID="dtbEmailTo" runat="server" Label="To" />
+                    <Rock:RockTextBox ID="tbEmailTo" runat="server" Label="To" TextMode="Email" />
 
-                    <Rock:DataTextBox ID="dtbEmailFrom" runat="server" Label="From" />
+                    <Rock:RockTextBox ID="tbEmailFrom" runat="server" Label="From" TextMode="Email" />
 
-                    <Rock:DataTextBox ID="dtbEmailMessage" runat="server" Label="Message" CssClass="form-control" Rows="3" />
+                    <Rock:RockTextBox ID="tbEmailMessage" runat="server" Label="Message" CssClass="form-control" Rows="3" TextMode="MultiLine" />
 
                     <Rock:BootstrapButton ID="btnSendEmail" runat="server" Text="Send" OnClick="btnSendEmail_Click" CssClass="btn btn-default pull-right" /> 
 

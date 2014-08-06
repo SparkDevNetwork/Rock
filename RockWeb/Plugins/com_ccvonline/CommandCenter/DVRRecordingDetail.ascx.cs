@@ -30,6 +30,7 @@ using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using com.ccvonline.CommandCenter.Model;
@@ -50,6 +51,10 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -62,42 +67,46 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             RockPage.AddCSSLink( "~/Plugins/com_ccvonline/CommandCenter/Styles/commandcenter.css" );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
-            Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
-            string venueType = PageParameter( "VenueType" );
-            string clipUrl = PageParameter( "ClipURL" );
-            string clipStart = PageParameter( "ClipStart" );
-            string clipDuration = PageParameter( "ClipDuration" );
-
-            RecordingService service = new RecordingService( new CommandCenterContext() );
-            var rockContext = new RockContext();
-
-            if ( campusGuid != null )
-            {
-                _campus = new CampusService( rockContext ).Get( campusGuid.Value );
-            }
-
-            var campusVenueWeekendTimeList = service.Queryable()
-                                   .Select( g =>
-                                       new
-                                       {
-                                           WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", 1 - SqlFunctions.DatePart( "dw", g.Date ) % 7, g.Date ) ),
-                                           Campus = g.Campus,
-                                           CampusId = g.CampusId,
-                                           CampusGuid = g.Campus.Guid,
-                                           RecordingDayAndTime = g.Label,
-                                           RecordingName = g.RecordingName,
-                                           VenueType = g.VenueType,
-                                           StartTime = g.StartTime
-                                       } );
-                                                                     
-
             if ( !Page.IsPostBack )
             {
+
+                DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
+                Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
+                string venueType = PageParameter( "VenueType" );
+                string clipUrl = PageParameter( "ClipURL" );
+                string clipStart = PageParameter( "ClipStart" );
+                string clipDuration = PageParameter( "ClipDuration" );
+
+                RecordingService service = new RecordingService( new CommandCenterContext() );
+                var rockContext = new RockContext();
+
+                if ( campusGuid != null )
+                {
+                    _campus = new CampusService( rockContext ).Get( campusGuid.Value );
+                }
+
+                var campusVenueWeekendTimeList = service.Queryable()
+                                       .Select( g =>
+                                           new
+                                           {
+                                               WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", 1 - SqlFunctions.DatePart( "dw", g.Date ) % 7, g.Date ) ),
+                                               Campus = g.Campus,
+                                               CampusId = g.CampusId,
+                                               CampusGuid = g.Campus.Guid,
+                                               RecordingDayAndTime = g.Label,
+                                               RecordingName = g.RecordingName,
+                                               VenueType = g.VenueType,
+                                               StartTime = g.StartTime
+                                           } );                                                                    
+            
                 if ( !String.IsNullOrWhiteSpace(clipUrl) )
                 {
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => g.RecordingName == clipUrl );
@@ -131,39 +140,38 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     pnlControls.Visible = false;
                 }
 
-            }
+                campusVenueWeekendTimeList = campusVenueWeekendTimeList.OrderBy( a => a.StartTime );
+                campusVenueWeekendTimeList.ToList();
 
-            campusVenueWeekendTimeList = campusVenueWeekendTimeList.OrderBy( a => a.StartTime );
-            campusVenueWeekendTimeList.ToList();
-
-            if ( campusVenueWeekendTimeList.Any() )
-            {
-
-                lblTitle.Text = "Weekend of " + campusVenueWeekendTimeList.FirstOrDefault().WeekendDate.Value.ToShortDateString();
-                lblCampus.Text = campusVenueWeekendTimeList.FirstOrDefault().Campus.ToString();
-                lblVenueType.Text = campusVenueWeekendTimeList.FirstOrDefault().VenueType.ToString();
-
-                // set the recording to the first recording that we'll show
-                hfRecording.Value = campusVenueWeekendTimeList.FirstOrDefault().RecordingName;
-
-                // creating the service time buttons
-                foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
+                if ( campusVenueWeekendTimeList.Any() )
                 {
-                    HtmlAnchor button = new HtmlAnchor();
-                    button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
-                    button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString( "n" ) );
-                    button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted( "'" ) + " );";
-                    button.Attributes["recordingName"] = campusServiceTimeList.RecordingName;
 
-                    button.Attributes.Add( "class", "btn btn-primary servicebutton" );
-                    plcServiceTimeButtons.Controls.Add( button );
+                    lblTitle.Text = "Weekend of " + campusVenueWeekendTimeList.FirstOrDefault().WeekendDate.Value.ToShortDateString();
+                    lblCampus.Text = campusVenueWeekendTimeList.FirstOrDefault().Campus.ToString();
+                    lblVenueType.Text = campusVenueWeekendTimeList.FirstOrDefault().VenueType.ToString();
+
+                    // set the recording to the first recording that we'll show
+                    hfRecording.Value = campusVenueWeekendTimeList.FirstOrDefault().RecordingName;
+
+                    // creating the service time buttons
+                    foreach ( var campusServiceTimeList in campusVenueWeekendTimeList )
+                    {
+                        HtmlAnchor button = new HtmlAnchor();
+                        button.InnerText = campusServiceTimeList.RecordingDayAndTime.Split( ' ' )[1];
+                        button.ID = string.Format( "btnRecording_{0}", Guid.NewGuid().ToString( "n" ) );
+                        button.Attributes["onclick"] = "javascript: ChangeRecording( " + campusServiceTimeList.RecordingName.Quoted( "'" ) + " );";
+                        button.Attributes["recordingName"] = campusServiceTimeList.RecordingName;
+
+                        button.Attributes.Add( "class", "btn btn-primary servicebutton" );
+                        plcServiceTimeButtons.Controls.Add( button );
+                    }
                 }
-            }
-            else
-            {
-                mdWarning.Visible = true;
-                pnlVideo.Visible = false;
-                pnlControls.Visible = false;
+                else
+                {
+                    mdWarning.Visible = true;
+                    pnlVideo.Visible = false;
+                    pnlControls.Visible = false;
+                }
             }
         }
 
@@ -171,12 +179,54 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
        
         #region Methods
 
+        /// <summary>
+        /// Sends an email.
+        /// </summary>
         private void SendMessage()
         {
-            var recipients = new Dictionary<string, Dictionary<string, object>>();
-            recipients.Add( dtbEmailTo.Text,  new Dictionary<string, object>() );
+            var recipients = new List<string>();
+            var orgFrom = GlobalAttributesCache.Read().GetValue( "OrganizationEmail" );
 
-            Email.Send( GetAttributeValue( "EmailTemplate" ).AsGuid(), recipients, ResolveRockUrlIncludeRoot( "~/" ), ResolveRockUrlIncludeRoot( "~~/" ) );
+            string to = tbEmailTo.Text;
+            if( !string.IsNullOrWhiteSpace( to ) )
+            {
+                recipients.Add( to );
+            }
+
+            if ( recipients.Any() )
+            {
+                var channelData = new Dictionary<string, string>();
+
+                if ( !string.IsNullOrWhiteSpace( tbEmailFrom.Text ) )
+                {
+                    channelData.Add( "From", tbEmailFrom.Text );                   
+                }
+                else
+                {
+                    channelData.Add( "From", orgFrom );
+                }
+
+                if ( !string.IsNullOrWhiteSpace( tbEmailMessage.Text ) )
+                {
+                    channelData.Add( "Body", tbEmailMessage.Text );
+                }
+
+                var channelEntity = EntityTypeCache.Read( Rock.SystemGuid.EntityType.COMMUNICATION_CHANNEL_EMAIL.AsGuid() );
+                if ( channelEntity != null )
+                {
+                    var channel = ChannelContainer.GetComponent( channelEntity.Name );
+                    if ( channel != null && channel.IsActive )
+                    {
+                        var transport = channel.Transport;
+                        if ( transport != null && transport.IsActive )
+                        {
+                            var appRoot = GlobalAttributesCache.Read().GetValue( "InternalApplicationRoot" );
+                            transport.Send( channelData, recipients, appRoot, string.Empty );
+                        }
+                    }
+                }
+                
+            }
         
         }
 
