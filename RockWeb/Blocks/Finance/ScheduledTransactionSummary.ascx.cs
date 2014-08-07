@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
     [CodeEditorField("Template", "Liquid template for the content to be placed on the page.", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 400, true, @"
 
-<div class=""row"">
+<div class=""row margin-b-md"">
 
     <div class=""col-md-6"">
         <h1 class=""condensed"">Hello, {{Person.NickName}}</h1>
