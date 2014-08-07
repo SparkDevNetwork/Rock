@@ -1787,6 +1787,9 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
+.controls .checkbox:first-child {
+  margin-top: 0;
+}
 dl:not(.dl-horizontal) {
   margin-bottom: 0;
 }
@@ -4234,6 +4237,9 @@ footer .footer-address {
 }
 .panel-block > .panel-body {
   padding: 0;
+}
+.panel-block > .panel-body .grid.grid-panel {
+  margin: 0;
 }
 @media (min-width: 768px) {
   #announcement-rotator {

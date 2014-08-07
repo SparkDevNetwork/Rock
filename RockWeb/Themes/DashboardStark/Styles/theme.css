@@ -1787,6 +1787,9 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
+.controls .checkbox:first-child {
+  margin-top: 0;
+}
 dl:not(.dl-horizontal) {
   margin-bottom: 0;
 }
