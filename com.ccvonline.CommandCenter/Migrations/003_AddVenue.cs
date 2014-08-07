@@ -9,7 +9,7 @@ using Rock.Plugin;
 namespace com.ccvonline.CommandCenter.Migrations
 {
     [MigrationNumber( 3, "1.0.10" )]
-    class AddVenueType : Migration
+    class AddVenue : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
@@ -18,14 +18,14 @@ namespace com.ccvonline.CommandCenter.Migrations
         {
             Sql(@"
                     ALTER TABLE dbo._com_ccvonline_CommandCenter_Recording
-                    ADD VenueType VARCHAR(50) NULL
+                    ADD Venue VARCHAR(50) NULL
 
                     UPDATE _com_ccvonline_CommandCenter_Recording
-                    SET VenueType = 'Command Center'
+                    SET Venue = 'Command Center'
                     WHERE StreamName not like 'WR%'
 
                     UPDATE _com_ccvonline_CommandCenter_Recording
-                    SET VenueType = 'War Room'
+                    SET Venue = 'War Room'
                     WHERE StreamName like 'WR%'
                 ");
         }
@@ -37,7 +37,7 @@ namespace com.ccvonline.CommandCenter.Migrations
         {
             Sql( @"
                     ALTER TABLE dbo._com_ccvonline_CommandCenter_Recording
-                    DROP COLUMN VenueType 
+                    DROP COLUMN Venue
                 " );
         }
     }

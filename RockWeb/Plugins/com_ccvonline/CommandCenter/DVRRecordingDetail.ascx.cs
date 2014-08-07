@@ -80,7 +80,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
                 DateTime? weekendDateTime = PageParameter( "WeekendDate" ).AsDateTime();
                 Guid? campusGuid = PageParameter( "CampusGuid" ).AsGuidOrNull();
-                string venueType = PageParameter( "VenueType" );
+                string venue = PageParameter( "Venue" );
                 string clipUrl = PageParameter( "ClipURL" );
                 string clipStart = PageParameter( "ClipStart" );
                 string clipDuration = PageParameter( "ClipDuration" );
@@ -103,7 +103,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                                CampusGuid = g.Campus.Guid,
                                                RecordingDayAndTime = g.Label,
                                                RecordingName = g.RecordingName,
-                                               VenueType = g.VenueType,
+                                               Venue = g.Venue,
                                                StartTime = g.StartTime
                                            } );                                                                    
             
@@ -124,11 +124,11 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     pnlVideo.Visible = true;
                     pnlControls.Visible = false;
                 }
-                else if ( weekendDateTime.HasValue || campusGuid.HasValue || !string.IsNullOrWhiteSpace( venueType ) )
+                else if ( weekendDateTime.HasValue || campusGuid.HasValue || !string.IsNullOrWhiteSpace( venue ) )
                 {
                     campusVenueWeekendTimeList = campusVenueWeekendTimeList.Where( g => ( g.WeekendDate == weekendDateTime ) &&
                                                 ( g.Campus.Guid == campusGuid ) &&
-                                                ( g.VenueType == venueType ) );
+                                                ( g.Venue == venue ) );
 
                     pnlVideo.Visible = true;
                     pnlControls.Visible = true;
@@ -148,7 +148,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
                     lblTitle.Text = "Weekend of " + campusVenueWeekendTimeList.FirstOrDefault().WeekendDate.Value.ToShortDateString();
                     lblCampus.Text = campusVenueWeekendTimeList.FirstOrDefault().Campus.ToString();
-                    lblVenueType.Text = campusVenueWeekendTimeList.FirstOrDefault().VenueType.ToString();
+                    lblVenue.Text = campusVenueWeekendTimeList.FirstOrDefault().Venue.ToString();
 
                     // set the recording to the first recording that we'll show
                     hfRecording.Value = campusVenueWeekendTimeList.FirstOrDefault().RecordingName;

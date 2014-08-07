@@ -121,14 +121,14 @@ namespace com.ccvonline.CommandCenter.Model
         public string StopResponse { get; set; }
 
         /// <summary>
-        /// Gets or sets the VenueType
+        /// Gets or sets the Venue
         /// </summary>
         /// <value>
-        /// The venue type
+        /// The venue.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        public string VenueType { get; set; }
+        public string Venue { get; set; }
 
 
         #endregion

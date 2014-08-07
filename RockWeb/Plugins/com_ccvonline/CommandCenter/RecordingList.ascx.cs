@@ -126,7 +126,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
             rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
             rFilter.SaveUserPreference( "Stream", tbStream.Text );
-            rFilter.SaveUserPreference( "VenueType", tbVenue.Text );
+            rFilter.SaveUserPreference( "Venue", tbVenue.Text );
             rFilter.SaveUserPreference( "Label", tbLabel.Text );
             rFilter.SaveUserPreference( "Recording", tbRecording.Text );
 
@@ -280,7 +280,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
             dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
             tbStream.Text = rFilter.GetUserPreference( "Stream" );
-            tbVenue.Text = rFilter.GetUserPreference( "VenueType" );
+            tbVenue.Text = rFilter.GetUserPreference( "Venue" );
             tbLabel.Text = rFilter.GetUserPreference( "Label" );
             tbRecording.Text = rFilter.GetUserPreference( "Recording" );
         }
@@ -319,10 +319,10 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 queryable = queryable.Where( r => r.StreamName.StartsWith( stream ) );
             }
 
-            string venue = rFilter.GetUserPreference( "VenueType" );
+            string venue = rFilter.GetUserPreference( "Venue" );
             if ( !string.IsNullOrWhiteSpace( venue ) )
             {
-                queryable = queryable.Where( r => r.VenueType.StartsWith( venue ) );
+                queryable = queryable.Where( r => r.Venue.StartsWith( venue ) );
             }
 
             string label = rFilter.GetUserPreference( "Label" );

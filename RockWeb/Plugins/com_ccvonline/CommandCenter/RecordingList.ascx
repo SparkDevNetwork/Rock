@@ -20,7 +20,7 @@
                 <asp:BoundField HeaderText="Campus" DataField="Campus" SortExpression="Campus" />
                 <asp:BoundField HeaderText="Date" DataField="Date" SortExpression="Date" DataFormatString="{0:MM/dd/yy}" />
                 <asp:BoundField HeaderText="Stream" DataField="StreamName" SortExpression="StreamName" />
-                <asp:BoundField HeaderText="Venue" DataField="VenueType" SortExpression="VenueType" />
+                <asp:BoundField HeaderText="Venue" DataField="Venue" SortExpression="Venue" />
                 <asp:BoundField HeaderText="Label" DataField="Label" SortExpression="Label" />
                 <asp:BoundField HeaderText="Recording" DataField="RecordingName" SortExpression="RecordingName" />
                 <asp:BoundField HeaderText="Started" DataField="StartTime" SortExpression="StartTime" DataFormatString="{0:MM/dd/yy hh:mm:ss tt}" />

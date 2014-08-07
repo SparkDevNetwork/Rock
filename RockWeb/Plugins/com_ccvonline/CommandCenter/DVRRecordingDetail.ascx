@@ -18,7 +18,7 @@
                 <div class="col-sm-6">
                     <div class="pull-right">
                         <Rock:HighlightLabel ID="lblCampus" LabelType="Campus" runat="server" />
-                        <Rock:HighlightLabel ID="lblVenueType" LabelType="Warning" runat="server" />
+                        <Rock:HighlightLabel ID="lblVenue" LabelType="Warning" runat="server" />
                     </div>
                 </div>
             </div>

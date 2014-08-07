@@ -91,7 +91,7 @@ namespace com.ccvonline.CommandCenter.Model
                 recording.RecordingName = recordingName;
                 recording.StartTime = DateTime.Now;
                 recording.StartResponse = ParseResponse( response.Message );
-                recording.VenueType = venue;
+                recording.Venue = venue;
 
                 this.Context.SaveChanges();
 
@@ -121,7 +121,7 @@ namespace com.ccvonline.CommandCenter.Model
                 IQueryable<Recording> recordings = Queryable().
                     Where( r =>
                         r.CampusId == campusId &&
-                        r.VenueType == venue &&
+                        r.Venue == venue &&
                         r.Label == label &&
                         r.App == app &&
                         r.StreamName == streamName &&

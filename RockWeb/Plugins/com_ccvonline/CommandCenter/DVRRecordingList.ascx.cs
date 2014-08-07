@@ -115,8 +115,8 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             var campusGuid = e.RowKeyValues[1].ToString();
             parameters.Add( "CampusGuid", campusGuid.ToString() );
 
-            var venueType = e.RowKeyValues[2];
-            parameters.Add( "VenueType", venueType.ToString() );            
+            var venue = e.RowKeyValues[2];
+            parameters.Add( "Venue", venue.ToString() );            
 
             NavigateToLinkedPage( "DetailPage", parameters );
         }
@@ -141,7 +141,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             rFilter.SaveUserPreference( "Campus", cpCampus.SelectedValue != All.Id.ToString() ? cpCampus.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
             rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
-            rFilter.SaveUserPreference( "Venue Type", ddlVenueType.Text );
+            rFilter.SaveUserPreference( "Venue", ddlVenue.Text );
 
             BindGrid();
         }
@@ -160,7 +160,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             cpCampus.SelectedValue = rFilter.GetUserPreference( "Campus" );
             dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
             dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
-            ddlVenueType.Text = rFilter.GetUserPreference( "Venue Type" );
+            ddlVenue.Text = rFilter.GetUserPreference( "Venue" );
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                             r.Campus,
                                             r.CampusId,
                                             WeekendDate = DbFunctions.TruncateTime( SqlFunctions.DateAdd( "day", 1 - SqlFunctions.DatePart( "dw", r.Date ) % 7, r.Date ) ),
-                                            r.VenueType
+                                            r.Venue
                                             } )
                                     .Select( g => 
                                         new {
@@ -185,7 +185,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                                             Campus = g.Key.Campus,
                                             CampusId = g.Key.CampusId,
                                             CampusGuid = g.Key.Campus.Guid,
-                                            VenueType = g.Key.VenueType,
+                                            Venue = g.Key.Venue,
                                             RecordingCount = g.Select( t => t.Date ).Count()
                                         } );
 
@@ -207,10 +207,10 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 queryable = queryable.Where( r => r.WeekendDate <= toDate );
             }
 
-            string venueType = rFilter.GetUserPreference( "VenueType" );
-            if (!string.IsNullOrWhiteSpace( venueType ) )
+            string venue = rFilter.GetUserPreference( "Venue" );
+            if (!string.IsNullOrWhiteSpace( venue ) )
             {
-                queryable = queryable.Where( r => r.VenueType.StartsWith( venueType ) );
+                queryable = queryable.Where( r => r.Venue.StartsWith( venue ) );
             }
 
             if ( sortProperty != null )
@@ -218,7 +218,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                 gRecordings.DataSource = queryable.Sort( sortProperty ).ToList();
             }
             else
-            {               
+            {
                 gRecordings.DataSource = queryable.OrderByDescending( t => t.WeekendDate ).ToList();
             }
            
