@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Edit an existing scheduled transaction.
     /// </summary>
-    [DisplayName( "Scheduled Transaction Detail" )]
+    [DisplayName( "Scheduled Transaction Edit" )]
     [Category( "Finance" )]
     [Description( "Edit an existing scheduled transaction." )]
 
@@ -79,7 +79,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
-    public partial class ScheduledTransactionDetail : RockBlock
+    public partial class ScheduledTransactionEdit : RockBlock
     {
         #region Fields
 
@@ -509,7 +509,7 @@ achieve our mission.  We are so grateful for your commitment.
             if ( targetPerson != null )
             {
                 int txnId = int.MinValue;
-                if ( int.TryParse( PageParameter( "Txn" ), out txnId ) )
+                if ( int.TryParse( PageParameter( "ScheduledTransactionId" ), out txnId ) )
                 {
                     var service = new FinancialScheduledTransactionService( rockContext );
                     var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )

@@ -700,7 +700,7 @@ namespace RockWeb.Blocks.Finance
                 if ( txn.ScheduledTransaction != null )
                 {
                     var qryParam = new Dictionary<string, string>();
-                    qryParam.Add( "Txn", txn.ScheduledTransaction.Id.ToString() );
+                    qryParam.Add( "ScheduledTransactionId", txn.ScheduledTransaction.Id.ToString() );
                     string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
                     detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
                         string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :

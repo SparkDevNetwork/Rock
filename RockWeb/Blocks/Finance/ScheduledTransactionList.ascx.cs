@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Finance
         protected void gList_Edit( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "Txn", gList.DataKeys[e.RowIndex]["id"].ToString() );
+            parms.Add( "ScheduledTransactionId", gList.DataKeys[e.RowIndex]["id"].ToString() );
             NavigateToLinkedPage( "ViewPage", parms );
         }
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Finance
         protected void ShowDetailForm( int id )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "Txn", id.ToString() );
+            parms.Add( "ScheduledTransactionId", id.ToString() );
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "DetailPage", parms );
         }
