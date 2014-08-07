@@ -187,19 +187,6 @@ namespace RockWeb.Blocks.Prayer
             var rockContext = new RockContext();
             var service = new NoteTypeService( rockContext );
             noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-            // If a note type with the specified name does not exist for the context entity type, create one
-            if ( noteType == null )
-            {
-                noteType = new NoteType();
-                noteType.IsSystem = false;
-                noteType.EntityTypeId = contextEntity.TypeId;
-                noteType.EntityTypeQualifierColumn = string.Empty;
-                noteType.EntityTypeQualifierValue = string.Empty;
-                noteType.Name = noteTypeName;
-                service.Add( noteType );
-                rockContext.SaveChanges();
-            }
         }
 
         /// <summary>

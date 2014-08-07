@@ -219,6 +219,55 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Reactivates the scheduled payment.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var ppTransaction = new RecurringReActivateTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
+
+            var ppResponse = ppTransaction.SubmitTransaction();
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
+                        if ( recurringResponse != null )
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            errorMessage = "Invalid recurring response from the financial gateway";
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return false;
+        }
+
+         /// <summary>
         /// Updates the scheduled payment.
         /// </summary>
         /// <param name="schedule">The schedule.</param>

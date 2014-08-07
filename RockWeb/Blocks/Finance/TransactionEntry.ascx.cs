@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -1335,16 +1335,43 @@ achieve our mission.  We are so grateful for your commitment.
                         scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
                         scheduledTransaction.CreditCardTypeValueId = CreditCardTypeValueId;
 
+                        var changeSummary = new StringBuilder();
+                        changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Name, schedule.StartDate.ToShortDateString() );
+                        changeSummary.AppendLine();
+                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Name );
+                        if (paymentInfo.CreditCardTypeValue != null)
+                        {
+                            changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Name );
+                        }
+                        changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
+                        changeSummary.AppendLine();
+
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
                         {
                             var transactionDetail = new FinancialScheduledTransactionDetail();
                             transactionDetail.Amount = account.Amount;
                             transactionDetail.AccountId = account.Id;
                             scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
+                            changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                            changeSummary.AppendLine();
                         }
 
                         var transactionService = new FinancialScheduledTransactionService( rockContext );
                         transactionService.Add( scheduledTransaction );
+                        rockContext.SaveChanges();
+
+                        // Add a note about the change
+                        var noteTypeService = new NoteTypeService( rockContext );
+                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
+
+                        var noteService = new NoteService( rockContext );
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.EntityId = scheduledTransaction.Id;
+                        note.Caption = "Created Transaction";
+                        note.Text = changeSummary.ToString();
+                        noteService.Add( note );
+
                         rockContext.SaveChanges();
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
