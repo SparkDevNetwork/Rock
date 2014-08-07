@@ -67,13 +67,14 @@ namespace com.ccvonline.CommandCenter.Model
         /// Starts the recording.
         /// </summary>
         /// <param name="campusId">The campus id.</param>
+        /// <param name="venue">The venue.</param>
         /// <param name="label">The label.</param>
         /// <param name="app">The app.</param>
         /// <param name="streamName">Name of the stream.</param>
         /// <param name="recordingName">Name of the recording.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Recording StartRecording( int? campusId, string label, string app, string streamName, string recordingName )
+        public Recording StartRecording( int? campusId, string venue, string label, string app, string streamName, string recordingName )
         {
             Rock.Net.RockWebResponse response = SendRecordingRequest( app, streamName, recordingName, "start" );
 
@@ -90,6 +91,7 @@ namespace com.ccvonline.CommandCenter.Model
                 recording.RecordingName = recordingName;
                 recording.StartTime = DateTime.Now;
                 recording.StartResponse = ParseResponse( response.Message );
+                recording.Venue = venue;
 
                 this.Context.SaveChanges();
 
@@ -103,13 +105,14 @@ namespace com.ccvonline.CommandCenter.Model
         /// Stops the recording.
         /// </summary>
         /// <param name="campusId">The campus id.</param>
+        /// <param name="venue">The venue.</param>
         /// <param name="label">The label.</param>
         /// <param name="app">The app.</param>
         /// <param name="streamName">Name of the stream.</param>
         /// <param name="recordingName">Name of the recording.</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public Recording StopRecording( int? campusId, string label, string app, string streamName, string recordingName )
+        public Recording StopRecording( int? campusId, string venue, string label, string app, string streamName, string recordingName )
         {
             Rock.Net.RockWebResponse response = SendRecordingRequest( app, streamName, recordingName, "stop" );
 
@@ -118,6 +121,7 @@ namespace com.ccvonline.CommandCenter.Model
                 IQueryable<Recording> recordings = Queryable().
                     Where( r =>
                         r.CampusId == campusId &&
+                        r.Venue == venue &&
                         r.Label == label &&
                         r.App == app &&
                         r.StreamName == streamName &&

@@ -9,32 +9,58 @@
     <ItemTemplate>
         <div class="col-md-4">
             <div class="panel panel-default">                
-                <div class="panel-body videocontent">   
+                <div class="panel-body live-content">   
                     <h3><%# Eval("[1]") %></h3>                 
-                    <video id='<%# Eval("[0]") %>' class="video-js vjs-default-skin vjs-live vjs-big-play-centered" controls autoplay
-                            preload="none" width="auto" height="330" poster="<%# ResolveRockUrl("~~/Assets/images/poster.jpg") %>" data-setup='{ "techOrder": ["html5", "flash", "other supported tech"] }'>
-                        <source src='<%# Eval("[2]") %>' type='rtmp/mp4'>
-                        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-                    </video>
+                    <a id='<%# Eval("[0]") %>' data-flashfit="true" class="live-player">
+                    </a>
                     <br />
                     <div style="text-align: center;">
-                        <asp:Button id='<%# Eval("[0]") %>' class="btn btn-default audio-toggle muted" >
+                        <a id='<%# Eval("[0]") %>' class="btn btn-default audio-toggle muted" >
                             <i class="fa fa-volume-off"></i>
                             <span></span>
-                        </asp:Button>   
+                        </a>   
                     </div>                 
                 </div>
             </div>
         </div>
+
+        <script type="text/javascript">
+                // setup player
+                flowplayer('<%# Eval("[0]") %>', "/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf",
+                    {
+                        controls: {
+                            time: false,
+                            scrubber: false
+                        },
+                        plugins: {
+                            rtmp: {
+                                url: '/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf',
+                            }
+                        },
+                        clip: {
+                            url: '<%# Eval("[2]") %>',
+			                live: true,
+			                provider: 'rtmp',
+			                scaling: 'scale',
+			                onStart: function () { MutePlayers(); }
+			    }
+			});
+        </script>
+
     </ItemTemplate>
 </asp:Repeater>
 
 
-<script>
+<script type="text/javascript">   
+
     // mute all videos on load except the first one
-    $('.video-js').not($('.video-js').first()).each(function () {
-        videojs(this.id).muted(true);
-    });
+    function MutePlayers() {
+        $f('*').each(function () {
+            this.mute();
+        });
+
+        $f('*').first().unmute();
+    }
 
     // untoggle first button
     $('.audio-toggle').first().each(function () {
@@ -60,8 +86,8 @@
         });
 
         // mute all videos
-        $('.video-js').each(function () {
-            videojs(this.id).muted(true);
+        $f('*').each(function () {
+            this.mute();
         });
 
         // get id of video player from button id
@@ -69,12 +95,12 @@
 
         // enabled selected video unless it is the active one, then mute
         if (currentItem) {
-            videojs(playerId).muted(true);
+            $f(playerId).mute();
         } else {
             $(this).addClass('enabled');
             $(this).addClass('btn-primary');
             $(this).removeClass('btn-default');
-            videojs(playerId).muted(false);
+            $f(playerId).unmute();
         }
     });
 </script>

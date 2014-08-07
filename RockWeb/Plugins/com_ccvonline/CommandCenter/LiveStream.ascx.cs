@@ -24,6 +24,17 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     {
         #region Base Control Methods
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer-3.2.18.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.controls-3.2.16.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.rtmp-3.2.13.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Assets/flowplayer.f4m-3.2.10.swf" );
+            RockPage.AddScriptLink( "~/Plugins/com_ccvonline/CommandCenter/Scripts/flowplayer-3.2.13.min.js" );
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             rptvideostreams.DataSource = GetDatasource();
@@ -41,7 +52,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
 
         private List<string[]> GetDatasource()
         {
-            string configuredVenueType = GetAttributeValue( "VenueType" );
+            string configuredVenue = GetAttributeValue( "Venue" );
             int? campusId = GetAttributeValue( "Campus" ).AsIntegerOrNull();
 
             var datasource = new List<string[]>();
@@ -74,7 +85,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
                     uniqueVideoId += 1;
                     string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
 
-                    if ( String.IsNullOrWhiteSpace( configuredVenueType ) || configuredVenueType.Equals( nameAndValue[0], StringComparison.OrdinalIgnoreCase ) )
+                    if ( String.IsNullOrWhiteSpace( configuredVenue ) || configuredVenue.Equals( nameAndValue[0], StringComparison.OrdinalIgnoreCase ) )
                     {
                         string[] videoOptions = new string[] { campusStream.CampusName + "-" + nameAndValue[0] + "-" + uniqueVideoId, campusStream.CampusName, nameAndValue.Length > 1 ? nameAndValue[1] : ""};
 
