@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Finance
         private bool _canConfigure = false;
         private FinancialBatch _batch = null;
         private Person _person = null;
+        private FinancialScheduledTransaction _scheduledTxn = null;
+
         private RockDropDownList _ddlMove = new RockDropDownList();
 
         // Dictionaries to cache values for databinding performance
@@ -68,6 +70,13 @@ namespace RockWeb.Blocks.Finance
 
             gfTransactions.ApplyFilterClick += gfTransactions_ApplyFilterClick;
             gfTransactions.DisplayFilterValue += gfTransactions_DisplayFilterValue;
+
+            string title = GetAttributeValue( "Title" );
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                title = "Transaction List";
+            }
+            lTitle.Text = title;
 
             _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
@@ -140,6 +149,11 @@ namespace RockWeb.Blocks.Finance
                     _batch = contextEntity as FinancialBatch;
                     gfTransactions.Visible = false;
                 }
+                else if ( contextEntity is FinancialScheduledTransaction )
+                {
+                    _scheduledTxn = contextEntity as FinancialScheduledTransaction;
+                    gfTransactions.Visible = false;
+                }
             }
 
             if ( !Page.IsPostBack )
@@ -172,6 +186,55 @@ namespace RockWeb.Blocks.Finance
 ", _ddlMove.ClientID, gTransactions.ClientID, Page.ClientScript.GetPostBackEventReference( this, "MoveTransactions" ) );
                 ScriptManager.RegisterStartupScript( _ddlMove, _ddlMove.GetType(), "moveTransaction", script, true );
             }
+        }
+
+        protected override void OnPreRender( EventArgs e )
+        {
+            // Set up the selection filter
+            if ( _batch != null )
+            {
+                if ( _batch.Status == BatchStatus.Closed )
+                {
+                    nbClosedWarning.Visible = true;
+                    gTransactions.Columns[0].Visible = false;
+                    _ddlMove.Visible = false;
+                }
+                else
+                {
+                    nbClosedWarning.Visible = false;
+                    gTransactions.Columns[0].Visible = true;
+                    _ddlMove.Visible = true;
+                }
+
+                // If the batch is closed, do not allow any editing of the transactions
+                if ( _batch.Status != BatchStatus.Closed && _canConfigure )
+                {
+                    gTransactions.Actions.ShowAdd = true;
+                    gTransactions.IsDeleteEnabled = true;
+                }
+                else
+                {
+                    gTransactions.Actions.ShowAdd = false;
+                    gTransactions.IsDeleteEnabled = false;
+                }
+            }
+            else if ( _scheduledTxn != null )
+            {
+                nbClosedWarning.Visible = false;
+                gTransactions.Columns[0].Visible = false;
+                _ddlMove.Visible = false;
+
+                gTransactions.Actions.ShowAdd = false;
+                gTransactions.IsDeleteEnabled = false;
+            }
+            else    // Person
+            {
+                nbClosedWarning.Visible = false;
+                gTransactions.Columns[0].Visible = false;
+                _ddlMove.Visible = false;
+            }
+            
+            base.OnPreRender( e );
         }
 
         #endregion Control Methods
@@ -523,6 +586,13 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
+            // If configured for a batch and batch is null, return
+            int scheduledTxnEntityTypeId = EntityTypeCache.Read( "Rock.Model.FinancialScheduledTransaction" ).Id;
+            if ( ContextTypesRequired.Any( e => e.Id == scheduledTxnEntityTypeId ) && _scheduledTxn == null )
+            {
+                return;
+            }
+
             // Qry
             var qry = new FinancialTransactionService( new RockContext() )
                 .Queryable( "AuthorizedPerson,ProcessedByPersonAlias.Person" );
@@ -530,40 +600,28 @@ namespace RockWeb.Blocks.Finance
             // Set up the selection filter
             if ( _batch != null )
             {
-                if ( _batch.Status == BatchStatus.Closed )
-                {
-                    nbClosedWarning.Visible = true;
-                    gTransactions.Columns[0].Visible = false;
-                    _ddlMove.Visible = false;
-                }
-                else
-                {
-                    nbClosedWarning.Visible = false;
-                    gTransactions.Columns[0].Visible = true;
-                    _ddlMove.Visible = true;
-                }
-
                 // If transactions are for a batch, the filter is hidden so only check the batch id
                 qry = qry.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
 
                 // If the batch is closed, do not allow any editing of the transactions
                 if ( _batch.Status != BatchStatus.Closed && _canConfigure )
                 {
-                    gTransactions.Actions.ShowAdd = true;
                     gTransactions.IsDeleteEnabled = true;
                 }
                 else
                 {
-                    gTransactions.Actions.ShowAdd = false;
                     gTransactions.IsDeleteEnabled = false;
                 }
             }
-            else
+            else if ( _scheduledTxn != null )
             {
-                nbClosedWarning.Visible = false;
-                gTransactions.Columns[0].Visible = false;
-                _ddlMove.Visible = false;
+                // If transactions are for a batch, the filter is hidden so only check the batch id
+                qry = qry.Where( t => t.ScheduledTransactionId.HasValue && t.ScheduledTransactionId.Value == _scheduledTxn.Id );
 
+                gTransactions.IsDeleteEnabled = false;
+            }
+            else    // Person
+            {
                 // otherwise set the selection based on filter settings
                 if ( _person != null )
                 {
@@ -661,7 +719,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                qry = qry.OrderBy( t => t.TransactionDateTime );
+                qry = qry.OrderByDescending( t => t.TransactionDateTime );
             }
 
             gTransactions.DataSource = qry.AsNoTracking().ToList();

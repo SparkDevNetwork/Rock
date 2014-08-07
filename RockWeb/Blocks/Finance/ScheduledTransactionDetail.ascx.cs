@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -44,41 +44,49 @@ namespace RockWeb.Blocks.Finance
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
 
-    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
+    [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 2 )]
+
+    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 3 )]
     [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option",
-        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
-    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 8 )]
+        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 4 )]
+    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 5 )]
 
     [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow",
-        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10 )]
+        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 6 )]
 
     [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
-", "Text Options", 13 )]
+", "Text Options", 7 )]
 
     [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
-", "Text Options", 14 )]
+", "Text Options", 8 )]
 
     [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
 Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
-", "Text Options", 15 )]
+", "Text Options", 9 )]
 
     [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
-", "Text Options", 16 )]
+", "Text Options", 10 )]
 
     #endregion
 
     public partial class ScheduledTransactionDetail : RockBlock
     {
+        #region Fields
+
+        protected bool FluidLayout { get; set; }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -230,6 +238,8 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         page.PageNavigate += page_PageNavigate;
                     }
+
+                    FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
 
                     btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
 
@@ -501,7 +511,6 @@ achieve our mission.  We are so grateful for your commitment.
                 int txnId = int.MinValue;
                 if ( int.TryParse( PageParameter( "Txn" ), out txnId ) )
                 {
-                    rockContext = new RockContext();
                     var service = new FinancialScheduledTransactionService( rockContext );
                     var scheduledTransaction = service.Queryable( "ScheduledTransactionDetails,GatewayEntityType,CurrencyTypeValue,CreditCardTypeValue" )
                         .Where( t =>
@@ -976,16 +985,23 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
+                var changeSummary = new StringBuilder();
+
                 // Get the payment schedule
                 scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
+                changeSummary.Append( DefinedValueCache.Read( scheduledTransaction.TransactionFrequencyValueId, rockContext ) );
+
                 if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
                     scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                    changeSummary.AppendFormat( " starting {0}", scheduledTransaction.StartDate.ToShortDateString() );
                 }
                 else
                 {
                     scheduledTransaction.StartDate = DateTime.MinValue;
                 }
+
+                changeSummary.AppendLine();
 
                 PaymentInfo paymentInfo = GetPaymentInfo( personService, scheduledTransaction );
                 if ( paymentInfo == null )
@@ -1001,19 +1017,23 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     if ( paymentInfo.CurrencyTypeValue != null )
                     {
+                        changeSummary.Append( paymentInfo.CurrencyTypeValue.Name );
                         scheduledTransaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
 
                         DefinedValueCache creditCardTypeValue = paymentInfo.CreditCardTypeValue;
                         if ( creditCardTypeValue != null )
                         {
+                            changeSummary.AppendFormat( " - {0}", creditCardTypeValue.Name );
                             scheduledTransaction.CreditCardTypeValueId = creditCardTypeValue.Id;
                         }
                         else
                         {
                             scheduledTransaction.CreditCardTypeValueId = null;
                         }
+                        changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
+                        changeSummary.AppendLine();
                     }
-                    
+
                     var selectedAccountIds = SelectedAccounts
                         .Where( a => a.Amount > 0 )
                         .Select( a => a.Id ).ToList();
@@ -1039,7 +1059,24 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         detail.Amount = account.Amount;
+
+                        changeSummary.AppendFormat( "{0}: {1:C2}", account.Name, account.Amount );
+                        changeSummary.AppendLine();
                     }
+
+                    rockContext.SaveChanges();
+
+                    // Add a note about the change
+                    var noteTypeService = new NoteTypeService( rockContext );
+                    var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
+
+                    var noteService = new NoteService( rockContext );
+                    var note = new Note();
+                    note.NoteTypeId = noteType.Id;
+                    note.EntityId = scheduledTransaction.Id;
+                    note.Caption = "Updated Transaction";
+                    note.Text = changeSummary.ToString();
+                    noteService.Add( note );
 
                     rockContext.SaveChanges();
 

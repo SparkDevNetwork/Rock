@@ -7,7 +7,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar"></i> Scheduled Contributions List</h1>
+                <h1 class="panel-title"><i class="fa fa-calendar"></i> Scheduled Transaction List</h1>
             </div>
             <div class="panel-body">
 
@@ -32,8 +32,7 @@
                             <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
                             <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
-                            <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Update" />
-                            <Rock:DeleteField OnClick="gList_Delete" />
+                            <Rock:DateTimeField DataField="LastStatusUpdateDateTime" HeaderText="Last Refresh" />
                         </Columns>
                     </Rock:Grid>
                 </div>

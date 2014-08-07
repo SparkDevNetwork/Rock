@@ -41,7 +41,8 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given transaction for editing." )]
 
-    [LinkedPage( "Scheduled Transaction Detail Page", "Page used to view scheduled transaction detail" )]
+    [LinkedPage( "Batch Detail Page", "Page used to view batch." )]
+    [LinkedPage( "Scheduled Transaction Detail Page", "Page used to view scheduled transaction detail." )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Properties
@@ -675,8 +676,19 @@ namespace RockWeb.Blocks.Finance
                 var detailsLeft = new DescriptionList()
                     .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty )
                     .Add( "Amount", ( txn.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
-                    .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty )
-                    .Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Name : string.Empty );
+                    .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
+
+                if ( txn.Batch != null )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "BatchId", txn.Batch.Id.ToString() );
+                    string url = LinkedPageUrl( "BatchDetailPage", qryParam );
+                    detailsLeft.Add( "Batch", !string.IsNullOrWhiteSpace( url ) ?
+                        string.Format( "<a href='{0}'>{1}</a>", url, txn.Batch.Name ) :
+                        txn.Batch.Name );
+                }
+
+                detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Name : string.Empty );
 
                 if ( txn.GatewayEntityType != null )
                 {
@@ -684,6 +696,16 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 detailsLeft.Add( "Transaction Code", txn.TransactionCode );
+                
+                if ( txn.ScheduledTransaction != null )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "Txn", txn.ScheduledTransaction.Id.ToString() );
+                    string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
+                    detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
+                        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
+                        txn.ScheduledTransaction.GatewayScheduleId );
+                }
 
                 if ( txn.CurrencyTypeValue != null )
                 {
@@ -719,23 +741,6 @@ namespace RockWeb.Blocks.Finance
 
                 gAccountsView.DataSource = txn.TransactionDetails.ToList();
                 gAccountsView.DataBind();
-
-                //if (txn.ScheduledTransaction != null)
-                //{
-                //    var qryParam = new Dictionary<string, string>();
-                //    qryParam.Add("Txn", txn.ScheduledTransaction.Id.ToString());
-                //    string url = LinkedPageUrl("ScheduledTransactionDetailPage", qryParam);
-                //    detailsRight.Add( "Scheduled Transaction", !string.IsNullOrWhiteSpace( url ) ?
-                //        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
-                //        txn.ScheduledTransaction.GatewayScheduleId );
-                //}
-
-                //if (txn.ProcessedByPersonAlias != null && txn.ProcessedByPersonAlias.Person != null && txn.ProcessedDateTime.HasValue)
-                //{
-                //    detailsRight.Add( "Matched By", string.Format( "{0} ({1})", txn.ProcessedByPersonAlias.Person.FullName, txn.ProcessedDateTime.Value.ToString( "g" ) ) );
-                //}
-
-                //lDetailsRight.Text = detailsRight.Html;
 
                 if ( txn.Images.Any() )
                 {
@@ -789,27 +794,6 @@ namespace RockWeb.Blocks.Finance
 
                 BindAccountsEditGrid();
                 tbSummary.Text = txn.Summary;
-
-                //if ( txn.ScheduledTransaction != null )
-                //{
-                //    var qryParam = new Dictionary<string, string>();
-                //    qryParam.Add( "Txn", txn.ScheduledTransaction.Id.ToString() );
-                //    string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
-
-                //    lScheduledTransaction.Text = !string.IsNullOrWhiteSpace( url ) ?
-                //        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
-                //        txn.ScheduledTransaction.GatewayScheduleId;
-                //    lScheduledTransaction.Visible = true;
-                //}
-                //else
-                //{
-                //    lScheduledTransaction.Visible = false;
-                //}
-
-                //if ( txn.ProcessedByPersonAlias != null && txn.ProcessedByPersonAlias.Person != null && txn.ProcessedDateTime.HasValue )
-                //{
-                //    lProcessedBy.Text = string.Format( "{0} ({1})", txn.ProcessedByPersonAlias.Person.FullName, txn.ProcessedDateTime.Value.ToString( "g" ) );
-                //}
 
                 BinaryFileIds = txn.Images.Select( i => i.BinaryFileId ).ToList();
 

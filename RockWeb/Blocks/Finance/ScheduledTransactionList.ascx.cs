@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists scheduled transactions either for current person (Person Detail Page) or all scheduled transactions." )]
 
-    [LinkedPage( "Edit Page" )]
+    [LinkedPage( "View Page" )]
     [LinkedPage( "Add Page" )]
     [ContextAware]
     public partial class ScheduledTransactionList : Rock.Web.UI.RockBlock
@@ -131,28 +131,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_Edit( object sender, RowEventArgs e )
         {
-            string urlEncodedKey = string.Empty;
-            if ( TargetPerson != null )
-            {
-                urlEncodedKey = TargetPerson.UrlEncodedKey;
-            }
-            else
-            {
-                var txn = new FinancialScheduledTransactionService( new RockContext() ).Get( (int)e.RowKeyValue );
-                if ( txn != null && txn.AuthorizedPerson != null )
-                {
-                    urlEncodedKey = txn.AuthorizedPerson.UrlEncodedKey;
-                }
-            }
-
             var parms = new Dictionary<string, string>();
             parms.Add( "Txn", gList.DataKeys[e.RowIndex]["id"].ToString() );
-            if ( !string.IsNullOrWhiteSpace( urlEncodedKey ) )
-            {
-                parms.Add( "Person", urlEncodedKey );
-            }
-
-            NavigateToLinkedPage( "EditPage", parms );
+            NavigateToLinkedPage( "ViewPage", parms );
         }
 
         /// <summary>
@@ -165,26 +146,6 @@ namespace RockWeb.Blocks.Finance
             var parms = new Dictionary<string, string>();
             parms.Add( "Person", TargetPerson.UrlEncodedKey );
             NavigateToLinkedPage( "AddPage", parms );
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gList_Delete( object sender, RowEventArgs e )
-        {
-            // TODO: Can't just delete profile, need to inactivate it on gateway
-            //var scheduledTransactionService = new FinancialScheduledTransactionService();
-
-            //FinancialScheduledTransaction profile = scheduledTransactionService.Get( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
-            //if ( profile != null )
-            //{
-            //    scheduledTransactionService.Delete( profile, CurrentPersonId );
-            //    scheduledTransactionService.Save( profile, CurrentPersonId );
-            //}
-
-            BindGrid();
         }
 
         /// <summary>
