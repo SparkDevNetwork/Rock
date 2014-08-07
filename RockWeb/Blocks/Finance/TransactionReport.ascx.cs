@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Finance
                 var lSummaryText = e.Row.FindControl( "lSummaryText" ) as Literal;
                 foreach ( var transactionDetail in txn.TransactionDetails )
                 {
-                    lSummaryText.Text += string.Format( "<small>{0} (${1})</small><br>", transactionDetail.Account, transactionDetail.Amount );
+                    lSummaryText.Text += string.Format( "{0} (${1})<br>", transactionDetail.Account, transactionDetail.Amount );
                 }
             }
 
