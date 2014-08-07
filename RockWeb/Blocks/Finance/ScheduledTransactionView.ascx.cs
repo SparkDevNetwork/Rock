@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Finance
             if ( txn != null && txn.AuthorizedPerson != null )
             {
                 var parms = new Dictionary<string, string>();
-                parms.Add( "Txn", txn.Id.ToString() );
+                parms.Add( "ScheduledTransactionId", txn.Id.ToString() );
                 parms.Add( "Person", txn.AuthorizedPerson.UrlEncodedKey );
                 NavigateToLinkedPage( "UpdatePage", parms );
             }
@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
-            int? txnId = PageParameter( "Txn" ).AsIntegerOrNull();
+            int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbReactivate_Click( object sender, EventArgs e )
         {
-            int? txnId = PageParameter( "Txn" ).AsIntegerOrNull();
+            int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
                 var rockContext = new RockContext();
@@ -328,7 +328,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         private FinancialScheduledTransaction GetScheduledTransaction()
         {
-            int? txnId = PageParameter( "Txn" ).AsIntegerOrNull();
+            int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if (txnId.HasValue)
             {
                 var rockContext = new RockContext();
