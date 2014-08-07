@@ -241,7 +241,7 @@ namespace Rock.Reporting
                 {
                     Expression trimmed = Expression.Call( property, typeof( string ).GetMethod( "Trim", System.Type.EmptyTypes ) );
                     Expression emtpyString = Expression.Constant( string.Empty );
-                    return Expression.Equal( trimmed, value );
+                    return Expression.Or( Expression.Equal( trimmed, value ), Expression.Equal( property, Expression.Constant( null, property.Type ) ) );
                 }
                 else
                 {
