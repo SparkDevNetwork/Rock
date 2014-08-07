@@ -68,8 +68,16 @@ namespace Rock.Model
             Regex rgx = new Regex( @"[^\d]" );
             searchterm = rgx.Replace( searchterm, "" );
 
-            return Queryable().
-                Where( n => n.Number.Contains( searchterm ) );
+            // if no digits exist return empty (otherwise we'll get all records)
+            if ( searchterm.Length > 0 )
+            {
+                return Queryable().
+                    Where( n => n.Number.Contains( searchterm ) );
+            }
+            else
+            {
+                return Queryable().Where( n => n.Id == -1);
+            }
         }
     }
 }
