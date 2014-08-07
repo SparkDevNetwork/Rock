@@ -75,7 +75,7 @@
                     pickerTop,
                     amount;
 
-                    if ($container.is(':visible')) {
+                    if ($container.is(':visible') && $container.data('tsb')) {
                         $container.tinyscrollbar_update('relative');
 
                         if ($dialog.length > 0 && $dialog.is(':visible')) {
