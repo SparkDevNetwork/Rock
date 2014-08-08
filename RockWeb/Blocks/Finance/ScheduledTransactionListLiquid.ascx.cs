@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField("Enable Debug", "Displays a list of available merge fields using the current person's scheduled transactions.", false, "", 2)]
     [LinkedPage("Scheduled Transaction Edit Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Scheduled Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 4 )]
-    [TextField( "Transaction Label", "The label to use to describe the transaction (e.g. 'gift', 'donation', etc.)", true, "gift", "", 5 )]
+    [TextField( "Transaction Label", "The label to use to describe the transaction (e.g. 'Gift', 'Donation', etc.)", true, "Gift", "", 5 )]
     public partial class ScheduledTransactionListLiquid : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -90,6 +90,8 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            lbAddScheduledTransaction.Text = string.Format( "Create New {0}", GetAttributeValue("TransactionLabel") );
 
             // set initial debug info
             if ( !IsPostBack )
@@ -232,6 +234,13 @@ namespace RockWeb.Blocks.Finance
             this.NavigateToLinkedPage( "ScheduledTransactionEditPage", qryParams );
         }
 
+        protected void lbAddScheduledTransaction_Click( object sender, EventArgs e )
+        {
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue("ScheduledTransactionEntryPage") ) ) {
+                this.NavigateToLinkedPage( "ScheduledTransactionEntryPage", null );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -251,13 +260,18 @@ namespace RockWeb.Blocks.Finance
 
                 rptScheduledTransactions.DataSource = schedules.ToList();
                 rptScheduledTransactions.DataBind();
+
+                if ( schedules.Count() == 0 )
+                {
+                    pnlNoScheduledTransactions.Visible = true;
+                    lNoScheduledTransactionsMessage.Text = string.Format("No {0} currently exist.", GetAttributeValue("TransactionLabel").Pluralize().ToLower());
+                }
             }
             
         }
 
 
         #endregion
-        
 }
     
 }
