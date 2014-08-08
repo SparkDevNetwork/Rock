@@ -256,39 +256,5 @@ namespace RockWeb.Blocks.Finance
 
 
         #endregion
-    }
-
-    public class ScheduledTransactionResult : ILiquidizable
-    {
-        public int Id { get; set; }
-        public Guid Guid { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-        public DateTime? NextPaymentDate { get; set; }
-        public int DaysTillNextPayment { get; set; }
-        public DateTime? LastPaymentDate { get; set; }
-        public int? DaysSinceLastPayment { get; set; }
-        public string CurrencyType { get; set; }
-        public string CreditCardType { get; set; }
-        public string UrlEncryptedKey { get; set; }
-        public decimal TotalAmount { get; set; }
-        public string Frequency { get; set; }
-        public string FrequencyDescription { get; set; }
-
-        public List<ScheduledTransactionDetailResult> TransactionDetails { get; set; }
-
-        public object ToLiquid()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class ScheduledTransactionDetailResult
-    {
-        public int AccountId { get; set; }
-        public string AccountName { get; set; }
-        public decimal Amount { get; set; }
-        public string Summary { get; set; }
-    }
-    
+    }    
 }

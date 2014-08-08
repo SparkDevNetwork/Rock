@@ -2513,6 +2513,7 @@ table.attribute-grid tr th:nth-child(3) {
     Used to manage styles for specific blocks.
 
     1. Contributions - block add a contribution transaction
+    2. Scheduled Transactions - Styles for the scheduled transaction blocks
 
 
 */
@@ -2564,6 +2565,17 @@ table.attribute-grid tr th:nth-child(3) {
 .is-diners li.card-diners,
 .is-jcb li.card-jcb {
   opacity: 1;
+}
+.scheduledtransaction-item {
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #efefef;
+}
+.scheduledtransaction-item:last-child {
+  border-bottom: 0;
+}
+.scheduledtransaction-item .actions {
+  margin: 6px 0;
 }
 /*
     Used to manage styles related to the person details page
