@@ -24,16 +24,21 @@ BEGIN
         ,'Transaction'
         ,0
 
+    -- Scores
+    -- ones marked ** only added to score if already a potential match
+    DECLARE @cScoreWeightEmail INT = 4
+        ,@cScoreWeightName INT = 3
+        ,@cScoreWeightPhoneNumber INT = 2
+        ,@cScoreWeightAddress INT = 2
+        ,@cScoreWeightBirthdate INT = 3 -- **
+        ,@cScoreWeightGender INT = 3 -- **
+        ,@cScoreWeightCampus INT = 1 -- **
     -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
         ,@cPHONENUMBER_DEFINEDTYPE_GUID UNIQUEIDENTIFIER = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'
-    -- 
-    DECLARE @cScoreWeightEmail INT = 10
-        ,@cScoreWeightName INT = 3
-        ,@cScoreWeightPhoneNumber INT = 4
-        ,@cScoreWeightAddress INT = 4
-        ,@processDateTime DATETIME = SYSDATETIME()
+    -- other
+    DECLARE @processDateTime DATETIME = SYSDATETIME()
         ,@cPHONENUMBER_DEFINEDTYPE_ID INT = (
             SELECT TOP 1 [Id]
             FROM [DefinedType]
@@ -122,7 +127,7 @@ BEGIN
         );
 
     INSERT INTO #PersonDuplicateByPhoneTable
-    SELECT [m].[Number] + isnull(',ex: ' + [m].[Extension], '') + isnull(',countrycode: ' + [m].[CountryCode], '') + ',Type:' + cast([m].[NumberTypeValueId] AS VARCHAR(max)) [PhoneNumberMatch]
+    SELECT [m].[Number] + isnull(',ex: ' + [m].[Extension], '') + isnull(',countrycode: ' + [m].[CountryCode], '') + ',Type:' + cast([m].[NumberTypeValueId] AS VARCHAR(max)) + ',Gender:' + cast([m].[Gender] AS VARCHAR(max)) [PhoneNumberMatch]
         ,[m].[NumberTypeValueId]
         ,[pa].[Id] [PersonAliasId]
     FROM (
@@ -130,6 +135,7 @@ BEGIN
             ,[Extension]
             ,[CountryCode]
             ,[NumberTypeValueId]
+            ,[Gender]
         FROM (
             SELECT [pn].[Number]
                 ,[pn].[Extension]
@@ -143,7 +149,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-                ,[p].[Gender] -- only consider it a potential duplicate person if the gender and the phone number are the same
+                ,[p].[Gender]
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [m]
@@ -153,6 +159,7 @@ BEGIN
         AND [pn].[NumberTypeValueId] = [m].[NumberTypeValueId]
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [pn].[PersonId]
     JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
+    WHERE [m].[Gender] = [p].[Gender] -- only consider it a potential duplicate person if the gender and the phone number are the same (to reduce false matches due to married couples)
     ORDER BY [PhoneNumberMatch]
 
     -- Find Duplicates by looking at people with the exact same address (Location)
@@ -406,6 +413,50 @@ BEGIN
                 ,@processDateTime
                 ,NEWID()
                 );
+
+    /*
+    Add additional scores to people that are already potential matches 
+    */
+    -- Increment the score on potential matches that have the same birthday
+    UPDATE [PersonDuplicate]
+    SET [Score] = [Score] + @cScoreWeightBirthdate
+        ,[ScoreDetail] = [ScoreDetail] + '| BirthdateMatch: ' + cast(p1.BirthDate AS VARCHAR(max))
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE p1.BirthDate = p2.BirthDate
+
+    -- Increment the score on potential matches that have the same gender
+    UPDATE [PersonDuplicate]
+    SET [Score] = [Score] + @cScoreWeightGender
+        ,[ScoreDetail] = [ScoreDetail] + '| Gender : ' + cast(p1.Gender AS VARCHAR(max))
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE p1.Gender = p2.Gender
+
+    -- Increment the score on potential matches that have the same campus
+    UPDATE PersonDuplicate
+    SET [Score] = [Score] + @cScoreWeightCampus
+        ,[ScoreDetail] = [ScoreDetail] + '| CampusMatch CampusId: ' + cast(g1.CampusId AS VARCHAR(max))
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    JOIN [GroupMember] [gm1] ON [gm1].[PersonId] = [p1].[Id]
+    JOIN [Group] [g1] ON [gm1].[GroupId] = [g1].[Id]
+    JOIN [GroupMember] [gm2] ON [gm2].[PersonId] = [p2].[Id]
+    JOIN [Group] [g2] ON [gm2].[GroupId] = [g2].[Id]
+    WHERE g1.CampusId = g2.CampusId
+        AND g1.CampusId IS NOT NULL
+        AND g2.CampusId IS NOT NULL
+        AND [g1].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+        AND [g2].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
 
     /* 
     Clean up records that no longer are duplicates 
