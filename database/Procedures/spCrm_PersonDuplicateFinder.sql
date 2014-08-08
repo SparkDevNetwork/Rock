@@ -28,7 +28,8 @@ BEGIN
         ,0
 
     DECLARE @cScoreWeightEmail INT = 10
-        ,@cScoreWeightNameMatch INT = 3
+        ,@cScoreWeightName INT = 3
+        ,@cScoreWeightPhoneNumber INT = 4
         ,@processDateTime DATETIME = sysdatetime()
 
     /* Find Duplicates by looking at people with the exact same email address  */
@@ -39,7 +40,6 @@ BEGIN
         ,CONSTRAINT [pk_PersonDuplicateByEmailTable] PRIMARY KEY CLUSTERED (Id)
         );
 
-    --CREATE INDEX IX_EMAIL on #PersonDuplicateByEmailTable (Email);
     INSERT INTO #PersonDuplicateByEmailTable
     SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
@@ -67,8 +67,6 @@ BEGIN
         ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (Id)
         );
 
-    --CREATE INDEX IX_NameMatch on #PersonDuplicateByNameTable (NameMatch);
-    --CREATE INDEX IX_PersonAliasId on #PersonDuplicateByNameTable (PersonAliasId);
     INSERT INTO #PersonDuplicateByNameTable
     SELECT [e].[LastName] + ' ' + [e].[First2] [NameMatch]
         ,[pa].[Id] [PersonAliasId]
@@ -92,6 +90,47 @@ BEGIN
         AND [p].[FirstName] LIKE (e.First2 + '%')
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     ORDER BY [NameMatch]
+
+    /* Find Duplicates by looking at people with the exact same phone number */
+    CREATE TABLE #PersonDuplicateByPhoneTable (
+        Id INT NOT NULL IDENTITY(1, 1)
+        ,PhoneNumberMatch NVARCHAR(max) NOT NULL
+        ,PersonAliasId INT NOT NULL
+        ,CONSTRAINT [pk_PersonDuplicateByPhoneTable] PRIMARY KEY CLUSTERED (Id)
+        );
+
+    INSERT INTO #PersonDuplicateByPhoneTable
+    SELECT [m].[Number] + isnull(',ex: ' + [m].[Extension], '') + isnull(',countrycode: ' + [m].[CountryCode], '') + ',Type:' + cast([m].[NumberTypeValueId] AS VARCHAR(max)) [PhoneNumberMatch]
+        ,[pa].[Id] [PersonAliasId]
+    FROM (
+        SELECT DISTINCT [Number]
+            ,[Extension]
+            ,[CountryCode]
+            ,[NumberTypeValueId]
+        FROM (
+            SELECT [pn].[Number]
+                ,[pn].[Extension]
+                ,[pn].[CountryCode]
+                ,[pn].[NumberTypeValueId]
+                ,[p].[Gender]
+                ,COUNT(*) [MatchCount]
+            FROM [PhoneNumber] [pn]
+            JOIN [Person] [p] ON [p].[Id] = [pn].[PersonId]
+            GROUP BY [pn].[Number]
+                ,[pn].[Extension]
+                ,[pn].[CountryCode]
+                ,[pn].[NumberTypeValueId]
+                ,[p].[Gender] -- only consider it a potential duplicate person if the gender and the phone number are the same
+            ) [a]
+        WHERE [a].[MatchCount] > 1
+        ) [m]
+    JOIN [PhoneNumber] [pn] ON [pn].[Number] = [m].[Number]
+        AND ISNULL([pn].[Extension], '') = ISNULL([m].[Extension], '')
+        AND ISNULL([pn].[CountryCode], '') = ISNULL([m].[CountryCode], '')
+        AND [pn].[NumberTypeValueId] = [m].[NumberTypeValueId]
+    JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [pn].[PersonId]
+    JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
+    ORDER BY [PhoneNumberMatch]
 
     /* Reset Scores for everybody. Preserve records where [IsConfirmedAsNotDuplicate] */
     UPDATE [PersonDuplicate]
@@ -154,7 +193,7 @@ BEGIN
     WHEN MATCHED
         THEN
             UPDATE
-            SET [Score] = [Score] + @cScoreWeightNameMatch
+            SET [Score] = [Score] + @cScoreWeightName
                 ,[ScoreDetail] = [ScoreDetail] + '| NameMatch:' + source.NameMatch
                 ,[ModifiedDateTime] = @processDateTime
     WHEN NOT MATCHED
@@ -172,8 +211,49 @@ BEGIN
             VALUES (
                 source.PersonAliasId
                 ,source.DuplicatePersonAliasId
-                ,@cScoreWeightNameMatch
+                ,@cScoreWeightName
                 ,'| NameMatch:' + source.NameMatch
+                ,0
+                ,@processDateTime
+                ,@processDateTime
+                ,NEWID()
+                );
+
+    /* Update PersonDuplicate table with results of phonenumber match */
+    MERGE [PersonDuplicate] AS TARGET
+    USING (
+        SELECT [e1].[PersonAliasId] [PersonAliasId]
+            ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
+            ,[e1].[PhoneNumberMatch] [PhoneNumberMatch]
+        FROM #PersonDuplicateByPhoneTable [e1]
+        JOIN #PersonDuplicateByPhoneTable [e2] ON [e1].[PhoneNumberMatch] = [e2].[PhoneNumberMatch]
+            AND [e1].[Id] != [e2].[Id]
+        ) AS source(PersonAliasId, DuplicatePersonAliasId, PhoneNumberMatch)
+        ON (target.PersonAliasId = source.PersonAliasId)
+            AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
+    WHEN MATCHED
+        THEN
+            UPDATE
+            SET [Score] = [Score] + @cScoreWeightPhoneNumber
+                ,[ScoreDetail] = [ScoreDetail] + '| PhoneNumberMatch:' + source.PhoneNumberMatch
+                ,[ModifiedDateTime] = @processDateTime
+    WHEN NOT MATCHED
+        THEN
+            INSERT (
+                PersonAliasId
+                ,DuplicatePersonAliasId
+                ,Score
+                ,ScoreDetail
+                ,IsConfirmedAsNotDuplicate
+                ,ModifiedDateTime
+                ,CreatedDateTime
+                ,[Guid]
+                )
+            VALUES (
+                source.PersonAliasId
+                ,source.DuplicatePersonAliasId
+                ,@cScoreWeightPhoneNumber
+                ,'| PhoneNumberMatch:' + source.PhoneNumberMatch
                 ,0
                 ,@processDateTime
                 ,@processDateTime
@@ -197,6 +277,8 @@ BEGIN
     DROP TABLE #PersonDuplicateByEmailTable;
 
     DROP TABLE #PersonDuplicateByNameTable;
+
+    DROP TABLE #PersonDuplicateByPhoneTable;
 
     COMMIT
 END
