@@ -1065,17 +1065,9 @@
     <Compile Include="Migrations\201408061807525_AddApplicationGroup.Designer.cs">
       <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201408071444326_ScheduledTransactionView.cs" />
-    <Compile Include="Migrations\201408071444326_ScheduledTransactionView.Designer.cs">
-      <DependentUpon>201408071444326_ScheduledTransactionView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201408080041147_RemoveAttendedCheckin.cs" />
-    <Compile Include="Migrations\201408080041147_RemoveAttendedCheckin.Designer.cs">
-      <DependentUpon>201408080041147_RemoveAttendedCheckin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201408081620116_PersonDuplicate.cs" />
-    <Compile Include="Migrations\201408081620116_PersonDuplicate.Designer.cs">
-      <DependentUpon>201408081620116_PersonDuplicate.cs</DependentUpon>
+    <Compile Include="Migrations\201408082214326_ExternalFinancePages.cs" />
+    <Compile Include="Migrations\201408082214326_ExternalFinancePages.Designer.cs">
+      <DependentUpon>201408082214326_ExternalFinancePages.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
@@ -1859,14 +1851,8 @@
     <EmbeddedResource Include="Migrations\201408061807525_AddApplicationGroup.resx">
       <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408071444326_ScheduledTransactionView.resx">
-      <DependentUpon>201408071444326_ScheduledTransactionView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408080041147_RemoveAttendedCheckin.resx">
-      <DependentUpon>201408080041147_RemoveAttendedCheckin.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201408081620116_PersonDuplicate.resx">
-      <DependentUpon>201408081620116_PersonDuplicate.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201408082214326_ExternalFinancePages.resx">
+      <DependentUpon>201408082214326_ExternalFinancePages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
