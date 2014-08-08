@@ -1065,6 +1065,10 @@
     <Compile Include="Migrations\201408061807525_AddApplicationGroup.Designer.cs">
       <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408071444326_ScheduledTransactionView.cs" />
+    <Compile Include="Migrations\201408071444326_ScheduledTransactionView.Designer.cs">
+      <DependentUpon>201408071444326_ScheduledTransactionView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1846,6 +1850,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408061807525_AddApplicationGroup.resx">
       <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408071444326_ScheduledTransactionView.resx">
+      <DependentUpon>201408071444326_ScheduledTransactionView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
