@@ -84,12 +84,12 @@ namespace RockWeb.Blocks.Finance
 
             if ( !Page.IsPostBack )
             {
-                // load account list
-                LoadAccounts();
-
                 // set default date range
                 drpFilterDates.LowerValue = new DateTime( DateTime.Now.Year, 1, 1 );
                 drpFilterDates.UpperValue = DateTime.Now;
+                
+                // load account list
+                LoadAccounts();
 
                 BindGrid();
             }
@@ -171,7 +171,12 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             FinancialAccountService accountService = new FinancialAccountService(rockContext);
 
-            List<Guid> selectedAccounts = GetAttributeValue("Accounts").Split(',').Select(Guid.Parse).ToList();
+            List<Guid> selectedAccounts = new List<Guid>(); ;
+
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "Accounts" ) ) )
+            {
+                selectedAccounts = GetAttributeValue( "Accounts" ).Split( ',' ).Select( Guid.Parse ).ToList();
+            }
 
             var accounts = accountService.Queryable()
                                 .Where( a => selectedAccounts.Contains( a.Guid ) )
