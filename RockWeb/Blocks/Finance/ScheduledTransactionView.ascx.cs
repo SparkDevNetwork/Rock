@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
-            int? txnId = PageParameter( "Txn" ).AsIntegerOrNull();
+            int? txnId = PageParameter( "ScheduledTransactionId" ).AsIntegerOrNull();
             if ( txnId.HasValue )
             {
                 var rockContext = new RockContext();
