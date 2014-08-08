@@ -33,6 +33,8 @@ BEGIN
         ,@cScoreWeightBirthdate INT = 3 -- **
         ,@cScoreWeightGender INT = 3 -- **
         ,@cScoreWeightCampus INT = 1 -- **
+        ,@cScoreWeightMaritalStatus INT = 1 -- **
+
     -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
@@ -457,6 +459,18 @@ BEGIN
         AND g2.CampusId IS NOT NULL
         AND [g1].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
         AND [g2].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+
+
+    -- Increment the score on potential matches that have the same marital status
+    UPDATE [PersonDuplicate]
+    SET [Score] = [Score] + @cScoreWeightMaritalStatus
+        ,[ScoreDetail] = [ScoreDetail] + '| MaritalStatus Id : ' + cast(p1.MaritalStatusValueId AS VARCHAR(max))
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
+    JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
+    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN Person p2 ON p2.Id = pa2.PersonId
+    WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
 
     /* 
     Clean up records that no longer are duplicates 
