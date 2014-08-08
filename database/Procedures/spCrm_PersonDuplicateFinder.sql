@@ -13,9 +13,6 @@
 	</code>
 </doc>
 */
-SET STATISTICS TIME ON
-GO
-
 ALTER PROCEDURE [dbo].[spCrm_PersonDuplicateFinder]
 AS
 BEGIN
@@ -27,12 +24,17 @@ BEGIN
         ,'Transaction'
         ,0
 
-    DECLARE @cScoreWeightEmail INT = 10
+    DECLARE @cPhoneNumberDefinedTypeId int = (select top 1 id from DefinedType where Guid = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD')
+        ,@cScoreWeightEmail INT = 10
         ,@cScoreWeightName INT = 3
         ,@cScoreWeightPhoneNumber INT = 4
-        ,@processDateTime DATETIME = sysdatetime()
+        ,@processDateTime DATETIME = SYSDATETIME()
 
-    /* Find Duplicates by looking at people with the exact same email address  */
+    /*
+    Populate Temporary Tables for each match criteria
+    */
+
+    -- Find Duplicates by looking at people with the exact same email address
     CREATE TABLE #PersonDuplicateByEmailTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,Email NVARCHAR(75) NOT NULL
@@ -59,7 +61,7 @@ BEGIN
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     ORDER BY [Email]
 
-    /* Find Duplicates by looking at people with the exact same lastname and same first 2 chars of First/Nick name */
+    -- Find Duplicates by looking at people with the exact same lastname and same first 2 chars of First/Nick name
     CREATE TABLE #PersonDuplicateByNameTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,NameMatch NVARCHAR(152) NOT NULL
@@ -91,16 +93,18 @@ BEGIN
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     ORDER BY [NameMatch]
 
-    /* Find Duplicates by looking at people with the exact same phone number */
+    -- Find Duplicates by looking at people with the exact same phone number
     CREATE TABLE #PersonDuplicateByPhoneTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,PhoneNumberMatch NVARCHAR(max) NOT NULL
+        ,NumberTypeValueId int not null
         ,PersonAliasId INT NOT NULL
         ,CONSTRAINT [pk_PersonDuplicateByPhoneTable] PRIMARY KEY CLUSTERED (Id)
         );
 
     INSERT INTO #PersonDuplicateByPhoneTable
     SELECT [m].[Number] + isnull(',ex: ' + [m].[Extension], '') + isnull(',countrycode: ' + [m].[CountryCode], '') + ',Type:' + cast([m].[NumberTypeValueId] AS VARCHAR(max)) [PhoneNumberMatch]
+        ,[m].NumberTypeValueId
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT DISTINCT [Number]
@@ -132,12 +136,18 @@ BEGIN
     JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
     ORDER BY [PhoneNumberMatch]
 
-    /* Reset Scores for everybody. Preserve records where [IsConfirmedAsNotDuplicate] */
+    /* 
+    Reset Scores for everybody. Preserve records where [IsConfirmedAsNotDuplicate] 
+    */
     UPDATE [PersonDuplicate]
     SET [Score] = 0
         ,[ScoreDetail] = '';
 
-    /* Update PersonDuplicate table with results of email match */
+    /*
+    Merge Results of Matches into PersonDuplicate Table
+    */
+
+    -- Update PersonDuplicate table with results of email match
     MERGE [PersonDuplicate] AS TARGET
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
@@ -178,7 +188,7 @@ BEGIN
                 ,NEWID()
                 );
 
-    /* Update PersonDuplicate table with results of name match */
+    -- Update PersonDuplicate table with results of name match
     MERGE [PersonDuplicate] AS TARGET
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
@@ -218,49 +228,66 @@ BEGIN
                 ,@processDateTime
                 ,NEWID()
                 );
+ 
+    --  Update PersonDuplicate table with results of phonenumber match for each number type. 
+    --  For example, if both the Cell and Home phone match, that should be a higher score 
+    declare @NumberTypeValueId int
+    declare numberTypeCursor cursor fast_forward for select id from DefinedValue where DefinedTypeId = @cPhoneNumberDefinedTypeId;
+    open numberTypeCursor
 
-    /* Update PersonDuplicate table with results of phonenumber match */
-    MERGE [PersonDuplicate] AS TARGET
-    USING (
-        SELECT [e1].[PersonAliasId] [PersonAliasId]
-            ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[PhoneNumberMatch] [PhoneNumberMatch]
-        FROM #PersonDuplicateByPhoneTable [e1]
-        JOIN #PersonDuplicateByPhoneTable [e2] ON [e1].[PhoneNumberMatch] = [e2].[PhoneNumberMatch]
-            AND [e1].[Id] != [e2].[Id]
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, PhoneNumberMatch)
-        ON (target.PersonAliasId = source.PersonAliasId)
-            AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
-    WHEN MATCHED
-        THEN
-            UPDATE
-            SET [Score] = [Score] + @cScoreWeightPhoneNumber
-                ,[ScoreDetail] = [ScoreDetail] + '| PhoneNumberMatch:' + source.PhoneNumberMatch
-                ,[ModifiedDateTime] = @processDateTime
-    WHEN NOT MATCHED
-        THEN
-            INSERT (
-                PersonAliasId
-                ,DuplicatePersonAliasId
-                ,Score
-                ,ScoreDetail
-                ,IsConfirmedAsNotDuplicate
-                ,ModifiedDateTime
-                ,CreatedDateTime
-                ,[Guid]
-                )
-            VALUES (
-                source.PersonAliasId
-                ,source.DuplicatePersonAliasId
-                ,@cScoreWeightPhoneNumber
-                ,'| PhoneNumberMatch:' + source.PhoneNumberMatch
-                ,0
-                ,@processDateTime
-                ,@processDateTime
-                ,NEWID()
-                );
+    fetch next from numberTypeCursor into @NumberTypeValueId
 
-    /* Clean up records that no longer are duplicates */
+    while @@FETCH_STATUS = 0
+    begin
+        MERGE [PersonDuplicate] AS TARGET
+        USING (
+            SELECT [e1].[PersonAliasId] [PersonAliasId]
+                ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
+                ,[e1].[PhoneNumberMatch] [PhoneNumberMatch]
+            FROM #PersonDuplicateByPhoneTable [e1]
+            JOIN #PersonDuplicateByPhoneTable [e2] ON [e1].[PhoneNumberMatch] = [e2].[PhoneNumberMatch]
+                AND [e1].[Id] != [e2].[Id] and [e1].[NumberTypeValueId] = [e2].[NumberTypeValueId]
+                where [e1].[NumberTypeValueId] = @NumberTypeValueId
+            ) AS source(PersonAliasId, DuplicatePersonAliasId, PhoneNumberMatch)
+            ON (target.PersonAliasId = source.PersonAliasId)
+                AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
+        WHEN MATCHED
+            THEN
+                UPDATE
+                SET [Score] = [Score] + @cScoreWeightPhoneNumber
+                    ,[ScoreDetail] = [ScoreDetail] + '| PhoneNumberMatch:' + source.PhoneNumberMatch
+                    ,[ModifiedDateTime] = @processDateTime
+        WHEN NOT MATCHED
+            THEN
+                INSERT (
+                    PersonAliasId
+                    ,DuplicatePersonAliasId
+                    ,Score
+                    ,ScoreDetail
+                    ,IsConfirmedAsNotDuplicate
+                    ,ModifiedDateTime
+                    ,CreatedDateTime
+                    ,[Guid]
+                    )
+                VALUES (
+                    source.PersonAliasId
+                    ,source.DuplicatePersonAliasId
+                    ,@cScoreWeightPhoneNumber
+                    ,'| PhoneNumberMatch:' + source.PhoneNumberMatch
+                    ,0
+                    ,@processDateTime
+                    ,@processDateTime
+                    ,NEWID()
+                    );
+        fetch next from numberTypeCursor into @NumberTypeValueId
+    end
+
+    close numberTypeCursor
+    deallocate numberTypeCursor
+
+    /* 
+    Clean up records that no longer are duplicates 
+    */
     DECLARE @staleCount INT;
 
     SELECT @staleCount = count(*)
@@ -284,7 +311,12 @@ BEGIN
 END
 GO
 
-/* DEBUG
+-- DEBUG
+/*
+SET STATISTICS TIME ON
+GO
+
 EXEC [dbo].[spCrm_PersonDuplicateFinder]
 GO
 */
+
