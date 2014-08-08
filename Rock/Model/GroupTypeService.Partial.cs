@@ -84,6 +84,7 @@ namespace Rock.Model
 		            UNION ALL
 		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
 		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                    WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
                  )
                 SELECT *
                 FROM [GroupType]
@@ -118,6 +119,7 @@ namespace Rock.Model
                             GroupTypeAssociation GTA
 		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
 		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
+                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
                 )
                 SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 3, 500) AS 'Path'
                 FROM CTE
