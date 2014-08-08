@@ -307,6 +307,7 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
+        [Index("IX_Email")]
         public string Email { get; set; }
 
         /// <summary>
