@@ -127,6 +127,7 @@ namespace RockWeb.Blocks.Administraton
 
             if ( exceptionList.Count == 1 )
             {
+                // if there is only one datapoint for the Chart, the yaxis labeling gets messed up, plus the graph wouldn't be useful anyways
                 lcExceptions.Visible = false;
             }
 
