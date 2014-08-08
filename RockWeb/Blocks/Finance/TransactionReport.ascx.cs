@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Finance
             this.AddConfigurationUpdateTrigger( upnlContent );
             cblAccounts.Label = GetAttributeValue( "AccountLabel" );
             gTransactions.RowItemText = GetAttributeValue( "TransactionLabel" );
-            gTransactions.EmptyDataText = string.Format( "No {0} found with the provided criteria.", GetAttributeValue( "TransactionLabel" ) );
+            gTransactions.EmptyDataText = string.Format( "No {0} found with the provided criteria.", GetAttributeValue( "TransactionLabel" ).ToLower() );
         }
 
         /// <summary>
@@ -218,9 +218,39 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => t.TransactionDateTime.Value < lastDate ); 
             }
 
-
             gTransactions.DataSource = qry.ToList();
             gTransactions.DataBind();
+
+            // get account totals
+            Dictionary<string, decimal> accountTotals = new Dictionary<string, decimal>();
+            
+            foreach ( var transaction in qry.ToList() )
+            {
+                foreach ( var transactionDetail in transaction.TransactionDetails )
+                {
+                    if ( accountTotals.Keys.Contains( transactionDetail.Account.Name ) )
+                    {
+                        accountTotals[transactionDetail.Account.Name] += transactionDetail.Amount;
+                    }
+                    else
+                    {
+                        accountTotals.Add( transactionDetail.Account.Name, transactionDetail.Amount );
+                    }
+                }
+            }
+
+            if ( accountTotals.Count > 0 )
+            {
+                pnlSummary.Visible = true;
+                foreach ( var key in accountTotals.Keys )
+                {
+                    lAccountSummary.Text += String.Format( "<li>{0}: ${1}</li>", key, accountTotals[key] );
+                }
+            }
+            else
+            {
+                pnlSummary.Visible = false;
+            }
         }
 
         #endregion

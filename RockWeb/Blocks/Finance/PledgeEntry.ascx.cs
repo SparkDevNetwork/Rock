@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Require Pledge Frequency", "Require that a user select a specific pledge frequency (when pledge frequency is shown)", DefaultValue = "false", Order = 6 )]
 
     [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
-    [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as the circumstances change.", Order = 8 )]
+    [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as your circumstances change.", Order = 8 )]
 
     [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
         @"

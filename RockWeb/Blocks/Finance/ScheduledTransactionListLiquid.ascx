@@ -18,6 +18,12 @@
             </asp:Repeater>
         </div>        
         
+        <asp:Panel ID="pnlNoScheduledTransactions" runat="server" CssClass="alert alert-info" Visible="false">
+            <asp:Literal ID="lNoScheduledTransactionsMessage" runat="server" />
+        </asp:Panel>
+
+        <asp:LinkButton ID="lbAddScheduledTransaction" runat="server" CssClass="btn btn-primary" OnClick="lbAddScheduledTransaction_Click" />
+
         <asp:Literal ID="lDebug" runat="server" />
         
     </ContentTemplate>

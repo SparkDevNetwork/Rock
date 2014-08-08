@@ -24,6 +24,11 @@
          
                 </div>
 
+                <asp:Panel ID="pnlSummary" CssClass="well account-summary" runat="server">
+                    <strong>Summary:</strong>
+                    <ul><asp:Literal ID="lAccountSummary" runat="server" /></ul>
+                </asp:Panel>
+
                 <div class="grid">
                     <Rock:Grid ID="gTransactions" runat="server" OnRowDataBound="gTransactions_RowDataBound">
                         <Columns>
