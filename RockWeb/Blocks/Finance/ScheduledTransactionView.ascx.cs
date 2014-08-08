@@ -260,66 +260,69 @@ namespace RockWeb.Blocks.Finance
         /// <param name="txn">The TXN.</param>
         private void ShowView( FinancialScheduledTransaction txn )
         {
-            hlStatus.Text = txn.IsActive ? "Active" : "Inactive";
-            hlStatus.LabelType = txn.IsActive ? LabelType.Success : LabelType.Danger;
-
-            string rockUrlRoot = ResolveRockUrl( "/" );
-
-            var detailsLeft = new DescriptionList()
-                .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty );
-
-            var detailsRight = new DescriptionList()
-                .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
-                .Add( "Frequency", txn.TransactionFrequencyValue != null ? txn.TransactionFrequencyValue.Name : string.Empty )
-                .Add( "Start Date", txn.StartDate.ToShortDateString() )
-                .Add( "End Date", txn.EndDate.HasValue ? txn.EndDate.Value.ToShortDateString() : string.Empty )
-                .Add( "Next Payment Date", txn.NextPaymentDate.HasValue ? txn.NextPaymentDate.Value.ToShortDateString() : string.Empty )
-                .Add( "Last Status Refresh", txn.LastStatusUpdateDateTime.HasValue ? txn.LastStatusUpdateDateTime.Value.ToString("g") : string.Empty );
-
-            if ( txn.CurrencyTypeValue != null )
+            if ( txn != null )
             {
-                string currencyType = txn.CurrencyTypeValue.Name;
-                if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
+                hlStatus.Text = txn.IsActive ? "Active" : "Inactive";
+                hlStatus.LabelType = txn.IsActive ? LabelType.Success : LabelType.Danger;
+
+                string rockUrlRoot = ResolveRockUrl( "/" );
+
+                var detailsLeft = new DescriptionList()
+                    .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty );
+
+                var detailsRight = new DescriptionList()
+                    .Add( "Amount", ( txn.ScheduledTransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
+                    .Add( "Frequency", txn.TransactionFrequencyValue != null ? txn.TransactionFrequencyValue.Name : string.Empty )
+                    .Add( "Start Date", txn.StartDate.ToShortDateString() )
+                    .Add( "End Date", txn.EndDate.HasValue ? txn.EndDate.Value.ToShortDateString() : string.Empty )
+                    .Add( "Next Payment Date", txn.NextPaymentDate.HasValue ? txn.NextPaymentDate.Value.ToShortDateString() : string.Empty )
+                    .Add( "Last Status Refresh", txn.LastStatusUpdateDateTime.HasValue ? txn.LastStatusUpdateDateTime.Value.ToString( "g" ) : string.Empty );
+
+                if ( txn.CurrencyTypeValue != null )
                 {
-                    currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Name ) : string.Empty;
+                    string currencyType = txn.CurrencyTypeValue.Name;
+                    if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
+                    {
+                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Name ) : string.Empty;
+                    }
+                    detailsLeft.Add( "Currency Type", currencyType );
                 }
-                detailsLeft.Add( "Currency Type", currencyType );
-            }
 
-            if ( txn.GatewayEntityType != null )
-            {
-                detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
-            }
-
-            detailsLeft
-                .Add( "Transaction Code", txn.TransactionCode )
-                .Add( "Schedule Id", txn.GatewayScheduleId );
-
-            lDetailsLeft.Text = detailsLeft.Html;
-            lDetailsRight.Text = detailsRight.Html;
-
-            gAccountsView.DataSource = txn.ScheduledTransactionDetails.ToList();
-            gAccountsView.DataBind();
-
-            var rockContext = new RockContext();
-            var noteType = new NoteTypeService( rockContext ).Get( txn.TypeId, "Note" );
-            rptrNotes.DataSource = new NoteService( rockContext ).Get( noteType.Id, txn.Id )
-                .Where( n => n.CreatedDateTime.HasValue )
-                .OrderBy( n => n.CreatedDateTime )
-                .ToList()
-                .Select( n => new
+                if ( txn.GatewayEntityType != null )
                 {
-                    n.Caption,
-                    Text = n.Text.ConvertCrLfToHtmlBr(),
-                    Person = n.CreatedByPersonAlias.Person.FullName,
-                    Date = n.CreatedDateTime.Value.ToShortDateString(),
-                    Time = n.CreatedDateTime.Value.ToShortTimeString()
-                } )
-                .ToList();
-            rptrNotes.DataBind();
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
+                }
 
-            lbCancel.Visible = txn.IsActive;
-            lbReactivate.Visible = !txn.IsActive;
+                detailsLeft
+                    .Add( "Transaction Code", txn.TransactionCode )
+                    .Add( "Schedule Id", txn.GatewayScheduleId );
+
+                lDetailsLeft.Text = detailsLeft.Html;
+                lDetailsRight.Text = detailsRight.Html;
+
+                gAccountsView.DataSource = txn.ScheduledTransactionDetails.ToList();
+                gAccountsView.DataBind();
+
+                var rockContext = new RockContext();
+                var noteType = new NoteTypeService( rockContext ).Get( txn.TypeId, "Note" );
+                rptrNotes.DataSource = new NoteService( rockContext ).Get( noteType.Id, txn.Id )
+                    .Where( n => n.CreatedDateTime.HasValue )
+                    .OrderBy( n => n.CreatedDateTime )
+                    .ToList()
+                    .Select( n => new
+                    {
+                        n.Caption,
+                        Text = n.Text.ConvertCrLfToHtmlBr(),
+                        Person = n.CreatedByPersonAlias.Person.FullName,
+                        Date = n.CreatedDateTime.Value.ToShortDateString(),
+                        Time = n.CreatedDateTime.Value.ToShortTimeString()
+                    } )
+                    .ToList();
+                rptrNotes.DataBind();
+
+                lbCancel.Visible = txn.IsActive;
+                lbReactivate.Visible = !txn.IsActive;
+            }
         }
 
         /// <summary>
