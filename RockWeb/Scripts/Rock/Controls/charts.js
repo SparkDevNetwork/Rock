@@ -33,9 +33,13 @@
                     else {
                         if (!chartSeriesLookup[chartData[i].SeriesId]) {
 
-                            
                             var seriesName = null;
-                            if (chartData[i].SeriesId == 0) {
+                            if ( (chartData[i].SeriesId != '') && isNaN(chartData[i].SeriesId) )
+                            {
+                                // SeriesId isn't a number (probably is text), so have that be the series name
+                                seriesName = chartData[i].SeriesId;
+                            }
+                            else if (chartData[i].SeriesId == 0) {
                                 // SeriesId of 0 means that the metric doesn't have a series partition. (Metrics don't have to be partitioned by Series)
                                 // set the series name to the xaxislabeltext or just 'value' if it's blank
                                 seriesName = xaxisLabelText || 'value';
