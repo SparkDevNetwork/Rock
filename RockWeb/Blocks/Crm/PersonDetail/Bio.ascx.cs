@@ -144,7 +144,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     }
 
                     // Setup Image
-                    string imgTag = Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Gender, 200, 200 );
+                    string imgTag = Rock.Model.Person.GetPhotoImageTag( Person.PhotoId, Person.Age, Person.Gender, 200, 200 );
                     if ( Person.PhotoId.HasValue )
                     {
                         lImage.Text = string.Format("<a href='{0}'>{1}</a>", Person.PhotoUrl, imgTag);
