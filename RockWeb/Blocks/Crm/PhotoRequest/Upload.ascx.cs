@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
             
             var imageEditor = e.Item.FindControl( "imgedPhoto" ) as Rock.Web.UI.Controls.ImageEditor;
             imageEditor.BinaryFileId = person.PhotoId;
-            imageEditor.NoPictureUrl = Person.GetPhotoUrl( null, person.Gender );
+            imageEditor.NoPictureUrl = Person.GetPhotoUrl( null, person.Age, person.Gender );
             if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == person.Id ).Count() > 0 )
             {
                 imageEditor.Label = string.Format( "{0} (staff member)", person.FullName );

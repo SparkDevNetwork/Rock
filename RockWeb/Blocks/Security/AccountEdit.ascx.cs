@@ -281,7 +281,7 @@ namespace RockWeb.Blocks.Security
             if ( person != null )
             {
                 imgPhoto.BinaryFileId = person.PhotoId;
-                imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, person.Gender );
+                imgPhoto.NoPictureUrl = Person.GetPhotoUrl( null, person.Age, person.Gender );
                 ddlTitle.SelectedValue = person.TitleValueId.HasValue ? person.TitleValueId.Value.ToString() : string.Empty;
                 tbFirstName.Text = person.FirstName;
                 tbLastName.Text = person.LastName;
