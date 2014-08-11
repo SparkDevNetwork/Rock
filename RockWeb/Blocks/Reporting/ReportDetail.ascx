@@ -48,13 +48,13 @@
                     <section class="panel panel-widget">
                         <header class="panel-heading clearfix">
                             <div class="pull-left">
-                                <h3 class="panel-title">
+                                <h3 class="panel-title margin-t-sm">
                                     <span>Fields</span>
                                 </h3>
                             </div>
                             <div class="pull-right">
-                                <div class="form-control-group">
-                                    <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-primary" Text="Add" CausesValidation="false" OnClick="btnAddField_Click" /></td>
+                                <div class="btn-group btn-group-sm pull-right">
+                                    <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton></td>
                                 </div>
                             </div>
                         </header>
