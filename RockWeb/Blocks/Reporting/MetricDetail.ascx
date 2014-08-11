@@ -27,7 +27,7 @@
                             <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Title" />
                             <Rock:DataTextBox ID="tbSubtitle" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Subtitle" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="IconCssClass" />
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Metric, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                             <Rock:CategoryPicker ID="cpMetricCategories" runat="server" AllowMultiSelect="true" Label="Categories" />
                             <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Series Partition" Help="Select the entity type which can be used to partition metric values. For example, select Campus if the Metric is Attendance for each campus." />
                             <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" AutoPostBack="true" OnSelectedIndexChanged="ddlSourceType_SelectedIndexChanged" />
@@ -77,7 +77,7 @@
                         <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
-                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-action pull-right" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
                     </div>
 
                 </fieldset>
