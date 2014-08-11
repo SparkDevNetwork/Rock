@@ -53,13 +53,13 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets the selected financial batch id.
+        /// Gets or sets the selected financial batch
         /// </summary>
         /// <value>
-        /// The selected financial batch id.
+        /// The selected financial batch
         /// </value>
-        public int SelectedFinancialBatchId { get; set; }
-
+        public FinancialBatch SelectedFinancialBatch { get; set; }
+        
         /// <summary>
         /// Gets or sets the logged in person id.
         /// </summary>
@@ -474,15 +474,15 @@ namespace Rock.Apps.CheckScannerUtility
                 bw.ReportProgress( percentComplete );
 
                 FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
-                financialTransactionScannedCheck.BatchId = SelectedFinancialBatchId;
+                financialTransactionScannedCheck.BatchId = SelectedFinancialBatch.Id;
                 financialTransactionScannedCheck.TransactionCode = string.Empty;
                 financialTransactionScannedCheck.Summary = string.Format( "Scanned Check from {0}", appInfo );
                 financialTransactionScannedCheck.Guid = Guid.NewGuid();
-                financialTransactionScannedCheck.TransactionDateTime = DateTime.Now;
+                financialTransactionScannedCheck.TransactionDateTime = SelectedFinancialBatch.BatchStartDateTime;
                 financialTransactionScannedCheck.CurrencyTypeValueId = currencyTypeValueCheck.Id;
                 financialTransactionScannedCheck.CreditCardTypeValueId = null;
                 financialTransactionScannedCheck.SourceTypeValueId = null;
-                financialTransactionScannedCheck.AuthorizedPersonId = this.LoggedInPerson.Id;
+                financialTransactionScannedCheck.AuthorizedPersonId = null;
                 financialTransactionScannedCheck.TransactionTypeValueId = transactionTypeValueContribution.Id;
 
                 // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
@@ -575,9 +575,9 @@ namespace Rock.Apps.CheckScannerUtility
             grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchStartDateTime ).ThenBy( a => a.Name );
             if ( pendingBatches.Count > 0 )
             {
-                if ( SelectedFinancialBatchId > 0 )
+                if ( SelectedFinancialBatch != null )
                 {
-                    grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatchId ) );
+                    grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatch.Id ) );
                 }
                 else
                 {
@@ -816,13 +816,13 @@ namespace Rock.Apps.CheckScannerUtility
                 client.Login( rockConfig.Username, rockConfig.Password );
 
                 FinancialBatch financialBatch = null;
-                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0)
                 {
                     financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
                 }
                 else
                 {
-                    financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatchId ) );
+                    financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatch.Id ) );
                 }
 
                 txtBatchName.Text = txtBatchName.Text.Trim();
@@ -858,12 +858,12 @@ namespace Rock.Apps.CheckScannerUtility
                     client.PutData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
                 }
 
-                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
                 {
                     // refetch the batch to get the Id if it was just Inserted
                     financialBatch = client.GetDataByGuid<FinancialBatch>( "api/FinancialBatches", financialBatch.Guid );
 
-                    SelectedFinancialBatchId = financialBatch.Id;
+                    SelectedFinancialBatch = financialBatch;
                 }
 
                 LoadFinancialBatchesGrid();
@@ -918,7 +918,7 @@ namespace Rock.Apps.CheckScannerUtility
             RockConfig rockConfig = RockConfig.Load();
             RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
-            SelectedFinancialBatchId = selectedBatch.Id;
+            SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
@@ -946,7 +946,7 @@ namespace Rock.Apps.CheckScannerUtility
                 transaction.TransactionDetails = client.GetData<List<FinancialTransactionDetail>>( "api/FinancialTransactionDetails/", string.Format( "TransactionId eq {0}", transaction.Id ) );
             }
 
-            grdBatchItems.DataContext = transactions.OrderByDescending( a => a.TransactionDateTime );
+            grdBatchItems.DataContext = transactions.OrderByDescending( a => a.CreatedDateTime );
         }
 
         /// <summary>

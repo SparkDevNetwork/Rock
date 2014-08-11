@@ -421,7 +421,7 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( "id", this.ClientID.ToString() );
-            writer.AddAttribute( "class", "toggle-container" + this.CssClass );
+            writer.AddAttribute( "class", "toggle-container " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "btn-group btn-toggle " + this.CssClass );

@@ -14,7 +14,7 @@
                 <div class="form-inline js-show-hide-options clearfix">
 
                     <div class="pull-left">
-                        <div class="form-group">
+                        <div class="form-group margin-r-sm">
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" id="cbShowGroup" checked="checked" /> <i class="fa fa-circle" style="color:#<%=_groupColor %>"></i> <span id="lGroupName">Show Group</span>
@@ -22,15 +22,15 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group margin-r-sm">
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" id="cbShowChildGroups" /> <i class="fa fa-circle" style="color:#<%=_childGroupColor %>"></i> Child Groups
+                                    <input type="checkbox" id="cbShowChildGroups" /> <i class="fa fa-circle" style="color:#<%=_childGroupColor %>"></i> Groups
                                 </label>
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group margin-r-sm">
                             <div class="checkbox">
                                 <label>
                                     <input type="checkbox" id="cbShowGroupMembers" /> <i class="fa fa-circle" style="color:#<%=_memberColor %>"></i> Group Members
@@ -42,7 +42,7 @@
                     <div class="pull-right">
                         <asp:Repeater ID="rptStatus" runat="server">
                             <ItemTemplate>
-                                <div class="form-group" style="display:none">
+                                <div class="form-group margin-l-sm" style="display:none">
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" class="js-connection-status-cb" data-item='<%# Eval("Id") %>' data-color='<%# Eval("Color") %>' /> <i class="fa fa-circle" style='color:#<%# Eval("Color") %>'></i> <%# Eval("Name") %>

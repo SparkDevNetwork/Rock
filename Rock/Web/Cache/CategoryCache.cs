@@ -19,11 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
-using System.Web.UI;
+
 using Rock.Data;
-using Rock.Field;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -254,33 +252,26 @@ namespace Rock.Web.Cache
         public static CategoryCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = CategoryCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             CategoryCache category = cache[cacheKey] as CategoryCache;
 
-            if ( category != null )
+            if ( category == null )
             {
-                return category;
-            }
-            else
-            {
-                var categoryService = new Rock.Model.CategoryService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var categoryService = new Rock.Model.CategoryService( rockContext );
                 var categoryModel = categoryService.Get( id );
                 if ( categoryModel != null )
                 {
+                    categoryModel.LoadAttributes( rockContext );
                     category = new CategoryCache( categoryModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-
-                    return category;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return category;
         }
 
         /// <summary>
@@ -294,31 +285,30 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            CategoryCache category = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                category = Read( (int)cacheObj );
             }
-            else
+
+            if ( category == null )
             {
-                var categoryService = new CategoryService( rockContext ?? new RockContext() );
-                var categoryModel = categoryService.Get(guid);
+                rockContext = rockContext ?? new RockContext();
+                var categoryService = new CategoryService( rockContext );
+                var categoryModel = categoryService.Get( guid );
 
                 if ( categoryModel != null )
                 {
-                    categoryModel.LoadAttributes();
-                    var category = new CategoryCache( categoryModel );
+                    categoryModel.LoadAttributes( rockContext );
+                    category = new CategoryCache( categoryModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( CategoryCache.CacheKey( category.Id ), category, cachePolicy );
                     cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-
-                    return category;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return category;
         }
 
         /// <summary>
@@ -329,25 +319,22 @@ namespace Rock.Web.Cache
         public static CategoryCache Read( Rock.Model.Category categoryModel )
         {
             string cacheKey = CategoryCache.CacheKey( categoryModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             CategoryCache category = cache[cacheKey] as CategoryCache;
 
             if ( category != null )
             {
                 category.CopyFromModel( categoryModel );
-                return category;
             }
             else
             {
                 category = new CategoryCache( categoryModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, category, cachePolicy );
                 cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
-                
-                return category;
             }
+
+            return category;
         }
 
         /// <summary>

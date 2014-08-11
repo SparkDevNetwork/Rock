@@ -66,6 +66,15 @@ namespace RockWeb.Blocks.Cms
 
             this.BlockUpdated += HtmlContentDetail_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlHtmlContent );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
 
             if ( !this.IsPostBack )
             {
@@ -153,17 +162,35 @@ namespace RockWeb.Blocks.Cms
 
             htmlEditor.MergeFields.Clear();
             htmlEditor.MergeFields.Add( "GlobalAttribute" );
-            htmlEditor.MergeFields.Add( "Rock.Model.Person" );
+            htmlEditor.MergeFields.Add( "Rock.Model.Person|Current Person" );
             htmlEditor.MergeFields.Add( "Date" );
             htmlEditor.MergeFields.Add( "Time" );
             htmlEditor.MergeFields.Add( "DayOfWeek" );
+            htmlEditor.MergeFields.Add( "RockVersion" );
 
             ceHtml.MergeFields.Clear();
             ceHtml.MergeFields.Add( "GlobalAttribute" );
-            ceHtml.MergeFields.Add( "Rock.Model.Person" );
+            ceHtml.MergeFields.Add( "Rock.Model.Person|Current Person" );
             ceHtml.MergeFields.Add( "Date" );
             ceHtml.MergeFields.Add( "Time" );
             ceHtml.MergeFields.Add( "DayOfWeek" );
+            ceHtml.MergeFields.Add( "RockVersion" );
+
+            var contextObjects = new Dictionary<string, object>();
+            foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
+            {
+                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                if ( contextEntity != null && contextEntity is DotLiquid.ILiquidizable )
+                {
+                    var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
+                    if ( type != null )
+                    {
+                        string mergeField = string.Format( "{0}|Current {1} (Context)|Context", type.FullName, type.Name );  
+                        htmlEditor.MergeFields.Add( mergeField );
+                        ceHtml.MergeFields.Add( mergeField );
+                    }
+                }
+            }
 
             string documentRoot = GetAttributeValue("DocumentRootFolder");
             string imageRoot = GetAttributeValue("ImageRootFolder");
@@ -543,22 +570,44 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
-                    if (CurrentPerson != null)
+                    if ( content.Content.HasMergeFields() )
                     {
-                        mergeFields.Add( "Person", CurrentPerson );
-                        mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
-                        mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
-                        mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
-
-                        var contextEntity = ContextEntity();
-                        if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                        var mergeFields = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( CurrentPerson );
+                        if ( CurrentPerson != null )
                         {
-                            mergeFields.Add( "ContextEntity", contextEntity );
-                        }
-                    }
+                            mergeFields.Add( "Person", CurrentPerson );
+                            mergeFields.Add( "Date", RockDateTime.Today.ToShortDateString() );
+                            mergeFields.Add( "Time", RockDateTime.Now.ToShortTimeString() );
+                            mergeFields.Add( "DayOfWeek", RockDateTime.Today.DayOfWeek.ConvertToString() );
+                            mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-                    html = content.Content.ResolveMergeFields( mergeFields );
+                            var contextObjects = new Dictionary<string, object>();
+                            foreach( var contextEntityType in RockPage.GetContextEntityTypes() )
+                            {
+                                var contextEntity = RockPage.GetCurrentContext( contextEntityType );
+                                if (contextEntity != null && contextEntity is DotLiquid.ILiquidizable)
+                                {
+                                    var type = Type.GetType(contextEntityType.AssemblyName ?? contextEntityType.Name);
+                                    if (type != null)
+                                    {
+                                        contextObjects.Add( type.Name, contextEntity );
+                                    }
+                                }
+
+                            }
+
+                            if ( contextObjects.Any() )
+                            {
+                                mergeFields.Add( "Context", contextObjects );
+                            }
+                        }
+
+                        html = content.Content.ResolveMergeFields( mergeFields );
+                    }
+                    else
+                    {
+                        html = content.Content;
+                    }
                 }
                 else
                 {

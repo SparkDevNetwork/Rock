@@ -2,11 +2,55 @@
 <%@ Import Namespace="System.Net"  %>
 <%@ Import Namespace="System.IO"  %>
 
+<!--
+                               INNNN                    
+                              NNNNNNN                   
+                            .NNNNNNNNNN                 
+                           NNNNNNNNNNNNN                
+                          NNNNNNNNNNNNNNN.              
+                         NNNNNNNNNNNNNNNNNN             
+                       NNNNNNNNN? .NNNNNNNNN            
+                      NNNNNNNNN     NNNNNNNNN+          
+                    ?NNNNNNNNN       .NNNNNNNNN         
+                   NNNNNNNNN          .NNNNNNNNN        
+                  NNNNNNNNN             NNNNNNNNNN      
+                NNNNNNNNNN               .NNNNNNNNN     
+                                NNNNNNNNNNNNNNNNNNNN    
+                               DNNNNNNNNNNNNNNNNNNNNN   
+                               NNNNNNNNNNNNNNNNNNNNNN7  
+                               .NNNNNNNNNNNNNNNNNNNNN   
+                                 NNNNNNNNN  .....       
+                                  DNNNNNNNNN            
+                                    NNNNNNNNN           
+                                     NNNNNNNNN.         
+                                      :NNNNNNNNN        
+                                        NNNNNNNNN.      
+                                         NNNNNNNNNZ     
+                                           NNNNNNNNN
+
+    
+                             !### --  READ THIS -- ###!
+    
+    If you are seeing this on in your browser it means one of a few things:
+
+    + You are not running on a Windows server. Rock requires a Windows hosting
+      platform running IIS 7+ and ASP.Net 4.5.1. For more information be sure
+      to read our hosting guides.
+
+    + Your Windows server is not configured to run ASP.Net. Please see our
+      guides to help you walk though the configuration of ASP.Net.
+
+    + The Internet has crashed. Better take the day off while it gets rebooted.
+
+
+-->
+
+
 <script language="CS" runat="server">
 
     const string requiredDotnetVersion = "4.5.1";
     public string redirectPage = string.Empty;
-    public string serverUrl = "http://storage.rockrms.com/install/";
+    public string serverUrl = "https://rockrms.blob.core.windows.net/install/";
 
     void Page_Load( object sender, EventArgs e )
     {        
@@ -69,6 +113,13 @@
         if ( !rockInstalledResult.DidPass )
         {
             errorDetails.Append(  rockInstalledResult.AsListItem );
+        }
+        
+        // install directory is an asp.net application
+        EnvironmentCheckResult rockDirectoryIsAppResult = DirectoryIsApplicationTest();
+        if ( !rockDirectoryIsAppResult.DidPass )
+        {
+            errorDetails.Append( rockDirectoryIsAppResult.AsListItem );
         }
         
         // if any test failed display errors
@@ -229,6 +280,15 @@
 
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
     <script src="<%=String.Format("{0}Scripts/rock-install.js", serverUrl) %>"></script>
+
+    <style type="text/css">
+
+        body {
+            background-color: #dbd5cb;
+            border-top: 24px solid #282526;
+        }
+
+    </style>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -386,6 +446,25 @@
         return result;
     }
 
+    // check dot net version
+    private EnvironmentCheckResult DirectoryIsApplicationTest()
+    {
+        EnvironmentCheckResult result = new EnvironmentCheckResult();
+        result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#DirectoryNotApplication";
+        result.DidPass = true;
+
+        string applicationPath = Request.ServerVariables["APPL_PHYSICAL_PATH"].ToLower();
+        string directoryPath = Request.ServerVariables["PATH_TRANSLATED"].ToLower().Replace("start.aspx", "");
+
+        if ( directoryPath != applicationPath )
+        {
+            result.DidPass = false;
+            result.Message = "The folder where you're installing Rock from needs to be converted to an Application in IIS using the 'Convert to Application' option in the context menu.";
+        }
+
+        return result;
+    }
+
     private EnvironmentCheckResult RockInstalledTest()
     {
         EnvironmentCheckResult isInstalledResult = new EnvironmentCheckResult();
@@ -403,7 +482,10 @@
         // check that sql server spatial files don't exist
         string sqlSpatialFiles32Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x86\SqlServerSpatial110.dll";
         string sqlSpatialFiles64Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x64\SqlServerSpatial110.dll";
-        if ( File.Exists( sqlSpatialFiles32Bit ) || File.Exists( sqlSpatialFiles64Bit ) )
+        string sqlMsCore32Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x86\msvcr100.dll";
+        string sqlMsCore64Bit = Server.MapPath( "." ) + @"\SqlServerTypes\x64\msvcr100.dll";
+
+        if ( File.Exists( sqlSpatialFiles32Bit ) || File.Exists( sqlSpatialFiles64Bit ) || File.Exists( sqlMsCore32Bit ) || File.Exists( sqlMsCore64Bit ) )
         {
             isInstalledResult.DidPass = false;
             isInstalledResult.Message = "You must remove the 'SqlServerTypes' folder before proceeding. You may need to stop the webserver to enable deletion.";

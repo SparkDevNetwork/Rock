@@ -194,6 +194,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 if ( !string.IsNullOrWhiteSpace( hfActiveTab.Value ) )
                 {
+                    if (hfActiveTab.Value == "Existing")
+                    {
+                        liNewPerson.RemoveCssClass( "active" );
+                        divNewPerson.RemoveCssClass( "active" );
+                        liExistingPerson.AddCssClass( "active" );
+                        divExistingPerson.AddCssClass( "active" );
+                    }
+                    else
+                    {
+                        liNewPerson.AddCssClass( "active" );
+                        divNewPerson.AddCssClass( "active" );
+                        liExistingPerson.RemoveCssClass( "active" );
+                        divExistingPerson.RemoveCssClass( "active" );
+                    }
+
                     modalAddPerson.Show();
                 }
 
@@ -380,7 +395,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             tbNewPersonFirstName.Required = true;
             tbNewPersonLastName.Required = true;
-            hfActiveTab.Value = "Existing";
+            hfActiveTab.Value = "New";
 
             ppPerson.SetValue( null );
 
@@ -403,35 +418,42 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( hfActiveTab.Value == "Existing" )
             {
-                if ( ppPerson.PersonId.HasValue && !FamilyMembers.Any( m => m.Id == ppPerson.PersonId.Value ) )
+                if ( ppPerson.PersonId.HasValue )
                 {
-                    var rockContext = new RockContext();
-                    var person = new PersonService( rockContext ).Get( ppPerson.PersonId.Value );
-                    if ( person != null )
+                    var existingfamilyMember = FamilyMembers.Where( m => m.Id == ppPerson.PersonId.Value ).FirstOrDefault();
+                    if ( existingfamilyMember != null )
                     {
-                        var familyMember = new FamilyMember();
-                        familyMember.SetValuesFromPerson( person );
-
-                        var familyRoleIds = familyRoles.Select( r => r.Id ).ToList();
-
-                        var existingFamilyRoles = new GroupMemberService( rockContext ).Queryable( "GroupRole" )
-                            .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
-                            .OrderBy( m => m.GroupRole.Order )
-                            .ToList();
-
-                        var existingRole = existingFamilyRoles.Select( m => m.GroupRole ).FirstOrDefault();
-                        if ( existingRole != null )
-                        {
-                            familyMember.RoleGuid = existingRole.Guid;
-                            familyMember.RoleName = existingRole.Name;
-                        }
-
-                        familyMember.ExistingFamilyMember = existingFamilyRoles.Any( r => r.GroupId == _family.Id );
-                        familyMember.RemoveFromOtherFamilies = cbRemoveOtherFamilies.Checked;
-
-                        FamilyMembers.Add( familyMember );
+                        existingfamilyMember.Removed = false;
                     }
+                    else
+                    {
+                        var rockContext = new RockContext();
+                        var person = new PersonService( rockContext ).Get( ppPerson.PersonId.Value );
+                        if ( person != null )
+                        {
+                            var familyMember = new FamilyMember();
+                            familyMember.SetValuesFromPerson( person );
 
+                            var familyRoleIds = familyRoles.Select( r => r.Id ).ToList();
+
+                            var existingFamilyRoles = new GroupMemberService( rockContext ).Queryable( "GroupRole" )
+                                .Where( m => m.PersonId == person.Id && familyRoleIds.Contains( m.GroupRoleId ) )
+                                .OrderBy( m => m.GroupRole.Order )
+                                .ToList();
+
+                            var existingRole = existingFamilyRoles.Select( m => m.GroupRole ).FirstOrDefault();
+                            if ( existingRole != null )
+                            {
+                                familyMember.RoleGuid = existingRole.Guid;
+                                familyMember.RoleName = existingRole.Name;
+                            }
+
+                            familyMember.ExistingFamilyMember = existingFamilyRoles.Any( r => r.GroupId == _family.Id );
+                            familyMember.RemoveFromOtherFamilies = cbRemoveOtherFamilies.Checked;
+
+                            FamilyMembers.Add( familyMember );
+                        }
+                    }
                 }
             }
             else
@@ -940,7 +962,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                     rockContext.SaveChanges();
 
-                    foreach ( var familyAddress in FamilyAddresses )
+                    foreach ( var familyAddress in FamilyAddresses.Where( a => a.Id >= 0 ) )
                     {
                         Location updatedAddress = null;
                         if ( familyAddress.LocationIsDirty )
@@ -1252,7 +1274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
         }
 
-        public string FormattedValue
+        public string FormattedAddress
         {
             get
             {
@@ -1283,6 +1305,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
                 {
                     result = result.Replace( Environment.NewLine + Environment.NewLine, Environment.NewLine );
+                }
+                while ( result.Contains( "\x0A\x0A" ) )
+                {
+                    result = result.Replace( "\x0A\x0A", "\x0A" );
                 }
 
                 if ( string.IsNullOrWhiteSpace( result.Replace( ",", string.Empty ) ) )

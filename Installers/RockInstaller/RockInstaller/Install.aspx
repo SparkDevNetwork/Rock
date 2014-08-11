@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
     <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
     
+    <style type="text/css">
+
+        body {
+            background-color: #dbd5cb;
+            border-top: 24px solid #282526;
+        }
+
+    </style>
+
     <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
 
     <script src="<%=String.Format("{0}Scripts/jquery.signalR.min.js", storageUrl) %>"></script>
@@ -16,7 +25,7 @@
     <link href="<%=String.Format("{0}Styles/rock-installer.css", storageUrl) %>" rel="stylesheet" />
     <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", storageUrl) %>" />
 
-    <script src="/signalr/hubs" type="text/javascript"></script>
+    <script src="./signalr/hubs" type="text/javascript"></script>
 
     <script>
 
@@ -64,6 +73,7 @@
 
             // redirect to complete page
             installcontroller.client.redirectToComplete = function () {
+                $('#step-unzip').addClass('complete');
                 window.location = queryString.replace('Install.aspx', 'Complete.aspx');
             }
 
@@ -209,7 +219,7 @@
                             <div class="alert alert-warning ssl-alert">
                                 <strong>Just A Thought...</strong></p>
                                         Looks like you're not running over an encrypted connection (SSL).  Since you will be providing passwords for configuring
-                                        your database and Rock install you may wish to run the install over an encrypted connection.
+                                        your database and Rock administrator login, you may wish to run the install over an encrypted connection.
                             </div>
                         </asp:Literal>
 
@@ -566,7 +576,7 @@
                         
                         <div class="row progress-header">
                             <div class="col-sm-6">
-                                <h4 id="step-name" class="fade-in">Step 1: Downloading Database</h4>
+                                <h4 id="step-name">Step 1: Downloading Database</h4>
                             </div>
 
                             <div class="col-sm-6">
@@ -624,7 +634,7 @@
 
 <script language="CS" runat="server">
     
-    const string baseStorageUrl = "//storage.rockrms.com/install/";
+    const string baseStorageUrl = "//rockrms.blob.core.windows.net/install/";
     const string baseVersion = "2_0_0";
 
     string storageUrl = string.Empty;

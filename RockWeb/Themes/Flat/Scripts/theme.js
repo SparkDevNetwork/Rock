@@ -16,7 +16,7 @@ $(document).ready(function() {
 	}
 
 	$(window).resize(function(){
-		var $current = $('ul.slide-control > li.flex-active')
+		var $current = $('.slide-control ul > li.flex-active')
 		moveTipper($current)
 	})
 })

@@ -60,10 +60,12 @@ namespace RockWeb.Blocks.Utility
             this.AddConfigurationUpdateTrigger( upSettings );
 
             string script = @"
-$('.checklist-item .checklist-desc-toggle').on('click', function (e) {
+$('.checklist-item label strong, .checklist-desc-toggle').on('click', function (e) {
+    e.stopImmediatePropagation();
     e.preventDefault();
-    $(this).parent('header').siblings('.panel-body').slideToggle();
-    $(this).parent().find('i').toggleClass('fa-chevron-up fa-chevron-down');
+    var $header = $(this).closest('header');
+    $header.siblings('.panel-body').slideToggle();
+    $header.find('i').toggleClass('fa-chevron-up fa-chevron-down');
 });
 ";
             ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
@@ -172,7 +174,7 @@ $('.checklist-item .checklist-desc-toggle').on('click', function (e) {
                         .Select( v => new
                         {
                             Id = v.Id,
-                            Name = v.Name,
+                            Name = "<strong class='checklist-desc-toggle'>" + v.Name + "</strong>",
                             Description = v.Description,
                             Selected = selectedValues.Contains( v.Id )
                         } ).ToList();

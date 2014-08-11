@@ -187,6 +187,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskDevice">The kiosk device.</param>
         /// <param name="location">The location.</param>
+        /// <param name="rockContext">The rock context.</param>
         private static void LoadKioskLocations( KioskDevice kioskDevice, Location location, RockContext rockContext )
         {
             var groupLocationService = new GroupLocationService( rockContext );

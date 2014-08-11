@@ -89,7 +89,7 @@ namespace Rock.Migrations
             // Attrib for BlockType: Group Detail:Group Map Page
             RockMigrationHelper.AddBlockTypeAttribute( "582BEEA1-5B27-444D-BC0A-F60CEB053981", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Group Map Page", "GroupMapPage", "", "The page to display detailed group map.", 0, @"", "69F9C989-456D-4855-A420-050DB8B9FEB7" );
             // Attrib for BlockType: Group Map:Polygon Colors
-            RockMigrationHelper.AddBlockTypeAttribute( "967F0D2B-DB76-486A-B034-D22B9D9240D3", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Polygon Colors", "PolygonColors", "", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. F71E22,E75C1F,E7801,F7A11F).", 5, @"F71E22,E75C1F,E7801,F7A11F", "71DBCABB-444E-46C3-932E-1D8EF487D23C" );
+            RockMigrationHelper.AddBlockTypeAttribute( "967F0D2B-DB76-486A-B034-D22B9D9240D3", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Polygon Colors", "PolygonColors", "", "Comma-Delimited list of colors to use when displaying multiple polygons (e.g. #F71E22,#E75C1F,#E7801,#F7A11F).", 5, @"#F71E22,#E75C1F,#E7801,#F7A11F", "71DBCABB-444E-46C3-932E-1D8EF487D23C" );
             // Attrib for BlockType: Group Map:Info Window Contents
             RockMigrationHelper.AddBlockTypeAttribute( "967F0D2B-DB76-486A-B034-D22B9D9240D3", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Info Window Contents", "InfoWindowContents", "", "Liquid template for the info window. To suppress the window provide a blank template.", 6, @"
 <div style='width:250px'>
@@ -154,7 +154,7 @@ namespace Rock.Migrations
             // Attrib Value for Block:Group Map, Attribute:Map Style Page: Group Map, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "FC4B338F-C2DC-4623-A6A5-C4712B70FDFD", @"fdc5d6ba-a818-4a06-96b1-9ef31b4087ac" );
             // Attrib Value for Block:Group Map, Attribute:Polygon Colors Page: Group Map, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "71DBCABB-444E-46C3-932E-1D8EF487D23C", @"f37833,446f7a,afd074,649dac,f8eba2,92d0df,eaf7fc" );
+            RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "71DBCABB-444E-46C3-932E-1D8EF487D23C", @"#f37833,#446f7a,#afd074,#649dac,#f8eba2,#92d0df,#eaf7fc" );
             // Attrib Value for Block:Group Map, Attribute:Info Window Contents Page: Group Map, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "80F0BB81-2209-4744-A6D9-747C6CE10760", "92B339D5-D8AF-4810-A7F8-09373DC5D0DE", @"<div style='width:250px'>
 

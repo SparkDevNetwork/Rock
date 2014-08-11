@@ -371,7 +371,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected keys.
         /// </value>
-        private List<object> SelectedKeys
+        public List<object> SelectedKeys
         {
             get
             {

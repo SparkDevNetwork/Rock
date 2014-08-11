@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Web.Http;
 using Newtonsoft.Json;
 using Rock.Data;
@@ -48,7 +49,7 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Gets the HTML for block.
+        /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
@@ -56,22 +57,25 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
-            Block block = new BlockService( new RockContext() ).Get( blockId );
+            RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
+            Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
             {
                 block.LoadAttributes();
 
                 string displayText = block.GetAttributeValue( "DisplayText" );
 
-                List<Guid> metricCategoryGuids = block.GetAttributeValue( "MetricCategories" ).Split( ',' ).Select( a => a.AsGuid() ).ToList();
-                bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
+                var metricCategoryPairList = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( block.GetAttributeValue( "MetricCategories" ) );
 
-                RockContext rockContext = new RockContext();
-                MetricCategoryService metricCategoryService = new MetricCategoryService( rockContext );
-                var metricCategories = metricCategoryService.GetByGuids( metricCategoryGuids );
+                var metricGuids = metricCategoryPairList.Select( a => a.MetricGuid ).ToList();
+               
+                bool roundYValues = block.GetAttributeValue( "RoundValues" ).AsBooleanOrNull() ?? true;
+                
+                MetricService metricService = new MetricService( rockContext );
+                var metrics = metricService.GetByGuids( metricGuids );
                 List<object> metricsData = new List<object>();
 
-                if ( metricCategories.Count() == 0 )
+                if ( metrics.Count() == 0 )
                 {
                     return @"<div class='alert alert-warning'> 
 								Please select a metric in the block settings.
@@ -84,7 +88,7 @@ namespace Rock.Rest.Controllers
                 DateTime currentDateTime = RockDateTime.Now;
                 DateTime firstDayOfNextYear = new DateTime( RockDateTime.Now.Year + 1, 1, 1 );
 
-                foreach ( var metric in metricCategories.Select(a => a.Metric).Distinct() )
+                foreach ( var metric in metrics )
                 {
                     var metricYTDData = JsonConvert.DeserializeObject( metric.ToJson(), typeof( MetricYTDData ) ) as MetricYTDData;
                     var qryMeasureValues = metricValueService.Queryable()
@@ -141,8 +145,8 @@ namespace Rock.Rest.Controllers
                     }
                     else
                     {
-                        var singleGoal = goalLineStartPoint ?? goalLineEndPoint;
-                        metricYTDData.GoalValue = singleGoal != null ? singleGoal.YValue : (decimal?)null;
+                        // if there isn't a both a start goal and end goal within the date range, there wouldn't be a goal line shown in a line chart, so don't display a goal in liquid either
+                        metricYTDData.GoalValue = null;
                     }
 
                     metricsData.Add( metricYTDData.ToLiquid() );
@@ -153,17 +157,20 @@ namespace Rock.Rest.Controllers
 
                 string resultHtml = displayText.ResolveMergeFields( mergeValues );
 
-                // show liquid help
+                // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
                 {
-                    string debugInfo = string.Format(
-                        @"<small><a data-toggle='collapse' data-parent='#accordion' href='#liquid-metric-debug'><i class='fa fa-eye'></i></a></small>
-                            <pre id='liquid-metric-debug' class='collapse well liquid-metric-debug'>
-                                {0}
-                            </pre>",
-                        mergeValues.LiquidHelpText() );
+                    StringBuilder debugInfo = new StringBuilder();
+                    debugInfo.Append( "<p /><div class='alert alert-info'><h4>Debug Info</h4>" );
 
-                    resultHtml += debugInfo;
+                    debugInfo.Append( "<pre>" );
+
+                    debugInfo.Append( "<p /><strong>Liquid Data</strong> <br>" );
+                    debugInfo.Append( mergeValues.LiquidHelpText() + "</pre>" );
+
+                    debugInfo.Append( "</div>" );
+
+                    resultHtml += debugInfo.ToString();
                 }
 
                 return resultHtml;

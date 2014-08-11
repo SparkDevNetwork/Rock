@@ -9,7 +9,10 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-building-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
-                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                </div>
             </div>
             <div class="panel-body">
 

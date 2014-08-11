@@ -281,7 +281,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The initial item parent ids.
         /// </value>
-        public string InitialItemParentIds
+        public virtual string InitialItemParentIds
         {
             get
             {

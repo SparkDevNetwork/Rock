@@ -18,10 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Newtonsoft.Json;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -29,22 +33,76 @@ using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Transaction Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given transaction for editing." )]
+
+    [LinkedPage( "Batch Detail Page", "Page used to view batch." )]
+    [LinkedPage( "Scheduled Transaction Detail Page", "Page used to view scheduled transaction detail." )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
-        #region Fields
+        #region Properties
 
-        private string contextTypeName = string.Empty;
-        private bool readOnly = false;
+        private List<FinancialTransactionDetail> TransactionDetailsState { get; set; }
+        private List<FinancialTransactionImage> TransactionImagesState { get; set; }
+        private List<int> BinaryFileIds { get; set; }
 
-        #endregion Fields
+        private Dictionary<int, string> _accountNames = null;
+        private Dictionary<int, string> AccountNames
+        {
+            get
+            {
+                if ( _accountNames == null )
+                {
+                    _accountNames = new Dictionary<int, string>();
+                    new FinancialAccountService( new RockContext() ).Queryable()
+                        .OrderBy( a => a.Order )
+                        .Select( a => new { a.Id, a.Name } )
+                        .ToList()
+                        .ForEach( a => _accountNames.Add( a.Id, a.Name ) );
+                }
+                return _accountNames;
+            }
+        }
+
+        #endregion
 
         #region Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            BinaryFileIds = ViewState["BinaryFileIds"] as List<int>;
+
+            string json = ViewState["TransactionDetailsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                TransactionDetailsState = new List<FinancialTransactionDetail>();
+            }
+            else
+            {
+                TransactionDetailsState = JsonConvert.DeserializeObject<List<FinancialTransactionDetail>>( json );
+            }
+
+            json = ViewState["TransactionImagesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                TransactionImagesState = new List<FinancialTransactionImage>();
+            }
+            else
+            {
+                TransactionImagesState = JsonConvert.DeserializeObject<List<FinancialTransactionImage>>( json );
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -53,30 +111,34 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RockPage.AddCSSLink( ResolveRockUrl( "~/Styles/fluidbox.css" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/imagesloaded.min.js" ) );
-            RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.fluidbox.min.js" ) );
 
-            gTransactionDetails.DataKeyNames = new string[] { "id" };
-            gTransactionDetails.Actions.AddClick += gTransactionDetails_Add;
-            gTransactionDetails.GridRebind += gTransactionDetails_GridRebind;
-            mdDetails.SaveClick += mdDetails_SaveClick;
-            mdDetails.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+            gAccountsView.DataKeyNames = new string[] { "Guid" };
+            gAccountsView.ShowActionRow = false;
 
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
-            {
-                readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialBatch.FriendlyTypeName );
-            }
+            gAccountsEdit.DataKeyNames = new string[] { "Guid" };
+            gAccountsEdit.ShowActionRow = true;
+            gAccountsEdit.Actions.ShowAdd = true;
+            gAccountsEdit.Actions.AddClick += gAccountsEdit_AddClick;
+            gAccountsEdit.GridRebind += gAccountsEdit_GridRebind;
 
-            ScriptManager.RegisterStartupScript( pnlDetails, pnlDetails.GetType(), "images-fluidbox", "$('.photo a.transaction-image').fluidbox();", true );
 
-            string deleteButtonScriptFormat = @"
-                $('.image-delete-button').on( 'click', function (event) {{
-                return Rock.dialogs.confirmDelete(event, '{0}');
-            }});";
-            string deleteButtonScript = string.Format( deleteButtonScriptFormat, "image" );
-            ScriptManager.RegisterStartupScript( pnlTransactionImages, pnlTransactionImages.GetType(), "image-delete-confirm-script", deleteButtonScript, true );
+            //function toggleCheckImages() {
+            //    var image1src = $('#<%=imgCheck.ClientID%>').attr("src");
+            //    var image2src = $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src");
+
+            //    $('#<%=imgCheck.ClientID%>').attr("src", image2src);
+            //    $('#<%=imgCheckOtherSideThumbnail.ClientID%>').attr("src", image1src);
+            //}
+
+            string script = @"
+    $('.transaction-image-thumbnail').click( function() {
+        var $primaryImg = $('.transaction-image');
+        var primarySrc = $primaryImg.attr('src');
+        $primaryImg.attr('src', $(this).attr('src'));
+        $(this).attr('src', primarySrc);
+    });
+";
+            ScriptManager.RegisterStartupScript( imgPrimary, imgPrimary.GetType(), "imgPrimarySwap", script, true );
         }
 
         /// <summary>
@@ -87,82 +149,251 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "transactionId" ).AsInteger() );
+                ShowDetail( PageParameter( "transactionId" ).AsInteger(), PageParameter( "batchId" ).AsIntegerOrNull() );
             }
+            else
+            {
+                if ( pnlEditDetails.Visible )
+                {
+                    foreach ( DataListItem item in dlImages.Items )
+                    {
+                        var hfImageGuid = item.FindControl( "hfImageGuid" ) as HiddenField;
+                        var ddlImageType = item.FindControl( "ddlImageType" ) as RockDropDownList;
+                        var imgupImage = item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
+
+                        if ( hfImageGuid != null && ddlImageType != null && imgupImage != null )
+                        {
+                            var txnImage = TransactionImagesState
+                                .Where( i => i.Guid.Equals( hfImageGuid.Value.AsGuid() ) )
+                                .FirstOrDefault();
+                            if ( txnImage != null )
+                            {
+                                txnImage.TransactionImageTypeValueId = ddlImageType.SelectedValueAsInt();
+                                txnImage.BinaryFileId = imgupImage.BinaryFileId ?? 0;
+                            }
+                        }
+                    }
+                }
+
+                ShowDialog();
+            }
+        }
+
+        protected override object SaveViewState()
+        {
+            ViewState["BinaryFileIds"] = BinaryFileIds;
+
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["TransactionDetailsState"] = JsonConvert.SerializeObject( TransactionDetailsState, Formatting.None, jsonSetting );
+            ViewState["TransactionImagesState"] = JsonConvert.SerializeObject( TransactionImagesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
         }
 
         #endregion Control Methods
 
         #region Events
 
+        #region Edit Events
+
         /// <summary>
-        /// Handles the Click event of the btnSaveFinancialTransaction control.
+        /// Handles the Click event of the lbEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveTransaction_Click( object sender, EventArgs e )
+        protected void lbEdit_Click( object sender, EventArgs e )
+        {
+            ShowEditDetails( GetTransaction( hfTransactionId.Value.AsInteger() ), new RockContext() );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var financialTransactionService = new Rock.Model.FinancialTransactionService( rockContext );
-            Rock.Model.FinancialTransaction financialTransaction = null;
-            int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? int.Parse( hfIdTransValue.Value ) : 0;
 
-            // null if not associated with a batch
+            var txnService = new FinancialTransactionService( rockContext );
+            var txnDetailService = new FinancialTransactionDetailService( rockContext );
+            var txnImageService = new FinancialTransactionImageService( rockContext );
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            FinancialTransaction txn = null;
+
+            int? txnId = hfTransactionId.Value.AsIntegerOrNull();
             int? batchId = hfBatchId.Value.AsIntegerOrNull();
 
-            if ( financialTransactionId == 0 )
+            if ( txnId.HasValue )
             {
-                financialTransaction = new Rock.Model.FinancialTransaction();
-                financialTransactionService.Add( financialTransaction );
-                financialTransaction.BatchId = batchId;
-            }
-            else
-            {
-                financialTransaction = financialTransactionService.Get( financialTransactionId );
+                txn = txnService.Get( txnId.Value );
             }
 
-            if ( ppAuthorizedPerson.PersonId != null )
+            if ( txn == null && batchId.HasValue )
             {
-                financialTransaction.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
-            }
-            else
-            {
-                financialTransaction.AuthorizedPersonId = null;
+                txn = new FinancialTransaction();
+                txnService.Add( txn );
+                txn.BatchId = batchId.Value;
             }
 
-            if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
+            if ( txn != null )
             {
-                financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
-            }
-            else
-            {
-                financialTransaction.CreditCardTypeValueId = null;
-            }
+                txn.AuthorizedPersonId = ppAuthorizedPerson.PersonId;
+                txn.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
+                txn.TransactionTypeValueId = ddlTransactionType.SelectedValue.AsInteger();
+                txn.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
 
-            financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
-            if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) )
-            {
-                var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( new Guid( ddlPaymentGateway.SelectedValue ) );
-                if ( gatewayEntity != null )
+                Guid? gatewayGuid = cpPaymentGateway.SelectedValueAsGuid();
+                if ( gatewayGuid.HasValue )
                 {
-                    financialTransaction.GatewayEntityTypeId = gatewayEntity.Id;
+                    var gatewayEntity = EntityTypeCache.Read( gatewayGuid.Value );
+                    if ( gatewayEntity != null )
+                    {
+                        txn.GatewayEntityTypeId = gatewayEntity.Id;
+                    }
+                    else
+                    {
+                        txn.GatewayEntityTypeId = null;
+                    }
                 }
+                else
+                {
+                    txn.GatewayEntityTypeId = null;
+                }
+
+                txn.TransactionCode = tbTransactionCode.Text;
+                txn.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
+                txn.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
+                txn.Summary = tbSummary.Text;
+
+                if ( !Page.IsValid || !txn.IsValid )
+                {
+                    return;
+                }
+
+                foreach ( var txnDetail in TransactionDetailsState )
+                {
+                    if ( !txnDetail.IsValid )
+                    {
+                        return;
+                    }
+                }
+
+                foreach ( var txnImage in TransactionImagesState )
+                {
+                    if ( !txnImage.IsValid )
+                    {
+                        return;
+                    }
+                }
+
+                rockContext.WrapTransaction( () =>
+                {
+                    // Save the transaction
+                    rockContext.SaveChanges();
+
+                    // Delete any transaction details that were removed
+                    var txnDetailsInDB = txnDetailService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
+                    var deletedDetails = from txnDetail in txnDetailsInDB
+                                         where !TransactionDetailsState.Select( d => d.Guid ).Contains( txnDetail.Guid )
+                                         select txnDetail;
+                    deletedDetails.ToList().ForEach( txnDetail =>
+                    {
+                        txnDetailService.Delete( txnDetail );
+                    } );
+                    rockContext.SaveChanges();
+
+                    // Save Transaction Details
+                    foreach ( var editorTxnDetail in TransactionDetailsState )
+                    {
+                        // Add or Update the activity type
+                        var txnDetail = txn.TransactionDetails.FirstOrDefault( d => d.Guid.Equals( editorTxnDetail.Guid ) );
+                        if ( txnDetail == null )
+                        {
+                            txnDetail = new FinancialTransactionDetail();
+                            txnDetail.Guid = editorTxnDetail.Guid;
+                            txn.TransactionDetails.Add( txnDetail );
+                        }
+                        txnDetail.AccountId = editorTxnDetail.AccountId;
+                        txnDetail.Amount = editorTxnDetail.Amount;
+                        txnDetail.Summary = editorTxnDetail.Summary;
+                    }
+                    rockContext.SaveChanges();
+
+                    // Remove any images that do not have a binary file
+                    foreach ( var txnImage in TransactionImagesState.Where( i => i.BinaryFileId == 0 ).ToList() )
+                    {
+                        TransactionImagesState.Remove( txnImage );
+                    }
+
+                    // Delete any transaction images that were removed
+                    var txnImagesInDB = txnImageService.Queryable().Where( a => a.TransactionId.Equals( txn.Id ) ).ToList();
+                    var deletedImages = from txnImage in txnImagesInDB
+                                        where !TransactionImagesState.Select( d => d.Guid ).Contains( txnImage.Guid )
+                                        select txnImage;
+                    deletedImages.ToList().ForEach( txnImage =>
+                    {
+                        txnImageService.Delete( txnImage );
+                    } );
+                    rockContext.SaveChanges();
+
+                    // Save Transaction Images
+                    foreach ( var editorTxnImage in TransactionImagesState )
+                    {
+                        // Add or Update the activity type
+                        var txnImage = txn.Images.FirstOrDefault( d => d.Guid.Equals( editorTxnImage.Guid ) );
+                        if ( txnImage == null )
+                        {
+                            txnImage = new FinancialTransactionImage();
+                            txnImage.Guid = editorTxnImage.Guid;
+                            txn.Images.Add( txnImage );
+                        }
+                        txnImage.BinaryFileId = editorTxnImage.BinaryFileId;
+                        txnImage.TransactionImageTypeValueId = editorTxnImage.TransactionImageTypeValueId;
+                    }
+                    rockContext.SaveChanges();
+
+                    // Make sure updated binary files are not temporary
+                    var savedBinaryFileIds = txn.Images.Select( i => i.BinaryFileId ).ToList();
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => savedBinaryFileIds.Contains( f.Id ) ) )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+
+                    // Delete any orphaned images
+                    var orphanedBinaryFileIds = BinaryFileIds.Where( f => !savedBinaryFileIds.Contains( f ) );
+                    foreach ( var binaryFile in binaryFileService.Queryable().Where( f => orphanedBinaryFileIds.Contains( f.Id ) ) )
+                    {
+                        binaryFileService.Delete( binaryFile );
+                    }
+
+                    rockContext.SaveChanges();
+
+                } );
+
+                // Requery the batch to support EF navigation properties
+                var savedTxn = GetTransaction( txn.Id );
+                ShowReadOnlyDetails( savedTxn );
             }
+        }
 
-            financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
-            financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
-
-            financialTransaction.Summary = tbSummary.Text;
-            financialTransaction.TransactionCode = tbTransactionCode.Text;
-            financialTransaction.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
-
-            rockContext.SaveChanges();
-
-            if ( batchId != null )
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbCancel_Click( object sender, EventArgs e )
+        {
+            int txnId = hfTransactionId.ValueAsInt();
+            if ( txnId != 0 )
             {
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["financialBatchid"] = hfBatchId.Value;
-                NavigateToParentPage( qryString );
+                ShowReadOnlyDetails( GetTransaction( txnId ) );
             }
             else
             {
@@ -171,21 +402,16 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Click event of the btnCancelFinancialTransaction control.
+        /// Handles the BlockUpdated event of the Block control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancelTransaction_Click( object sender, EventArgs e )
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
+            int txnId = hfTransactionId.ValueAsInt();
+            if ( txnId != 0 )
             {
-                Dictionary<string, string> qryString = new Dictionary<string, string>();
-                qryString["financialBatchid"] = hfBatchId.Value;
-                NavigateToParentPage( qryString );
-            }
-            else
-            {
-                NavigateToParentPage();
+                ShowReadOnlyDetails( GetTransaction( txnId ) );
             }
         }
 
@@ -196,146 +422,96 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            // We don't want to show the Credit Card Type drop down if the type of currency isn't Credit Card.
-            if ( ddlCurrencyType.SelectedItem.ToString() == "Credit Card" )
-            {
-                ddlCreditCardType.Visible = true;
-            }
-            else
-            {
-                ddlCreditCardType.Visible = false;
-            }
+            SetCreditCardVisibility();
         }
 
+        #endregion
+
+        #region Account Transaction Details
+
         /// <summary>
-        /// Handles the Click event of the lbEdit control.
+        /// Handles the AddClick event of the gAccountsEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbEdit_Click( object sender, EventArgs e )
+        private void gAccountsEdit_AddClick( object sender, EventArgs e )
         {
-            BindDropdowns();
-            var transaction = new FinancialTransactionService( new RockContext() ).Get( hfIdTransValue.ValueAsInt() );
-            ShowEdit( transaction );
+            ShowAccountDialog( Guid.NewGuid() );
         }
 
         /// <summary>
         /// Handles the RowSelected event of the gTransactionDetails control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gTransactionDetails_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAccountsEdit_RowSelected( object sender, RowEventArgs e )
         {
-            if ( !readOnly )
+            Guid? guid = e.RowKeyValue.ToString().AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                var rockContext = new RockContext();
-                LoadRelatedImages( new FinancialTransactionService( rockContext ).Get( hfIdTransValue.ValueAsInt() ).Id );
-                var transactionDetailsId = (int)e.RowKeyValue;
-                hfIdValue.Value = transactionDetailsId.ToString();
-                var ftd = new FinancialTransactionDetailService( rockContext ).Get( transactionDetailsId );
-                ddlTransactionAccount.SelectedValue = ftd.AccountId.ToString();
-                tbTransactionAmount.Text = ftd.Amount.ToString();
-                tbTransactionSummary.Text = ftd.Summary;
-                mdDetails.Show();
+                ShowAccountDialog( guid.Value );
             }
         }
 
         /// <summary>
-        /// Handles the Delete event of the gTransactionDetails control.
+        /// Handles the DeleteClick event of the gAccountsEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gTransactionDetails_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gAccountsEdit_DeleteClick( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
-            var ftdService = new FinancialTransactionDetailService( rockContext );
-            var ftd = ftdService.Get( e.RowKeyId );
-            if ( ftd != null )
+            Guid? guid = e.RowKeyValue.ToString().AsGuidOrNull();
+            if ( guid.HasValue )
             {
-                string errorMessage;
-                if ( !ftdService.CanDelete( ftd, out errorMessage ) )
+                var txnDetail = TransactionDetailsState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                if ( txnDetail != null )
                 {
-                    maGridWarning.Show( errorMessage, Rock.Web.UI.Controls.ModalAlertType.Information );
-                    return;
+                    TransactionDetailsState.Remove( txnDetail );
                 }
 
-                ftdService.Delete( ftd );
-                rockContext.SaveChanges();
+                BindAccountsEditGrid();
+            }
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gAccountsEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gAccountsEdit_GridRebind( object sender, EventArgs e )
+        {
+            BindAccountsEditGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdAccount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdAccount_SaveClick( object sender, EventArgs e )
+        {
+            Guid? guid = hfAccountGuid.Value.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                var txnDetail = TransactionDetailsState.Where( t => t.Guid.Equals( guid.Value ) ).FirstOrDefault();
+                if ( txnDetail == null )
+                {
+                    txnDetail = new FinancialTransactionDetail();
+                    TransactionDetailsState.Add( txnDetail );
+                }
+                txnDetail.AccountId = ddlAccount.SelectedValue.AsInteger();
+                txnDetail.Amount = tbAccountAmount.Text.AsDecimal();
+                txnDetail.Summary = tbAccountSummary.Text;
+
+                BindAccountsEditGrid();
             }
 
-            FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService( rockContext ).Get( hfIdTransValue.ValueAsInt() );
-            BindTransactionDetailGrid( transaction );
+            HideDialog();
         }
 
-        /// <summary>
-        /// Handles the Add event of the gTransactionDetails control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gTransactionDetails_Add( object sender, EventArgs e )
-        {
-            var transactionDetailsId = 0;
-            hfIdValue.Value = transactionDetailsId.ToString();
-            ddlTransactionAccount.SelectedIndex = 0;
-            tbTransactionAmount.Text = string.Empty;
-            tbTransactionSummary.Text = string.Empty;
-            mdDetails.Show();
-        }
+        #endregion
 
-        /// <summary>
-        /// Handles the GridRebind event of the gTransactionDetails control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gTransactionDetails_GridRebind( object sender, EventArgs e )
-        {
-            FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService( new RockContext() ).Get( hfIdTransValue.ValueAsInt() );
-            BindTransactionDetailGrid( transaction );
-        }
-
-        /// <summary>
-        /// Handles the SaveClick event of the mdDetails control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void mdDetails_SaveClick( object sender, EventArgs e )
-        {
-            var rockContext = new RockContext();
-            if ( !string.IsNullOrWhiteSpace( tbTransactionAmount.Text ) )
-            {
-                var ftdService = new FinancialTransactionDetailService( rockContext );
-                FinancialTransactionDetail ftd = null;
-                var transactionDetailId = int.Parse( hfIdValue.Value );
-                if ( transactionDetailId > 0 )
-                {
-                    ftd = ftdService.Get( transactionDetailId );
-                }
-                else
-                {
-                    ftd = new FinancialTransactionDetail { Id = 0 };
-                }
-
-                ftd.TransactionId = hfIdTransValue.ValueAsInt();
-                ftd.AccountId = int.Parse( ddlTransactionAccount.SelectedValue );
-                ftd.Amount = decimal.Parse( tbTransactionAmount.Text );
-                ftd.Summary = tbTransactionSummary.Text;
-
-                if ( transactionDetailId == 0 )
-                {
-                    ftdService.Add( ftd );
-                }
-
-                rockContext.SaveChanges();
-            }
-
-            mdDetails.Hide();
-            FinancialTransaction transaction = new FinancialTransaction();
-            transaction = new FinancialTransactionService( rockContext ).Get( hfIdTransValue.ValueAsInt() );
-            BindTransactionDetailGrid( transaction );
-            LoadRelatedImages( transaction.Id );
-        }
+        #region Image Details
 
         /// <summary>
         /// Handles the ItemDataBound event of the dlImages control.
@@ -346,109 +522,283 @@ namespace RockWeb.Blocks.Finance
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                PlaceHolder ph = e.Item.FindControl( "phImage" ) as PlaceHolder;
-                var imageId = ( (BinaryFile)e.Item.DataItem ).Id;
-                var imageUrl = "/GetImage.ashx?id=" + imageId;
-                var imageTag = new LiteralControl( "<img src='" + imageUrl + "' style='max-width:100%;max-height:100%;' />" );
-                var imageLink = new HyperLink();
-                imageLink.Attributes.Add( "href", imageUrl );
-                imageLink.AddCssClass( "transaction-image" );
-                ph.Controls.Add( imageLink );
-                imageLink.Controls.Add( imageTag );
-
-                LinkButton lbDelete = e.Item.FindControl( "lbDelete" ) as LinkButton;
-                lbDelete.Attributes.Add( "imageId", imageId.ToString() );
+                var txnImage = e.Item.DataItem as FinancialTransactionImage;
+                var ddlImageType = e.Item.FindControl( "ddlImageType" ) as RockDropDownList;
+                var imgupImage = e.Item.FindControl( "imgupImage" ) as Rock.Web.UI.Controls.ImageUploader;
+                if ( txnImage != null && ddlImageType != null )
+                {
+                    ddlImageType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE.AsGuid() ) );
+                    ddlImageType.SetValue( txnImage.TransactionImageTypeValueId );
+                    if ( txnImage.BinaryFileId != 0 )
+                    {
+                        imgupImage.BinaryFileId = txnImage.BinaryFileId;
+                    }
+                    else
+                    {
+                        imgupImage.BinaryFileId = null;
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbDelete control.
+        /// Handles the FileSaved event of the imageEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbDelete_Click( object sender, EventArgs e )
+        protected void imageEditor_FileSaved( object sender, EventArgs e )
         {
-            LinkButton lbDelete = sender as LinkButton;
-            var imageId = int.Parse( lbDelete.Attributes["imageId"] );
-            var rockContext = new RockContext();
-
-            // Delete the reference to the binary file (image) from the FinancialTransactionImage table
-            var imageService = new FinancialTransactionImageService( rockContext );
-            var financialTransactionImage = imageService.Queryable().Where( image => image.BinaryFileId == imageId ).FirstOrDefault();
-            imageService.Delete( financialTransactionImage );
-
-            // Delete the actual binary file (image)
-            var binaryFileService = new BinaryFileService( rockContext );
-            var binaryFile = binaryFileService.Get( imageId );
-            binaryFileService.Delete( binaryFile );
-
-            rockContext.SaveChanges();
-
-            LoadRelatedImages( hfIdTransValue.ValueAsInt() );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbSaveImage control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbSaveImage_Click( object sender, EventArgs e )
-        {
-            if ( imgupTransactionImages.BinaryFileId.HasValue )
+            var imageEditor = sender as ImageEditor;
+            if ( imageEditor != null && imageEditor.BinaryFileId.HasValue )
             {
-                var rockContext = new RockContext();
-                var service = new FinancialTransactionImageService( rockContext );
-                var financialTransactionImage = new FinancialTransactionImage();
-                var transactionId = hfIdTransValue.ValueAsInt();
-                financialTransactionImage.BinaryFileId = imgupTransactionImages.BinaryFileId.Value;
-                financialTransactionImage.TransactionId = transactionId;
-                financialTransactionImage.TransactionImageTypeValueId = ddlTransactionImageType.SelectedValueAsInt();
-                service.Add( financialTransactionImage );
-                rockContext.SaveChanges();
-                imgupTransactionImages.BinaryFileId = 0;
-                LoadRelatedImages( transactionId );
+                BinaryFileIds.Add( imageEditor.BinaryFileId.Value );
             }
         }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddImage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddImage_Click( object sender, EventArgs e )
+        {
+            TransactionImagesState.Add( new FinancialTransactionImage { Guid = Guid.NewGuid() } );
+            BindImages();
+        }
+
+        #endregion
 
         #endregion Events
 
-        #region Internal Methods
+        #region Methods
 
         /// <summary>
-        /// Loads the account drop down.
+        /// Gets the transaction.
         /// </summary>
-        private void LoadAccountDropDown()
+        /// <param name="transactionId">The transaction identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private FinancialTransaction GetTransaction( int transactionId, RockContext rockContext = null )
         {
-            var accountList = new FinancialAccountService( new RockContext() ).Queryable().ToList();
-            foreach ( var account in accountList )
+            rockContext = rockContext ?? new RockContext();
+            var txn = new FinancialTransactionService( rockContext )
+                .Queryable( "AuthorizedPerson,TransactionTypeValue,SourceTypeValue,GatewayEntityType,CurrencyTypeValue,TransactionDetails,Images.TransactionImageTypeValue,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Where( t => t.Id == transactionId )
+                .FirstOrDefault();
+            return txn;
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        public void ShowDetail( int transactionId )
+        {
+            ShowDetail( transactionId, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="transactionId">The transaction identifier.</param>
+        public void ShowDetail( int transactionId, int? batchId )
+        {
+            FinancialTransaction txn = null;
+
+            bool editAllowed = true;
+
+            var rockContext = new RockContext();
+
+            if ( !transactionId.Equals( 0 ) )
             {
-                ListItem acc = new ListItem();
-                acc.Text = account.Name;
-                acc.Value = account.Id.ToString();
-                ddlTransactionAccount.Items.Add( acc );
+                txn = GetTransaction( transactionId, rockContext );
+                if ( txn != null )
+                {
+                    editAllowed = txn.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
+            }
+
+            if ( txn == null )
+            {
+                txn = new FinancialTransaction { Id = 0 };
+                txn.BatchId = batchId;
+            }
+
+            hfTransactionId.Value = txn.Id.ToString();
+            hfBatchId.Value = batchId.HasValue ? batchId.Value.ToString() : string.Empty;
+
+            bool readOnly = false;
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !editAllowed || !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialTransaction.FriendlyTypeName );
+            }
+
+            if ( readOnly )
+            {
+                lbEdit.Visible = false;
+                ShowReadOnlyDetails( txn );
+            }
+            else
+            {
+                lbEdit.Visible = true;
+                if ( txn.Id > 0 )
+                {
+                    ShowReadOnlyDetails( txn );
+                }
+                else
+                {
+                    ShowEditDetails( txn, rockContext );
+                }
+            }
+
+            lbSave.Visible = !readOnly;
+        }
+
+        /// <summary>
+        /// Shows the read only details.
+        /// </summary>
+        /// <param name="txn">The TXN.</param>
+        private void ShowReadOnlyDetails( FinancialTransaction txn )
+        {
+            SetEditMode( false );
+
+            if ( txn != null )
+            {
+                hfTransactionId.Value = txn.Id.ToString();
+
+                SetHeadingInfo( txn );
+
+                string rockUrlRoot = ResolveRockUrl( "/" );
+
+                var detailsLeft = new DescriptionList()
+                    .Add( "Person", txn.AuthorizedPerson != null ? txn.AuthorizedPerson.GetAnchorTag( rockUrlRoot ) : string.Empty )
+                    .Add( "Amount", ( txn.TransactionDetails.Sum( d => (decimal?)d.Amount ) ?? 0.0M ).ToString( "C2" ) )
+                    .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
+
+                if ( txn.Batch != null )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "BatchId", txn.Batch.Id.ToString() );
+                    string url = LinkedPageUrl( "BatchDetailPage", qryParam );
+                    detailsLeft.Add( "Batch", !string.IsNullOrWhiteSpace( url ) ?
+                        string.Format( "<a href='{0}'>{1}</a>", url, txn.Batch.Name ) :
+                        txn.Batch.Name );
+                }
+
+                detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Name : string.Empty );
+
+                if ( txn.GatewayEntityType != null )
+                {
+                    detailsLeft.Add( "Payment Gateway", Rock.Financial.GatewayContainer.GetComponentName( txn.GatewayEntityType.Name ) );
+                }
+
+                detailsLeft.Add( "Transaction Code", txn.TransactionCode );
+                
+                if ( txn.ScheduledTransaction != null )
+                {
+                    var qryParam = new Dictionary<string, string>();
+                    qryParam.Add( "ScheduledTransactionId", txn.ScheduledTransaction.Id.ToString() );
+                    string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
+                    detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
+                        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
+                        txn.ScheduledTransaction.GatewayScheduleId );
+                }
+
+                if ( txn.CurrencyTypeValue != null )
+                {
+                    string currencyType = txn.CurrencyTypeValue.Name;
+                    if ( txn.CurrencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
+                    {
+                        currencyType += txn.CreditCardTypeValue != null ? ( " - " + txn.CreditCardTypeValue.Name ) : string.Empty;
+                    }
+                    detailsLeft.Add( "Currency Type", currencyType );
+                }
+
+                detailsLeft.Add( "Summary", txn.Summary );
+
+                var modified = new StringBuilder(); ;
+                if ( txn.CreatedByPersonAlias != null && txn.CreatedByPersonAlias.Person != null && txn.CreatedDateTime.HasValue )
+                {
+                    modified.AppendFormat( "Created by {0} on {1} at {2}<br/>", txn.CreatedByPersonAlias.Person.GetAnchorTag( rockUrlRoot ),
+                        txn.CreatedDateTime.Value.ToShortDateString(), txn.CreatedDateTime.Value.ToShortTimeString() );
+                }
+                if ( txn.ProcessedByPersonAlias != null && txn.ProcessedByPersonAlias.Person != null && txn.ProcessedDateTime.HasValue )
+                {
+                    modified.AppendFormat( "Processed by {0} on {1} at {2}<br/>", txn.ProcessedByPersonAlias.Person.GetAnchorTag( rockUrlRoot ),
+                        txn.ProcessedDateTime.Value.ToShortDateString(), txn.ProcessedDateTime.Value.ToShortTimeString() );
+                }
+                if ( txn.ModifiedByPersonAlias != null && txn.ModifiedByPersonAlias.Person != null && txn.ModifiedDateTime.HasValue )
+                {
+                    modified.AppendFormat( "Last Modified by {0} on {1} at {2}<br/>", txn.ModifiedByPersonAlias.Person.GetAnchorTag( rockUrlRoot ),
+                        txn.ModifiedDateTime.Value.ToShortDateString(), txn.ModifiedDateTime.Value.ToShortTimeString() );
+                }
+                detailsLeft.Add( "Updates", modified.ToString() );
+
+                lDetailsLeft.Text = detailsLeft.Html;
+
+                gAccountsView.DataSource = txn.TransactionDetails.ToList();
+                gAccountsView.DataBind();
+
+                if ( txn.Images.Any() )
+                {
+                    var primaryImage = txn.Images
+                        .OrderBy( i => i.TransactionImageTypeValue.Order )
+                        .FirstOrDefault();
+                    imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                    imgPrimary.Visible = true;
+
+                    rptrImages.DataSource = txn.Images
+                        .Where( i => !i.Id.Equals( primaryImage.Id ) )
+                        .OrderBy( i => i.TransactionImageTypeValue.Order )
+                        .ToList();
+                    rptrImages.DataBind();
+                }
+                else
+                {
+                    imgPrimary.Visible = false;
+                }
             }
         }
 
         /// <summary>
-        /// Binds the dropdowns.
+        /// Shows the edit details.
         /// </summary>
-        protected void BindDropdowns()
+        /// <param name="txn">The TXN.</param>
+        private void ShowEditDetails( FinancialTransaction txn, RockContext rockContext )
         {
-            BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
-            BindDefinedTypeDropdown( ddlCreditCardType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ), "Credit Card Type" );
-            BindDefinedTypeDropdown( ddlSourceType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE ), "Source" );
-            BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
-        }
+            if ( txn != null )
+            {
+                BindDropdowns( rockContext );
 
-        /// <summary>
-        /// Binds the defined type dropdown.
-        /// </summary>
-        /// <param name="ListControl">The list control.</param>
-        /// <param name="definedTypeGuid">The defined type GUID.</param>
-        /// <param name="userPreferenceKey">The user preference key.</param>
-        private void BindDefinedTypeDropdown( ListControl listControl, Guid definedTypeGuid, string userPreferenceKey )
-        {
-            listControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
+                hfTransactionId.Value = txn.Id.ToString();
+
+                SetHeadingInfo( txn );
+
+                SetEditMode( true );
+
+                ppAuthorizedPerson.SetValue( txn.AuthorizedPerson );
+                dtTransactionDateTime.SelectedDateTime = txn.TransactionDateTime;
+                ddlTransactionType.SetValue( txn.TransactionTypeValueId );
+                ddlSourceType.SetValue( txn.SourceTypeValueId );
+                cpPaymentGateway.SetValue( txn.GatewayEntityType != null ? txn.GatewayEntityType.Guid.ToString().ToUpper() : string.Empty );
+                tbTransactionCode.Text = txn.TransactionCode;
+                ddlCurrencyType.SetValue( txn.CurrencyTypeValueId );
+                ddlCreditCardType.SetValue( txn.CreditCardTypeValueId );
+                SetCreditCardVisibility();
+
+                TransactionDetailsState = txn.TransactionDetails.ToList();
+                TransactionImagesState = txn.Images.ToList();
+
+                BindAccountsEditGrid();
+                tbSummary.Text = txn.Summary;
+
+                BinaryFileIds = txn.Images.Select( i => i.BinaryFileId ).ToList();
+
+                BindImages();
+            }
         }
 
         /// <summary>
@@ -463,200 +813,150 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Shows the edit values.
+        /// Sets the heading information.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        protected void ShowEdit( FinancialTransaction transaction )
+        /// <param name="txn">The TXN.</param>
+        private void SetHeadingInfo( FinancialTransaction txn )
         {
-            if ( transaction != null && transaction.Id != 0 )
+            if ( txn.TransactionTypeValue != null )
             {
-                lTitle.Text = "Edit Transaction".FormatAsHtmlTitle();
-                hfIdTransValue.Value = transaction.Id.ToString();
-                hfBatchId.Value = PageParameter( "financialBatchId" );
-                ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
-                ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
-                if ( transaction.GatewayEntityTypeId.HasValue )
-                {
-                    var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
-                    if ( gatewayEntity != null )
-                    {
-                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString().ToUpper() );
-                    }
-                }
-
-                ddlSourceType.SetValue( transaction.SourceTypeValueId );
-                ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
-                tbSummary.Text = transaction.Summary;
-                tbTransactionCode.Text = transaction.TransactionCode;
-                dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
-                if ( transaction.AuthorizedPersonId != null )
-                {
-                    ppAuthorizedPerson.PersonId = transaction.AuthorizedPersonId;
-                    ppAuthorizedPerson.PersonName = transaction.AuthorizedPerson.FullName;
-                }
+                hlType.Visible = true;
+                hlType.Text = txn.TransactionTypeValue.Name;
             }
             else
             {
-                lTitle.Text = "Add Transaction".FormatAsHtmlTitle();
-                int? contextPersonId = PageParameter( "PersonId" ).AsIntegerOrNull();
-                if ( contextPersonId.HasValue )
-                {
-                    var contextPerson = new PersonService( new RockContext() ).Get( (int)contextPersonId );
-                    ppAuthorizedPerson.PersonId = contextPerson.Id;
-                    ppAuthorizedPerson.PersonName = contextPerson.FullName;
-                }                
-            }
-
-            SetEditMode( true );
-            LoadRelatedImages( transaction.Id );
-
-            if ( ddlCurrencyType != null && ddlCurrencyType.SelectedItem != null && ddlCurrencyType.SelectedItem.ToString() != "Credit Card" )
-            {
-                ddlCreditCardType.Visible = false;
+                hlType.Visible = false;
             }
         }
 
         /// <summary>
-        /// Shows the summary.
+        /// Binds the dropdowns.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        private void ShowSummary( FinancialTransaction transaction )
+        /// <param name="rockContext">The rock context.</param>
+        private void BindDropdowns( RockContext rockContext )
         {
-            lTitle.Text = "View Transaction".FormatAsHtmlTitle();
-            SetEditMode( false );
+            ddlTransactionType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ) );
+            ddlSourceType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ), true );
+            ddlCurrencyType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ), true );
+            ddlCreditCardType.BindToDefinedType( DefinedTypeCache.Read( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ), true );
 
-            string authorizedPerson = string.Empty;
-            if ( transaction.AuthorizedPerson != null )
-            {
-                authorizedPerson = transaction.AuthorizedPerson.FullName;
-            }
-
-            lDetailsLeft.Text = new DescriptionList()
-                .Add( "Transaction Date/Time", transaction.TransactionDateTime )
-                .Add( "Transaction Type", transaction.TransactionTypeValue )
-                .Add( "Credit Card Type", transaction.CreditCardTypeValue )
-                .Add( "Authorized Person", authorizedPerson )
-                .Html;
-
-            lDetailsRight.Text = new DescriptionList()
-                .Add( "Summary", transaction.Summary )
-                .Add( "Source Type", transaction.SourceTypeValue )
-                .Add( "Transaction Code", transaction.TransactionCode )
-                .Add( "Currency Type", transaction.CurrencyTypeValue )
-                .Add( "Payment Gateway", transaction.GatewayEntityType )
-                .Html;
+            ddlAccount.DataSource = AccountNames;
+            ddlAccount.DataBind();
         }
 
         /// <summary>
-        /// Shows the detail.
+        /// Sets the credit card visibility.
         /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        public void ShowDetail( int transactionId )
+        private void SetCreditCardVisibility()
         {
-            FinancialTransaction transaction = null;
-            if ( !transactionId.Equals( 0 ) )
-            {
-                transaction = new FinancialTransactionService( new RockContext() ).Get( transactionId );
-            }
-
-            if ( transaction == null )
-            {
-                transaction = new FinancialTransaction { Id = 0 };
-            }
-
-            hfIdTransValue.Value = transaction.Id.ToString();
-            hfBatchId.Value = PageParameter( "financialBatchId" );
-
-            if ( !readOnly )
-            {
-                lbEdit.Visible = true;
-                if ( transaction.Id > 0 )
-                {
-                    ShowSummary( transaction );
-                }
-                else
-                {
-                    BindDropdowns();
-                    ShowEdit( transaction );
-                }
-
-                gTransactionDetails.Actions.ShowAdd = true;
-                gTransactionDetails.IsDeleteEnabled = true;
-                pnlImageUpload.Visible = true;
-            }
-            else
-            {
-                lbEdit.Visible = false;
-                ShowSummary( transaction );
-                gTransactionDetails.Actions.ShowAdd = false;
-                gTransactionDetails.IsDeleteEnabled = false;
-                pnlImageUpload.Visible = false;
-            }
-
-            lbSave.Visible = !readOnly;
-            LoadAccountDropDown();
-            BindTransactionDetailGrid( transaction );
-            BindDefinedTypeDropdown( ddlTransactionImageType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_IMAGE_TYPE ), "Transaction Image Type" );
-            LoadRelatedImages( transaction.Id );
+            int? currencyType = ddlCurrencyType.SelectedValueAsInt();
+            var creditCardCurrencyType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+            ddlCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
         }
 
         /// <summary>
-        /// Displays the error.
+        /// Binds the transaction details.
         /// </summary>
-        /// <param name="message">The message.</param>
-        private void DisplayError( string message )
+        private void BindAccountsEditGrid()
         {
-            valSummaryTop.Controls.Clear();
-            valSummaryTop.Controls.Add( new LiteralControl( message ) );
-            valSummaryTop.Visible = true;
+            gAccountsEdit.DataSource = TransactionDetailsState;
+            gAccountsEdit.DataBind();
         }
 
-        /// <summary>
-        /// Binds the transaction detail grid.
-        /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        private void BindTransactionDetailGrid( FinancialTransaction transaction )
+        private void BindImages()
         {
-            // Load the TransactionDetails grid here if this transaction already exists.
-            if ( transaction.Id != 0 )
-            {
-                var financialTransactionDetails = new FinancialTransactionDetailService( new RockContext() ).Queryable().Where( trans => trans.TransactionId == transaction.Id ).ToList();
-                gTransactionDetails.DataSource = financialTransactionDetails;
-                gTransactionDetails.DataBind();
-                pnlTransactionDetails.Visible = true;
-            }
-            else
-            {
-                pnlTransactionDetails.Visible = false;
-            }
-        }
-
-        /// <summary>
-        /// Loads the related images.
-        /// </summary>
-        /// <param name="transactionId">The transaction identifier.</param>
-        private void LoadRelatedImages( int transactionId )
-        {
-            var rockContext = new RockContext();
-            
-            // Let's get a list of related images from the FinancialTransactionImage table
-            var relatedImageList = new FinancialTransactionImageService( rockContext ).Queryable().Where( image => image.TransactionId == transactionId ).ToList();
-
-            var binaryFileService = new BinaryFileService( rockContext );
-
-            // Now let's get the binary files from the BinaryFile table
-            var binaryFileList = new List<BinaryFile>();
-            foreach ( var relatedImage in relatedImageList )
-            {
-                var binaryFileId = relatedImage.BinaryFileId;
-                var binaryFile = binaryFileService.Get( binaryFileId );
-                binaryFileList.Add( binaryFile );
-            }
-
-            dlImages.DataSource = binaryFileList;
+            dlImages.DataSource = TransactionImagesState;
             dlImages.DataBind();
         }
 
-        #endregion Internal Methods
+        /// <summary>
+        /// Shows the account dialog.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        private void ShowAccountDialog( Guid guid )
+        {
+            hfAccountGuid.Value = guid.ToString();
+
+            var txnDetail = TransactionDetailsState.Where( d => d.Guid.Equals( guid ) ).FirstOrDefault();
+            if ( txnDetail != null )
+            {
+                ddlAccount.SetValue( txnDetail.AccountId );
+                tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
+                tbAccountSummary.Text = txnDetail.Summary;
+            }
+            else
+            {
+                ddlAccount.SelectedIndex = -1;
+                tbAccountSummary.Text = string.Empty;
+                tbAccountSummary.Text = string.Empty;
+            }
+
+            ShowDialog( "ACCOUNT" );
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        /// <param name="dialog">The dialog.</param>
+        private void ShowDialog( string dialog )
+        {
+            hfActiveDialog.Value = dialog.ToUpper().Trim();
+            ShowDialog();
+        }
+
+        /// <summary>
+        /// Shows the dialog.
+        /// </summary>
+        private void ShowDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ACCOUNT":
+                    mdAccount.Show();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Hides the dialog.
+        /// </summary>
+        private void HideDialog()
+        {
+            switch ( hfActiveDialog.Value )
+            {
+                case "ACCOUNT":
+                    mdAccount.Hide();
+                    break;
+            }
+
+            hfActiveDialog.Value = string.Empty;
+        }
+
+        /// <summary>
+        /// Accounts the name.
+        /// </summary>
+        /// <param name="accountId">The account identifier.</param>
+        /// <returns></returns>
+        protected string AccountName( int accountId )
+        {
+            return AccountNames.ContainsKey( accountId ) ? AccountNames[accountId] : "";
+        }
+
+        /// <summary>
+        /// Images the URL.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <returns></returns>
+        protected string ImageUrl( int binaryFileId, int? maxWidth = null, int? maxHeight = null )
+        {
+            string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
+            string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
+            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+        }
+
+        #endregion
+
     }
 }

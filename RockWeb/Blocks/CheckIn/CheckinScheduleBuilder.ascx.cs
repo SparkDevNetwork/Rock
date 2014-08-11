@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var groupLocationService = new GroupLocationService( rockContext );
             var groupTypeService = new GroupTypeService( rockContext );
-
+            IEnumerable<GroupTypePath> groupPaths = new List<GroupTypePath>();
             var groupLocationQry = groupLocationService.Queryable();
             int groupTypeId;
 
@@ -282,6 +282,8 @@ namespace RockWeb.Blocks.CheckIn
 
                 // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent (ancestor)
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || descendantGroupTypeIds.Contains( a.Group.GroupTypeId ) );
+
+                groupPaths = groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId );
             }
             else
             {
@@ -316,7 +318,8 @@ namespace RockWeb.Blocks.CheckIn
                     GroupName = a.Group.Name,
                     LocationName = a.Location.Name,
                     ScheduleIdList = a.Schedules.Select( s => s.Id ),
-                    a.LocationId
+                    a.LocationId,
+                    GroupTypeId = a.Group.GroupTypeId
                 } ).ToList();
 
             int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
@@ -331,6 +334,7 @@ namespace RockWeb.Blocks.CheckIn
             dataTable.Columns.Add( "GroupLocationId" );
             dataTable.Columns.Add( "GroupName" );
             dataTable.Columns.Add( "LocationName" );
+            dataTable.Columns.Add( "Path" );
             foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
             {
                 dataTable.Columns.Add( field.DataField, typeof( bool ) );
@@ -342,6 +346,7 @@ namespace RockWeb.Blocks.CheckIn
                 dataRow["GroupLocationId"] = row.GroupLocationId;
                 dataRow["GroupName"] = row.GroupName;
                 dataRow["LocationName"] = row.LocationName;
+                dataRow["Path"] = groupPaths.Where( gt => gt.GroupTypeId == row.GroupTypeId ).Select( gt => gt.Path ).FirstOrDefault();
                 foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
                 {
                     int scheduleId = int.Parse( field.DataField.Replace( "scheduleField_", string.Empty ) );

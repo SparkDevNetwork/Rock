@@ -25,7 +25,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Stored as a delimited list of FinancialAccount Guids
     /// </summary>
     public class AccountsFieldType : FieldType
     {

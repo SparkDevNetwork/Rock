@@ -80,6 +80,33 @@ namespace Rock.Financial
             return null;
         }
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        public static string GetComponentName( string entityType )
+        {
+            foreach ( var serviceEntry in Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+
+                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
+                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    if ( component.IsActive )
+                    {
+                        return serviceEntry.Value.Metadata.ComponentName;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets or sets the MEF components.

@@ -72,9 +72,9 @@
                 Value="#6a6a6a"></Setter>
     </Style>
 
-    
+
     <!-- *** Banner ***  -->
-    
+
     <!-- Panel Style: panelBanner -->
     <Style x:Key="panelBanner"
            TargetType="{x:Type StackPanel}" >
@@ -91,7 +91,7 @@
             Value="Horizontal"
             />
     </Style>
-    
+
     <!-- Label style: Banner Title -->
     <Style x:Key="labelStyleBannerTitle"
            TargetType="{x:Type Label}">
@@ -122,8 +122,8 @@
         <Setter Property="HorizontalAlignment"
                 Value="Left" />
     </Style>
-    
-    
+
+
 
     <!-- Grid style: PanelGrid -->
     <Style x:Key="gridPanel"
@@ -169,9 +169,9 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
-    
-    
+
+
+
 
     <!-- Label style: Alert-->
     <Style x:Key="labelStyleAlert"
@@ -322,16 +322,16 @@
            TargetType="{x:Type TextBlock}">
         <Setter Property="Label.Margin"
                 Value="0,0,0,0">
-            </Setter>
-            <Setter Property="Label.VerticalAlignment"
+        </Setter>
+        <Setter Property="Label.VerticalAlignment"
                 Value="Center"></Setter>
-            <Setter Property="Label.HorizontalAlignment"
+        <Setter Property="Label.HorizontalAlignment"
                 Value="Left"></Setter>
-            <Setter Property="Label.FontWeight"
+        <Setter Property="Label.FontWeight"
                 Value="Normal"></Setter>
-            <Setter Property="Label.FontSize"
+        <Setter Property="Label.FontSize"
                 Value="14"></Setter>
-            <Setter Property="Label.Foreground"
+        <Setter Property="Label.Foreground"
                 Value="#6a6a6a"></Setter>
     </Style>
 
@@ -707,6 +707,15 @@
                Property="Background"
                Value="#FF373737"
                />
+    </Style>
+
+    <!-- Menu Style -->
+    <Style x:Key="menuStyle" 
+           TargetType="Menu">
+        <Setter
+            Property="Background"
+            Value="#dbd5cb"
+            />
     </Style>
 
 </ResourceDictionary>

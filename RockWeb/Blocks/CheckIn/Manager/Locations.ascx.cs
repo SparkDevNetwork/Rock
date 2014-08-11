@@ -28,7 +28,6 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.Dashboard.Flot;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -44,7 +43,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [CustomRadioListField( "Navigation Mode", "Navigation and attendance counts can be grouped and displayed either by 'Group Type > Group Type (etc) > Group > Location' or by 'location > location (etc).'  Select the navigation heirarchy that is most appropriate for your organization.", "T:Group Type,L:Location,", true, "T", "", 0, "Mode" )]
     [GroupTypeField( "Check-in Type", "The Check-in Area to display.  This value can also be overridden through the URL query string key (e.g. when navigated to from the Check-in Type selection block).", true, "", "", 1, "GroupTypeTemplate", Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE )]
     [LinkedPage( "Person Page", "The page used to display a selected person's details.", order: 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 3, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
+    [LinkedPage( "Area Select Page", "The page to redirect user to if area has not be configured or selected.", order: 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", order: 4, defaultValue: Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
     public partial class Locations : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -264,6 +264,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             bool reversed = false;
             var results = new PersonService( rockContext ).GetByFullName(
                 tbSearch.Text, false, false, false, out reversed )
+                .ToList()
                 .GroupJoin(
                     attendanceQry,
                     p => p.Id,
@@ -278,6 +279,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     p.LastName + ", " + p.NickName :
                                     p.NickName + " " + p.LastName ),
                                 PhotoId = p.PhotoId,
+                                Age = p.Age.ToString() ?? "",
                                 LastCheckin = c.LastCheckin,
                                 CheckedInNow = currentAttendeeIds.Contains( p.Id ),
                                 GroupName = ""
@@ -291,11 +293,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
                                     p.LastName + ", " + p.NickName :
                                     p.NickName + " " + p.LastName ),
                                 PhotoId = p.PhotoId,
+                                Age = p.Age.ToString() ?? "",
                                 LastCheckin = null,
                                 CheckedInNow = false,
                                 GroupName = ""
                             } ) )
                 .SelectMany( a => a )
+                .Distinct()
                 .OrderByDescending( a => a.CheckedInNow )
                 .ThenByDescending( a => a.LastCheckin )
                 .ThenBy( a => a.Name )
@@ -716,7 +720,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                     bool current = chartTime.Equals( chartTimes.Max() );
 
-                    foreach ( var itemCount in attendances
+                    foreach ( var groupLocSched in attendances
                         .Where( a => 
                             a.StartDateTime < chartTime &&
                             activeSchedules.Contains( a.ScheduleId.Value ) )
@@ -731,18 +735,24 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             ScheduleId = g.Key.ScheduleId,
                             GroupId = g.Key.GroupId,
                             LocationId = g.Key.LocationId,
-                            Count = g.Count()
+                            PersonIds = g.Select( a => a.PersonId.Value).ToList()
                         } ) )
                     {
-                        AddGroupCount( chartTime, itemCount.GroupId, itemCount.Count, current );
-                        AddLocationCount( chartTime, itemCount.LocationId, itemCount.Count, current );
+                        AddGroupCount( chartTime, groupLocSched.GroupId, groupLocSched.PersonIds, current );
+                        AddLocationCount( chartTime, groupLocSched.LocationId, groupLocSched.PersonIds, current );
                     }
                 }
                 return NavData;
             }
             else
             {
-                nbWarning.Text = "Please select a Check-in type in the block settings.";
+                if ( string.IsNullOrWhiteSpace( PageParameter( "Area" ) ) )
+                {
+                    // If could not determine area and did not come from are select, redirect to area select page
+                    NavigateToLinkedPage( "AreaSelectPage" );
+                }
+
+                nbWarning.Text = "Please select a valid Check-in type in the block settings.";
                 nbWarning.Visible = true;
                 pnlContent.Visible = false;
             }
@@ -855,68 +865,68 @@ namespace RockWeb.Blocks.CheckIn.Manager
             return null;
         }
 
-        private void AddGroupCount( DateTime time, int groupId, int count, bool current )
+        private void AddGroupCount( DateTime time, int groupId, List<int> personIds, bool current )
         {
             var navGroup = NavData.Groups.FirstOrDefault( g => g.Id == groupId );
             if ( navGroup != null )
             {
-                if (!navGroup.RecentCounts.ContainsKey(time))
+                if (!navGroup.RecentPersonIds.ContainsKey(time))
                 {
-                    navGroup.RecentCounts.Add( time, 0 );
+                    navGroup.RecentPersonIds.Add( time, new List<int>() );
                 }
-                navGroup.RecentCounts[time] += count;
+                navGroup.RecentPersonIds[time] = navGroup.RecentPersonIds[time].Union(personIds).ToList();
 
                 if ( current )
                 {
-                    navGroup.CurrentCount += count;
+                    navGroup.CurrentPersonIds = navGroup.CurrentPersonIds.Union( personIds ).ToList();
                 }
 
-                AddGroupTypeCount( time, navGroup.GroupTypeId, count, current );
+                AddGroupTypeCount( time, navGroup.GroupTypeId, personIds, current );
             }
         }
 
-        private void AddGroupTypeCount( DateTime time, int groupTypeId, int count, bool current )
+        private void AddGroupTypeCount( DateTime time, int groupTypeId, List<int> personIds, bool current )
         {
             var navGroupType = NavData.GroupTypes.FirstOrDefault( g => g.Id == groupTypeId );
             if ( navGroupType != null )
             {
-                if ( !navGroupType.RecentCounts.ContainsKey( time ) )
+                if ( !navGroupType.RecentPersonIds.ContainsKey( time ) )
                 {
-                    navGroupType.RecentCounts.Add( time, 0 );
+                    navGroupType.RecentPersonIds.Add( time, new List<int>() );
                 }
-                navGroupType.RecentCounts[time] += count;
+                navGroupType.RecentPersonIds[time] = navGroupType.RecentPersonIds[time].Union( personIds ).ToList();
 
                 if ( current )
                 {
-                    navGroupType.CurrentCount += count;
+                    navGroupType.CurrentPersonIds = navGroupType.CurrentPersonIds.Union( personIds ).ToList();
                 }
 
                 if ( navGroupType.ParentId.HasValue )
                 {
-                    AddGroupTypeCount( time, navGroupType.ParentId.Value, count, current );
+                    AddGroupTypeCount( time, navGroupType.ParentId.Value, personIds, current );
                 }
             }
         }
 
-        private void AddLocationCount( DateTime time, int locationId, int count, bool current )
+        private void AddLocationCount( DateTime time, int locationId, List<int> personIds, bool current )
         {
             var navLocation = NavData.Locations.FirstOrDefault( g => g.Id == locationId );
             if ( navLocation != null )
             {
-                if ( !navLocation.RecentCounts.ContainsKey( time ) )
+                if ( !navLocation.RecentPersonIds.ContainsKey( time ) )
                 {
-                    navLocation.RecentCounts.Add( time, 0 );
+                    navLocation.RecentPersonIds.Add( time, new List<int>()  );
                 }
-                navLocation.RecentCounts[time] += count;
+                navLocation.RecentPersonIds[time]  = navLocation.RecentPersonIds[time].Union( personIds ).ToList();
 
                 if (current)
                 {
-                    navLocation.CurrentCount += count;
+                    navLocation.CurrentPersonIds = navLocation.CurrentPersonIds.Union( personIds ).ToList();
                 }
 
                 if ( navLocation.ParentId.HasValue )
                 {
-                    AddLocationCount( time, navLocation.ParentId.Value, count, current );
+                    AddLocationCount( time, navLocation.ParentId.Value, personIds, current );
                 }
             }
         }
@@ -990,23 +1000,23 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 }
 
                 // Get chart data
-                Dictionary<DateTime, int> chartCounts = null;
+                Dictionary<DateTime, List<int>> chartCounts = null;
                 if (item != null)
                 {
-                    chartCounts = item.RecentCounts;
+                    chartCounts = item.RecentPersonIds;
                 }
                 else
                 {
-                    chartCounts = new Dictionary<DateTime, int>();
+                    chartCounts = new Dictionary<DateTime, List<int>>();
                     foreach(var navItem in navItems)
                     {
-                        foreach(var kv in navItem.RecentCounts)
+                        foreach ( var kv in navItem.RecentPersonIds )
                         {
                             if ( !chartCounts.ContainsKey( kv.Key ) )
                             {
-                                chartCounts.Add( kv.Key, 0 );
+                                chartCounts.Add( kv.Key, new List<int>() );
                             }
-                            chartCounts[kv.Key] += kv.Value;
+                            chartCounts[kv.Key] = chartCounts[kv.Key].Union( kv.Value ).ToList();
                         }
                     }
                 }
@@ -1017,7 +1027,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 {
                     DateTime offsetTime = kv.Key.Subtract( baseSpan );
                     long ticks = (long)( offsetTime.Ticks / 10000 );
-                    chartData.Add( string.Format( "[{0}, {1}]", ticks, kv.Value ) );
+                    chartData.Add( string.Format( "[{0}, {1}]", ticks, kv.Value.Count() ) );
                 }
                 hfChartData.Value = string.Format( "[ [ {0} ] ]", chartData.AsDelimited( ", " ) );
                 pnlChart.Attributes["onClick"] = upnlContent.GetPostBackEventReference("R");
@@ -1065,6 +1075,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
                             .ToList();
 
                         var results = attendees
+                            .Select( a => new
+                            {
+                                Person = a.Person,
+                                Group = a.Group
+                            } )
+                            .Distinct()
                             .Select( a => new PersonResult
                             {
                                 Id = a.Person.Id,
@@ -1167,8 +1183,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public int Id { get; set; }
             public string Name { get; set; }
             public int Order { get; set; }
-            public int CurrentCount { get; set; }
-            public Dictionary<DateTime, int> RecentCounts { get; set; }
+            public List<int> CurrentPersonIds { get; set; }
+            public int CurrentCount { get { return CurrentPersonIds.Count(); } }
+            public Dictionary<DateTime, List<int>> RecentPersonIds { get; set; }
             public virtual string TypeKey { get { return ""; } }
         }
 
@@ -1183,8 +1200,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 Id = location.Id;
                 Name = location.Name;
-                RecentCounts = new Dictionary<DateTime, int>();
-                chartTimes.ForEach( t => RecentCounts.Add( t, 0 ) );
+                CurrentPersonIds = new List<int>();
+                RecentPersonIds = new Dictionary<DateTime, List<int>>();
+                chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 IsActive = location.IsActive;
                 ChildLocationIds = new List<int>();
             }
@@ -1201,8 +1219,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 Id = groupType.Id;
                 Name = groupType.Name;
                 Order = groupType.Order;
-                RecentCounts = new Dictionary<DateTime, int>();
-                chartTimes.ForEach( t => RecentCounts.Add( t, 0 ) );
+                CurrentPersonIds = new List<int>();
+                RecentPersonIds = new Dictionary<DateTime, List<int>>();
+                chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 ChildGroupTypeIds = new List<int>();
                 ChildGroupIds = new List<int>();
             }
@@ -1219,8 +1238,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 Id = group.Id;
                 Name = group.Name;
                 Order = group.Order;
-                RecentCounts = new Dictionary<DateTime, int>();
-                chartTimes.ForEach( t => RecentCounts.Add( t, 0 ) );
+                CurrentPersonIds = new List<int>();
+                RecentPersonIds = new Dictionary<DateTime, List<int>>();
+                chartTimes.ForEach( t => RecentPersonIds.Add( t, new List<int>() ) );
                 GroupTypeId = group.GroupTypeId;
                 ChildLocationIds = new List<int>();
             }

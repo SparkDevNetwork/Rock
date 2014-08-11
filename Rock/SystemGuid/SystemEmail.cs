@@ -50,5 +50,10 @@ namespace Rock.SystemGuid
         /// Gets the template guid for workflow form notifications
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
+
+        /// <summary>
+        /// Gets the template guid for finance pledge confirmation email
+        /// </summary>
+        public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
     }
 }

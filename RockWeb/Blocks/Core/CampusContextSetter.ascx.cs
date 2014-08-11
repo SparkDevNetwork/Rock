@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Core
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -81,13 +81,12 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList();
-            foreach ( var campus in campuses )
-            {
-                var listItem = new ListItem( campus.Name, HttpUtility.UrlDecode( campus.ContextKey ) );
-                listItem.Selected = ( defaultCampus != null && campus.Guid == defaultCampus.Guid );
-                ddlCampus.Items.Add( listItem );
-            }
+            lCurrentSelection.Text = defaultCampus != null ? defaultCampus.ToString() : "Select Campus";
+
+            var campuses = campusService.Queryable().OrderBy( a => a.Name ).ToList().Select( a => new { a.Name, ContextKey = HttpUtility.UrlDecode( a.ContextKey ) } ).ToList();
+
+            rptCampuses.DataSource = campuses;
+            rptCampuses.DataBind();
         }
 
         #endregion
@@ -95,11 +94,11 @@ namespace RockWeb.Blocks.Core
         #region Methods
 
         /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCampus control.
+        /// Handles the ItemCommand event of the rptCampuses control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptCampuses_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var contextCookie = Request.Cookies["Rock:context"];
             if ( contextCookie == null )
@@ -107,10 +106,14 @@ namespace RockWeb.Blocks.Core
                 contextCookie = new HttpCookie( "Rock:context" );
             }
 
-            contextCookie.Values[typeof( Rock.Model.Campus ).FullName] = ddlCampus.SelectedValue;
+            contextCookie.Values[typeof( Rock.Model.Campus ).FullName] = e.CommandArgument as string;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
             Response.Cookies.Add( contextCookie );
+
+            // reload page to ensure that all blocks get the new context setting
+            Response.Redirect( Request.RawUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         #endregion

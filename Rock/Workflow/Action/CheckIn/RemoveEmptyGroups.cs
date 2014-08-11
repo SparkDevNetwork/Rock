@@ -25,9 +25,9 @@ using Rock.Data;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any group that does not have any locations
+    /// Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter.
     /// </summary>
-    [Description( "Removes any group that does not have any locations" )]
+    [Description( "Removes any group that does not have any locations.  If group contains locations, but they are all excluded by filter, will also mark the group as excluded by filter." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Groups" )]
     public class RemoveEmptyGroups : CheckInActionComponent
@@ -57,6 +57,10 @@ namespace Rock.Workflow.Action.CheckIn
                                 if ( group.Locations.Count == 0 )
                                 {
                                     groupType.Groups.Remove( group );
+                                }
+                                else if ( !group.Locations.Any( l => !l.ExcludedByFilter ) )
+                                {
+                                    group.ExcludedByFilter = true;
                                 }
                             }
                         }
