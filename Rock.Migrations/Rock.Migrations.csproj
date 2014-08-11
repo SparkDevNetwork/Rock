@@ -1081,6 +1081,10 @@
     <Compile Include="Migrations\201408112112255_ExternalFinancePages.Designer.cs">
       <DependentUpon>201408112112255_ExternalFinancePages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408112120366_GroupGuest.cs" />
+    <Compile Include="Migrations\201408112120366_GroupGuest.Designer.cs">
+      <DependentUpon>201408112120366_GroupGuest.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1874,6 +1878,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408112112255_ExternalFinancePages.resx">
       <DependentUpon>201408112112255_ExternalFinancePages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408112120366_GroupGuest.resx">
+      <DependentUpon>201408112120366_GroupGuest.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
