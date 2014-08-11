@@ -256,6 +256,11 @@ namespace Rock.Web.Cache
         {
             int? entityTypeId = null;
 
+            if ( type.Namespace == "System.Data.Entity.DynamicProxies" )
+            {
+                type = type.BaseType;
+            }
+
             lock ( obj )
             {
                 if ( entityTypes.ContainsKey( type.FullName ) )
@@ -331,17 +336,13 @@ namespace Rock.Web.Cache
         public static EntityTypeCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = EntityTypeCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
-            if ( entityType != null )
+            if ( entityType == null )
             {
-                return entityType;
-            }
-            else
-            {
-                var entityTypeService = new EntityTypeService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var entityTypeService = new EntityTypeService( rockContext );
                 var entityTypeModel = entityTypeService.Get( id );
                 if ( entityTypeModel != null )
                 {
@@ -350,14 +351,10 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, entityType, cachePolicy );
                     cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                    return entityType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return entityType;
         }
 
         /// <summary>
@@ -371,29 +368,28 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            EntityTypeCache entityType = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                entityType = Read( (int)cacheObj );
             }
-            else
+
+            if ( entityType == null )
             {
-                var entityTypeService = new EntityTypeService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var entityTypeService = new EntityTypeService( rockContext );
                 var entityTypeModel = entityTypeService.Get( guid );
                 if ( entityTypeModel != null )
                 {
-                    var entityType = new EntityTypeCache( entityTypeModel );
+                    entityType = new EntityTypeCache( entityTypeModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( EntityTypeCache.CacheKey( entityType.Id ), entityType, cachePolicy );
                     cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                    return entityType;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return entityType;
         }
 
         /// <summary>
@@ -404,25 +400,22 @@ namespace Rock.Web.Cache
         public static EntityTypeCache Read( EntityType entityTypeModel )
         {
             string cacheKey = EntityTypeCache.CacheKey( entityTypeModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             EntityTypeCache entityType = cache[cacheKey] as EntityTypeCache;
 
             if ( entityType != null )
             {
                 entityType.CopyFromModel( entityTypeModel );
-                return entityType;
             }
             else
             {
                 entityType = new EntityTypeCache( entityTypeModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, entityType, cachePolicy );
                 cache.Set( entityType.Guid.ToString(), entityType.Id, cachePolicy );
-
-                return entityType;
             }
+
+            return entityType;
         }
 
         /// <summary>

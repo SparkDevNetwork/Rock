@@ -101,6 +101,11 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 RockPage.PageTitle = _workflowType.Name;
+
+                if ( !string.IsNullOrWhiteSpace( _workflowType.IconCssClass ) )
+                {
+                    lHeadingIcon.Text = string.Format("<i class='{0}'></i>", _workflowType.IconCssClass);
+                }
             }
             else
             {

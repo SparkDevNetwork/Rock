@@ -1013,6 +1013,62 @@
     <Compile Include="Migrations\201407181703490_ChildLabelFontAwesome.Designer.cs">
       <DependentUpon>201407181703490_ChildLabelFontAwesome.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201407211308127_CheckinChanges.cs" />
+    <Compile Include="Migrations\201407211308127_CheckinChanges.Designer.cs">
+      <DependentUpon>201407211308127_CheckinChanges.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407232253485_CreatePledgePage.cs" />
+    <Compile Include="Migrations\201407232253485_CreatePledgePage.Designer.cs">
+      <DependentUpon>201407232253485_CreatePledgePage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407241610046_AddScheduledTxnFields.cs" />
+    <Compile Include="Migrations\201407241610046_AddScheduledTxnFields.Designer.cs">
+      <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407261708456_CheckinCleanUp.cs" />
+    <Compile Include="Migrations\201407261708456_CheckinCleanUp.Designer.cs">
+      <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.cs" />
+    <Compile Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.Designer.cs">
+      <DependentUpon>201407270612147_EmailAndLinkAttributeTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407291625544_FinancialTransactionProcessedBy.cs" />
+    <Compile Include="Migrations\201407291625544_FinancialTransactionProcessedBy.Designer.cs">
+      <DependentUpon>201407291625544_FinancialTransactionProcessedBy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407292304111_RenameGivingProfileToTransactionProfile.cs" />
+    <Compile Include="Migrations\201407292304111_RenameGivingProfileToTransactionProfile.Designer.cs">
+      <DependentUpon>201407292304111_RenameGivingProfileToTransactionProfile.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407311214231_AddAttributeKeyIndex.cs" />
+    <Compile Include="Migrations\201407311214231_AddAttributeKeyIndex.Designer.cs">
+      <DependentUpon>201407311214231_AddAttributeKeyIndex.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201407312015431_PageRenameSweep.cs" />
+    <Compile Include="Migrations\201407312015431_PageRenameSweep.Designer.cs">
+      <DependentUpon>201407312015431_PageRenameSweep.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408012250032_FinancialPersonBackAccountMasked.cs" />
+    <Compile Include="Migrations\201408012250032_FinancialPersonBackAccountMasked.Designer.cs">
+      <DependentUpon>201408012250032_FinancialPersonBackAccountMasked.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408041816502_ScheduledTxnLastUpdate.cs" />
+    <Compile Include="Migrations\201408041816502_ScheduledTxnLastUpdate.Designer.cs">
+      <DependentUpon>201408041816502_ScheduledTxnLastUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408042245548_AddGeneralGroupType.cs" />
+    <Compile Include="Migrations\201408042245548_AddGeneralGroupType.Designer.cs">
+      <DependentUpon>201408042245548_AddGeneralGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408061807525_AddApplicationGroup.cs" />
+    <Compile Include="Migrations\201408061807525_AddApplicationGroup.Designer.cs">
+      <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201408082214326_ExternalFinancePages.cs" />
+    <Compile Include="Migrations\201408082214326_ExternalFinancePages.Designer.cs">
+      <DependentUpon>201408082214326_ExternalFinancePages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1755,6 +1811,48 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201407181703490_ChildLabelFontAwesome.resx">
       <DependentUpon>201407181703490_ChildLabelFontAwesome.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407211308127_CheckinChanges.resx">
+      <DependentUpon>201407211308127_CheckinChanges.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407232253485_CreatePledgePage.resx">
+      <DependentUpon>201407232253485_CreatePledgePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407241610046_AddScheduledTxnFields.resx">
+      <DependentUpon>201407241610046_AddScheduledTxnFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407261708456_CheckinCleanUp.resx">
+      <DependentUpon>201407261708456_CheckinCleanUp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407270612147_EmailAndLinkAttributeTypes.resx">
+      <DependentUpon>201407270612147_EmailAndLinkAttributeTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407291625544_FinancialTransactionProcessedBy.resx">
+      <DependentUpon>201407291625544_FinancialTransactionProcessedBy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407292304111_RenameGivingProfileToTransactionProfile.resx">
+      <DependentUpon>201407292304111_RenameGivingProfileToTransactionProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407311214231_AddAttributeKeyIndex.resx">
+      <DependentUpon>201407311214231_AddAttributeKeyIndex.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201407312015431_PageRenameSweep.resx">
+      <DependentUpon>201407312015431_PageRenameSweep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408012250032_FinancialPersonBackAccountMasked.resx">
+      <DependentUpon>201408012250032_FinancialPersonBackAccountMasked.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408041816502_ScheduledTxnLastUpdate.resx">
+      <DependentUpon>201408041816502_ScheduledTxnLastUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408042245548_AddGeneralGroupType.resx">
+      <DependentUpon>201408042245548_AddGeneralGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408061807525_AddApplicationGroup.resx">
+      <DependentUpon>201408061807525_AddApplicationGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408082214326_ExternalFinancePages.resx">
+      <DependentUpon>201408082214326_ExternalFinancePages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

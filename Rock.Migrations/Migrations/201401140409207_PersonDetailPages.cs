@@ -152,7 +152,7 @@ Please confirm the information below. Once you have confirmed that the informati
             // Attrib Value for Block:Finance - Add Transaction, Attribute:ACH Card Gateway Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7",@"d4a40c4a-336f-49a6-9f44-88f149726126");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Batch Name Prefix Page: Add Scheduled Transaction, Site: Rock Internal
-            AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D",@"Online Giving -");
+            AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D",@"Online Giving");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Source Page: Add Scheduled Transaction, Site: Rock Internal
             AddBlockAttributeValue("8ADB1C1F-299B-461A-8469-0FF4E2C98216","5C54E6E7-1C21-4959-98EA-FB1C2D0A0D61",@"");
             // Attrib Value for Block:Finance - Add Transaction, Attribute:Address Type Page: Add Scheduled Transaction, Site: Rock Internal

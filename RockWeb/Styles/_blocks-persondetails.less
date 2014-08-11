@@ -51,6 +51,15 @@
         text-align: center;
     }
 
+    .nav li .persondetails-actions {
+        padding: 2px 0 0 15px;
+
+        &:hover, 
+        &:focus {
+            background-color: transparent;
+        }
+    }
+
     .actions { // edit individual button
         position: absolute;
         right: 50%;
@@ -731,12 +740,6 @@ span.field-value {
 // 12. Person Page Views
 // -------------------------
 .panel-widget.pageviewsession {
-
-    .panel-heading {
-        small {
-            color: @accent-bold-color;
-        }
-    }
 
     .pageviewsession-client {
         color: @accent-bold-color;

@@ -234,16 +234,46 @@ namespace Rock.Model
         /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {
-            return ExecuteQuery(
+            return ExecuteQuery( string.Format(
                 @"
-                with CTE as (
-                select * from [Location] where [ParentLocationId]={0}
-                union all
-                select [a].* from [Location] [a]
-                inner join CTE pcte on pcte.Id = [a].[ParentLocationId]
+                WITH CTE AS (
+                    SELECT * FROM [Location] WHERE [ParentLocationId]={0}
+                    UNION ALL
+                    SELECT [a].* FROM [Location] [a]
+                    INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
                 )
-                select * from CTE
-                ", parentLocationId );
+                SELECT * FROM CTE
+                ", parentLocationId ) );
         }
+
+        /// <summary>
+        /// Gets the locations associated to a device and optionally any child locaitons
+        /// </summary>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="includeChildLocations">if set to <c>true</c> [include child locations].</param>
+        /// <returns></returns>
+        public IEnumerable<Location> GetByDevice ( int deviceId, bool includeChildLocations = true )
+        {
+            string childQuery = includeChildLocations ? @"
+                    UNION ALL
+                    SELECT [a].* 
+                        FROM [Location] [a]
+                            INNER JOIN  CTE pcte ON pcte.Id = [a].[ParentLocationId]
+" : "";
+
+            return ExecuteQuery( string.Format(
+                @"
+            WITH CTE AS (
+                SELECT L.* 
+                    FROM [DeviceLocation] D
+                        INNER JOIN [Location] L ON L.[Id] = D.[LocationId]
+                WHERE D.[DeviceId] = {0}
+                {1}
+            )
+
+            SELECT * FROM CTE
+            ", deviceId, childQuery ) );
+        }
+
     }
 }

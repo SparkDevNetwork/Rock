@@ -156,7 +156,9 @@
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
+    <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
+    <Compile Include="Attribute\EmailFieldAttribute.cs" />
     <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
     <Compile Include="Attribute\SlidingDateRangeFieldAttribute.cs" />
@@ -221,8 +223,10 @@
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
+    <Compile Include="Field\Types\UrlLinkFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
+    <Compile Include="Field\Types\EmailFieldType.cs" />
     <Compile Include="Field\Types\ValueListFieldType.cs" />
     <Compile Include="Field\Types\SlidingDateRangeFieldType.cs" />
     <Compile Include="Field\Types\EntityFieldType.cs" />
@@ -231,17 +235,21 @@
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
+    <Compile Include="Jobs\GetScheduledPayments.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\FinancialBatchService.Partial.cs" />
+    <Compile Include="Model\PersonDuplicate.cs" />
     <Compile Include="Model\PluginMigration.cs" />
     <Compile Include="Model\ScheduleService.Partial.cs" />
     <Compile Include="Model\WorkflowActionService.Partial.cs" />
     <Compile Include="Model\WorkflowActivityTypeService.Partial.cs" />
     <Compile Include="Model\WorkflowActionTypeService.Partial.cs" />
-    <Compile Include="Reporting\Dashboard\ChartStyle.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Reporting\Dashboard\DashboardWidget.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Reporting\Dashboard\Flot\ChartOptions.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartOptions.cs" />
     <Compile Include="Field\Types\WorkflowActivityTypeFieldType.cs" />
     <Compile Include="Plugin\Migration.cs" />
     <Compile Include="Plugin\VersionAttribute.cs" />
@@ -371,6 +379,7 @@
     <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\SelectExpressionExtractor.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
+    <Compile Include="SystemGuid\FinancialAccount.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Utility\DateRange.cs" />
     <Compile Include="Utility\DoubleMetaphone.cs" />
@@ -608,10 +617,12 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\BarChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\PieChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\LineChart.cs" />
-    <Compile Include="Web\UI\Controls\Dashboard\FlotChart.cs" />
+    <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
+    <Compile Include="Web\UI\Controls\EmailBox.cs" />
+    <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\PieChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\LineChart.cs" />
+    <Compile Include="Web\UI\Controls\Chart\FlotChart.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\TimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
@@ -756,7 +767,6 @@
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
@@ -776,8 +786,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\CompleteActivity.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\Action\RunSQL.cs" />

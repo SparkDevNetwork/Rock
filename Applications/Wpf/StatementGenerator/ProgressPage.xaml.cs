@@ -48,7 +48,7 @@ namespace Rock.Apps.StatementGenerator
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             btnSaveAs.Visibility = Visibility.Hidden;
-            btnBack.Visibility = Visibility.Hidden;
+            btnPrev.Visibility = Visibility.Hidden;
             lblReportProgress.Visibility = Visibility.Hidden;
             lblReportProgress.Content = "Progress - Creating Statements";
             pgReportProgress.Visibility = Visibility.Hidden;
@@ -68,7 +68,7 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
-            btnBack.Visibility = Visibility.Visible;
+            btnPrev.Visibility = Visibility.Visible;
             pgReportProgress.Visibility = Visibility.Collapsed;
             
             if ( e.Error != null )
@@ -192,11 +192,11 @@ No contributions found with the criteria provided.";
         }
 
         /// <summary>
-        /// Handles the Click event of the btnBack control.
+        /// Handles the Click event of the btnPrev control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnBack_Click( object sender, RoutedEventArgs e )
+        private void btnPrev_Click( object sender, RoutedEventArgs e )
         {
             this.NavigationService.GoBack();
         }

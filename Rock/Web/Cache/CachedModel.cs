@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -281,8 +282,8 @@ namespace Rock.Web.Cache
                 return this.AttributeValues[key][0].Value;
             }
 
-            if (this.Attributes != null &&
-                this.Attributes.ContainsKey(key))
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
             {
                 return this.Attributes[key].DefaultValue;
             }
@@ -298,7 +299,7 @@ namespace Rock.Web.Cache
         public List<string> GetAttributeValues( string key )
         {
             string value = GetAttributeValue( key );
-            if (!string.IsNullOrWhiteSpace(value))
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 return value.SplitDelimitedValues().ToList();
             }

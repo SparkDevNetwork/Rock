@@ -97,6 +97,14 @@ namespace Rock.Financial
         public abstract bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage );
 
         /// <summary>
+        /// Reactivates the scheduled payment.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage );
+
+        /// <summary>
         /// Gets the scheduled payment status.
         /// </summary>
         /// <param name="transaction">The transaction.</param>

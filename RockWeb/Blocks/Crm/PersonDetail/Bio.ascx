@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
 <Rock:NotificationBox ID="nbInvalidPerson" runat="server" NotificationBoxType="Warning" Title="Person Not Found" Text="The requested person profile does not exist." Visible="false" />
-<asp:PlaceHolder ID="phContent" runat="server">
+<asp:Panel ID="pnlContent" runat="server">
 
     <script>
         $(function () {
@@ -96,6 +96,6 @@
         </div>
     </div>
 
-</asp:PlaceHolder>
+</asp:Panel>
 
 

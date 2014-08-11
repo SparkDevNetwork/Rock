@@ -307,6 +307,7 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
+        [Index("IX_Email")]
         public string Email { get; set; }
 
         /// <summary>
@@ -1034,6 +1035,17 @@ namespace Rock.Model
             user.PersonId = this.Id;
             user.Person = this;
             return user;
+        }
+
+        /// <summary>
+        /// Gets an anchor tag for linking to person profile
+        /// </summary>
+        /// <param name="rockUrlRoot">The rock URL root.</param>
+        /// <param name="cssClass">The CSS class.</param>
+        /// <returns></returns>
+        public string GetAnchorTag( string rockUrlRoot, string cssClass = "" )
+        {
+            return string.Format( "<a class='{0}' href='{1}Person/{2}'>{3}</a>", cssClass, rockUrlRoot, Id, FullName );
         }
 
         /// <summary>

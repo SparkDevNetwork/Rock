@@ -5,7 +5,7 @@
         
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-users"></i> Group List</h1>
+                <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lTitle" runat="server" Text="Group List" /></h1>
             </div>
             <div class="panel-body">
 
@@ -23,7 +23,7 @@
                     <Rock:Grid ID="gGroups" runat="server" RowItemText="Group" AllowSorting="true" OnRowSelected="gGroups_Edit">
                         <Columns>
                             <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <asp:BoundField DataField="GroupTypeName" HeaderText="Group Type" SortExpression="GroupTypeName" />
+                            <asp:BoundField DataField="GroupTypeName" HeaderText="Group Type" SortExpression="GroupTypeName"/>
                             <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                             <asp:BoundField DataField="GroupRole" HeaderText="Role" SortExpression="Role" />
                             <asp:BoundField DataField="MemberCount" HeaderText="Members" SortExpression="MemberCount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />

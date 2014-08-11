@@ -29,8 +29,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Down();
-            
             // add the ZPL file and data for the child label (font awesome)
             Sql( @"
     DECLARE @ChildLabelIconFileId INT 
@@ -134,7 +132,27 @@ INSERT INTO [AttributeValue]
         + '|8^' + CAST(@LegalIconValueId AS VARCHAR)
         + '|' 
 	    ,'DACC00A3-B65D-4557-9EC9-22BC1C1ED946') 
+
+    DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = 'C4204D6E-715E-4E3A-BA1B-949D20D26487' )
+
+    UPDATE [AttributeValue]
+    SET [Value] = '~/checkin/welcome'
+    WHERE [AttributeId] = @AttributeId
+    AND [Value] = 'welcome'
+
+    UPDATE [AttributeValue]
+    SET [Value] = '~/attendedcheckin/search'
+    WHERE [AttributeId] = @AttributeId
+    AND [Value] = 'search'
+
+    DECLARE @PageId int = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A4DCE339-9C11-40CA-9A02-D2FE64EA164B')
+    UPDATE [PageRoute] SET [PageId] = @PageId WHERE [Route] = 'ManageCheckin'
 " );
+            // Attrib for BlockType: Locations:Area Select Page
+            RockMigrationHelper.AddBlockTypeAttribute( "00FC1DEA-FE34-41E3-BC0A-2EE9138091EC", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Area Select Page", "AreaSelectPage", "", "The page to redirect user to if area has not be configured or selected.", 3, @"", "FD0CCA8C-D9B7-45AF-BF12-23C9C7E82F54" );
+            // Attrib Value for Block:Check-in Manager, Attribute:Area Select Page Page: Check-in Manager, Site: Rock Check-in Manager
+            RockMigrationHelper.AddBlockAttributeValue( "D38C2DA2-4F76-4BA5-9B26-ADA39D98DEDC", "FD0CCA8C-D9B7-45AF-BF12-23C9C7E82F54", @"62c70118-0a6f-432a-9d84-a5296655cb9e" );
+
         }
         
         /// <summary>
@@ -142,7 +160,28 @@ INSERT INTO [AttributeValue]
         /// </summary>
         public override void Down()
         {
-            Sql( "DELETE FROM [BinaryFile] where [Guid] = 'C2E6B0A0-3991-4FAF-9E2F-49CF321CBB0D'" );
+            Sql( @"
+    DELETE FROM [BinaryFile] where [Guid] = 'C2E6B0A0-3991-4FAF-9E2F-49CF321CBB0D'
+    DELETE FROM [AttributeValue] where [Guid] = 'DACC00A3-B65D-4557-9EC9-22BC1C1ED946'
+
+    DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = 'C4204D6E-715E-4E3A-BA1B-949D20D26487' )
+
+    UPDATE [AttributeValue]
+    SET [Value] = 'welcome'
+    WHERE [AttributeId] = @AttributeId
+    AND [Value] = '~/checkin/welcome'
+
+    UPDATE [AttributeValue]
+    SET [Value] = 'search'
+    WHERE [AttributeId] = @AttributeId
+    AND [Value] = '~/attendedcheckin/search'
+
+    DECLARE @PageId int = (SELECT [Id] FROM [Page] WHERE [Guid] = '62C70118-0A6F-432A-9D84-A5296655CB9E')
+    UPDATE [PageRoute] SET [PageId] = @PageId WHERE [Route] = 'ManageCheckin'
+" );
+
+            // Attrib for BlockType: Locations:Area Select Page
+            RockMigrationHelper.DeleteAttribute( "FD0CCA8C-D9B7-45AF-BF12-23C9C7E82F54" );
         }
     }
 }

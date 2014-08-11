@@ -46,7 +46,8 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Menu x:Name="mainMenu"
-                  Grid.Column="0">
+                  Grid.Column="0"
+                  Style ="{StaticResource menuStyle}">
                 <MenuItem Header="_File">
                     <MenuItem x:Name="mnuConnect"
                               Header="_Connect"
@@ -354,7 +355,7 @@
 
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            Binding="{Binding TransactionDateTime}"
+                                            Binding="{Binding CreatedDateTime}"
                                             HeaderStyle="{StaticResource gridHeaderStyleDateTime}"
                                             CellStyle="{StaticResource gridCellStyleNumber}"
                                             CanUserResize="False"
