@@ -1085,6 +1085,10 @@
     <Compile Include="Migrations\201408112120366_GroupGuest.Designer.cs">
       <DependentUpon>201408112120366_GroupGuest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408121626462_GroupTypeLocationSchedules.cs" />
+    <Compile Include="Migrations\201408121626462_GroupTypeLocationSchedules.Designer.cs">
+      <DependentUpon>201408121626462_GroupTypeLocationSchedules.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1881,6 +1885,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408112120366_GroupGuest.resx">
       <DependentUpon>201408112120366_GroupGuest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408121626462_GroupTypeLocationSchedules.resx">
+      <DependentUpon>201408121626462_GroupTypeLocationSchedules.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -232,6 +232,15 @@ namespace Rock.Model
         public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
+        /// Gets or sets the enable location schedules.
+        /// </summary>
+        /// <value>
+        /// The enable location schedules.
+        /// </value>
+        [DataMember]
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets Id of the <see cref="Rock.Model.DefinedValue"/> that represents the purpose of the GroupType.
         /// </summary>
         /// <value>
