@@ -173,33 +173,18 @@ namespace RockWeb.Blocks.Finance
                 var txn = txnService.Get( txnId.Value );
                 if ( txn != null )
                 {
-                    var gateWay = GetGateway( txn );
-                    if ( gateWay != null )
+                    string errorMessage = string.Empty;
+                    if ( txnService.Cancel( txn, out errorMessage ) )
                     {
-                        string errorMessage = string.Empty;
-                        if ( gateWay.CancelScheduledPayment( txn, out errorMessage ) )
-                        {
-                            var noteTypeService = new NoteTypeService( rockContext );
-                            var noteType = noteTypeService.Get( txn.TypeId, "Note" );
-
-                            var noteService = new NoteService( rockContext );
-                            var note = new Note();
-                            note.NoteTypeId = noteType.Id;
-                            note.EntityId = txn.Id;
-                            note.Caption = "Cancelled Transaction";
-                            noteService.Add( note );
-                        }
-                        else
-                        {
-                            ShowErrorMessage( errorMessage );
-                        }
-
-                        txnService.GetStatus(txn, out errorMessage);
-
+                        txnService.GetStatus( txn, out errorMessage );
                         rockContext.SaveChanges();
-
-                        ShowView( txn );
                     }
+                    else
+                    {
+                        ShowErrorMessage( errorMessage );
+                    }
+
+                    ShowView( txn );
                 }
             }
         }
@@ -219,33 +204,18 @@ namespace RockWeb.Blocks.Finance
                 var txn = txnService.Get( txnId.Value );
                 if ( txn != null )
                 {
-                    var gateWay = GetGateway( txn );
-                    if ( gateWay != null )
+                    string errorMessage = string.Empty;
+                    if ( txnService.Reactivate( txn, out errorMessage ) )
                     {
-                        string errorMessage = string.Empty;
-                        if ( gateWay.ReactivateScheduledPayment( txn, out errorMessage ) )
-                        {
-                            var noteTypeService = new NoteTypeService( rockContext );
-                            var noteType = noteTypeService.Get( txn.TypeId, "Note" );
-
-                            var noteService = new NoteService( rockContext );
-                            var note = new Note();
-                            note.NoteTypeId = noteType.Id;
-                            note.EntityId = txn.Id;
-                            note.Caption = "Reactivated Transaction";
-                            noteService.Add( note );
-                        }
-                        else
-                        {
-                            ShowErrorMessage( errorMessage );
-                        }
-
                         txnService.GetStatus( txn, out errorMessage );
-
                         rockContext.SaveChanges();
-
-                        ShowView( txn );
                     }
+                    else
+                    {
+                        ShowErrorMessage( errorMessage );
+                    }
+
+                    ShowView( txn );
                 }
             }
         }

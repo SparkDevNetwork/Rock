@@ -724,6 +724,8 @@ namespace Rock.PayFlowPro
 
         private void SetPayPeriod( RecurringInfo recurringInfo, DefinedValueCache transactionFrequencyValue )
         {
+            recurringInfo.MaxFailPayments = 0;
+            recurringInfo.Term = 0;
             var selectedFrequencyGuid = transactionFrequencyValue.Guid.ToString().ToUpper();
             switch ( selectedFrequencyGuid )
             {

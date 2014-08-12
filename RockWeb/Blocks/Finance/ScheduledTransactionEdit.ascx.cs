@@ -1013,6 +1013,15 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                 }
 
+                // If transaction is not active, attempt to re-activate it first
+                if ( !scheduledTransaction.IsActive )
+                {
+                    if ( !transactionService.Reactivate( scheduledTransaction, out errorMessage ) )
+                    {
+                        return false;
+                    }
+                }
+
                 if ( Gateway.UpdateScheduledPayment( scheduledTransaction, paymentInfo, out errorMessage ) )
                 {
                     if ( paymentInfo.CurrencyTypeValue != null )
@@ -1082,6 +1091,11 @@ achieve our mission.  We are so grateful for your commitment.
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
                     TransactionCode = scheduledTransaction.TransactionCode;
+
+                    if (transactionService.GetStatus( scheduledTransaction, out errorMessage ))
+                    {
+                        rockContext.SaveChanges();
+                    }
                 }
                 else
                 {
