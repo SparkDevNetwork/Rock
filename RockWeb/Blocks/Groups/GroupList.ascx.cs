@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
 
-                    var qry = new GroupMemberService( rockContext ).Queryable()
+                    var qry = new GroupMemberService( rockContext ).Queryable( true )
                         .Where( m =>
                             m.PersonId == personContext.Id &&
                             groupTypeIds.Contains( m.Group.GroupTypeId ) &&

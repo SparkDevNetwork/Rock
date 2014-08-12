@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -78,6 +78,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
                     gGroupMembers.PersonIdField = "PersonId";
+                    gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.Actions.ShowAdd = true;
                     gGroupMembers.IsDeleteEnabled = true;
@@ -125,6 +126,23 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region GroupMembers Grid
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gGroupMembers_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var groupMember = e.Row.DataItem as GroupMember;
+                if ( groupMember != null && groupMember.Person != null && ( groupMember.Person.IsDeceased ?? false ) )
+                {
+                    e.Row.CssClass = "deceased";
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -317,7 +335,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Visible = true;
 
                     GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
-                    var qry = groupMemberService.Queryable( "Person,GroupRole" )
+                    var qry = groupMemberService.Queryable( "Person,GroupRole", true )
                         .Where( m => m.GroupId == _group.Id );
 
                     // Filter by First Name
