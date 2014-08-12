@@ -436,6 +436,11 @@ namespace RockWeb.Blocks.Groups
             {
                 var singleGroupType = GroupTypeCache.Read( groupTypeIds.FirstOrDefault() );
                 lTitle.Text = string.Format( "{0}", singleGroupType.GroupTerm.Pluralize() );
+                iIcon.AddCssClass( singleGroupType.IconCssClass );
+            }
+            else
+            {
+                iIcon.AddCssClass( "fa fa-users" );
             }
 
             groupTypeIds = qry.Select( t => t.Id ).ToList();
