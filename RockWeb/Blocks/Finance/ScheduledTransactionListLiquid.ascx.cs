@@ -211,10 +211,16 @@ namespace RockWeb.Blocks.Finance
             BootstrapButton bbtnDelete = (BootstrapButton)sender;
             RepeaterItem riItem = (RepeaterItem)bbtnDelete.NamingContainer;
 
+            HiddenField hfScheduledTransactionId = (HiddenField)riItem.FindControl( "hfScheduledTransactionId" );
+
+            var rockContext = new Rock.Data.RockContext();
+            FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+            var currentTransaction = fstService.Get( Int32.Parse(hfScheduledTransactionId.Value) );
+
             Button btnEdit = (Button)riItem.FindControl( "btnEdit" );
 
             Literal content = (Literal)riItem.FindControl( "lLiquidContent" );
-            content.Text = String.Format("<div class='alert alert-success'>Your {0} has been deleted.</div>", GetAttributeValue("TransactionLabel"));
+            content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
             bbtnDelete.Visible = false;
             btnEdit.Visible = false;
 
