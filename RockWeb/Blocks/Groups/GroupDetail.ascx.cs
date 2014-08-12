@@ -811,25 +811,6 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            //var groupLocations = new List<GroupLocation>();
-            //foreach ( var groupLocation in group.GroupLocations )
-            //{
-            //    var groupLocationState = new GroupLocation();
-            //    groupLocationState.CopyPropertiesFrom( groupLocation );
-            //    if ( groupLocation.Location != null )
-            //    {
-            //        groupLocationState.Location = new Location();
-            //        groupLocationState.Location.CopyPropertiesFrom( groupLocation.Location );
-            //    }
-
-            //    if ( groupLocation.GroupLocationTypeValue != null )
-            //    {
-            //        groupLocationState.GroupLocationTypeValue = new DefinedValue();
-            //        groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
-            //    }
-            //    groupLocations.Add( groupLocationState );
-            //}
-
             //GroupLocationsState = groupLocations;
             GroupLocationsState = group.GroupLocations.ToList();
 
@@ -877,6 +858,9 @@ namespace RockWeb.Blocks.Groups
                 {
                     wpLocations.Visible = false;
                 }
+
+                gLocations.Columns[2].Visible = groupType.EnableLocationSchedules ?? false;
+                spSchedules.Visible = groupType.EnableLocationSchedules ?? false;
 
                 phGroupAttributes.Controls.Clear();
                 group.LoadAttributes();

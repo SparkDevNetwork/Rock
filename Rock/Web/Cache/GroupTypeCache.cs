@@ -213,6 +213,15 @@ namespace Rock.Web.Cache
         public GroupLocationPickerMode LocationSelectionMode { get; set; }
 
         /// <summary>
+        /// Gets or sets the enable location schedules.
+        /// </summary>
+        /// <value>
+        /// The enable location schedules.
+        /// </value>
+        [DataMember]
+        public bool? EnableLocationSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the group type purpose value identifier.
         /// </summary>
         /// <value>
@@ -382,6 +391,7 @@ namespace Rock.Web.Cache
                 this.Order = groupType.Order;
                 this.InheritedGroupTypeId = groupType.InheritedGroupTypeId;
                 this.LocationSelectionMode = groupType.LocationSelectionMode;
+                this.EnableLocationSchedules = groupType.EnableLocationSchedules;
                 this.GroupTypePurposeValueId = groupType.GroupTypePurposeValueId;
                 this.locationTypeValueIDs = groupType.LocationTypes.Select( l => l.LocationTypeValueId ).ToList();
 
