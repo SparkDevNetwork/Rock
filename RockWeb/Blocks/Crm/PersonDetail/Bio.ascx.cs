@@ -80,6 +80,11 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     NavigateToLinkedPage( "BusinessDetailPage", parms );
                 }
 
+                if ( Person.IsDeceased ?? false )
+                {
+                    divBio.AddCssClass( "deceased" );
+                }
+
                 // Set the browser page title to include person's name
                 RockPage.BrowserTitle = Person.FullName;
 
