@@ -111,37 +111,50 @@ BEGIN
     CREATE TABLE #PersonDuplicateByNameTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,LastName NVARCHAR(50) NOT NULL
-        ,First2 NVARCHAR(50) NOT NULL
+        ,First2FirstName NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
+        ,First2NickName NVARCHAR(50) NOT NULL
         ,PersonAliasId INT NOT NULL
         ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (Id)
         );
 
     INSERT INTO #PersonDuplicateByNameTable (
         LastName
-        ,First2
+        ,First2FirstName
+        ,First2NickName
         ,PersonAliasId
         )
     SELECT [e].[LastName]
-        ,[e].[First2]
+        ,[e].[First2FirstName]
+        ,[e].[First2NickName]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-        SELECT [a].[First2]
+        SELECT [a].[First2FirstName]
+            ,[a].[First2NickName]
             ,[a].[LastName]
         FROM (
-            SELECT SUBSTRING([FirstName], 1, 2) [First2]
+            SELECT SUBSTRING([FirstName], 1, 2) [First2FirstName]
+                ,SUBSTRING([NickName], 1, 2) [First2NickName]
                 ,[LastName]
                 ,COUNT(*) [MatchCount]
             FROM [Person] [p]
             WHERE isnull([LastName], '') != ''
-                AND [FirstName] IS NOT NULL
-                AND LEN([FirstName]) >= 2
+                AND (
+                    LEN(ISNULL([FirstName], '')) >= 2
+                    OR LEN(ISNULL([NickName], '')) >= 2
+                    )
             GROUP BY [LastName]
                 ,SUBSTRING([FirstName], 1, 2)
+                ,SUBSTRING([NickName], 1, 2)
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [e]
     JOIN [Person] [p] ON [p].[LastName] = [e].[LastName]
-        AND [p].[FirstName] LIKE (e.First2 + '%')
+        AND (
+            [p].[FirstName] LIKE (e.First2FirstName + '%')
+            OR [p].[FirstName] LIKE (e.First2NickName + '%')
+            OR [p].[NickName] LIKE (e.First2FirstName + '%')
+            OR [p].[NickName] LIKE (e.First2NickName + '%')
+            )
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByName = 1
@@ -280,8 +293,7 @@ BEGIN
     */
     UPDATE [PersonDuplicate]
     SET [Score] = 0
-        ,[ScoreDetail] = ''
-        ,[Capacity] = 0;
+        ,[ScoreDetail] = '';
 
     /*
     Merge Results of Matches into PersonDuplicate Table
@@ -333,14 +345,20 @@ BEGIN
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[First2] [First2]
+            ,[e1].[First2FirstName] [First2FirstName]
+            ,[e1].[First2NickName] [First2NickName]
             ,[e1].[LastName] [LastName]
         FROM #PersonDuplicateByNameTable [e1]
-        JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
+        JOIN #PersonDuplicateByNameTable [e2] ON (
+                [e1].[First2FirstName] = [e2].[First2FirstName]
+                OR [e1].[First2FirstName] = [e2].[First2NickName]
+                OR [e1].[First2NickName] = [e2].[First2FirstName]
+                OR [e1].[First2FirstName] = [e2].[First2NickName]
+                )
             AND [e1].[LastName] = [e2].[LastName]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2)
+        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2FirstName, First2NickName)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
     WHEN MATCHED
@@ -586,19 +604,23 @@ BEGIN
         @compareByMaritalStatus bit = 1
     */
     UPDATE [PersonDuplicate]
-    SET [Capacity] = 0
+    SET [Capacity] = 0;
 
     UPDATE [PersonDuplicate]
-    SET [Capacity] += @cScoreWeightEmail
+    SET [Capacity] += CASE 
+            WHEN @compareByEmail = 1
+                AND isnull(p1.Email, '') != ''
+                THEN @cScoreWeightEmail
+            ELSE 0
+            END + CASE 
+            WHEN @compareByName = 1
+                AND isnull(p1.FirstName + p1.LastName, '') != ''
+                THEN @cScoreWeightEmail
+            ELSE 0
+            END
     FROM PersonDuplicate pd
     JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
-    --JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
     JOIN Person p1 ON p1.Id = pa1.PersonId
-    --JOIN Person p2 ON p2.Id = pa2.PersonId
-    --WHERE p1.MaritalStatusValueId = p2.MaritalStatusValueId
-    WHERE p1.Email IS NOT NULL
-        AND p1.Email != ''
-        AND @compareByEmail = 1
 
     /*
     Explicitly clean up temp tables before the proc exists (vs. have SQL Server do it for us after the proc is done)
@@ -633,11 +655,12 @@ GO
 
 select Len(ScoreDetail) from PersonDuplicate order by Len(ScoreDetail) desc
 
-SELECT p1.FirstName + ' ' + p1.LastName [Person], p2.FirstName  + ' ' +  p2.LastName [DuplicatePerson], Score, ScoreDetail
+SELECT p1.FirstName + '|' + p1.NickName + ',' + p1.LastName [Person], p2.FirstName + '|' + p2.NickName  + ', ' +  p2.LastName [DuplicatePerson], Score, ScoreDetail
 FROM PersonDuplicate pd
 JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
 JOIN PersonAlias pa2 ON pa2.Id = pd.DuplicatePersonAliasId
 JOIN Person p1 on p1.Id = pa1.PersonId
 JOIN Person p2 on p2.Id = pa2.PersonId
+where p1.FirstName != p2.FirstName
 order by Score desc, [Person]
 */
