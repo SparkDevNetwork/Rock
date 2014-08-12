@@ -79,7 +79,17 @@ namespace Rock.Migrations
             // named locations
             RockMigrationHelper.AddPage( "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D", "0CB60906-6B74-44FD-AB25-026050EF70EB", "Named Locations", "Allows for the administration of specific locations.", "96501070-BB46-4432-AA3C-A8C496691629", "fa fa-map-marker" );
             RockMigrationHelper.AddBlock( "96501070-BB46-4432-AA3C-A8C496691629", "", "468B99CE-D276-4D30-84A9-7842933BDBCD", "Location Tree View", "Sidebar1", "", "", 1, "31AD774C-B8FE-49CF-BF53-40BD46C2DCC1" );
+            RockMigrationHelper.AddBlockAttributeValue( "31AD774C-B8FE-49CF-BF53-40BD46C2DCC1", "BA252362-F8D3-4D2D-91B5-7E90BDB154DA", "96501070-bb46-4432-aa3c-a8c496691629" ); 
+            RockMigrationHelper.AddBlockAttributeValue( "31AD774C-B8FE-49CF-BF53-40BD46C2DCC1", "EC259AD8-CE80-401D-948B-66322ED5B5D0", "" ); 
             RockMigrationHelper.AddBlock( "96501070-BB46-4432-AA3C-A8C496691629", "", "08189564-1245-48F8-86CC-560F4DD48733", "Location Detail", "Main", "", "", 1, "71334750-1F04-41DE-BEC4-8350BBC7D844" );
+            RockMigrationHelper.AddBlockAttributeValue( "71334750-1F04-41DE-BEC4-8350BBC7D844", "A4BE7F16-A8E0-4F2F-AFFD-9323AEE51F1D", @"
+    {% if point or polygon %}
+        <div class='group-location-map'>
+            <img src='http://maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
+        </div>
+    {% endif %}
+" );
+            RockMigrationHelper.AddBlockAttributeValue( "71334750-1F04-41DE-BEC4-8350BBC7D844", "3475B7C5-3B57-4617-A1CA-CBACF20E7463", "fdc5d6ba-a818-4a06-96b1-9ef31b4087ac" ); 
 
             // schedules
             RockMigrationHelper.AddPage( "66C5DD58-094C-4FF9-9AFB-44801FCFCC2D", "0CB60906-6B74-44FD-AB25-026050EF70EB", "Schedules", "Configure schedules used throughout the system.", "AFFFB245-A0EB-4002-B736-A2D52DD692CF", "fa fa-calendar" );
