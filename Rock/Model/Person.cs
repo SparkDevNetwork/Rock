@@ -1115,6 +1115,19 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
         {
+            var inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            var deceased = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
+
+            if ( inactiveStatus != null && deceased != null )
+            {
+                bool isInactive = ( RecordStatusValueId.HasValue && RecordStatusValueId.Value == inactiveStatus.Id ) ||
+                    ( RecordStatusValue != null && RecordStatusValue.Id == inactiveStatus.Id );
+                bool isReasonDeceased = ( RecordStatusReasonValueId.HasValue && RecordStatusReasonValueId.Value == deceased.Id ) ||
+                    ( RecordStatusReasonValue != null && RecordStatusReasonValue.Id == deceased.Id );
+
+                IsDeceased = isInactive && isReasonDeceased;
+            }
+
             if (string.IsNullOrWhiteSpace(NickName))
             {
                 NickName = FirstName;
