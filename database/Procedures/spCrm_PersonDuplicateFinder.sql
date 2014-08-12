@@ -240,53 +240,73 @@ BEGIN
         ,PersonAliasId
         )
     -- from the locations that have multiple potential duplicate persons, select the person records (along with gender and family role) that are associated with that location
-    -- in case the person has multiple home addresses, get just one of them
-    SELECT Max([LocationId]) [LocationId]
+    -- in case the person has multiple home addresses, get the first one with preference given to MapLocation=true
+    SELECT CASE 
+            WHEN a.MaxMappedLocationId > 0
+                THEN a.MaxMappedLocationId
+            ELSE a.MaxNotMappedLocationId
+            END [LocationId]
         ,[Gender]
         ,[GroupRoleId]
         ,[PersonAliasId]
     FROM (
-        SELECT [m].[LocationId]
-            ,[m].[Gender]
-            ,[m].[GroupRoleId]
-            ,[pa].[Id] [PersonAliasId]
+        SELECT max(CASE 
+                    WHEN [IsMappedLocation] = 1
+                        THEN [LocationId]
+                    ELSE 0
+                    END) [MaxMappedLocationId]
+            ,max(CASE 
+                    WHEN [IsMappedLocation] = 0
+                        THEN [LocationId]
+                    ELSE 0
+                    END) [MaxNotMappedLocationId]
+            ,[Gender]
+            ,[GroupRoleId]
+            ,[PersonAliasId]
         FROM (
-            SELECT [LocationId]
-                ,[Gender]
-                ,[GroupRoleId]
-                ,[MatchCount]
+            SELECT [m].[LocationId]
+                ,[gl].[IsMappedLocation]
+                ,[m].[Gender]
+                ,[m].[GroupRoleId]
+                ,[pa].[Id] [PersonAliasId]
             FROM (
-                -- consider it a potential duplicate person if multiple people have the same address (LocationId), Gender and GroupRole (adult, child)
-                SELECT [gl].[LocationId]
-                    ,[gm].[GroupRoleId]
-                    ,[p].[Gender]
-                    ,COUNT(*) [MatchCount]
-                FROM [Person] [p]
-                JOIN [GroupMember] [gm] ON [gm].[PersonId] = [p].[Id]
-                JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
-                JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
-                JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
-                    AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
-                WHERE [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
-                GROUP BY [gl].[LocationID]
-                    ,[p].[Gender]
-                    ,[gm].[GroupRoleId]
-                ) [a]
-            WHERE [MatchCount] > 1
-            ) [m]
-        JOIN [GroupLocation] [gl] ON [gl].[LocationId] = [m].[LocationId]
-        JOIN [Group] [g] ON [g].[Id] = [gl].[GroupId]
-        JOIN [GroupMember] [gm] ON [gm].[GroupId] = [g].[Id]
-        JOIN [PersonAlias] [pa] ON [gm].[PersonId] = [pa].[PersonId]
-        JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
-        WHERE [m].[Gender] = [p].[Gender]
-            AND [m].[GroupRoleId] = [gm].[GroupRoleId] -- only consider it a potential duplicate person if the gender,role and location are the same (to reduce false matches due to married couples)
-            AND [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
-            AND @compareByAddress = 1
-        ) [a]
-    GROUP BY [PersonAliasId]
-        ,[Gender]
-        ,[GroupRoleId]
+                SELECT [LocationId]
+                    ,[Gender]
+                    ,[GroupRoleId]
+                    ,[MatchCount]
+                FROM (
+                    -- consider it a potential duplicate person if multiple people have the same address (LocationId), Gender and GroupRole (adult, child)
+                    SELECT [gl].[LocationId]
+                        ,[gm].[GroupRoleId]
+                        ,[p].[Gender]
+                        ,COUNT(*) [MatchCount]
+                    FROM [Person] [p]
+                    JOIN [GroupMember] [gm] ON [gm].[PersonId] = [p].[Id]
+                    JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
+                    JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
+                    JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
+                        AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+                    WHERE [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
+                    GROUP BY [gl].[LocationID]
+                        ,[p].[Gender]
+                        ,[gm].[GroupRoleId]
+                    ) [a]
+                WHERE [MatchCount] > 1
+                ) [m]
+            JOIN [GroupLocation] [gl] ON [gl].[LocationId] = [m].[LocationId]
+            JOIN [Group] [g] ON [g].[Id] = [gl].[GroupId]
+            JOIN [GroupMember] [gm] ON [gm].[GroupId] = [g].[Id]
+            JOIN [PersonAlias] [pa] ON [gm].[PersonId] = [pa].[PersonId]
+            JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
+            WHERE [m].[Gender] = [p].[Gender]
+                AND [m].[GroupRoleId] = [gm].[GroupRoleId] -- only consider it a potential duplicate person if the gender,role and location are the same (to reduce false matches due to married couples)
+                AND [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
+                AND @compareByAddress = 1
+            ) [a]
+        GROUP BY [PersonAliasId]
+            ,[Gender]
+            ,[GroupRoleId]
+        ) a
 
     /* 
     Reset Scores for everybody. (We want to preserve each record's [IsConfirmedAsNotDuplicate] value)
@@ -594,33 +614,75 @@ BEGIN
     END
 
     /* Calculate Capacities
+        @compareByGender bit = 1,
+        @compareByMaritalStatus bit = 1
+        
         @compareByEmail bit = 1,
         @compareByName bit = 1,
+        @compareByBirthDate bit = 1,
+
         @compareByPhone bit = 1,
         @compareByAddress bit = 1,
-        @compareByBirthDate bit = 1,
-        @compareByGender bit = 1,
-        @compareByCampus bit = 1,
-        @compareByMaritalStatus bit = 1
+        @compareByCampus BIT = 1,
     */
+    -- set base capacity to include MaritalStatus and Gender, since everybody has values for those
     UPDATE [PersonDuplicate]
-    SET [Capacity] = 0;
+    SET [Capacity] = CASE 
+            WHEN @compareByGender = 1
+                THEN @cScoreWeightGender
+            ELSE 0
+            END + CASE 
+            WHEN @compareByMaritalStatus = 1
+                THEN @cScoreWeightMaritalStatus
+            ELSE 0
+            END;
 
+    -- increment capacity values for Email, Name, Birthdate (do in one Update statement since these are all person fields)
     UPDATE [PersonDuplicate]
     SET [Capacity] += CASE 
             WHEN @compareByEmail = 1
-                AND isnull(p1.Email, '') != ''
+                AND isnull(p.Email, '') != ''
                 THEN @cScoreWeightEmail
             ELSE 0
             END + CASE 
             WHEN @compareByName = 1
-                AND isnull(p1.FirstName + p1.LastName, '') != ''
-                THEN @cScoreWeightEmail
+                AND (
+                    isnull(p.LastName, '') != ''
+                    AND (
+                        isnull(p.FirstName, '') != ''
+                        OR isnull(p.NickName, '') != ''
+                        )
+                    )
+                THEN @cScoreWeightName
+            ELSE 0
+            END + CASE 
+            WHEN @compareByBirthDate = 1
+                AND p.BirthDate IS NOT NULL
+                THEN @cScoreWeightBirthdate
             ELSE 0
             END
     FROM PersonDuplicate pd
-    JOIN PersonAlias pa1 ON pa1.Id = pd.PersonAliasId
-    JOIN Person p1 ON p1.Id = pa1.PersonId
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+
+    -- increment capacity values for Phone
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += @cScoreWeightPhoneNumber
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+    WHERE p.Id IN (
+            SELECT PersonId
+            FROM PhoneNumber
+            WHERE NumberTypeValueId IN (
+                    @cHOME_PHONENUMBER_DEFINEDVALUE_ID
+                    ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
+                    )
+            )
+        AND @cScoreWeightPhoneNumber = 1
+
+    -- increment capacity values for Address, Campus
+    -- #TODO#
 
     /*
     Explicitly clean up temp tables before the proc exists (vs. have SQL Server do it for us after the proc is done)
@@ -644,6 +706,10 @@ GO
 
 SELECT count(*)
 FROM PersonDuplicate
+
+SELECT Score, Capacity, score / (Capacity *.01) [Percent2]
+FROM PersonDuplicate
+order by score / (Capacity *.01) desc
     -- DEBUG
     /*
 SET STATISTICS TIME ON
