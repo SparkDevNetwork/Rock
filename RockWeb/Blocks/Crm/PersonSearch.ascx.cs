@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Crm
             gPeople.DataKeyNames = new string[] { "id" };
             gPeople.Actions.ShowAdd = false;
             gPeople.GridRebind += gPeople_GridRebind;
+            gPeople.RowDataBound += gPeople_RowDataBound;
             gPeople.PersonIdField = "Id";
         }
 
@@ -67,6 +68,18 @@ namespace RockWeb.Blocks.Crm
         void gPeople_GridRebind( object sender, EventArgs e )
         {
             BindGrid();
+        }
+
+        void gPeople_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var person = e.Row.DataItem as Person;
+                if ( person != null && ( person.IsDeceased ?? false ) )
+                {
+                    e.Row.CssClass = "deceased";
+                }
+            }
         }
 
         protected void gPeople_RowSelected( object sender, RowEventArgs e )
