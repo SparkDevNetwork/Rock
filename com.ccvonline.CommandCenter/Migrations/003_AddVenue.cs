@@ -16,9 +16,12 @@ namespace com.ccvonline.CommandCenter.Migrations
         /// </summary>
         public override void Up()
         {
-            Sql(@"
+            Sql( @"
                     ALTER TABLE dbo._com_ccvonline_CommandCenter_Recording
                     ADD Venue VARCHAR(50) NULL
+                " );
+
+            Sql( @"
 
                     UPDATE _com_ccvonline_CommandCenter_Recording
                     SET Venue = 'Command Center'
@@ -27,7 +30,7 @@ namespace com.ccvonline.CommandCenter.Migrations
                     UPDATE _com_ccvonline_CommandCenter_Recording
                     SET Venue = 'War Room'
                     WHERE StreamName like 'WR%'
-                ");
+                " );
         }
 
         /// <summary>
