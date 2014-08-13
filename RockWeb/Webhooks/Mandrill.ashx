@@ -45,7 +45,7 @@ public class Mandrill : IHttpHandler
 
                 // process the communication recipient
 
-                if (item.Msg.Metadata != null && item.Msg.Metadata.ContainsKey("communication_recipient_guid") )
+                if ( item.Msg != null && item.Msg.Metadata != null && item.Msg.Metadata.ContainsKey( "communication_recipient_guid" ) )
                 {
                     Guid communicationRecipientGuid;
                     if ( Guid.TryParse( item.Msg.Metadata["communication_recipient_guid"], out communicationRecipientGuid ) )
