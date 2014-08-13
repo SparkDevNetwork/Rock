@@ -13,6 +13,7 @@
     10. Responsive Overrides
     11. Person Merge
     12. Person Page Views
+    13. Deceased
 */
 
 // 1. Page Styles
@@ -745,5 +746,39 @@ span.field-value {
         color: @accent-bold-color;
         text-align: right;
         line-height: 1;
+    }
+}
+
+// 13. Deceased Styles
+// -------------------------
+
+.person-bio {
+    div.deceased:after {
+        content: 'Deceased';
+        font-size: 14px;
+        position: absolute;
+        bottom: 36px;
+        right: 0;
+        margin-right: 12px;
+        color: @label-color;
+        background-color: @label-warning-bg;
+        padding: 4px 12px;
+        border-radius: @border-radius-base;
+    }
+}
+
+.groupmembers {
+    .member.deceased {
+        background-color: @label-warning-bg;
+        
+        &:hover {
+            background-color: lighten(@label-warning-bg, 10%);
+        }
+    }
+}
+
+tr.deceased {
+    td {
+        background-color: lighten(@label-warning-bg, 25%) !important;
     }
 }
