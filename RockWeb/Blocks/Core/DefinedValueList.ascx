@@ -14,12 +14,10 @@
 
                 <asp:Panel ID="pnlList" runat="server" Visible="false">
 
-                    <div class="row-fluid">
-                        <h4>Values</h4>
                         <asp:Panel ID="pnlValues" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                         
-                            <div class="grid">
+                            <div class="grid grid-panel">
                                 <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                     <Columns>
                                         <Rock:ReorderField/>
@@ -30,7 +28,6 @@
                             </div>
 
                         </asp:Panel>
-                    </div>
 
                 </asp:Panel>
 
