@@ -8,13 +8,13 @@
             ///
             /// handles putting chartData into a Line/Bar/Points chart
             ///
-            plotChartData: function (chartData, chartOptions, plotSelector, xaxisLabelText, getSeriesUrl, combineValues) {
+            plotChartData: function (chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues) {
 
                 var chartSeriesLookup = {};
                 var chartSeriesList = [];
 
                 var chartGoalPoints = {
-                    label: xaxisLabelText + ' goal',
+                    label: yaxisLabelText + ' goal',
                     chartData: [],
                     data: []
                 }
@@ -41,8 +41,8 @@
                             }
                             else if (chartData[i].SeriesId == 0) {
                                 // SeriesId of 0 means that the metric doesn't have a series partition. (Metrics don't have to be partitioned by Series)
-                                // set the series name to the xaxislabeltext or just 'value' if it's blank
-                                seriesName = xaxisLabelText || 'value';
+                                // set the series name to the yaxislabeltext or just 'value' if it's blank
+                                seriesName = yaxisLabelText || 'value';
                             }
                             else {
                                 // SeriesId is NonZero so get the seriesName from the getSeriesUrl
@@ -59,7 +59,7 @@
 
                             // if we weren't able to determine the seriesName for some reason, output at least the seriesId
                             // this could happen if there is no longer a record of the entity (Campus, Group, etc) with that value or if the getSeriesUrl failed
-                            seriesName = seriesName || xaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
+                            seriesName = seriesName || yaxisLabelText + '(seriesId:' + chartData[i].SeriesId + ')';
 
                             chartSeriesLookup[chartData[i].SeriesId] = {
                                 label: seriesName,
@@ -122,7 +122,7 @@
                     combinedData.sort(function (item1, item2) { return item2[0] - item1[0]; });
 
                     var chartCombinedMeasurePoints = {
-                        label: xaxisLabelText + ' Total',
+                        label: yaxisLabelText + ' Total',
                         chartData: combinedChartData,
                         data: combinedData
                     };

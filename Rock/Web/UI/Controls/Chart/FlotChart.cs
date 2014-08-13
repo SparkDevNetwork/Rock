@@ -570,7 +570,7 @@ namespace Rock.Web.UI.Controls
 
                 var chartOptions = {1}; 
                 var plotSelector = '#{0} .js-chart-placeholder';
-                var xaxisLabelText = $('#{0} .js-xaxis-value').val();
+                var yaxisLabelText = $('#{0} .js-yaxis-value').val();
                 var getSeriesUrl = $('#{0} .js-seriesname-url').val();
                 var combineValues = {4};
 ";
@@ -585,7 +585,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 scriptFormat += @"
-                Rock.controls.charts.plotChartData(chartData, chartOptions, plotSelector, xaxisLabelText, getSeriesUrl, combineValues);
+                Rock.controls.charts.plotChartData(chartData, chartOptions, plotSelector, yaxisLabelText, getSeriesUrl, combineValues);
 ";
             }
 
