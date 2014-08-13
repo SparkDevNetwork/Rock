@@ -4214,7 +4214,7 @@ h2,
 h3,
 h4 {
   font-weight: 300;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 a:hover {
   text-decoration: none;
@@ -4254,7 +4254,7 @@ pre {
 }
 .panel .panel-heading .panel-title {
   font-weight: 300;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   font-size: 18px;
   margin: 0 12px 4px 0;
 }
@@ -4418,7 +4418,7 @@ pre {
   margin: 0;
   font-size: 24px;
   font-weight: 300;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 #content-wrapper #page-title h1 .page-icon {
   display: inline;
