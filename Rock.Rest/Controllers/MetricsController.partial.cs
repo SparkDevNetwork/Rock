@@ -63,7 +63,7 @@ namespace Rock.Rest.Controllers
             {
                 block.LoadAttributes();
 
-                string displayText = block.GetAttributeValue( "DisplayText" );
+                string liquidTemplate = block.GetAttributeValue( "LiquidTemplate" );
 
                 var metricCategoryPairList = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( block.GetAttributeValue( "MetricCategories" ) );
 
@@ -156,7 +156,7 @@ namespace Rock.Rest.Controllers
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
                 mergeValues.Add( "Metrics", metricsData );
 
-                string resultHtml = displayText.ResolveMergeFields( mergeValues );
+                string resultHtml = liquidTemplate.ResolveMergeFields( mergeValues );
 
                 // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )
