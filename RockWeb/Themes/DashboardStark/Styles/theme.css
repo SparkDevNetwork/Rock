@@ -1539,6 +1539,7 @@ ul.groupmembers li.member {
   margin-right: 15px;
   margin-bottom: 15px;
   min-width: 140px;
+  border-radius: 4px;
 }
 ul.groupmembers li.member .person-image {
   border: 1px solid #999999;
@@ -2592,6 +2593,7 @@ table.attribute-grid tr th:nth-child(3) {
     10. Responsive Overrides
     11. Person Merge
     12. Person Page Views
+    13. Deceased
 */
 .personprofile {
   margin-top: -15px;
@@ -3130,6 +3132,27 @@ span.field-value {
   color: #428bca;
   text-align: right;
   line-height: 1;
+}
+.person-bio div.deceased:after {
+  content: 'Deceased';
+  font-size: 14px;
+  position: absolute;
+  bottom: 36px;
+  right: 0;
+  margin-right: 12px;
+  color: #ffffff;
+  background-color: #f0ad4e;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+.groupmembers .member.deceased {
+  background-color: #f0ad4e;
+}
+.groupmembers .member.deceased:hover {
+  background-color: #f4c37d;
+}
+tr.deceased td {
+  background-color: #fae3c4 !important;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3885,7 +3908,7 @@ a.help {
   border-radius: 0;
 }
 .panel-block .panel-body .grid.grid-panel .table-bordered {
-  border: 1px 0 0 0;
+  border-width: 1px 0 0 0;
 }
 .panel-block .panel-body .grid.grid-panel .table-bordered > tfoot > tr > td {
   border: 0px;
