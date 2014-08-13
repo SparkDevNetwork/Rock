@@ -61,7 +61,7 @@ namespace Rock.Attribute
         /// <returns></returns>
         public static List<MetricCategoryPair> GetValueAsGuidPairs( string value )
         {
-            return value.Split( ',' ).Select( a =>
+            return (value ?? string.Empty).Split( ',' ).Select( a =>
             {
                 var parts = a.Split( '|' );
 

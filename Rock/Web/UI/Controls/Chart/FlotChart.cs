@@ -542,7 +542,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.EntityId.HasValue )
                 {
-                    filterParams.Add( string.Format( "EntityId eq {0}", this.EntityId ) );
+                    filterParams.Add( string.Format( "(EntityId eq {0} or EntityId eq null)", this.EntityId ) );
                 }
 
                 if ( filterParams.Count > 0 )
