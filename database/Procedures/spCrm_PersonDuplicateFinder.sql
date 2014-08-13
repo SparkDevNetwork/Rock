@@ -111,50 +111,37 @@ BEGIN
     CREATE TABLE #PersonDuplicateByNameTable (
         Id INT NOT NULL IDENTITY(1, 1)
         ,LastName NVARCHAR(50) NOT NULL
-        ,First2FirstName NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
-        ,First2NickName NVARCHAR(50) NOT NULL
+        ,First2 NVARCHAR(50) NOT NULL -- intentionally 50 vs 2 for performance reasons (sql server spends time on the length constraint if it's shorter than the source column)
         ,PersonAliasId INT NOT NULL
         ,CONSTRAINT [pk_PersonDuplicateByNameTable] PRIMARY KEY CLUSTERED (Id)
         );
 
     INSERT INTO #PersonDuplicateByNameTable (
         LastName
-        ,First2FirstName
-        ,First2NickName
+        ,First2
         ,PersonAliasId
         )
     SELECT [e].[LastName]
-        ,[e].[First2FirstName]
-        ,[e].[First2NickName]
+        ,[e].[First2]
         ,[pa].[Id] [PersonAliasId]
     FROM (
-        SELECT [a].[First2FirstName]
-            ,[a].[First2NickName]
+        SELECT [a].[First2]
             ,[a].[LastName]
         FROM (
-            SELECT SUBSTRING([FirstName], 1, 2) [First2FirstName]
-                ,SUBSTRING([NickName], 1, 2) [First2NickName]
+            SELECT SUBSTRING([FirstName], 1, 2) [First2]
                 ,[LastName]
                 ,COUNT(*) [MatchCount]
             FROM [Person] [p]
             WHERE isnull([LastName], '') != ''
-                AND (
-                    LEN(ISNULL([FirstName], '')) >= 2
-                    OR LEN(ISNULL([NickName], '')) >= 2
-                    )
+                AND [FirstName] IS NOT NULL
+                AND LEN([FirstName]) >= 2
             GROUP BY [LastName]
                 ,SUBSTRING([FirstName], 1, 2)
-                ,SUBSTRING([NickName], 1, 2)
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [e]
     JOIN [Person] [p] ON [p].[LastName] = [e].[LastName]
-        AND (
-            [p].[FirstName] LIKE (e.First2FirstName + '%')
-            OR [p].[FirstName] LIKE (e.First2NickName + '%')
-            OR [p].[NickName] LIKE (e.First2FirstName + '%')
-            OR [p].[NickName] LIKE (e.First2NickName + '%')
-            )
+        AND [p].[FirstName] LIKE (e.First2 + '%')
     JOIN [PersonAlias] [pa] ON [pa].[PersonId] = [p].[Id]
     WHERE [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
         AND @compareByName = 1
@@ -200,7 +187,7 @@ BEGIN
                 ,COUNT(*) [MatchCount]
             FROM [PhoneNumber] [pn]
             JOIN [Person] [p] ON [p].[Id] = [pn].[PersonId]
-            WHERE isnull([pn].[Number], '') != ''
+            WHERE ISNUMERIC([pn].[Number]) = 1
                 AND [pn].[NumberTypeValueId] IN (
                     @cHOME_PHONENUMBER_DEFINEDVALUE_ID
                     ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
@@ -365,20 +352,14 @@ BEGIN
     USING (
         SELECT [e1].[PersonAliasId] [PersonAliasId]
             ,[e2].[PersonAliasId] [DuplicatePersonAliasId]
-            ,[e1].[First2FirstName] [First2FirstName]
-            ,[e1].[First2NickName] [First2NickName]
+            ,[e1].[First2] [First2]
             ,[e1].[LastName] [LastName]
         FROM #PersonDuplicateByNameTable [e1]
-        JOIN #PersonDuplicateByNameTable [e2] ON (
-                [e1].[First2FirstName] = [e2].[First2FirstName]
-                OR [e1].[First2FirstName] = [e2].[First2NickName]
-                OR [e1].[First2NickName] = [e2].[First2FirstName]
-                OR [e1].[First2FirstName] = [e2].[First2NickName]
-                )
+        JOIN #PersonDuplicateByNameTable [e2] ON [e1].[First2] = [e2].[First2]
             AND [e1].[LastName] = [e2].[LastName]
             AND [e1].[Id] != [e2].[Id]
             AND [e1].[PersonAliasId] > [e2].[PersonAliasId] -- we only need the matched pair in there once (don't need both PersonA == PersonB and PersonB == PersonA)
-        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2FirstName, First2NickName)
+        ) AS source(PersonAliasId, DuplicatePersonAliasId, LastName, First2)
         ON (target.PersonAliasId = source.PersonAliasId)
             AND (target.DuplicatePersonAliasId = source.DuplicatePersonAliasId)
     WHEN MATCHED
@@ -538,6 +519,96 @@ BEGIN
                 ,NEWID()
                 );
 
+    /* Calculate Capacities before we do the additional scores
+    */
+    -- set base capacity to include MaritalStatus and Gender, since everybody has values for those
+    UPDATE [PersonDuplicate]
+    SET [Capacity] = CASE 
+            WHEN @compareByGender = 1
+                THEN @cScoreWeightGender
+            ELSE 0
+            END + CASE 
+            WHEN @compareByMaritalStatus = 1
+                THEN @cScoreWeightMaritalStatus
+            ELSE 0
+            END;
+
+    -- increment capacity values for Email, Name, Birthdate (do in one Update statement since these are all person fields)
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += CASE 
+            WHEN @compareByEmail = 1
+                AND isnull(p.Email, '') != ''
+                THEN @cScoreWeightEmail
+            ELSE 0
+            END + CASE 
+            WHEN @compareByName = 1
+                AND (
+                    isnull(p.LastName, '') != ''
+                    AND (
+                        isnull(p.FirstName, '') != ''
+                        OR isnull(p.NickName, '') != ''
+                        )
+                    )
+                THEN @cScoreWeightName
+            ELSE 0
+            END + CASE 
+            WHEN @compareByBirthDate = 1
+                AND p.BirthDate IS NOT NULL
+                THEN @cScoreWeightBirthdate
+            ELSE 0
+            END
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+
+    -- increment capacity values for Phone
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += @cScoreWeightPhoneNumber
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+    WHERE p.Id IN (
+            SELECT PersonId
+            FROM PhoneNumber
+            WHERE NumberTypeValueId IN (
+                    @cHOME_PHONENUMBER_DEFINEDVALUE_ID
+                    ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
+                    )
+            )
+        AND @compareByPhone = 1
+
+    -- increment capacity values for Address, Campus
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += @cScoreWeightAddress
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+    WHERE p.Id IN (
+            SELECT PersonId
+            FROM [GroupMember] [gm]
+            JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
+            JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
+            JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
+                AND [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+            WHERE [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
+            )
+        AND @compareByAddress = 1
+
+    -- increment capacity values for Campus
+    UPDATE [PersonDuplicate]
+    SET [Capacity] += @cScoreWeightCampus
+    FROM PersonDuplicate pd
+    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
+    JOIN Person p ON p.Id = pa.PersonId
+    WHERE p.Id IN (
+            SELECT PersonId
+            FROM [GroupMember] [gm]
+            JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
+            WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+                AND g.CampusId IS NOT NULL
+            )
+        AND @compareByCampus = 1
+
     /*
     Add additional scores to people that are already potential matches 
     */
@@ -613,77 +684,6 @@ BEGIN
         WHERE [ModifiedDateTime] < @processDateTime
     END
 
-    /* Calculate Capacities
-        @compareByGender bit = 1,
-        @compareByMaritalStatus bit = 1
-        
-        @compareByEmail bit = 1,
-        @compareByName bit = 1,
-        @compareByBirthDate bit = 1,
-
-        @compareByPhone bit = 1,
-        @compareByAddress bit = 1,
-        @compareByCampus BIT = 1,
-    */
-    -- set base capacity to include MaritalStatus and Gender, since everybody has values for those
-    UPDATE [PersonDuplicate]
-    SET [Capacity] = CASE 
-            WHEN @compareByGender = 1
-                THEN @cScoreWeightGender
-            ELSE 0
-            END + CASE 
-            WHEN @compareByMaritalStatus = 1
-                THEN @cScoreWeightMaritalStatus
-            ELSE 0
-            END;
-
-    -- increment capacity values for Email, Name, Birthdate (do in one Update statement since these are all person fields)
-    UPDATE [PersonDuplicate]
-    SET [Capacity] += CASE 
-            WHEN @compareByEmail = 1
-                AND isnull(p.Email, '') != ''
-                THEN @cScoreWeightEmail
-            ELSE 0
-            END + CASE 
-            WHEN @compareByName = 1
-                AND (
-                    isnull(p.LastName, '') != ''
-                    AND (
-                        isnull(p.FirstName, '') != ''
-                        OR isnull(p.NickName, '') != ''
-                        )
-                    )
-                THEN @cScoreWeightName
-            ELSE 0
-            END + CASE 
-            WHEN @compareByBirthDate = 1
-                AND p.BirthDate IS NOT NULL
-                THEN @cScoreWeightBirthdate
-            ELSE 0
-            END
-    FROM PersonDuplicate pd
-    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
-    JOIN Person p ON p.Id = pa.PersonId
-
-    -- increment capacity values for Phone
-    UPDATE [PersonDuplicate]
-    SET [Capacity] += @cScoreWeightPhoneNumber
-    FROM PersonDuplicate pd
-    JOIN PersonAlias pa ON pa.Id = pd.PersonAliasId
-    JOIN Person p ON p.Id = pa.PersonId
-    WHERE p.Id IN (
-            SELECT PersonId
-            FROM PhoneNumber
-            WHERE NumberTypeValueId IN (
-                    @cHOME_PHONENUMBER_DEFINEDVALUE_ID
-                    ,@cCELL_PHONENUMBER_DEFINEDVALUE_ID
-                    )
-            )
-        AND @cScoreWeightPhoneNumber = 1
-
-    -- increment capacity values for Address, Campus
-    -- #TODO#
-
     /*
     Explicitly clean up temp tables before the proc exists (vs. have SQL Server do it for us after the proc is done)
     */
@@ -706,10 +706,13 @@ GO
 
 SELECT count(*)
 FROM PersonDuplicate
-
-SELECT Score, Capacity, score / (Capacity *.01) [Percent2]
+    /*
+SELECT PersonAliasId, DuplicatePersonAliasId, Score
+    ,Capacity
+    ,score / (Capacity * .01) [Percent2]
 FROM PersonDuplicate
-order by score / (Capacity *.01) desc
+ORDER BY score / (Capacity * .01) DESC
+*/
     -- DEBUG
     /*
 SET STATISTICS TIME ON
