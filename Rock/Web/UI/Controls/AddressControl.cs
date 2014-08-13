@@ -658,12 +658,26 @@ namespace Rock.Web.UI.Controls
         {
             if ( location != null )
             {
-                location.Country = Country;
-                location.Street1 = Street1;
-                location.Street2 = Street2;
-                location.City = City;
-                location.State = State;
-                location.PostalCode = PostalCode;
+                if ( !string.IsNullOrWhiteSpace( this.Street1 ) ||
+                    !string.IsNullOrWhiteSpace( this.Street2 ) ||
+                    !string.IsNullOrWhiteSpace( this.City ) )
+                {
+                    location.Country = Country;
+                    location.Street1 = Street1;
+                    location.Street2 = Street2;
+                    location.City = City;
+                    location.State = State;
+                    location.PostalCode = PostalCode;
+                }
+                else
+                {
+                    location.Country = null;
+                    location.Street1 = null;
+                    location.Street2 = null;
+                    location.City = null;
+                    location.State = null;
+                    location.PostalCode = null;
+                }
             }
         }
 

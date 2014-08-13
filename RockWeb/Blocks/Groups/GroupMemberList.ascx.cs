@@ -18,12 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,6 +40,7 @@ namespace RockWeb.Blocks.Groups
     {
         #region Private Variables
 
+        private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
 
         #endregion
@@ -78,6 +80,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.DataKeyNames = new string[] { "Id" };
                     gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
                     gGroupMembers.PersonIdField = "PersonId";
+                    gGroupMembers.RowDataBound += gGroupMembers_RowDataBound;
                     gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
                     gGroupMembers.Actions.ShowAdd = true;
                     gGroupMembers.IsDeleteEnabled = true;
@@ -125,6 +128,33 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region GroupMembers Grid
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gGroupMembers control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gGroupMembers_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var groupMember = e.Row.DataItem as GroupMember;
+                if ( groupMember != null && groupMember.Person != null )
+                {
+                    if ( _inactiveStatus != null &&
+                        groupMember.Person.RecordStatusValueId.HasValue &&
+                        groupMember.Person.RecordStatusValueId == _inactiveStatus.Id )
+                    {
+                        e.Row.AddCssClass( "inactive" );
+                    }
+
+                    if ( groupMember.Person.IsDeceased ?? false )
+                    {
+                        e.Row.AddCssClass( "deceased" );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -317,7 +347,7 @@ namespace RockWeb.Blocks.Groups
                     gGroupMembers.Visible = true;
 
                     GroupMemberService groupMemberService = new GroupMemberService( new RockContext() );
-                    var qry = groupMemberService.Queryable( "Person,GroupRole" )
+                    var qry = groupMemberService.Queryable( "Person,GroupRole", true )
                         .Where( m => m.GroupId == _group.Id );
 
                     // Filter by First Name
@@ -367,6 +397,8 @@ namespace RockWeb.Blocks.Groups
                     {
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
                     }
+
+                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 

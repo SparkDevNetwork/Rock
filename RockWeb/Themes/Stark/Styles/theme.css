@@ -203,7 +203,7 @@ img.jcrop-preview {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 11000;
+  z-index: 9000;
   right: auto;
 }
 .zone-configuration p {
@@ -237,7 +237,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 11000;
+  z-index: 9000;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -410,7 +410,7 @@ img.jcrop-preview {
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 11000;
+  z-index: 12000;
   width: 750px;
   margin-left: 0px;
   background-color: #ffffff;
@@ -551,7 +551,7 @@ img.jcrop-preview {
   margin-left: 20px;
 }
 .picker .picker-select-item-details .person-image {
-  border: 1px solid #999999;
+  border: 1px solid #f6f6f6;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -654,8 +654,8 @@ ul.rocktree ul {
 }
 .rocktree .selected,
 .rocktree .selected a {
-  background: #999999;
-  color: #ffffff;
+  background: #f6f6f6;
+  color: #333333;
 }
 .rocktree .rocktree-name {
   padding: 2px 6px;
@@ -994,7 +994,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #999999;
+  border: 4px solid #f6f6f6;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
@@ -1335,7 +1335,7 @@ fieldset .actions {
   height: 30px;
   border: 1px dotted #bbbbbb;
   border-radius: 0 0 4px 4px;
-  background-color: #999999;
+  background-color: #f6f6f6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -1353,7 +1353,7 @@ fieldset .actions {
 }
 .imageupload-group .imageupload-dropzone span {
   font-size: 13px;
-  color: #ffffff;
+  color: #333333;
   width: 100%;
 }
 .imageupload-group .upload-progress {
@@ -1426,7 +1426,7 @@ fieldset .actions {
   height: 30px;
   border: 1px dotted #bbbbbb;
   border-radius: 0 0 4px 4px;
-  background-color: #999999;
+  background-color: #f6f6f6;
   text-align: center;
   padding-top: 8px;
   position: relative;
@@ -1442,7 +1442,7 @@ fieldset .actions {
 }
 .fileupload-group .fileupload-dropzone span {
   font-size: 13px;
-  color: #ffffff;
+  color: #333333;
   width: 100%;
 }
 .fileupload-group .upload-progress {
@@ -1541,7 +1541,7 @@ ul.groupmembers li.member {
   min-width: 140px;
 }
 ul.groupmembers li.member .person-image {
-  border: 1px solid #999999;
+  border: 1px solid #f6f6f6;
   float: left;
   margin-right: 7.5px;
   display: inline-block;
@@ -1600,8 +1600,8 @@ ul.rocklist .rocklist-item .file-name {
   display: block;
 }
 ul.rocklist .rocklist-item:hover {
-  background-color: #999999;
-  color: #ffffff;
+  background-color: #f6f6f6;
+  color: #333333;
 }
 ul.rocklist .rocklist-item.selected {
   background-color: #428bca;
@@ -2031,12 +2031,12 @@ td.grid-col-actions {
 }
 .grid-actions .btn {
   margin-left: 8px;
-  background-color: #999999;
-  color: #ffffff;
-  border-color: #ffffff;
+  background-color: #f6f6f6;
+  color: #333333;
+  border-color: #333333;
 }
 .grid-actions .btn:hover {
-  background-color: #808080;
+  background-color: #dddddd;
 }
 .table-light thead th {
   background-color: inherit;
@@ -2271,12 +2271,12 @@ td.grid-col-actions {
   color: #ebccd1;
 }
 .panel-note article.personal {
-  background-color: #999999;
-  border: 1px solid #919191;
-  color: #ffffff;
+  background-color: #f6f6f6;
+  border: 1px solid #eeeeee;
+  color: #333333;
 }
 .panel-note article.personal > i {
-  color: #d9d9d9;
+  color: #ffffff;
 }
 .panel-note article > img {
   float: left;
@@ -2485,7 +2485,7 @@ td.grid-col-actions {
   float: right;
 }
 .group-location-map img {
-  border: 1px solid #999999;
+  border: 1px solid #f6f6f6;
 }
 @media (max-width: 992px) {
   .group-location-map {
@@ -2638,7 +2638,7 @@ table.attribute-grid tr th:nth-child(3) {
 }
 .personprofilebar-bio .photo {
   padding: 5px 5px 5px 5px;
-  background-color: #999999;
+  background-color: #f6f6f6;
   border: 1px solid #bdbdbd;
   display: table;
   max-width: 200px;
@@ -2735,7 +2735,7 @@ table.attribute-grid tr th:nth-child(3) {
   padding-bottom: 30px;
 }
 .personprofilebar-bio .personcontact .email .email-status i {
-  color: #999999;
+  color: #f6f6f6;
 }
 .personprofilebar-bio .personcontact .email .email-status.do-not-email i {
   color: #d9534f;
@@ -3124,7 +3124,7 @@ span.field-value {
   display: block;
 }
 .merge-photo {
-  border: 3px solid #999999;
+  border: 3px solid #f6f6f6;
 }
 .panel-widget.pageviewsession .pageviewsession-client {
   color: #428bca;
@@ -3149,7 +3149,7 @@ span.field-value {
 }
 iframe.email-body {
   width: 100%;
-  border: 1px solid #999999;
+  border: 1px solid #f6f6f6;
   background-color: #fff;
   height: 300px;
 }
@@ -3360,13 +3360,13 @@ iframe.email-body {
   border: 1px solid #d5d5d5;
 }
 .accent-semibold-color {
-  background-color: #999999;
-  color: #ffffff;
+  background-color: #f6f6f6;
+  color: #333333;
 }
 .accent-semibold-color-bordered {
-  background-color: #999999;
-  color: #ffffff;
-  border: 1px solid #808080;
+  background-color: #f6f6f6;
+  color: #333333;
+  border: 1px solid #dddddd;
 }
 .accent-bold-color {
   background-color: #428bca;
@@ -3608,10 +3608,10 @@ a.cke_dialog_ui_button:focus,
 a.cke_dialog_ui_button:active {
   box-shadow: none !important;
   text-decoration: none !important;
-  background: #999999 !important;
+  background: #f6f6f6 !important;
   background-image: none !important;
-  color: #ffffff !important;
-  border: 1px solid #808080 !important;
+  color: #333333 !important;
+  border: 1px solid #dddddd !important;
   border-radius: 4px;
   text-shadow: none !important;
   padding: 6px 2px !important;
@@ -3899,18 +3899,18 @@ a.help {
   box-shadow: none;
 }
 .btn-action {
-  color: #ffffff;
-  background-color: #999999;
-  border-color: #8c8c8c;
+  color: #333333;
+  background-color: #f6f6f6;
+  border-color: #e9e9e9;
 }
 .btn-action:hover,
 .btn-action:focus,
 .btn-action:active,
 .btn-action.active,
 .open > .dropdown-toggle.btn-action {
-  color: #ffffff;
-  background-color: #808080;
-  border-color: #6e6e6e;
+  color: #333333;
+  background-color: #dddddd;
+  border-color: #cbcbcb;
 }
 .btn-action:active,
 .btn-action.active,
@@ -3932,26 +3932,26 @@ fieldset[disabled] .btn-action:active,
 .btn-action.disabled.active,
 .btn-action[disabled].active,
 fieldset[disabled] .btn-action.active {
-  background-color: #999999;
-  border-color: #8c8c8c;
+  background-color: #f6f6f6;
+  border-color: #e9e9e9;
 }
 .btn-action .badge {
-  color: #999999;
-  background-color: #ffffff;
+  color: #f6f6f6;
+  background-color: #333333;
 }
 .btn-security {
-  color: #ffffff;
-  background-color: #999999;
-  border-color: #8c8c8c;
+  color: #333333;
+  background-color: #f6f6f6;
+  border-color: #e9e9e9;
 }
 .btn-security:hover,
 .btn-security:focus,
 .btn-security:active,
 .btn-security.active,
 .open > .dropdown-toggle.btn-security {
-  color: #ffffff;
-  background-color: #808080;
-  border-color: #6e6e6e;
+  color: #333333;
+  background-color: #dddddd;
+  border-color: #cbcbcb;
 }
 .btn-security:active,
 .btn-security.active,
@@ -3973,12 +3973,12 @@ fieldset[disabled] .btn-security:active,
 .btn-security.disabled.active,
 .btn-security[disabled].active,
 fieldset[disabled] .btn-security.active {
-  background-color: #999999;
-  border-color: #8c8c8c;
+  background-color: #f6f6f6;
+  border-color: #e9e9e9;
 }
 .btn-security .badge {
-  color: #999999;
-  background-color: #ffffff;
+  color: #f6f6f6;
+  background-color: #333333;
 }
 .btn-authenication {
   color: #333333;

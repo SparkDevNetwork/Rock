@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
+        <Rock:NotificationBox runat="server" ID="nbWarning" NotificationBoxType="Warning" Text="No, that's not right. Are you sure you copied that web address correctly?" Visible="false"></Rock:NotificationBox>
         <asp:PlaceHolder ID="phPhotos" runat="server"></asp:PlaceHolder>
         <asp:Repeater runat="server" ID="rptPhotos" OnItemDataBound="rptPhotos_ItemDataBound">
             <ItemTemplate>

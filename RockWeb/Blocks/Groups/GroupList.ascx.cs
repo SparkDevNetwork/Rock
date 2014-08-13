@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
 
-                    var qry = new GroupMemberService( rockContext ).Queryable()
+                    var qry = new GroupMemberService( rockContext ).Queryable( true )
                         .Where( m =>
                             m.PersonId == personContext.Id &&
                             groupTypeIds.Contains( m.Group.GroupTypeId ) &&
@@ -436,6 +436,11 @@ namespace RockWeb.Blocks.Groups
             {
                 var singleGroupType = GroupTypeCache.Read( groupTypeIds.FirstOrDefault() );
                 lTitle.Text = string.Format( "{0}", singleGroupType.GroupTerm.Pluralize() );
+                iIcon.AddCssClass( singleGroupType.IconCssClass );
+            }
+            else
+            {
+                iIcon.AddCssClass( "fa fa-users" );
             }
 
             groupTypeIds = qry.Select( t => t.Id ).ToList();

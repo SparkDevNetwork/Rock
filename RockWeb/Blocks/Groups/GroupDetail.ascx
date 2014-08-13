@@ -62,12 +62,13 @@
                             </div>
                         </Rock:PanelWidget>
 
-                        <Rock:PanelWidget ID="wpLocations" runat="server">
+                        <Rock:PanelWidget ID="wpLocations" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
                                         <asp:BoundField DataField="Location" HeaderText="Location" />
-                                        <asp:BoundField DataField="GroupLocationTypeValue.Name" HeaderText="Type" />
+                                        <asp:BoundField DataField="Type" HeaderText="Type" />
+                                        <asp:BoundField DataField="Schedules" HeaderText="Schedule(s)" />
                                         <Rock:EditField OnClick="gLocations_Edit" />
                                         <Rock:DeleteField OnClick="gLocations_Delete" />
                                     </Columns>
@@ -187,6 +188,8 @@
                 </div>
 
                 <Rock:RockDropDownList ID="ddlLocationType" runat="server" Label="Type" DataValueField="Id" DataTextField="Name" ValidationGroup="Location" />
+
+                <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" ValidationGroup="Location" AllowMultiSelect="true" />
 
             </Content>
         </Rock:ModalDialog>

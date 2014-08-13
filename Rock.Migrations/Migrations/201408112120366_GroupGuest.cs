@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,31 +14,32 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace Rock.SystemGuid
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// System Groups
+    ///
     /// </summary>
-    public static class Group
+    public partial class GroupGuest : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets the administrator group guid (Rock Administrators)
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public const string GROUP_ADMINISTRATORS= "628C51A8-4613-43ED-A18D-4A6FB999273E";
-
+        public override void Up()
+        {
+            AddColumn("dbo.Group", "AllowGuests", c => c.Boolean());
+            AddColumn("dbo.GroupMember", "GuestCount", c => c.Int());
+        }
+        
         /// <summary>
-        /// Gets the staff member group guid (Staff Users)
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public const string GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
-
-        /// <summary>
-        /// Get the photo request application group
-        /// </summary>
-        public const string GROUP_PHOTO_REQUEST = "2108EF9C-10DC-4466-973D-D25AAB7818BE";
+        public override void Down()
+        {
+            DropColumn("dbo.GroupMember", "GuestCount");
+            DropColumn("dbo.Group", "AllowGuests");
+        }
     }
 }

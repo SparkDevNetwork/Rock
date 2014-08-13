@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.1.0-30225")]
-    public sealed partial class ExternalFinancePages : IMigrationMetadata
+    public sealed partial class GroupGuest : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(ExternalFinancePages));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupGuest));
         
         string IMigrationMetadata.Id
         {
-            get { return "201408082214326_ExternalFinancePages"; }
+            get { return "201408112120366_GroupGuest"; }
         }
         
         string IMigrationMetadata.Source

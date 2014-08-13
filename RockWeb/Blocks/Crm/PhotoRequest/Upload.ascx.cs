@@ -32,7 +32,7 @@ using Rock.Attribute;
 namespace RockWeb.Blocks.Crm.PhotoRequest
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Allows a photo to be uploaded for the given person (logged in person) and optionally their family members.
     /// </summary>
     [DisplayName( "Upload" )]
     [Category( "CRM > PhotoRequest" )]
@@ -48,6 +48,11 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
         /// This is special "staff" group but it's only loaded when the AllowStaff block attribute is set to false.
         /// </summary>
         private Group _staffGroup = null;
+
+        /// <summary>
+        /// Group that manages the people using the Photo Request system.
+        /// </summary>
+        private Group _photoRequestGroup = null;
 
         #endregion
 
@@ -68,6 +73,8 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            nbWarning.Visible = false;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -120,7 +127,7 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
             
             var imageEditor = e.Item.FindControl( "imgedPhoto" ) as Rock.Web.UI.Controls.ImageEditor;
             imageEditor.BinaryFileId = person.PhotoId;
-            imageEditor.NoPictureUrl = Person.GetPhotoUrl( null, person.Gender );
+            imageEditor.NoPictureUrl = Person.GetPhotoUrl( null, person.Age, person.Gender );
             if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == person.Id ).Count() > 0 )
             {
                 imageEditor.Label = string.Format( "{0} (staff member)", person.FullName );
@@ -148,26 +155,9 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
                 PersonService personService = new PersonService( rockContext );
                 var person = personService.Get( personId.AsInteger() );
                 person.PhotoId = control.BinaryFileId.Value;
-                rockContext.SaveChanges();
-            }
-        }
 
-        /// <summary>
-        /// Handles the FileUploaded event of the fupContentFile control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void fileUploader_FileUploaded( object sender, EventArgs e )
-        {
-            //var imageUploader = e.Item.FindControl( "imgupPhoto" ) as Rock.Web.UI.Controls.ImageUploader;
-            var control = (Rock.Web.UI.Controls.ImageUploader)sender;
-            var personId = control.Attributes["CommandArgument"];
-            if ( personId != null && control.BinaryFileId != null )
-            {
-                RockContext rockContext = new RockContext();
-                PersonService personService = new PersonService( rockContext );
-                var person = personService.Get( personId.AsInteger() );
-                person.PhotoId = control.BinaryFileId.Value;
+                AddOrUpdatePersonInPhotoRequestGroup( person, rockContext );
+
                 rockContext.SaveChanges();
             }
         }
@@ -184,15 +174,34 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
         private void BindRepeater()
         {
             var people = new List<Person>();
-            var currentUser = CurrentUser;
+            Person targetPerson = null;
 
-            if ( currentUser != null )
+            string personKey = PageParameter( "Person" );
+            if ( ! string.IsNullOrEmpty( personKey ) )
             {
-                people.Add( currentUser.Person );
+                try
+                {
+                    targetPerson = new PersonService( new RockContext() ).GetByUrlEncodedKey( personKey );
+                }
+                catch ( Exception ex )
+                {
+                    nbWarning.Visible = true;
+                    LogException( ex );
+                }
+            }
+            else
+            {
+                // otherwise use the currently logged in person
+                targetPerson = CurrentUser.Person;
+            }
+
+            if ( targetPerson != null )
+            {
+                people.Add( targetPerson );
 
                 if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
                 {
-                    foreach ( var member in currentUser.Person.GetFamilyMembers( includeSelf: false ).ToList() )
+                    foreach ( var member in targetPerson.GetFamilyMembers( includeSelf: false ).ToList() )
                     {
                         people.Add( member.Person );
                     }
@@ -202,6 +211,31 @@ namespace RockWeb.Blocks.Crm.PhotoRequest
             rptPhotos.DataBind();
         }
 
+        /// <summary>
+        /// Add the person (if not already existing) to the Photo Request group and set status to Pending.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void AddOrUpdatePersonInPhotoRequestGroup( Person person, RockContext rockContext )
+        {
+            if ( _photoRequestGroup == null )
+            {
+                GroupService service = new GroupService( rockContext );
+                _photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
+            }
+
+            var groupMember = _photoRequestGroup.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+            if ( groupMember == null )
+            {
+                groupMember = new GroupMember();
+                groupMember.GroupId = _photoRequestGroup.Id;
+                groupMember.PersonId = person.Id;
+                groupMember.GroupRoleId = _photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1;
+                _photoRequestGroup.Members.Add( groupMember );
+            }
+            
+            groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
+        }
         #endregion
     }
 }

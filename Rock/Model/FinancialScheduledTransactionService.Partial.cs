@@ -92,9 +92,92 @@ namespace Rock.Model
 
             errorMessages = "Gateway is invalid or not active";
             return false;
-
         }
 
+        /// <summary>
+        /// Reactivates the specified scheduled transaction.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
+        {
+            if ( scheduledTransaction.GatewayEntityType != null )
+            {
+                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
+                if ( gateway != null && gateway.IsActive )
+                {
+                    if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
+                    {
+                        var noteTypeService = new NoteTypeService( (RockContext)this.Context );
+                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
+
+                        var noteService = new NoteService( (RockContext)this.Context );
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.EntityId = scheduledTransaction.Id;
+                        note.Caption = "Reactivated Transaction";
+                        noteService.Add( note );
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            errorMessages = "Gateway is invalid or not active";
+            return false;
+        }
+
+        /// <summary>
+        /// Cancels the specified scheduled transaction.
+        /// </summary>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
+        {
+            if ( scheduledTransaction.GatewayEntityType != null )
+            {
+                var gateway = Rock.Financial.GatewayContainer.GetComponent( scheduledTransaction.GatewayEntityType.Guid.ToString() );
+                if ( gateway != null && gateway.IsActive )
+                {
+                    if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
+                    {
+                        var noteTypeService = new NoteTypeService( (RockContext)this.Context );
+                        var noteType = noteTypeService.Get( scheduledTransaction.TypeId, "Note" );
+
+                        var noteService = new NoteService( (RockContext)this.Context );
+                        var note = new Note();
+                        note.NoteTypeId = noteType.Id;
+                        note.EntityId = scheduledTransaction.Id;
+                        note.Caption = "Cancelled Transaction";
+                        noteService.Add( note );
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            errorMessages = "Gateway is invalid or not active";
+            return false;
+        }
+
+        /// <summary>
+        /// Processes the payments.
+        /// </summary>
+        /// <param name="gateway">The gateway.</param>
+        /// <param name="batchNamePrefix">The batch name prefix.</param>
+        /// <param name="payments">The payments.</param>
+        /// <param name="batchUrlFormat">The batch URL format.</param>
+        /// <returns></returns>
         public static string ProcessPayments( GatewayComponent gateway, string batchNamePrefix, List<Payment> payments, string batchUrlFormat = "" )
         {
             int totalPayments = 0;

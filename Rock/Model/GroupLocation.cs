@@ -145,6 +145,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Schedule"/> that are associated with this GroupLocation.
         /// </value>
+        [DataMember]
         public virtual ICollection<Schedule> Schedules
         {
             get { return _schedules ?? ( _schedules = new Collection<Schedule>() ); }

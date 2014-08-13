@@ -211,10 +211,25 @@ namespace RockWeb.Blocks.Finance
             BootstrapButton bbtnDelete = (BootstrapButton)sender;
             RepeaterItem riItem = (RepeaterItem)bbtnDelete.NamingContainer;
 
+            HiddenField hfScheduledTransactionId = (HiddenField)riItem.FindControl( "hfScheduledTransactionId" );
+            Literal content = (Literal)riItem.FindControl( "lLiquidContent" );
             Button btnEdit = (Button)riItem.FindControl( "btnEdit" );
 
-            Literal content = (Literal)riItem.FindControl( "lLiquidContent" );
-            content.Text = String.Format("<div class='alert alert-success'>Your {0} has been deleted.</div>", GetAttributeValue("TransactionLabel"));
+            var rockContext = new Rock.Data.RockContext();
+            FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
+            var currentTransaction = fstService.Get( Int32.Parse(hfScheduledTransactionId.Value) );
+
+            string errorMessage = string.Empty;
+            if ( fstService.Cancel( currentTransaction, out errorMessage ) )
+            {
+                rockContext.SaveChanges();
+                content.Text = String.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( "TransactionLabel" ).ToLower() );
+            }
+            else
+            {
+                content.Text = String.Format( "<div class='alert alert-danger'>An error occured while deleting your scheduled transation. Message: {0}</div>", errorMessage );
+            }
+            
             bbtnDelete.Visible = false;
             btnEdit.Visible = false;
 
