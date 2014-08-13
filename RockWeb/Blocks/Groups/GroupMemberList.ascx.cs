@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -39,6 +40,7 @@ namespace RockWeb.Blocks.Groups
     {
         #region Private Variables
 
+        private DefinedValueCache _inactiveStatus = null;
         private Group _group = null;
 
         #endregion
@@ -137,9 +139,19 @@ namespace RockWeb.Blocks.Groups
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var groupMember = e.Row.DataItem as GroupMember;
-                if ( groupMember != null && groupMember.Person != null && ( groupMember.Person.IsDeceased ?? false ) )
+                if ( groupMember != null && groupMember.Person != null )
                 {
-                    e.Row.CssClass = "deceased";
+                    if ( _inactiveStatus != null &&
+                        groupMember.Person.RecordStatusValueId.HasValue &&
+                        groupMember.Person.RecordStatusValueId == _inactiveStatus.Id )
+                    {
+                        e.Row.AddCssClass( "inactive" );
+                    }
+
+                    if ( groupMember.Person.IsDeceased ?? false )
+                    {
+                        e.Row.AddCssClass( "deceased" );
+                    }
                 }
             }
         }
@@ -385,6 +397,8 @@ namespace RockWeb.Blocks.Groups
                     {
                         qry = qry.Where( m => statuses.Contains( m.GroupMemberStatus ) );
                     }
+
+                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     SortProperty sortProperty = gGroupMembers.SortProperty;
 
