@@ -65,6 +65,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the score.
+        /// Calculated in the [spCrm_PersonDuplicateFinder] stored procedure
         /// </summary>
         /// <value>
         /// The score.
@@ -80,6 +81,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ScoreDetail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the capacity.
+        /// The max possible score based on what items they have values for.
+        /// </summary>
+        /// <value>
+        /// The capacity.
+        /// </value>
+        [DataMember]
+        public int? Capacity { get; set; }
 
         #endregion
 
