@@ -28,6 +28,7 @@ using Rock.Web.UI.Controls;
 using System.Text.RegularExpressions;
 using System.Data.Entity.SqlServer;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -38,6 +39,12 @@ namespace RockWeb.Blocks.Crm
     [LinkedPage("Person Detail Page")]
     public partial class PersonSearch : Rock.Web.UI.RockBlock
     {
+        #region Fields
+
+        private DefinedValueCache _inactiveStatus = null;
+
+        #endregion
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -75,9 +82,19 @@ namespace RockWeb.Blocks.Crm
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
                 var person = e.Row.DataItem as Person;
-                if ( person != null && ( person.IsDeceased ?? false ) )
+                if ( person != null )
                 {
-                    e.Row.CssClass = "deceased";
+                    if (_inactiveStatus != null && 
+                        person.RecordStatusValueId.HasValue && 
+                        person.RecordStatusValueId == _inactiveStatus.Id)
+                    {
+                        e.Row.AddCssClass( "inactive" );
+                    }
+
+                    if ( person.IsDeceased ?? false )
+                    {
+                        e.Row.AddCssClass( "deceased" );
+                    }
                 }
             }
         }
@@ -172,6 +189,8 @@ namespace RockWeb.Blocks.Crm
                             nbNotice.Visible = true;
                         }
                     }
+
+                    _inactiveStatus = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
                     gPeople.DataSource = personList;
                     gPeople.DataBind();
