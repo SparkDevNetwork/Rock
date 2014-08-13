@@ -104,7 +104,7 @@ namespace Rock.Model
                 var definedValue = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
                 if ( definedValue != null )
                 {
-                    return Queryable( includes )
+                    return base.Queryable( includes )
                         .Where( p =>
                             p.RecordTypeValueId != definedValue.Id &&
                             ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) );

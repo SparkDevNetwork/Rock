@@ -67,7 +67,16 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var kioskGroup in kioskGroupType.KioskGroups )
                                 {
-                                    if ( !groupType.Groups.Any( g => g.Group.Id == kioskGroup.Group.Id ) )
+                                    bool validGroup = true;
+                                    if ( groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
+                                    {
+                                        validGroup = new GroupMemberService( rockContext ).Queryable()
+                                            .Any( m =>
+                                                m.GroupId == kioskGroup.Group.Id &&
+                                                m.PersonId == person.Person.Id );
+                                    }
+
+                                    if ( validGroup && !groupType.Groups.Any( g => g.Group.Id == kioskGroup.Group.Id ) )
                                     {
                                         var checkInGroup = new CheckInGroup();
                                         checkInGroup.Group = kioskGroup.Group.Clone( false );

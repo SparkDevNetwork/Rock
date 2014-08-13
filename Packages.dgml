@@ -4,8 +4,13 @@
     <Node Id="RockWeb" Label="RockWeb" Category="Project" />
     <Node Id="Antlr 3.5.0.2" Label="Antlr 3.5.0.2" Category="Package" />
     <Node Id="ImageResizer 3.4.3" Label="ImageResizer 3.4.3" Category="Package" />
+    <Node Id="jQuery 1.6.4" Label="jQuery 1.6.4" Category="Package" />
     <Node Id="Microsoft.AspNet.Cors 5.1.2" Label="Microsoft.AspNet.Cors 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Label="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR 2.0.3" Label="Microsoft.AspNet.SignalR 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.Core 2.0.3" Label="Microsoft.AspNet.SignalR.Core 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.JS 2.0.3" Label="Microsoft.AspNet.SignalR.JS 2.0.3" Category="Package" />
+    <Node Id="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Label="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Category="Package" />
     <Node Id="Microsoft.AspNet.Web.Optimization 1.1.3" Label="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi 5.1.2" Label="Microsoft.AspNet.WebApi 5.1.2" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 5.1.2" Label="Microsoft.AspNet.WebApi.Client 5.1.2" Category="Package" />
@@ -15,11 +20,15 @@
     <Node Id="Microsoft.Bcl 1.1.8" Label="Microsoft.Bcl 1.1.8" Category="Package" />
     <Node Id="Microsoft.Bcl.Build 1.0.14" Label="Microsoft.Bcl.Build 1.0.14" Category="Package" />
     <Node Id="Microsoft.Net.Http 2.2.20" Label="Microsoft.Net.Http 2.2.20" Category="Package" />
+    <Node Id="Microsoft.Owin 2.0.1" Label="Microsoft.Owin 2.0.1" Category="Package" />
+    <Node Id="Microsoft.Owin.Host.SystemWeb 2.0.1" Label="Microsoft.Owin.Host.SystemWeb 2.0.1" Category="Package" />
+    <Node Id="Microsoft.Owin.Security 2.0.1" Label="Microsoft.Owin.Security 2.0.1" Category="Package" />
     <Node Id="Microsoft.SqlServer.Types 11.0.1" Label="Microsoft.SqlServer.Types 11.0.1" Category="Package" />
     <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Label="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" />
     <Node Id="Microsoft.Web.Xdt 1.0.0" Label="Microsoft.Web.Xdt 1.0.0" Category="Package" />
     <Node Id="Newtonsoft.Json 6.0.3" Label="Newtonsoft.Json 6.0.3" Category="Package" />
     <Node Id="NuGet.Core 2.8.1" Label="NuGet.Core 2.8.1" Category="Package" />
+    <Node Id="Owin 1.0" Label="Owin 1.0" Category="Package" />
     <Node Id="UAParser 1.0.2.0" Label="UAParser 1.0.2.0" Category="Package" />
     <Node Id="WebActivatorEx 2.0.5" Label="WebActivatorEx 2.0.5" Category="Package" />
     <Node Id="WebGrease 1.6.0" Label="WebGrease 1.6.0" Category="Package" />
@@ -68,6 +77,15 @@
     <Node Id="WindowsAzure.Storage 3.1.0.1" Label="WindowsAzure.Storage 3.1.0.1" Category="Package" />
   </Nodes>
   <Links>
+    <Link Source="Microsoft.AspNet.SignalR 2.0.3" Target="Microsoft.AspNet.SignalR.JS 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR 2.0.3" Target="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.Core 2.0.3" Target="Microsoft.Owin.Security 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.JS 2.0.3" Target="jQuery 1.6.4" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Target="Microsoft.AspNet.SignalR.Core 2.0.3" Category="Package Dependency" />
+    <Link Source="Microsoft.AspNet.SignalR.SystemWeb 2.0.3" Target="Microsoft.Owin.Host.SystemWeb 2.0.1" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.1.3" Target="WebGrease 1.6.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.WebApi 5.1.2" Target="Microsoft.AspNet.WebApi.WebHost 5.1.2" Category="Package Dependency" />
@@ -81,6 +99,14 @@
     <Link Source="Microsoft.Bcl 1.1.8" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" />
     <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl 1.1.8" Category="Package Dependency" />
     <Link Source="Microsoft.Net.Http 2.2.20" Target="Microsoft.Bcl.Build 1.0.14" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Host.SystemWeb 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Security 2.0.1" Target="Owin 1.0" Category="Package Dependency" />
+    <Link Source="Microsoft.Owin.Security 2.0.1" Target="Microsoft.Owin 2.0.1" Category="Package Dependency" />
     <Link Source="NuGet.Core 2.8.1" Target="Microsoft.Web.Xdt 1.0.0" Category="Package Dependency" />
     <Link Source="UAParser 1.0.2.0" Target="YamlDotNet 3.0.0" Category="Package Dependency" />
     <Link Source="WebActivatorEx 2.0.5" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
@@ -88,6 +114,7 @@
     <Link Source="WebGrease 1.6.0" Target="Newtonsoft.Json 6.0.3" Category="Package Dependency" />
     <Link Source="RockWeb" Target="ImageResizer 3.4.3" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.ScriptManager.WebForms 5.0.0" Category="Installed Package" />
+    <Link Source="RockWeb" Target="Microsoft.AspNet.SignalR 2.0.3" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.Web.Optimization 1.1.3" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 5.1.2" Category="Installed Package" />
     <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi.Cors 5.1.2" Category="Installed Package" />

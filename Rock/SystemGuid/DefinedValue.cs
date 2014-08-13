@@ -314,6 +314,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Record Status Reason
+
+        /// <summary>
+        /// Inactive record status reason of Deceased 
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
+
+        #endregion
+
         #region Person Record Type
 
         /// <summary>

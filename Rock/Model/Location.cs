@@ -490,6 +490,13 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
+            if (string.IsNullOrWhiteSpace(this.Street1) &&
+                string.IsNullOrWhiteSpace(this.Street2) &&
+                string.IsNullOrWhiteSpace(this.City))
+            {
+                return string.Empty;
+            }
+
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 
