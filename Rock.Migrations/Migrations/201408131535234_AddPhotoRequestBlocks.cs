@@ -82,24 +82,24 @@ namespace Rock.Migrations
 " );
 
             // Add new Action called "Request Photo" on person bio block
-            Sql( @"
-            -- Add new Action called 'Request Photo' on person bio block
-            DECLARE @BlockId int = ( SELECT [Id] FROM [Block] WHERE [Guid] = 'B5C1FDB6-0224-43E4-8E26-6B2EAF86253A' )
-            DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '35F69669-48DE-4182-B828-4EC9C1C31B08' )
-
-            IF NOT EXISTS (SELECT [ID] FROM  [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId AND [Value] LIKE '%templateGuid=B9A0489C-A823-4C5C-A9F9-14A206EC3B88%' )
-            BEGIN
-                UPDATE [AttributeValue] SET [Value] = [Value] + '
-	                <li>
-		                <a href=''~/Communication/?templateGuid=B9A0489C-A823-4C5C-A9F9-14A206EC3B88&PersonId={0}'' tabindex=''0''>
-			                <i class=''fa fa-camera''></i>
-			                Request Photo
-		                </a>
-	                </li>'
-                WHERE [AttributeId] = @AttributeId
-                AND [EntityId] = @BlockId
-            END
-" );
+//            Sql( @"
+//            -- Add new Action called 'Request Photo' on person bio block
+//            DECLARE @BlockId int = ( SELECT [Id] FROM [Block] WHERE [Guid] = 'B5C1FDB6-0224-43E4-8E26-6B2EAF86253A' )
+//            DECLARE @AttributeId int = ( SELECT [Id] FROM [Attribute] WHERE [Guid] = '35F69669-48DE-4182-B828-4EC9C1C31B08' )
+//
+//            IF NOT EXISTS (SELECT [ID] FROM  [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @BlockId AND [Value] LIKE '%templateGuid=B9A0489C-A823-4C5C-A9F9-14A206EC3B88%' )
+//            BEGIN
+//                UPDATE [AttributeValue] SET [Value] = [Value] + '
+//	                <li>
+//		                <a href=''~/Communication/?templateGuid=B9A0489C-A823-4C5C-A9F9-14A206EC3B88&PersonId={0}'' tabindex=''0''>
+//			                <i class=''fa fa-camera''></i>
+//			                Request Photo
+//		                </a>
+//	                </li>'
+//                WHERE [AttributeId] = @AttributeId
+//                AND [EntityId] = @BlockId
+//            END
+//" );
 
             #endregion
 
