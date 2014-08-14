@@ -1070,6 +1070,13 @@ achieve our mission.  We are so grateful for your commitment.
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
             }
 
+            var location = new Location();
+            acAddress.GetValues( location );
+            if ( string.IsNullOrWhiteSpace( location.Street1 )  )
+            {
+                errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
+            }
+
             if ( hfPaymentTab.Value == "ACH" )
             {
                 // Validate ach options
