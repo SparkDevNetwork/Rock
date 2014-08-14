@@ -8,7 +8,7 @@
             <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-o"></i> Define Value List</h1>
+                <h1 class="panel-title"><i class="fa fa-file-o"></i> Values</h1>
             </div>
             <div class="panel-body">
 
