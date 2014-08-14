@@ -4396,7 +4396,6 @@ pre {
 // 5. Theme Styling          */
 #page-wrapper {
   width: 100%;
-  overflow: hidden;
 }
 #content-wrapper {
   background-color: #f3f3f4;
