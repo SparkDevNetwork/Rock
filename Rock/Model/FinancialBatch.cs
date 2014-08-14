@@ -116,6 +116,9 @@ namespace Rock.Model
 
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialBatch"/> class.
+        /// </summary>
         public FinancialBatch() : base()
         {
             Transactions = new Collection<FinancialTransaction>();

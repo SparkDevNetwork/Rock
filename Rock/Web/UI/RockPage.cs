@@ -2157,7 +2157,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// Updates the blocks.
         /// </summary>
-        /// <param name="rockBlockType">Type of the rock block.</param>
+        /// <param name="blockTypePath">The block type path.</param>
         public void UpdateBlocks( string blockTypePath )
         {
             foreach ( var rockBlock in RockBlocks )

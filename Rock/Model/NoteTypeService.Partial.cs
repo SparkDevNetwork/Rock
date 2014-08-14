@@ -26,11 +26,14 @@ namespace Rock.Model
     public partial class NoteTypeService : Service<NoteType>
     {
         /// <summary>
-        /// Gets the first <see cref="Rock.Model.NoteType"/> by Name and EntityType
+        /// Gets the first <see cref="Rock.Model.NoteType" /> by Name and EntityType
         /// </summary>
-        /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/> to search for.</param>
-        /// <param name="name">A <see cref="System.String"/> representing the Name of the </param>
-        /// <returns>The first <see cref="Rock.Model.NoteType"/> matching the provided values. If a match is not found, this value will be null.</returns>
+        /// <param name="entityTypeId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.EntityType" /> to search for.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the Name of the</param>
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns>
+        /// The first <see cref="Rock.Model.NoteType" /> matching the provided values. If a match is not found, this value will be null.
+        /// </returns>
         public NoteType Get( int entityTypeId, string name, bool create = true )
         {
             var noteType = Queryable().FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
