@@ -578,17 +578,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the first location.
+        /// Gets the first group location.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="locationTypeValueId">The location type value id.</param>
         /// <returns></returns>
-        public Location GetFirstLocation( int personId, int locationTypeValueId )
+        public GroupLocation GetFirstLocation( int personId, int locationTypeValueId )
         {
-            return GetFamilies( personId )
-                .SelectMany( g => g.GroupLocations )
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            return new GroupMemberService( (RockContext)this.Context ).Queryable( "GroupLocations.Location" )
+                .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
+                .SelectMany( m => m.Group.GroupLocations )
                 .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
-                .Select( gl => gl.Location )
                 .FirstOrDefault();
         }
 

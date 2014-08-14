@@ -651,11 +651,17 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardName.Visible = !Gateway.SplitNameOnCard;
                     txtCardName.Text = scheduledTransaction.AuthorizedPerson.FullName;
 
-                    var address = new PersonService( new RockContext() ).GetFirstLocation( 
+                    var groupLocation = new PersonService( new RockContext() ).GetFirstLocation( 
                         scheduledTransaction.AuthorizedPerson.Id,
                         DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id );
-
-                    acBillingAddress.SetValues( address );
+                    if ( groupLocation != null )
+                    {
+                        acBillingAddress.SetValues( groupLocation.Location );
+                    }
+                    else
+                    {
+                        acBillingAddress.SetValues( null );
+                    }
 
                     mypExpiration.MinimumYear = RockDateTime.Now.Year;
                 }
@@ -1175,15 +1181,15 @@ achieve our mission.  We are so grateful for your commitment.
                     addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                 }
 
-                var address = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
-                if ( address != null )
+                var groupLocation = personService.GetFirstLocation( scheduledTransaction.AuthorizedPerson.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
+                if ( groupLocation != null && groupLocation.Location != null )
                 {
-                    paymentInfo.Street1 = address.Street1;
-                    paymentInfo.Street2 = address.Street2;
-                    paymentInfo.City = address.City;
-                    paymentInfo.State = address.State;
-                    paymentInfo.PostalCode = address.PostalCode;
-                    paymentInfo.Country = address.Country;
+                    paymentInfo.Street1 = groupLocation.Location.Street1;
+                    paymentInfo.Street2 = groupLocation.Location.Street2;
+                    paymentInfo.City = groupLocation.Location.City;
+                    paymentInfo.State = groupLocation.Location.State;
+                    paymentInfo.PostalCode = groupLocation.Location.PostalCode;
+                    paymentInfo.Country = groupLocation.Location.Country;
                 }
             }
 
