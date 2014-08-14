@@ -215,6 +215,7 @@ namespace Rock.Web.Cache
         /// Reads the specified class name.
         /// </summary>
         /// <param name="className">Name of the class.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public static RestControllerCache Read( string className, RockContext rockContext = null )
         {

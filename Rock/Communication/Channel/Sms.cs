@@ -160,7 +160,7 @@ namespace Rock.Communication.Channel
         /// <param name="toPhone">The phone number a message is sent to.</param>
         /// <param name="fromPhone">The phone number a message is sent from.</param>
         /// <param name="message">The message that was sent.</param>
-        /// <returns></returns>
+        /// <param name="errorMessage">The error message.</param>
         public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
             errorMessage = string.Empty;

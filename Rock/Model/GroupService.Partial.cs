@@ -347,6 +347,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         /// <param name="postalCode">The postal code.</param>
         /// <param name="country">The country.</param>
+        /// <param name="moveExistingToPrevious">if set to <c>true</c> [move existing to previous].</param>
         public static void AddNewFamilyAddress( RockContext rockContext, Group family, string locationTypeGuid, 
             string street1, string street2, string city, string state, string postalCode, string country, bool moveExistingToPrevious = false )
         {

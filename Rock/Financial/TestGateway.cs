@@ -96,7 +96,6 @@ namespace Rock.Financial
         /// Reactivates the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
-        /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
@@ -108,7 +107,7 @@ namespace Rock.Financial
         /// <summary>
         /// Updates the scheduled payment.
         /// </summary>
-        /// <param name="schedule">The schedule.</param>
+        /// <param name="transaction">The transaction.</param>
         /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
@@ -170,7 +169,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets an optional reference identifier needed to process future transaction from saved account.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
+        /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
