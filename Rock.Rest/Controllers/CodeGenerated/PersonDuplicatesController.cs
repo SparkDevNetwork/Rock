@@ -26,10 +26,10 @@ using Rock.Model;
 namespace Rock.Rest.Controllers
 {
     /// <summary>
-    /// FinancialTransactionScannedChecks REST API
+    /// PersonDuplicates REST API
     /// </summary>
-    public partial class FinancialTransactionScannedChecksController : Rock.Rest.ApiController<Rock.Model.FinancialTransactionScannedCheck>
+    public partial class PersonDuplicatesController : Rock.Rest.ApiController<Rock.Model.PersonDuplicate>
     {
-        public FinancialTransactionScannedChecksController() : base( new Rock.Model.FinancialTransactionScannedCheckService( new Rock.Data.RockContext() ) ) { } 
+        public PersonDuplicatesController() : base( new Rock.Model.PersonDuplicateService( new Rock.Data.RockContext() ) ) { } 
     }
 }

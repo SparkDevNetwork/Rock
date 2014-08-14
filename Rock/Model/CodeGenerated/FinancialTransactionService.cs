@@ -105,6 +105,8 @@ namespace Rock.Model
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.CheckMicrEncrypted = source.CheckMicrEncrypted;
             target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
+            target.ProcessedDateTime = source.ProcessedDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

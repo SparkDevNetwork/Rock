@@ -117,6 +117,7 @@
     <Compile Include="Controllers\CodeGenerated\FollowingsController.cs" />
     <Compile Include="Controllers\CodeGenerated\MetricCategoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageViewsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PluginMigrationsController.cs" />
     <Compile Include="Controllers\ExceptionLogsController.Partial.cs" />
     <Compile Include="Controllers\FollowingsController.Partial.cs" />
@@ -142,7 +143,6 @@
     <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
-    <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupTypeRolesController.cs" />
     <Compile Include="Controllers\CodeGenerated\HistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
