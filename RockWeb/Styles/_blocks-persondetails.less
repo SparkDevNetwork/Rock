@@ -13,7 +13,7 @@
     10. Responsive Overrides
     11. Person Merge
     12. Person Page Views
-    13. Deceased
+    13. Deceased / Inactive Styles
 */
 
 // 1. Page Styles
@@ -753,7 +753,7 @@ span.field-value {
     }
 }
 
-// 13. Deceased Styles
+// 13. Deceased / Inactive Styles
 // -------------------------
 
 .person-bio {
@@ -781,8 +781,13 @@ span.field-value {
     }
 }
 
-tr.deceased {
+//tr.deceased {
+//    td {
+//    }
+//}
+
+tr.inactive {
     td {
-        background-color: lighten(@label-warning-bg, 25%) !important;
+        color: lighten(@text-color, 30%);
     }
 }
