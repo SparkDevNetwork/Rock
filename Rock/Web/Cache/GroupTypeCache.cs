@@ -586,6 +586,14 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
         /// </summary>
         /// <param name="role">The role.</param>
@@ -594,6 +602,7 @@ namespace Rock.Web.Cache
             Id = role.Id;
             Guid = role.Guid;
             Name = role.Name;
+            Order = role.Order;
         }
     }
 }
