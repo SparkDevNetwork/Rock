@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -269,27 +270,40 @@ namespace RockInstallTools
         {
             DatabaseConnectionResult dbConnectResult = new DatabaseConnectionResult();
 
-            // setup connection
-            string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", dbUsername, dbPassword, dbServer );
-            SqlConnection testConnection = new SqlConnection( connectionString );
-
-            // try connection
-            try
+            // check password for characters that are not supported in a connection string
+            Match match = Regex.Match( dbPassword, @"[,;*!@?(){}\[\]]", RegexOptions.IgnoreCase );
+            if ( match.Success ) 
             {
-                testConnection.Open();
-                dbConnectResult.CanConnect = true;
-                dbConnectResult.Message = String.Format( "The user {0} connected successfully to {1}.", dbUsername, dbServer );
-
-            }
-            catch ( Exception ex )
-            {
+                // we have an illegal character
                 dbConnectResult.CanConnect = false;
-                dbConnectResult.Message = String.Format("The user {0} could not connect to the server {1}. Error message: {2}.", dbUsername, dbServer, ex.Message);
+                dbConnectResult.Message = "Please do not use one of the following characters in your database password '[] {}() , ; ? * ! @'.";
             }
-            finally
+            else
             {
-                testConnection = null;
+                // setup connection
+                string connectionString = String.Format( "user id={0};password={1};server={2};connection timeout=10", dbUsername, dbPassword, dbServer );
+                SqlConnection testConnection = new SqlConnection( connectionString );
+
+                // try connection
+                try
+                {
+                    testConnection.Open();
+                    dbConnectResult.CanConnect = true;
+                    dbConnectResult.Message = String.Format( "The user {0} connected successfully to {1}.", dbUsername, dbServer );
+
+                }
+                catch ( Exception ex )
+                {
+                    dbConnectResult.CanConnect = false;
+                    dbConnectResult.Message = String.Format( "The user {0} could not connect to the server {1}. Error message: {2}.", dbUsername, dbServer, ex.Message );
+                }
+                finally
+                {
+                    testConnection = null;
+                }
             }
+
+            
 
             return dbConnectResult;
         }
