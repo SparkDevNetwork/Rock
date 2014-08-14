@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Crm
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
 
-            var personDuplicateQry = personDuplicateService.Queryable();
+            var personDuplicateQry = personDuplicateService.Queryable().Where( a => a.Capacity.HasValue && a.Capacity > 0 );
 
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
 
