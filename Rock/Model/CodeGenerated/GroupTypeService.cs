@@ -119,6 +119,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.LocationSelectionMode = source.LocationSelectionMode;
+            target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

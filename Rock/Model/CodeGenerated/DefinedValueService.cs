@@ -77,12 +77,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring FinancialScheduledTransaction,CreditCardTypeValueId 
+            
+            // ignoring FinancialScheduledTransaction,CurrencyTypeValueId 
+            
+            // ignoring FinancialScheduledTransaction,TransactionFrequencyValueId 
             
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             

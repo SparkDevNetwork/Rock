@@ -28,64 +28,71 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialTransactionScannedCheck Service class
+    /// PersonDuplicate Service class
     /// </summary>
-    public partial class FinancialTransactionScannedCheckService : Service<FinancialTransactionScannedCheck>
+    public partial class PersonDuplicateService : Service<PersonDuplicate>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionScannedCheckService"/> class
+        /// Initializes a new instance of the <see cref="PersonDuplicateService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public FinancialTransactionScannedCheckService(RockContext context) : base(context)
+        public PersonDuplicateService(RockContext context) : base(context)
         {
+        }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( PersonDuplicate item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return true;
         }
     }
 
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class FinancialTransactionScannedCheckExtensionMethods
+    public static partial class PersonDuplicateExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialTransactionScannedCheck object to a new FinancialTransactionScannedCheck object
+        /// Clones this PersonDuplicate object to a new PersonDuplicate object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialTransactionScannedCheck Clone( this FinancialTransactionScannedCheck source, bool deepCopy )
+        public static PersonDuplicate Clone( this PersonDuplicate source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialTransactionScannedCheck;
+                return source.Clone() as PersonDuplicate;
             }
             else
             {
-                var target = new FinancialTransactionScannedCheck();
+                var target = new PersonDuplicate();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another FinancialTransactionScannedCheck object to this FinancialTransactionScannedCheck object
+        /// Copies the properties from another PersonDuplicate object to this PersonDuplicate object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this FinancialTransactionScannedCheck target, FinancialTransactionScannedCheck source )
+        public static void CopyPropertiesFrom( this PersonDuplicate target, PersonDuplicate source )
         {
-            target.ScannedCheckMicr = source.ScannedCheckMicr;
-            target.AuthorizedPersonId = source.AuthorizedPersonId;
-            target.BatchId = source.BatchId;
-            target.GatewayEntityTypeId = source.GatewayEntityTypeId;
-            target.TransactionDateTime = source.TransactionDateTime;
-            target.TransactionCode = source.TransactionCode;
-            target.Summary = source.Summary;
-            target.TransactionTypeValueId = source.TransactionTypeValueId;
-            target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-            target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-            target.SourceTypeValueId = source.SourceTypeValueId;
-            target.CheckMicrEncrypted = source.CheckMicrEncrypted;
-            target.ScheduledTransactionId = source.ScheduledTransactionId;
+            target.PersonAliasId = source.PersonAliasId;
+            target.DuplicatePersonAliasId = source.DuplicatePersonAliasId;
+            target.IsConfirmedAsNotDuplicate = source.IsConfirmedAsNotDuplicate;
+            target.Score = source.Score;
+            target.ScoreDetail = source.ScoreDetail;
+            target.Capacity = source.Capacity;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

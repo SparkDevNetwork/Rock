@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.PersonId = source.PersonId;
             target.AccountNumberSecured = source.AccountNumberSecured;
+            target.AccountNumberMasked = source.AccountNumberMasked;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

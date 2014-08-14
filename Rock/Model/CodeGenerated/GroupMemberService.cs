@@ -92,6 +92,7 @@ namespace Rock.Model
             target.PersonId = source.PersonId;
             target.GroupRoleId = source.GroupRoleId;
             target.GroupMemberStatus = source.GroupMemberStatus;
+            target.GuestCount = source.GuestCount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
