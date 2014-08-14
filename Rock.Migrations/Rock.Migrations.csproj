@@ -1097,6 +1097,10 @@
     <Compile Include="Migrations\201408131734148_PersonDuplicateCapacity.Designer.cs">
       <DependentUpon>201408131734148_PersonDuplicateCapacity.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201408140543489_AdditionalCheckinAdminPages.cs" />
+    <Compile Include="Migrations\201408140543489_AdditionalCheckinAdminPages.Designer.cs">
+      <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
     <Compile Include="Migrations\RockMigration4.cs" />
@@ -1902,6 +1906,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201408131734148_PersonDuplicateCapacity.resx">
       <DependentUpon>201408131734148_PersonDuplicateCapacity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201408140543489_AdditionalCheckinAdminPages.resx">
+      <DependentUpon>201408140543489_AdditionalCheckinAdminPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
