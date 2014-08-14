@@ -7,7 +7,7 @@
             <Rock:DatePicker ID="dtStartDate" runat="server" Label="From Date" />
             <Rock:DatePicker ID="dtEndDate" runat="server" Label="To Date" />
             <Rock:CampusPicker ID="cpCampus" runat="server" />
-            <Rock:RockDropDownList ID="ddlVenue" runat="server" Label="Venue Type" />
+            <Rock:RockTextBox ID="tbVenue" runat="server" Label="Venue" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="gRecordings" runat="server" EmptyDataText="No DVR Recordings Found" DataKeyNames="WeekendDate,CampusGuid,Venue" AllowSorting="true" OnRowSelected="gRecordings_Edit">

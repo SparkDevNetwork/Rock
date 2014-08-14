@@ -141,7 +141,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             rFilter.SaveUserPreference( "Campus", cpCampus.SelectedValue != All.Id.ToString() ? cpCampus.SelectedValue : string.Empty );
             rFilter.SaveUserPreference( "From Date", dtStartDate.Text );
             rFilter.SaveUserPreference( "To Date", dtEndDate.Text );
-            rFilter.SaveUserPreference( "Venue", ddlVenue.Text );
+            rFilter.SaveUserPreference( "Venue", tbVenue.Text );
 
             BindGrid();
         }
@@ -160,7 +160,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
             cpCampus.SelectedValue = rFilter.GetUserPreference( "Campus" );
             dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
             dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
-            ddlVenue.Text = rFilter.GetUserPreference( "Venue" );
+            tbVenue.Text = rFilter.GetUserPreference( "Venue" );
         }
 
         /// <summary>

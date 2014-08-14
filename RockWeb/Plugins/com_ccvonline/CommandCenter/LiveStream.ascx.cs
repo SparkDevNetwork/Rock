@@ -19,7 +19,7 @@ namespace RockWeb.Plugins.com_ccvonline.CommandCenter
     [Description("Used for viewing live venue streams.")]
 
     [CampusField("Campus", "Only show streams from a specific campus", false, order: 0)]
-    [TextField("Venue Type", "Only shows streams for a specfic venue. i.e. Command Center", false, order: 1)]
+    [TextField("Venue", "Only shows streams for a specfic venue. i.e. Command Center", false, order: 1)]
     public partial class LiveStream : RockBlock
     {
         #region Base Control Methods
