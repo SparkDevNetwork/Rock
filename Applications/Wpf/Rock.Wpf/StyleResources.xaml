@@ -615,7 +615,7 @@
                                  Value="True">
                             <Setter TargetName="buttonBorder"
                                     Property="Background"
-                                    Value="#000000">
+                                    Value="#ee7624">
                             </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
