@@ -87,6 +87,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Model.cs" />
+    <Compile Include="Data\NamedModel.cs" />
     <Compile Include="Data\SampleProjectContext.cs" />
     <Compile Include="Data\SampleProjectService.cs" />
     <Compile Include="Migrations\002_AddSystemData.cs" />
@@ -95,6 +97,7 @@
     <Compile Include="Model\ReferralAgencyService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rest\ReferralAgenciesController.cs" />
+    <Compile Include="SystemGuid\DefinedType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -102,10 +105,6 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\com.ccvonline\com.ccvonline.csproj">
-      <Project>{83775a9e-0455-4801-b1ef-dc70d786d09b}</Project>
-      <Name>com.ccvonline</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{b89dfd33-ce93-44e1-8616-c31acdfe89cb}</Project>
       <Name>Rock.Rest</Name>

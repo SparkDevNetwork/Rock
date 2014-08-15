@@ -25,7 +25,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 using com.ccvonline.Residency.Data;
-using Rock.Data;
 
 namespace com.ccvonline.Residency.Model
 {
@@ -34,7 +33,7 @@ namespace com.ccvonline.Residency.Model
     /// </summary>
     [Table( "_com_ccvonline_Residency_ProjectPointOfAssessment" )]
     [DataContract]
-    public class ProjectPointOfAssessment : com.ccvonline.Data.Model<ProjectPointOfAssessment>
+    public class ProjectPointOfAssessment : Model<ProjectPointOfAssessment>
     {
         #region Entity Properties
 
@@ -54,7 +53,7 @@ namespace com.ccvonline.Residency.Model
         /// <value>
         /// The point of assessment type value id.
         /// </value>
-        [DefinedValue( com.ccvonline.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
+        [Rock.Data.DefinedValue( com.ccvonline.Residency.SystemGuid.DefinedType.RESIDENCY_POINT_OF_ASSESSMENT_TYPE )]
         public int? PointOfAssessmentTypeValueId { get; set; }
 
         /// <summary>

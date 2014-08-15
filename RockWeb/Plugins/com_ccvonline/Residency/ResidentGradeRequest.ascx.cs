@@ -318,7 +318,7 @@ namespace RockWeb.Plugins.com_ccvonline.Residency
 
             recipients.Add( facilitator.Email, mergeObjects );
 
-            Email.Send( com.ccvonline.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
+            Email.Send( com.ccvonline.Residency.SystemGuid.EmailTemplate.RESIDENCY_PROJECT_GRADE_REQUEST.AsGuid(), recipients );
 
             var parentParams = new Dictionary<string, string>();
             parentParams.Add( "CompetencyPersonProjectId", hfCompetencyPersonProjectId.Value );

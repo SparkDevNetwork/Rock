@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.ccvonline.Data;
 using com.ccvonline.Residency.Data;
 
 namespace com.ccvonline.Residency.Model
@@ -34,7 +33,7 @@ namespace com.ccvonline.Residency.Model
     /// </summary>
     [Table( "_com_ccvonline_Residency_CompetencyPersonProjectAssessment" )]
     [DataContract]
-    public class CompetencyPersonProjectAssessment : com.ccvonline.Data.Model<CompetencyPersonProjectAssessment>
+    public class CompetencyPersonProjectAssessment : Model<CompetencyPersonProjectAssessment>
     {
         #region Entity Properties
 

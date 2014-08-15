@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-using com.ccvonline.Data;
 using com.ccvonline.Residency.Data;
 
 using Rock.Data;

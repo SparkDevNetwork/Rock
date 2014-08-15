@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace com.ccvonline.SystemGuid
+namespace com.ccvonline.CommandCenter.SystemGuid
 {
     /// <summary>
     /// System Category Guids

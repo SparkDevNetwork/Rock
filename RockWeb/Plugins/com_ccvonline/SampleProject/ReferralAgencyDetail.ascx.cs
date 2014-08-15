@@ -49,7 +49,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            var definedType = DefinedTypeCache.Read( com.ccvonline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Read( com.ccvonline.SampleProject.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
             if (definedType != null)
             {
                 ddlAgencyType.BindToDefinedType( definedType, true );

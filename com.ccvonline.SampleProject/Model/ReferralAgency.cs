@@ -6,7 +6,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using com.ccvonline.Data;
+using com.ccvonline.SampleProject.Data;
 
 using Rock.Data;
 using Rock.Model;
@@ -18,7 +18,7 @@ namespace com.ccvonline.SampleProject.Model
     /// </summary>
     [Table( "_com_ccvonline_SampleProject_ReferralAgency" )]
     [DataContract]
-    public class ReferralAgency : com.ccvonline.Data.NamedModel<ReferralAgency>
+    public class ReferralAgency : NamedModel<ReferralAgency>
     {
         #region Entity Properties
 

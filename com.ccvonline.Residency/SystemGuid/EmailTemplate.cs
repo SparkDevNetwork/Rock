@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace com.ccvonline.SystemGuid
+namespace com.ccvonline.Residency.SystemGuid
 {
     /// <summary>
     /// Email Templates used specifically by the com.ccvonline.* Plugins

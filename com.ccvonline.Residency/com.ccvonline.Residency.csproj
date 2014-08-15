@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Model.cs" />
+    <Compile Include="Data\NamedModel.cs" />
     <Compile Include="Data\ResidencyContext.cs" />
     <Compile Include="Data\ResidencyService.cs" />
     <Compile Include="Migrations\002_AddIndexes.cs" />
@@ -76,16 +78,15 @@
     <Compile Include="Model\ProjectPointOfAssessment.cs" />
     <Compile Include="Model\Track.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemGuid\DefinedType.cs" />
+    <Compile Include="SystemGuid\DefinedValue.cs" />
+    <Compile Include="SystemGuid\EmailTemplate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\com.ccvonline\com.ccvonline.csproj">
-      <Project>{c61f05c4-f947-4a32-84c1-413bdfa912fa}</Project>
-      <Name>com.ccvonline</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>

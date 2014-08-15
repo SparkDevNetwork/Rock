@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace com.ccvonline.SystemGuid
+namespace com.ccvonline.Residency.SystemGuid
 {
     /// <summary>
     /// Static Guids for DefinedValues used specifically by the com.ccvonline.* Plugins

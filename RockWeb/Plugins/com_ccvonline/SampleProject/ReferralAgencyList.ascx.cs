@@ -210,7 +210,7 @@ namespace RockWeb.Plugins.com_ccvonline.SampleProject
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var definedType = DefinedTypeCache.Read( com.ccvonline.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
+            var definedType = DefinedTypeCache.Read( com.ccvonline.SampleProject.SystemGuid.DefinedType.REFERRAL_AGENCY_TYPE.AsGuid() );
             if ( definedType != null )
             {
                 ddlAgencyType.BindToDefinedType( definedType, true );
