@@ -46,13 +46,13 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="score">The score.</param>
         /// <returns></returns>
-        public string GetMatchLabelClass( decimal percent )
+        public string GetMatchLabelClass( double? percent )
         {
-            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDecimal() )
+            if ( percent >= this.GetAttributeValue( "MatchPercentHigh" ).AsDoubleOrNull() )
             {
                 return "label label-success";
             }
-            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDecimal() )
+            else if ( percent <= this.GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull() )
             {
                 return "label label-default";
             }
