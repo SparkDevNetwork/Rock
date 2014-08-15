@@ -96,30 +96,32 @@
                 });
 
                 // Bind the block instance delete anchor
-                $('a.block-delete').click(function () {
+                $('a.block-delete').click(function (a, b, c) {
+                    var blockId = $(this).attr('href');
 
-                    if (confirm('Are you sure you want to delete this block?')) {
+                    Rock.dialogs.confirm('Are you sure you want to delete this block?', function(result) {
 
-                        var blockId = $(this).attr('href');
+                        if (result)   {
 
-                        // delete the block instance
-                        $.ajax({
-                            type: 'DELETE',
-                            contentType: 'application/json',
-                            dataType: 'json',
-                            url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
-                            success: function (data, status, xhr) {
+                            // delete the block instance
+                            $.ajax({
+                                type: 'DELETE',
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
+                                success: function (data, status, xhr) {
 
-                                // Remove the block instance's container div
-                                $('#bid_' + blockId).remove();
+                                    // Remove the block instance's container div
+                                    $('#bid_' + blockId).remove();
 
-                            },
-                            error: function (xhr, status, error) {
-                                alert(status + ' [' + error + ']: ' + xhr.responseText);
-                            }
-                        });
+                                },
+                                error: function (xhr, status, error) {
+                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
+                                }
+                            });
+                        }
 
-                    }
+                    });
 
                     // Cancel the default action of the delete anchor tag
                     return false;
