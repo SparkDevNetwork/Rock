@@ -3141,23 +3141,19 @@ span.field-value {
   text-align: right;
   line-height: 1;
 }
-.person-bio div.deceased:after {
+.person-bio div.deceased h1.title.name:after {
   content: 'Deceased';
   font-size: 14px;
-  position: absolute;
-  bottom: 36px;
-  right: 0;
-  margin-right: 12px;
-  color: #ffffff;
-  background-color: #f3d066;
-  padding: 4px 12px;
-  border-radius: 4px;
-}
-.groupmembers .member.deceased {
-  background-color: #f3d066;
+  margin-left: 12px;
+  color: #c84b4b;
 }
 .groupmembers .member.deceased:hover {
-  background-color: #f7df95;
+  background-color: #d8d8dc;
+}
+.groupmembers .member.deceased .person-info:after {
+  content: 'Deceased';
+  font-size: 10px;
+  color: #c84b4b;
 }
 tr.inactive td {
   color: #b7b7b7;
@@ -4396,7 +4392,6 @@ pre {
 // 5. Theme Styling          */
 #page-wrapper {
   width: 100%;
-  overflow: hidden;
 }
 #content-wrapper {
   background-color: #f3f3f4;
