@@ -46,9 +46,15 @@
             </CheckBox>
             <TextBox x:Name="txtCacheLabelDuration" Style="{StaticResource textboxStyle}" Grid.Row="3" Grid.Column="3" Height="44" Width="100" HorizontalAlignment="Left" FontSize="24" Margin="0,15,0,0" Padding="4"></TextBox>
 
+
             <StackPanel x:Name="spPrinterOverride" Orientation="Vertical" Grid.Row="4" Grid.Column="3">
                 <TextBox x:Name="txtPrinterOverrideIp" Style="{StaticResource textboxStyle}" Height="44" Width="300" Margin="0,15,0,0" FontSize="24" Padding="4" ></TextBox>
+                <ScrollViewer CanContentScroll="True" HorizontalScrollBarVisibility="Hidden" Padding="20,20,20,20" MaxHeight="400">
+                    <StackPanel x:Name="spUsbPrinterList" Orientation="Vertical">
+                    </StackPanel>
+                </ScrollViewer>
             </StackPanel>
+
         </Grid>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Content="Start" x:Name="btnStart" Style="{StaticResource buttonStylePrimary}" VerticalAlignment="Top" Width="130" Height="60" FontSize="24" Click="btnStart_Click"/>
