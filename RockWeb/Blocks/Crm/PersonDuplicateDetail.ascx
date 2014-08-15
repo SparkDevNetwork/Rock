@@ -4,9 +4,11 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-star"></i> Blank Detail Block</h1>
+                <h1 class="panel-title"><i class="fa fa-user"></i>&nbsp;Person Duplicates</h1>
+
+
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlblTest" runat="server" LabelType="Info" Text="Label" />
@@ -14,26 +16,49 @@
             </div>
             <div class="panel-body">
 
-                <div class="alert alert-info">
-                    <h4>Stark Template Block</h4>
-                    <p>This block serves as a starting point for creating new blocks. After copy/pasting it and renaming the resulting file be sure to make the following changes:</p>
 
-                    <strong>Changes to the Codebehind (ascx.cs) File</strong>
-                    <ul>
-                        <li>Update the namespace to match your directory</li>
-                        <li>Update the class name</li>
-                        <li>Fill in the DisplayName, Category and Description attributes</li>
-                    </ul>
-
-                    <strong>Changes to the Usercontrol (.ascx) File</strong>
-                    <ul>
-                        <li>Update the Inherhits to match the namespace and class file</li>
-                        <li>Remove this text... unless you really like it...</li>
-                    </ul>
+                <div class="row">
+                    <div class="col-md-6">
+                        <asp:Literal runat="server" ID="lPersonInfoCol1" />
+                    </div>
+                    <div class="col-md-6">
+                        <asp:Literal runat="server" ID="lPersonInfoCol2" />
+                    </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        
+                    </div>
+                </div>
+
+                <h5>Possible Matches</h5>
+                <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowDataBound="gList_RowDataBound">
+                    <Columns>
+                        <asp:BoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
+                        <asp:BoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
+                        <asp:BoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
+                        <Rock:EnumField DataField="DuplicatePerson.Gender" HeaderText="Gender" SortExpression="DuplicatePerson.Gender" />
+
+                        <asp:BoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
+                        <Rock:DateTimeField DataField="DuplicatePerson.ModifiedDateTime" HeaderText="ModifiedDateTime" SortExpression="DuplicatePerson.ModifiedDateTime" />
+                        <asp:BoundField DataField="Score" HeaderText="Score" />
+                        <asp:BoundField DataField="Capacity" HeaderText="Capacity" />
+                        <%--
+                            <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus"  />
+                            <asp:BoundField DataField="Addresses" HeaderText="Addresses" />
+                            <asp:BoundField DataField="PhoneNumbers" HeaderText="Phone Numbers" />
+                        --%>
+                        <asp:TemplateField>
+                            <ItemTemplate>
+                                <asp:LinkButton runat="server" ID="btnMerge" CssClass="btn btn-primary" Text="Merge" OnClick="btnMerge_Click" />
+                                <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-action" Text="Confirm Not Duplicate" OnClick="btnNotDuplicate_Click" />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                    </Columns>
+                </Rock:Grid>
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

@@ -29,6 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.Web.UI;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -40,18 +41,6 @@ namespace RockWeb.Blocks.Crm
     [Description( "Shows records that are possible duplicates of the selected person" )]
     public partial class PersonDuplicateDetail : RockBlock
     {
-        #region Fields
-
-        // used for private variables
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
 
         //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
@@ -64,9 +53,9 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upnlContent );
+            gList.Actions.ShowAdd = false;
+            gList.DataKeyNames = new string[] { "Id" };
+            gList.GridRebind += gList_GridRebind;
         }
 
         /// <summary>
@@ -79,7 +68,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                // added for your convenience
+                BindGrid();
             }
         }
 
@@ -87,24 +76,85 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
-        // handlers called by the controls on your block
-
         /// <summary>
-        /// Handles the BlockUpdated event of the control.
+        /// Handles the GridRebind event of the gList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated( object sender, EventArgs e )
+        protected void gList_GridRebind( object sender, EventArgs e )
         {
-
+            BindGrid();
         }
 
         #endregion
 
         #region Methods
 
-        // helper functional methods (like BindGrid(), etc.)
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
+        {
+            RockContext rockContext = new RockContext();
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+            var personService = new PersonService( rockContext );
+            int personId = this.PageParameter( "PersonId" ).AsInteger();
+
+            //var duplicatePersonsQry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId ).Select( a => a.Id );
+
+            var person = personService.Get( personId );
+            if ( person != null )
+            {
+                lPersonInfoCol1.Text = new DescriptionList()
+                    .Add( "Name", person )
+                    .Add( "Email", person.Email, true )
+                    .Add( "Gender", person.Gender.ConvertToString() )
+                    .Add( "Age", person.Age, true )
+                    .Add( "Added", person.CreatedDateTime )
+                    .Html;
+            }
+
+            // select person duplicate records (the person and the duplicates)
+            var qry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId )
+                .Select( s => new
+                {
+                    Id = s.Id,
+                    DuplicatePerson = s.DuplicatePersonAlias.Person,
+                    Score = s.Capacity > 0 ? s.Score / (s.Capacity * .01) : (double?)null,
+                    Capacity = s.Capacity
+                } );
+
+            qry = qry.OrderBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+
+
+            gList.DataSource = qry.ToList();
+            gList.DataBind();
+        }
 
         #endregion
-    }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            // maybe todo
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnMerge control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMerge_Click( object sender, EventArgs e )
+        {
+            // todo
+        }
+        protected void btnNotDuplicate_Click( object sender, EventArgs e )
+        {
+
+        }
+}
 }

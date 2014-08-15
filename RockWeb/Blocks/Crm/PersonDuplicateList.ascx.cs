@@ -126,8 +126,8 @@ namespace RockWeb.Blocks.Crm
         {
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
-
-            var personDuplicateQry = personDuplicateService.Queryable().Where( a => a.Capacity.HasValue && a.Capacity > 0 );
+            
+            var personDuplicateQry = personDuplicateService.Queryable();
 
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
 
@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Crm
                 LastName = a.Key.LastName,
                 FirstName = a.Key.FirstName,
                 MatchCount = a.Count(),
-                MaxScorePercent = a.Max( s => s.Score * 100 / (decimal)s.Capacity ),
+                MaxScorePercent = a.Max( s=> s.Capacity > 0 ? s.Score / ( s.Capacity * .01 ) : (double?)null),
                 PersonModifiedDateTime = a.Key.ModifiedDateTime,
                 CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
             } );
