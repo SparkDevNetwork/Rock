@@ -19,7 +19,7 @@
 
                             <asp:TemplateField HeaderText="Max Score" ItemStyle-HorizontalAlign="Right" SortExpression="Max">
                                 <ItemTemplate>
-                                    <span class='<%# GetMatchLabelClass((decimal)Eval("MaxScorePercent"))  %>'><%# ((decimal)Eval("MaxScorePercent")/100).ToString("P") %></span>
+                                    <span class='<%# GetMatchLabelClass((double?)Eval("MaxScorePercent"))  %>'><%# ((double?)Eval("MaxScorePercent")/100).Value.ToString("P") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
 
