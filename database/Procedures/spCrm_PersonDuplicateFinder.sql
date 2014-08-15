@@ -28,6 +28,8 @@ BEGIN
         ,'Transaction'
         ,0
 
+       -- don't compare people that are both inactive...
+
     DECLARE @compareByEmail BIT = 1
         ,@compareByName BIT = 1
         ,@compareByPhone BIT = 1
@@ -46,6 +48,9 @@ BEGIN
         ,@cScoreWeightGender INT = 3 -- **
         ,@cScoreWeightCampus INT = 1 -- **
         ,@cScoreWeightMaritalStatus INT = 1 -- **
+        ,@cScoreFullFirstName INT = 3 -- ** subtract scorewieghtname???
+        ,@cScoreFullLastName INT = 3 -- **
+        ,@cRecordStatusActive INT = 42
         -- Guids that this proc uses
     DECLARE @cGROUPTYPE_FAMILY_GUID UNIQUEIDENTIFIER = '790E3215-3B10-442B-AF69-616C0DCB998E'
         ,@cLOCATION_TYPE_HOME_GUID UNIQUEIDENTIFIER = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
