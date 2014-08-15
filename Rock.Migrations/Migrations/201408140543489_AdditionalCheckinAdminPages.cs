@@ -59,13 +59,13 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( "3F1EA6E5-6C61-444A-A80E-5B66F96F521B", "", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "Defined Value List", "Main", "", "", 1, "6DF11D72-96ED-415B-BACA-1A4390CAA4D7" );
 
             // Attrib for BlockType: Dynamic Data:Merge Fields
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Merge Fields", "MergeFields", "", "Any fields to make available as merge fields for any new communications", 9, @"", "8EB882CE-5BB1-4844-9C28-10190903EECD" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Merge Fields", "MergeFields", "", "Any fields to make available as merge fields for any new communications", 9, @"", "8EB882CE-5BB1-4844-9C28-10190903EECD" );
 
             // Attrib for BlockType: Dynamic Data:Formatted Output
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Formatted Output", "FormattedOutput", "", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}", 7, @"", "6A233402-446C-47E9-94A5-6A247C29BC21" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Formatted Output", "FormattedOutput", "", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}", 7, @"", "6A233402-446C-47E9-94A5-6A247C29BC21" );
 
             // Attrib for BlockType: Dynamic Data:Person Report
-            RockMigrationHelper.AddBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Person Report", "PersonReport", "", "Is this report a list of people.?", 8, @"False", "8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C" );
+            RockMigrationHelper.UpdateBlockTypeAttribute( "E31E02E9-73F6-4B3E-98BA-E0E4F86CA126", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Person Report", "PersonReport", "", "Is this report a list of people.?", 8, @"False", "8104CE53-FDB3-4E9F-B8E7-FD9E06E7551C" );
 
             // Attrib Value for Block:Defined Type Detail, Attribute:Defined Type Page: Ability Levels, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "AF457FEF-E26E-409D-A413-0508355FB4E2", "0305EF98-C791-4626-9996-F189B9BB674C", @"7beef4d4-0860-4913-9a3d-857634d1bf7c" );
