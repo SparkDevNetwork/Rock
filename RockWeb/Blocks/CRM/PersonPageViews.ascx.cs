@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
     [IntegerField("Session Count", "The number of sessions to show per page.", true, 20, "", 1)]
-    [BooleanField("Show Header", "Determines whether the header showing the person's name and date filter should be displayed", true, "", 2)]
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -180,19 +179,6 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        protected void rptPageViews_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            /*if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                int currentIndex = e.Item.ItemIndex;
-                if ( currentIndex > 0 )
-                {
-                    var lPageViewDuration = e.Item.FindControl( "lPageViewDuration" ) as Literal;
-                    var rptPageViews = sender as Repeater;
-                }
-            }*/
-        }
-
         protected void btnFilter_Click( object sender, EventArgs e )
         {
             if ( drpDateFilter.LowerValue.HasValue )
@@ -225,60 +211,54 @@ namespace RockWeb.Blocks.Crm
             var person = new PersonService( rockContext ).GetByUrlEncodedKey( PageParameter( "Person" ) );
             if (person != null)
             {
-                if ( GetAttributeValue( "ShowHeader" ).AsBoolean() )
-                {
-                    pnlHeader.Visible = true;
-                    lPersonName.Text = person.FullName.FormatAsHtmlTitle() + " Page Views";
-                }
-                else
-                {
-                    pnlHeader.Visible = false;
-                }
+                lPersonName.Text = person.FullName;
 
                 PageViewService pageviewService = new PageViewService( rockContext );
 
                 var pageViews = pageviewService.Queryable();
-                
+
                 var sessionInfo = pageviewService.Queryable()
-                    .Where( s => s.PersonAlias.PersonId == person.Id )
-                    .GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent })
-                                .Select( s => new WebSession
-                                {
-                                                SessionId = s.Key.SessionId,
-                                                StartDateTime = s.Min(x => x.DateTimeViewed),
-                                                EndDateTime = s.Max(x => x.DateTimeViewed),
-                                                SiteId = s.Key.SiteId,
-                                                Site = s.Key.SiteName,
-                                                ClientType = s.Key.ClientType,
-                                                IpAddress = s.Key.IpAddress,
-                                                UserAgent = s.Key.UserAgent,
-                                                PageViews = pageViews.Where(p=> p.SessionId == s.Key.SessionId).ToList()
-                                });
+                    .Where( s => s.PersonAlias.PersonId == person.Id );
+                    
 
                 if ( startDate != DateTime.MinValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.StartDateTime > drpDateFilter.LowerValue );
+                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed > drpDateFilter.LowerValue );
                 }
 
                 if ( endDate != DateTime.MaxValue )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.StartDateTime < drpDateFilter.UpperValue );
+                    sessionInfo = sessionInfo.Where( s => s.DateTimeViewed < drpDateFilter.UpperValue );
                 }
 
                 if ( siteId != -1 )
                 {
-                    sessionInfo = sessionInfo.Where( s => s.SiteId == siteId );
+                    sessionInfo = sessionInfo.Where( p => p.SiteId == siteId );
                 }
 
-                sessionInfo = sessionInfo.OrderByDescending(p => p.StartDateTime)
+                var pageviewInfo = sessionInfo.GroupBy( s => new { s.SessionId, s.SiteId, SiteName = s.Site.Name, s.ClientType, s.IpAddress, s.UserAgent } )
+                                .Select( s => new WebSession
+                                {
+                                    SessionId = s.Key.SessionId,
+                                    StartDateTime = s.Min( x => x.DateTimeViewed ),
+                                    EndDateTime = s.Max( x => x.DateTimeViewed ),
+                                    SiteId = s.Key.SiteId,
+                                    Site = s.Key.SiteName,
+                                    ClientType = s.Key.ClientType,
+                                    IpAddress = s.Key.IpAddress,
+                                    UserAgent = s.Key.UserAgent,
+                                    PageViews = pageViews.Where( p => p.SessionId == s.Key.SessionId && p.SiteId == s.Key.SiteId).ToList()
+                                } );
+
+                pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
                                 .Skip( skipCount )
                                 .Take( sessionCount + 1);
 
-                rptSessions.DataSource = sessionInfo.ToList().Take(sessionCount);
+                rptSessions.DataSource = pageviewInfo.ToList().Take( sessionCount );
                 rptSessions.DataBind();
 
                 // set next button
-                if ( sessionInfo.Count() > sessionCount )
+                if ( pageviewInfo.Count() > sessionCount )
                 {
                     hlNext.Visible = hlNext.Enabled = true;
                     Dictionary<string, string> queryStringNext = new Dictionary<string, string>();

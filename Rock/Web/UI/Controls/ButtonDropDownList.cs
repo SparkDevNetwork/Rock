@@ -231,6 +231,18 @@ namespace Rock.Web.UI.Controls
             {
                 return Items.IndexOf( SelectedItem );
             }
+
+            set
+            {
+                if ( value >= 0 && value < Items.Count )
+                {
+                    SelectedValue = Items[value].Value;
+                }
+                else
+                {
+                    SelectedValue = string.Empty;
+                }
+            }
         }
 
         #endregion
@@ -241,6 +253,8 @@ namespace Rock.Web.UI.Controls
         public ButtonDropDownList()
             : base()
         {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
             HelpBlock = new HelpBlock();
         }
 
@@ -354,6 +368,9 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _divControl );
             Controls.Add( _hfSelectedItemId );
             Controls.Add( _hfSelectedItemText );
+
+            RequiredFieldValidator.InitialValue = string.Empty;
+            RequiredFieldValidator.ControlToValidate = _hfSelectedItemId.ID;
         }
 
         /// <summary>

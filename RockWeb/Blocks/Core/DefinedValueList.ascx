@@ -8,19 +8,17 @@
             <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-o"></i> Define Value List</h1>
+                <h1 class="panel-title"><i class="fa fa-file-o"></i> Values</h1>
             </div>
             <div class="panel-body">
 
                 <asp:Panel ID="pnlList" runat="server" Visible="false">
 
-                    <div class="row-fluid">
-                        <h4>Values</h4>
                         <asp:Panel ID="pnlValues" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
                         
-                            <div class="grid">
-                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False">
+                            <div class="grid grid-panel">
+                                <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                     <Columns>
                                         <Rock:ReorderField/>
                                         <asp:BoundField DataField="Name" HeaderText="Value"/>
@@ -30,7 +28,6 @@
                             </div>
 
                         </asp:Panel>
-                    </div>
 
                 </asp:Panel>
 

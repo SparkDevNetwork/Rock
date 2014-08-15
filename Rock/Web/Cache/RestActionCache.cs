@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -82,7 +83,7 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string Path { get; set; }
-        
+
         /// <summary>
         /// Gets the type of the field.
         /// </summary>
@@ -160,17 +161,13 @@ namespace Rock.Web.Cache
         public static RestActionCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = RestActionCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             RestActionCache RestAction = cache[cacheKey] as RestActionCache;
 
-            if ( RestAction != null )
+            if ( RestAction == null )
             {
-                return RestAction;
-            }
-            else
-            {
-                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var RestActionService = new RestActionService( rockContext );
                 var RestActionModel = RestActionService.Get( id );
                 if ( RestActionModel != null )
                 {
@@ -179,14 +176,10 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, RestAction, cachePolicy );
                     cache.Set( RestAction.Guid.ToString(), RestAction.Id, cachePolicy );
-
-                    return RestAction;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return RestAction;
         }
 
         /// <summary>
@@ -200,67 +193,64 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            RestActionCache restAction = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                restAction = Read( (int)cacheObj );
             }
-            else
+
+            if ( restAction == null )
             {
-                var RestActionService = new RestActionService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var RestActionService = new RestActionService( rockContext );
                 var RestActionModel = RestActionService.Get( guid );
                 if ( RestActionModel != null )
                 {
-                    var RestAction = new RestActionCache( RestActionModel );
+                    restAction = new RestActionCache( RestActionModel );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( RestActionCache.CacheKey( RestAction.Id ), RestAction, cachePolicy );
-                    cache.Set( RestAction.Guid.ToString(), RestAction.Id, cachePolicy );
-
-                    return RestAction;
-                }
-                else
-                {
-                    return null;
+                    cache.Set( RestActionCache.CacheKey( restAction.Id ), restAction, cachePolicy );
+                    cache.Set( restAction.Guid.ToString(), restAction.Id, cachePolicy );
                 }
             }
+
+            return restAction;
         }
 
         /// <summary>
         /// Reads the specified API identifier.
         /// </summary>
         /// <param name="apiId">The API identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static RestActionCache Read( string apiId )
+        public static RestActionCache Read( string apiId, RockContext rockContext = null )
         {
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[apiId];
 
+            RestActionCache restAction = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                restAction = Read( (int)cacheObj );
             }
             else
             {
-                var RestActionService = new RestActionService( new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var RestActionService = new RestActionService( rockContext );
                 var RestActionModel = RestActionService.Queryable()
-                    .Where( a => a.ApiId == apiId)
+                    .Where( a => a.ApiId == apiId )
                     .FirstOrDefault();
-
                 if ( RestActionModel != null )
                 {
-                    var RestAction = new RestActionCache( RestActionModel );
+                    restAction = new RestActionCache( RestActionModel );
 
                     var cachePolicy = new CacheItemPolicy();
-                    cache.Set( RestActionCache.CacheKey( RestAction.Id ), RestAction, cachePolicy );
-                    cache.Set( apiId, RestAction.Id, cachePolicy );
-
-                    return RestAction;
-                }
-                else
-                {
-                    return null;
+                    cache.Set( RestActionCache.CacheKey( restAction.Id ), restAction, cachePolicy );
+                    cache.Set( apiId, restAction.Id, cachePolicy );
                 }
             }
+
+            return restAction;
         }
 
         /// <summary>
@@ -271,25 +261,22 @@ namespace Rock.Web.Cache
         public static RestActionCache Read( RestAction RestActionModel )
         {
             string cacheKey = RestActionCache.CacheKey( RestActionModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
-            RestActionCache RestAction = cache[cacheKey] as RestActionCache;
+            RestActionCache restAction = cache[cacheKey] as RestActionCache;
 
-            if ( RestAction != null )
+            if ( restAction != null )
             {
-                RestAction.CopyFromModel( RestActionModel );
-                return RestAction;
+                restAction.CopyFromModel( RestActionModel );
             }
             else
             {
-                RestAction = new RestActionCache( RestActionModel );
-
+                restAction = new RestActionCache( RestActionModel );
                 var cachePolicy = new CacheItemPolicy();
-                cache.Set( cacheKey, RestAction, cachePolicy );
-                cache.Set( RestAction.Guid.ToString(), RestAction.Id, cachePolicy );
-
-                return RestAction;
+                cache.Set( cacheKey, restAction, cachePolicy );
+                cache.Set( restAction.Guid.ToString(), restAction.Id, cachePolicy );
             }
+
+            return restAction;
         }
 
         /// <summary>
@@ -307,12 +294,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The identifier.</param>
         /// <returns></returns>
-        public static string GetName(int? id)
+        public static string GetName( int? id )
         {
-            if (id.HasValue)
+            if ( id.HasValue )
             {
                 var RestAction = Read( id.Value );
-                if (RestAction != null)
+                if ( RestAction != null )
                 {
                     return RestAction.Method;
                 }

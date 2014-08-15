@@ -51,8 +51,6 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            RockPage.AddScriptLink( this.Page, "~/scripts/jquery.switch.js" );
-
             // Switch does not automatically initialize again after a partial-postback.  This script 
             // looks for any switch elements that have not been initialized and re-intializes them.
             string script = @"

@@ -65,6 +65,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the title icon CSS class.
+        /// </summary>
+        /// <value>
+        /// The title icon CSS class.
+        /// </value>
+        public string TitleIconCssClass
+        {
+            get
+            {
+                return ViewState["TitleIconCssClass"] as string ?? string.Empty;
+            }
+
+            set
+            {
+                ViewState["TitleIconCssClass"] = value;
+            }
+        }        
+        
+        /// <summary>
         /// Gets or sets a value indicating whether [show reorder icon].
         /// </summary>
         /// <value>
@@ -256,9 +275,6 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Title
-
-
                 // Hidden Field to track Title
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-header-title-hidden" );
                 _hfTitle.RenderControl( writer );
@@ -275,6 +291,15 @@ $('.js-stop-immediate-propagation').click(function (event) {
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 
+                // Title
+                if (!string.IsNullOrWhiteSpace(TitleIconCssClass))
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
+                    writer.RenderBeginTag( HtmlTextWriterTag.I );
+                    writer.RenderEndTag();
+                    writer.Write( " " );
+                }
+
                 // also write out the value of the hidden field as the title
                 writer.Write( _hfTitle.Value );
 

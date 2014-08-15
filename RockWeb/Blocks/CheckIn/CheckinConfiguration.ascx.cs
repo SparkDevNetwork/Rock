@@ -322,7 +322,10 @@ namespace RockWeb.Blocks.CheckIn
                 CreateGroupEditorControls( childGroup, groupTypeEditor, rockContext, false );
             }
 
-            foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var childGroupType in groupType.ChildGroupTypes
+                .Where( t => t.Id != groupType.Id)
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name ) )
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, rockContext );
             }
@@ -391,6 +394,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -416,6 +420,7 @@ namespace RockWeb.Blocks.CheckIn
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
             checkinArea.IsSystem = false;
+            checkinArea.ShowInNavigation = false;
             checkinArea.TakesAttendance = true;
             checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
             checkinArea.AttendancePrintTo = PrintTo.Default;
@@ -767,6 +772,7 @@ namespace RockWeb.Blocks.CheckIn
                         groupTypeDB = new GroupType();
                         groupTypeDB.Id = 0;
                         groupTypeDB.Guid = groupTypeUI.Guid;
+                        groupTypeDB.ShowInNavigation = false;
                     }
 
                     groupTypeDB.Name = groupTypeUI.Name;
@@ -944,7 +950,7 @@ namespace RockWeb.Blocks.CheckIn
             };
 
             // delete non-template childgrouptypes that were deleted in this ui
-            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes )
+            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes.Where( g => g.Id != groupTypeDB.Id ) )
             {
                 if ( !templateGroupTypes.Contains( childGroupTypeDB.GroupTypePurposeValueId ?? 0 ) )
                 {

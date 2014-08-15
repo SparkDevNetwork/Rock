@@ -8,7 +8,10 @@
                     
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-tag"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                    <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
+                    
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
+                    </div>
                 </div>
                 <div class="panel-body">
                     

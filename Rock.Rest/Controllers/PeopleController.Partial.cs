@@ -162,7 +162,7 @@ namespace Rock.Rest.Controllers
             {
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = reversed ? person.FullNameReversed : person.FullName;
-                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Gender, 50, 50 );
+                personSearchResult.ImageHtmlTag = Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 50, 50 );
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
                 personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Read( person.ConnectionStatusValueId.Value ).Name : string.Empty;
                 personSearchResult.Gender = person.Gender.ConvertToString();
@@ -184,7 +184,7 @@ namespace Rock.Rest.Controllers
 
                 string imageHtml = string.Format(
                     "<div class='person-image' style='background-image:url({0}&width=65);background-size:cover;background-position:50%'></div>",
-                    Person.GetPhotoUrl( person.PhotoId, person.Gender ) );
+                    Person.GetPhotoUrl( person.PhotoId, person.Age, person.Gender ) );
 
                 string personInfo = string.Empty;
 
@@ -344,7 +344,7 @@ namespace Rock.Rest.Controllers
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 html.AppendFormat( "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPhotoImageTag( person.PhotoId, person.Gender, 65, 65 ),
+                    Person.GetPhotoImageTag( person.PhotoId, person.Age, person.Gender, 65, 65 ),
                     person.FullName,
                     person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Name : string.Empty );
 

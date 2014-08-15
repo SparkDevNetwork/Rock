@@ -75,7 +75,6 @@ namespace Rock.Field.Types
             {
                 ddl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
             }
-            controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
             ddl.Label = "Entity Type";

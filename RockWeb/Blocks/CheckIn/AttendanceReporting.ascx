@@ -5,12 +5,12 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Reporting</h1>
+                <h1 class="panel-title"><i class="fa fa-check-square-o"></i>Attendance Analysis</h1>
             </div>
             <div class="panel-body">
 
                 <Rock:LineChart ID="lcAttendance" runat="server" DataSourceUrl="" Title="" Subtitle="" ChartHeight="300" />
-                <div class="row">
+                <div class="row margin-t-sm">
                     <div class="col-md-12">
                         <div class="pull-right">
                             <asp:LinkButton ID="lShowGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowGrid_Click" />
@@ -30,7 +30,7 @@
                     </div>
                 </asp:Panel>
 
-                <div class="actions">
+                <div class="actions margin-b-md">
                     <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" Text="Apply" ToolTip="Update the chart" OnClick="btnApply_Click" />
                 </div>
 

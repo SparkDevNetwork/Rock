@@ -382,27 +382,25 @@ namespace Rock.Model
         public virtual BinaryFile Image { get; set; }
 
         /// <summary>
-        /// Gets the formatted location.
+        /// Gets the formatted address.
         /// </summary>
         /// <value>
-        /// The formatted location.
+        /// The formatted address.
         /// </value>
-        [NotMapped]
-        public virtual string FormattedValue
+        public virtual string FormattedAddress
         {
-            get { return this.ToString(); }
+            get { return GetFullStreetAddress(); }
         }
 
         /// <summary>
-        /// Gets the formatted HTML value.
+        /// Gets the formatted HTML address.
         /// </summary>
         /// <value>
-        /// The formatted HTML value.
+        /// The formatted HTML address.
         /// </value>
-        [NotMapped]
-        public virtual string FormattedHtmlValue
+        public virtual string FormattedHtmlAddress
         {
-            get { return FormattedValue.ConvertCrLfToHtmlBr(); }
+            get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
         }
 
         #endregion
@@ -492,6 +490,13 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
+            if (string.IsNullOrWhiteSpace(this.Street1) &&
+                string.IsNullOrWhiteSpace(this.Street2) &&
+                string.IsNullOrWhiteSpace(this.City))
+            {
+                return string.Empty;
+            }
+
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
 

@@ -203,7 +203,7 @@ img.jcrop-preview {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 11000;
+  z-index: 9000;
   right: auto;
 }
 .zone-configuration p {
@@ -237,7 +237,7 @@ img.jcrop-preview {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 11000;
+  z-index: 9000;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -346,68 +346,71 @@ img.jcrop-preview {
   -webkit-box-shadow: #464646 18px 18px 80px 0px;
   box-shadow: #464646 18px 18px 80px 0px;
 }
-.rock-modal {
+.modal-content {
+  border: 0;
   background-color: #ffffff;
+  color: #333333;
 }
-.rock-modal .modal-header {
+.modal-content .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
+  border-radius: 4px 4px 0 0;
 }
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
+.modal-content .modal-header:before,
+.modal-content .modal-header:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
-.rock-modal .modal-header:after {
+.modal-content .modal-header:after {
   clear: both;
 }
-.rock-modal .modal-header h3 {
+.modal-content .modal-header h3 {
   float: left;
   margin-right: 12px;
 }
-.rock-modal .modal-header .close {
+.modal-content .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-.rock-modal .modal-header .label {
+.modal-content .modal-header .label {
   margin-top: 8px;
 }
-.rock-modal .modal-header small {
+.modal-content .modal-header small {
   margin-top: 12px;
   display: block;
   color: #a2a2a2;
 }
-.rock-modal .modal-body {
+.modal-content .modal-body {
   color: #333333;
 }
-.rock-modal .modal-body .nav-pills {
+.modal-content .modal-body .nav-pills {
   margin: 6px 0 18px;
 }
-.rock-modal .modal-body > .scroll-container {
+.modal-content .modal-body > .scroll-container {
   width: 720px;
 }
-.rock-modal .modal-body > .scroll-container > .viewport {
+.modal-content .modal-body > .scroll-container > .viewport {
   width: 670px;
 }
-.rock-modal .modal-body.iframe {
+.modal-content .modal-body.iframe {
   overflow: hidden;
 }
-.rock-modal .modal-footer {
+.modal-content .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #eeeeee;
+  color: #555555;
+  border-radius: 0 0 4px 4px;
 }
 .modal {
   position: fixed;
   top: 50%;
   left: 50%;
-  z-index: 11000;
+  z-index: 12000;
   width: 750px;
   margin-left: 0px;
   background-color: #ffffff;
@@ -464,6 +467,8 @@ img.jcrop-preview {
     25. Active Users - styles for the active users block
     26. Navigation for Paging - styles for creating a pager
     27. List Extensions - additional list options
+    28. Key Value Pair Control - styling for key/value pair control
+    29. Context Setters
 */
 .picker {
   position: relative;
@@ -472,9 +477,7 @@ img.jcrop-preview {
 .picker:before,
 .picker:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .picker:after {
   clear: both;
@@ -531,7 +534,7 @@ img.jcrop-preview {
   font-weight: 700;
 }
 .picker .picker-menu {
-  width: 370px;
+  width: 400px;
   padding: 10px;
 }
 .picker .picker-menu h4:first-child {
@@ -598,9 +601,7 @@ img.jcrop-preview {
 .banner:before,
 .banner:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .banner:after {
   clear: both;
@@ -993,7 +994,7 @@ div.tagsinput .tags_clear {
   }
 }
 .photoframe {
-  border: 4px solid #428bca;
+  border: 4px solid #999999;
   display: inline-block;
 }
 .photoframe.photoframe-sm {
@@ -1276,6 +1277,7 @@ fieldset .actions {
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   border: 1px solid #cccccc;
   padding: 6px 12px;
@@ -1537,6 +1539,7 @@ ul.groupmembers li.member {
   margin-right: 15px;
   margin-bottom: 15px;
   min-width: 140px;
+  border-radius: 4px;
 }
 ul.groupmembers li.member .person-image {
   border: 1px solid #999999;
@@ -1713,9 +1716,7 @@ ul.rocklist .rocklist-item.selected {
 .list-horizontal:before,
 .list-horizontal:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .list-horizontal:after {
   clear: both;
@@ -1724,6 +1725,12 @@ ul.rocklist .rocklist-item.selected {
   float: left;
   margin-right: 2px;
   margin-bottom: 4px;
+}
+.key-value-rows .controls-row {
+  margin-bottom: 6px;
+}
+.contextsetter {
+  margin-right: 2px;
 }
 /*
     Used to manage styles related to Rock's forms
@@ -1781,6 +1788,9 @@ a.aspNetDisabled {
 .form-horizontal .form-group .form-control {
   float: left;
 }
+.controls .checkbox:first-child {
+  margin-top: 0;
+}
 dl:not(.dl-horizontal) {
   margin-bottom: 0;
 }
@@ -1822,9 +1832,7 @@ dl:not(.dl-horizontal) dd {
 .form-control-group:before,
 .form-control-group:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .form-control-group:after {
   clear: both;
@@ -1884,10 +1892,14 @@ dl:not(.dl-horizontal) dd {
   background-color: #d5d5d5;
   border-color: #d5d5d5;
 }
-.panel-dashboard > .panel-heading + .panel-collapse .panel-body {
+.panel-dashboard > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #d5d5d5;
 }
-.panel-dashboard > .panel-footer + .panel-collapse .panel-body {
+.panel-dashboard > .panel-heading .badge {
+  color: #d5d5d5;
+  background-color: #333333;
+}
+.panel-dashboard > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #d5d5d5;
 }
 /*
@@ -2045,6 +2057,7 @@ td.grid-col-actions {
 .table-light .grid-columncommand {
   text-align: right;
   width: 42px;
+  min-width: 42px;
 }
 .table-padded td,
 .table-padded th {
@@ -2071,6 +2084,13 @@ td.grid-col-actions {
 .table > tbody > tr > th.grid-columncommand,
 .table > tbody > tr > td.grid-columncommand {
   padding: 6px;
+  padding-top: 12px;
+  min-width: 48px;
+}
+.table > tbody > tr > th.grid-columnreorder,
+.table > tbody > tr > td.grid-columnreorder {
+  padding-top: 12px;
+  min-width: 48px;
 }
 .table .color-field {
   padding: 0;
@@ -2178,10 +2198,14 @@ td.grid-col-actions {
   background-color: #eeeeee;
   border-color: #e2e2e2;
 }
-.panel-note > .panel-heading + .panel-collapse .panel-body {
+.panel-note > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #e2e2e2;
 }
-.panel-note > .panel-footer + .panel-collapse .panel-body {
+.panel-note > .panel-heading .badge {
+  color: #eeeeee;
+  background-color: #333333;
+}
+.panel-note > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #e2e2e2;
 }
 .panel-note .panel-body {
@@ -2296,10 +2320,14 @@ td.grid-col-actions {
   background-color: #333333;
   border-color: #333333;
 }
-.panel-noteentry > .panel-heading + .panel-collapse .panel-body {
+.panel-noteentry > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #d5d5d5;
 }
-.panel-noteentry > .panel-footer + .panel-collapse .panel-body {
+.panel-noteentry > .panel-heading .badge {
+  color: #333333;
+  background-color: #333333;
+}
+.panel-noteentry > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #d5d5d5;
 }
 .panel-noteentry .settings {
@@ -2329,9 +2357,7 @@ td.grid-col-actions {
 .recurrence-pattern-specific-date:before,
 .recurrence-pattern-specific-date:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .recurrence-pattern-specific-date:after {
   clear: both;
@@ -2353,9 +2379,7 @@ td.grid-col-actions {
 .recurrence-pattern-weekly .week-days:before,
 .recurrence-pattern-weekly .week-days:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .recurrence-pattern-weekly .week-days:after {
   clear: both;
@@ -2490,6 +2514,7 @@ table.attribute-grid tr th:nth-child(3) {
     Used to manage styles for specific blocks.
 
     1. Contributions - block add a contribution transaction
+    2. Scheduled Transactions - Styles for the scheduled transaction blocks
 
 
 */
@@ -2542,6 +2567,17 @@ table.attribute-grid tr th:nth-child(3) {
 .is-jcb li.card-jcb {
   opacity: 1;
 }
+.scheduledtransaction-item {
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eeeeee;
+}
+.scheduledtransaction-item:last-child {
+  border-bottom: 0;
+}
+.scheduledtransaction-item .actions {
+  margin: 6px 0;
+}
 /*
     Used to manage styles related to the person details page
     
@@ -2557,6 +2593,7 @@ table.attribute-grid tr th:nth-child(3) {
     10. Responsive Overrides
     11. Person Merge
     12. Person Page Views
+    13. Deceased / Inactive Styles
 */
 .personprofile {
   margin-top: -15px;
@@ -2581,6 +2618,13 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-bio .labels {
   margin-bottom: 7.5px;
   text-align: center;
+}
+.personprofilebar-bio .nav li .persondetails-actions {
+  padding: 2px 0 0 15px;
+}
+.personprofilebar-bio .nav li .persondetails-actions:hover,
+.personprofilebar-bio .nav li .persondetails-actions:focus {
+  background-color: transparent;
 }
 .personprofilebar-bio .actions {
   position: absolute;
@@ -2905,19 +2949,25 @@ table.attribute-grid tr th:nth-child(3) {
 .personprofilebar-family .groupmembers .member a:before,
 .personprofilebar-family .groupmembers .member a:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .personprofilebar-family .groupmembers .member a:after {
   clear: both;
 }
 .personprofilebar-family .groupmembers .member .person-image {
-  -webkit-filter: grayscale(100%);
-  -moz-filter: grayscale(100%);
-  filter: gray;
+  /* For Webkit browsers */
+  /* For IE 6 - 9 */
+  /* Fade to color for Chrome and Safari */
+  /* Firefox 10+, Firefox on Android */
   filter: grayscale(100%);
-  filter: url('../../Assets/Images/(desaturate.svg#grayscale');
+  -webkit-filter: grayscale(100%);
+  /* For Webkit browsers */
+  filter: gray;
+  /* For IE 6 - 9 */
+  -webkit-transition: all .6s ease;
+  /* Fade to color for Chrome and Safari */
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+  /* Firefox 10+, Firefox on Android */
   transition: .5s;
 }
 .personprofilebar-family .groupmembers .member:hover {
@@ -2925,9 +2975,9 @@ table.attribute-grid tr th:nth-child(3) {
   border-radius: 4px;
 }
 .personprofilebar-family .groupmembers .member:hover .person-image {
-  -webkit-filter: grayscale(0%);
-  -moz-filter: grayscale(0%);
   filter: grayscale(0%);
+  -webkit-filter: grayscale(0%);
+  filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
 }
 .personprofilebar-family .actions {
   position: absolute;
@@ -3086,13 +3136,31 @@ span.field-value {
 .merge-photo {
   border: 3px solid #999999;
 }
-.panel-widget.pageviewsession .panel-heading small {
-  color: #428bca;
-}
 .panel-widget.pageviewsession .pageviewsession-client {
   color: #428bca;
   text-align: right;
   line-height: 1;
+}
+.person-bio div.deceased:after {
+  content: 'Deceased';
+  font-size: 14px;
+  position: absolute;
+  bottom: 36px;
+  right: 0;
+  margin-right: 12px;
+  color: #ffffff;
+  background-color: #f0ad4e;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+.groupmembers .member.deceased {
+  background-color: #f0ad4e;
+}
+.groupmembers .member.deceased:hover {
+  background-color: #f4c37d;
+}
+tr.inactive td {
+  color: #808080;
 }
 /*
     Used to manage styles for specific blocks.
@@ -3141,8 +3209,9 @@ iframe.email-body {
 /*
     Used to manage styles for specific blocks.
 
-    1. Error Page - styles for the error page.
-
+    1. Error Page 
+    2. Blank Page
+    3. Exception Page
 */
 .error-wrap {
   text-align: center;
@@ -3178,6 +3247,18 @@ iframe.email-body {
 .rock-blank main.container {
   margin: 0;
   padding: 12px;
+}
+.exceptionDetail-stackTrace-hide {
+  display: none;
+}
+.exceptionDetail-stackTrace-show {
+  display: table-row;
+}
+.exceptionDetail-stackTrace-show pre {
+  padding: 0;
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
 }
 /*
     Used to manage styles related to Rock's internal scrollbar
@@ -3665,9 +3746,7 @@ a.help {
 .popover-content header:before,
 .popover-content header:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .popover-content header:after {
   clear: both;
@@ -3689,10 +3768,16 @@ a.help {
   border-color: #d5d5d5;
 }
 .panel .panel-heading .panel-title small {
-  color: #e0e0e0;
+  opacity: .5;
+}
+.panel .panel-heading .panel-labels {
+  float: right;
 }
 .panel .panel-heading .panel-actions {
   margin-top: 4px;
+}
+.panel .panel-heading .form-group {
+  margin-bottom: 0;
 }
 .panel .panel-body {
   border-radius: 0 0 4px 4px;
@@ -3708,10 +3793,14 @@ a.help {
   background-color: #d5d5d5;
   border-color: #d5d5d5;
 }
-.panel-widget > .panel-heading + .panel-collapse .panel-body {
+.panel-widget > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #d5d5d5;
 }
-.panel-widget > .panel-footer + .panel-collapse .panel-body {
+.panel-widget > .panel-heading .badge {
+  color: #d5d5d5;
+  background-color: #333333;
+}
+.panel-widget > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #d5d5d5;
 }
 .panel-widget .panel-heading .checkbox {
@@ -3740,10 +3829,14 @@ a.help {
   background-color: #eeeeee;
   border-color: #e2e2e2;
 }
-.panel-persondetails > .panel-heading + .panel-collapse .panel-body {
+.panel-persondetails > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #e2e2e2;
 }
-.panel-persondetails > .panel-footer + .panel-collapse .panel-body {
+.panel-persondetails > .panel-heading .badge {
+  color: #eeeeee;
+  background-color: #333333;
+}
+.panel-persondetails > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #e2e2e2;
 }
 .panel-persondetails .panel-heading .actions a {
@@ -3758,9 +3851,7 @@ a.help {
 .panel-persondetails .panel-body .form-group.static-control:before,
 .panel-persondetails .panel-body .form-group.static-control:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .panel-persondetails .panel-body .form-group.static-control:after {
   clear: both;
@@ -3787,21 +3878,27 @@ a.help {
   background-color: #eeeeee;
   border-color: #e2e2e2;
 }
-.panel-block > .panel-heading + .panel-collapse .panel-body {
+.panel-block > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #e2e2e2;
 }
-.panel-block > .panel-footer + .panel-collapse .panel-body {
+.panel-block > .panel-heading .badge {
+  color: #eeeeee;
+  background-color: #333333;
+}
+.panel-block > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: #e2e2e2;
 }
 .panel-block .panel-heading {
   background-color: #eeeeee;
+  /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
+            float: right;
+            margin-top: 2px;
+        }*/
 }
 .panel-block .panel-heading:before,
 .panel-block .panel-heading:after {
   content: " ";
-  /* 1 */
   display: table;
-  /* 2 */
 }
 .panel-block .panel-heading:after {
   clear: both;
@@ -3812,10 +3909,6 @@ a.help {
 .panel-block .panel-heading .panel-title i {
   color: #6a6a6a;
 }
-.panel-block .panel-heading span.label {
-  float: right;
-  margin-top: 2px;
-}
 .panel-block .panel-body .grid.grid-panel {
   margin: -15px;
 }
@@ -3823,7 +3916,7 @@ a.help {
   border-radius: 0;
 }
 .panel-block .panel-body .grid.grid-panel .table-bordered {
-  border: 1px 0 0 0;
+  border-width: 1px 0 0 0;
 }
 .panel-block .panel-body .grid.grid-panel .table-bordered > tfoot > tr > td {
   border: 0px;
@@ -3845,14 +3938,14 @@ a.help {
 .btn-action:focus,
 .btn-action:active,
 .btn-action.active,
-.open .dropdown-toggle.btn-action {
+.open > .dropdown-toggle.btn-action {
   color: #ffffff;
-  background-color: #858585;
+  background-color: #808080;
   border-color: #6e6e6e;
 }
 .btn-action:active,
 .btn-action.active,
-.open .dropdown-toggle.btn-action {
+.open > .dropdown-toggle.btn-action {
   background-image: none;
 }
 .btn-action.disabled,
@@ -3873,6 +3966,10 @@ fieldset[disabled] .btn-action.active {
   background-color: #999999;
   border-color: #8c8c8c;
 }
+.btn-action .badge {
+  color: #999999;
+  background-color: #ffffff;
+}
 .btn-security {
   color: #ffffff;
   background-color: #999999;
@@ -3882,14 +3979,14 @@ fieldset[disabled] .btn-action.active {
 .btn-security:focus,
 .btn-security:active,
 .btn-security.active,
-.open .dropdown-toggle.btn-security {
+.open > .dropdown-toggle.btn-security {
   color: #ffffff;
-  background-color: #858585;
+  background-color: #808080;
   border-color: #6e6e6e;
 }
 .btn-security:active,
 .btn-security.active,
-.open .dropdown-toggle.btn-security {
+.open > .dropdown-toggle.btn-security {
   background-image: none;
 }
 .btn-security.disabled,
@@ -3910,6 +4007,10 @@ fieldset[disabled] .btn-security.active {
   background-color: #999999;
   border-color: #8c8c8c;
 }
+.btn-security .badge {
+  color: #999999;
+  background-color: #ffffff;
+}
 .btn-authenication {
   color: #333333;
   background-color: #d5d5d5;
@@ -3920,14 +4021,14 @@ fieldset[disabled] .btn-security.active {
 .btn-authenication:focus,
 .btn-authenication:active,
 .btn-authenication.active,
-.open .dropdown-toggle.btn-authenication {
+.open > .dropdown-toggle.btn-authenication {
   color: #333333;
-  background-color: #c1c1c1;
+  background-color: #bbbbbb;
   border-color: #aaaaaa;
 }
 .btn-authenication:active,
 .btn-authenication.active,
-.open .dropdown-toggle.btn-authenication {
+.open > .dropdown-toggle.btn-authenication {
   background-image: none;
 }
 .btn-authenication.disabled,
@@ -3948,6 +4049,10 @@ fieldset[disabled] .btn-authenication.active {
   background-color: #d5d5d5;
   border-color: #c8c8c8;
 }
+.btn-authenication .badge {
+  color: #d5d5d5;
+  background-color: #333333;
+}
 .btn-authenication:hover {
   background-color: #bbbbbb;
 }
@@ -3960,6 +4065,12 @@ fieldset[disabled] .btn-authenication.active {
   text-decoration: none;
   color: #808080;
   padding: 0;
+}
+.alert pre {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background-color: transparent;
 }
 .alert-action {
   background-color: #d5d5d5;
@@ -4000,6 +4111,12 @@ fieldset[disabled] .btn-authenication.active {
 .alert-danger a.help {
   border-bottom: 0;
 }
+.alert pre {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
 .system-error pre {
   background-color: transparent;
   border: 0;
@@ -4030,6 +4147,15 @@ ul.list-padded li {
 }
 ul.list-padded li:first-child {
   margin-top: 0;
+}
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 @media (min-width: 992px) {
   .col-md-2-10 {

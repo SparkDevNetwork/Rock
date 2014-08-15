@@ -15,12 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.UI;
 
 namespace Rock.Web.Cache
 {
@@ -268,34 +267,26 @@ namespace Rock.Web.Cache
         public static BlockCache Read( int id, RockContext rockContext = null )
         {
             string cacheKey = BlockCache.CacheKey( id );
-
             ObjectCache cache = MemoryCache.Default;
             BlockCache block = cache[cacheKey] as BlockCache;
 
-            if ( block != null )
+            if ( block == null )
             {
-                return block;
-            }
-            else
-            {
-                var blockService = new BlockService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var blockService = new BlockService( rockContext );
                 var blockModel = blockService.Get( id );
                 if ( blockModel != null )
                 {
-                    blockModel.LoadAttributes();
+                    blockModel.LoadAttributes( rockContext );
                     block = new BlockCache( blockModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, block, cachePolicy );
                     cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-
-                    return block;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return block;
         }
 
         /// <summary>
@@ -309,30 +300,29 @@ namespace Rock.Web.Cache
             ObjectCache cache = MemoryCache.Default;
             object cacheObj = cache[guid.ToString()];
 
+            BlockCache block = null;
             if ( cacheObj != null )
             {
-                return Read( (int)cacheObj );
+                block = Read( (int)cacheObj );
             }
-            else
+
+            if ( block == null )
             {
-                var blockService = new BlockService( rockContext ?? new RockContext() );
+                rockContext = rockContext ?? new RockContext();
+                var blockService = new BlockService( rockContext );
                 var blockModel = blockService.Get( guid );
                 if ( blockModel != null )
                 {
-                    blockModel.LoadAttributes();
-                    var block = new BlockCache( blockModel );
+                    blockModel.LoadAttributes( rockContext );
+                    block = new BlockCache( blockModel );
 
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( BlockCache.CacheKey( block.Id ), block, cachePolicy );
                     cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-
-                    return block;
-                }
-                else
-                {
-                    return null;
                 }
             }
+
+            return block;
         }
 
         /// <summary>
@@ -343,25 +333,22 @@ namespace Rock.Web.Cache
         public static BlockCache Read( Block blockModel )
         {
             string cacheKey = BlockCache.CacheKey( blockModel.Id );
-
             ObjectCache cache = MemoryCache.Default;
             BlockCache block = cache[cacheKey] as BlockCache;
 
             if ( block != null )
             {
                 block.CopyFromModel( blockModel );
-                return block;
             }
             else
             {
                 block = new BlockCache( blockModel );
-
                 var cachePolicy = new CacheItemPolicy();
                 cache.Set( cacheKey, block, cachePolicy );
                 cache.Set( block.Guid.ToString(), block.Id, cachePolicy );
-
-                return block;
             }
+
+            return block;
         }
 
         /// <summary>

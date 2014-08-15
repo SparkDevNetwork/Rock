@@ -133,6 +133,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Financial Source
+
+        /// <summary>
+        /// The financial source of Website
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
+
+        #endregion
+
         #region Group Location Type
 
         /// <summary>
@@ -311,6 +320,15 @@ namespace Rock.SystemGuid
         /// Pending Record Status
         /// </summary>
         public const string PERSON_RECORD_STATUS_PENDING = "283999EC-7346-42E3-B807-BCE9B2BABB49";
+
+        #endregion
+
+        #region Person Record Status Reason
+
+        /// <summary>
+        /// Inactive record status reason of Deceased 
+        /// </summary>
+        public const string PERSON_RECORD_STATUS_REASON_DECEASED = "05D35BC4-5816-4210-965F-1BF44F35A16A";
 
         #endregion
 

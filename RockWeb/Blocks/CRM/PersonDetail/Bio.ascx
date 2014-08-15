@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
 <Rock:NotificationBox ID="nbInvalidPerson" runat="server" NotificationBoxType="Warning" Title="Person Not Found" Text="The requested person profile does not exist." Visible="false" />
-<asp:PlaceHolder ID="phContent" runat="server">
+<asp:Panel ID="pnlContent" runat="server">
 
     <script>
         $(function () {
@@ -10,7 +10,7 @@
         });
     </script>
 
-    <div class="rollover-container">
+    <div id="divBio" runat="server" class="rollover-container">
         <div class="actions rollover-item">
             <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-action btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit Individual</asp:LinkButton>
         </div>
@@ -96,6 +96,6 @@
         </div>
     </div>
 
-</asp:PlaceHolder>
+</asp:Panel>
 
 

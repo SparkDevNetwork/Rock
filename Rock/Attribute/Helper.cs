@@ -94,18 +94,16 @@ namespace Rock.Attribute
                 blockProperties.Add( (FieldAttribute)customAttribute );
             }
 
+            rockContext = rockContext ?? new RockContext();
+
             // Create any attributes that need to be created
-            if ( blockProperties.Count > 0 )
+            foreach ( var blockProperty in blockProperties )
             {
-                foreach ( var blockProperty in blockProperties )
-                {
-                    attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue ) || attributesUpdated;
-                    existingKeys.Add( blockProperty.Key );
-                }
+                attributesUpdated = UpdateAttribute( blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
+                existingKeys.Add( blockProperty.Key );
             }
 
             // Remove any old attributes
-            rockContext = rockContext ?? new RockContext();
             var attributeService = new Model.AttributeService( rockContext );
             foreach ( var a in attributeService.Get( entityTypeId, entityQualifierColumn, entityQualifierValue ).ToList() )
             {
@@ -136,6 +134,7 @@ namespace Rock.Attribute
             bool updated = false;
 
             rockContext = rockContext ?? new RockContext();
+
             var attributeService = new AttributeService( rockContext );
             var attributeQualifierService = new AttributeQualifierService( rockContext );
             var fieldTypeService = new FieldTypeService(rockContext);
@@ -254,9 +253,13 @@ namespace Rock.Attribute
 
                 // If this is a new attribute, add it, otherwise remove the exiting one from the cache
                 if ( attribute.Id == 0 )
+                {
                     attributeService.Add( attribute );
+                }
                 else
+                {
                     AttributeCache.Flush( attribute.Id );
+                }
 
                 rockContext.SaveChanges();
 

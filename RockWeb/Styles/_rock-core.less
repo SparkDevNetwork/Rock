@@ -176,12 +176,20 @@ a.help {
     .panel-heading {
         .panel-title {
             small {
-                color: #e0e0e0;
+                opacity: .5;
             }
+        }
+
+        .panel-labels {
+            float: right;
         }
 
         .panel-actions {
             margin-top: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
         }
     }
 
@@ -281,10 +289,10 @@ a.help {
             }
         }
 
-        span.label {
+        /*span.label {     JME 7/23/14 - was messing up standard bootstrap styling of labels in the panel headings (specifically the group viewer)
             float: right;
             margin-top: 2px;
-        }
+        }*/
     }
 
     .panel-body {
@@ -297,7 +305,7 @@ a.help {
             }
 
             .table-bordered {
-                border: 1px 0 0 0;
+                border-width: 1px 0 0 0;
                 
                 & > tfoot > tr > td {
                     border: 0px;
@@ -348,7 +356,15 @@ a.help {
 }
 
 // alert extentions
+.alert { // styling for exceptions
 
+    pre {
+        border: 0;
+        padding: 0;
+        color: inherit;
+        background-color: transparent;
+    }
+}
 // new alert types
 .alert-action { 
     .alert-variant(@accent-color; @accent-color; @accent-text-color);
@@ -394,6 +410,15 @@ a.help {
     }
     a.help {
         border-bottom: 0;
+    }
+}
+
+.alert { // hide the styling of pre's inside of alerts
+    pre {
+        background-color: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
     }
 }
 
@@ -445,6 +470,18 @@ ul.list-padded {
             margin-top: 0;
         }
     }
+}
+
+// typography
+
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 // add 10 column row

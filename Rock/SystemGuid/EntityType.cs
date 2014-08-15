@@ -55,5 +55,10 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.MetricCategory entity
         /// </summary>
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Schedule entity
+        /// </summary>
+        public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
     }
 }

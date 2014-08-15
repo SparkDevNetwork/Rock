@@ -16,7 +16,7 @@
         <asp:Panel ID="pnlNotActive" runat="server">
             <div class="row checkin-header">
                 <div class="col-md-12">
-                    <h1>Checkin Not Active</h1>
+                    <h1>Check-in Is Not Active</h1>
                 </div>
             </div>
                 
@@ -31,7 +31,7 @@
         <asp:Panel ID="pnlNotActiveYet" runat="server">
             <div class="row checkin-header">
                 <div class="col-md-12">
-                    <h1>Checkin Not Active Yet</h1>
+                    <h1>Check-in Is Not Active Yet</h1>
                 </div>
             </div>
                 

@@ -40,6 +40,24 @@ namespace Rock
         public DateTime? End { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DateRange"/> class.
+        /// </summary>
+        public DateRange()
+        { 
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateRange"/> class.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        public DateRange( DateTime? start, DateTime? end )
+        {
+            Start = start;
+            End = end;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -47,7 +65,34 @@ namespace Rock
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0} to {1}", Start.HasValue ? Start.Value.ToString( "f" ) : null, End.HasValue ? End.Value.ToString( "f" ) : null );
+            return ToString( "f" );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <param name="dateFormat">The date format.</param>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public string ToString( string dateFormat)
+        {
+            if (Start.HasValue && End.HasValue)
+            {
+                return string.Format( "{0} to {1}", Start.Value.ToString( dateFormat ), End.Value.ToString( dateFormat ) );
+            }
+
+            if (Start.HasValue && !End.HasValue)
+            {
+                return string.Format( "from {0}", Start.Value.ToString(dateFormat) );
+            }
+
+            if (!Start.HasValue && End.HasValue)
+            {
+                return string.Format( "through {0}", Start.Value.ToString( dateFormat ) );
+            }
+
+            return string.Empty;
         }
     }
 }

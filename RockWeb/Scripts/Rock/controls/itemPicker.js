@@ -129,6 +129,7 @@
                 });
             },
             updateScrollbar: function () {
+                // first, update this control's scrollbar, then the modal's
                 var $container = $('#' + this.options.controlId).find('.scroll-container'),
                     $dialog = $('div.rock-modal > div.modal-body > div.scroll-container'),
                     dialogTop,
@@ -148,6 +149,9 @@
                         }
                     }
                 }
+
+                // update the outer modal scrollbar
+                Rock.dialogs.updateModalScrollBar(this.options.controlId);
             }
         };
 

@@ -48,6 +48,8 @@ namespace RockWeb.Blocks.Groups
     [ContextAware]
     public partial class GroupList : RockBlock
     {
+        public int _groupTypesCount = 0;
+
         #region Control Methods
 
         /// <summary>
@@ -303,7 +305,7 @@ namespace RockWeb.Blocks.Groups
                     gGroups.IsDeleteEnabled = false;
                     gGroups.Columns.OfType<DeleteField>().ToList().ForEach( f => f.Visible = false );
 
-                    var qry = new GroupMemberService( rockContext ).Queryable()
+                    var qry = new GroupMemberService( rockContext ).Queryable( true )
                         .Where( m =>
                             m.PersonId == personContext.Id &&
                             groupTypeIds.Contains( m.Group.GroupTypeId ) &&
@@ -388,6 +390,12 @@ namespace RockWeb.Blocks.Groups
             }
 
             gGroups.DataBind();
+
+            // hide the group type column if there's only one type; must come after DataBind()
+            if ( _groupTypesCount == 1 )
+            {
+                this.gGroups.Columns[1].Visible = false;
+            }
         }
 
         /// <summary>
@@ -404,6 +412,7 @@ namespace RockWeb.Blocks.Groups
             List<Guid> includeGroupTypeGuids = GetAttributeValue( "IncludeGroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
             if ( includeGroupTypeGuids.Count > 0 )
             {
+                _groupTypesCount = includeGroupTypeGuids.Count;
                 qry = qry.Where( t => includeGroupTypeGuids.Contains( t.Guid ) );
             }
 
@@ -420,6 +429,18 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupTypeIds.Add( groupTypeId );
                 }
+            }
+
+            // If there's only one group type, use it's 'group term' in the panel title.
+            if ( groupTypeIds.Count == 1 )
+            {
+                var singleGroupType = GroupTypeCache.Read( groupTypeIds.FirstOrDefault() );
+                lTitle.Text = string.Format( "{0}", singleGroupType.GroupTerm.Pluralize() );
+                iIcon.AddCssClass( singleGroupType.IconCssClass );
+            }
+            else
+            {
+                iIcon.AddCssClass( "fa fa-users" );
             }
 
             groupTypeIds = qry.Select( t => t.Id ).ToList();

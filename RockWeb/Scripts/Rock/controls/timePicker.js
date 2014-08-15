@@ -10,12 +10,24 @@
                     throw 'id is required';
                 }
 
+                var $tp = $('#' + options.id);
+
                 // bootstrap-timepicker requires that the parent div have bootstrap-timepicker, input-append classes
-                $('#' + options.id).closest('div').addClass('bootstrap-timepicker').addClass('input-append');
+                $tp.closest('div').addClass('bootstrap-timepicker').addClass('input-append');
 
 
                 // uses https://github.com/jdewit/bootstrap-timepicker
-                $('#' + options.id).timepicker({ defaultTime: false, appendWidgetTo: '.bootstrap-timepicker' });
+                $tp.timepicker({
+                    defaultTime: false,
+                    appendWidgetTo: '.bootstrap-timepicker'
+                });
+                
+                $tp.on('show.timepicker', function (e) {
+                    var $scrollcontainer = $tp.closest('.scroll-container');
+                    if ($scrollcontainer.length) {
+                        $scrollcontainer.tinyscrollbar_update('relative');
+                    }
+                });
             }
         };
 

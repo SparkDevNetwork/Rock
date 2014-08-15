@@ -13,7 +13,10 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-users"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                </div>
             </div>
             <div class="panel-body">
 
@@ -81,8 +84,16 @@
                             <div class="col-md-6">
                                 <Rock:RockCheckBoxList ID="cblLocationSelectionModes" runat="server" Label="Location Selection Modes"
                                     Help="The location selection modes to allow when adding locations to groups of this type."/>
-                                <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
-                                    Help="Check this option if more than one location should be allowed for groups of this type." />
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow" 
+                                            Help="Check this option if more than one location should be allowed for groups of this type." />
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes" 
+                                            Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
+                                    </div>
+                                </div>
                                 <Rock:RockControlWrapper ID="rcLocationTypes" runat="server" Label="Location Types"
                                     Help="Groups can have one or more location types attached to them.  For instance you may want to have a meeting location and an assignment target location.">
                                     <div class="grid">

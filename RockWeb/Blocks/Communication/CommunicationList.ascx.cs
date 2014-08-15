@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,6 +101,7 @@ namespace RockWeb.Blocks.Communication
                 rFilter.SaveUserPreference( "Created By", ppSender.PersonId.ToString() );
             }
             rFilter.SaveUserPreference( "Content", tbContent.Text );
+            rFilter.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
 
             BindGrid();
         }
@@ -147,6 +148,11 @@ namespace RockWeb.Blocks.Communication
                             }
                         }
 
+                        break;
+                    }
+                case "Date Range":
+                    {
+                        e.Value = DateRangePicker.FormatDelimitedValues( e.Value );
                         break;
                     }
             }
@@ -241,6 +247,9 @@ namespace RockWeb.Blocks.Communication
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
         private void BindFilter()
         {
             if ( cpChannel.Items[0].Value != string.Empty )
@@ -275,10 +284,15 @@ namespace RockWeb.Blocks.Communication
                     }
                 }
 
+                drpDates.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+
                 tbContent.Text = rFilter.GetUserPreference( "Content" );
             }
         }
 
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
         private void BindGrid()
         {
             var rockContext = new RockContext();
@@ -323,6 +337,19 @@ namespace RockWeb.Blocks.Communication
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
                 communications = communications.Where( c => c.ChannelDataJson.Contains( content ) );
+            }
+
+            var drp = new DateRangePicker();
+            drp.DelimitedValues = rFilter.GetUserPreference( "Date Range" );
+            if ( drp.LowerValue.HasValue )
+            {
+                communications = communications.Where( a => a.ReviewedDateTime >= drp.LowerValue.Value );
+            }
+
+            if ( drp.UpperValue.HasValue )
+            {
+                DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                communications = communications.Where( a => a.ReviewedDateTime < upperDate );
             }
 
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();

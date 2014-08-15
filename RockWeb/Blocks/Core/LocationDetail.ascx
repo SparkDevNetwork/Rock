@@ -9,8 +9,11 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-map-marker"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
-                    <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                        <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                    </div>
                 </div>
                 <div class="panel-body">
 
@@ -31,7 +34,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
-                                <Rock:LocationAddressPicker ID="locapAddress" runat="server" Label="Address" />
+                                <Rock:AddressControl ID="acAddress" runat="server" UseStateAbbreviation="true" />
                                 <asp:Button ID="btnStandardize" runat="server" OnClick="btnStandardize_Click" Text="Verify Address" CssClass="btn btn-action margin-b-md" />
                                 <asp:Literal ID="lStandardizationUpdate" runat="server" />
                                 <Rock:RockCheckBox ID="cbGeoPointLocked" runat="server" Label="Point Locked" Text="Yes" Help="Locks the geocoding to keep the location from being re-geocoding in the future." />
@@ -51,7 +54,7 @@
 
                         <div class="row">
                             <div class="col-md-2">
-                                <div class="photo">
+                                <div class="photo photoframe">
                                     <asp:Literal ID="lImage" runat="server" />
                                 </div>
                             </div>

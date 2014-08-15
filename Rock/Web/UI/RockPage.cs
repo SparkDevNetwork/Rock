@@ -783,6 +783,7 @@ namespace Rock.Web.UI
                                 catch ( Exception ex )
                                 {
                                     NotificationBox nbBlockLoad = new NotificationBox();
+                                    nbBlockLoad.ID = string.Format( "nbBlockLoad_{0}", block.Id );
                                     nbBlockLoad.CssClass = "system-error";
                                     nbBlockLoad.NotificationBoxType = NotificationBoxType.Danger;
                                     nbBlockLoad.Text = string.Format( "Error Loading Block: {0}", block.Name );
@@ -851,7 +852,7 @@ namespace Rock.Web.UI
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
                                         Page.Trace.Warn( "\tCreating block attributes" );
-                                        blockControl.CreateAttributes();
+                                        blockControl.CreateAttributes( rockContext );
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
 
@@ -2149,6 +2150,21 @@ namespace Rock.Web.UI
                     {
                         OnBlockUpdated( blockId );
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the blocks.
+        /// </summary>
+        /// <param name="blockTypePath">The block type path.</param>
+        public void UpdateBlocks( string blockTypePath )
+        {
+            foreach ( var rockBlock in RockBlocks )
+            {
+                if ( rockBlock._blockCache.BlockType.Path.Equals( blockTypePath, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    OnBlockUpdated( rockBlock.BlockId );
                 }
             }
         }

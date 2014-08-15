@@ -21,7 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -75,74 +75,57 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        #region Child Grid Dictionarys
+        #region Properties
 
-        /// <summary>
-        /// Gets or sets the state of the location.
-        /// </summary>
-        /// <value>
-        /// The state of the location.
-        /// </value>
-        private ViewStateList<GroupLocation> GroupLocationsState
-        {
-            get
-            {
-                return ViewState["GroupLocationsState"] as ViewStateList<GroupLocation>;
-            }
-
-            set
-            {
-                ViewState["GroupLocationsState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the group member inherited attributes.
-        /// </summary>
-        /// <value>
-        /// The group member inherited attributes.
-        /// </value>
-        private List<InheritedAttribute> GroupMemberAttributesInheritedState
-        {
-            get
-            {
-                return ViewState["GroupMemberAttributesInheritedState"] as List<InheritedAttribute>;
-            }
-
-            set
-            {
-                ViewState["GroupMemberAttributesInheritedState"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the state of the group member attributes.
-        /// </summary>
-        /// <value>
-        /// The state of the group member attributes.
-        /// </value>
-        private ViewStateList<Attribute> GroupMemberAttributesState
-        {
-            get
-            {
-                return ViewState["GroupMemberAttributesState"] as ViewStateList<Attribute>;
-            }
-
-            set
-            {
-                ViewState["GroupMemberAttributesState"] = value;
-            }
-        }
-
-        private bool AllowMultipleLocations
-        {
-            get { return ViewState["AllowMultipleLocations"] as bool? ?? false; }
-            set { ViewState["AllowMultipleLocations"] = value; }
-        }
+        private List<GroupLocation> GroupLocationsState { get; set; }
+        private List<InheritedAttribute> GroupMemberAttributesInheritedState { get; set; }
+        private List<Attribute> GroupMemberAttributesState { get; set; }
+        private bool AllowMultipleLocations { get; set; }
 
         #endregion
 
         #region Control Methods
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            string json = ViewState["GroupLocationsState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupLocationsState = new List<GroupLocation>();
+            }
+            else
+            {
+                GroupLocationsState = JsonConvert.DeserializeObject<List<GroupLocation>>( json );
+            }
+
+            json = ViewState["GroupMemberAttributesInheritedState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupMemberAttributesInheritedState = new List<InheritedAttribute>();
+            }
+            else
+            {
+                GroupMemberAttributesInheritedState = JsonConvert.DeserializeObject<List<InheritedAttribute>>( json );
+            }
+
+            json = ViewState["GroupMemberAttributesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                GroupMemberAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                GroupMemberAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
+            }
+
+            AllowMultipleLocations = ViewState["AllowMultipleLocations"] as bool? ?? false;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -219,15 +202,16 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            if ( GroupLocationsState != null )
+            var jsonSetting = new JsonSerializerSettings
             {
-                GroupLocationsState.SaveViewState();
-            }
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
 
-            if ( GroupMemberAttributesState != null )
-            {
-                GroupMemberAttributesState.SaveViewState();
-            }
+            ViewState["GroupLocationsState"] = JsonConvert.SerializeObject( GroupLocationsState, Formatting.None, jsonSetting );
+            ViewState["GroupMemberAttributesInheritedState"] = JsonConvert.SerializeObject( GroupMemberAttributesInheritedState, Formatting.None, jsonSetting );
+            ViewState["GroupMemberAttributesState"] = JsonConvert.SerializeObject( GroupMemberAttributesState, Formatting.None, jsonSetting );
+            ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
 
             return base.SaveViewState();
         }
@@ -354,6 +338,7 @@ namespace RockWeb.Blocks.Groups
 
             GroupService groupService = new GroupService( rockContext );
             GroupLocationService groupLocationService = new GroupLocationService( rockContext );
+            ScheduleService scheduleService = new ScheduleService( rockContext );
             AttributeService attributeService = new AttributeService( rockContext );
             AttributeQualifierService attributeQualifierService = new AttributeQualifierService( rockContext );
             CategoryService categoryService = new CategoryService( rockContext );
@@ -374,7 +359,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                group = groupService.Get( groupId );
+                group = groupService.Queryable( "GroupLocations.Schedules" ).Where( g => g.Id == groupId ).FirstOrDefault();
                 wasSecurityRole = group.IsSecurityRole;
 
                 var selectedLocations = GroupLocationsState.Select( l => l.Guid );
@@ -397,9 +382,25 @@ namespace RockWeb.Blocks.Groups
                 {
                     groupLocationState.Id = groupLocation.Id;
                     groupLocationState.Guid = groupLocation.Guid;
+
+                    var selectedSchedules = groupLocationState.Schedules.Select( s => s.Guid ).ToList();
+                    foreach( var schedule in groupLocation.Schedules.Where( s => !selectedSchedules.Contains( s.Guid)).ToList())
+                    {
+                        groupLocation.Schedules.Remove( schedule );
+                    }
                 }
 
                 groupLocation.CopyPropertiesFrom( groupLocationState );
+
+                var existingSchedules = groupLocation.Schedules.Select( s => s.Guid ).ToList();
+                foreach ( var scheduleState in groupLocationState.Schedules.Where( s => !existingSchedules.Contains( s.Guid )).ToList())
+                {
+                    var schedule = scheduleService.Get( scheduleState.Guid );
+                    if ( schedule != null )
+                    {
+                        groupLocation.Schedules.Add( schedule );
+                    }
+                }
             }
 
             group.Name = tbName.Text;
@@ -810,26 +811,8 @@ namespace RockWeb.Blocks.Groups
 
             ddlCampus.SetValue( group.CampusId );
 
-            var groupLocations = new List<GroupLocation>();
-            foreach ( var groupLocation in group.GroupLocations )
-            {
-                var groupLocationState = new GroupLocation();
-                groupLocationState.CopyPropertiesFrom( groupLocation );
-                if ( groupLocation.Location != null )
-                {
-                    groupLocationState.Location = new Location();
-                    groupLocationState.Location.CopyPropertiesFrom( groupLocation.Location );
-                }
-
-                if ( groupLocation.GroupLocationTypeValue != null )
-                {
-                    groupLocationState.GroupLocationTypeValue = new DefinedValue();
-                    groupLocationState.GroupLocationTypeValue.CopyPropertiesFrom( groupLocation.GroupLocationTypeValue );
-                }
-                groupLocations.Add( groupLocationState );
-            }
-            GroupLocationsState = new ViewStateList<GroupLocation>();
-            GroupLocationsState.AddAll( groupLocations );
+            //GroupLocationsState = groupLocations;
+            GroupLocationsState = group.GroupLocations.ToList();
 
             ShowGroupTypeEditDetails( GroupTypeCache.Read( group.GroupTypeId ), group, true );
 
@@ -841,14 +824,13 @@ namespace RockWeb.Blocks.Groups
             }
 
             string qualifierValue = group.Id.ToString();
-            GroupMemberAttributesState = new ViewStateList<Attribute>();
-            GroupMemberAttributesState.AddAll( attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
+            GroupMemberAttributesState = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                     .Where( a =>
                         a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
                         a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )
-                    .ToList() );
+                    .ToList();
             BindGroupMemberAttributesGrid();
 
             BindInheritedAttributes( group.GroupTypeId, attributeService );
@@ -870,7 +852,6 @@ namespace RockWeb.Blocks.Groups
                 if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
                 {
                     wpLocations.Visible = true;
-                    wpLocations.Title = AllowMultipleLocations ? "Locations" : "Location";
                     BindLocationsGrid();
                 }
                 else
@@ -878,13 +859,16 @@ namespace RockWeb.Blocks.Groups
                     wpLocations.Visible = false;
                 }
 
+                gLocations.Columns[2].Visible = groupType.EnableLocationSchedules ?? false;
+                spSchedules.Visible = groupType.EnableLocationSchedules ?? false;
+
                 phGroupAttributes.Controls.Clear();
                 group.LoadAttributes();
 
                 if ( group.Attributes != null && group.Attributes.Any() )
                 {
                     wpGroupAttributes.Visible = true;
-                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, "GroupDetail" );
+                    Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, setValues, BlockValidationGroup );
                 }
                 else
                 {
@@ -952,6 +936,10 @@ namespace RockWeb.Blocks.Groups
             var attributeCategories = Helper.GetAttributeCategories( attributes );
             Rock.Attribute.Helper.AddDisplayControls( group, attributeCategories, phAttributes, null, false );
 
+            var pageParams = new Dictionary<string, string>();
+            pageParams.Add("GroupId", group.Id.ToString());
+            string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
+
             // Get Map Style
             phMaps.Controls.Clear();
             var mapStyleValue = DefinedValueCache.Read( GetAttributeValue( "MapStyle" ) );
@@ -963,81 +951,69 @@ namespace RockWeb.Blocks.Groups
             if ( mapStyleValue != null )
             {
                 string mapStyle = mapStyleValue.GetAttributeValue( "StaticMapStyle" );
-
                 if ( !string.IsNullOrWhiteSpace( mapStyle ) )
                 {
-                    // Get all the group locations and group all those that have a geo-location into either points or polygons
-                    var points = new List<GroupLocation>();
-                    var polygons = new List<GroupLocation>();
-                    foreach ( GroupLocation groupLocation in group.GroupLocations )
+                    foreach ( GroupLocation groupLocation in group.GroupLocations.OrderBy( gl => (gl.GroupLocationTypeValue != null) ? gl.GroupLocationTypeValue.Order : int.MaxValue) )
                     {
                         if ( groupLocation.Location != null )
                         {
                             if ( groupLocation.Location.GeoPoint != null )
                             {
-                                points.Add( groupLocation );
-                            }
-                            else if ( groupLocation.Location.GeoFence != null )
-                            {
-                                polygons.Add( groupLocation );
-                            }
-                        }
-                    }
-
-                    var pageParams = new Dictionary<string, string>();
-                    pageParams.Add("GroupId", group.Id.ToString());
-                    string groupMapUrl = LinkedPageUrl("GroupMapPage", pageParams);
-
-                    if ( points.Any() )
-                    {
-                        foreach ( var groupLocation in points )
-                        {
-                            string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
-                            string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
-                            mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
-                            mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
-                            var literalcontrol = new Literal()
-                            {
-                                Text = string.Format(
-                                "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
-                                groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
-                                groupMapUrl,
-                                mapLink ),
-                                Mode = LiteralMode.PassThrough
-                            };
-                            phMaps.Controls.Add( literalcontrol );
-                        }
-                    }
-
-                    if ( polygons.Any() )
-                    {
-                        foreach ( var groupLocation in polygons )
-                        {
-                            string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
-                            string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
-                            mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
-                            mapLink += "&sensor=false&size=350x200&format=png";
-                            phMaps.Controls.Add(
-                                new LiteralControl( string.Format(
+                                string markerPoints = string.Format( "{0},{1}", groupLocation.Location.GeoPoint.Latitude, groupLocation.Location.GeoPoint.Longitude );
+                                string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", markerPoints );
+                                mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", string.Empty );
+                                mapLink += "&sensor=false&size=350x200&zoom=13&format=png";
+                                var literalcontrol = new Literal()
+                                {
+                                    Text = string.Format(
                                     "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
                                     groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
                                     groupMapUrl,
-                                    mapLink ) ) );
+                                    mapLink ),
+                                    Mode = LiteralMode.PassThrough
+                                };
+                                phMaps.Controls.Add( literalcontrol );
+                            }
+                            else if ( groupLocation.Location.GeoFence != null )
+                            {
+                                string polygonPoints = "enc:" + groupLocation.Location.EncodeGooglePolygon();
+                                string mapLink = System.Text.RegularExpressions.Regex.Replace( mapStyle, @"\{\s*MarkerPoints\s*\}", string.Empty );
+                                mapLink = System.Text.RegularExpressions.Regex.Replace( mapLink, @"\{\s*PolygonPoints\s*\}", polygonPoints );
+                                mapLink += "&sensor=false&size=350x200&format=png";
+                                phMaps.Controls.Add(
+                                    new LiteralControl( string.Format(
+                                        "<div class='group-location-map'>{0}<a href='{1}'><img src='{2}'/></a></div>",
+                                        groupLocation.GroupLocationTypeValue != null ? ( "<h4>" + groupLocation.GroupLocationTypeValue.Name + "</h4>" ) : string.Empty,
+                                        groupMapUrl,
+                                        mapLink ) ) );
+                            }
                         }
-                    }
-
-                    if (phMaps.Controls.Count == 0)
-                    {
-                        phMaps.Controls.Add(
-                            new LiteralControl( string.Format(
-                                    "<div class='group-location-map'><a href='{0}'>Map</a></div>",
-                                    groupMapUrl ) ) );
                     }
                 }
             }
 
+            bool displayMapButton = group.GroupLocations
+                .Where( gl => 
+                    gl.Location != null && 
+                    ( gl.Location.GeoPoint != null || gl.Location.GeoFence != null ) )
+                .Any();
+            if (!displayMapButton && group.GroupType != null)
+            {
+                // Current group doesn't have a mappaple location, but check to see if any of the child group types allow maps
+                foreach( var childGroupType in group.GroupType.ChildGroupTypes)
+                {
+                    if ( childGroupType.LocationTypes.Any() )
+                    {
+                        displayMapButton = true;
+                        break;
+                    }
+                }
+            }
+                  
+            hlMap.Visible = displayMapButton;
+            hlMap.NavigateUrl = groupMapUrl;
+            
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            btnSecurity.Title = group.Name;
             btnSecurity.EntityId = group.Id;
         }
 
@@ -1064,7 +1040,7 @@ namespace RockWeb.Blocks.Groups
             Group group = RockPage.GetSharedItem( key ) as Group;
             if ( group == null )
             {
-                group = new GroupService( new RockContext() ).Queryable( "GroupType" )
+                group = new GroupService( new RockContext() ).Queryable( "GroupType,GroupLocations.Schedules" )
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
                 RockPage.SaveSharedItem( key, group );
@@ -1210,7 +1186,7 @@ namespace RockWeb.Blocks.Groups
         /// Sets the attribute list order.
         /// </summary>
         /// <param name="attributeList">The attribute list.</param>
-        private void SetAttributeListOrder( ViewStateList<Attribute> attributeList )
+        private void SetAttributeListOrder( List<Attribute> attributeList )
         {
             int order = 0;
             attributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList().ForEach( a => a.Order = order++ );
@@ -1222,7 +1198,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="itemList">The item list.</param>
         /// <param name="oldIndex">The old index.</param>
         /// <param name="newIndex">The new index.</param>
-        private void ReorderAttributeList( ViewStateList<Attribute> itemList, int oldIndex, int newIndex )
+        private void ReorderAttributeList( List<Attribute> itemList, int oldIndex, int newIndex )
         {
             var movedItem = itemList.Where( a => a.Order == oldIndex ).FirstOrDefault();
             if ( movedItem != null )
@@ -1381,6 +1357,8 @@ namespace RockWeb.Blocks.Groups
 
                             ddlLocationType.SetValue( groupLocation.GroupLocationTypeValueId );
 
+                            spSchedules.SetValues( groupLocation.Schedules );
+
                             hfAddLocationGroupGuid.Value = locationGuid.ToString();
                         }
                         else
@@ -1481,6 +1459,10 @@ namespace RockWeb.Blocks.Groups
                 groupLocation.LocationId = groupLocation.Location.Id;
                 groupLocation.GroupLocationTypeValueId = ddlLocationType.SelectedValueAsId();
 
+                var selectedIds = spSchedules.SelectedValuesAsInt();
+                groupLocation.Schedules = new ScheduleService( rockContext ).Queryable()
+                    .Where( s => selectedIds.Contains( s.Id ) ).ToList();
+
                 if ( groupLocation.GroupLocationTypeValueId.HasValue )
                 {
                     groupLocation.GroupLocationTypeValue = new DefinedValue();
@@ -1504,7 +1486,16 @@ namespace RockWeb.Blocks.Groups
         {
             gLocations.Actions.ShowAdd = AllowMultipleLocations || !GroupLocationsState.Any();
 
-            gLocations.DataSource = GroupLocationsState.ToList();
+            gLocations.DataSource = GroupLocationsState
+                .OrderBy( gl => gl.GroupLocationTypeValue.Order )
+                .Select( gl => new
+                {
+                    gl.Guid,
+                    gl.Location,
+                    Type = gl.GroupLocationTypeValue.Name,
+                    Schedules = gl.Schedules.Select( s => s.Name).ToList().AsDelimited(", ")
+                } )
+                .ToList();
             gLocations.DataBind();
         }
 

@@ -97,13 +97,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _ddlMetric.Required;
+                return _mpMetricCategory.Required;
             }
 
             set
             {
                 EnsureChildControls();
-                _ddlMetric.Required = value;
+                _mpMetricCategory.Required = value;
             }
         }
 
@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private RockDropDownList _ddlMetric;
+        private MetricCategoryPicker _mpMetricCategory;
         private PlaceHolder _phEntityTypeEntityIdValue;
         private Control _entityTypeEditControl;
         private RockRadioButtonList _rblSelectOrContext;
@@ -191,20 +191,47 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The metric identifier.
         /// </value>
-        public int? MetricId
+        public int? MetricCategoryId
         {
             get
             {
                 EnsureChildControls();
-                return _ddlMetric.SelectedValueAsInt( false );
+                var metricCategoryId = _mpMetricCategory.SelectedValue.AsIntegerOrNull();
+                return metricCategoryId;
             }
 
             set
             {
                 EnsureChildControls();
-                _ddlMetric.SelectedValue = value.ToString();
-                _ddlMetric_SelectedIndexChanged( null, null );
+                _mpMetricCategory.SetValue( value );
+                mpMetric_SelectItem( null, null );
             }
+        }
+
+        /// <summary>
+        /// Gets the metric identifier.
+        /// </summary>
+        /// <value>
+        /// The metric identifier.
+        /// </value>
+        public int? MetricId
+        {
+            get
+            {
+                var metricCategory = new MetricCategoryService( new RockContext() ).Get( this.MetricCategoryId ?? 0 );
+                return metricCategory != null ? metricCategory.MetricId : (int?)null;
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the _mpMetric control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mpMetric_SelectItem( object sender, EventArgs e )
+        {
+            // figure out which picker to render based on the Metric's Entity
+            UpdateEntityTypeControls();
         }
 
         /// <summary>
@@ -266,7 +293,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( _rblSelectOrContext != null)
+                if ( _rblSelectOrContext != null )
                 {
                     return _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 1;
                 }
@@ -352,18 +379,16 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            _ddlMetric = new RockDropDownList();
-            _ddlMetric.ID = this.ID + "_ddlMetric";
-            _ddlMetric.AutoPostBack = true;
-            _ddlMetric.SelectedIndexChanged += _ddlMetric_SelectedIndexChanged;
-            Controls.Add( _ddlMetric );
+            _mpMetricCategory = new MetricCategoryPicker();
+            _mpMetricCategory.AllowMultiSelect = false;
+            _mpMetricCategory.ID = this.ID + "_mpMetric";
+            _mpMetricCategory.SelectItem += mpMetric_SelectItem;
+            Controls.Add( _mpMetricCategory );
 
             _phEntityTypeEntityIdValue = new PlaceHolder();
             _phEntityTypeEntityIdValue.ID = this.ID + "_phEntityTypeEntityIdValue";
             _phEntityTypeEntityIdValue.EnableViewState = false;
             Controls.Add( _phEntityTypeEntityIdValue );
-
-            LoadMetrics();
 
             // figure out which picker to render based on the Metric's Entity
             UpdateEntityTypeControls();
@@ -424,6 +449,17 @@ namespace Rock.Web.UI.Controls
                 }
 
                 rockControlWrapper.Controls.Add( _rblSelectOrContext );
+                if ( string.IsNullOrEmpty( _rblSelectOrContext.SelectedValue ) )
+                {
+                    // might have to get the SelectedValue since we re-created the control after Load()
+                    _rblSelectOrContext.SelectedValue = this.Page.Request.Params[_rblSelectOrContext.UniqueID];
+                }
+
+                if ( string.IsNullOrEmpty( _rblSelectOrContext.SelectedValue ) )
+                {
+                    // if not set from either what it was, or from PageContext, default it to "Get from page context"
+                    _rblSelectOrContext.SelectedValue = "1";
+                }
 
                 _entityTypeEditControl.Visible = _rblSelectOrContext.SelectedValue.AsIntegerOrNull() == 0;
                 rockControlWrapper.Controls.Add( _entityTypeEditControl );
@@ -437,33 +473,6 @@ namespace Rock.Web.UI.Controls
 
                 rockControlWrapper.Controls.Add( _cbCombine );
             }
-        }
-
-        /// <summary>
-        /// Loads the metrics.
-        /// </summary>
-        public void LoadMetrics()
-        {
-            _ddlMetric.Items.Clear();
-            _ddlMetric.Items.Add( new ListItem( string.Empty, "0" ) );
-
-            var metricService = new MetricService( new RockContext() );
-
-            foreach ( var g in metricService.Queryable().OrderBy( a => a.Title ).ThenBy( a => a.Subtitle ) )
-            {
-                _ddlMetric.Items.Add( new ListItem( g.Title, g.Id.ToString() ) );
-            }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the _ddlMetric control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void _ddlMetric_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            // figure out which picker to render based on the Metric's Entity
-            UpdateEntityTypeControls();
         }
 
         /// <summary>
@@ -484,7 +493,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            _ddlMetric.RenderControl( writer );
+            _mpMetricCategory.RenderControl( writer );
             _phEntityTypeEntityIdValue.RenderControl( writer );
         }
 
@@ -509,15 +518,24 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var guid = Guid.Empty;
-                var metric = new MetricService( new RockContext() ).Get( this.MetricId ?? 0 );
+                var metricGuid = Guid.Empty;
+                var categoryGuid = Guid.Empty;
+                var rockContext = new RockContext();
 
-                if ( metric != null )
+                // first try to get metric from MetricCategoryId.  If not found, just get the metric regardless of category
+                var metricCategory = new MetricCategoryService( rockContext ).Get( this.MetricCategoryId ?? 0 );
+                if ( metricCategory == null )
                 {
-                    guid = metric.Guid;
+                    metricCategory = new MetricCategoryService( rockContext ).Queryable().Where( a => a.MetricId == ( this.MetricId ?? 0 ) ).FirstOrDefault();
                 }
 
-                return string.Format( "{0}|{1}|{2}|{3}", guid.ToString(), this.EntityId, this.GetEntityFromContext, this.CombineValues );
+                if ( metricCategory != null )
+                {
+                    metricGuid = metricCategory.Metric.Guid;
+                    categoryGuid = metricCategory.Category.Guid;
+                }
+
+                return string.Format( "{0}|{1}|{2}|{3}|{4}", metricGuid.ToString(), this.EntityId, this.GetEntityFromContext, this.CombineValues, categoryGuid );
             }
 
             set
@@ -525,10 +543,26 @@ namespace Rock.Web.UI.Controls
                 var valueParts = value.Split( '|' );
                 if ( valueParts.Length > 0 )
                 {
-                    var metric = new MetricService( new RockContext() ).Get( valueParts[0].AsGuid() );
-                    if ( metric != null )
+
+                    Guid metricGuid = valueParts[0].AsGuid();
+                    Guid categoryGuid = Guid.Empty;
+
+                    if ( valueParts.Length > 4 )
                     {
-                        this.MetricId = metric.Id;
+                        categoryGuid = valueParts[4].AsGuid();
+                    }
+
+                    // first try to get metric from Metric.Guid and Category.Guid.  If not found, just get the metric regardless of category
+                    var metricCategoryQry = new MetricCategoryService( new RockContext() ).Queryable();
+                    MetricCategory metricCategory = metricCategoryQry.Where( a => a.Metric.Guid == metricGuid && a.Category.Guid == categoryGuid ).FirstOrDefault();
+                    if ( metricCategory == null )
+                    {
+                        metricCategory = metricCategoryQry.Where( a => a.Metric.Guid == metricGuid ).FirstOrDefault();
+                    }
+
+                    if ( metricCategory != null )
+                    {
+                        this.MetricCategoryId = metricCategory.Id;
                         if ( valueParts.Length > 3 )
                         {
                             this.EntityId = valueParts[1].AsIntegerOrNull();

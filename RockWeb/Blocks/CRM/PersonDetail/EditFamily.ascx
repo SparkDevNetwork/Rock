@@ -80,7 +80,7 @@
                                     </asp:TemplateField>
                                     <asp:TemplateField HeaderText="Address">
                                         <ItemTemplate>
-                                            <%# Eval("FormattedValue") %><br />
+                                            <%# Eval("FormattedAddress") %><br />
                                         </ItemTemplate>
                                         <EditItemTemplate>
                                             <Rock:AddressControl ID="acAddress" runat="server" />
@@ -141,22 +141,15 @@
                 <asp:HiddenField ID="hfActiveTab" runat="server" />
 
                 <ul class="nav nav-pills">
-                    <li id="liExistingPerson" runat="server" class="active"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
-                    <li id="liNewPerson" runat="server"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
+                    <li id="liNewPerson" runat="server" class="active"><a href='#<%=divNewPerson.ClientID%>' data-toggle="pill">Add New Person</a></li>
+                    <li id="liExistingPerson" runat="server"><a href='#<%=divExistingPerson.ClientID%>' data-toggle="pill">Add Existing Person</a></li>
                 </ul>
 
                 <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" ValidationGroup="AddPerson"/>
 
                 <div class="tab-content">
 
-                    <div id="divExistingPerson" runat="server" class="tab-pane active">
-                        <fieldset>
-                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
-                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
-                        </fieldset>
-                    </div>
-
-                    <div id="divNewPerson" runat="server" class="tab-pane">
+                    <div id="divNewPerson" runat="server" class="tab-pane active">
                         <div class="row">
                             <div class="col-md-4">
                                 <fieldset>
@@ -189,7 +182,16 @@
                             </div>
                         </div>
                     </div>
+
+                    <div id="divExistingPerson" runat="server" class="tab-pane">
+                        <fieldset>
+                            <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" ValidationGroup="AddPerson" />
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" ValidationGroup="AddPerson"/>
+                        </fieldset>
+                    </div>
+
                 </div>
+
 
                 <script>
                     Sys.Application.add_load(function () {
