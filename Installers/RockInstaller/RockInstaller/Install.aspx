@@ -446,12 +446,12 @@
 
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Name</label>
-						    <asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Church" CssClass="required-field form-control" Text=""></asp:TextBox>
+						    <asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Organization" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
 							
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Default Email Address</label>
-						    <asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
+						    <asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourorg.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
 							
 					    <div class="form-group">
@@ -461,7 +461,7 @@
 							
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Organization Website</label>
-						    <asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+						    <asp:TextBox ID="txtOrgWebsite" placeholder="http://www.yourorg.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
 
                         <div class="btn-list clearfix">
@@ -512,12 +512,12 @@
 
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Email Server</label>
-						    <asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
+						    <asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 					    </div>
 							
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Email Server SMTP Port (default is 25)</label>
-						    <asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text="25"></asp:TextBox>
+						    <asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourorg.com" CssClass="required-field form-control" Text="25"></asp:TextBox>
 					    </div>
 							
 					    <div class="form-group">
