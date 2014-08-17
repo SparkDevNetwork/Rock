@@ -303,52 +303,59 @@ namespace RockWeb.Blocks.Communication
                         string textClass = string.Empty;
                         string textTooltip = string.Empty;
 
-
-                        if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
+                        if ( recipient.IsDeceased )
                         {
-                            if ( string.IsNullOrWhiteSpace( recipient.Email ) )
+                            textClass = "text-danger";
+                            textTooltip = "Deceased";
+                        }
+                        else
+                        {
+                            if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Email" ).Id )
                             {
-                                textClass = "text-danger";
-                                textTooltip = "No Email." + recipient.EmailNote;
-                            }
-                            else if ( !recipient.IsEmailActive )
-                            {
-                                // if email is not active, show reason why as tooltip
-                                textClass = "text-danger";
-                                textTooltip = "Email is Inactive. " + recipient.EmailNote;
-                            }
-                            else
-                            {
-                                // Email is active
-                                if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
+                                if ( string.IsNullOrWhiteSpace( recipient.Email ) )
                                 {
-                                    textTooltip = Recipient.PreferenceMessage( recipient );
+                                    textClass = "text-danger";
+                                    textTooltip = "No Email." + recipient.EmailNote;
+                                }
+                                else if ( !recipient.IsEmailActive )
+                                {
+                                    // if email is not active, show reason why as tooltip
+                                    textClass = "text-danger";
+                                    textTooltip = "Email is Inactive. " + recipient.EmailNote;
+                                }
+                                else
+                                {
+                                    // Email is active
+                                    if ( recipient.EmailPreference != EmailPreference.EmailAllowed )
+                                    {
+                                        textTooltip = Recipient.PreferenceMessage( recipient );
 
-                                    if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
-                                    {
-                                        textClass = "js-no-bulk-email";
-                                        var channelData = ChannelData;
-                                        if ( cbBulk.Checked )
+                                        if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                         {
-                                            // This is a bulk email and user does not want bulk emails
-                                            textClass += " text-danger";
+                                            textClass = "js-no-bulk-email";
+                                            var channelData = ChannelData;
+                                            if ( cbBulk.Checked )
+                                            {
+                                                // This is a bulk email and user does not want bulk emails
+                                                textClass += " text-danger";
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        // Email preference is 'Do Not Email'
-                                        textClass = "text-danger";
+                                        else
+                                        {
+                                            // Email preference is 'Do Not Email'
+                                            textClass = "text-danger";
+                                        }
                                     }
                                 }
                             }
-                        }
-                        else if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
-                        {
-                            if ( !recipient.HasSmsNumber )
+                            else if ( ChannelEntityTypeId == EntityTypeCache.Read( "Rock.Communication.Channel.Sms" ).Id )
                             {
-                                // No SMS Number
-                                textClass = "text-danger";
-                                textTooltip = "No phone number with SMS enabled.";
+                                if ( !recipient.HasSmsNumber )
+                                {
+                                    // No SMS Number
+                                    textClass = "text-danger";
+                                    textTooltip = "No phone number with SMS enabled.";
+                                }
                             }
                         }
 
@@ -1011,6 +1018,14 @@ namespace RockWeb.Blocks.Communication
             public string PersonName { get; set; }
 
             /// <summary>
+            /// Gets or sets a value indicating whether this person is deceased.
+            /// </summary>
+            /// <value>
+            /// <c>true</c> if this instance is deceased; otherwise, <c>false</c>.
+            /// </value>
+            public bool IsDeceased { get; set; }
+
+            /// <summary>
             /// Gets or sets a value indicating whether [has SMS number].
             /// </summary>
             /// <value>
@@ -1092,6 +1107,7 @@ namespace RockWeb.Blocks.Communication
             {
                 PersonId = person.Id;
                 PersonName = person.FullName;
+                IsDeceased = person.IsDeceased ?? false;
                 HasSmsNumber = person.PhoneNumbers.Any( p => p.IsMessagingEnabled );
                 Email = person.Email;
                 IsEmailActive = person.IsEmailActive ?? true;

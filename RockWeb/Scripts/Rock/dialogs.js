@@ -6,7 +6,7 @@
         var _dialogs = {},
             exports = {
                 // Presents a bootstrap style alert box with the specified message 
-                // Returns true if the user selects OK
+                // then executes the callback function(result)
                 confirm: function (msg, callback) {
                     bootbox.dialog({
                         message: msg,

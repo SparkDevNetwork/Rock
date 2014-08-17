@@ -1180,6 +1180,7 @@ namespace Rock.Model
         /// Returns a URL for the person's photo.
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
         /// <param name="gender">The gender.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
@@ -1322,12 +1323,15 @@ namespace Rock.Model
         /// Gets the photo image tag.
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
         /// <param name="gender">The gender to use if the photoId is null.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
         /// <param name="className">The css class name to apply to the image.</param>
-        /// <returns>An html img tag (string) of the requested photo.</returns>
+        /// <returns>
+        /// An html img tag (string) of the requested photo.
+        /// </returns>
         public static string GetPhotoImageTag(int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
             var photoUrl = new StringBuilder();

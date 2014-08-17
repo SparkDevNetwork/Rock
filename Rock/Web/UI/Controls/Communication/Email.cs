@@ -152,6 +152,7 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "UnsubscribeOption" );
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
+            htmlMessage.Height = 600;
             Controls.Add( htmlMessage );
 
             tbTextMessage = new RockTextBox();

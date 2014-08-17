@@ -26,7 +26,9 @@
                             <Rock:EnumField DataField="MetricValueType" HeaderText="Type" SortExpression="MetricValueType" />
                             <asp:BoundField DataField="YValue" HeaderText="Value" SortExpression="YValue" ItemStyle-HorizontalAlign="Right" />
                             <asp:BoundField DataField="EntityId" HeaderText="EntityTypeName" />
-                            <asp:BoundField DataField="XValue" HeaderText="X Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" />
+
+                            <%-- Hide X Value for now until we implement XValue (In most cases, the Metric.Xaxis is ignored and MetricValueDateTime is used as the X-Axis --%>
+                            <asp:BoundField DataField="XValue" HeaderText="X Value" SortExpression="XValue" ItemStyle-HorizontalAlign="Right" Visible="false" />
 
                             <Rock:DeleteField OnClick="gMetricValues_Delete" />
                         </Columns>

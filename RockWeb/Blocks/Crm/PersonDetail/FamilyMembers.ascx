@@ -25,7 +25,7 @@
                                         <li class='<%# FormatPersonCssClass( (bool?)Eval("Person.IsDeceased") ) %>'>
                                             <a href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'>
                                                 <div class="person-image" id="divPersonImage" runat="server"></div>
-                                                <div>
+                                                <div class="person-info">
                                                     <h4><%# Eval("Person.NickName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
                                                 </div>

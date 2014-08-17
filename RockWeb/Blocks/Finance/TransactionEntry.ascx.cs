@@ -44,7 +44,8 @@ namespace RockWeb.Blocks.Finance
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 2 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, "", "", 3 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, 
+        Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 3 )]
     [GroupLocationTypeField( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 4 )]
 
@@ -94,12 +95,8 @@ achieve our mission.  We are so grateful for your commitment.
     {
         #region Fields
 
-        protected bool FluidLayout { get; set; }
-
         private bool _showRepeatingOptions = false;
-
         private GatewayComponent _ccGateway;
-
         private GatewayComponent _achGateway;
 
         #endregion
@@ -107,9 +104,29 @@ achieve our mission.  We are so grateful for your commitment.
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether [fluid layout].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [fluid layout]; otherwise, <c>false</c>.
+        /// </value>
+        protected bool FluidLayout { get; set; }
+
+        /// <summary>
         /// Gets or sets the target person.
         /// </summary>
         protected Person TargetPerson { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the group location identifier.
+        /// </summary>
+        /// <value>
+        /// The group location identifier.
+        /// </value>
+        protected int? GroupLocationId 
+        {
+            get { return ViewState["GroupLocationId"] as int?; }
+            set { ViewState["GroupLocationId"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -483,7 +500,16 @@ achieve our mission.  We are so grateful for your commitment.
                             addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
                         }
 
-                        acAddress.SetValues( personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id ) );
+                        var groupLocation = personService.GetFirstLocation( person.Id, DefinedValueCache.Read( addressTypeGuid ).Id );
+                        if ( groupLocation != null )
+                        {
+                            GroupLocationId = groupLocation.Id;
+                            acAddress.SetValues( groupLocation.Location );
+                        }
+                        else
+                        {
+                            acAddress.SetValues( null );
+                        }
                     }
                     else
                     {
@@ -846,6 +872,9 @@ achieve our mission.  We are so grateful for your commitment.
         {
             Person person = null;
             var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            Group familyGroup = null;
 
             int personId = ViewState["PersonId"] as int? ?? 0;
             if ( personId == 0 && TargetPerson != null )
@@ -854,8 +883,6 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                var personService = new PersonService( rockContext );
-
                 if ( personId != 0 )
                 {
                     person = personService.Get( personId );
@@ -899,18 +926,39 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         // Create Family
-                        var familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false );
-                        if ( familyGroup != null )
-                        {
-                            GroupService.AddNewFamilyAddress(
-                                rockContext,
-                                familyGroup,
-                                GetAttributeValue( "AddressType" ),
-                                acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-                        }
+                        familyGroup = GroupService.SaveNewFamily( rockContext, person, null, false );
                     }
 
                     ViewState["PersonId"] = person != null ? person.Id : 0;
+                }
+            }
+
+            if ( create && person != null ) // person should never be null at this point
+            {
+                if ( familyGroup == null )
+                {
+                    var groupLocationService = new GroupLocationService( rockContext );
+                    if ( GroupLocationId.HasValue )
+                    {
+                        familyGroup = groupLocationService.Queryable()
+                            .Where( gl => gl.Id == GroupLocationId.Value )
+                            .Select( gl => gl.Group )
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        familyGroup = personService.GetFamilies( person.Id ).FirstOrDefault();
+                    }
+                }
+
+                if ( familyGroup != null )
+                {
+                    GroupService.AddNewFamilyAddress(
+                        rockContext,
+                        familyGroup,
+                        GetAttributeValue( "AddressType" ),
+                        acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country,
+                        true );
                 }
             }
 
@@ -1020,6 +1068,13 @@ achieve our mission.  We are so grateful for your commitment.
             if ( string.IsNullOrWhiteSpace( txtEmail.Text ) )
             {
                 errorMessages.Add( "Make sure to enter a valid email address.  An email address is required for us to send you a payment confirmation" );
+            }
+
+            var location = new Location();
+            acAddress.GetValues( location );
+            if ( string.IsNullOrWhiteSpace( location.Street1 )  )
+            {
+                errorMessages.Add( "Make sure to enter a valid address.  An address is required for us to process this transaction" );
             }
 
             if ( hfPaymentTab.Value == "ACH" )

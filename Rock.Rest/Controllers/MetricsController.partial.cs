@@ -63,7 +63,7 @@ namespace Rock.Rest.Controllers
             {
                 block.LoadAttributes();
 
-                string displayText = block.GetAttributeValue( "DisplayText" );
+                string liquidTemplate = block.GetAttributeValue( "LiquidTemplate" );
 
                 var metricCategoryPairList = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( block.GetAttributeValue( "MetricCategories" ) );
 
@@ -96,12 +96,13 @@ namespace Rock.Rest.Controllers
                         .Where( a => a.MetricValueDateTime >= firstDayOfYear && a.MetricValueDateTime < currentDateTime )
                         .Where( a => a.MetricValueType == MetricValueType.Measure );
 
-                    // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
-                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId )
+                    //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+                    //// Note: if a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
+                    if ( entityTypeId.HasValue && metric.EntityTypeId == entityTypeId || metric.EntityTypeId == null )
                     {
                         if ( entityId.HasValue )
                         {
-                            qryMeasureValues = qryMeasureValues.Where( a => a.EntityId == entityId );
+                            qryMeasureValues = qryMeasureValues.Where( a => a.EntityId == entityId || a.EntityId == null );
                         }
                     }
 
@@ -155,7 +156,7 @@ namespace Rock.Rest.Controllers
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();
                 mergeValues.Add( "Metrics", metricsData );
 
-                string resultHtml = displayText.ResolveMergeFields( mergeValues );
+                string resultHtml = liquidTemplate.ResolveMergeFields( mergeValues );
 
                 // show liquid help for debug
                 if ( block.GetAttributeValue( "EnableDebug" ).AsBoolean() )

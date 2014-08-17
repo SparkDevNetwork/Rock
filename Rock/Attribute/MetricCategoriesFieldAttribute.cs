@@ -50,7 +50,20 @@ namespace Rock.Attribute
         /// </summary>
         public class MetricCategoryPair
         {
+            /// <summary>
+            /// Gets or sets the metric unique identifier.
+            /// </summary>
+            /// <value>
+            /// The metric unique identifier.
+            /// </value>
             public Guid MetricGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the category unique identifier.
+            /// </summary>
+            /// <value>
+            /// The category unique identifier.
+            /// </value>
             public Guid? CategoryGuid { get; set; }
         }
 
@@ -61,7 +74,7 @@ namespace Rock.Attribute
         /// <returns></returns>
         public static List<MetricCategoryPair> GetValueAsGuidPairs( string value )
         {
-            return value.Split( ',' ).Select( a =>
+            return (value ?? string.Empty).Split( ',' ).Select( a =>
             {
                 var parts = a.Split( '|' );
 

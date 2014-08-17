@@ -244,6 +244,11 @@ You can view an online version of this email here:
                     .ToList() )
                 {
                     var person = recipient.Person;
+                    if ( person.IsDeceased ?? false )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is deceased!";
+                    }
                     if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;

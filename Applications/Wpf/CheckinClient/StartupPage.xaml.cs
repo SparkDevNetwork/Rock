@@ -68,7 +68,7 @@ namespace CheckinClient
             }
             else
             {
-                foreach ( Control control in spPrinterOverride.Children )
+                foreach ( Control control in spUsbPrinterList.Children )
                 {
                     if ( control is ToggleButton )
                     {
@@ -127,8 +127,8 @@ namespace CheckinClient
                 {
                     btnToggle.IsChecked = true;
                 }
-                
-                spPrinterOverride.Children.Add( btnToggle );
+
+                spUsbPrinterList.Children.Add( btnToggle );
                 btnToggle.Click += new RoutedEventHandler( btnToggle_Click );
                 printerCounter++;
             }
@@ -144,7 +144,7 @@ namespace CheckinClient
             ToggleButton btnClicked = sender as ToggleButton;
 
             // ensure only one toggle button is selected at a time
-            foreach ( Control control in spPrinterOverride.Children )
+            foreach ( Control control in spUsbPrinterList.Children )
             {
                 if ( control is ToggleButton && control.Name != btnClicked.Name )
                 {

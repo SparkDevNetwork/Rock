@@ -36,9 +36,10 @@ namespace Rock.Model
         public IQueryable<Rock.Model.CommunicationRecipient> Get( int communicationId, CommunicationRecipientStatus status )
         {
             return Queryable( "Communication" )
-                .Where( r => 
-                    r.CommunicationId == communicationId  &&
-                    r.Status == status);
+                .Where( r =>
+                    r.CommunicationId == communicationId &&
+                    r.Status == status &&
+                    ( !r.Person.IsDeceased.HasValue || !r.Person.IsDeceased.Value ) );
         }
 
         /// <summary>

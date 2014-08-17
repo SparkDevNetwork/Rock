@@ -208,6 +208,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the metric identifier.
+        /// </summary>
+        /// <value>
+        /// The metric identifier.
+        /// </value>
         public int? MetricId
         {
             get
