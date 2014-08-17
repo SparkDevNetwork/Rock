@@ -176,6 +176,8 @@ namespace Rock.Model
             
             // ignoring FinancialTransaction,ModifiedByPersonAliasId 
             
+            // ignoring FinancialTransaction,ProcessedByPersonAliasId 
+            
             // ignoring FinancialTransactionDetail,CreatedByPersonAliasId 
             
             // ignoring FinancialTransactionDetail,ModifiedByPersonAliasId 
@@ -294,6 +296,14 @@ namespace Rock.Model
             
             // ignoring PersonBadge,ModifiedByPersonAliasId 
             
+            // ignoring PersonDuplicate,CreatedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,DuplicatePersonAliasId 
+            
+            // ignoring PersonDuplicate,ModifiedByPersonAliasId 
+            
+            // ignoring PersonDuplicate,PersonAliasId 
+            
             // ignoring PersonViewed,TargetPersonAliasId 
             
             // ignoring PersonViewed,ViewerPersonAliasId 
@@ -363,6 +373,8 @@ namespace Rock.Model
             // ignoring UserLogin,ModifiedByPersonAliasId 
             
             // ignoring Workflow,CreatedByPersonAliasId 
+            
+            // ignoring Workflow,InitiatorPersonAliasId 
             
             // ignoring Workflow,ModifiedByPersonAliasId 
             

@@ -133,6 +133,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Financial Source
+
+        /// <summary>
+        /// The financial source of Website
+        /// </summary>
+        public const string FINANCIAL_SOURCE_TYPE_WEBSITE = "7D705CE7-7B11-4342-A58E-53617C5B4E69";
+
+        #endregion
+
         #region Group Location Type
 
         /// <summary>

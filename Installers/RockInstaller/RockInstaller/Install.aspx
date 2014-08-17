@@ -237,7 +237,7 @@
                         <h1>Database Configuration</h1>
 					    <p>Please provide configuration information to the database below.  This information should come from your server
 						    administrator or hosting provider.</p>
-							
+                        	
 					    <div class="form-group">
 						    <label class="control-label" for="inputEmail">Database Server</label>
 						    <asp:TextBox ID="txtServerName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>

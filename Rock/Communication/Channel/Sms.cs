@@ -117,12 +117,50 @@ namespace Rock.Communication.Channel
         }
 
         /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public override void Send( Model.Communication communication )
+        {
+            var rockContext = new RockContext();
+            var communicationService = new CommunicationService( rockContext );
+
+            communication = communicationService.Get( communication.Id );
+
+            if ( communication != null &&
+                communication.Status == Model.CommunicationStatus.Approved &&
+                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
+                ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
+            {
+                // Update any recipients that should not get sent the communication
+                var recipientService = new CommunicationRecipientService( rockContext );
+                foreach ( var recipient in recipientService.Queryable( "Person" )
+                    .Where( r =>
+                        r.CommunicationId == communication.Id &&
+                        r.Status == CommunicationRecipientStatus.Pending )
+                    .ToList() )
+                {
+                    var person = recipient.Person;
+                    if ( person.IsDeceased ?? false )
+                    {
+                        recipient.Status = CommunicationRecipientStatus.Failed;
+                        recipient.StatusNote = "Person is deceased!";
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            base.Send( communication );
+        }
+
+        /// <summary>
         /// Process inbound messages that are sent to a SMS number.
         /// </summary>
         /// <param name="toPhone">The phone number a message is sent to.</param>
         /// <param name="fromPhone">The phone number a message is sent from.</param>
         /// <param name="message">The message that was sent.</param>
-        /// <returns></returns>
+        /// <param name="errorMessage">The error message.</param>
         public void ProcessResponse( string toPhone, string fromPhone, string message, out string errorMessage )
         {
             errorMessage = string.Empty;

@@ -28,12 +28,12 @@ namespace Rock.Attribute
     public class SchedulesFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ScheduleFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="SchedulesFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultMetricsGuids">The default schedule guids.</param>
+        /// <param name="defaultScheduleGuids">The default schedule guids.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>

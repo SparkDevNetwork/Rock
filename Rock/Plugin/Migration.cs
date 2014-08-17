@@ -33,7 +33,15 @@ namespace Rock.Plugin
         /// The SQL connection.
         /// </value>
         public virtual SqlConnection SqlConnection { get; set;}
+
+        /// <summary>
+        /// Gets or sets the SQL transaction.
+        /// </summary>
+        /// <value>
+        /// The SQL transaction.
+        /// </value>
         public virtual SqlTransaction SqlTransaction { get; set; }
+
         /// <summary>
         /// The commands to run to migrate plugin to the specific version
         /// </summary>

@@ -70,6 +70,7 @@ namespace Rock.Rest.Controllers
 
         /// <summary>
         /// Gets the by metric identifier.
+        /// NOTE: The Chart blocks use ODATA to further filter this
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
         /// <param name="metricValueType">Type of the metric value.</param>
@@ -119,12 +120,13 @@ namespace Rock.Rest.Controllers
                 qry = qry.Where( a => a.MetricValueDateTime < endDate.Value );
             }
 
-            // if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+            //// if an entityTypeId/EntityId filter was specified, and the entityTypeId is the same as the metrics.EntityTypeId, filter the values to the specified entityId
+            //// Note: If a Metric or it's Metric Value doesn't have a context, include it regardless of Context setting
             if ( entityTypeId.HasValue )
             {
                 if ( entityId.HasValue )
                 {
-                    qry = qry.Where( a => a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId );
+                    qry = qry.Where( a => ( a.Metric.EntityTypeId == entityTypeId && a.EntityId == entityId ) || ( a.Metric.EntityTypeId == null) || ( a.EntityId == null ) );
                 }
             }
 

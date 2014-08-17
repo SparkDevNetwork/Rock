@@ -17,7 +17,7 @@
 SELECT
     TOP 10 *
 FROM
-    person
+    [Person]
                         </Rock:CodeEditor>
 
                         <Rock:Toggle ID="tQuery" runat="server" Label="Selection Query?" OnText="Yes" OffText="No" Checked="true"

@@ -237,7 +237,9 @@
     <Compile Include="Field\Types\MetricEntityFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTextOrAttributeFieldType.cs" />
     <Compile Include="Field\Types\WorkflowAttributeFieldType.cs" />
+    <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\PersonDuplicate.cs" />
@@ -402,7 +404,6 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
     <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">

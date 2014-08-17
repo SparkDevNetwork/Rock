@@ -1697,6 +1697,7 @@ namespace Rock
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="enumValue">The enum value.</param>
+        /// <param name="defaultValue">The default value.</param>
         /// <returns></returns>
         public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
