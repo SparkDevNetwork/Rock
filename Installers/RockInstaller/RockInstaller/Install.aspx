@@ -666,7 +666,7 @@
             txtDatabaseName.Text = "RockInstallTest";
             txtUsername.Text = "RockInstallUser";
             txtPassword.TextMode = TextBoxMode.SingleLine;
-            txtPassword.Text = "rocktestpassword!23";
+            txtPassword.Text = "rocktestpassword23";
 
             txtAdminUsername.Text = "admin";
             txtAdminPassword.TextMode = TextBoxMode.SingleLine;

@@ -304,7 +304,10 @@ namespace RockInstaller
 
             result = DownloadFile( rockURL + "/Data/" + rockSource, serverPath + @"\" + rockSource, 10, 1 );
 
-            this.SendConsoleMessage( "File Download Complete!" );
+            if ( result.Success )
+            {
+                this.SendConsoleMessage( "File Download Complete!" );
+            }
 
             return result;
         }
