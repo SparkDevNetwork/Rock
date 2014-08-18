@@ -253,6 +253,7 @@ namespace RockWeb.Blocks.Groups
     Sys.Application.add_load(function () {{
 
         var groupId = {0};
+        var allMarkers = [];
         var groupItems = [];
         var childGroupItems = [];
         var groupMemberItems = [];
@@ -273,6 +274,9 @@ namespace RockWeb.Blocks.Groups
         var polygonColors = [{2}];
 
         var infoWindowRequest = {6};
+
+        var min = .999999;
+        var max = 1.000001;
 
         initializeMap();
 
@@ -341,6 +345,9 @@ namespace RockWeb.Blocks.Groups
 
             ).done( function() {{
 
+                // adjust any markers that may overlap
+                adjustOverlappedMarkers();
+
                 // When all three requests are done, set the map bounds
                 if (!bounds.isEmpty()) {{
                     map.fitBounds(bounds);
@@ -393,6 +400,7 @@ namespace RockWeb.Blocks.Groups
                 }});
     
                 items.push(marker);
+                allMarkers.push(marker);
 
                 google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                     return function () {{
@@ -527,6 +535,26 @@ namespace RockWeb.Blocks.Groups
                 polygonColorIndex = 1;
             }}
             return color;
+        }}
+
+        function adjustOverlappedMarkers() {{
+            
+            if (allMarkers.length > 1) {{
+                for(i=0; i < allMarkers.length-1; i++) {{
+                    var marker1 = allMarkers[i];
+                    var pos1 = marker1.getPosition();
+                    for(j=i+1; j < allMarkers.length; j++) {{
+                        var marker2 = allMarkers[j];
+                        var pos2 = marker2.getPosition();
+                        if (pos1.equals(pos2)) {{
+                            var newLat = pos1.lat() * (Math.random() * (max - min) + min);
+                            var newLng = pos1.lng() * (Math.random() * (max - min) + min);
+                            marker1.setPosition( new google.maps.LatLng(newLat,newLng) );
+                        }}
+                    }}
+                }}
+            }}
+
         }}
 
     }});
