@@ -126,8 +126,8 @@ namespace RockWeb.Blocks.Crm
         {
             RockContext rockContext = new RockContext();
             var personDuplicateService = new PersonDuplicateService( rockContext );
-            
-            var personDuplicateQry = personDuplicateService.Queryable();
+
+            var personDuplicateQry = personDuplicateService.Queryable().Where( a => !a.IsConfirmedAsNotDuplicate );
 
             var groupByQry = personDuplicateQry.GroupBy( a => a.PersonAlias.Person );
 
@@ -141,6 +141,13 @@ namespace RockWeb.Blocks.Crm
                 PersonModifiedDateTime = a.Key.ModifiedDateTime,
                 CreatedByPerson = a.Key.CreatedByPersonAlias.Person.FirstName + " " + a.Key.CreatedByPersonAlias.Person.LastName
             } );
+
+            double? matchPercentLow = GetAttributeValue( "MatchPercentLow" ).AsDoubleOrNull();
+            if (matchPercentLow.HasValue)
+            {
+                qry = qry.Where( a => a.MaxScorePercent >= matchPercentLow );
+            }
+
 
             SortProperty sortProperty = gList.SortProperty;
             if ( sortProperty != null )
