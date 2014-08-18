@@ -84,8 +84,11 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
+                        <asp:LinkButton ID="btnTest" runat="server" Text="Send Test" CssClass="btn btn-link" OnClick="btnTest_Click" />
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-link" OnClick="btnSave_Click" />
                     </div>
+
+                    <Rock:NotificationBox ID="nbTestResult" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
 
                 </asp:Panel>
 

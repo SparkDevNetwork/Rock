@@ -177,6 +177,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnLoad( e );
 
+            nbTestResult.Visible = false;
+
             if ( Page.IsPostBack )
             {
                 LoadChannelControl( false );
@@ -409,6 +411,64 @@ namespace RockWeb.Blocks.Communication
         {
             args.IsValid = Recipients.Any();
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnSubmit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnTest_Click( object sender, EventArgs e )
+        {
+            if ( Page.IsValid && CurrentPerson != null )
+            {
+                // Get existing or new communication record
+                var communication = UpdateCommunication( new RockContext() );
+
+                if ( communication != null  )
+                {
+                    // Using a new context (so that changes in the UpdateCommunication() are not persisted )
+                    var testCommunication = new Rock.Model.Communication();
+                    testCommunication.SenderPersonId = communication.SenderPersonId;
+                    testCommunication.Subject = communication.Subject;
+                    testCommunication.IsBulkCommunication = communication.IsBulkCommunication;
+                    testCommunication.ChannelEntityTypeId = communication.ChannelEntityTypeId;
+                    testCommunication.ChannelDataJson = communication.ChannelDataJson;
+                    testCommunication.AdditionalMergeFieldsJson = communication.AdditionalMergeFieldsJson;
+
+                    testCommunication.FutureSendDateTime = null;
+                    testCommunication.Status = CommunicationStatus.Approved;
+                    testCommunication.ReviewedDateTime = RockDateTime.Now;
+                    testCommunication.ReviewerPersonId = CurrentPerson.Id;;
+
+                    var testRecipient = new CommunicationRecipient();
+                    if (communication.Recipients.Any())
+                    {
+                        var recipient = communication.Recipients.FirstOrDefault();
+                        testRecipient.AdditionalMergeValuesJson = recipient.AdditionalMergeValuesJson;
+                    }
+                    testRecipient.Status = CommunicationRecipientStatus.Pending;
+                    testRecipient.PersonId = CurrentPerson.Id;
+                    testCommunication.Recipients.Add( testRecipient );
+
+                    var rockContext = new RockContext();
+                    var communicationService = new CommunicationService( rockContext );
+                    communicationService.Add( testCommunication );
+                    rockContext.SaveChanges();
+
+                    var channel = testCommunication.Channel;
+                    if ( channel != null )
+                    {
+                        channel.Send( testCommunication );
+                    }
+
+                    communicationService.Delete( testCommunication );
+                    rockContext.SaveChanges();
+
+                    nbTestResult.Visible = true;
+                }
+            }
+        }
+
 
         /// <summary>
         /// Handles the Click event of the btnSubmit control.
