@@ -54,7 +54,7 @@ namespace RockWeb.Blocks.Crm
             base.OnInit( e );
 
             gList.Actions.ShowAdd = false;
-            gList.DataKeyNames = new string[] { "Id" };
+            gList.DataKeyNames = new string[] { "PersonId" };
             gList.GridRebind += gList_GridRebind;
         }
 
@@ -90,6 +90,21 @@ namespace RockWeb.Blocks.Crm
 
         #region Methods
 
+        public string GetCampus(Person person)
+        {
+            return "ToDo";
+        }
+
+        public string GetAddresses( Person person )
+        {
+            return "ToDo";
+        }
+
+        public string GetPhoneNumbers( Person person )
+        {
+            return "ToDo";
+        }
+
         /// <summary>
         /// Binds the grid.
         /// </summary>
@@ -100,34 +115,32 @@ namespace RockWeb.Blocks.Crm
             var personService = new PersonService( rockContext );
             int personId = this.PageParameter( "PersonId" ).AsInteger();
 
-            //var duplicatePersonsQry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId ).Select( a => a.Id );
-
-            var person = personService.Get( personId );
-            if ( person != null )
-            {
-                lPersonInfoCol1.Text = new DescriptionList()
-                    .Add( "Name", person )
-                    .Add( "Email", person.Email, true )
-                    .Add( "Gender", person.Gender.ConvertToString() )
-                    .Add( "Age", person.Age, true )
-                    .Add( "Added", person.CreatedDateTime )
-                    .Html;
-            }
-
-            // select person duplicate records (the person and the duplicates)
-            var qry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId )
+            // select person duplicate records
+            var qry = personDuplicateService.Queryable().Where( a => a.PersonAlias.PersonId == personId && !a.IsConfirmedAsNotDuplicate )
                 .Select( s => new
                 {
-                    Id = s.Id,
+                    PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+                    PersonDuplicateId = s.Id,
                     DuplicatePerson = s.DuplicatePersonAlias.Person,
-                    Score = s.Capacity > 0 ? s.Score / (s.Capacity * .01) : (double?)null,
-                    Capacity = s.Capacity
+                    Score = s.Capacity > 0 ? s.Score / (double)s.Capacity : (double?)null,
+                    IsComparePerson = true
                 } );
 
-            qry = qry.OrderBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+            qry = qry.OrderByDescending(a => a.Score).ThenBy( a => a.DuplicatePerson.LastName ).ThenBy( a => a.DuplicatePerson.FirstName );
+            var gridList = qry.ToList();
 
+            // put the person we are comparing the duplicates to at the top of the list
+            var person = personService.Get( personId );
+            gridList.Insert( 0, new
+            {
+                PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
+                PersonDuplicateId = 0,
+                DuplicatePerson = person,
+                Score = (double?)null,
+                IsComparePerson = false
+            } );
 
-            gList.DataSource = qry.ToList();
+            gList.DataSource = gridList;
             gList.DataBind();
         }
 
@@ -140,7 +153,21 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            // maybe todo
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                var person = e.Row.DataItem.GetPropertyValue( "DuplicatePerson" );
+                bool isComparePerson = (bool)e.Row.DataItem.GetPropertyValue( "IsComparePerson" );
+
+                // If this is the main person for the compare, select them, but then hide the checkbox.  
+                var cell = e.Row.Cells[gList.Columns.OfType<SelectField>().First().ColumnIndex];
+                var selectBox = (cell.Controls[0] as CheckBox);
+                selectBox.Visible = isComparePerson;
+                selectBox.Checked = !isComparePerson;
+
+                // If this is the main person for the compare, hide the "not duplicate" button
+                LinkButton btnNotDuplicate = e.Row.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault( a => a.ID == "btnNotDuplicate" );
+                btnNotDuplicate.Visible = isComparePerson;
+            }
         }
 
         /// <summary>
@@ -152,9 +179,22 @@ namespace RockWeb.Blocks.Crm
         {
             // todo
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnNotDuplicate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnNotDuplicate_Click( object sender, EventArgs e )
         {
+            RockContext rockContext = new RockContext();
+            var personDuplicateService = new PersonDuplicateService( rockContext );
+            int personDuplicateId = ( sender as LinkButton ).CommandArgument.AsInteger();
+            var personDuplicate = personDuplicateService.Get( personDuplicateId );
+            personDuplicateService.Delete( personDuplicate );
+            rockContext.SaveChanges();
 
+            BindGrid();
         }
 }
 }
