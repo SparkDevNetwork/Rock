@@ -15,7 +15,7 @@
                     <asp:Repeater runat="server" ID="rptCampuses" OnItemCommand="rptCampuses_ItemCommand">
                         <ItemTemplate>
                             <li>
-                                <asp:LinkButton ID="btnCampus" runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("ContextKey") %>' />
+                                <asp:LinkButton ID="btnCampus" runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("Id") %>' />
                             </li>
                         </ItemTemplate>
                     </asp:Repeater>
