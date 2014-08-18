@@ -540,6 +540,10 @@ img.jcrop-preview {
 .picker .picker-menu h4:first-child {
   margin-top: 0;
 }
+.picker.picker-menu-right .picker-menu {
+  right: 0;
+  left: auto;
+}
 .picker .picker-actions {
   background-color: #eeeeee;
   padding: 10px;
