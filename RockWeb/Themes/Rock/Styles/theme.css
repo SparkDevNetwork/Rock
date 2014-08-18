@@ -3971,18 +3971,18 @@ fieldset[disabled] .btn-action.active {
   background-color: #ffffff;
 }
 .btn-security {
-  color: #555555;
+  color: #524c43;
   background-color: #efefef;
-  border-color: #e2e2e2;
+  border-color: #dbd5cb;
 }
 .btn-security:hover,
 .btn-security:focus,
 .btn-security:active,
 .btn-security.active,
 .open > .dropdown-toggle.btn-security {
-  color: #555555;
+  color: #524c43;
   background-color: #d6d6d6;
-  border-color: #c4c4c4;
+  border-color: #c2b8a7;
 }
 .btn-security:active,
 .btn-security.active,
@@ -4005,11 +4005,11 @@ fieldset[disabled] .btn-security:active,
 .btn-security[disabled].active,
 fieldset[disabled] .btn-security.active {
   background-color: #efefef;
-  border-color: #e2e2e2;
+  border-color: #dbd5cb;
 }
 .btn-security .badge {
   color: #efefef;
-  background-color: #555555;
+  background-color: #524c43;
 }
 .btn-authenication {
   color: #524c43;
