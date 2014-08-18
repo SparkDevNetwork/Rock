@@ -15,26 +15,9 @@
                 </div>
             </div>
             <div class="panel-body">
-
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <asp:Literal runat="server" ID="lPersonInfoCol1" />
-                    </div>
-                    <div class="col-md-6">
-                        <asp:Literal runat="server" ID="lPersonInfoCol2" />
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        
-                    </div>
-                </div>
-
-                <h5>Possible Matches</h5>
-                <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowDataBound="gList_RowDataBound">
+                <Rock:Grid ID="gList" runat="server" AllowSorting="true" OnRowDataBound="gList_RowDataBound" PersonIdField="PersonId" >
                     <Columns>
+                        <Rock:SelectField />
                         <asp:BoundField DataField="DuplicatePerson.FirstName" HeaderText="First Name" SortExpression="DuplicatePerson.FirstName, DuplicatePerson.LastName" />
                         <asp:BoundField DataField="DuplicatePerson.LastName" HeaderText="Last Name" SortExpression="DuplicatePerson.LastName, DuplicatePerson.FirstName" />
                         <asp:BoundField DataField="DuplicatePerson.Email" HeaderText="Email" SortExpression="DuplicatePerson.Email" />
@@ -42,22 +25,55 @@
 
                         <asp:BoundField DataField="DuplicatePerson.Age" HeaderText="Age" SortExpression="DuplicatePerson.Age" />
                         <Rock:DateTimeField DataField="DuplicatePerson.ModifiedDateTime" HeaderText="ModifiedDateTime" SortExpression="DuplicatePerson.ModifiedDateTime" />
-                        <asp:BoundField DataField="Score" HeaderText="Score" />
-                        <asp:BoundField DataField="Capacity" HeaderText="Capacity" />
-                        <%--
-                            <asp:BoundField DataField="Campus" HeaderText="Campus" SortExpression="Campus"  />
-                            <asp:BoundField DataField="Addresses" HeaderText="Addresses" />
-                            <asp:BoundField DataField="PhoneNumbers" HeaderText="Phone Numbers" />
-                        --%>
+                        <asp:BoundField DataField="Score" HeaderText="Score" DataFormatString="{0:P}" NullDisplayText="-" />
+                        <asp:TemplateField HeaderText="Campus">
+                            <ItemTemplate>
+                                <asp:Literal ID="lCampus" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Addresses">
+                            <ItemTemplate>
+                                <asp:Literal ID="lAddresses" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                            </ItemTemplate>
+                        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="PhoneNumbers">
+                            <ItemTemplate>
+                                <asp:Literal ID="lPhoneNumbers" runat="server" Text='<%# GetCampus(Eval("DuplicatePerson") as Rock.Model.Person) %>' />
+                            </ItemTemplate>
+                        </asp:TemplateField>
                         <asp:TemplateField>
                             <ItemTemplate>
-                                <asp:LinkButton runat="server" ID="btnMerge" CssClass="btn btn-primary" Text="Merge" OnClick="btnMerge_Click" />
-                                <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-action" Text="Confirm Not Duplicate" OnClick="btnNotDuplicate_Click" />
+                                <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-action js-not-duplicate" Text="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>' />
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
                 </Rock:Grid>
             </div>
+
+            <script>
+                Sys.Application.add_load(function () {
+                    $('.js-not-duplicate').on('click', function (e) {
+                        // make sure the element that triggered this event isn't disabled
+                        if (e.currentTarget && e.currentTarget.disabled) {
+                            return false;
+                        }
+
+                        e.preventDefault();
+
+                        Rock.dialogs.confirm("Are you sure this is not a duplicate?", function (result) {
+                            if (result) {
+                                var postbackJs = e.target.href ? e.target.href : e.target.parentElement.href;
+
+                                // need to do unescape because firefox might put %20 instead of spaces
+                                postbackJs = unescape(postbackJs);
+
+                                // Careful!
+                                eval(postbackJs);
+                            }
+                        })
+                    });
+                });
+            </script>
 
         </asp:Panel>
 
