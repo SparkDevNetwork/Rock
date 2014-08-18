@@ -683,30 +683,9 @@ namespace Rock.Web.UI.Controls
 
         private void SetOrganizationAddressDefaults()
         {
-            // Check to see if there is an global attribute for organization address
-            Guid locGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" ).AsGuid();
-            if ( !locGuid.Equals( Guid.Empty ) )
-            {
-                // If the organization location is still same as last check, use saved values
-                if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
-                {
-                    _orgState = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
-                    _orgCountry = Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_COUNTRY );
-                }
-                else
-                {
-                    // otherwise read the new location and save the state/country
-                    Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
-                    var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid );
-                    if ( location != null )
-                    {
-                        _orgState = location.State;
-                        _orgCountry = location.Country;
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, _orgState );
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_COUNTRY, _orgCountry );
-                    }
-                }
-            }
+            var globalAttributesCache = GlobalAttributesCache.Read();
+            _orgState = globalAttributesCache.OrganizationState;
+            _orgCountry = globalAttributesCache.OrganizationCountry;
         }
 
         private void BindCountries()

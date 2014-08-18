@@ -992,25 +992,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            bool displayMapButton = group.GroupLocations
-                .Where( gl => 
-                    gl.Location != null && 
-                    ( gl.Location.GeoPoint != null || gl.Location.GeoFence != null ) )
-                .Any();
-            if (!displayMapButton && group.GroupType != null)
-            {
-                // Current group doesn't have a mappaple location, but check to see if any of the child group types allow maps
-                foreach( var childGroupType in group.GroupType.ChildGroupTypes)
-                {
-                    if ( childGroupType.LocationTypes.Any() )
-                    {
-                        displayMapButton = true;
-                        break;
-                    }
-                }
-            }
-                  
-            hlMap.Visible = displayMapButton;
+            hlMap.Visible = !string.IsNullOrWhiteSpace( groupMapUrl );
             hlMap.NavigateUrl = groupMapUrl;
             
             btnSecurity.Visible = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
