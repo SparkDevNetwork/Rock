@@ -66,10 +66,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected campus ids.
+        /// Gets or sets the selected campus identifier.
         /// </summary>
         /// <value>
-        /// The selected campus ids.
+        /// The selected campus identifier.
         /// </value>
         public int? SelectedCampusId
         {
